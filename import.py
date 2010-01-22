@@ -1,28 +1,34 @@
 #!/usr/bin/env python
 
 from sqlite3 import dbapi2 as sqlite
-DBNAME=join('/','data','sdss','sdss.db')
+from os.path import join,exists
+from sys import argv
 
-def readformat(fname=)
+DBNAME='merged.db'
+
+def readcfg(fname='merged.cfg'):
+    f=open(fname)
+    exec(f.readlines())
+    
+    print config
+    return config
+    
+def fillit(curs,config):
+    delim=config['delim']
+    for talbe in config['tables']
 
 def setupdb(dbname=DBNAME):
-    if not exists(dbname): newdb=True
-    else: newdb=False
-
-    connection=sqlite.connect(dbname)
-    cursor=connection.cursor()
-
-    if newdb:
-        cursor.execute('CREATE TABLE sdss (objID INTEGER PRIMARY KEY)')
-        connection.commit()
-
-    return connection,cursor
-
+    conn=sqlite.connect(dbname)
+    curs=connection.cursor()
+    return conn,curs
 
 
 
 def main():
     conn,curs=setupdb()
+    config=readcfg(argv[1])
+    fillit(curs,config)
+    conn.commit()
     
 
 if __name__ == '__main__':
