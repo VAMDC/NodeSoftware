@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 
 from SimpleHTTPServer import SimpleHTTPRequestHandler, BaseHTTPServer
-import cgi
+from cgi import parse_qs as parse
 
 class MyHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
-        ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
-        print ctype,pdict
-        try:
-            query=cgi.parse_multipart(self.rfile, pdict)
-            print query
-        except: print 'nope'
+        length= int( self.headers['content-length'] )
+        data=self.rfile.read( length )
+        data=parse(data)
+        self.log_message("""post data is: %s"""%str(data))
         self.send_response(200)
         self.send_header('Content-type','text/html')
         self.end_headers()
-        self.wfile.write('test')
-        return
+        for key in data.keys():
+            self.wfile.write('%s: %s\n'%(key,data[key][0]))
+        
+    def do_GET(self):
+        self.send_response(404)
+        
 
 def main():
     try:
