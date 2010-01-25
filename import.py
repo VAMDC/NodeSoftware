@@ -15,7 +15,14 @@ def readcfg(fname='merged.cfg'):
     
 def fillit(curs,config):
     delim=config['delim']
-    for talbe in config['tables']
+    for table in config['tables']:
+        sql='CREATE TABLE IF NOT EXISTS %s '%table['tname']
+        sql+='(id INTEGER PRIMARY KEY, '
+        for i,colname in enumerate(table['colnames']):
+            sql+='%s %s,'%(colname,table['coltypes'][i])
+        sql+=');'
+        print sql
+        #curs.execute()
 
 def setupdb(dbname=DBNAME):
     conn=sqlite.connect(dbname)
