@@ -1,7 +1,7 @@
 A quick implementation of a mini-VAMDC, for test purposes.
 
 USAGE:
-* Check out your copy with "git://github.com/ivh/VAMDC-VALD.git"
+* Check out your copy with "git clone git://github.com/ivh/VAMDC-VALD.git"
 * Change directory into VAMDC-VALD.
 * Run "./import.py dummy" to create dummy data with corresponding
   config file.
