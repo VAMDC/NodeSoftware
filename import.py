@@ -32,6 +32,9 @@ def filldata(curs,tconf):
         f.readline()
     for line in f:
         l=line.split()
+        if len(l) != len(tconf['colnames']):
+            print 'skipped line'
+            continue
         sql='INSERT INTO %s '%(tconf['tname'])
         curs.execute(sql+' VALUES (NULL, %s)'%s.join(('?')*27,', '),tuple(l))
         
