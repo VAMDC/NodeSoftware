@@ -2,27 +2,35 @@
 
 from sqlite3 import dbapi2 as sqlite
 from os.path import join,exists
+import string as s
 from sys import argv
 
 DBNAME='merged.db'
 
 def readcfg(fname='merged.cfg'):
     f=open(fname)
-    exec(f.readlines())
+    exec(s.join(f.readlines()))
     
     print config
     return config
     
-def fillit(curs,config):
-    delim=config['delim']
-    for table in config['tables']:
-        sql='CREATE TABLE IF NOT EXISTS %s '%table['tname']
+def createtables(curs,tconf):
+    
+        sql='CREATE TABLE IF NOT EXISTS %s '%tconf['tname']
         sql+='(id INTEGER PRIMARY KEY, '
-        for i,colname in enumerate(table['colnames']):
-            sql+='%s %s,'%(colname,table['coltypes'][i])
+        for i,colname in enumerate(tconf['colnames']):
+            sql+='%s %s, '%(colname,tconf['coltypes'][i])
+        sql=sql[:-2]
         sql+=');'
         print sql
-        #curs.execute()
+        curs.execute(sql)
+
+def filldata(curs,tconf):
+    delim=tconf['delim']
+    f=open(tconf['fname'])
+    
+    for line in f:
+        print line.split(delim)
 
 def setupdb(dbname=DBNAME):
     conn=sqlite.connect(dbname)
@@ -34,7 +42,9 @@ def setupdb(dbname=DBNAME):
 def main():
     conn,curs=setupdb()
     config=readcfg(argv[1])
-    fillit(curs,config)
+    for tconf in config['tables']:
+        createtables(curs,tconf)
+        filldata(curs,tconf)
     conn.commit()
     
 
