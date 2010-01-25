@@ -28,9 +28,13 @@ def createtables(curs,tconf):
 def filldata(curs,tconf):
     delim=tconf['delim']
     f=open(tconf['fname'])
-    
+    for i in range(tconf['headlines']):
+        f.readline()
     for line in f:
-        print line.split(delim)
+        l=line.split()
+        sql='INSERT INTO %s '%(tconf['tname'])
+        curs.execute(sql+' VALUES (NULL, %s)'%s.join(('?')*27,', '),tuple(l))
+        
 
 def setupdb(dbname=DBNAME):
     conn=sqlite.connect(dbname)
