@@ -26,7 +26,7 @@ def fillit(curs,config):
 
 def setupdb(dbname=DBNAME):
     conn=sqlite.connect(dbname)
-    curs=connection.cursor()
+    curs=conn.cursor()
     return conn,curs
 
 
