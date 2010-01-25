@@ -1,2 +1,22 @@
 A quick implementation of a mini-VAMDC, for test purposes.
 
+USAGE:
+* Check out your copy with "git://github.com/ivh/VAMDC-VALD.git"
+* Change directory into VAMDC-VALD.
+* Run "./import.py dummy" to create dummy data with corresponding
+  config file.
+* Run "./server.py" to start the server on localhost:8080.
+* Run "./request.py" to send a request to the server and
+  get the answer back (JSON encoded), unpack the data and
+  print it.
+
+DESCRIPTION:
+Uses the built-in Python libraries for 
+ * Webserver
+ * URL retrieval with POST data
+ * JSON data format
+ * SQLite database
+these scripts emulate the communication principle between
+VAMDC and a data provider database, i.e. a request is sent
+over http to the server, which anwsers it from the database
+that was created from the import.
