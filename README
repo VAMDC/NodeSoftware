@@ -20,3 +20,17 @@ these scripts emulate the communication principle between
 VAMDC and a data provider database, i.e. a request is sent
 over http to the server, which anwsers it from the database
 that was created from the import.
+
+TODO:
+import.py:
+ * Come up with a format in the config files for connecting
+   tables and specify indices
+ * add format descriptions for the columns
+ * treat empty fields, quotes in data etc.
+ * create tables for metadata, registry
+ * make it robust, testing
+
+server.py
+ * add authentication
+ * implement registry request
+ * maybe switch to a higher level framework, like cherrypy or web2py
