@@ -32,9 +32,10 @@ import.py:
 
 server.py
  * add authentication
+ * make requests more TAP-like
  * implement registry request
  * maybe switch to a higher level framework, like cherrypy or web2py
- * alternative to SQLite: use MySQL
+ * implement alternative to SQLite: use MySQL
 
 In general:
  * import the whole of VALD and run performance tests
