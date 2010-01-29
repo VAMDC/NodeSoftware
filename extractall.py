@@ -1,5 +1,17 @@
 #!/usr/bin/env python
 
+"""
+
+extractall.py
+
+This file is not really a member of "mini-VAMDC", but uses the 
+VALD extraction tools to generate ascii-files that then are used by
+import.py
+
+Automatic generation of the config-dictionaries would be nice.
+
+"""
+
 from string import *
 from os.path import join
 from os import system

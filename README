@@ -36,5 +36,5 @@ server.py
  * maybe switch to a higher level framework, like cherrypy or web2py
  * alternative to SQLite: use MySQL
 
-general:
+In general:
  * import the whole of VALD and run performance tests
