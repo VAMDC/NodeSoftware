@@ -20,7 +20,6 @@ into several tables, indices etc.
 
 """
 
-from sqlite3 import dbapi2 as sqlite
 from os.path import join,exists
 from os import remove
 import string as s
@@ -66,13 +65,19 @@ def filldata(curs,tconf):
         curs.execute(sql+' VALUES (NULL, %s)'%s.join(('?')*len(l),', '),tuple(l))
         
 
-def setupdb(dbname):
+def connect_sqlite(dbname):
     """
        connect to the database file and return cursor and connection handle
     """
+    from sqlite3 import dbapi2 as sqlite
     conn=sqlite.connect(dbname)
-    curs=conn.cursor()
-    return conn,curs
+    return conn,conn.cursor()
+    
+def connect_mysql(host='localhost',user='vald',passwd='V@ld',db='vald'):
+    import MySQLdb
+    conn = MySQLdb.connect (host=host,user=user,passwd=passwd,db=db)
+    return conn,conn.cursor()
+    
 
 def dummycfg():
     """
@@ -113,19 +118,22 @@ def main():
     if argv[1]=='dummy':
         try: remove('dummy.db')
         except: pass
-        conn,curs=setupdb('dummy.db')
+        conn,curs=connect_sqlite('dummy.db')
         exec(dummycfg())
         writedummydata()
+    elif argv[1]='vald':
+         conn,curs=connect_mysql()
+         config=readcfg('merged.cfg')
     else:
         dbname=s.replace(argv[1],'.cfg','')+'.db'
-        conn,curs=setupdb(dbname)
+        conn,curs=connect_sqlite(dbname)
         config=readcfg(argv[1])
 
     for tconf in config['tables']:
         createtable(curs,tconf)
         filldata(curs,tconf)
 
-    conn.commit() # IMPORTANT! This actually writes the database file.
+    conn.commit() # IMPORTANT! This actually writes the database.
                   # Before everything's only in memory.
     
 
