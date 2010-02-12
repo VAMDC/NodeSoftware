@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 import.py
@@ -25,18 +26,35 @@ from os import remove
 import string as s
 from sys import argv
 
+def fixvald(data):
+    pass
+
 valdcfg={\
     'tables':[\
         {'tname':'merged',
          'fname':'merged.dat',
          'delim':'fixedcol',
          'headlines':2,
+         'commentchar':'',
+         'function':fixvald # to be applied on each line
          'columns':[\
-                ('l','%.3f',0,12,'FLOAT'),
-                ('l','%.3f',0,12,'FLOAT'),
-                ('l','%.3f',0,12,'FLOAT'),
-                ('l','%.3f',0,12,'FLOAT'),
-                ('l','%.3f',0,12,'FLOAT'),
+                #colname,printformat,comment,unit,bytes,
+                ('lamda','%.5f','Wavelength','Å',0,13,'UNSIGNED FLOAT'),
+                ('atomic','%d','Atomic number',13,16,'UNSIGNED TINYINT'),
+                ('ion','%d','Ionization stage, 0 is neutral',17,19,'UNSIGNED TINYINT'),
+                ('loggf','%.3f','oscillator strength, log g*f',19,27,'FLOAT'),
+                ('lowev','%.3f',27,35,'UNSIGNED FLOAT'),
+                ('lowj','%.1f',35,40,'UNSIGNED FLOAT'),
+                ('hiev','%.3f',40,48,'UNSIGNED FLOAT'),
+                ('hij','%.1f',48,53,'UNSIGNED FLOAT'),
+                ('landup','%.2f',53,59,'FLOAT'),
+                ('landlo','%.2f',59,65,'FLOAT'),
+                ('landeff','%.2f',0,12,'FLOAT'),
+                ('lowev','%.3f',0,12,'FLOAT'),
+                ('lowev','%.3f',0,12,'FLOAT'),
+                ('lowev','%.3f',0,12,'FLOAT'),
+                ('lowev','%.3f',0,12,'FLOAT'),
+                ('lowev','%.3f',0,12,'FLOAT',),
     }
 
 def readcfg(fname):
