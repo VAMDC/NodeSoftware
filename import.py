@@ -17,13 +17,27 @@ information.
 Quite a bit of thought will be needed on how to descibe the splitting
 into several tables, indices etc.
 
-
+     52.68200
 """
 
 from os.path import join,exists
 from os import remove
 import string as s
 from sys import argv
+
+valdcfg={\
+    'tables':[\
+        {'tname':'merged',
+         'fname':'merged.dat',
+         'delim':'fixedcol',
+         'headlines':2,
+         'columns':[\
+                ('l','%.3f',0,12,'FLOAT'),
+                ('l','%.3f',0,12,'FLOAT'),
+                ('l','%.3f',0,12,'FLOAT'),
+                ('l','%.3f',0,12,'FLOAT'),
+                ('l','%.3f',0,12,'FLOAT'),
+    }
 
 def readcfg(fname):
     """
