@@ -18,7 +18,6 @@ information.
 Quite a bit of thought will be needed on how to descibe the splitting
 into several tables, indices etc.
 
-     52.68200
 """
 
 from os.path import join,exists
@@ -26,36 +25,194 @@ from os import remove
 import string as s
 from sys import argv
 
+### FUCTIONS TO APPLY TO DATA AFTER READING
 def fixvald(data):
-    pass
+    return data
+
+def fixrefs(data):
+    return data
+
+def fixnothing(data):
+    return data
+
+### CONFIG "FILES"
+dummycfg = {\
+    'tables':[\
+        {'fname':'dummy.dat',
+         'delim':' ',
+         'tname':'dummy1',
+         'headlines':0,
+         'commentchar':'',
+         'function':fixnothing,
+         'columns':[\
+                {'cname':'c1',
+                 'cfmt':'%d',
+                 'ccom':'column 1',
+                 'cunit':None,
+                 'cbyte':0,
+                 'cnull':None,
+                 'ctype':'UNSIGNED INT',
+                 },
+                {'cname':'c2',
+                 'cfmt':'%.2f',
+                 'ccom':'column 2',
+                 'cunit':'Å',
+                 'cbyte':1,
+                 'cnull':0.0,
+                 'ctype':'FLOAT',
+                 },
+                ]
+         },
+        {'fname':'dummy.dat',
+         'delim':' ',
+         'tname':'dummy2',
+         'headlines':0,
+         'commentchar':'',
+         'function':fixnothing,
+         'columns':[\
+                {'cname':'c1',
+                 'cfmt':'%d',
+                 'ccom':'column 1',
+                 'cunit':None,
+                 'cbyte':0,
+                 'cnull':None,
+                 'ctype':'UNSIGNED INT',
+                 },
+                {'cname':'c2',
+                 'cfmt':'%.2f',
+                 'ccom':'column 2',
+                 'cunit':'eV',
+                 'cbyte':2,
+                 'cnull':0.0,
+                 'ctype':'UNSIGNED FLOAT',
+                 },
+                ],
+         'relations':[{\
+                'table1':'dummy1',
+                'column1':'c1',
+                'table2':'dummy2',
+                'column2':'c1'
+                }]
+      
+         }
+        ]
+    }
 
 valdcfg={\
     'tables':[\
         {'tname':'merged',
          'fname':'merged.dat',
-         'delim':'fixedcol',
-         'headlines':2,
-         'commentchar':'',
-         'function':fixvald # to be applied on each line
+         'delim':'fixedcol', # delimiter character or 'fixedcol'
+         'headlines':2,      # this many lies ignored in file header
+         'commentchar':'',   # lines that start with this are ignored
+         'function':fixvald,  # to be applied on each line
          'columns':[\
-                #colname,printformat,comment,unit,bytes,
-                ('lamda','%.5f','Wavelength','Å',0,13,'UNSIGNED FLOAT'),
-                ('atomic','%d','Atomic number',13,16,'UNSIGNED TINYINT'),
-                ('ion','%d','Ionization stage, 0 is neutral',17,19,'UNSIGNED TINYINT'),
-                ('loggf','%.3f','oscillator strength, log g*f',19,27,'FLOAT'),
-                ('lowev','%.3f',27,35,'UNSIGNED FLOAT'),
-                ('lowj','%.1f',35,40,'UNSIGNED FLOAT'),
-                ('hiev','%.3f',40,48,'UNSIGNED FLOAT'),
-                ('hij','%.1f',48,53,'UNSIGNED FLOAT'),
-                ('landup','%.2f',53,59,'FLOAT'),
-                ('landlo','%.2f',59,65,'FLOAT'),
-                ('landeff','%.2f',0,12,'FLOAT'),
-                ('lowev','%.3f',0,12,'FLOAT'),
-                ('lowev','%.3f',0,12,'FLOAT'),
-                ('lowev','%.3f',0,12,'FLOAT'),
-                ('lowev','%.3f',0,12,'FLOAT'),
-                ('lowev','%.3f',0,12,'FLOAT',),
+                {'cname':'wavel',     # column name
+                 'cfmt':'%.5f',       # print format
+                 'ccom':'Wavelength', # description
+                 'cunit':'Å',         # Units
+                 'cbit':(0,13),       # place in the line
+                 'cnull':None,        # value to be converted to NULL
+                 'ctype':'UNSIGNED FLOAT', # data format in database
+                 },
+                {'cname':'atomic',
+                 'cfmt':'%d',
+                 'ccom':'Atomic number',
+                 'cunit':None,
+                 'cbit':(13,16),
+                 'cnull':None,
+                 'ctype':'UNSIGNED TINYINT'},
+                {'cname':'ion',
+                 'cfmt':'%d',
+                 'ccom':'Ionization stage, 0 is neutral',
+                 'cunit':None,
+                 'cbit':(17,19),
+                 'cnull':None,
+                 'ctype':'UNSIGNED TINYINT'},
+                {'cname':'loggf',
+                 'cfmt':'%.3f',
+                 'ccom':'oscillator strength, log g*f',
+                 'cunit':None,
+                 'cbit':(19,27),
+                 'cnull':None,
+                 'ctype':'FLOAT'},
+                {'cname':'lowev',
+                 'cfmt':'%.3f',
+                 'ccom':'excitation energy of the lower level',
+                 'cunit':'eV',
+                 'cbit':(27,35),
+                 'cnull':None,
+                 'ctype':'UNSIGNED FLOAT'},
+                {'cname':'lowj',
+                 'cfmt':'%.2f',
+                 'ccom':'quantum number J of the lower level',
+                 'cunit':None,
+                 'cbit':(35,40),
+                 'cnull':None,
+                 'ctype':'UNSIGNED FLOAT'},
+                {'cname':'hiev',
+                 'cfmt':'%.3f',
+                 'ccom':'excitation energy of the upper level',
+                 'cunit':'eV',
+                 'cbit':(40,48),
+                 'cnull':None,
+                 'ctype':'UNSIGNED FLOAT'},
+                {'cname':'hij',
+                 'ccom':'quantum number J of the upper level',
+                 'cfmt':'%.2f',
+                 'cunit':None,
+                 'cbit':(48,53),
+                 'cnull':None,
+                 'ctype':'UNSIGNED FLOAT'},
+                {'cname':'landup',
+                 'cfmt':'%.2f',
+                 'cunit':None,
+                 'cbit':(53,59),
+                 'cnull':None,
+                 'ctype':'FLOAT'},
+                {'cname':'landlo',
+                 'cfmt':'%.2f',
+                 'cunit':None,
+                 'cbit':(59,65),
+                 'cnull':None,
+                 'ctype':'FLOAT'},
+                {'cname':'',
+                 'cfmt':'%.2f',
+                 'ccom':'',
+                 'cunit':None,
+                 'cbit':(0,12),
+                 'cnull':None,
+                 'ctype':'FLOAT'},
+                ]
+         },
+        {'tname':'refs',
+         'fname':'',
+         'delim':',',
+         'headlines':1,
+         'commentchar':';',
+         'function':fixrefs,
+         'columns':[\
+                {'cname':'',
+                 'cfmt':'%.2f',
+                 'ccom':'',
+                 'cunit':None,
+                 'cbit':(0,12),
+                 'cnull':None,
+                 'ctype':'FLOAT'},
+                ]
+         },
+        ],
+    'relations':[ # descibe which table.column is related to another
+        {'table1':'',
+         'column1':'',
+         'table2':'',
+         'column2':'',
+         }
+        ]
     }
+
+
+#### WORKER FUNCTIONS; I.E. THE "IMPORT TOOLS"
 
 def readcfg(fname):
     """
@@ -64,37 +221,89 @@ def readcfg(fname):
        Have a look at createcfg() to see how it should look like.
     """
     f=open(fname)
-    exec(s.join(f.readlines()))
-    
+    #exec(s.join(f.readlines()))
+    exec(f.read())
     return config
     
 def createtable(curs,tconf):
     """
        create the tables with typed columns, according to the config-dict
     """
-    sql='CREATE TABLE IF NOT EXISTS %s '%tconf['tname']
-    sql+='(id INTEGER PRIMARY KEY, '
-    for i,colname in enumerate(tconf['colnames']):
-        sql+='%s %s, '%(colname,tconf['coltypes'][i])
+    sql='CREATE TABLE IF NOT EXISTS %s ('%tconf['tname']
+    for col in tconf['columns']:
+        sql+='%s %s, '%(col['cname'],col['ctype'])
     sql=sql[:-2]
     sql+=');' 
     curs.execute(sql)
 
+def createmeta(curs):
+    """
+        creates the meta table
+    """
+    sql='CREATE TABLE IF NOT EXISTS meta ('
+    sql+='cname VARCHAR(64),'
+    sql+='tname VARCHAR(64),'
+    sql+='ccom TEXT,'
+    sql+='cunit VARCHAR(64),'
+    sql+='cfmt VARCHAR(64)'
+    sql+=' );'
+    
+    curs.execute(sql)
+
+def fillmeta(curs,conf):
+    """
+        fills the meta table according to the config
+    """
+    for table in conf['tables']:
+        tname=table['tname']
+        for col in table['columns']:
+            sql='INSERT INTO meta VALUES (?, ?, ?, ?, ?);'
+            d=[col['cname'],tname,col['ccom'],col['cunit'],col['cfmt']]
+            
+            print sql,d
+            curs.execute(sql,d)
+
+def createindices(curs,conf):
+    pass
+        
+    
+
+def splitfixedcol(line,cols,delim):
+    data=[]
+    for col in cols:
+        start=col['cbyte'][0]
+        ned=col['cbyte'][1]
+        data.append(s.strip(line[start:end]))
+    return data
+
+def splitbydelim(line,cols,delim):
+    data=[]
+    for col in cols:
+        print col
+        d=line.split(delim)[col['cbyte']] 
+        data.append(s.strip(d))
+    return data
+    
 def filldata(curs,tconf):
     """
         read the data-files and fill the data into the tables in the DB
     """
-    delim=tconf['delim']
     f=open(tconf['fname'])
     for i in range(tconf['headlines']):
         f.readline()
+
+    delim=tconf['delim']
+    if delim=='fixedcol': 
+        splitter=splitfixedcol
+    else:
+        splitter=splitbydelim
+
     for line in f:
-        l=line.split()
-        if len(l) != len(tconf['colnames']):
-            print 'skipped line'
-            continue
+        data=splitter(line,tconf['columns'],delim)
+        data=tconf['function'](data)
         sql='INSERT INTO %s '%(tconf['tname'])
-        curs.execute(sql+' VALUES (NULL, %s)'%s.join(('?')*len(l),', '),tuple(l))
+        sql+=' VALUES (%s)'%s.join(('?')*len(data),', ')
+        curs.execute(sql,tuple(data))
         
 
 def connect_sqlite(dbname):
@@ -111,35 +320,16 @@ def connect_mysql(host='localhost',user='vald',passwd='V@ld',db='vald'):
     return conn,conn.cursor()
     
 
-def dummycfg():
-    """
-        return code to create a config-dictionary that matches the
-        dummy data below.
-    """
-    return """config = { \
-	'tables':[\
-	       {'fname':'dummy.dat',\
-		'delim':' ',\
-		'tname':'dummy1',\
-		'headlines':0,\
-		'ncols':3,\
-		'colnames':['c1', 'c2', 'c3'],\
-		'coltypes':['REAL', 'REAL', 'TEXT'],\
-		}\
-	]
-}
 
-"""
-
-def writedummydata(n=100):
+def writedummydata(n=100,filename='dummy.dat'):
     """
-        write random dummy data into dummy.dat
+        write random dummy data
     """
-    from random import random,choice
-    f=open('dummy.dat','w')
+    from random import random
+    f=open(filename,'w')
     while n>0:
-        f.write('%f %f %s\n'%(random(),random(),choice(s.letters)))
         n-=1
+        f.write('%d %f %f\n'%(100-n,random(),random()))
     f.close()
 
 def main():
@@ -151,9 +341,9 @@ def main():
         try: remove('dummy.db')
         except: pass
         conn,curs=connect_sqlite('dummy.db')
-        exec(dummycfg())
+        config=dummycfg
         writedummydata()
-    elif argv[1]='vald':
+    elif argv[1]=='vald':
          conn,curs=connect_mysql()
          config=readcfg('merged.cfg')
     else:
@@ -161,13 +351,16 @@ def main():
         conn,curs=connect_sqlite(dbname)
         config=readcfg(argv[1])
 
+    createmeta(curs)
+    fillmeta(curs,config)
+
     for tconf in config['tables']:
         createtable(curs,tconf)
         filldata(curs,tconf)
 
     conn.commit() # IMPORTANT! This actually writes the database.
                   # Before everything's only in memory.
-    
+    conn.close()
 
 if __name__ == '__main__':
     main()
