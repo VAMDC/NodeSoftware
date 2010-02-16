@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from import-tools import *
+from imptools import *
 
 def main():
     if len(argv) < 2:
