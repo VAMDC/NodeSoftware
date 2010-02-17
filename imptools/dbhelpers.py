@@ -7,11 +7,7 @@ helper functions to create and fill the database
 
 """
 
-from os.path import join,exists
-from os import remove
 import string as s
-from sys import argv
-
 
 def readcfg(fname):
     """

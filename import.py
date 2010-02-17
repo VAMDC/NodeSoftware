@@ -1,27 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import sys
 
 from imptools import *
 
 def main():
-    if len(argv) < 2:
+    if len(sys.argv) < 2:
         print "usage: ./import.py name.cfg\nOr ./import.py dummy"
         return
 
-    if argv[1]=='dummy':
-        try: remove('dummy.db')
+    if sys.argv[1]=='dummy':
+        try: os.remove('dummy.db')
         except: pass
         conn,curs=connect_sqlite('dummy.db')
         config=dummycfg
         writedummydata()
-    elif argv[1]=='vald':
+    elif sys.argv[1]=='vald':
          conn,curs=connect_mysql()
+         try: curs.execute('drop table merged; drop table meta; drop table refs;')
+         except: pass
+         conn.commit()
          config=valdcfg
     else:
-        dbname=s.replace(argv[1],'.cfg','')+'.db'
+        dbname=s.replace(sys.argv[1],'.cfg','')+'.db'
         conn,curs=connect_sqlite(dbname)
-        config=readcfg(argv[1])
+        config=readcfg(sys.argv[1])
 
     createmeta(curs)
     fillmeta(curs,config)
