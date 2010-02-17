@@ -33,6 +33,7 @@ def createtable(curs,tconf):
         sql+='%s %s, '%(col['cname'],col['ctype'])
     sql=sql[:-2]
     sql+=');' 
+    #print sql
     curs.execute(sql)
 
 def createmeta(curs):
@@ -44,7 +45,8 @@ def createmeta(curs):
     sql+='tname VARCHAR(64),'
     sql+='ccom TEXT,'
     sql+='cunit VARCHAR(64),'
-    sql+='cfmt VARCHAR(64)'
+    sql+='cfmt VARCHAR(64),'
+    sql+='PRIMARY KEY (cname)'
     sql+=' );'
     
     curs.execute(sql)
@@ -56,10 +58,8 @@ def fillmeta(curs,conf):
     for table in conf['tables']:
         tname=table['tname']
         for col in table['columns']:
-            sql='INSERT INTO meta VALUES (?, ?, ?, ?, ?);'
-            d=[col['cname'],tname,col['ccom'],col['cunit'],col['cfmt']]
-            
-            print sql,d
+            sql='INSERT INTO meta VALUES (%s, %s, %s, %s, %s)'
+            d=(col['cname'],tname,col['ccom'],col['cunit'],col['cfmt'])
             curs.execute(sql,d)
 
 def createindices(curs,conf):
@@ -71,14 +71,13 @@ def splitfixedcol(line,cols,delim):
     data=[]
     for col in cols:
         start=col['cbyte'][0]
-        ned=col['cbyte'][1]
+        end=col['cbyte'][1]
         data.append(s.strip(line[start:end]))
     return data
 
 def splitbydelim(line,cols,delim):
     data=[]
     for col in cols:
-        print col
         d=line.split(delim)[col['cbyte']] 
         data.append(s.strip(d))
     return data
@@ -98,10 +97,12 @@ def filldata(curs,tconf):
         splitter=splitbydelim
 
     for line in f:
+        if line.startswith(tconf['commentchar']): continue
         data=splitter(line,tconf['columns'],delim)
         data=tconf['function'](data)
         sql='INSERT INTO %s '%(tconf['tname'])
-        sql+=' VALUES (%s)'%s.join(('?')*len(data),', ')
+        sql+=' VALUES (%s)'%s.join(('%s',)*len(data),', ')
+        #print sql,data
         curs.execute(sql,tuple(data))
         
 

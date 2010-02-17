@@ -17,7 +17,7 @@ def main():
         writedummydata()
     elif argv[1]=='vald':
          conn,curs=connect_mysql()
-         config=readcfg('merged.cfg')
+         config=valdcfg
     else:
         dbname=s.replace(argv[1],'.cfg','')+'.db'
         conn,curs=connect_sqlite(dbname)
@@ -27,6 +27,7 @@ def main():
     fillmeta(curs,config)
 
     for tconf in config['tables']:
+        print tconf['tname']
         createtable(curs,tconf)
         filldata(curs,tconf)
 
