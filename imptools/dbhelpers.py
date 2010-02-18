@@ -29,7 +29,7 @@ def createtable(curs,tconf):
         sql+='%s %s, '%(col['cname'],col['ctype'])
     sql=sql[:-2]
     sql+=');' 
-    #print sql
+    print sql
     curs.execute(sql)
 
 def createmeta(curs):

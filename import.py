@@ -19,9 +19,8 @@ def main():
         writedummydata()
     elif sys.argv[1]=='vald':
          conn,curs=connect_mysql()
-         try: curs.execute('drop table merged; drop table meta; drop table refs;')
+         try: curs.execute('drop table merged; drop table meta; drop table refs;'); conn.commit()
          except: pass
-         conn.commit()
          config=valdcfg
     else:
         dbname=s.replace(sys.argv[1],'.cfg','')+'.db'
