@@ -79,23 +79,25 @@ dummycfg = {\
         ]
     }
 
-valdcfg={\
-    'tables':[\
-        {'tname':'merged',
-         'fname':'merged.dat',
-         'delim':'fixedcol', # delimiter character or 'fixedcol'
-         'headlines':2,      # this many lies ignored in file header
-         'commentchar':'#',   # lines that start with this are ignored
-         'function':fixvald,  # to be applied on each line
-         'columns':[\
-                {'cname':'wavel',     # column name
-                 'cfmt':'.5f',       # print format
+valdcfg={\         # start dictionary
+    'tables':[\    # start list of tables
+        {\         # start dictionary for first table
+        'tname':'merged',       # table name in db
+         'fname':'merged.dat',  # file to read data from
+         'delim':'fixedcol',    # delimiter character or 'fixedcol'
+         'headlines':2,         # this many lies ignored in file header
+         'commentchar':'#',     # lines that start with this are ignored
+         'function':fixvald,    # to be applied on each line
+         'columns':[\           # start list of columns
+                {\              # start dictionary for first column
+                 'cname':'wavel',     # column name
+                 'cfmt':'.5f',        # print format
                  'ccom':'Wavelength', # description
                  'cunit':'Å',         # Units
-                 'cbyte':(0,13),       # place in the line
+                 'cbyte':(0,13),      # place in the line
                  'cnull':None,        # value to be converted to NULL
-                 'ctype':'FLOAT', # data format in database
-                 },
+                 'ctype':'FLOAT',     # data format in database
+                 },                 
                 {'cname':'atomic',
                  'cfmt':'d',
                  'ccom':'Atomic number',
