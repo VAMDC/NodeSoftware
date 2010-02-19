@@ -202,14 +202,14 @@ valdcfg={         # start dictionary
                  'cunit':None,
                  'cbyte':(123,127),
                  'cnull':None,
-                 'ctype':'SNALLINT UNSIGNED'},
+                 'ctype':'SMALLINT UNSIGNED'},
                 {'cname':'ref2',
                  'cfmt':'d',
                  'ccom':'reference to VALD source file, i.e. reference',
                  'cunit':None,
                  'cbyte':(127,131),
                  'cnull':None,
-                 'ctype':'SNALLINT UNSIGNED'},
+                 'ctype':'SMALLINT UNSIGNED'},
                 {'cname':'ref3',
                  'cfmt':'d',
                  'ccom':'reference to VALD source file, i.e. reference',
@@ -260,7 +260,7 @@ valdcfg={         # start dictionary
                  'cnull':None,
                  'ctype':'SMALLINT UNSIGNED'},
                 ]
-         },
+        },
         {'tname':'refs',
          'fname':'all.cfg',
          'delim':',',
@@ -377,4 +377,3 @@ valdcfg={         # start dictionary
          }
         ]
     }
-
