@@ -79,17 +79,17 @@ dummycfg = {\
         ]
     }
 
-valdcfg={\         # start dictionary
-    'tables':[\    # start list of tables
-        {\         # start dictionary for first table
+valdcfg={         # start dictionary
+    'tables':[    # start list of tables
+        {         # start dictionary for first table
         'tname':'merged',       # table name in db
          'fname':'merged.dat',  # file to read data from
          'delim':'fixedcol',    # delimiter character or 'fixedcol'
          'headlines':2,         # this many lies ignored in file header
          'commentchar':'#',     # lines that start with this are ignored
          'function':fixvald,    # to be applied on each line
-         'columns':[\           # start list of columns
-                {\              # start dictionary for first column
+         'columns':[            # start list of columns
+                {               # start dictionary for first column
                  'cname':'wavel',     # column name
                  'cfmt':'.5f',        # print format
                  'ccom':'Wavelength', # description
