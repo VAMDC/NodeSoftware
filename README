@@ -9,6 +9,8 @@ USAGE:
 * Run "./request.py" to send a request to the server and
   get the answer back (JSON encoded), unpack the data and
   print it.
+* A short sample of VALD data is also included. To use it run
+  "./import vald && ./server.py vald.db" and modify the request.
 
 DESCRIPTION:
 Uses the built-in Python libraries for 
