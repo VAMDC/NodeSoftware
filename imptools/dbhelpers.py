@@ -56,6 +56,7 @@ def fillmeta(curs,conf):
         for col in table['columns']:
             sql='INSERT INTO meta VALUES (%s, %s, %s, %s, %s)'
             d=(col['cname'],tname,col['ccom'],col['cunit'],col['cfmt'])
+            print sql
             curs.execute(sql,d)
 
 def createindices(curs,conf):
