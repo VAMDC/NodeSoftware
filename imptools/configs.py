@@ -23,7 +23,7 @@ dummycfg = {\
          'delim':' ',
          'tname':'dummy1',
          'headlines':0,
-         'commentchar':'',
+         'commentchar':'#',
          'function':fixnothing,
          'columns':[\
                 {'cname':'c11',

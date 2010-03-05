@@ -12,6 +12,8 @@ this script.
 """
 import urllib
 import simplejson as j
+from os import environ
+environ["http_proxy"]=''
 
 # where to send the request
 url="http://localhost:8080/query"
@@ -20,13 +22,14 @@ url="http://localhost:8080/query"
 # "table", "columns", "where" and "order". Anything else
 # is ignored.
 
-data={'table': 'dummy1','columns':'id,c1,c2,c3','hurz':'bla bla'}
-#data={'table': 'merged','columns':'m2,m6','hurz':'bla bla'}
-#'where':'id <15',,'order':'m6'
+# example for dummy data
+data={'table': 'dummy1','columns':'c11,c12'}
+
+# example for vald
+#data={'table':'valddata','columns':'wavel,atomic,ion','order':'wavel'}
 
 data=urllib.urlencode(data)
 response = urllib.urlopen(url,data) # making the actual request
-
 data=j.load(response)
 response.close()
 

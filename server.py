@@ -17,6 +17,7 @@ import string as s
 from sys import argv,exit
 
 
+
 class MyHandler(SimpleHTTPRequestHandler):
     """
         The class that gets bound to the webserver
@@ -103,6 +104,7 @@ class MyHandler(SimpleHTTPRequestHandler):
         if ord:
             query+=' ORDER BY (%s)'%ord
 
+        print query
         try:
             curs.execute(query+';')
         except sqlite.OperationalError:

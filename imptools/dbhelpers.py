@@ -92,14 +92,12 @@ def filldata(curs,tconf):
         splitter=splitfixedcol
     else:
         splitter=splitbydelim
-
     for line in f:
         if line.startswith(tconf['commentchar']): continue
         data=splitter(line,tconf['columns'],delim)
         data=tconf['function'](data)
         sql='INSERT INTO %s '%(tconf['tname'])
         sql+=' VALUES (%s)'%s.join(('?',)*len(data),', ')
-        #print sql,data
         curs.execute(sql,tuple(data))
         
 
