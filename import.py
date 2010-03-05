@@ -18,10 +18,12 @@ def main():
         config=dummycfg
         writedummydata()
     elif sys.argv[1]=='vald':
-         conn,curs=connect_mysql()
-         try: curs.execute('drop table merged; drop table meta; drop table refs;'); conn.commit()
-         except: pass
-         config=valdcfg
+        try: os.remove('vald.db')
+        except: pass
+        conn,curs=connect_sqlite('vald.db')
+        #try: curs.execute('drop table merged; drop table meta; drop table refs;'); conn.commit()
+        #except: pass
+        config=valdcfg
     else:
         dbname=s.replace(sys.argv[1],'.cfg','')+'.db'
         conn,curs=connect_sqlite(dbname)
@@ -31,9 +33,12 @@ def main():
     fillmeta(curs,config)
 
     for tconf in config['tables']:
-        print tconf['tname']
+        print 'Working on table %s:'%tconf['tname'],
+        print 'Create...',
         createtable(curs,tconf)
+        print 'done. Fill...',
         filldata(curs,tconf)
+        print 'done.'
 
     conn.commit() # IMPORTANT! This actually writes the database.
                   # Before everything's only in memory.

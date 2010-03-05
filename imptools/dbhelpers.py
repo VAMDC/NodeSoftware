@@ -29,7 +29,7 @@ def createtable(curs,tconf):
         sql+='%s %s, '%(col['cname'],col['ctype'])
     sql=sql[:-2]
     sql+=');' 
-    print sql
+    #print sql
     curs.execute(sql)
 
 def createmeta(curs):
@@ -54,9 +54,9 @@ def fillmeta(curs,conf):
     for table in conf['tables']:
         tname=table['tname']
         for col in table['columns']:
-            sql='INSERT INTO meta VALUES (%s, %s, %s, %s, %s)'
+            sql='INSERT INTO meta VALUES (?, ?, ?, ?, ?)'
             d=(col['cname'],tname,col['ccom'],col['cunit'],col['cfmt'])
-            print sql
+            #print sql,d
             curs.execute(sql,d)
 
 def createindices(curs,conf):
@@ -98,7 +98,7 @@ def filldata(curs,tconf):
         data=splitter(line,tconf['columns'],delim)
         data=tconf['function'](data)
         sql='INSERT INTO %s '%(tconf['tname'])
-        sql+=' VALUES (%s)'%s.join(('%s',)*len(data),', ')
+        sql+=' VALUES (%s)'%s.join(('?',)*len(data),', ')
         #print sql,data
         curs.execute(sql,tuple(data))
         

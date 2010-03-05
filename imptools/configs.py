@@ -82,8 +82,8 @@ dummycfg = {\
 valdcfg={         # start dictionary
     'tables':[    # start list of tables
         {         # start dictionary for first table
-        'tname':'merged',       # table name in db
-         'fname':'merged.dat',  # file to read data from
+        'tname':'valddata',       # table name in db
+         'fname':'valdsample.dat',  # file to read data from
          'delim':'fixedcol',    # delimiter character or 'fixedcol'
          'headlines':2,         # this many lies ignored in file header
          'commentchar':'#',     # lines that start with this are ignored
@@ -262,7 +262,7 @@ valdcfg={         # start dictionary
                 ]
         },
         {'tname':'refs',
-         'fname':'all.cfg',
+         'fname':'vald.refs',
          'delim':',',
          'headlines':1,
          'commentchar':';',
