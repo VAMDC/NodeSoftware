@@ -5,9 +5,15 @@ tap-request.py
 
 Attempt to query the TAP-interface of DSA/catalog.
 It's a asynchronous request and the replies are XML
-documents that can be tranformed into html
+documents (that can be tranformed into html).
 
-Below script does not work yet.
+The scripts sends a (hardcoded) request to my
+DSA/catalog installation with VALD data. It then
+tells DSA to run the query, checks if it has completed
+and fetches the result.
+
+Not yet working: read the result into ATPy's implementation
+of VOTable.
 
 """
 import urllib
