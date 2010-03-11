@@ -26,8 +26,9 @@ text_list=XPath("//text()")
 parser=e.XMLParser(remove_blank_text=True)
 
 from time import sleep
-import atpy
+#import atpy
 from StringIO import StringIO
+import threading
 
 # XML schema
 xsl_job2html_url='http://vamdc.tmy.se:8080/DSAcat/TAP/uws-job-to-html.xsl'
@@ -99,5 +100,11 @@ def main():
     #open('data.vo','w').write(vodata)
     #t=readVO(vodata) # this does not yet work yet since the vald-metadata are incomplete
 
+class MyThread ( threading.Thread ):
+    def run ( self ): main()
+
 
 if __name__=='__main__': main()
+#    for i in xrange(20):
+#        MyThread().start()
+
