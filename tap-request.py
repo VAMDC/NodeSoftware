@@ -23,6 +23,7 @@ import sgmllib
 from lxml import etree as e
 from lxml.etree import XPath
 text_list=XPath("//text()")
+parser=e.XMLParser(remove_blank_text=True)
 
 from time import sleep
 import atpy
@@ -44,6 +45,16 @@ xsl_xsams= e.parse(xsl_xsams_url)
 # where exactly to query
 url="http://vamdc.tmy.se:8080/DSAcat/TAP/async"
 
+# the query
+quer={}
+quer['LANG']='ADQL'
+quer['FORMAT']='application/x-votable+xml'
+quer['VERSION']='1.0'
+quer['QUERY']='SELECT TOP 5 VALD.merged.wavel,VALD.merged.ion FROM VALD.merged'
+
+#
+#  Helper functions
+#
 def runquery(quer):
     quer=urllib.urlencode(quer)
     response = urllib.urlopen(url,quer) # making the actual request
@@ -77,15 +88,16 @@ def readVO(vodata):
     print t.columns
 
 
-# construct the query
-quer={}
-quer['LANG']='ADQL'
-quer['FORMAT']='application/x-votable+xml'
-quer['VERSION']='1.0'
-quer['QUERY']='SELECT TOP 5 VALD.merged.wavel FROM VALD.merged'
 
-jobid=runquery(quer)
-vodata=fetchresult(jobid)
-print vodata
-#open('data.vo','w').write(vodata)
-#t=readVO(vodata) # this does not yet work yet since the vald-metadata are incomplete
+def main():
+    jobid=runquery(quer)
+    vodata=fetchresult(jobid)
+    vo=e.parse(StringIO(vodata),parser)
+    for el in vo.iter():
+        if 'TR' in el.tag: print
+        if 'TD' in el.tag: print el.text,
+    #open('data.vo','w').write(vodata)
+    #t=readVO(vodata) # this does not yet work yet since the vald-metadata are incomplete
+
+
+if __name__=='__main__': main()
