@@ -36,13 +36,11 @@ xsl_xsams= e.parse(xsl_xsams_url)
 
 
 # where exactly to query
-# The base of the tap interface
-url="http://vamdc.tmy.se:8080/DSAcat/TAP/"
-suffix='async'
+url="http://vamdc.tmy.se:8080/DSAcat/TAP/async"
 
 def runquery(quer):
     quer=urllib.urlencode(quer)
-    response = urllib.urlopen(url+suffix,quer) # making the actual request
+    response = urllib.urlopen(url,quer) # making the actual request
     xml_res=e.parse(response)
     response.close()
     # old way to find out the JobId:
@@ -51,17 +49,17 @@ def runquery(quer):
     #        jobid=el.text
     jobid=text_list(xml_res)[1] 
     postdata=urllib.urlencode({'PHASE':'RUN'})
-    urllib.urlopen(url+suffix+'/'+jobid+'/phase',postdata)
+    urllib.urlopen(url+'/'+jobid+'/phase',postdata)
 
     return jobid
 
 def fetchresult(jobid):
     # check if result is there
-    while urllib.urlopen(url+suffix+'/'+jobid+'/phase').read() != 'COMPLETED':
+    while urllib.urlopen(url+'/'+jobid+'/phase').read() != 'COMPLETED':
         print 'waiting...'
         sleep(1)
 
-    resulturl=url+suffix+'/'+jobid+'/results/result'
+    resulturl=url+'/'+jobid+'/results/result'
     data=urllib.urlopen(resulturl).read()
     return data
 
@@ -82,5 +80,6 @@ quer['QUERY']='SELECT TOP 5 VALD.merged.wavel FROM VALD.merged'
 
 jobid=runquery(quer)
 vodata=fetchresult(jobid)
+print vodata
 #open('data.vo','w').write(vodata)
 #t=readVO(vodata) # this does not yet work yet since the vald-metadata are incomplete
