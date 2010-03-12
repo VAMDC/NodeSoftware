@@ -25,8 +25,9 @@ valdurl="http://vamdc.tmy.se:8080/DSAcat/TAP/async"
 valdquery='SELECT TOP 5 VALD.merged.wavel,VALD.merged.ion FROM VALD.merged'
 
 class TAP(object):
-    def __init__(self,requrl=valdurl,query=valdquery):
+    def __init__(self,requrl=valdurl,query=valdquery,parser=parser):
         self.requrl=requrl
+        self.parser=parser
         quer={}
         quer['LANG']='ADQL'
         quer['FORMAT']='application/x-votable+xml'
@@ -72,7 +73,7 @@ class TAP(object):
 
         resulturl=self.requrl+'/'+self.jobid+'/results/result'
         res=urllib.urlopen(resulturl)
-        self.result_xml=e.parse(res,parser)
+        self.result_xml=e.parse(res,self.parser)
         res.close()
 
     def readVO(vodata):
