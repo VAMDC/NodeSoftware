@@ -14,7 +14,7 @@ of VOTable.
 """
 
 # don't use a proxy
-from os import environ
+from os import environ,unlink,fdopen
 environ["http_proxy"]=''
 
 import urllib
@@ -26,5 +26,9 @@ import atpy
 from StringIO import StringIO
 import threading
 
+from tempfile import mkstemp
+def mktmp():
+    fd,name=mkstemp()
+    return fdopen(fd,'w'),name
 
 from tapclass import *

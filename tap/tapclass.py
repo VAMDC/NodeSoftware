@@ -22,7 +22,7 @@ xsl_xsams= e.parse(xsl_xsams_url)
 
 
 valdurl="http://vamdc.tmy.se:8080/DSAcat/TAP/async"
-valdquery='SELECT TOP 5 VALD.merged.wavel,VALD.merged.ion FROM VALD.merged'
+valdquery='SELECT TOP 5 VALD.merged.wavel FROM VALD.merged'
 
 class TAP(object):
     def __init__(self,requrl=valdurl,query=valdquery,parser=parser):
@@ -49,6 +49,7 @@ class TAP(object):
         self.send_query()
         self.run_job()
         self.fetch_result()
+        self.readVO()
 
     def send_query(self):
         response = urllib.urlopen(self.requrl,self.query)
@@ -76,10 +77,15 @@ class TAP(object):
         self.result_xml=e.parse(res,self.parser)
         res.close()
 
-    def readVO(vodata):
+    def readVO(self):
         t=atpy.Table()
-        t.read(StringIO(self.vodata),type='vo')
-        print t.wavel[2]
-        print t.columns
-    #open('data.vo','w').write(vodata)
-    #t=readVO(vodata) # this does not yet work yet since the vald-metadata are incomplete
+        tfile,tname=mktmp()
+        tfile.write(e.tostring(self.result_xml))
+        tfile.close()
+        t.read(tname,type='vo')
+        unlink(tname)
+        self.VoTab=t
+        
+        #print self.VoTab.columns
+        #for col in self.VoTab.columns:
+        #    print self.VoTab.data[col]

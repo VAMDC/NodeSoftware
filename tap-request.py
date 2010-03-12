@@ -10,6 +10,6 @@ class MyThread ( threading.Thread ):
 
 
 if __name__=='__main__': 
-    for i in xrange(10):
+    for i in xrange(1):
         MyThread().start()
 
