@@ -22,7 +22,7 @@ xsl_xsams= e.parse(xsl_xsams_url)
 
 
 valdurl="http://vamdc.tmy.se:8080/DSAcat/TAP/async"
-valdquery='SELECT TOP 5 VALD.merged.wavel FROM VALD.merged'
+valdquery='SELECT * FROM VALD.merged WHERE VALD.merged.ref1=1'
 
 class TAP(object):
     def __init__(self,requrl=valdurl,query=valdquery,parser=parser):
@@ -47,9 +47,13 @@ class TAP(object):
 
     def run(self):
         self.send_query()
+        sleep(2)
+        print 'now running...'
         self.run_job()
+        sleep(2)
+        print 'now fetching...'
         self.fetch_result()
-        self.readVO()
+        #self.readVO()
 
     def send_query(self):
         response = urllib.urlopen(self.requrl,self.query)
