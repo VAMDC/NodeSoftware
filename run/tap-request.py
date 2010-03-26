@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from tap import *
+from vamdc.tap import *
 
 class MyThread ( threading.Thread ):
     def run ( self ):
@@ -10,6 +10,6 @@ class MyThread ( threading.Thread ):
 
 
 if __name__=='__main__': 
-    for i in xrange(10):
+    for i in xrange(1):
         MyThread().start()
 

@@ -13,10 +13,14 @@ this script.
 import urllib
 import simplejson as j
 from os import environ
+from sys import argv
 environ["http_proxy"]=''
 
 # where to send the request
-url="http://localhost:8080/query"
+fallbackurl="http://localhost:8080/query"
+
+if len(argv) < 2: url=fallbackurl
+else: url=argv[1]
 
 # server.py for the time being understands the keywords
 # "table", "columns", "where" and "order". Anything else

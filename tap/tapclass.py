@@ -9,19 +9,19 @@ text_list=XPath("//text()")
 parser=e.XMLParser(remove_blank_text=True)
 
 # XML schemata
-xsl_job2html_url='http://vamdc.tmy.se:8080/DSAcat/TAP/uws-job-to-html.xsl'
+xsl_job2html_url='http://vamdc.fysast.uu.se:8080/DSAcat/TAP/uws-job-to-html.xsl'
 xsl_job2html = e.parse(xsl_job2html_url)
 job2html= e.XSLT(xsl_job2html)
 
-xsl_data2html_url='http://vamdc.tmy.se:8080/DSAcat/TAP/uws-results-to-html.xsl'
+xsl_data2html_url='http://vamdc.fysast.uu.se:8080/DSAcat/TAP/uws-results-to-html.xsl'
 xsl_data2html = e.parse(xsl_data2html_url)
 data2html= e.XSLT(xsl_data2html)
 
-xsl_xsams_url='http://vamdc.tmy.se:8080/DSAcat/xsams-0.1.xsd'
+xsl_xsams_url='http://vamdc.fysast.uu.se:8080/DSAcat/xsams-0.1.xsd'
 xsl_xsams= e.parse(xsl_xsams_url)
 
 
-valdurl="http://vamdc.tmy.se:8080/DSAcat/TAP/async"
+valdurl="http://vamdc.fysast.uu.se:8080/DSAcat/TAP/async"
 valdquery='SELECT * FROM VALD.merged WHERE VALD.merged.ref1=1'
 
 class TAP(object):
@@ -47,10 +47,10 @@ class TAP(object):
 
     def run(self):
         self.send_query()
-        sleep(2)
+        #sleep(2)
         print 'now running...'
         self.run_job()
-        sleep(2)
+        #sleep(2)
         print 'now fetching...'
         self.fetch_result()
         #self.readVO()
@@ -58,15 +58,16 @@ class TAP(object):
     def send_query(self):
         response = urllib.urlopen(self.requrl,self.query)
         self.job_xml=e.parse(response)
+	#print e.tostring(self.job_xml)
         response.close()
-        # old way to find out the JobId:
-        #for el in xml_res.iter():
+	#for el in self.job_xml.iter():
         #    if 'jobId' in el.tag:
-        #        jobid=el.text
+        #        self.jobid=el.text
         self.jobid=text_list(self.job_xml)[1] 
 
     def run_job(self):
         postdata=urllib.urlencode({'PHASE':'RUN'})
+	#print self.requrl+'/'+self.jobid+'/phase'
         urllib.urlopen(self.requrl+'/'+self.jobid+'/phase',postdata)
 
 

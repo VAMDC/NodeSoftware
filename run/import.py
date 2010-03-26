@@ -4,7 +4,7 @@
 import os
 import sys
 
-from imptools import *
+from vamdc.imptools import *
 
 def main():
     if len(sys.argv) < 2:
