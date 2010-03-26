@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 
-server.py
+simple.py
 
 Very basic proof-of-concept implementation of a webserver that
 answers a data query that it gets via a HTTP POST request by handing
@@ -120,7 +120,7 @@ class MyHandler(SimpleHTTPRequestHandler):
 
         
 
-def main():
+def run(argv):
     """
         connect to the DB and start the server
     """
@@ -148,4 +148,4 @@ def main():
         server.socket.close()
 
 if __name__ == '__main__':
-    main()
+    run(argv)
