@@ -18,8 +18,6 @@ from os import environ,unlink,fdopen
 environ["http_proxy"]=''
 
 import urllib
-from lxml import etree as e
-from lxml.etree import XPath
 
 from time import sleep
 import atpy
