@@ -14,19 +14,19 @@ def main():
     if sys.argv[1]=='dummy':
         try: os.remove('dummy.db')
         except: pass
-        conn,curs=connect_sqlite('dummy.db')
+        conn,curs=sqlite('dummy.db')
         config=dummycfg
         writedummydata()
     elif sys.argv[1]=='vald':
         try: os.remove('vald.db')
         except: pass
-        conn,curs=connect_sqlite('vald.db')
+        conn,curs=sqlite('vald.db')
         #try: curs.execute('drop table merged; drop table meta; drop table refs;'); conn.commit()
         #except: pass
         config=valdcfg
     else:
         dbname=s.replace(sys.argv[1],'.cfg','')+'.db'
-        conn,curs=connect_sqlite(dbname)
+        conn,curs=sqlite(dbname)
         config=readcfg(sys.argv[1])
 
     createmeta(curs)

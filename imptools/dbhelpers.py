@@ -7,6 +7,8 @@ helper functions to create and fill the database
 
 """
 
+from vamdc.db.cursors import *
+
 import string as s
 
 def readcfg(fname):
@@ -100,21 +102,6 @@ def filldata(curs,tconf):
         sql+=' VALUES (%s)'%s.join(('?',)*len(data),', ')
         curs.execute(sql,tuple(data))
         
-
-def connect_sqlite(dbname):
-    """
-       connect to the database file and return cursor and connection handle
-    """
-    from sqlite3 import dbapi2 as sqlite
-    conn=sqlite.connect(dbname)
-    return conn,conn.cursor()
-    
-def connect_mysql(host='localhost',user='vald',passwd='V@ld',db='vald'):
-    import MySQLdb
-    conn = MySQLdb.connect (host=host,user=user,passwd=passwd,db=db)
-    return conn,conn.cursor()
-    
-
 
 def writedummydata(n=100,filename='dummy.dat'):
     """
