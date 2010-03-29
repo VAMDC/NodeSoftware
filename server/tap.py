@@ -3,7 +3,7 @@ The implementation of the TAP class
 
 """
 
-from vamdc.tap import *
+from vamdc.server import *
 from vamdc.xmltools.globals import *
 
 valdurl="http://vamdc.fysast.uu.se:8080/DSAcat/TAP/async"

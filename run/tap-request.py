@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from vamdc.tap import *
+from vamdc.server import tap as t
 
-class MyThread ( threading.Thread ):
+class MyThread ( t.threading.Thread ):
     def run ( self ):
-        tap=TAP()
+        tap=t.TAP()
         tap.run()
 #        print tap
 
