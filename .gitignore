@@ -1,6 +1,6 @@
 *~
-*db
-*pyc
+*.pyc
+*.db
 dummy*
 /.pydevproject
 /.project
