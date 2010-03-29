@@ -1,5 +1,4 @@
-from lxml import etree as e
-from lxml.etree import XPath
+from vamdc.xmltools import *
 
 text_list=XPath("//text()")
 parser=e.XMLParser(remove_blank_text=True)
