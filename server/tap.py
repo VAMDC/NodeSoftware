@@ -4,7 +4,7 @@ The implementation of the TAP class
 """
 
 from vamdc.server import *
-from vamdc.xmltools.globals import *
+from vamdc.xmltools import *
 
 valdurl="http://vamdc.fysast.uu.se:8080/DSAcat/TAP/async"
 valdquery='SELECT * FROM VALD.merged WHERE VALD.merged.ref1=1'

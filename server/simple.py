@@ -140,7 +140,7 @@ def run(argv):
         exit(1)
 
     try:
-        server = BaseHTTPServer.HTTPServer(('', 8080), MyHandler)
+        server = BaseHTTPServer.HTTPServer(('', 8081), MyHandler)
         print 'started httpserver...'
         server.serve_forever()
     except KeyboardInterrupt:

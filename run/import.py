@@ -8,7 +8,7 @@ from vamdc.imptools import *
 
 def main():
     if len(sys.argv) < 2:
-        print "usage: ./import.py name.cfg\nOr ./import.py dummy"
+        print "Usage: ./import.py name.cfg\nOr ./import.py dummy\nOr ./import.py vald"
         return
 
     if sys.argv[1]=='dummy':

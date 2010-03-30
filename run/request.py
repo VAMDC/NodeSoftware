@@ -17,7 +17,7 @@ from sys import argv
 environ["http_proxy"]=''
 
 # where to send the request
-fallbackurl="http://localhost:8080/query"
+fallbackurl="http://localhost:8081/query"
 
 if len(argv) < 2: url=fallbackurl
 else: url=argv[1]
