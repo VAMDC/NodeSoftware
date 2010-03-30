@@ -1,5 +1,6 @@
 import vamdc.db.tools as t
-from vamdc.xmltools import *
+import vamdc.xmltools as x
+e=x.e
 
 metatab='meta'
 cname='cname'
