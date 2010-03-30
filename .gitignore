@@ -5,3 +5,5 @@ dummy*
 /.pydevproject
 /.project
 /xml-files
+/xsl/vald.xml
+/xsl/valdxsams.xml

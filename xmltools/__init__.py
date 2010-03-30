@@ -1,10 +1,9 @@
-import customxml as c
 from lxml.builder import E
 from lxml import etree as e
 from lxml.etree import XPath
 import string as s
 
-text_list=x.XPath("//text()")
+text_list=XPath("//text()")
 parser=e.XMLParser(remove_blank_text=True)
 
 # XML schemata

@@ -1,7 +1,6 @@
-import vamdc.xmltools as x
+from vamdc.xmltools import *
 import vamdc.db as db
-e=x.e
-t=db.t
+t=db.tools
 
 metatab='meta'
 cname='cname'
@@ -26,7 +25,7 @@ def getvaldrefs(curs,cols):
     sql='SELECT * FROM refs'
     
 
-def run(curs):
+def run(curs,outname=None):
     meta=t.cols2lists(curs,metatab,colsl)
     exec('%s=meta'%cols)
 
@@ -61,10 +60,10 @@ def run(curs):
     #for trans in xvald.iter('wavel'):
     #    print 'wavel: %s'%str(trans.text)
     
-
-    f=open('vald.xml','w')
-    f.write("""<?xml version="1.0" encoding="UTF-8"?>
+    if outname:
+        f=open(outname,'w')
+        f.write("""<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="http://tmy.se/t/vald2xsams.xsl"?>
 """)
-    f.write(e.tostring(xvald,pretty_print=True))
-    f.close()
+        f.write(e.tostring(xvald,pretty_print=True))
+        f.close()
