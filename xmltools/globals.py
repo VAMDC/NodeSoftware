@@ -1,6 +1,7 @@
-from vamdc.xmltools import *
+import vamdc.xmltools as x
+e=x.e
 
-text_list=XPath("//text()")
+text_list=x.XPath("//text()")
 parser=e.XMLParser(remove_blank_text=True)
 
 # XML schemata

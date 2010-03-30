@@ -1,4 +1,3 @@
-#import XsamsPyxb as xsams # this requires pyxb to be installed
 import customxml as c
 from lxml.builder import E
 from lxml import etree
@@ -8,3 +7,5 @@ import string as s
 
 
 from globals import *
+
+#import XsamsPyxb as xsams # this requires pyxb to be installed
