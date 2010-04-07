@@ -23,7 +23,7 @@ def main():
         conn,curs=sqlite('vald.db')
         #try: curs.execute('drop table merged; drop table meta; drop table refs;'); conn.commit()
         #except: pass
-        config=valdcfg
+        config=vald3cfg
     else:
         dbname=s.replace(sys.argv[1],'.cfg','')+'.db'
         conn,curs=sqlite(dbname)
@@ -39,7 +39,6 @@ def main():
         print 'done. Fill...',
         filldata(curs,tconf)
         print 'done.'
-
     conn.commit() # IMPORTANT! This actually writes the database.
                   # Before everything's only in memory.
     conn.close()

@@ -13,7 +13,7 @@
 			</Sources>
 
 			<Methods>
-				<Method methodID="1">
+				<Method methodID="M1">
 					<Category>measured</Category>
 					<Description></Description>
 				</Method>
@@ -28,23 +28,25 @@
 
 	<xsl:template match="vald/data">
 		<xsl:for-each select="transition">
-			<xsl:value-of select="wavel" />
+		  <xsl:value-of select="ion" />
+		  <xsl:value-of select="atomic" />
+		  <xsl:value-of select="wavel" />
 		</xsl:for-each>
 	</xsl:template>
 
 
 	<xsl:template match="refs">
-		<Source sourceID="1">
+		<Source sourceID="S1">
 			<Authors>
 				<Author>
-					<Name></Name>
+					<Name>Testname</Name>
 				</Author>
 			</Authors>
 			<Category>journal</Category>
 			<Year>2002</Year>
-			<SourceName>IAEA-APID</SourceName>
-			<Volume>10</Volume>
-			<PageBegin>7</PageBegin>
+			<SourceName>sone journal</SourceName>
+			<Volume>666</Volume>
+			<PageBegin>1337</PageBegin>
 		</Source>
 	</xsl:template>
 
