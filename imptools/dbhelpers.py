@@ -43,8 +43,8 @@ def createmeta(curs):
     sql+='tname VARCHAR(64),'
     sql+='ccom TEXT,'
     sql+='cunit VARCHAR(64),'
-    sql+='cfmt VARCHAR(64),'
-    sql+='PRIMARY KEY (cname)'
+    sql+='cfmt VARCHAR(64)'
+#    sql+='PRIMARY KEY (cname)'
     sql+=' );'
     
     curs.execute(sql)
