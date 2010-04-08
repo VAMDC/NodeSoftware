@@ -21,7 +21,7 @@ def main():
         try: os.remove('vald.db')
         except: pass
         #conn,curs=sqlite('vald.db')
-        conn,curs=mysqlmysql('vald','V@ld','vald3')
+        conn,curs=mysql('vald','V@ld','vald3')
         #try: curs.execute('drop table merged; drop table meta; drop table refs;'); conn.commit()
         #except: pass
         config=vald3cfg
