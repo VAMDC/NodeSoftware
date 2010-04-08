@@ -71,14 +71,18 @@ def splitfixedcol(line,cols,delim):
     for col in cols:
         start=col['cbyte'][0]
         end=col['cbyte'][1]
-        data.append(s.strip(line[start:end]))
+        d=s.strip(line[start:end])
+        if d==col['cnull']: d='NULL'
+        data.append(d)
     return data
 
 def splitbydelim(line,cols,delim):
     data=[]
     for col in cols:
         d=line.split(delim)[col['cbyte']] 
-        data.append(s.strip(d))
+        d=s.strip(d)
+        if d==col['cnull']: d='NULL'
+        data.append(d)
     return data
     
 def filldata(curs,tconf):
@@ -98,9 +102,14 @@ def filldata(curs,tconf):
         if line.startswith(tconf['commentchar']): continue
         data=splitter(line,tconf['columns'],delim)
         data=tconf['function'](data)
-        sql='INSERT INTO %s '%(tconf['tname'])
-        sql+=' VALUES (%s)'%s.join(('?',)*len(data),', ')
-        curs.execute(sql,tuple(data))
+        sql='INSERT OR IGNORE INTO %s '%(tconf['tname'])
+        sql+=' VALUES ("%s'%s.join(data,'","')
+        sql=sql+ '")'
+        sql=sql.replace('"NULL"','NULL')
+        #print sql
+        curs.execute(sql)
+        #sql+=' VALUES (%s)'%s.join(('?',)*len(data),', ')
+        #curs.execute(sql,tuple(data))
         
 
 def writedummydata(n=100,filename='dummy.dat'):
