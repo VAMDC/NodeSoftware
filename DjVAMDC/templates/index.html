@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{{ LANGUAGE_CODE }}" lang="{{ LANGUAGE_CODE }}">
+{% load i18n %}
+<head>
+    <title>{% block title %}{% trans 'Home' %}{% endblock %}</title>
+    <style type="text/css">
+      table,td {border: 1px solid black;}
+      #sidebar {float:right;
+      width:200px;
+      border: 1px solid black;
+      padding:15px;
+      margin:20px;
+      }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        {% block sidebar %}
+	<h3>{% trans 'Menu' %}</h3>
+        <ul>
+	  <li><a href="/">{% trans 'Home' %}</a></li>
+ 	  <li><a href="/admin/">{% trans 'Admin' %}</a></li>
+	</ul>
+	<h3>{% trans 'Portal' %}</h3>
+        <ul>
+          <li><a href="/query/">{% trans 'Query' %}</a></li>
+        </ul>
+	<h3>{% trans 'Nodes' %}</h3>
+        <ul>
+          <li><a href="/node/">{% trans 'Index' %}</a></li>
+	  <li><a href="/node/vald">{% trans 'VALD' %}</a></li>
+        </ul>
+
+         {% endblock %}
+    </div>
+
+    <div id="content">
+        {% block content %}
+	{% endblock %}
+    </div>
+</body>
+</html>
