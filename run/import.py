@@ -25,7 +25,7 @@ def main():
         config=vald3cfg
         dbtype='sqlite'
     elif sys.argv[1]=='valdmysql':
-        conn,curs=mysql('vald','V@ld','vald3')
+        conn,curs=mysql('vald','V@ld','vald')
         try: curs.execute('drop table transitions; drop table meta; drop table sources; drop table species; drop table states;'); conn.commit()
         except: pass
         config=vald3cfg
@@ -43,7 +43,7 @@ def main():
         print 'Create...',
         createtable(curs,tconf,dbtype)
         print 'done. Fill...',
-        filldata(curs,tconf)
+        filldata(curs,tconf,dbtype)
         print 'done.'
     conn.commit() # IMPORTANT! This actually writes the database.
                   # Before everything's only in memory.
