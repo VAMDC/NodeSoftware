@@ -3,7 +3,7 @@ from django.template import RequestContext, loader
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 
-from DjVAMDC.vald.models import Transitions,States,Sources
+from DjVAMDC.vald.models import Transitions,States,Sources,Species
 
 from django.db.models import Q
 
@@ -36,25 +36,40 @@ def sync(request):
     tap=TAPQUERY(data)
     if tap.valid:
         wheres=tap.query.split('WHERE')[1].split('AND') # replace this with http://code.google.com/p/python-sqlparse/ later
+        qlist=[]
         for w in map(lower,wheres):
-            if 'wavelength' in w:
-                if '<' in w:
-                    waveq=Q
-        wavebord=85
-        transs=Transitions.objects.filter(vacwave__lt=wavebord)
-        states=transs.lostate.object.all()
+            w=w.split()
+            print w
+            value=w[-1]
+            if 'wavelength' in w: field='vacwave'
+            if 'element' in w: field='species__name'
+            if '<' in w: op='__lt'
+            if '>' in w: op='__gt'
+            if '=' in w: op='__iexact'
+            if '<=' in w: op='__lte'
+            if '>=' in w: op='__gte'
+                
+            exec('mq=Q(%s="%s")'%(field+op,value))
+            qlist.append(mq)
+            qtup=tuple(qlist)
+            
+        transs=Transitions.objects.filter(*qtup)
+        states=States.objects.filter(islowerstate_trans__in=transs).distinct()
+        sources=Sources.objects.filter(iswaveref_trans__in=transs).distinct()
+        species=Species.objects.filter(isspecies_trans__in=transs).distinct()
         #states=States.objects.filter(islowerstate_trans__vacwave__lt=wavebord).distinct()
         #sources=Sources.objects.filter(iswaveref_trans__vacwave__lt=wavebord).distinct()
-        print time()
-        print len(transs),len(states),len(sources)
-        print time()
+        #print time()
+        #print len(transs),len(states),len(sources)
+        ts=time()
         c=RequestContext(request,{'transitions':transs,
                                   'sources':sources,
                                   'states':states,
+                                  'species':species,
                                   })
         t=loader.get_template('vald/valdxsams.xml')
         r=t.render(c)
-        print time()
+        print 'run time:',time()-ts
         return HttpResponse(r)
         #return render_to_response('vald/valdxsams.xml', c) # shortcut
     else:

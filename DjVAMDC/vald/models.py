@@ -67,7 +67,7 @@ class Transitions(models.Model):
     id = models.IntegerField(null=True, primary_key=True, blank=True)
     vacwave = models.FloatField(blank=True) 
     airwave = models.FloatField(blank=True)
-    species = models.ForeignKey(Species,db_column='species')
+    species = models.ForeignKey(Species,db_column='species',related_name='isspecies_trans')
     loggf = models.FloatField(blank=True)
     landeff = models.FloatField(blank=True)
     gammarad = models.FloatField(blank=True)
