@@ -22,7 +22,7 @@ def readcfg(fname):
     exec(f.read())
     return config
     
-def createtable(curs,tconf,dbtype='mysql'):
+def createtable(curs,tconf,dbtype='sqlite'):
     """
        create the tables with typed columns, according to the config-dict
     """
@@ -66,7 +66,7 @@ def fillmeta(curs,conf):
 def createindices(curs,conf):
     pass
         
-def filldata(curs,tconf):
+def filldata(curs,tconf,dbtype='sqlite'):
     """
         read the data-files and fill the data into the tables in the DB
     """
@@ -90,6 +90,10 @@ def filldata(curs,tconf):
                 data.append('NULL')
 
         sql='%s %s '%(tconf['method'],tconf['tname'])
+
+        if (dbtype=='mysql') and ('OR IGNORE' in tconf['method']):
+            tconf['method']=tconf['method'].replace('OR IGNORE','IGNORE')
+
         if tconf['method'].startswith('INSERT'):
             sql+=' VALUES ("%s'%s.join(data,'","')
             sql=sql+ '");'
