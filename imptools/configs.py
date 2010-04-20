@@ -182,7 +182,7 @@ vald3cfg={         # start dictionary
                  'cbyte':(charrange,(272,276)),
                  'cnull':None,
                  'ctype':'SMALLINT UNSIGNED'},
-                {'cname':'gamastark_ref',
+                {'cname':'gammastark_ref',
                  'cfmt':'d',
                  'ccom':'reference code for stark gamma',
                  'cunit':None,

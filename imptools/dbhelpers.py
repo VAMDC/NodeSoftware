@@ -32,7 +32,11 @@ def createtable(curs,tconf,dbtype='sqlite'):
             col['ctype']+=' AUTO_INCREMENT'    
         sql+='%s %s, '%(col['cname'],col['ctype'])
     sql=sql[:-2]
-    sql+=');' 
+
+    if (dbtype=='mysql'):
+        sql+=')ENGINE = MyISAM;' 
+    else:
+        sql+=');'
     #print sql
     curs.execute(sql)
 
