@@ -56,7 +56,7 @@ def fillmeta(curs,conf):
     for table in conf['tables']:
         tname=table['tname']
         for col in table['columns']:
-            sql='INSERT INTO meta VALUES (%s, %s, %s, %s, %s)'%(col['cname'],tname,col['ccom'],col['cunit'],col['cfmt'])
+            sql='INSERT INTO meta VALUES ("%s", "%s", "%s", "%s", "%s")'%(col['cname'],tname,col['ccom'],col['cunit'],col['cfmt'])
             sql=sql.replace('"NULL"','NULL')
             #print sql,d
             curs.execute(sql)
