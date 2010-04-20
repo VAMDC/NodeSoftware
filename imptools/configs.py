@@ -96,6 +96,15 @@ vald3cfg={         # start dictionary
          'function':fixvald,    # to be applied on each line
          'columns':[            # start list of columns
                 {               # start dictionary for first column
+                 'cname':'id',     # column name
+                 'cfmt':'d',        # print format
+                 'ccom':'ID', # description
+                 'cunit':None,         # Units
+                 'cbyte':None,      # place in the line
+                 'cnull':None,        # value to be converted to NULL
+                 'ctype':'INTEGER PRIMARY KEY',
+                 },
+                {               
                  'cname':'vacwave',     # column name
                  'cfmt':'.8f',        # print format
                  'ccom':'Vacuum Wavelength', # description
