@@ -23,8 +23,6 @@ def main():
         conn,curs=sqlite('vald.db')
         config=vald3cfg
     elif sys.argv[1]=='valdmysql':
-        try: os.remove('vald.db')
-        except: pass
         conn,curs=mysql('vald','V@ld','vald3')
         try: curs.execute('drop table transitions; drop table meta; drop table sources; drop table species; drop table states;'); conn.commit()
         except: pass
