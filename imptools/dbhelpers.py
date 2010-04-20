@@ -59,7 +59,7 @@ def fillmeta(curs,conf):
             sql='INSERT INTO meta VALUES (%s, %s, %s, %s, %s)'%(col['cname'],tname,col['ccom'],col['cunit'],col['cfmt'])
             sql=sql.replace('"NULL"','NULL')
             #print sql,d
-            curs.execute(sql,d)
+            curs.execute(sql)
 
 def createindices(curs,conf):
     pass
