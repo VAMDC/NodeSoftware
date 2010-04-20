@@ -28,7 +28,7 @@ def createtable(curs,tconf,dbtype='mysql'):
     """
     sql='CREATE TABLE IF NOT EXISTS %s ('%tconf['tname']
     for col in tconf['columns']:
-        if (dbtype=='mysql') and ('PRIMARY KEY' in col['ctype']):
+        if (dbtype=='mysql') and ('INTEGER PRIMARY KEY' in col['ctype']):
             col['ctype']+=' AUTO_INCREMENT'    
         sql+='%s %s, '%(col['cname'],col['ctype'])
     sql=sql[:-2]
