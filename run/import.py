@@ -8,7 +8,7 @@ from vamdc.imptools import *
 
 def main():
     if len(sys.argv) < 2:
-        print "Usage: ./import.py name.cfg\nOr ./import.py dummy\nOr ./import.py vald"
+        print "Usage: ./import.py name.cfg\nOr ./import.py dummy\nOr ./import.py vald[sqlite|mysql]"
         return
 
     if sys.argv[1]=='dummy':
@@ -17,13 +17,17 @@ def main():
         conn,curs=sqlite('dummy.db')
         config=dummycfg
         writedummydata()
-    elif sys.argv[1]=='vald':
+    elif sys.argv[1]=='valdsqlite':
         try: os.remove('vald.db')
         except: pass
         conn,curs=sqlite('vald.db')
-        #conn,curs=mysql('vald','V@ld','vald3')
-        #try: curs.execute('drop table merged; drop table meta; drop table refs;'); conn.commit()
-        #except: pass
+        config=vald3cfg
+    elif sys.argv[1]=='valdmysql':
+        try: os.remove('vald.db')
+        except: pass
+        conn,curs=mysql('vald','V@ld','vald3')
+        try: curs.execute('drop table transitions; drop table meta; drop table sources; drop table species; drop table states;'); conn.commit()
+        except: pass
         config=vald3cfg
     else:
         dbname=s.replace(sys.argv[1],'.cfg','')+'.db'
