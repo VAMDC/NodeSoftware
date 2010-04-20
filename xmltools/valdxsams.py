@@ -80,21 +80,21 @@ def run(curs,outname=None,query=None):
 
     data=getdata(curs,query)
     for d in data:
-        vacwave,airwave,species,loggf,landeff,gammarad,gammastark,gammawaals,srctag,acflag,accur,comment,wave_ref,loggf_ref,lande_ref,gammarad_ref,gamastark_ref,gammawaals_ref,upcoupling,upterm,locoupling,loterm=d
+        print len(d)
+        id,vacwave,airwave,species,loggf,landeff,gammarad,gammastark,gammawaals,srctag,acflag,accur,comment,wave_ref,loggf_ref,lande_ref,gammarad_ref,gamastark_ref,gammawaals_ref,upstate,lostate=d
 
 
-        UpStateID='%s-%s-%s'%(species,upcoupling,upterm)
-        UpStateID=UpStateID.replace(' ','-')
-        LoStateID='%s-%s-%s'%(species,locoupling,loterm)
-        LoStateID=LoStateID.replace(' ','-')
+        #UpStateID='%s-%s-%s'%(species,upcoupling,upterm)
+        #UpStateID=UpStateID.replace(' ','-')
+        #LoStateID='%s-%s-%s'%(species,locoupling,loterm)
+        #LoStateID=LoStateID.replace(' ','-')
         
-        loqs=getdata(curs,'SELECT * from qnums WHERE idstring="%s"'%LoStateID)
-        hiqs=getdata(curs,'SELECT * from qnums WHERE idstring="%s"'%UpStateID)
+        #loqs=getdata(curs,'SELECT * from qnums WHERE idstring="%s"'%lostate)
+        #hiqs=getdata(curs,'SELECT * from qnums WHERE idstring="%s"'%upstate)
 
-        lostate=getdata(curs,'SELECT * from lostates WHERE species="%s" AND term="%s" AND coupling="%s"'%())
-        print lostate
-
-        if loqs: write_state(curs,state,loqs)
+        lostate=getdata(curs,'SELECT * from states WHERE id="%s"'%lostate)
+        
+        write_state(atoms,lostate)
         write_state(states,data)
         write_transition(processes,data)
         write_source(sources,data)
@@ -110,7 +110,7 @@ def run(curs,outname=None,query=None):
         f.write("""<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="http://tmy.se/t/vald2xsams.xsl"?>
 """)
-        f.write(e.tostring(xvald,pretty_print=True))
+        f.write(e.tostring(root,pretty_print=True))
         f.close()
 
 

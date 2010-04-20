@@ -73,17 +73,17 @@ class Atom(models.Model):
 
 ################################################################
 
+class MolecularState(models.Model):
+    class Meta:
+        verbose_name = _('Molecule')
+        verbose_name_plural = _('Molecules')
+    
 class Molecule(models.Model):
     class Meta:
         verbose_name = _('Molecule')
         verbose_name_plural = _('Molecules')
     MolecularState=models.ForeignKey(MolecularState)
 
-class MolecularState(models.Model)
-    class Meta:
-        verbose_name = _('Molecule')
-        verbose_name_plural = _('Molecules')
-    
 class Particle(models.Model):
     class Meta:
         verbose_name = _('Particle')

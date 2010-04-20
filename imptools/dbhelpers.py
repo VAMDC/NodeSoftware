@@ -64,7 +64,65 @@ def fillmeta(curs,conf):
 def createindices(curs,conf):
     pass
         
-    
+def filldata(curs,tconf):
+    """
+        read the data-files and fill the data into the tables in the DB
+    """
+    f=open(tconf['fname'])
+    for i in range(tconf['headlines']):
+        f.readline()
+
+    for line in f:
+        if line.startswith(tconf['commentchar']): continue
+        data=[]
+        for colconf in tconf['columns']:
+            if colconf['cbyte']:
+                fu=colconf['cbyte'][0]
+                args=colconf['cbyte'][1]
+                d=fu(line,*args)
+                if d==colconf['cnull']:
+                    data.append('NULL')
+                else:
+                    data.append(s.strip(d))
+            else:
+                data.append('NULL')
+
+        sql='%s %s '%(tconf['method'],tconf['tname'])
+        if tconf['method'].startswith('INSERT'):
+            sql+=' VALUES ("%s'%s.join(data,'","')
+            sql=sql+ '");'
+        
+        elif tconf['method'].startswith('UPDATE'):
+            sql+='SET '
+            for i,colconf in enumerate(tconf['columns']):
+                sql+='%s="%s",'%(colconf['cname'],data[i])
+            sql=sql[:-1] + ' WHERE id="%s"'%data[0]
+        else:
+            print 'Dont know what to do with method "%s"'%tconf['method']
+            continue
+        
+        sql=sql.replace('"NULL"','NULL')
+        #print sql
+        curs.execute(sql)
+        #sql+=' VALUES (%s)'%s.join(('?',)*len(data),', ')
+        #curs.execute(sql,tuple(data))
+        
+ 
+
+def writedummydata(n=100,filename='dummy.dat'):
+    """
+        write random dummy data
+    """
+    from random import random
+    f=open(filename,'w')
+    while n>0:
+        n-=1
+        f.write('%d %f %f\n'%(100-n,random(),random()))
+    f.close()
+
+
+
+### LEGACY BELOW HERE
 
 def splitfixedcol(line,cols,delim):
     data=[]
@@ -85,7 +143,7 @@ def splitbydelim(line,cols,delim):
         data.append(d)
     return data
     
-def filldata(curs,tconf):
+def filldata_old(curs,tconf):
     """
         read the data-files and fill the data into the tables in the DB
     """
@@ -111,14 +169,3 @@ def filldata(curs,tconf):
         #sql+=' VALUES (%s)'%s.join(('?',)*len(data),', ')
         #curs.execute(sql,tuple(data))
         
-
-def writedummydata(n=100,filename='dummy.dat'):
-    """
-        write random dummy data
-    """
-    from random import random
-    f=open(filename,'w')
-    while n>0:
-        n-=1
-        f.write('%d %f %f\n'%(100-n,random(),random()))
-    f.close()
