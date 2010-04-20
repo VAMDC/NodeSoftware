@@ -27,7 +27,7 @@ class Sources(models.Model):
     id = models.PositiveSmallIntegerField(null=True, primary_key=True,db_column='refid')
     speclo = models.ForeignKey(Species,related_name='islowerboundspeciesfor',db_column='speclo')
     spechi = models.ForeignKey(Species,related_name='isupperboundspeciesfor',db_column='speclo')
-    blob = models.PositiveSmallIntegerField(null=True,default=0)
+    listtype = models.PositiveSmallIntegerField(null=True,default=0)
     r1 = models.PositiveSmallIntegerField(null=True, blank=True)
     r2 = models.PositiveSmallIntegerField(null=True, blank=True)
     r3 = models.PositiveSmallIntegerField(null=True, blank=True)

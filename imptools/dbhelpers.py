@@ -82,18 +82,19 @@ def filldata(curs,tconf,dbtype='sqlite'):
                 fu=colconf['cbyte'][0]
                 args=colconf['cbyte'][1]
                 d=fu(line,*args)
-                if d==colconf['cnull']:
+                if (d==colconf['cnull']) or (s.strip(d)==colconf['cnull']):
                     data.append('NULL')
                 else:
                     data.append(s.strip(d))
             else:
                 data.append('NULL')
 
-        sql='%s %s '%(tconf['method'],tconf['tname'])
-
         if (dbtype=='mysql') and ('OR IGNORE' in tconf['method']):
             tconf['method']=tconf['method'].replace('OR IGNORE','IGNORE')
+        
+        sql='%s %s '%(tconf['method'],tconf['tname'])
 
+            
         if tconf['method'].startswith('INSERT'):
             sql+=' VALUES ("%s'%s.join(data,'","')
             sql=sql+ '");'

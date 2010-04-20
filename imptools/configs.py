@@ -687,7 +687,7 @@ vald3cfg={         # start dictionary
                  'cbyte':(bySepNr,(3,)),
                  'cnull':None,
                  'ctype':'SMALLINT UNSIGNED'},
-                {'cname':'blob',
+                {'cname':'listtype',
                  'cfmt':'d',
                  'ccom':'some number descibing the list, 0 means linelist, 1 replacement list, etc',
                  'cunit':None,
