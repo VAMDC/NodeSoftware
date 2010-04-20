@@ -17,28 +17,31 @@ def main():
         conn,curs=sqlite('dummy.db')
         config=dummycfg
         writedummydata()
+        dbtype='sqlite'
     elif sys.argv[1]=='valdsqlite':
         try: os.remove('vald.db')
         except: pass
         conn,curs=sqlite('vald.db')
         config=vald3cfg
+        dbtype='sqlite'
     elif sys.argv[1]=='valdmysql':
         conn,curs=mysql('vald','V@ld','vald3')
         try: curs.execute('drop table transitions; drop table meta; drop table sources; drop table species; drop table states;'); conn.commit()
         except: pass
         config=vald3cfg
+        dbtype='mysql'
     else:
         dbname=s.replace(sys.argv[1],'.cfg','')+'.db'
         conn,curs=sqlite(dbname)
         config=readcfg(sys.argv[1])
-
+        dbtype='sqlite'
     createmeta(curs)
     fillmeta(curs,config)
 
     for tconf in config['tables']:
         print 'Working on table %s:'%tconf['tname'],
         print 'Create...',
-        createtable(curs,tconf)
+        createtable(curs,tconf,dbtype)
         print 'done. Fill...',
         filldata(curs,tconf)
         print 'done.'

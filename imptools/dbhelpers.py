@@ -22,12 +22,14 @@ def readcfg(fname):
     exec(f.read())
     return config
     
-def createtable(curs,tconf):
+def createtable(curs,tconf,dbtype='mysql'):
     """
        create the tables with typed columns, according to the config-dict
     """
     sql='CREATE TABLE IF NOT EXISTS %s ('%tconf['tname']
     for col in tconf['columns']:
+        if (dbtype=='mysql') and ('PRIMARY KEY' in col['ctype']):
+            col['ctype']+=' AUTO_INCREMENT'    
         sql+='%s %s, '%(col['cname'],col['ctype'])
     sql=sql[:-2]
     sql+=');' 
