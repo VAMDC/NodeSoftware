@@ -54,7 +54,9 @@ def sync(request):
             qtup=tuple(qlist)
             
         transs=Transitions.objects.filter(*qtup)
-        states=States.objects.filter(islowerstate_trans__in=transs).distinct()
+        lostates=States.objects.filter(islowerstate_trans__in=transs).distinct()
+        histates=States.objects.filter(islowerstate_trans__in=transs).distinct()
+        states = lostates | histates
         sources=Sources.objects.filter(iswaveref_trans__in=transs).distinct()
         species=Species.objects.filter(isspecies_trans__in=transs).distinct()
         #states=States.objects.filter(islowerstate_trans__vacwave__lt=wavebord).distinct()
