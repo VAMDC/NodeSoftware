@@ -8,8 +8,8 @@ states, species, references:
 
 sqlite -> xsams:  45 sec,   4.5  MB ( 0.21 gzipped)
 sqlite -> csv:    45  sec,  0.7 MB ( 0.14 gzipped)
-mysql -> xsams:  79,40,38  sec,  size see above
-mysql -> csv:  50,37 sec,  size see above
+mysql -> xsams:  90,51  sec,  size see above
+mysql -> csv:  57,37 sec,  size see above
 
 Run time with mysql goes down after first request - I suspect clever
 caching. these numbers also mean that the query is the bottle neck,

@@ -44,7 +44,7 @@
 <Description>{{ state.id }}</Description>
 <AtomicNumericalData>
 {% if state.energy %}
-<StateEnergy><Value units="eV" sourceRef="S-{{ state.energy_ref.id }}">{{ state.energy }}</Value></StateEnergy>
+<StateEnergy><Value units="1/cm" sourceRef="S-{{ state.energy_ref.id }}">{{ state.energy }}</Value></StateEnergy>
 {% endif %}
 {% if state.species.ionen %}
 <IonizationEnergy><Value units="eV">{{ state.species.ionen }}</Value></IonizationEnergy>
@@ -65,21 +65,13 @@
 
 {% if state.coupling and state.term %}
 <AtomicComposition>
-<Comments>Term reference: S-{{ state.level_ref.id }}</Comments>
 <Component>
 <Configuration><ConfigurationLabel>{{ state.term }}</ConfigurationLabel></Configuration>
 <Term>
-{% if state.coupling == "LS" %}
-<LS>
-<L><Value>{{ state.l }}</Value></L>
-<S>{{ state.s }}</S>
-</LS>
-{% endif %}
-{% if state.coupling == "JK" %}
-{{ state.j1 }},{{ state.j2 }},{{ state.k }},{{ state.s2 }},{{ state.jc }}
-{% endif %}
-{% if state.coupling == "JJ" %}
-{% endif %}
+<Comments>Term reference: S-{{ state.level_ref.id }}</Comments>
+{% if state.coupling == "LS" %}<LS><L><Value>{{ state.l }}</Value></L><S>{{ state.s }}</S></LS>{% endif %}
+{% if state.coupling == "JK" %}<jK><j>{{ state.s2 }}</j><K>{{ state.k }}</K></jK>{% endif %}
+{% if state.coupling == "JJ" %}<J1J2><j>{{ state.j1 }}<j></j>{{ state.j2 }}</j></J1J2>{% endif %}
 </Term>
 </Component>
 </AtomicComposition>
@@ -93,11 +85,10 @@
 </States>
 
 <Processes>
-
 <Radiative>
 {% for trans in transitions %}
 <RadiativeTransition methodRef="MEXP">
-<Comments>No place found for effective lande factor and broadening gammas: 
+<Comments>Effective Lande factor and broadening gammas: 
 lande_eff: {{ trans.landeff }} (Ref S-{{ trans.lande_ref.id }})
 gamma_rad: {{ trans.gammarad }} (Ref S-{{ trans.gammarad_ref.id }})
 gamma_stark: {{ trans.gammastark }} (Ref S-{{ trans.gammastark_ref.id }})
