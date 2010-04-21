@@ -21,83 +21,89 @@ class TAPQUERY(object):
             self.lang=data['LANG']
             self.query=data['QUERY']
             self.format=data['FORMAT']
-            self.valid=True
+            self.isvalid=True
         except:
-            self.valid=False
-        
+            self.isvalid=False
+
+        if self.isvalid: self.validate()
+    def validate(self):
+        """
+        overwrite this method for
+        custom checks, depending on data set
+        """
+
     def __str__(self):
         return '%s'%self.query
 
+def parseSQL(sql):
+    wheres=tap.query.split('WHERE')[1].split('AND') # replace this with http://code.google.com/p/python-sqlparse/ later
+    qlist=[]
+    for w in map(lower,wheres):
+        w=w.split()
+        print w
+        value=w[-1]
+        if 'wavelength' in w: field='vacwave'
+        if 'element' in w: field='species__name'
+        if '<' in w: op='__lt'
+        if '>' in w: op='__gt'
+        if '=' in w: op='__iexact'
+        if '<=' in w: op='__lte'
+        if '>=' in w: op='__gte'
+        
+        exec('mq=Q(%s="%s")'%(field+op,value))
+        qlist.append(mq)
+    return tuple(qlist)
+            
+
 def sync(request):
-    if request.POST:
-        data = request.POST
-    elif request.GET:
-        data = request.GET
-    else: data = None
-    tap=TAPQUERY(data)
-    if tap.valid:
-        wheres=tap.query.split('WHERE')[1].split('AND') # replace this with http://code.google.com/p/python-sqlparse/ later
-        qlist=[]
-        for w in map(lower,wheres):
-            w=w.split()
-            print w
-            value=w[-1]
-            if 'wavelength' in w: field='vacwave'
-            if 'element' in w: field='species__name'
-            if '<' in w: op='__lt'
-            if '>' in w: op='__gt'
-            if '=' in w: op='__iexact'
-            if '<=' in w: op='__lte'
-            if '>=' in w: op='__gte'
-                
-            exec('mq=Q(%s="%s")'%(field+op,value))
-            qlist.append(mq)
-            qtup=tuple(qlist)
-        
-        ts=time()
+    tap=TAPQUERY(request.REQUEST)
+    if not tap.isvalid:
+        # return http error
+        pass
 
-        transs=Transitions.objects.filter(*qtup)
-        print 'transitions set up',time()-ts
-        
-        lostates=States.objects.filter(islowerstate_trans__in=transs)
-        histates=States.objects.filter(islowerstate_trans__in=transs)
-        states = lostates | histates
-        states = states.distinct()
-        print 'states set up',time()-ts
-        
-        waverefs=Q(iswaveref_trans__in=transs)
-        landerefs=Q(islanderef_trans__in=transs)
-        loggfrefs=Q(isloggfref_trans__in=transs)
-        g1refs=Q(isgammaradref_trans__in=transs)
-        g2refs=Q(isgammastarkref_trans__in=transs)
-        g3refs=Q(isgammawaalsref_trans__in=transs)
-        refQ= waverefs | landerefs | loggfrefs | g1refs | g2refs | g3refs
-        sources=Sources.objects.filter(refQ).distinct()
-        print 'sources set up',time()-ts
-        
-        
-        print len(transs),len(states),len(sources)
-        print 'len() called',time()-ts
-        
+    qtup=parseSQL(tap.query)
+    
+    ts=time()
 
-        if tap.format.lower()=='xsams': template='vald/valdxsams.xml'
-        elif tap.format.lower()=='csv': template='vald/valdtable.csv'
-        else: template='index.html'
+    transs=Transitions.objects.filter(*qtup)
+    print 'transitions set up',time()-ts
+    
+    lostates=States.objects.filter(islowerstate_trans__in=transs)
+    histates=States.objects.filter(islowerstate_trans__in=transs)
+    states = lostates | histates
+    states = states.distinct()
+    print 'states set up',time()-ts
+    
+    waverefs=Q(iswaveref_trans__in=transs)
+    landerefs=Q(islanderef_trans__in=transs)
+    loggfrefs=Q(isloggfref_trans__in=transs)
+    g1refs=Q(isgammaradref_trans__in=transs)
+    g2refs=Q(isgammastarkref_trans__in=transs)
+    g3refs=Q(isgammawaalsref_trans__in=transs)
+    refQ= waverefs | landerefs | loggfrefs | g1refs | g2refs | g3refs
+    sources=Sources.objects.filter(refQ).distinct()
+    print 'sources set up',time()-ts
+        
+        
+    print len(transs),len(states),len(sources)
+    print 'len() called',time()-ts
+    
 
-        c=RequestContext(request,{'transitions':transs,
-                                  'sources':sources,
-                                  'states':states,
-                                  'species':species,
-                                  })
-        t=loader.get_template(template)
-        print 'starting render',time()-ts
-        r=t.render(c)
-        print 'render ended:',time()-ts
-        return HttpResponse(r)
+    if tap.format.lower()=='xsams': template='vald/valdxsams.xml'
+    elif tap.format.lower()=='csv': template='vald/valdtable.csv'
+    else: template='index.html'
+    
+    c=RequestContext(request,{'transitions':transs,
+                              'sources':sources,
+                              'states':states,
+                              'species':species,
+                              })
+    t=loader.get_template(template)
+    print 'starting render',time()-ts
+    r=t.render(c)
+    print 'render ended:',time()-ts
+    return HttpResponse(r)
         #return render_to_response('vald/valdxsams.xml', c) # shortcut
-    else:
-        c=RequestContext(request,{})
-        return render_to_response('node/index.html', c)
 
 def async(request):
     c=RequestContext(request,{})
