@@ -3,7 +3,7 @@ from django.template import RequestContext, loader
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 
-from DjVAMDC.vald.models import Transitions,States,Sources,Species
+from DjVAMDC.vald.models import Transition,State,Source,Species
 
 from django.db.models import Q
 
@@ -36,7 +36,7 @@ class TAPQUERY(object):
         return '%s'%self.query
 
 def parseSQL(sql):
-    wheres=tap.query.split('WHERE')[1].split('AND') # replace this with http://code.google.com/p/python-sqlparse/ later
+    wheres=sql.split('WHERE')[1].split('AND') # replace this with http://code.google.com/p/python-sqlparse/ later
     qlist=[]
     for w in map(lower,wheres):
         w=w.split()
@@ -55,6 +55,50 @@ def parseSQL(sql):
     return tuple(qlist)
             
 
+def getVALDsources1(transs):
+    # this is REALLY slow
+    waverefs=Q(iswaveref_trans__in=transs)
+    landerefs=Q(islanderef_trans__in=transs)
+    loggfrefs=Q(isloggfref_trans__in=transs)
+    g1refs=Q(isgammaradref_trans__in=transs)
+    g2refs=Q(isgammastarkref_trans__in=transs)
+    g3refs=Q(isgammawaalsref_trans__in=transs)
+    refQ= waverefs | landerefs | loggfrefs | g1refs | g2refs | g3refs
+    sources=Source.objects.filter(refQ).distinct()
+    return sources
+
+def getVALDsources2(transs):
+    waverefs=Q(iswaveref_trans__in=transs)
+    landerefs=Q(islanderef_trans__in=transs)
+    loggfrefs=Q(isloggfref_trans__in=transs)
+    g1refs=Q(isgammaradref_trans__in=transs)
+    g2refs=Q(isgammastarkref_trans__in=transs)
+    g3refs=Q(isgammawaalsref_trans__in=transs)
+    refQs=[waverefs, landerefs, loggfrefs, g1refs, g2refs, g3refs]
+    sources=set()
+    for q in refQs:
+        refs=Source.objects.filter(q)
+        for r in refs:
+            sources.add(r)
+    return sources
+
+def getVALDsources3(transs):
+    sids=set([])
+    for trans in transs:
+        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
+        sids=sids.union(s)
+    return list(sids)
+
+def getVALDsources4(transs):
+    sids=set([])
+    for trans in transs:
+        s=set([trans.wave_ref.id,trans.loggf_ref.id,trans.lande_ref.id,trans.gammarad_ref.id,trans.gammastark_ref.id,trans.gammawaals_ref.id])
+        sids=sids.union(s)
+    sources=[]
+    for sid in sids:
+        sources.append(Source.objects.get(pk=sid))
+    return sources
+
 def sync(request):
     tap=TAPQUERY(request.REQUEST)
     if not tap.isvalid:
@@ -65,29 +109,18 @@ def sync(request):
     
     ts=time()
 
-    transs=Transitions.objects.filter(*qtup)
-    print 'transitions set up',time()-ts
+    transs=Transition.objects.filter(*qtup)
+    print '%d transitions set up'%len(transs),time()-ts
     
-    lostates=States.objects.filter(islowerstate_trans__in=transs)
-    histates=States.objects.filter(islowerstate_trans__in=transs)
+    lostates=State.objects.filter(islowerstate_trans__in=transs)
+    histates=State.objects.filter(islowerstate_trans__in=transs)
     states = lostates | histates
     states = states.distinct()
-    print 'states set up',time()-ts
+    print '%d states set up'%len(states),time()-ts
     
-    waverefs=Q(iswaveref_trans__in=transs)
-    landerefs=Q(islanderef_trans__in=transs)
-    loggfrefs=Q(isloggfref_trans__in=transs)
-    g1refs=Q(isgammaradref_trans__in=transs)
-    g2refs=Q(isgammastarkref_trans__in=transs)
-    g3refs=Q(isgammawaalsref_trans__in=transs)
-    refQ= waverefs | landerefs | loggfrefs | g1refs | g2refs | g3refs
-    sources=Sources.objects.filter(refQ).distinct()
-    print 'sources set up',time()-ts
+    sources=getVALDsources4(transs)
+    print '%d sources set up'%len(sources),time()-ts
         
-        
-    print len(transs),len(states),len(sources)
-    print 'len() called',time()-ts
-    
 
     if tap.format.lower()=='xsams': template='vald/valdxsams.xml'
     elif tap.format.lower()=='csv': template='vald/valdtable.csv'
@@ -96,7 +129,6 @@ def sync(request):
     c=RequestContext(request,{'transitions':transs,
                               'sources':sources,
                               'states':states,
-                              'species':species,
                               })
     t=loader.get_template(template)
     print 'starting render',time()-ts

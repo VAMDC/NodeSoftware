@@ -19,8 +19,8 @@ def main():
         writedummydata()
         dbtype='sqlite'
     elif sys.argv[1]=='valdsqlite':
-        try: os.remove('vald.db')
-        except: pass
+        #try: os.remove('vald.db')
+        #except: pass
         conn,curs=sqlite('vald.db')
         config=vald3cfg
         dbtype='sqlite'
@@ -35,13 +35,14 @@ def main():
         conn,curs=sqlite(dbname)
         config=readcfg(sys.argv[1])
         dbtype='sqlite'
-    createmeta(curs)
+    
+    #createmeta(curs)
     fillmeta(curs,config)
 
     for tconf in config['tables']:
         print 'Working on table %s:'%tconf['tname'],
-        print 'Create...',
-        createtable(curs,tconf,dbtype)
+        #print 'Create...',
+        #createtable(curs,tconf,dbtype)
         print 'done. Fill...',
         filldata(curs,tconf,dbtype)
         print 'done.'

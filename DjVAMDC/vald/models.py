@@ -1,16 +1,20 @@
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
-class Meta(models.Model):
-    cname = models.CharField(max_length=64, blank=True)
-    tname = models.CharField(max_length=64, blank=True)
-    ccom = models.TextField(blank=True)
-    cunit = models.CharField(max_length=64, blank=True)
-    cfmt = models.CharField(max_length=64, blank=True)
+class ColInfo(models.Model):
+    id = models.IntegerField(primary_key=True)
+    cname = models.CharField(max_length=64)
+    tname = models.CharField(max_length=64)
+    ccom = models.TextField(blank=True,null=True)
+    cunit = models.CharField(max_length=64, blank=True,null=True)
+    cfmt = models.CharField(max_length=64, blank=True,null=True)
     class Meta:
         db_table = u'meta'
+        verbose_name = _('ColumnInfo')
+        verbose_name_plural = _('ColumnInfos')
 
 class Species(models.Model):
-    id = models.PositiveSmallIntegerField(primary_key=True, db_index=True)
+    id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=10, db_index=True)
     ion = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     mass = models.FloatField(blank=True) 
@@ -21,13 +25,15 @@ class Species(models.Model):
     isotope = models.PositiveSmallIntegerField(null=True, blank=True)
     class Meta:
         db_table = u'species'
+        verbose_name = _('Species')
+        verbose_name_plural = _('Species')
 
-class Sources(models.Model):
+class Source(models.Model):
+    id = models.IntegerField(primary_key=True)
     srcfile = models.CharField(max_length=128)
-    id = models.PositiveSmallIntegerField(null=True, primary_key=True,db_column='refid', db_index=True)
     speclo = models.ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo')
     spechi = models.ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi')
-    listtype = models.PositiveSmallIntegerField(null=True,default=0)
+    listtype = models.PositiveSmallIntegerField(null=True,blank=True)
     r1 = models.PositiveSmallIntegerField(null=True, blank=True)
     r2 = models.PositiveSmallIntegerField(null=True, blank=True)
     r3 = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -40,50 +46,56 @@ class Sources(models.Model):
     srcdescr = models.CharField(max_length=128, blank=True, null=True)
     class Meta:
         db_table = u'sources'
+        verbose_name = _('Source')
+        verbose_name_plural = _('Sources')
 
-class States(models.Model):
-    id = models.CharField(max_length=128, primary_key=True, blank=True, db_index=True)
+class State(models.Model):
+    id = models.CharField(max_length=128, primary_key=True)
     species = models.ForeignKey(Species,db_column='species', db_index=True)
     energy = models.FloatField(null=True,blank=True, db_index=True) 
     lande = models.FloatField(null=True,blank=True)
     coupling = models.CharField(max_length=2, null=True,blank=True)
     term = models.CharField(max_length=46, null=True,blank=True)
-    energy_ref = models.ForeignKey(Sources,related_name='isenergyref_state',db_column='energy_ref')
-    lande_ref = models.ForeignKey(Sources,related_name='islanderef_state',db_column='lande_ref')
-    level_ref = models.ForeignKey(Sources,related_name='istermref_state',db_column=u'level_ref')
-    j = models.FloatField(db_column=u'J', blank=True)
-    l = models.FloatField(db_column=u'L', blank=True)
-    s = models.FloatField(db_column=u'S', blank=True)
-    p = models.FloatField(db_column=u'P', blank=True)
-    j1 = models.FloatField(db_column=u'J1', blank=True)
-    j2 = models.FloatField(db_column=u'J2', blank=True)
-    k = models.FloatField(db_column=u'K', blank=True)
-    s2 = models.FloatField(db_column=u'S2', blank=True)
-    jc = models.FloatField(db_column=u'Jc', blank=True)
+    energy_ref = models.ForeignKey(Source,related_name='isenergyref_state',db_column='energy_ref')
+    lande_ref = models.ForeignKey(Source,related_name='islanderef_state',db_column='lande_ref')
+    level_ref = models.ForeignKey(Source,related_name='istermref_state',db_column=u'level_ref')
+    j = models.FloatField(db_column=u'J', null=True,blank=True)
+    l = models.FloatField(db_column=u'L', null=True,blank=True)
+    s = models.FloatField(db_column=u'S', null=True,blank=True)
+    p = models.FloatField(db_column=u'P', null=True,blank=True)
+    j1 = models.FloatField(db_column=u'J1', null=True,blank=True)
+    j2 = models.FloatField(db_column=u'J2', null=True,blank=True)
+    k = models.FloatField(db_column=u'K', null=True,blank=True)
+    s2 = models.FloatField(db_column=u'S2', null=True,blank=True)
+    jc = models.FloatField(db_column=u'Jc', null=True,blank=True)
     class Meta:
         db_table = u'states'
+        verbose_name = _('State')
+        verbose_name_plural = _('States')
 
-class Transitions(models.Model):
-    id = models.IntegerField(null=True, primary_key=True, blank=True, db_index=True)
-    vacwave = models.FloatField(blank=True, db_index=True) 
-    airwave = models.FloatField(blank=True, db_index=True)
-    species = models.ForeignKey(Species,db_column='species',related_name='isspecies_trans', db_index=True)
-    loggf = models.FloatField(blank=True)
-    landeff = models.FloatField(blank=True)
-    gammarad = models.FloatField(blank=True)
-    gammastark = models.FloatField(blank=True)
-    gammawaals = models.FloatField(blank=True)
-    srctag = models.CharField(max_length=7, blank=True)
-    acflag = models.CharField(max_length=1, blank=True)
-    accur = models.CharField(max_length=10, blank=True)
-    comment = models.CharField(max_length=10, blank=True)
-    wave_ref = models.ForeignKey(Sources,db_column=u'wave_ref',related_name='iswaveref_trans')
-    loggf_ref = models.ForeignKey(Sources,db_column=u'loggf_ref',related_name='isloggfref_trans')
-    lande_ref = models.ForeignKey(Sources,db_column=u'lande_ref',related_name='islanderef_trans')
-    gammarad_ref = models.ForeignKey(Sources,db_column=u'gammarad_ref',related_name='isgammaradref_trans')
-    gammastark_ref = models.ForeignKey(Sources,db_column=u'gammastark_ref',related_name='isgammastarkref_trans')
-    gammawaals_ref = models.ForeignKey(Sources,db_column=u'gammawaals_ref',related_name='isgammawaalsref_trans')
-    upstate = models.ForeignKey(States,related_name='isupperstate_trans',db_column='upstate', db_index=True)
-    lostate = models.ForeignKey(States,related_name='islowerstate_trans',db_column='lostate', db_index=True)
+class Transition(models.Model):
+    id = models.IntegerField(primary_key=True)
+    vacwave = models.FloatField(db_index=True) 
+    airwave = models.FloatField(db_index=True)
+    species = models.ForeignKey(Species,db_column='species',related_name='isspecies_trans')
+    loggf = models.FloatField(null=True,blank=True)
+    landeff = models.FloatField(null=True,blank=True)
+    gammarad = models.FloatField(null=True,blank=True)
+    gammastark = models.FloatField(null=True,blank=True)
+    gammawaals = models.FloatField(null=True,blank=True)
+    srctag = models.CharField(max_length=7, blank=True,null=True)
+    acflag = models.CharField(max_length=1, blank=True,null=True)
+    accur = models.CharField(max_length=10, blank=True,null=True)
+    comment = models.CharField(max_length=10, null=True,blank=True)
+    wave_ref = models.ForeignKey(Source,db_column=u'wave_ref',related_name='iswaveref_trans')
+    loggf_ref = models.ForeignKey(Source,db_column=u'loggf_ref',related_name='isloggfref_trans')
+    lande_ref = models.ForeignKey(Source,db_column=u'lande_ref',related_name='islanderef_trans')
+    gammarad_ref = models.ForeignKey(Source,db_column=u'gammarad_ref',related_name='isgammaradref_trans')
+    gammastark_ref = models.ForeignKey(Source,db_column=u'gammastark_ref',related_name='isgammastarkref_trans')
+    gammawaals_ref = models.ForeignKey(Source,db_column=u'gammawaals_ref',related_name='isgammawaalsref_trans')
+    upstate = models.ForeignKey(State,related_name='isupperstate_trans',db_column='upstate')
+    lostate = models.ForeignKey(State,related_name='islowerstate_trans',db_column='lostate')
     class Meta:
         db_table = u'transitions'
+        verbose_name = _('Transition')
+        verbose_name_plural = _('Transitions')
