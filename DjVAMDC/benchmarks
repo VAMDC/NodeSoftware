@@ -1,10 +1,17 @@
 
-2010-04-21
-running on melkor, djangos test-server (single thread), once with sqlite backend, once with mysql
-same import in both databases, same indexes 
+2010-04-21 running on melkor, djangos test-server (single thread),
+once with sqlite backend, once with mysql same import in both
+databases, same indexes
 
-query all Fe transitions, 3000 < Å < 3500, plus corresponging states, species, references:
-sqlite -> incomplete xsams:  32 sec,   1.7  MB ( 0.08 gzipped)
-sqlite -> csv:    31  sec,  0.7 MB ( 0.14 gzipped)
-mysql -> incomplete xsams:   5   sec,  size see above
-mysql -> csv:    32  sec,  MB ( gzipped)
+query all Fe transitions, 3000 < Å < 3500, plus corresponging 
+states, species, references:
+
+sqlite -> xsams:  45 sec,   4.5  MB ( 0.21 gzipped)
+sqlite -> csv:    45  sec,  0.7 MB ( 0.14 gzipped)
+mysql -> xsams:  79,40,38  sec,  size see above
+mysql -> csv:  50,37 sec,  size see above
+
+Run time with mysql goes down after first request - I suspect clever
+caching. these numbers also mean that the query is the bottle neck,
+not the creation of XML. However creating xsams might need more
+advanced queries to the db - thereby increasing overhead...

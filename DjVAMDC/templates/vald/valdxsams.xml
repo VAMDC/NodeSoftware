@@ -15,7 +15,7 @@
 <Volume>666</Volume>
 <PageBegin>666</PageBegin>
 </Source>
-{% endfor  %}
+{% endfor %}
 </Sources>
 
 <Methods>
@@ -29,41 +29,61 @@
 <States>
 <Atoms>
 {% for state in states %}
-{{ state.id }},{{ state.species }},{{ state.energy }},{{ state.lande }},{{ state.coupling }},{{ state.term }},{{ state.energy_ref.id }},{{ state.lande_ref.id }},{{ state.level_ref.id }},{{ state.j }},{{ state.l }},{{ state.s }},{{ state.p }},{{ state.j1 }},{{ state.j2 }},{{ state.k }},{{ state.s2 }},{{ state.jc }}
-
-{{ state.species.id }},{{ state.species.name }},{{ state.species.ion }},{{ state.species.mass }},{{ state.species.ionen }},{{ state.species.solariso }},{{ state.species.ncomp }},{{ state.species.atomic }}
-
 <Atom>
-<NuclearCharge>1</NuclearCharge>
+<ChemicalElement>
+<NuclearCharge>{{ state.species.atomic }}</NuclearCharge>
+<ElementSymbol>{{ state.species.name }}</ElementSymbol>
+</ChemicalElement>
 <Isotope>
+<IsotopeParameters>
+<MassNumber>{{ state.species.mass }}</MassNumber>
+</IsotopeParameters>
 <IonState>
-<IonCharge>0</IonCharge>
+<IonCharge>{{ state.species.ion }}</IonCharge>
 <AtomicState stateID="S-{{ state.id }}">
 <Description>{{ state.id }}</Description>
 <AtomicNumericalData>
-<StateEnergy>
-<Value units="1/cm">5.6</Value>
-</StateEnergy>
-<LandeFactor/>
+{% if state.energy %}
+<StateEnergy><Value units="eV" sourceRef="S-{{ state.energy_ref.id }}">{{ state.energy }}</Value></StateEnergy>
+{% endif %}
+{% if state.species.ionen %}
+<IonizationEnergy><Value units="eV">{{ state.species.ionen }}</Value></IonizationEnergy>
+{% endif %}
+{% if state.lande %}
+<LandeFactor><Value units="unitless" sourceRef="S-{{ state.lande_ref.id }}">{{ state.lande }}</Value><LandeFactor/>
+{% endif %}
 </AtomicNumericalData>
+
 <AtomicQuantumNumbers>
-<Parity>even</Parity>
-<TotalAngularMomentum>2.5</TotalAngularMomentum>
+{% if state.p %}
+<Parity>{{ state.p }}</Parity>
+{% endif %}
+{% if state.j %}
+<TotalAngularMomentum>{{ state.j }}</TotalAngularMomentum>
+{% endif %}
 </AtomicQuantumNumbers>
+
+{% if state.coupling and state.term %}
 <AtomicComposition>
+<Comments>Term reference: S-{{ state.level_ref.id }}</Comments>
 <Component>
+<Configuration><ConfigurationLabel>{{ state.term }}</ConfigurationLabel></Configuration>
 <Term>
+{% if state.coupling == "LS" %}
 <LS>
-<L>
-<Value></Value>
-</L>
-<S>
-<Value>2.5</Value>
-</S>
+<L><Value>{{ state.l }}</Value></L>
+<S>{{ state.s }}</S>
 </LS>
+{% endif %}
+{% if state.coupling == "JK" %}
+{{ state.j1 }},{{ state.j2 }},{{ state.k }},{{ state.s2 }},{{ state.jc }}
+{% endif %}
+{% if state.coupling == "JJ" %}
+{% endif %}
 </Term>
 </Component>
 </AtomicComposition>
+{% endif %}
 </AtomicState>
 </IonState>
 </Isotope>
@@ -76,17 +96,31 @@
 
 <Radiative>
 {% for trans in transitions %}
-{{ trans.vacwave }},{{ trans.airwave }},{{ trans.species.id }},{{ trans.loggf }},{{ trans.landeff }},{{ trans.gammarad }},{{ trans.gammastark }},{{ trans.gammawaals }},{{ trans.srctag }},{{ trans.acflag }},{{ trans.accur }},{{ trans.wave_ref.id }},{{ trans.loggf_ref.id }},{{ trans.lande_ref.id }},{{ trans.gammarad_ref.id }},{{ trans.gammastark_ref.id }},{{ trans.gammawaals_ref.id }},{{ trans.lostate.id }},{{ trans.upstate.id }}
-<RadiativeTransition methodRef="MEXP" sourceRef="S-{{ trans.wave_ref.id }}">
+<RadiativeTransition methodRef="MEXP">
+<Comments>No place found for effective lande factor and broadening gammas: 
+lande_eff: {{ trans.landeff }} (Ref S-{{ trans.lande_ref.id }})
+gamma_rad: {{ trans.gammarad }} (Ref S-{{ trans.gammarad_ref.id }})
+gamma_stark: {{ trans.gammastark }} (Ref S-{{ trans.gammastark_ref.id }})
+gamma_waals: {{ trans.gammawaals }} (Ref S-{{ trans.gammawaals_ref.id }})
+</Comments>
 <EnergyWavelength>
 <Wavelength>
 <Experimental sourceRef="S-{{ trans.wave_ref.id }}">
+<Comments>Wavelength in vaccuum (first) and air.</Comments>
 <Value units="1/cm">{{ trans.vacwave }}</Value>
 <Value units="1/cm">{{ trans.airwave }}</Value>
 <Accuracy>Flag: {{ trans.acflag }}, Value: {{ trans.accur }}</Accuracy>
 </Experimental>
 </Wavelength>
 </EnergyWavelength>
+{% if trans.upstate %}<InitialStateRef>S-{{ trans.upstate.id }}</InitialStateRef>{% endif %}
+{% if trans.lostate %}<FinalStateRef>S-{{ trans.lostate.id }}</FinalStateRef>{% endif %}
+<Probability>
+<Log10WeightedOscillatorStrength sourceRef="S-{{ trans.loggf_ref.id }}">
+<Value units="unitless">{{ trans.loggf }}</Value>
+</Log10WeightedOscillatorStrength>
+<Probability>
+</RadiativeTransition>
 {% endfor%}
 </Radiative>
 <Processes/>
