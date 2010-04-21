@@ -10,21 +10,21 @@ class Meta(models.Model):
         db_table = u'meta'
 
 class Species(models.Model):
-    id = models.PositiveSmallIntegerField(primary_key=True)
-    name = models.CharField(max_length=10)
-    ion = models.PositiveSmallIntegerField(null=True, blank=True)
+    id = models.PositiveSmallIntegerField(primary_key=True, db_index=True)
+    name = models.CharField(max_length=10, db_index=True)
+    ion = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     mass = models.FloatField(blank=True) 
     ionen = models.FloatField(blank=True)
     solariso = models.FloatField(blank=True)
     ncomp = models.PositiveSmallIntegerField(null=True, blank=True)
-    atomic = models.PositiveSmallIntegerField(null=True, blank=True)
+    atomic = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     isotope = models.PositiveSmallIntegerField(null=True, blank=True)
     class Meta:
         db_table = u'species'
 
 class Sources(models.Model):
     srcfile = models.CharField(max_length=128)
-    id = models.PositiveSmallIntegerField(null=True, primary_key=True,db_column='refid')
+    id = models.PositiveSmallIntegerField(null=True, primary_key=True,db_column='refid', db_index=True)
     speclo = models.ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo')
     spechi = models.ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi')
     listtype = models.PositiveSmallIntegerField(null=True,default=0)
@@ -42,9 +42,9 @@ class Sources(models.Model):
         db_table = u'sources'
 
 class States(models.Model):
-    id = models.CharField(max_length=128, primary_key=True, blank=True)
-    species = models.ForeignKey(Species,db_column='species')
-    energy = models.FloatField(null=True,blank=True) 
+    id = models.CharField(max_length=128, primary_key=True, blank=True, db_index=True)
+    species = models.ForeignKey(Species,db_column='species', db_index=True)
+    energy = models.FloatField(null=True,blank=True, db_index=True) 
     lande = models.FloatField(null=True,blank=True)
     coupling = models.CharField(max_length=2, null=True,blank=True)
     term = models.CharField(max_length=46, null=True,blank=True)
@@ -64,10 +64,10 @@ class States(models.Model):
         db_table = u'states'
 
 class Transitions(models.Model):
-    id = models.IntegerField(null=True, primary_key=True, blank=True)
-    vacwave = models.FloatField(blank=True) 
-    airwave = models.FloatField(blank=True)
-    species = models.ForeignKey(Species,db_column='species',related_name='isspecies_trans')
+    id = models.IntegerField(null=True, primary_key=True, blank=True, db_index=True)
+    vacwave = models.FloatField(blank=True, db_index=True) 
+    airwave = models.FloatField(blank=True, db_index=True)
+    species = models.ForeignKey(Species,db_column='species',related_name='isspecies_trans', db_index=True)
     loggf = models.FloatField(blank=True)
     landeff = models.FloatField(blank=True)
     gammarad = models.FloatField(blank=True)
@@ -83,7 +83,7 @@ class Transitions(models.Model):
     gammarad_ref = models.ForeignKey(Sources,db_column=u'gammarad_ref',related_name='isgammaradref_trans')
     gammastark_ref = models.ForeignKey(Sources,db_column=u'gammastark_ref',related_name='isgammastarkref_trans')
     gammawaals_ref = models.ForeignKey(Sources,db_column=u'gammawaals_ref',related_name='isgammawallsref_trans')
-    upstate = models.ForeignKey(States,related_name='isupperstate_trans',db_column='upstate')
-    lostate = models.ForeignKey(States,related_name='islowerstate_trans',db_column='lostate')
+    upstate = models.ForeignKey(States,related_name='isupperstate_trans',db_column='upstate', db_index=True)
+    lostate = models.ForeignKey(States,related_name='islowerstate_trans',db_column='lostate', db_index=True)
     class Meta:
         db_table = u'transitions'
