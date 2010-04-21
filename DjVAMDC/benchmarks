@@ -15,3 +15,5 @@ Run time with mysql goes down after first request - I suspect clever
 caching. these numbers also mean that the query is the bottle neck,
 not the creation of XML. However creating xsams might need more
 advanced queries to the db - thereby increasing overhead...
+
+If I leave out the element constraint:
