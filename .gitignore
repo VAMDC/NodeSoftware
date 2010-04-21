@@ -8,3 +8,5 @@ dummy*
 /xsl/vald.xml
 /xsl/valdxsams.xml
 /.settings
+\#*
+.#*
