@@ -1,0 +1,20 @@
+Sources:
+{% for source  in sources %}
+{{ source.id }},{{ source.srcfile }},{{ source.speclo }},{{ source.spechi }},{{ source.listtype }},{{ source.srcdescr }},{{ source.r1 }},{{ source.r2 }},{{ source.r3 }},{{ source.r4 }},{{ source.r5 }},{{ source.r6 }},{{ source.r7 }},{{ source.r8 }},{{ source.r9 }}
+{% endfor  %}
+
+Species:
+{% for spec  in species %}
+{{ spec.id }},{{ spec.name }},{{ spec.ion }},{{ spec.mass }},{{ spec.ionen }},{{ spec.solariso }},{{ spec.ncomp }},{{ spec.atomic }}
+{% endfor %}
+
+
+States:
+{% for state in states %}
+{{ state.id }},{{ state.species }},{{ state.energy }},{{ state.lande }},{{ state.coupling }},{{ state.term }},{{ state.energy_ref.id }},{{ state.lande_ref.id }},{{ state.level_ref.id }},{{ state.j }},{{ state.l }},{{ state.s }},{{ state.p }},{{ state.j1 }},{{ state.j2 }},{{ state.k },{{ state.s2 }},{{ state.jc }},
+{% endfor %}
+
+Transitions:
+{% for trans in transitions %}
+{ trans.vacwave }},{{ trans.airwave }},{{ trans.species }},{{ trans.loggf }},{{ trans.landeff }},{{ trans.gammarad }},{{ trans.gammastark }},{{ trans.gammawaals }},{{ trans.srctag }},{{ trans.acflag }},{{ trans.accur }},{{ trans.wave_ref.id }},{{ trans.loggf_ref.id }},{{ trans.lande_ref.id }},{{ trans.gammarad_ref.id }},{{ trans.gammastark_ref.id }},{{ trans.gammawaals_ref.id }},{{ trans.lostate.id }},{{ trans.upstate.id }}
+{% endfor%}
