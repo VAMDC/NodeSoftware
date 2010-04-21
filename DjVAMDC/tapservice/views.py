@@ -20,6 +20,7 @@ class TAPQUERY(object):
             self.request=data['REQUEST']
             self.lang=data['LANG']
             self.query=data['QUERY']
+            self.format=data['FORMAT']
             self.valid=True
         except:
             self.valid=False
@@ -65,12 +66,18 @@ def sync(request):
         #print time()
         #print len(transs),len(states),len(sources)
         ts=time()
+
+
+        if tap.format=='xsams': template='vald/valdxsams.xml'
+        elif tap.format='csv': template='vald/valdtable.csv'
+        else: template='index.html'
+
         c=RequestContext(request,{'transitions':transs,
                                   'sources':sources,
                                   'states':states,
                                   'species':species,
                                   })
-        t=loader.get_template('vald/valdxsams.xml')
+        t=loader.get_template(template)
         r=t.render(c)
         print 'run time:',time()-ts
         return HttpResponse(r)
