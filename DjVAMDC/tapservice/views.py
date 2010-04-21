@@ -68,8 +68,8 @@ def sync(request):
         ts=time()
 
 
-        if tap.format=='xsams': template='vald/valdxsams.xml'
-        elif tap.format='csv': template='vald/valdtable.csv'
+        if tap.format.lower()=='xsams': template='vald/valdxsams.xml'
+        elif tap.format.lower()=='csv': template='vald/valdtable.csv'
         else: template='index.html'
 
         c=RequestContext(request,{'transitions':transs,

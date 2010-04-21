@@ -6,7 +6,7 @@
 <Source sourceID="S-{{ source.id }}">
 <Authors>
 <Author>
-<Name>{{ source.srcdescr }}</Name>
+<Name>{{ source.srcdescr }}, List type: {{ source.listtype }}, Source file: {{ source.srcfile }}</Name>
 </Author>
 </Authors>
 <Category>journal</Category>
@@ -29,6 +29,10 @@
 <States>
 <Atoms>
 {% for state in states %}
+{{ state.id }},{{ state.species }},{{ state.energy }},{{ state.lande }},{{ state.coupling }},{{ state.term }},{{ state.energy_ref.id }},{{ state.lande_ref.id }},{{ state.level_ref.id }},{{ state.j }},{{ state.l }},{{ state.s }},{{ state.p }},{{ state.j1 }},{{ state.j2 }},{{ state.k }},{{ state.s2 }},{{ state.jc }}
+
+{{ state.species.id }},{{ state.species.name }},{{ state.species.ion }},{{ state.species.mass }},{{ state.species.ionen }},{{ state.species.solariso }},{{ state.species.ncomp }},{{ state.species.atomic }}
+
 <Atom>
 <NuclearCharge>1</NuclearCharge>
 <Isotope>
@@ -69,8 +73,10 @@
 </States>
 
 <Processes>
+
 <Radiative>
 {% for trans in transitions %}
+{{ trans.vacwave }},{{ trans.airwave }},{{ trans.species.id }},{{ trans.loggf }},{{ trans.landeff }},{{ trans.gammarad }},{{ trans.gammastark }},{{ trans.gammawaals }},{{ trans.srctag }},{{ trans.acflag }},{{ trans.accur }},{{ trans.wave_ref.id }},{{ trans.loggf_ref.id }},{{ trans.lande_ref.id }},{{ trans.gammarad_ref.id }},{{ trans.gammastark_ref.id }},{{ trans.gammawaals_ref.id }},{{ trans.lostate.id }},{{ trans.upstate.id }}
 <RadiativeTransition methodRef="MEXP" sourceRef="S-{{ trans.wave_ref.id }}">
 <EnergyWavelength>
 <Wavelength>
