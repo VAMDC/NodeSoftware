@@ -53,20 +53,32 @@ def sync(request):
             exec('mq=Q(%s="%s")'%(field+op,value))
             qlist.append(mq)
             qtup=tuple(qlist)
-            
+        
+        ts=time()
+
         transs=Transitions.objects.filter(*qtup)
+        print 'transitions set up',time()-ts
+        
         lostates=States.objects.filter(islowerstate_trans__in=transs)
         histates=States.objects.filter(islowerstate_trans__in=transs)
         states = lostates | histates
         states = states.distinct()
-        sources=Sources.objects.filter(iswaveref_trans__in=transs).distinct()
-        species=Species.objects.filter(isspecies_trans__in=transs).distinct()
-        #states=States.objects.filter(islowerstate_trans__vacwave__lt=wavebord).distinct()
-        #sources=Sources.objects.filter(iswaveref_trans__vacwave__lt=wavebord).distinct()
-        #print time()
-        #print len(transs),len(states),len(sources)
-        ts=time()
-
+        print 'states set up',time()-ts
+        
+        waverefs=Q(iswaveref_trans__in=transs)
+        landerefs=Q(islanderef_trans__in=transs)
+        loggfrefs=Q(isloggfref_trans__in=transs)
+        g1refs=Q(isgammaradref_trans__in=transs)
+        g2refs=Q(isgammastarkref_trans__in=transs)
+        g3refs=Q(isgammawaalsref_trans__in=transs)
+        refQ= waverefs | landerefs | loggfrefs | g1refs | g2refs | g3refs
+        sources=Sources.objects.filter(refQ).distinct()
+        print 'sources set up',time()-ts
+        
+        
+        print len(transs),len(states),len(sources)
+        print 'len() called',time()-ts
+        
 
         if tap.format.lower()=='xsams': template='vald/valdxsams.xml'
         elif tap.format.lower()=='csv': template='vald/valdtable.csv'
@@ -78,8 +90,9 @@ def sync(request):
                                   'species':species,
                                   })
         t=loader.get_template(template)
+        print 'starting render',time()-ts
         r=t.render(c)
-        print 'run time:',time()-ts
+        print 'render ended:',time()-ts
         return HttpResponse(r)
         #return render_to_response('vald/valdxsams.xml', c) # shortcut
     else:

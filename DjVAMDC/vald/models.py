@@ -82,7 +82,7 @@ class Transitions(models.Model):
     lande_ref = models.ForeignKey(Sources,db_column=u'lande_ref',related_name='islanderef_trans')
     gammarad_ref = models.ForeignKey(Sources,db_column=u'gammarad_ref',related_name='isgammaradref_trans')
     gammastark_ref = models.ForeignKey(Sources,db_column=u'gammastark_ref',related_name='isgammastarkref_trans')
-    gammawaals_ref = models.ForeignKey(Sources,db_column=u'gammawaals_ref',related_name='isgammawallsref_trans')
+    gammawaals_ref = models.ForeignKey(Sources,db_column=u'gammawaals_ref',related_name='isgammawaalsref_trans')
     upstate = models.ForeignKey(States,related_name='isupperstate_trans',db_column='upstate', db_index=True)
     lostate = models.ForeignKey(States,related_name='islowerstate_trans',db_column='lostate', db_index=True)
     class Meta:
