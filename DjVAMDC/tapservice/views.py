@@ -210,9 +210,6 @@ def sync(request):
                               'sources':sources,
                               'states':states,
                               })
-    print 'starting single render',time()-ts
-    rendered=SingleRender(c,tap.format)
-    print 'single render ended:',time()-ts
     print 'starting multi render',time()-ts
     rendered=MultiRender(c,tap.format)
     print 'multi render ended:',time()-ts
