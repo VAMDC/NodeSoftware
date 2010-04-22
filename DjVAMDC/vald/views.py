@@ -22,17 +22,33 @@ def stateterm2xsams(state):
     if not (state.term and state.coupling): return ''
     
     result='<AtomicComposition><Component><Configuration>'
-    result+='<ConfigurationLabel>%s</ConfigurationLabel></Configuration>'%state.term
+    result+='<ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%state.term
     result+='<Term><Comments>Term reference: S-%s</Comments>'%state.level_ref
-    if state.coupling == "LS": result+='<LS><L><Value>%f</Value></L><S>%f</S></LS>'%( state.l,state.s)
-    elif state.coupling == "JK": result+='<jK><j>%f</j><K> %f</K></jK>'%(state.s2 ,state.k)
-    elif state.coupling == "JJ": result+='<J1J2><j>%f<j></j>%f</j></J1J2>'%(state.j1, state.j2 )
+    if state.coupling == "LS": 
+        result+='<LS>'
+        if state.l: '<L><Value>%f</Value></L>'%state.l
+        if state.s: '<S>%f</S>'%state.s
+        result+='</LS>'
+        
+    elif state.coupling == "JK": 
+        result+='<jK>'
+        if state.s2: '<j>%f</j>'%state.s2
+        if state.k: '<K> %f</K>'%state.k
+        result+='</jK>'
+        
+    elif state.coupling == "JJ":
+        result+='<J1J2>'
+        if state.j1: '<j>%f</j>'%state.j1
+        if state.j2: '<j>%f</j>'%state.j2
+        result+='</J1J2>'
+        
     result+='</Term></Component></AtomicComposition>'
     return result
 
 
 def states2xsams(states):
     for state in states:
+        mass = int(round(state.species.mass))
         yield """<Atom>
 <ChemicalElement>
 <NuclearCharge>%d</NuclearCharge>
@@ -44,17 +60,19 @@ def states2xsams(states):
 </IsotopeParameters>
 <IonState>
 <IonCharge>%d</IonCharge>
-<AtomicState stateID="S-%s">
-<Description></Description>
+<AtomicState stateID="S-%s"><Description>%s</Description>
 <AtomicNumericalData>
 <StateEnergy><Value units="1/cm" sourceRef="S-%d">%f</Value></StateEnergy>
 <IonizationEnergy><Value units="eV">%f</Value></IonizationEnergy>
 <LandeFactor><Value units="unitless" sourceRef="S-%d">%f</Value><LandeFactor/>
 </AtomicNumericalData>
-<AtomicQuantumNumbers>
-<Parity>%s</Parity>
-<TotalAngularMomentum>%f</TotalAngularMomentum>
-</AtomicQuantumNumbers>"""%( state.species.atomic , state.species.name , round(state.species.mass) , state.species.ion , state.id , state.id , state.energy_ref , state.energy , state.species.ionen , state.lande_ref , state.lande , 'odd 'if (state.p%2) else 'even', state.j )
+"""%( state.species.atomic , state.species.name , mass , state.species.ion , state.id , state.id , state.energy_ref.id , state.energy , state.species.ionen , state.lande_ref.id , state.lande)
+
+        if (state.p or state.j):
+            yield "<AtomicQuantumNumbers>"
+            if state.p: '<Parity>%s</Parity>'%('odd' if state.p%2 else 'even')
+            if state.j: '<TotalAngularMomentum>%f</TotalAngularMomentum>'%state.j
+            yield "</AtomicQuantumNumbers>"
 
         yield stateterm2xsams(state)
         yield """</AtomicState>
@@ -84,7 +102,7 @@ gamma_waals: %f (Ref S-%d)
 <InitialStateRef>S-%s</InitialStateRef>
 <FinalStateRef>S-%s</FinalStateRef>
 <Probability>
-<Log10WeightedOscillatorStrength sourceRef="S-%d"><Value units="unitless">%d</Value></Log10WeightedOscillatorStrength>
+<Log10WeightedOscillatorStrength sourceRef="S-%d"><Value units="unitless">%f</Value></Log10WeightedOscillatorStrength>
 <Probability>
 </RadiativeTransition>"""%( trans.landeff , trans.lande_ref , trans.gammarad , trans.gammarad_ref , trans.gammastark , trans.gammastark_ref , trans.gammawaals , trans.gammawaals_ref , trans.wave_ref , trans.vacwave , trans.airwave , trans.acflag , trans.accur , trans.upstate , trans.lostate , trans.loggf_ref , trans.loggf )
 
@@ -104,7 +122,7 @@ def vald2xsams(transitions,states,sources):
 
 <States>
 <Atoms>"""
-    #for state in states2xsams(transitions): yield state
+    for state in states2xsams(states): yield state
     yield '</Atoms></States><Processes><Radiative>'
     for trans in transitions2xsams(transitions): yield trans
     yield '</Radiative><Processes/></XSAMSData>'

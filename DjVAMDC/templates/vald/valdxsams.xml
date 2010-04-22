@@ -71,7 +71,7 @@
 <Comments>Term reference: S-{{ state.level_ref }}</Comments>
 {% if state.coupling == "LS" %}<LS><L><Value>{{ state.l }}</Value></L><S>{{ state.s }}</S></LS>{% endif %}
 {% if state.coupling == "JK" %}<jK><j>{{ state.s2 }}</j><K>{{ state.k }}</K></jK>{% endif %}
-{% if state.coupling == "JJ" %}<J1J2><j>{{ state.j1 }}<j></j>{{ state.j2 }}</j></J1J2>{% endif %}
+{% if state.coupling == "JJ" %}<J1J2><j>{{ state.j1 }}</j><j>{{ state.j2 }}</j></J1J2>{% endif %}
 </Term>
 </Component>
 </AtomicComposition>

@@ -118,11 +118,9 @@ def MyRender(format,transs,states,sources):
         rend=''   
     return rend
 
-def renderedResponse(transs,states,sources):
-    print 'starting rendering',time()-ts
+def renderedResponse(transs,states,sources,tap):
     rendered=MyRender(tap.format,transs,states,sources)
-    print 'multi render ended:',time()-ts
-
+    
     zbuf = StringIO()
     zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
     zfile.write(rendered)
@@ -132,6 +130,7 @@ def renderedResponse(transs,states,sources):
     response['Content-Encoding'] = 'gzip'
     response['Content-Length'] = str(len(compressed_content))
     response['Content-Disposition'] = 'attachment; filename=%s.%s.gz'%(tap.queryid,tap.format)
+    return response
     
 
 def sync(request):
@@ -145,15 +144,15 @@ def sync(request):
     ts=time()
 
     transs=Transition.objects.filter(*qtup).order_by('vacwave')
-    #print '%d transitions set up'%len(transs),time()-ts
+    print '%d transitions set up'%len(transs),time()-ts
     
     states = getVALDstates2(transs)
-    #print '%d states set up'%len(states),time()-ts
+    print '%d states set up'%len(states),time()-ts
     
     sources=getVALDsources5(transs)
-    #print '%d sources set up'%len(sources),time()-ts
+    print '%d sources set up'%len(sources),time()-ts
        
-    #response = renderedResponse(transs,states,sources)
+    #response = renderedResponse(transs,states,sources,tap)
     response=HttpResponse(vald2xsams(transs,states,sources))
     response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     return response
