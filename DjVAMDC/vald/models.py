@@ -110,8 +110,8 @@ class Transition(models.Model):
 
     upstate = models.ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True)
     lostate = models.ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True)
-    #upstate = models.CharField(max_length=128,null=True)
-    #lostate = models.CharField(max_length=128,null=True)
+    upstateid = models.CharField(max_length=128,null=True)
+    lostateid = models.CharField(max_length=128,null=True)
     def __unicode__(self):
         return u'%d'%self.id
     class Meta:

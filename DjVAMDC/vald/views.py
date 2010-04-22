@@ -99,7 +99,8 @@ def states2xsams(states):
 
 def transitions2xsams(transitions):
     for trans in transitions:
-        yield """<RadiativeTransition methodRef="MEXP">
+        yield """
+<RadiativeTransition methodRef="MEXP">
 <Comments>Effective Lande factor and broadening gammas: 
 lande_eff: %f (Ref S-%d)
 gamma_rad: %f (Ref S-%d)
@@ -116,8 +117,9 @@ gamma_waals: %f (Ref S-%d)
 </Experimental>
 </Wavelength>
 </EnergyWavelength>"""%( trans.landeff , trans.lande_ref , trans.gammarad , trans.gammarad_ref , trans.gammastark , trans.gammastark_ref , trans.gammawaals , trans.gammawaals_ref , trans.wave_ref , trans.vacwave , trans.airwave , trans.acflag , trans.accur )
-        if trans.upstate: yield '<InitialStateRef>S-%s</InitialStateRef>'%trans.upstate.id
-        if trans.lostate: yield '<FinalStateRef>S-%s</FinalStateRef>'%trans.lostate.id 
+
+        if trans.upstateid: yield '<InitialStateRef>S-%s</InitialStateRef>'%trans.upstateid
+        if trans.lostateid: yield '<FinalStateRef>S-%s</FinalStateRef>'%trans.lostateid
         if trans.loggf: yield """<Probability>
 <Log10WeightedOscillatorStrength sourceRef="S-%d"><Value units="unitless">%f</Value></Log10WeightedOscillatorStrength>
 </Probability>
@@ -143,7 +145,7 @@ def vald2xsams(transitions,states,sources):
     for state in states2xsams(states): yield state
     yield '</Atoms></States><Processes><Radiative>'
     for trans in transitions2xsams(transitions): yield trans
-    yield '</Radiative><Processes/></XSAMSData>'
+    yield '</Radiative><Processes/>\n</XSAMSData>\n'
 
 
 
