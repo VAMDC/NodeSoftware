@@ -78,6 +78,8 @@ class RenderThread(threading.Thread):
         
 
 def RenderXSAMSmulti(format,transs,states,sources):
+    # this turned out to be inefficient
+    # due to large overhead of python threads
     n=int(transs.count()/3)
     trans1=transs[:n]
     trans2=transs[n:2*n]
@@ -101,12 +103,8 @@ def RenderXSAMSmulti(format,transs,states,sources):
 
 def RenderXSAMSsingle(format,transs,states,sources):
     c=Context({'transitions':transs,'sources':sources,'states':states,})
-    t1=loader.get_template('vald/valdxsams_p1.xml')
-    t2=loader.get_template('vald/valdxsams_p2.xml')
-    r1=t1.render(c)
-    r2=t2.render(c)
-    rend=r1+r2+ u'\n</XSAMSData>'
-    return rend
+    t=loader.get_template('vald/valdxsams.xml')
+    return t.render(c)
 
 
 def MyRender(format,transs,states,sources):
@@ -120,6 +118,21 @@ def MyRender(format,transs,states,sources):
         rend=''   
     return rend
 
+def renderedResponse(transs,states,sources):
+    print 'starting rendering',time()-ts
+    rendered=MyRender(tap.format,transs,states,sources)
+    print 'multi render ended:',time()-ts
+
+    zbuf = StringIO()
+    zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
+    zfile.write(rendered)
+    zfile.close()
+    compressed_content = zbuf.getvalue()
+    response = HttpResponse(compressed_content,mimetype='application/x-gzip')
+    response['Content-Encoding'] = 'gzip'
+    response['Content-Length'] = str(len(compressed_content))
+    response['Content-Disposition'] = 'attachment; filename=%s.%s.gz'%(tap.queryid,tap.format)
+    
 
 def sync(request):
     tap=TAPQUERY(request.REQUEST)
@@ -140,23 +153,11 @@ def sync(request):
     sources=getVALDsources5(transs)
     #print '%d sources set up'%len(sources),time()-ts
        
-
-    print 'starting rendering',time()-ts
-    rendered=MyRender(tap.format,transs,states,sources)
-    print 'multi render ended:',time()-ts
-
-    zbuf = StringIO()
-    zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
-    zfile.write(rendered)
-    zfile.close()
-    compressed_content = zbuf.getvalue()
-    response = HttpResponse(compressed_content,mimetype='application/x-gzip')
-    response['Content-Encoding'] = 'gzip'
-    response['Content-Length'] = str(len(compressed_content))
-    response['Content-Disposition'] = 'attachment; filename=%s.%s.gz'%(tap.queryid,tap.format)
+    #response = renderedResponse(transs,states,sources)
+    response=HttpResponse(vald2xsams(transs,states,sources))
+    response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     return response
-        #return render_to_response('vald/valdxsams.xml', c) # shortcut
-
+     
 def async(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)

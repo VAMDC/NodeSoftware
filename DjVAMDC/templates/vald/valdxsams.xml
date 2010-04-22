@@ -44,7 +44,7 @@
 <Description>{{ state.id }}</Description>
 <AtomicNumericalData>
 {% if state.energy %}
-<StateEnergy><Value units="1/cm" sourceRef="S-{{ state.energy_ref.id }}">{{ state.energy }}</Value></StateEnergy>
+<StateEnergy><Value units="1/cm" sourceRef="S-{{ state.energy_ref }}">{{ state.energy }}</Value></StateEnergy>
 {% endif %}
 {% if state.species.ionen %}
 <IonizationEnergy><Value units="eV">{{ state.species.ionen }}</Value></IonizationEnergy>
@@ -104,12 +104,9 @@ gamma_waals: {{ trans.gammawaals }} (Ref S-{{ trans.gammawaals_ref }})
 </Experimental>
 </Wavelength>
 </EnergyWavelength>
-{% if trans.upstate %}<InitialStateRef>S-{{ trans.upstate }}</InitialStateRef>{% endif %}
-{% if trans.lostate %}<FinalStateRef>S-{{ trans.lostate }}</FinalStateRef>{% endif %}
+<InitialStateRef>S-{{ trans.upstate }}</InitialStateRef><FinalStateRef>S-{{ trans.lostate }}</FinalStateRef>
 <Probability>
-<Log10WeightedOscillatorStrength sourceRef="S-{{ trans.loggf_ref }}">
-<Value units="unitless">{{ trans.loggf }}</Value>
-</Log10WeightedOscillatorStrength>
+<Log10WeightedOscillatorStrength sourceRef="S-{{ trans.loggf_ref }}"><Value units="unitless">{{ trans.loggf }}</Value></Log10WeightedOscillatorStrength>
 <Probability>
 </RadiativeTransition>
 {% endfor%}

@@ -35,7 +35,7 @@ def makeValdUpperStateKey(line):
     coup=charrange(line,170,172)
     term=charrange(line,172,218)
     d=map(strip,(species,coup,term))
-    if not (d[1] and d[2]): return 'Unknown'
+    if not (d[1] and d[2]): return None
     return '%s-%s-%s'%tuple(d)
 
 def makeValdLowerStateKey(line):
@@ -44,7 +44,7 @@ def makeValdLowerStateKey(line):
     term=charrange(line,124,170)
     d=map(strip,(species,coup,term))
     #print d
-    if not (d[1] and d[2]): return 'Unknown'
+    if not (d[1] and d[2]): return None
     return '%s-%s-%s'%tuple(d)
 
 
@@ -201,14 +201,14 @@ vald3cfg={         # start dictionary
                  'ccom':'coupling, higher level',
                  'cunit':None,
                  'cbyte':(makeValdUpperStateKey,()),
-                 'cnull':'  ',
+                 'cnull':None,
                  'ctype':'VARCHAR(128)'},
                 {'cname':'lostate',
                  'cfmt':'s',
                  'ccom':'coupling, lower level',
                  'cunit':None,
                  'cbyte':(makeValdLowerStateKey,()),
-                 'cnull':'  ',
+                 'cnull':None,
                  'ctype':'VARCHAR(128)'},
                 ],
         },
