@@ -50,7 +50,7 @@
 <IonizationEnergy><Value units="eV">{{ state.species.ionen }}</Value></IonizationEnergy>
 {% endif %}
 {% if state.lande %}
-<LandeFactor><Value units="unitless" sourceRef="S-{{ state.lande_ref.id }}">{{ state.lande }}</Value><LandeFactor/>
+<LandeFactor><Value units="unitless" sourceRef="S-{{ state.lande_ref }}">{{ state.lande }}</Value><LandeFactor/>
 {% endif %}
 </AtomicNumericalData>
 
@@ -68,7 +68,7 @@
 <Component>
 <Configuration><ConfigurationLabel>{{ state.term }}</ConfigurationLabel></Configuration>
 <Term>
-<Comments>Term reference: S-{{ state.level_ref.id }}</Comments>
+<Comments>Term reference: S-{{ state.level_ref }}</Comments>
 {% if state.coupling == "LS" %}<LS><L><Value>{{ state.l }}</Value></L><S>{{ state.s }}</S></LS>{% endif %}
 {% if state.coupling == "JK" %}<jK><j>{{ state.s2 }}</j><K>{{ state.k }}</K></jK>{% endif %}
 {% if state.coupling == "JJ" %}<J1J2><j>{{ state.j1 }}<j></j>{{ state.j2 }}</j></J1J2>{% endif %}
@@ -89,14 +89,14 @@
 {% for trans in transitions %}
 <RadiativeTransition methodRef="MEXP">
 <Comments>Effective Lande factor and broadening gammas: 
-lande_eff: {{ trans.landeff }} (Ref S-{{ trans.lande_ref.id }})
-gamma_rad: {{ trans.gammarad }} (Ref S-{{ trans.gammarad_ref.id }})
-gamma_stark: {{ trans.gammastark }} (Ref S-{{ trans.gammastark_ref.id }})
-gamma_waals: {{ trans.gammawaals }} (Ref S-{{ trans.gammawaals_ref.id }})
+lande_eff: {{ trans.landeff }} (Ref S-{{ trans.lande_ref }})
+gamma_rad: {{ trans.gammarad }} (Ref S-{{ trans.gammarad_ref }})
+gamma_stark: {{ trans.gammastark }} (Ref S-{{ trans.gammastark_ref }})
+gamma_waals: {{ trans.gammawaals }} (Ref S-{{ trans.gammawaals_ref }})
 </Comments>
 <EnergyWavelength>
 <Wavelength>
-<Experimental sourceRef="S-{{ trans.wave_ref.id }}">
+<Experimental sourceRef="S-{{ trans.wave_ref }}">
 <Comments>Wavelength in vaccuum (first) and air.</Comments>
 <Value units="1/cm">{{ trans.vacwave }}</Value>
 <Value units="1/cm">{{ trans.airwave }}</Value>
@@ -104,10 +104,10 @@ gamma_waals: {{ trans.gammawaals }} (Ref S-{{ trans.gammawaals_ref.id }})
 </Experimental>
 </Wavelength>
 </EnergyWavelength>
-{% if trans.upstate %}<InitialStateRef>S-{{ trans.upstate.id }}</InitialStateRef>{% endif %}
-{% if trans.lostate %}<FinalStateRef>S-{{ trans.lostate.id }}</FinalStateRef>{% endif %}
+{% if trans.upstate %}<InitialStateRef>S-{{ trans.upstate }}</InitialStateRef>{% endif %}
+{% if trans.lostate %}<FinalStateRef>S-{{ trans.lostate }}</FinalStateRef>{% endif %}
 <Probability>
-<Log10WeightedOscillatorStrength sourceRef="S-{{ trans.loggf_ref.id }}">
+<Log10WeightedOscillatorStrength sourceRef="S-{{ trans.loggf_ref }}">
 <Value units="unitless">{{ trans.loggf }}</Value>
 </Log10WeightedOscillatorStrength>
 <Probability>

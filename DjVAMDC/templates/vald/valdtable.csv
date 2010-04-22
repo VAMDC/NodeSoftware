@@ -1,12 +1,12 @@
 Sources:
-{% for source  in sources %}{{ source.id }},{{ source.srcfile }},{{ source.listtype }},{{ source.srcdescr }}
+{% for source  in sources %}{{ source }},{{ source.srcfile }},{{ source.listtype }},{{ source.srcdescr }}
 {% endfor  %}
 
 
 States:
-{% for state in states %}{{ state.id }},{{ state.species.id }},{{ state.energy }},{{ state.lande }},{{ state.coupling }},{{ state.term }},{{ state.energy_ref.id }},{{ state.lande_ref.id }},{{ state.level_ref.id }},{{ state.j }},{{ state.l }},{{ state.s }},{{ state.p }},{{ state.j1 }},{{ state.j2 }},{{ state.k }},{{ state.s2 }},{{ state.jc }},{{state.species.name}},{{state.species.atomic}},{{state.species.ion}},{{state.species.ionen}},{{state.species.mass}}
+{% for state in states %}{{ state }},{{ state.species }},{{ state.energy }},{{ state.lande }},{{ state.coupling }},{{ state.term }},{{ state.energy_ref }},{{ state.lande_ref }},{{ state.level_ref }},{{ state.j }},{{ state.l }},{{ state.s }},{{ state.p }},{{ state.j1 }},{{ state.j2 }},{{ state.k }},{{ state.s2 }},{{ state.jc }},{{state.species.name}},{{state.species.atomic}},{{state.species.ion}},{{state.species.ionen}},{{state.species.mass}}
 {% endfor %}
 
 Transitions:
-{% for trans in transitions %}{{ trans.vacwave }},{{ trans.airwave }},{{ trans.species.id }},{{ trans.loggf }},{{ trans.landeff }},{{ trans.gammarad }},{{ trans.gammastark }},{{ trans.gammawaals }},{{ trans.srctag }},{{ trans.acflag }},{{ trans.accur }},{{ trans.wave_ref.id }},{{ trans.loggf_ref.id }},{{ trans.lande_ref.id }},{{ trans.gammarad_ref.id }},{{ trans.gammastark_ref.id }},{{ trans.gammawaals_ref.id }},{{ trans.lostate.id }},{{ trans.upstate.id }}
+{% for trans in transitions %}{{ trans.vacwave }},{{ trans.airwave }},{{ trans.species }},{{ trans.loggf }},{{ trans.landeff }},{{ trans.gammarad }},{{ trans.gammastark }},{{ trans.gammawaals }},{{ trans.srctag }},{{ trans.acflag }},{{ trans.accur }},{{ trans.wave_ref }},{{ trans.loggf_ref }},{{ trans.lande_ref }},{{ trans.gammarad_ref }},{{ trans.gammastark_ref }},{{ trans.gammawaals_ref }},{{ trans.lostate }},{{ trans.upstate }}
 {% endfor%}

@@ -1,8 +1,8 @@
-from DjVAMDC.vald.models import Species,Transitions,States,Sources
+from DjVAMDC.vald.models import Species,Transition,State,Source
 from django.contrib import admin
 
 
 admin.site.register(Species)
-admin.site.register(States)
-admin.site.register(Transitions)
-admin.site.register(Sources)
+admin.site.register(State)
+admin.site.register(Transition)
+admin.site.register(Source)
