@@ -1,7 +1,23 @@
-from DjVAMDC.node.views import *
 from DjVAMDC.vald.models import Transition,State,Source,Species
-import cStringIO, gzip
 from django.db.models import Q
+
+
+
+def getVALDsources(transs):
+    sids=set([])
+    for trans in transs:
+        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
+        sids=sids.union(s)
+    return Source.objects.filter(pk__in=sids)
+
+def getVALDstates(transs):
+    #lostates=State.objects.filter(islowerstate_trans__in=transs)
+    #histates=State.objects.filter(islowerstate_trans__in=transs)
+    #states = lostates | histates
+    q1,q2=Q(islowerstate_trans__in=transs),Q(islowerstate_trans__in=transs)
+    return State.objects.filter(q1|q2).distinct()
+
+
 
 def sources2xsams(sources):
     for source in sources:
@@ -67,7 +83,7 @@ def states2xsams(states):
 <IonizationEnergy><Value units="eV">%f</Value></IonizationEnergy>
 <LandeFactor><Value units="unitless" sourceRef="S-%d">%f</Value><LandeFactor/>
 </AtomicNumericalData>
-"""%( state.species.atomic , state.species.name , mass , state.species.ion , state.id , state.id , state.energy_ref.id , state.energy , state.species.ionen , state.lande_ref.id , state.lande)
+"""%( state.species.atomic , state.species.name , mass , state.species.ion , state.id , state.id , state.energy_ref , state.energy , state.species.ionen , state.lande_ref , state.lande)
 
         if (state.p or state.j):
             yield "<AtomicQuantumNumbers>"
@@ -99,13 +115,14 @@ gamma_waals: %f (Ref S-%d)
 <Accuracy>Flag: %s, Value: %s</Accuracy>
 </Experimental>
 </Wavelength>
-</EnergyWavelength>
-<InitialStateRef>S-%s</InitialStateRef>
-<FinalStateRef>S-%s</FinalStateRef>
-<Probability>
+</EnergyWavelength>"""%( trans.landeff , trans.lande_ref , trans.gammarad , trans.gammarad_ref , trans.gammastark , trans.gammastark_ref , trans.gammawaals , trans.gammawaals_ref , trans.wave_ref , trans.vacwave , trans.airwave , trans.acflag , trans.accur )
+        if trans.upstate: yield '<InitialStateRef>S-%s</InitialStateRef>'%trans.upstate.id
+        if trans.lostate: yield '<FinalStateRef>S-%s</FinalStateRef>'%trans.lostate.id 
+        if trans.loggf: yield """<Probability>
 <Log10WeightedOscillatorStrength sourceRef="S-%d"><Value units="unitless">%f</Value></Log10WeightedOscillatorStrength>
-<Probability>
-</RadiativeTransition>"""%( trans.landeff , trans.lande_ref , trans.gammarad , trans.gammarad_ref , trans.gammastark , trans.gammastark_ref , trans.gammawaals , trans.gammawaals_ref , trans.wave_ref , trans.vacwave , trans.airwave , trans.acflag , trans.accur , trans.upstate.id , trans.lostate.id , trans.loggf_ref , trans.loggf )
+</Probability>
+</RadiativeTransition>"""%(trans.loggf_ref,trans.loggf)
+
 
 def vald2xsams(transitions,states,sources):
     yield """<?xml version="1.0" encoding="UTF-8"?>
@@ -127,22 +144,6 @@ def vald2xsams(transitions,states,sources):
     yield '</Atoms></States><Processes><Radiative>'
     for trans in transitions2xsams(transitions): yield trans
     yield '</Radiative><Processes/></XSAMSData>'
-
-
-def getVALDsources(transs):
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
-        sids=sids.union(s)
-    
-    return Source.objects.filter(pk__in=sids)
-
-def getVALDstates(transs):
-    lostates=State.objects.filter(islowerstate_trans__in=transs)
-    histates=State.objects.filter(islowerstate_trans__in=transs)
-    states = lostates | histates
-    #return []
-    return states.distinct()
 
 
 
