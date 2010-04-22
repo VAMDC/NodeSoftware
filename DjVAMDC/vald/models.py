@@ -75,7 +75,7 @@ class State(models.Model):
     s2 = models.FloatField(db_column=u'S2', null=True,blank=True)
     jc = models.FloatField(db_column=u'Jc', null=True,blank=True)
     def __unicode__(self):
-        return u'%s'%self.id
+        return self.id.encode('utf8')
     class Meta:
         db_table = u'states'
         verbose_name = _('State')
@@ -101,16 +101,17 @@ class Transition(models.Model):
     #gammarad_ref = models.ForeignKey(Source,db_column=u'gammarad_ref',related_name='isgammaradref_trans')
     #gammastark_ref = models.ForeignKey(Source,db_column=u'gammastark_ref',related_name='isgammastarkref_trans')
     #gammawaals_ref = models.ForeignKey(Source,db_column=u'gammawaals_ref',related_name='isgammawaalsref_trans')
-    #upstate = models.ForeignKey(State,related_name='isupperstate_trans',db_column='upstate')
-    #lostate = models.ForeignKey(State,related_name='islowerstate_trans',db_column='lostate')
     wave_ref = models.PositiveSmallIntegerField()
     loggf_ref = models.PositiveSmallIntegerField()
     lande_ref = models.PositiveSmallIntegerField()
     gammarad_ref = models.PositiveSmallIntegerField()
     gammastark_ref = models.PositiveSmallIntegerField()
     gammawaals_ref = models.PositiveSmallIntegerField()
-    upstate = models.CharField(max_length=128)
-    lostate = models.CharField(max_length=128)
+
+    upstate = models.ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True)
+    lostate = models.ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True)
+    #upstate = models.CharField(max_length=128,null=True)
+    #lostate = models.CharField(max_length=128,null=True)
     def __unicode__(self):
         return u'%d'%self.id
     class Meta:

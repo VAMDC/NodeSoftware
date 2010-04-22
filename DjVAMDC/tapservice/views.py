@@ -143,15 +143,15 @@ def sync(request):
     
     ts=time()
 
-    transs=Transition.objects.filter(*qtup).order_by('vacwave')
-    print '%d transitions set up'%len(transs),time()-ts
+    transs = Transition.objects.filter(*qtup).order_by('vacwave')
+    #print '%d transitions set up'%len(transs),time()-ts
     
-    states = getVALDstates2(transs)
-    print '%d states set up'%len(states),time()-ts
-    
-    sources=getVALDsources5(transs)
-    print '%d sources set up'%len(sources),time()-ts
+    sources = getVALDsources(transs)
+    #print '%d sources set up'%len(sources),time()-ts
        
+    states = getVALDstates(transs)
+    #print '%d states set up'%len(states),time()-ts
+    
     #response = renderedResponse(transs,states,sources,tap)
     response=HttpResponse(vald2xsams(transs,states,sources),mimetype='application/xml')
     response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
