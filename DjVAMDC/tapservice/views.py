@@ -197,13 +197,13 @@ def sync(request):
     ts=time()
 
     transs=Transition.objects.filter(*qtup)
-    print '%d transitions set up'%len(transs),time()-ts
+    #print '%d transitions set up'%len(transs),time()-ts
     
     states = getVALDstates2(transs)
-    print '%d states set up'%len(states),time()-ts
+    #print '%d states set up'%len(states),time()-ts
     
     sources=getVALDsources5(transs)
-    print '%d sources set up'%len(sources),time()-ts
+    #print '%d sources set up'%len(sources),time()-ts
        
 
     c=RequestContext(request,{'transitions':transs,
