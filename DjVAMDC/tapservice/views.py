@@ -153,7 +153,7 @@ def sync(request):
     print '%d sources set up'%len(sources),time()-ts
        
     #response = renderedResponse(transs,states,sources,tap)
-    response=HttpResponse(vald2xsams(transs,states,sources))
+    response=HttpResponse(vald2xsams(transs,states,sources),mimetype='application/xml')
     response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     return response
      
