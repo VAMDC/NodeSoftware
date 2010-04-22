@@ -1,5 +1,5 @@
 from django.shortcuts import render_to_response,get_object_or_404
-from django.template import RequestContext, loader
+from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 
@@ -147,43 +147,48 @@ class RenderThread(threading.Thread):
         self.r=self.t.render(self.c)
         
 
-def MultiRender(context,format='xsams'):
+def MyRender(format,transs,states,sources):
     if format.lower()=='xsams':
-        t1=loader.get_template('vald/valdxsams_p1.xml')
-        t2=loader.get_template('vald/valdxsams_p2.xml')
-        t3=loader.get_template('vald/valdxsams_p3.xml')
-        th1=RenderThread(t1,context)
-        th2=RenderThread(t2,context)
-        th3=RenderThread(t3,context)
-        th1.start()
-        th2.start()
-        th3.start()
-        th1.join()
-        th2.join()
-        th3.join()
-        rend=th1.r + th2.r + th3.r
+        rend=MultiRender(format,transs,states,sources)
     elif format.lower()=='csv': 
         t=loader.get_template('vald/valdtable.csv')
-        rend=t.render(context)
+        c=Context({'transitions':transs,'sources':sources,'states':states,})
+        rend=t.render(c)
     else: 
         rend=''   
     return rend
 
-def SingleRender(context,format='xsams'):
-    if format.lower()=='xsams':
-        t1=loader.get_template('vald/valdxsams_p1.xml')
-        t2=loader.get_template('vald/valdxsams_p2.xml')
-        t3=loader.get_template('vald/valdxsams_p3.xml')
-        r1=t1.render(context)
-        r2=t2.render(context)
-        r3=t3.render(context)
-        rend=r1+r2+r3
 
-    elif format.lower()=='csv': 
-        t=loader.get_template('vald/valdtable.csv')
-        rend=t.render(context)
-    else: 
-        rend=''   
+def MultiRender(format,transs,states,sources):
+    n=int(transs.count()/3)
+    trans1=transs[:n]
+    trans2=transs[n:2*n]
+    trans3=transs[2*n:]
+    t1=loader.get_template('vald/valdxsams_p1.xml')
+    t2=loader.get_template('vald/valdxsams_p2.xml')
+    th1=RenderThread(t1,Context({'sources':sources,'states':states,}))
+    th2=RenderThread(t2,Context({'transitions':trans1}))
+    th3=RenderThread(t2,Context({'transitions':trans2}))
+    th4=RenderThread(t2,Context({'transitions':trans3}))
+    th1.start()
+    th2.start()
+    th3.start()
+    th4.start()
+    th1.join()
+    th2.join()
+    th3.join()
+    th4.join()
+    rend=th1.r + th2.r + th3.r + th4.r + u'\n</XSAMSData>'
+    return rend
+
+def SingleRender(context,format):
+    t1=loader.get_template('vald/valdxsams_p1.xml')
+    t2=loader.get_template('vald/valdxsams_p2.xml')
+    t3=loader.get_template('vald/valdxsams_p3.xml')
+    r1=t1.render(context)
+    r2=t2.render(context)
+    r3=t3.render(context)
+    rend=r1+r2+r3
     return rend
 
 def sync(request):
@@ -206,12 +211,8 @@ def sync(request):
     #print '%d sources set up'%len(sources),time()-ts
        
 
-    c=RequestContext(request,{'transitions':transs,
-                              'sources':sources,
-                              'states':states,
-                              })
-    print 'starting multi render',time()-ts
-    rendered=MultiRender(c,tap.format)
+    print 'starting rendering',time()-ts
+    rendered=MyRender(tap.format,transs,states,sources)
     print 'multi render ended:',time()-ts
 
     zbuf = StringIO()
