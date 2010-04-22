@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Sources>
+{% for source  in sources %}
+<Source sourceID="S-{{ source.id }}">
+<Authors>
+<Author>
+<Name>{{ source.srcdescr }}, List type: {{ source.listtype }}, Source file: {{ source.srcfile }}</Name>
+</Author>
+</Authors>
+<Category>journal</Category>
+<Year>2222</Year>
+<SourceName>SomeJournal</SourceName>
+<Volume>666</Volume>
+<PageBegin>666</PageBegin>
+</Source>
+{% endfor %}
+</Sources>
+
+<Methods>
+<Method methodID="MEXP">
+<Category>measured</Category>
+<Description />
+</Method>
+</Methods>
+

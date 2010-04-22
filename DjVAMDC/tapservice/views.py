@@ -12,7 +12,7 @@ from datetime import date
 from string import lower
 import gzip
 from cStringIO import StringIO
-
+import threading
 import os, math
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
@@ -138,6 +138,53 @@ def getVALDstates2(transs):
         states.append(State.objects.get(pk=sid))
     return states
 
+class RenderThread(threading.Thread):
+    def __init__(self, t,c):
+        threading.Thread.__init__(self)
+        self.t = t
+        self.c = c
+    def run(self):
+        self.r=self.t.render(self.c)
+        
+
+def MultiRender(context,format='xsams'):
+    if format.lower()=='xsams':
+        t1=loader.get_template('vald/valdxsams_p1.xml')
+        t2=loader.get_template('vald/valdxsams_p2.xml')
+        t3=loader.get_template('vald/valdxsams_p3.xml')
+        th1=RenderThread(t1,context)
+        th2=RenderThread(t2,context)
+        th3=RenderThread(t3,context)
+        th1.start()
+        th2.start()
+        th3.start()
+        th1.join()
+        th2.join()
+        th3.join()
+        rend=th1.r + th2.r + th3.r
+    elif format.lower()=='csv': 
+        t=loader.get_template('vald/valdtable.csv')
+        rend=t.render(context)
+    else: 
+        rend=''   
+    return rend
+
+def SingleRender(context,format='xsams'):
+    if format.lower()=='xsams':
+        t1=loader.get_template('vald/valdxsams_p1.xml')
+        t2=loader.get_template('vald/valdxsams_p2.xml')
+        t3=loader.get_template('vald/valdxsams_p3.xml')
+        r1=t1.render(context)
+        r2=t2.render(context)
+        r3=t3.render(context)
+        rend=r1+r2+r3
+
+    elif format.lower()=='csv': 
+        t=loader.get_template('vald/valdtable.csv')
+        rend=t.render(context)
+    else: 
+        rend=''   
+    return rend
 
 def sync(request):
     tap=TAPQUERY(request.REQUEST)
@@ -159,19 +206,16 @@ def sync(request):
     print '%d sources set up'%len(sources),time()-ts
        
 
-    if tap.format.lower()=='xsams': template='vald/valdxsams.xml'; suffix='.xml'
-    elif tap.format.lower()=='csv': template='vald/valdtable.csv'; suffix='.csv'
-    else: template='index.html'
-    
     c=RequestContext(request,{'transitions':transs,
                               'sources':sources,
                               'states':states,
                               })
-    templ=loader.get_template(template)
-    print 'starting render',time()-ts
-    rendered=templ.render(c)
-    print 'render ended:',time()-ts
-    
+    print 'starting single render',time()-ts
+    rendered=SingleRender(c,tap.format)
+    print 'single render ended:',time()-ts
+    print 'starting multi render',time()-ts
+    rendered=MultiRender(c,tap.format)
+    print 'multi render ended:',time()-ts
 
     zbuf = StringIO()
     zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
@@ -181,7 +225,7 @@ def sync(request):
     response = HttpResponse(compressed_content,mimetype='application/x-gzip')
     response['Content-Encoding'] = 'gzip'
     response['Content-Length'] = str(len(compressed_content))
-    response['Content-Disposition'] = 'attachment; filename=%s%s.gz'%(tap.queryid,suffix)
+    response['Content-Disposition'] = 'attachment; filename=%s%s.gz'%(tap.queryid,tap.format)
     return response
         #return render_to_response('vald/valdxsams.xml', c) # shortcut
 

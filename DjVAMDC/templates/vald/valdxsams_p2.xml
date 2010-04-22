@@ -1,0 +1,57 @@
+<States>
+<Atoms>
+{% for state in states %}
+<Atom>
+<ChemicalElement>
+<NuclearCharge>{{ state.species.atomic }}</NuclearCharge>
+<ElementSymbol>{{ state.species.name }}</ElementSymbol>
+</ChemicalElement>
+<Isotope>
+<IsotopeParameters>
+<MassNumber>{{ state.species.mass }}</MassNumber>
+</IsotopeParameters>
+<IonState>
+<IonCharge>{{ state.species.ion }}</IonCharge>
+<AtomicState stateID="S-{{ state.id }}">
+<Description>{{ state.id }}</Description>
+<AtomicNumericalData>
+{% if state.energy %}
+<StateEnergy><Value units="1/cm" sourceRef="S-{{ state.energy_ref.id }}">{{ state.energy }}</Value></StateEnergy>
+{% endif %}
+{% if state.species.ionen %}
+<IonizationEnergy><Value units="eV">{{ state.species.ionen }}</Value></IonizationEnergy>
+{% endif %}
+{% if state.lande %}
+<LandeFactor><Value units="unitless" sourceRef="S-{{ state.lande_ref }}">{{ state.lande }}</Value><LandeFactor/>
+{% endif %}
+</AtomicNumericalData>
+
+<AtomicQuantumNumbers>
+{% if state.p %}
+<Parity>{{ state.p }}</Parity>
+{% endif %}
+{% if state.j %}
+<TotalAngularMomentum>{{ state.j }}</TotalAngularMomentum>
+{% endif %}
+</AtomicQuantumNumbers>
+
+{% if state.coupling and state.term %}
+<AtomicComposition>
+<Component>
+<Configuration><ConfigurationLabel>{{ state.term }}</ConfigurationLabel></Configuration>
+<Term>
+<Comments>Term reference: S-{{ state.level_ref }}</Comments>
+{% if state.coupling == "LS" %}<LS><L><Value>{{ state.l }}</Value></L><S>{{ state.s }}</S></LS>{% endif %}
+{% if state.coupling == "JK" %}<jK><j>{{ state.s2 }}</j><K>{{ state.k }}</K></jK>{% endif %}
+{% if state.coupling == "JJ" %}<J1J2><j>{{ state.j1 }}<j></j>{{ state.j2 }}</j></J1J2>{% endif %}
+</Term>
+</Component>
+</AtomicComposition>
+{% endif %}
+</AtomicState>
+</IonState>
+</Isotope>
+</Atom>
+{% endfor %}
+</Atoms>
+</States>
