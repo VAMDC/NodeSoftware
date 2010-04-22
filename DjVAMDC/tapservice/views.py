@@ -149,7 +149,7 @@ class RenderThread(threading.Thread):
 
 def MyRender(format,transs,states,sources):
     if format.lower()=='xsams':
-        rend=MultiRender(format,transs,states,sources)
+        rend=RenderXSAMSmulti(format,transs,states,sources)
     elif format.lower()=='csv': 
         t=loader.get_template('vald/valdtable.csv')
         c=Context({'transitions':transs,'sources':sources,'states':states,})
@@ -159,7 +159,7 @@ def MyRender(format,transs,states,sources):
     return rend
 
 
-def MultiRender(format,transs,states,sources):
+def RenderXSAMSmulti(format,transs,states,sources):
     n=int(transs.count()/3)
     trans1=transs[:n]
     trans2=transs[n:2*n]
@@ -181,14 +181,13 @@ def MultiRender(format,transs,states,sources):
     rend=th1.r + th2.r + th3.r + th4.r + u'\n</XSAMSData>'
     return rend
 
-def SingleRender(context,format):
+def RenderXSAMSsingle(format,transs,states,sources):
+    c=Context({'transitions':transs,'sources':sources,'states':states,})
     t1=loader.get_template('vald/valdxsams_p1.xml')
     t2=loader.get_template('vald/valdxsams_p2.xml')
-    t3=loader.get_template('vald/valdxsams_p3.xml')
-    r1=t1.render(context)
-    r2=t2.render(context)
-    r3=t3.render(context)
-    rend=r1+r2+r3
+    r1=t1.render(c)
+    r2=t2.render(c)
+    rend=r1+r2+ u'\n</XSAMSData>'
     return rend
 
 def sync(request):
