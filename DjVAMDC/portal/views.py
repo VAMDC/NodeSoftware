@@ -19,7 +19,7 @@ def query(request):
         if form.is_valid(): # All validation rules pass
             # Process the data in form.cleaned_data
             # ...
-            return HttpResponseRedirect('/thanks/') # Redirect after POST
+            return HttpResponseRedirect('http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/?REQUEST=doQuery&LANG=ADQL&FORMAT=XSAMS&QUERY=SELECT%20ALL%20WHERE%20WAVELENGTH%20%3E%203000%20AND%20WAVELENGTH%20%3C%203500%20AND%20ELEMENT%20=%20Fe',) # Redirect after POST
     else:
         form = QueryForm() # An unbound form
 
