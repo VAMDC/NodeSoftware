@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('DjVAMDC.portal.views',
+urlpatterns = patterns('DjVAMDC.tapquery.views',
                        (r'^$', 'index'),
-)
+                       )

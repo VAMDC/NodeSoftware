@@ -1,6 +1,17 @@
-from DjVAMDC.vald.models import Transition,State,Source,Species
+from django.shortcuts import render_to_response,get_object_or_404
 from django.db.models import Q
+from django.template import RequestContext
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 
+
+from DjVALD.vald.models import Transition,State,Source,Species
+
+from DjVAMDC.tapservice.views import *
+
+def index(request):
+    c=RequestContext(request,{})
+    return render_to_response('vald/index.html', c)
 
 
 def getVALDsources(transs):
@@ -149,6 +160,30 @@ def vald2xsams(transitions,states,sources):
 
 
 
+def sync(request):
+    tap=TAPQUERY(request.REQUEST)
+    if not tap.isvalid:
+        # return http error
+        pass
+
+    qtup=parseSQL(tap.query)
+    
+    ts=time()
+
+    transs = Transition.objects.filter(*qtup).order_by('vacwave')
+    #print '%d transitions set up'%len(transs),time()-ts
+    
+    sources = getVALDsources(transs)
+    #print '%d sources set up'%len(sources),time()-ts
+       
+    states = getVALDstates(transs)
+    #print '%d states set up'%len(states),time()-ts
+    
+    #response = renderedResponse(transs,states,sources,tap)
+    response=HttpResponse(vald2xsams(transs,states,sources),mimetype='application/xml')
+    response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+    return response
+     
 ## LEGACY below
 
 
@@ -210,3 +245,61 @@ def getVALDsources4(transs):
     for sid in sids:
         sources.append(Source.objects.get(pk=sid))
     return sources
+
+
+
+def RenderXSAMSmulti(format,transs,states,sources):
+    # this turned out to be inefficient
+    # due to large overhead of python threads
+    n=int(transs.count()/3)
+    trans1=transs[:n]
+    trans2=transs[n:2*n]
+    trans3=transs[2*n:]
+    t1=loader.get_template('vald/valdxsams_p1.xml')
+    t2=loader.get_template('vald/valdxsams_p2.xml')
+    th1=RenderThread(t1,Context({'sources':sources,'states':states,}))
+    th2=RenderThread(t2,Context({'transitions':trans1}))
+    th3=RenderThread(t2,Context({'transitions':trans2}))
+    th4=RenderThread(t2,Context({'transitions':trans3}))
+    th1.start()
+    th2.start()
+    th3.start()
+    th4.start()
+    th1.join()
+    th2.join()
+    th3.join()
+    th4.join()
+    rend=th1.r + th2.r + th3.r + th4.r + u'\n</XSAMSData>'
+    return rend
+
+def RenderXSAMSsingle(format,transs,states,sources):
+    c=Context({'transitions':transs,'sources':sources,'states':states,})
+    t=loader.get_template('vald/valdxsams.xml')
+    return t.render(c)
+
+
+def MyRender(format,transs,states,sources):
+    if format=='xsams':
+        rend=RenderXSAMSsingle(format,transs,states,sources)
+    elif format=='csv': 
+        t=loader.get_template('vald/valdtable.csv')
+        c=Context({'transitions':transs,'sources':sources,'states':states,})
+        rend=t.render(c)
+    else: 
+        rend=''   
+    return rend
+
+def renderedResponse(transs,states,sources,tap):
+    rendered=MyRender(tap.format,transs,states,sources)
+    
+    zbuf = StringIO()
+    zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
+    zfile.write(rendered)
+    zfile.close()
+    compressed_content = zbuf.getvalue()
+    response = HttpResponse(compressed_content,mimetype='application/x-gzip')
+    response['Content-Encoding'] = 'gzip'
+    response['Content-Length'] = str(len(compressed_content))
+    response['Content-Disposition'] = 'attachment; filename=%s.%s.gz'%(tap.queryid,tap.format)
+    return response
+    

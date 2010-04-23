@@ -7,4 +7,8 @@ from django.core.urlresolvers import reverse
 
 def index(request):
     c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
+    return render_to_response('portal/index.html', c)
+
+def query(request):
+    c=RequestContext(request,{})
+    return render_to_response('portal/index.html', c)

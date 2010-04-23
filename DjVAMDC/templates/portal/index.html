@@ -1,0 +1,16 @@
+{% extends "indigo.html" %}
+{% load i18n %}
+{% block title %}{{ title }} | {% trans 'Node Start' %}{% endblock %}
+
+{% block headline %}Welcome to VAMDC{% endblock %}
+
+{% block content %}
+<div class="descr">April 25, 2010 by Thomas</div>
+
+<p> This is nothig more than a test implementation of a VAMDC portal. 
+It's purpose is to let the user <a href="/portal/query/">construct a 
+query</a> and then hand it on to several databases (so far only VALD 
+which lives <a href="/node/vald">here</a>). </p>
+
+{% endblock %}
+

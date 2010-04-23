@@ -1,10 +1,12 @@
 from django.conf.urls.defaults import *
+
+# Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
     # Example:
-    # (r'^DjVAMDC/', include('DjVAMDC.foo.urls')),
+    # (r'^DjVALD/', include('DjVALD.foo.urls')),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:
@@ -12,7 +14,6 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
-    (r'^query/', include('DjVAMDC.tapquery.urls')),
-    (r'', include('DjVAMDC.portal.urls')),
-#    (r'^node/', include('DjVAMDC.node.urls')),
+    (r'', include('DjVALD.vald.urls')),
+    #(r'^tap/', include('DjVAMDC.tapservice.urls')),
 )
