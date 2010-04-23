@@ -12,7 +12,6 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
-    (r'^query/', include('DjVAMDC.tapquery.urls')),
     (r'', include('DjVAMDC.portal.urls')),
 #    (r'^node/', include('DjVAMDC.node.urls')),
 )
