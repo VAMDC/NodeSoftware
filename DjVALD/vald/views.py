@@ -6,8 +6,11 @@ from django.core.urlresolvers import reverse
 
 
 from DjVALD.vald.models import Transition,State,Source,Species
-
 from DjVAMDC.tapservice.views import *
+
+from base64 import b64encode as b64
+def enc(s):
+    return b64(s).replace('=','')
 
 def index(request):
     c=RequestContext(request,{})
@@ -32,7 +35,7 @@ def getVALDstates(transs):
 
 def sources2xsams(sources):
     for source in sources:
-        yield """<Source sourceID="S-%d">
+        yield """<Source sourceID="B%d">
 <Authors>
 <Author>
 <Name>%s, List type: %d, Source file: %s</Name>
@@ -47,24 +50,22 @@ def sources2xsams(sources):
 
 def stateterm2xsams(state):
     
-    if not (state.term and state.coupling): return ''
-    
-    result='<AtomicComposition><Component><Configuration>'
-    result+='<ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%state.term
-    result+='<Term><Comments>Term reference: S-%s</Comments>'%state.level_ref
-    if state.coupling == "LS": 
+    result='<AtomicComposition><Comments>Term reference: B%s</Comments>'%state.level_ref
+    result+='<Component><Configuration><ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%state.term
+    result+='<Term>'
+    if state.coupling == "LS" and state.l and state.s: 
         result+='<LS>'
         if state.l: '<L><Value>%f</Value></L>'%state.l
         if state.s: '<S>%f</S>'%state.s
         result+='</LS>'
         
-    elif state.coupling == "JK": 
+    elif state.coupling == "JK" and state.s2 and state.k: 
         result+='<jK>'
         if state.s2: '<j>%f</j>'%state.s2
         if state.k: '<K> %f</K>'%state.k
         result+='</jK>'
         
-    elif state.coupling == "JJ":
+    elif state.coupling == "JJ" and state.j1 and state.j2:
         result+='<J1J2>'
         if state.j1: '<j>%f</j>'%state.j1
         if state.j2: '<j>%f</j>'%state.j2
@@ -88,13 +89,13 @@ def states2xsams(states):
 </IsotopeParameters>
 <IonState>
 <IonCharge>%d</IonCharge>
-<AtomicState stateID="S-%s"><Description>%s</Description>
+<AtomicState stateID="S%s"><Description>%s</Description>
 <AtomicNumericalData>
-<StateEnergy><Value units="1/cm" sourceRef="S-%d">%f</Value></StateEnergy>
+<StateEnergy sourceRef="B%d"><Value units="1/cm">%f</Value></StateEnergy>
 <IonizationEnergy><Value units="eV">%f</Value></IonizationEnergy>
-<LandeFactor><Value units="unitless" sourceRef="S-%d">%f</Value><LandeFactor/>
+<LandeFactor sourceRef="B%d"><Value units="unitless">%f</Value></LandeFactor>
 </AtomicNumericalData>
-"""%( state.species.atomic , state.species.name , mass , state.species.ion , state.id , state.id , state.energy_ref , state.energy , state.species.ionen , state.lande_ref , state.lande)
+"""%( state.species.atomic , state.species.name , mass , state.species.ion , enc(state.id) , state.id , state.energy_ref , state.energy , state.species.ionen , state.lande_ref , state.lande)
 
         if (state.p or state.j):
             yield "<AtomicQuantumNumbers>"
@@ -111,28 +112,23 @@ def states2xsams(states):
 def transitions2xsams(transitions):
     for trans in transitions:
         yield """
-<RadiativeTransition methodRef="MEXP">
+<RadiativeTransition methodRef="MOBS">
 <Comments>Effective Lande factor and broadening gammas: 
-lande_eff: %f (Ref S-%d)
-gamma_rad: %f (Ref S-%d)
-gamma_stark: %f (Ref S-%d)
-gamma_waals: %f (Ref S-%d)
+lande_eff: %f (Ref B%d)
+gamma_rad: %f (Ref B%d)
+gamma_stark: %f (Ref B%d)
+gamma_waals: %f (Ref B%d)
+air wavelength: %f (Ref B%d)
 </Comments>
 <EnergyWavelength>
-<Wavelength>
-<Experimental sourceRef="S-%d">
-<Comments>Wavelength in vaccuum (first) and air.</Comments>
-<Value units="1/cm">%f</Value>
-<Value units="1/cm">%f</Value>
-<Accuracy>Flag: %s, Value: %s</Accuracy>
-</Experimental>
-</Wavelength>
-</EnergyWavelength>"""%( trans.landeff , trans.lande_ref , trans.gammarad , trans.gammarad_ref , trans.gammastark , trans.gammastark_ref , trans.gammawaals , trans.gammawaals_ref , trans.wave_ref , trans.vacwave , trans.airwave , trans.acflag , trans.accur )
+<Wavelength><Experimental sourceRef="B%d">
+<Comments>Wavelength in vaccuum. For air see the comment field.</Comments><Value units="1/cm">%f</Value><Accuracy>Flag: %s, Value: %s</Accuracy>
+</Experimental></Wavelength></EnergyWavelength>"""%( trans.landeff , trans.lande_ref , trans.gammarad , trans.gammarad_ref , trans.gammastark , trans.gammastark_ref , trans.gammawaals , trans.gammawaals_ref , trans.airwave, trans.wave_ref, trans.wave_ref , trans.vacwave , trans.acflag , trans.accur)
 
-        if trans.upstateid: yield '<InitialStateRef>S-%s</InitialStateRef>'%trans.upstateid
-        if trans.lostateid: yield '<FinalStateRef>S-%s</FinalStateRef>'%trans.lostateid
+        if trans.upstateid: yield '<InitialStateRef>S%s</InitialStateRef>'%enc(trans.upstateid)
+        if trans.lostateid: yield '<FinalStateRef>S%s</FinalStateRef>'%enc(trans.lostateid)
         if trans.loggf: yield """<Probability>
-<Log10WeightedOscillatorStrength sourceRef="S-%d"><Value units="unitless">%f</Value></Log10WeightedOscillatorStrength>
+<Log10WeightedOscillatorStregnth sourceRef="B%d"><Value units="unitless">%f</Value></Log10WeightedOscillatorStregnth>
 </Probability>
 </RadiativeTransition>"""%(trans.loggf_ref,trans.loggf)
 
@@ -145,8 +141,8 @@ def vald2xsams(transitions,states,sources):
     for source in sources2xsams(sources): yield source
     yield """</Sources>
 <Methods>
-<Method methodID="MEXP">
-<Category>measured</Category>
+<Method methodID="MOBS">
+<Category>observed</Category>
 <Description />
 </Method>
 </Methods>
@@ -156,7 +152,7 @@ def vald2xsams(transitions,states,sources):
     for state in states2xsams(states): yield state
     yield '</Atoms></States><Processes><Radiative>'
     for trans in transitions2xsams(transitions): yield trans
-    yield '</Radiative><Processes/>\n</XSAMSData>\n'
+    yield '</Radiative></Processes >\n</XSAMSData>\n'
 
 
 
