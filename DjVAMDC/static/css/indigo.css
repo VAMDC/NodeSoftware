@@ -82,6 +82,9 @@ h1,h2,h3 {
 	color: #FFF;
 	font: normal 2em Verdana,sans-serif;
 }
+.title a h1 {
+        text-decoration: none;	
+}
 /* navigation */
 .navigation {
 	float: left;
@@ -114,7 +117,7 @@ h1,h2,h3 {
 /* main left */
 .sidenav {
 	float: left;
-	width: 24%;
+	width: 34%;
 }
 .sidenav h1 {
 	border-bottom: 1px dashed #DDD;
@@ -148,7 +151,7 @@ h1,h2,h3 {
 .content {
 	float: left;
 	margin-right: 4%;
-	width: 69%;
+	width: 59%;
 }
 .content .descr {
 	color: #C60;

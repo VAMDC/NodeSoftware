@@ -8,19 +8,19 @@
 <meta name="keywords" content="keywords"/> 
 <meta name="author" content="author"/> 
 <link rel="stylesheet" type="text/css" href="indigo.css" media="screen"/>
-<title>{% block title %}VAMDC{% endblock %}</title>
+<title>{% block title %}VAMDC Testsite{% endblock %}</title>
 </head>
 
 <body>
 
 <div class="container">
 
-	<div class="header">
+	<a href="/"><div class="header">
 
 		<div class="title">
-		  <h1>{% block headline %}VAMDC{% endblock %}</h1>
+		  <h1>{% block headline %}VAMDC Testsite{% endblock %}</h1>
 		</div>
-
+		<!-- 
 		<div class="navigation">
 		  {% block topnavi %}
 		        <a href="/portal/">Home</a><a href="/portal/query/">Query</a>
@@ -30,8 +30,8 @@
 			<div class="clearer"><span></span></div>
 
 		</div>
-
-	</div>
+		-->
+	</div></a>
 
 	<div class="main">
 		
@@ -58,6 +58,13 @@
 			<h1>Nodes</h1>
 			<ul>
 				<li><a href="/node/vald/">VALD</a></li>
+				
+			</ul>
+			<h1>Links</h1>
+			<ul>
+				<li><a href="http://www.vamdc.eu">VAMDC Homepage</a></li>
+				<li><a href="http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/">VAMDC Wiki</a></li>
+				<li><a href="http://www.uu.se">UU</a></li>
 				
 			</ul>
 			<!-- 
