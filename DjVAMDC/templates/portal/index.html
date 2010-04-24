@@ -11,11 +11,11 @@
 two parts that are run by independant web-applications:</p>
 
 <ul>
-<li>The <strong>portal</strong> which is the VAMDC "central" that is supposed to let users <a href="/portal/query/">make data requests</a> without knowing about individial databases, to pass this request to the connected databases and to collect the result to be displayed or downloaded to the user. All URLs that contain <em>/portal/</em> are run by this application.</li>
-<li>The <strong>nodes</strong> which represent a data set, typically a database, with the software running on top of it that allows communication with the portal. Nodes have URLs with <em>/node/</em> and as you can see, there is currently just one: <a href="/node/vald">VALD</a></li>.
+<li>The <strong>portal</strong> which is the VAMDC "central" that is supposed to let users <a href="/portal/query/">make a data request</a> without knowing about individial databases, to pass this request to the connected databases and to collect the results to be displayed or downloaded to the user. All URLs that contain <em>/portal/</em> are run by this application.</li>
+<li>The <strong>nodes</strong> which represent a data set, typically a database, with the software running on top of it that allows communication with the portal. Nodes have URLs with <em>/node/</em> and as you can see, there is currently just one: <a href="/node/vald">VALD</a>.</li>
 </ul>
 
-<p><strong>Note:</strong> Even though both applications (<em>/portal/</em> and <em>/node/</em>) run on the same server for test purposes, there is no "cheating" in the sense that thet share running code. They only communicate via standard HTTP-interfaces that are an important part to be tested.
+<p><strong>Note:</strong> Even though both applications (<em>/portal/</em> and <em>/node/</em>) run on the same server for test purposes, there is no "cheating" in the sense that they share running code. They only communicate via standard HTTP-interfaces which are important parts to be developed and tested.
 </p>
 
 <p>Questions and feedback are welcome at <em>thomas.marquart@fysast.uu.se</em>.</p>
