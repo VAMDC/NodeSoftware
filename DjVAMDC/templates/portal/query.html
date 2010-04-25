@@ -10,14 +10,14 @@
 
 <p>Selection criteria:</p>
 <form action="." method="post">
-  {{ selectionset.management_form }}
+<p>  {{ selectionset.management_form }}</p>
 <table>
   <tr><th colspan="2">Lower bound</th><th>Parameter to restrict</th><th colspan="2">Upper bound</th><th>Use AND?</th></tr>
   {% for selection in selectionset.forms %}
     <tr><td>{{ selection.lower }}</td><td><strong>&lt;</strong></td><td>{{ selection.parameter }}</td><td><strong>&lt;</strong></td><td>{{ selection.upper }}</td><td>{{ selection.connection }}</td></tr>
   {% endfor %}
 </table>
-<input type="submit" value="Preview" />
+<p><input type="submit" value="Preview" /></p>
 </form>
 
 <p><a name="howto"<strong>How to use:</strong></a></p>
