@@ -24,9 +24,9 @@ PARA_CHOICES=[(1,u''),
 ]
 
 class ConditionForm(forms.Form):
-    lower=forms.DecimalField(max_digits=8,required=False,initial=None,label='lower bound')
+    lower=forms.DecimalField(max_digits=6,required=False,initial=None,label='lower bound',widget=forms.widgets.TextInput(attrs={'size':'8'}))
     parameter=forms.ChoiceField(label='parameter to restrict',required=True,initial='',choices=PARA_CHOICES)
-    upper=forms.DecimalField(max_digits=8,required=False,initial=None,label='upper bound')
+    upper=forms.DecimalField(max_digits=6,required=False,initial=None,label='upper bound',widget=forms.widgets.TextInput(attrs={'size':'8'}))
     connection=forms.BooleanField(initial=True,required=False,label='Use AND to connect with next condition?')
     
     def validate(self,value):
