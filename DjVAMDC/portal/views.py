@@ -13,18 +13,9 @@ from random import choice
 def makeQID(length=6, chars=s.letters + s.digits):
     return ''.join([choice(chars) for i in xrange(length)])
 
-VALD_DICT={'1':'species.atomic',
-           '2':'species.ion',
-           '3':'transitions.vacwave',
-           '4':'transitions.airwave',
-           '5':'transitions.loggf',
-           '6':'state.energy',
-           '7':'state.J',
-           }
-
 REGISTRY=[
-          {'name':'VALD','url':'http://vamdc.fysast.uu.se:8888/node/vald/sync/','coldict':VALD_DICT},
-          {'name':'VALD2','url':'http://vamdc.fysast.uu.se:8888/node/vald/sync/','coldict':VALD_DICT},
+          {'name':'VALD','url':'http://vamdc.fysast.uu.se:8888/node/vald/sync/'},
+          {'name':'VALD2','url':'http://vamdc.fysast.uu.se:8888/node/vald/sync/'},
           ]
 
 
@@ -54,16 +45,16 @@ def constructQuery(constraints):
     for c in constraints:
         if c['parameter']=='0': continue
         if c['lower'] and c['upper']:
-            if c['lower'] == c['upper']: q+='( %%(%s) = %s )'%(c['parameter'],c['upper'])
+            if c['lower'] == c['upper']: q+='( %%(%s)s = %s )'%(c['parameter'],c['upper'])
             else:
-                q+='( %%(%s) > %s AND '%(c['parameter'],c['lower'])
-                q+='%%(%s) < %s )'%(c['parameter'],c['upper'])
+                q+='( %%(%s)s > %s AND '%(c['parameter'],c['lower'])
+                q+='%%(%s)s < %s )'%(c['parameter'],c['upper'])
         elif c['lower']:
-            q+='( %%(%s) > %s )'%(c['parameter'],c['lower'])
+            q+='( %%(%s)s > %s )'%(c['parameter'],c['lower'])
         elif c['upper']:
-            q+='( %%(%s) < %s )'%(c['parameter'],c['upper'])
+            q+='( %%(%s)s < %s )'%(c['parameter'],c['upper'])
         else:
-            q+='( %%(%s) notnull )'%c['parameter']
+            q+='( %%(%s)s notnull )'%c['parameter']
 
         if c['connection']: q+=' AND '
         else: q+=' OR '

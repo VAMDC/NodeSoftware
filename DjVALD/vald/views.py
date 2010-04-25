@@ -8,6 +8,17 @@ from django.core.urlresolvers import reverse
 from DjVALD.vald.models import Transition,State,Source,Species
 from DjVAMDC.tapservice.views import *
 
+
+VALD_DICT={'1':'species.atomic',
+           '2':'species.ion',
+           '3':'transitions.vacwave',
+           '4':'transitions.airwave',
+           '5':'transitions.loggf',
+           '6':'state.energy',
+           '7':'state.J',
+           }
+
+
 from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
