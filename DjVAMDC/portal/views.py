@@ -6,21 +6,37 @@ from django.core.urlresolvers import reverse
 from django import forms
 from django.forms.formsets import formset_factory
 
-import urllib
+from DjVAMDC.portal.models import Query
 
-def index(request):
-    c=RequestContext(request,{})
-    return render_to_response('portal/index.html', c)
+import string as s
+from random import choice
+def makeQID(length=6, chars=s.letters + s.digits):
+    return ''.join([choice(chars) for i in xrange(length)])
 
-PARA_CHOICES=[(1,u''),
-              (2,u'Atomic number'),
-              (3,u'Ionization'),
-              (4,u'Wavelength in vaccum (Å)'),
-              (5,u'Wavelength in air (Å)'),
-              (6,u'log(g*f)'),
-              (7,u'Level energy (1/cm)'),
+VALD_DICT={'1':'species.atomic',
+           '2':'species.ion',
+           '3':'transitions.vacwave',
+           '4':'transitions.airwave',
+           '5':'transitions.loggf',
+           '6':'state.energy',
+           '7':'state.J',
+           }
+
+REGISTRY=[
+          {'name':'VALD','url':'http://vamdc.fysast.uu.se:8888/node/vald/sync/','coldict':VALD_DICT},
+          {'name':'VALD2','url':'http://vamdc.fysast.uu.se:8888/node/vald/sync/','coldict':VALD_DICT},
+          ]
+
+
+PARA_CHOICES=[(0,u''),
+              (1,u'Atomic number'),
+              (2,u'Ionization'),
+              (3,u'Wavelength in vaccum (Å)'),
+              (4,u'Wavelength in air (Å)'),
+              (5,u'log(g*f)'),
+              (6,u'Level energy (1/cm)'),
+              (7,u'Total angular momentum J'),
               (8,u'Species from species list (not implemented)'),
-              (9,u'Total angular momentum J'),
 ]
 
 class ConditionForm(forms.Form):
@@ -30,24 +46,37 @@ class ConditionForm(forms.Form):
     connection=forms.BooleanField(initial=True,required=False,label='Use AND to connect with next condition?')
     
     def validate(self,value):
-        super(ConditionForm,self).validate(value)
+        # check here e.g. if the lower bound <= upper
+        super(ConditionForm,self).validate(value)              
 
-              
+def constructQuery(constraints):
+    q='SELECT ALL WHERE '
+    for c in constraints:
+        if c['parameter']=='0': continue
+        if c['lower'] and c['upper']:
+            if c['lower'] == c['upper']: q+='( %%(%s) = %s )'%(c['parameter'],c['upper'])
+            else:
+                q+='( %%(%s) > %s AND '%(c['parameter'],c['lower'])
+                q+='%%(%s) < %s )'%(c['parameter'],c['upper'])
+        elif c['lower']:
+            q+='( %%(%s) > %s )'%(c['parameter'],c['lower'])
+        elif c['upper']:
+            q+='( %%(%s) < %s )'%(c['parameter'],c['upper'])
+        else:
+            q+='( %%(%s) notnull )'%c['parameter']
 
-
-class OutputForm(forms.Form):
-    pass
-
-class SQLqueryForm(forms.Form):
-    sql=forms.CharField()
+        if c['connection']: q+=' AND '
+        else: q+=' OR '
+    return q
 
 def query(request):
     ConditionSet = formset_factory(ConditionForm, extra=5)
     if request.method == 'POST':
-        print request.POST
         selectionset = ConditionSet(request.POST,request.FILES) 
-        if selectionset.is_valid(): 
-            return HttpResponseRedirect('http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/?REQUEST=doQuery&LANG=ADQL&FORMAT=XSAMS&QUERY=SELECT%20ALL%20WHERE%20WAVELENGTH%20%3E%203000%20AND%20WAVELENGTH%20%3C%203500%20AND%20ELEMENT%20=%20Fe',) 
+        if selectionset.is_valid():
+            query=Query(qid=makeQID(),query=constructQuery(selectionset.cleaned_data))
+            query.save()
+            return HttpResponseRedirect('/portal/results/%s/'%query.qid) 
     else:
         selectionset = ConditionSet(initial=[
                 {'lower': u'3000',
@@ -62,6 +91,42 @@ def query(request):
                  },
                 ])
         
-    return render_to_response('portal/query.html', {
-                                                    'selectionset': selectionset,
-                                                    })
+    return render_to_response('portal/query.html', {'selectionset': selectionset})
+
+
+#####################
+
+def askNode(node,query):
+    pass
+
+def results(request,qid):
+    query=Query.objects.get(pk=qid)
+    results=[]
+    for node in REGISTRY:
+        results.append(askNode(node,query))
+        
+    return render_to_response('portal/results.html', {'result': results, 'query':query})
+
+###################
+
+def index(request):
+    c=RequestContext(request,{})
+    return render_to_response('portal/index.html', c)
+
+######################
+
+class SQLqueryForm(forms.Form):
+    sql=forms.CharField(label='Enter your SQL query',widget=forms.widgets.Textarea(attrs={'cols':'40','rows':'5'}),required=True)
+
+
+def sqlquery(request):
+    if request.method == 'POST':
+        form = SQLqueryForm(request.POST) 
+        if form.is_valid():
+            print form.cleaned_data
+
+    else:
+        form=SQLqueryForm()
+        
+    return render_to_response('portal/sqlquery.html', {'form': form})
+

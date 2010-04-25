@@ -1,0 +1,16 @@
+{% extends "indigo.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>Make a query</h1>
+
+<p><strong>Not yet operational!</strong></p>
+
+<form action="." method="post">
+<p>Write your SQL query:</p>
+<p>{{ form.sql }}</p>
+<p><input type="submit" value="Preview" /></p>
+</form>
+
+{% endblock %}
+
