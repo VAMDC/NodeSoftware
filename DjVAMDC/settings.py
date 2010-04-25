@@ -82,6 +82,5 @@ INSTALLED_APPS = (
     'DjVAMDC.portal',
 #    'DjVAMDC.node',
 #    'DjVAMDC.vald',
-    'DjVAMDC.tapquery',
 #    'DjVAMDC.tapservice',
 )

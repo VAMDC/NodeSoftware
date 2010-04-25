@@ -10,11 +10,15 @@
 
 <div  class="code">
 <p>Selection criteria:</p>
-<form action="/portal/query/" method="post">
-{{ selectionset.as_p }}
-<p>Data output:</p>
-{{ outputform.as_p }}
-<input type="submit" value="Submit" />
+<form action="." method="post">
+  {{ selectionset.management_form }}
+<table>
+  <tr><th colspan="2">Lower bound</th><th>Parameter to restrict</th><th colspan="2">Upper bound</th><th>Use AND?</th></tr>
+  {% for selection in selectionset.forms %}
+    <tr><td>{{ selection.lower }}</td><td><strong>&lt;</strong></td><td>{{ selection.parameter }}</td><td><strong>&lt;</strong></td><td>{{ selection.upper }}</td><td>{{ selection.connection }}</td></tr>
+  {% endfor %}
+</table>
+<input type="submit" value="Preview" />
 </form>
 </div>
 
@@ -22,9 +26,9 @@
 <ul>
   <li>Select the parameters that you want to restrict and fill in lower and/or upper boundaries. Use the same value for upper and lower to achieve "equal".</li>
   <li>Selecting a parameter and not entering any bounds means that there must be a value present for this parameter.</li>
+  <li>The values for upper and lower bounds are to be enteres as decimals with at most 8 significant digits. Exponents are allowed, e.g. 4.567E-8</li>
   <li></li>
-  <li></li>
-  <li>In the second part, you select what kind of data you want that matches the criteria. For the time being, all information about the selection is returned.</li>
+  <li>In the second part of the form, you select what kind of data you want that matches the criteria. For the time being, all information about the selection is returned.</li>
   <li></li>
   
 </ul>
