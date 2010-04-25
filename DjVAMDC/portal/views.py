@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django import forms
-
-# from DjVAMDC.node.models import SomeModel
+from django.forms.formsets import formset_factory
 
 import urllib
 
@@ -12,7 +12,15 @@ def index(request):
     c=RequestContext(request,{})
     return render_to_response('portal/index.html', c)
 
-class QueryForm(forms.Form):
+PARA_CHOICES=[u'Atomic number',u'Ionization',u'Wavelength in vaccum (Å)',u'Wavelength in air (Å)',u'log(g*f)',u'Level energy (1/cm)',u'Species from species list (not implemented)',u'Total angular momentum J']
+
+class ConditionForm(forms.Form):
+    pass
+
+class OutputForm(froms.Form):
+    pass
+
+class SQLqueryForm(forms.Form):
     sql=forms.CharField()
 
 def query(request):

@@ -4,13 +4,29 @@
 {% block content %}
 <h1>Make a query</h1>
 
+<p>Please start by reading the <a href="#howto">how-to</a> below!</p>
+
 <p><strong>Not yet operational!</strong></p>
 
+<div  class="code">
+<p>Selection criteria:</p>
 <form action="/portal/query/" method="post">
-{{ form.as_p }}
+{{ selectionset.as_p }}
+<p>Data output:</p>
+{{ outputform.as_p }}
 <input type="submit" value="Submit" />
 </form>
+</div>
 
-
+<p><a name="howto" /><strong>How to use:</strong></p>
+<ul>
+  <li>Select the parameters that you want to restrict and fill in lower and/or upper boundaries. Use the same value for upper and lower to achieve "equal".</li>
+  <li>Selecting a parameter and not entering any bounds means that there must be a value present for this parameter.</li>
+  <li></li>
+  <li></li>
+  <li>In the second part, you select what kind of data you want that matches the criteria. For the time being, all information about the selection is returned.</li>
+  <li></li>
+  
+</ul>
 {% endblock %}
 
