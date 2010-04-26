@@ -20,6 +20,7 @@
    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
    xmlns="http://www.ivoa.net/xml/VOTable/v1.2"
    targetNamespace="http://www.ivoa.net/xml/VOTable/v1.2" 
+   elementFormDefault="qualified"
 >
 <xs:annotation><xs:documentation>
     VOTable1.2 is meant to serialize tabular documents in the

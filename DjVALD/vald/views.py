@@ -44,7 +44,7 @@ def getVALDstates(transs):
 
 
 
-def sources2xsams(sources):
+def valdsources2xsams(sources):
     for source in sources:
         yield """<Source sourceID="B%d">
 <Authors>
@@ -59,34 +59,34 @@ def sources2xsams(sources):
 <PageBegin>666</PageBegin>
 </Source>"""%( source.id , source.srcdescr, source.listtype , source.srcfile )
 
-def stateterm2xsams(state):
+def valdterm2xsams(state):
     
-    result='<AtomicComposition><Comments>Term reference: B%s</Comments>'%state.level_ref
+    result='<AtomicComposition>\n<Comments>Term reference: B%s</Comments>\n'%state.level_ref
     result+='<Component><Configuration><ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%state.term
     result+='<Term>'
     if state.coupling == "LS" and state.l and state.s: 
         result+='<LS>'
-        if state.l: '<L><Value>%f</Value></L>'%state.l
-        if state.s: '<S>%f</S>'%state.s
+        if state.l: result+='<L><Value>%d</Value></L>'%state.l
+        if state.s: result+='<S>%.1f</S>'%state.s
         result+='</LS>'
         
     elif state.coupling == "JK" and state.s2 and state.k: 
         result+='<jK>'
-        if state.s2: '<j>%f</j>'%state.s2
-        if state.k: '<K> %f</K>'%state.k
+        if state.s2: result+='<j>%f</j>'%state.s2
+        if state.k: result+='<K> %f</K>'%state.k
         result+='</jK>'
         
     elif state.coupling == "JJ" and state.j1 and state.j2:
         result+='<J1J2>'
-        if state.j1: '<j>%f</j>'%state.j1
-        if state.j2: '<j>%f</j>'%state.j2
+        if state.j1: result+='<j>%f</j>'%state.j1
+        if state.j2: result+='<j>%f</j>'%state.j2
         result+='</J1J2>'
         
     result+='</Term></Component></AtomicComposition>'
     return result
 
 
-def states2xsams(states):
+def valdstates2xsams(states):
     for state in states:
         mass = int(round(state.species.mass))
         yield """<Atom>
@@ -114,13 +114,13 @@ def states2xsams(states):
             if state.j: '<TotalAngularMomentum>%f</TotalAngularMomentum>'%state.j
             yield "</AtomicQuantumNumbers>"
 
-        yield stateterm2xsams(state)
+        yield valdterm2xsams(state)
         yield """</AtomicState>
 </IonState>
 </Isotope>
 </Atom>"""
 
-def transitions2xsams(transitions):
+def valdtransitions2xsams(transitions):
     for trans in transitions:
         yield """
 <RadiativeTransition methodRef="MOBS">
@@ -149,7 +149,7 @@ def vald2xsams(transitions,states,sources):
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <Sources>"""
-    for source in sources2xsams(sources): yield source
+    for source in valdsources2xsams(sources): yield source
     yield """</Sources>
 <Methods>
 <Method methodID="MOBS">
@@ -160,23 +160,90 @@ def vald2xsams(transitions,states,sources):
 
 <States>
 <Atoms>"""
-    for state in states2xsams(states): yield state
+    for state in valdstates2xsams(states): yield state
     yield '</Atoms></States><Processes><Radiative>'
-    for trans in transitions2xsams(transitions): yield trans
+    for trans in valdtransitions2xsams(transitions): yield trans
     yield '</Radiative></Processes >\n</XSAMSData>\n'
 
+##########################################################
+######## VO TABLE GENERATORS ####################
+def valdsources2votable(sources):
+    for source in sources:
+        yield ''
+
+def valdstates2votable(states):
+    yield """<TABLE name="states" ID="states">
+      <DESCRIPTION>The States that are involved in transitions</DESCRIPTION>
+      <GROUP ID="">
+        <PARAM datatype="char" arraysize="*" ucd="pos.frame" name="cooframe"
+             utype="stc:AstroCoords.coord_system_id" value="UTC-ICRS-TOPO" />
+        <FIELDref ref="col1"/>
+        <FIELDref ref="col2"/>
+      </GROUP>
+      <FIELD name="RA"   ID="col1" ucd="pos.eq.ra;meta.main" ref="J2000" 
+             utype="stc:AstroCoords.Position2D.Value2.C1"
+             datatype="float" width="6" precision="2" unit="deg"/>
+      <DATA>
+        <TABLEDATA>"""
+
+    for state in states:
+        yield  '<TR><TD>010.68</TD><TD>+41.27</TD><TD>N  224</TD><TD>-297</TD><TD>5</TD><TD>0.7</TD></TR>'
+        
+    yield """</TABLEDATA></DATA></TABLE>"""
+
+def valdtransitions2votable(transs):
+    yield """<TABLE name="transitions" ID="transitions">
+      <DESCRIPTION>The transitions</DESCRIPTION>
+      <FIELD name="wavelength in vacuum" ID="vacwave" datatype="float" unit="cm-1"/>
+      <FIELD name="wavelength in air" ID="airwave" datatype="float" unit="cm-1"/>
+      <FIELD name="log(g*f)"   ID="loggf" datatype="float"/>
+      <FIELD name="effective lande factor" ID="landeff" datatype="float"/>
+      <FIELD name="radiative gamma" ID="gammarad" datatype="float"/>
+      <FIELD name="stark gamma" ID="gammastark" datatype="float"/>
+      <FIELD name="waals gamma" ID="gammawaals" datatype="float"/>
+      <FIELD name="upper state id" ID="upstateid" datatype="char" arraysize="*"/>
+      <FIELD name="lower state id" ID="lostateid" datatype="char" arraysize="*"/>
+      <DATA>
+        <TABLEDATA>"""
+
+    for trans in transs:
+        yield  '<TR><TD>%f</TD><TD>%f</TD><TD>%f</TD><TD>%f</TD><TD>%f</TD><TD>%f</TD><TD>%f</TD><TD>%s</TD><TD>%s</TD></TR>\n'%( trans.vacwave , trans.airwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , trans.upstateid, trans.lostateid)
+        
+    yield """</TABLEDATA></DATA></TABLE>"""
+
+def vald2votable(transitions,states,sources,query):
+    yield """<?xml version="1.0"?>
+<VOTABLE version="1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns="http://www.ivoa.net/xml/VOTable/v1.2" 
+ xmlns:stc="http://www.ivoa.net/xml/STC/v1.30" >
+  <RESOURCE name="queryresults">
+    <DESCRIPTION>
+    </DESCRIPTION>
+    <LINK></LINK>
+    
+"""
+    #yield valdsources2votable(sources):
+    #yield valdstates2votable(states):
+    for trans in valdtransitions2votable(transitions):
+        yield trans
+    yield """
+</RESOURCE>
+</VOTABLE>
+"""
 
 
-def sync(request):
-    tap=TAPQUERY(request.REQUEST)
-    if not tap.isvalid:
-        # return http error
-        pass
+
+
+###########################################################
+
+def setupGenerator(transs,states,sources,tap):
+    if tap.format == 'xsams': return vald2xsams(transs,states,sources)
+    if tap.format == 'votable': return vald2votable(transs,states,sources,tap)
+
+def setupResults(tap):
+    #ts=time()
 
     qtup=parseSQL(tap.query)
-    
-    ts=time()
-
     transs = Transition.objects.filter(*qtup).order_by('vacwave')
     #print '%d transitions set up'%len(transs),time()-ts
     
@@ -186,12 +253,36 @@ def sync(request):
     states = getVALDstates(transs)
     #print '%d states set up'%len(states),time()-ts
     
+    return transs,states,sources
+    
+def sync(request):
+    tap=TAPQUERY(request.REQUEST)
+    if not tap.isvalid:
+        # return http error
+        pass
+
+    transs,states,sources=setupResults(tap)
+    generator=setupGenerator(transs,states,sources,tap)
+
     #response = renderedResponse(transs,states,sources,tap)
-    response=HttpResponse(vald2xsams(transs,states,sources),mimetype='application/xml')
+    response=HttpResponse(generator,mimetype='application/xml')
     response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     return response
-     
-## LEGACY below
+
+
+
+
+
+
+
+
+
+
+#############################################################     
+############### LEGACY below ################################
+#############################################################
+
+
 
 
 def getVALDstates2(transs):

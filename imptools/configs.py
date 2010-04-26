@@ -52,7 +52,7 @@ vald3cfg={         # start dictionary
     'tables':[    # start list of tables
         {         # start dictionary for first table
          'tname':'transitions',       # table name in db
-         'fname':'/home/tom/vald3.dat',  # file to read data from
+         'fname':'/vald/vald3.dat',  # file to read data from
          'headlines':2,         # this many lies ignored in file header
          'method':'INSERT INTO',
          'commentchar':'#',     # lines that start with this are ignored
@@ -227,7 +227,7 @@ vald3cfg={         # start dictionary
                 ],
         },
         {'tname':'states',   ######### FIRST PASS FOR THE UPPER STATES
-         'fname':'/home/tom/vald3.dat',
+         'fname':'/vald/vald3.dat',
          'headlines':2,       
          'commentchar':'#',   
          'method':'INSERT OR IGNORE INTO',
@@ -371,7 +371,7 @@ vald3cfg={         # start dictionary
                 ]
          },
         {'tname':'states', ######### SECOND PASS FOR THE LOWER STATES
-         'fname':'/home/tom/vald3.dat',
+         'fname':'/vald/vald3.dat',
          'headlines':2,    
          'method':'INSERT OR IGNORE INTO',
          'commentchar':'#',   
@@ -515,7 +515,7 @@ vald3cfg={         # start dictionary
         },
         {        
             'tname':'species',     
-            'fname':'/home/tom/VALD_list_of_species', 
+            'fname':'/vald/VALD_list_of_species', 
             'delim':'fixedcol',  
             'method':'INSERT INTO',
             'headlines':0,   
@@ -588,7 +588,7 @@ vald3cfg={         # start dictionary
                 ],
         },
         {'tname':'states',
-         'fname':'/home/tom/myterms.dat',
+         'fname':'/vald/myterms.dat',
          'headlines':0,
          'method':'UPDATE',
          'commentchar':'#',
@@ -666,7 +666,7 @@ vald3cfg={         # start dictionary
                 ],
          },
         {'tname':'sources',
-         'fname':'/home/tom/vald3_test.cfg',
+         'fname':'/vald/vald3_test.cfg',
          'method':'INSERT OR IGNORE INTO',
          'delim':',',
          'headlines':1,

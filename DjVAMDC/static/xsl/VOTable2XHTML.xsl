@@ -20,7 +20,7 @@
 <!--
 	For further documentation and updates visit http://services.china-vo.org/votable2xhtml/
 	-->
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" xmlns:VOT="http://www.ivoa.net/xml/VOTable/v1.1">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" xmlns:VOT="http://www.ivoa.net/xml/VOTable/v1.2">
 	<xsl:output method="xml" encoding="UTF-8" media-type="application/xhtml+xml" indent="no" doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" omit-xml-declaration="no"/>
 	<xsl:template match="/">
 		<html>
