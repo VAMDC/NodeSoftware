@@ -72,14 +72,14 @@ def valdterm2xsams(state):
         
     elif state.coupling == "JK" and state.s2 and state.k: 
         result+='<jK>'
-        if state.s2: result+='<j>%f</j>'%state.s2
-        if state.k: result+='<K> %f</K>'%state.k
+        if state.s2: result+='<j>%s</j>'%state.s2
+        if state.k: result+='<K> %s</K>'%state.k
         result+='</jK>'
         
     elif state.coupling == "JJ" and state.j1 and state.j2:
         result+='<J1J2>'
-        if state.j1: result+='<j>%f</j>'%state.j1
-        if state.j2: result+='<j>%f</j>'%state.j2
+        if state.j1: result+='<j>%s</j>'%state.j1
+        if state.j2: result+='<j>%s</j>'%state.j2
         result+='</J1J2>'
         
     result+='</Term></Component></AtomicComposition>'
@@ -102,16 +102,16 @@ def valdstates2xsams(states):
 <IonCharge>%d</IonCharge>
 <AtomicState stateID="S%s"><Description>%s</Description>
 <AtomicNumericalData>
-<StateEnergy sourceRef="B%d"><Value units="1/cm">%f</Value></StateEnergy>
-<IonizationEnergy><Value units="eV">%f</Value></IonizationEnergy>
-<LandeFactor sourceRef="B%d"><Value units="unitless">%f</Value></LandeFactor>
+<StateEnergy sourceRef="B%d"><Value units="1/cm">%s</Value></StateEnergy>
+<IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
+<LandeFactor sourceRef="B%d"><Value units="unitless">%s</Value></LandeFactor>
 </AtomicNumericalData>
 """%( state.species.atomic , state.species.name , mass , state.species.ion , enc(state.id) , state.id , state.energy_ref , state.energy , state.species.ionen , state.lande_ref , state.lande)
 
         if (state.p or state.j):
             yield "<AtomicQuantumNumbers>"
             if state.p: '<Parity>%s</Parity>'%('odd' if state.p%2 else 'even')
-            if state.j: '<TotalAngularMomentum>%f</TotalAngularMomentum>'%state.j
+            if state.j: '<TotalAngularMomentum>%s</TotalAngularMomentum>'%state.j
             yield "</AtomicQuantumNumbers>"
 
         yield valdterm2xsams(state)
@@ -125,21 +125,21 @@ def valdtransitions2xsams(transitions):
         yield """
 <RadiativeTransition methodRef="MOBS">
 <Comments>Effective Lande factor and broadening gammas: 
-lande_eff: %f (Ref B%d)
-gamma_rad: %f (Ref B%d)
-gamma_stark: %f (Ref B%d)
-gamma_waals: %f (Ref B%d)
-air wavelength: %f (Ref B%d)
+lande_eff: %s (Ref B%d)
+gamma_rad: %s (Ref B%d)
+gamma_stark: %s (Ref B%d)
+gamma_waals: %s (Ref B%d)
+air wavelength: %s (Ref B%d)
 </Comments>
 <EnergyWavelength>
 <Wavelength><Experimental sourceRef="B%d">
-<Comments>Wavelength in vaccuum. For air see the comment field.</Comments><Value units="1/cm">%f</Value><Accuracy>Flag: %s, Value: %s</Accuracy>
+<Comments>Wavelength in vaccuum. For air see the comment field.</Comments><Value units="1/cm">%s</Value><Accuracy>Flag: %s, Value: %s</Accuracy>
 </Experimental></Wavelength></EnergyWavelength>"""%( trans.landeff , trans.lande_ref , trans.gammarad , trans.gammarad_ref , trans.gammastark , trans.gammastark_ref , trans.gammawaals , trans.gammawaals_ref , trans.airwave, trans.wave_ref, trans.wave_ref , trans.vacwave , trans.acflag , trans.accur)
 
         if trans.upstateid: yield '<InitialStateRef>S%s</InitialStateRef>'%enc(trans.upstateid)
         if trans.lostateid: yield '<FinalStateRef>S%s</FinalStateRef>'%enc(trans.lostateid)
         if trans.loggf: yield """<Probability>
-<Log10WeightedOscillatorStregnth sourceRef="B%d"><Value units="unitless">%f</Value></Log10WeightedOscillatorStregnth>
+<Log10WeightedOscillatorStregnth sourceRef="B%d"><Value units="unitless">%s</Value></Log10WeightedOscillatorStregnth>
 </Probability>
 </RadiativeTransition>"""%(trans.loggf_ref,trans.loggf)
 
@@ -207,7 +207,7 @@ def valdtransitions2votable(transs):
         <TABLEDATA>"""
 
     for trans in transs:
-        yield  '<TR><TD>%f</TD><TD>%f</TD><TD>%f</TD><TD>%f</TD><TD>%f</TD><TD>%f</TD><TD>%f</TD><TD>%s</TD><TD>%s</TD></TR>\n'%( trans.vacwave , trans.airwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , trans.upstateid, trans.lostateid)
+        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%( trans.vacwave , trans.airwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , trans.upstateid, trans.lostateid)
         
     yield """</TABLEDATA></DATA></TABLE>"""
 
