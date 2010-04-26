@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response,get_object_or_404
 from django.db.models import Q
 from django.template import RequestContext
@@ -7,6 +8,13 @@ from django.core.urlresolvers import reverse
 
 from DjVALD.vald.models import Transition,State,Source,Species
 from DjVAMDC.tapservice.views import *
+
+from base64 import b64encode as b64
+def enc(s):
+    return b64(s).replace('=','')
+
+from lxml import etree as E
+vo2html=E.XSLT(E.parse(open('/home/tom/py/vamdc/DjVAMDC/static/xsl/VOTable2XHTML_mine.xsl')))
 
 
 VALD_DICT={'1':'species.atomic',
@@ -18,10 +26,6 @@ VALD_DICT={'1':'species.atomic',
            '7':'state.J',
            }
 
-
-from base64 import b64encode as b64
-def enc(s):
-    return b64(s).replace('=','')
 
 def index(request):
     c=RequestContext(request,{})
@@ -191,28 +195,32 @@ def valdstates2votable(states):
         
     yield """</TABLEDATA></DATA></TABLE>"""
 
-def valdtransitions2votable(transs):
-    yield """<TABLE name="transitions" ID="transitions">
-      <DESCRIPTION>The transitions</DESCRIPTION>
-      <FIELD name="wavelength in vacuum" ID="vacwave" datatype="float" unit="cm-1"/>
-      <FIELD name="wavelength in air" ID="airwave" datatype="float" unit="cm-1"/>
+def valdtransitions2votable(transs,count):
+    n=len(transs) if (type(transs)==type([])) else transs.count()
+    yield u"""<TABLE name="transitions" ID="transitions">
+      <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>
+      <FIELD name="wavelength (air)" ID="airwave" datatype="float" unit="AA"/>
       <FIELD name="log(g*f)"   ID="loggf" datatype="float"/>
-      <FIELD name="effective lande factor" ID="landeff" datatype="float"/>
+   <!--   <FIELD name="effective lande factor" ID="landeff" datatype="float"/>
       <FIELD name="radiative gamma" ID="gammarad" datatype="float"/>
       <FIELD name="stark gamma" ID="gammastark" datatype="float"/>
       <FIELD name="waals gamma" ID="gammawaals" datatype="float"/>
-      <FIELD name="upper state id" ID="upstateid" datatype="char" arraysize="*"/>
+  -->    <FIELD name="upper state id" ID="upstateid" datatype="char" arraysize="*"/>
       <FIELD name="lower state id" ID="lostateid" datatype="char" arraysize="*"/>
       <DATA>
-        <TABLEDATA>"""
+        <TABLEDATA>"""%(count or n,n)
 
     for trans in transs:
-        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%( trans.vacwave , trans.airwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , trans.upstateid, trans.lostateid)
+        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.loggf, #trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , 
+trans.upstateid, trans.lostateid)
         
     yield """</TABLEDATA></DATA></TABLE>"""
 
-def vald2votable(transitions,states,sources,query):
+def vald2votable(transitions,states,sources,totalcount=None):
     yield """<?xml version="1.0"?>
+<!--
+<?xml-stylesheet type="text/xml" href="http://vamdc.fysast.uu.se:8888/VOTable2XHTMLbasic.xsl"?>
+-->
 <VOTABLE version="1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xmlns="http://www.ivoa.net/xml/VOTable/v1.2" 
  xmlns:stc="http://www.ivoa.net/xml/STC/v1.30" >
@@ -224,7 +232,7 @@ def vald2votable(transitions,states,sources,query):
 """
     #yield valdsources2votable(sources):
     #yield valdstates2votable(states):
-    for trans in valdtransitions2votable(transitions):
+    for trans in valdtransitions2votable(transitions,totalcount):
         yield trans
     yield """
 </RESOURCE>
@@ -236,37 +244,48 @@ def vald2votable(transitions,states,sources,query):
 
 ###########################################################
 
-def setupGenerator(transs,states,sources,tap):
+def setupGenerator(transs,states,sources,total):
     if tap.format == 'xsams': return vald2xsams(transs,states,sources)
-    if tap.format == 'votable': return vald2votable(transs,states,sources,tap)
+    if tap.format == 'votable': return vald2votable(transs,states,sources,totalcount)
 
-def setupResults(tap):
-    #ts=time()
-
+def setupResults(tap,limit=False):
     qtup=parseSQL(tap.query)
     transs = Transition.objects.filter(*qtup).order_by('vacwave')
-    #print '%d transitions set up'%len(transs),time()-ts
-    
+    totalcount=transs.count()
+    if limit and (totalcount > 100):
+        step=totalcount/100
+        transs = Transition.objects.filter(*qtup).order_by('vacwave')[::step]
     sources = getVALDsources(transs)
-    #print '%d sources set up'%len(sources),time()-ts
-       
     states = getVALDstates(transs)
-    #print '%d states set up'%len(states),time()-ts
-    
-    return transs,states,sources
-    
+    if limit:
+        return transs,states,sources,totalcount
+    else:
+        return transs,states,sources
+
 def sync(request):
     tap=TAPQUERY(request.REQUEST)
     if not tap.isvalid:
         # return http error
         pass
 
-    transs,states,sources=setupResults(tap)
-    generator=setupGenerator(transs,states,sources,tap)
+    if tap.format == 'xsams': 
+        transs,states,sources=setupResults(tap)
+        generator=vald2xsams(transs,states,sources)
+        response=HttpResponse(generator,mimetype='application/xml')
+        response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+    
+    elif tap.format == 'votable': 
+        transs,states,sources=setupResults(tap)
+        generator=vald2votable(transs,states,sources)
+        response=HttpResponse(generator,mimetype='application/xml')
+        response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+    
+    elif tap.format == 'embedhtml':
+        transs,states,sources,count=setupResults(tap,limit=True)
+        generator=vald2votable(transs,states,sources,count)
+        html=vo2html(E.fromstring('\n'.join(generator)))
+        response=HttpResponse(html,mimetype='text/html')
 
-    #response = renderedResponse(transs,states,sources,tap)
-    response=HttpResponse(generator,mimetype='application/xml')
-    response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     return response
 
 
