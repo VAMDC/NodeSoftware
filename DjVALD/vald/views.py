@@ -19,9 +19,9 @@ vo2html=E.XSLT(E.parse(open('/home/tom/py/vamdc/DjVAMDC/static/xsl/VOTable2XHTML
 
 VALD_DICT={'1':'species.atomic',
            '2':'species.ion',
-           '3':'transitions.vacwave',
-           '4':'transitions.airwave',
-           '5':'transitions.loggf',
+           '3':'vacwave',
+           '4':'airwave',
+           '5':'loggf',
            '6':'state.energy',
            '7':'state.J',
            }
@@ -212,7 +212,7 @@ def valdtransitions2votable(transs,count):
 
     for trans in transs:
         yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.loggf, #trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , 
-trans.upstateid, trans.lostateid)
+trans.upstateid.replace('<','').replace('>','') if trans.upstateid else None, trans.lostateid.replace('<','').replace('>','') if trans.lostateid else None)
         
     yield """</TABLEDATA></DATA></TABLE>"""
 
@@ -249,12 +249,18 @@ def setupGenerator(transs,states,sources,total):
     if tap.format == 'votable': return vald2votable(transs,states,sources,totalcount)
 
 def setupResults(tap,limit=False):
-    qtup=parseSQL(tap.query)
-    transs = Transition.objects.filter(*qtup).order_by('vacwave')
+    if tap.lang=='vamdc':
+        tap.query=tap.query%VALD_DICT
+        print tap.query
+        transs = Transition.objects.extra(where=[tap.query]).order_by('vacwave')
+    else:
+        qtup=parseSQL(tap.query)
+        transs = Transition.objects.filter(*qtup).order_by('vacwave')
+
     totalcount=transs.count()
     if limit and (totalcount > 100):
         step=totalcount/100
-        transs = Transition.objects.filter(*qtup).order_by('vacwave')[::step]
+        transs = transs[::step]
     sources = getVALDsources(transs)
     states = getVALDstates(transs)
     if limit:
@@ -266,8 +272,8 @@ def sync(request):
     tap=TAPQUERY(request.REQUEST)
     if not tap.isvalid:
         # return http error
-        pass
-
+        print 'not valid tap!'
+    
     if tap.format == 'xsams': 
         transs,states,sources=setupResults(tap)
         generator=vald2xsams(transs,states,sources)
@@ -283,7 +289,9 @@ def sync(request):
     elif tap.format == 'embedhtml':
         transs,states,sources,count=setupResults(tap,limit=True)
         generator=vald2votable(transs,states,sources,count)
-        html=vo2html(E.fromstring('\n'.join(generator)))
+        xml='\n'.join(generator)
+        open('/tmp/bla.xml','w').write(xml)
+        html=vo2html(E.fromstring(xml))
         response=HttpResponse(html,mimetype='text/html')
 
     return response

@@ -11,6 +11,10 @@
 
 {% for result in results %}
 
+<h2>Results from {{ result.nodename }}</h2>
+
+{% autoescape off %}{{ result.html }}{% endautoescape %}
+
 {% endfor %}
 
 {% endblock %}

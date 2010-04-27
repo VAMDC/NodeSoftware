@@ -13,9 +13,15 @@ from random import choice
 def makeQID(length=6, chars=s.letters + s.digits):
     return ''.join([choice(chars) for i in xrange(length)])
 
+from urllib import urlopen,urlencode
+
 REGISTRY=[
-          {'name':'VALD','url':'http://vamdc.fysast.uu.se:8888/node/vald/sync/'},
-          {'name':'VALD2','url':'http://vamdc.fysast.uu.se:8888/node/vald/sync/'},
+          {'name':'VALD','url':'http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/'},
+          {'name':'VALD2','url':'http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/'},
+          ]
+REGISTRY=[
+          {'name':'VALD','url':'http://localhost:8001/tap/sync/'},
+          {'name':'VALD2','url':'http://localhost:8001/tap/sync/'},
           ]
 
 
@@ -41,7 +47,7 @@ class ConditionForm(forms.Form):
         super(ConditionForm,self).validate(value)              
 
 def constructQuery(constraints):
-    q='SELECT ALL WHERE '
+    q=''
     for c in constraints:
         if c['parameter']=='0': continue
         if c['lower'] and c['upper']:
@@ -57,8 +63,8 @@ def constructQuery(constraints):
             q+='( %%(%s)s notnull )'%c['parameter']
 
         if c['connection']: q+=' AND '
-        else: q+=' OR '
-    return q
+        else: q+=' OR  '
+    return q[:-5] # remove the last AND/OR
 
 def query(request):
     ConditionSet = formset_factory(ConditionForm, extra=5)
@@ -87,16 +93,27 @@ def query(request):
 
 #####################
 
-def askNode(node,query):
-    pass
+def askNode(url,query):
+    postdata={}
+    postdata['LANG']='VAMDC'
+    postdata['REQUEST']='doQuery'
+    postdata['QUERY']=query
+    postdata['FORMAT']='embedhtml'
+    postdata=urlencode(postdata)
+    req=urlopen(url,postdata)
+    html=req.read()
+    req.close()
+    return html
 
 def results(request,qid):
     query=Query.objects.get(pk=qid)
     results=[]
     for node in REGISTRY:
-        results.append(askNode(node,query))
+        result={'nodename':node['name']}
+        result['html']=askNode(node['url'],query.query)
+        results.append(result)
         
-    return render_to_response('portal/results.html', {'result': results, 'query':query})
+    return render_to_response('portal/results.html', {'results': results, 'query':query})
 
 ###################
 
