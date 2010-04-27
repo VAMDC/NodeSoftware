@@ -19,10 +19,10 @@ REGISTRY=[
           {'name':'VALD','url':'http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/'},
           {'name':'VALD2','url':'http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/'},
           ]
-#REGISTRY=[
-#          {'name':'VALD','url':'http://localhost:8001/tap/sync/'},
-#          {'name':'VALD2','url':'http://localhost:8001/tap/sync/'},
-#          ]
+REGISTRY=[
+          {'name':'VALD','url':'http://localhost:8001/tap/sync/'},
+          {'name':'VALD2','url':'http://localhost:8001/tap/sync/'},
+          ]
 
 
 PARA_CHOICES=[(0,u''),

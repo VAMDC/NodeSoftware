@@ -19,9 +19,9 @@ vo2html=E.XSLT(E.parse(open('/home/tom/py/vamdc/DjVAMDC/static/xsl/VOTable2XHTML
 
 VALD_DICT={'1':'species.atomic',
            '2':'species.ion',
-           '3':'vacwave',
-           '4':'airwave',
-           '5':'loggf',
+           '3':'transitions.vacwave',
+           '4':'transitions.airwave',
+           '5':'transitions.loggf',
            '6':'state.energy',
            '7':'state.J',
            }
@@ -252,7 +252,7 @@ def setupResults(tap,limit=False):
     if tap.lang=='vamdc':
         tap.query=tap.query%VALD_DICT
         print tap.query
-        transs = Transition.objects.extra(where=[tap.query]).order_by('vacwave')
+        transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostateid=states.id OR transitions.upstateid=states.id)','transitions.species=species.id'],).order_by('vacwave')
     else:
         qtup=parseSQL(tap.query)
         transs = Transition.objects.filter(*qtup).order_by('vacwave')
