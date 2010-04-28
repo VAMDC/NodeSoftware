@@ -56,12 +56,12 @@
 				<xsl:for-each select=".//VOT:FIELD">
 					<xsl:choose>
 						<xsl:when test="@name">
-							<th class="header" align="center">
+							<th align="center">
 								<xsl:value-of select="@name"/>
 							</th>
 						</xsl:when>
 						<xsl:otherwise>
-							<th class="header" align="center">
+							<th align="center">
 								<xsl:value-of select="@ID"/>
 							</th>
 						</xsl:otherwise>
@@ -70,7 +70,7 @@
 			</tr>
 			<tr align="center">
 				<xsl:for-each select=".//VOT:FIELD">
-					<td class="databody" align="center">
+					<td align="center">
 						<xsl:value-of select="@unit"/>
 					</td>
 				</xsl:for-each>
@@ -80,7 +80,7 @@
 					<xsl:for-each select="VOT:TR">
 						<tr>
 							<xsl:for-each select=".//VOT:TD">
-								<td class="databody">
+								<td>
 									<xsl:value-of select="."/>
 								</td>
 							</xsl:for-each>

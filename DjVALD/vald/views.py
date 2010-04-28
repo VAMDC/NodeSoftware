@@ -199,7 +199,7 @@ def valdtransitions2votable(transs,count):
     n=len(transs) if (type(transs)==type([])) else transs.count()
     yield u"""<TABLE name="transitions" ID="transitions">
       <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>
-      <FIELD name="wavelength (air)" ID="airwave" datatype="float" unit="AA"/>
+      <FIELD name="wavelength (air)" ID="airwave" datatype="float" unit="Angstrom"/>
       <FIELD name="log(g*f)"   ID="loggf" datatype="float"/>
    <!--   <FIELD name="effective lande factor" ID="landeff" datatype="float"/>
       <FIELD name="radiative gamma" ID="gammarad" datatype="float"/>
