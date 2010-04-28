@@ -2,7 +2,6 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 class ColInfo(models.Model):
-    id = models.IntegerField(primary_key=True,db_index=True)
     cname = models.CharField(max_length=64)
     tname = models.CharField(max_length=64)
     ccom = models.TextField(blank=True,null=True)
@@ -22,7 +21,6 @@ class Query(models.Model):
 
 
 class Species(models.Model):
-    id = models.IntegerField(primary_key=True,db_index=True)
     name = models.CharField(max_length=10, db_index=True)
     ion = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     mass = models.DecimalField(max_digits=5, decimal_places=2) 
@@ -39,7 +37,6 @@ class Species(models.Model):
         verbose_name_plural = _('Species')
 
 class Source(models.Model):
-    id = models.IntegerField(primary_key=True,db_index=True)
     srcfile = models.CharField(max_length=128)
     speclo = models.ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo')
     spechi = models.ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi')
@@ -62,15 +59,15 @@ class Source(models.Model):
         verbose_name_plural = _('Sources')
 
 class State(models.Model):
-    id = models.CharField(max_length=128, primary_key=True,db_index=True)
+    charid = models.CharField(max_length=128, db_index=True,unique=True)
     species = models.ForeignKey(Species,db_column='species', db_index=True)
     energy = models.DecimalField(max_digits=10, decimal_places=4,null=True,blank=True, db_index=True) 
     lande = models.DecimalField(max_digits=4, decimal_places=2,null=True,blank=True)
     coupling = models.CharField(max_length=2, null=True,blank=True)
     term = models.CharField(max_length=46, null=True,blank=True)
-    energy_ref = models.PositiveSmallIntegerField()
-    lande_ref = models.PositiveSmallIntegerField()
-    level_ref = models.PositiveSmallIntegerField()
+    energy_ref = models.PositiveSmallIntegerField(null=True,blank=True)
+    lande_ref = models.PositiveSmallIntegerField(null=True,blank=True)
+    level_ref = models.PositiveSmallIntegerField(null=True,blank=True)
     j = models.DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True,blank=True)
     l = models.DecimalField(max_digits=3, decimal_places=1,db_column=u'L', null=True,blank=True)
     s = models.DecimalField(max_digits=3, decimal_places=1,db_column=u'S', null=True,blank=True)
@@ -88,7 +85,6 @@ class State(models.Model):
         verbose_name_plural = _('States')
 
 class Transition(models.Model):
-    id = models.IntegerField(primary_key=True,db_index=True)
     vacwave = models.DecimalField(max_digits=15, decimal_places=8) 
     airwave = models.DecimalField(max_digits=15, decimal_places=8) 
     species = models.ForeignKey(Species,db_column='species',related_name='isspecies_trans')
