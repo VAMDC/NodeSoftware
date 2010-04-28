@@ -59,7 +59,7 @@ class Source(models.Model):
         verbose_name_plural = _('Sources')
 
 class State(models.Model):
-    charid = models.CharField(max_length=128, db_index=True,unique=True)
+    charid = models.CharField(max_length=128, db_index=True,unique=True,null=False)
     species = models.ForeignKey(Species,db_column='species', db_index=True)
     energy = models.DecimalField(max_digits=10, decimal_places=4,null=True,blank=True, db_index=True) 
     lande = models.DecimalField(max_digits=4, decimal_places=2,null=True,blank=True)
