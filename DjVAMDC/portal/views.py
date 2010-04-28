@@ -76,13 +76,18 @@ def query(request):
             return HttpResponseRedirect('/portal/results/%s/'%query.qid) 
     else:
         selectionset = ConditionSet(initial=[
-                {'lower': u'3000',
-                 'upper': u'3500',
+                {'lower': u'5000',
+                 'upper': u'7500',
                  'parameter':4,
                  'connection':True,
                  },
                 {'lower': u'26',
                  'upper': u'26',
+                 'parameter':1,
+                 'connection':True,
+                 },
+                {'lower': u'1',
+                 'upper': u'3',
                  'parameter':2,
                  'connection':True,
                  },
