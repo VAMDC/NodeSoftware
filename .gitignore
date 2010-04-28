@@ -1,6 +1,7 @@
 *~
 *.pyc
 *.db
+*.db-journal
 dummy*
 /.pydevproject
 /.project
