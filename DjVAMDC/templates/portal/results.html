@@ -6,7 +6,8 @@
 
 <ul>
   <li>ID: {{ query.qid }}</li>
-  <li>submitted on: {{ query.datetime }}</li>
+  <li>Submitted on: {{ query.datetime }}</li>
+  <li>Raw query string: {{ query.query }}</li>
 </ul>
 
 {% for result in results %}
