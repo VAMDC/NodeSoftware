@@ -30,7 +30,7 @@ class Species(models.Model):
     atomic = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     isotope = models.PositiveSmallIntegerField(null=True, blank=True)
     def __unicode__(self):
-        return u'%d'%self.id
+        return u'%s'%self.id.encode('utf8') if self.id else u'NULL'
     class Meta:
         db_table = u'species'
         verbose_name = _('Species')
@@ -38,8 +38,8 @@ class Species(models.Model):
 
 class Source(models.Model):
     srcfile = models.CharField(max_length=128)
-    speclo = models.ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo')
-    spechi = models.ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi')
+    speclo = models.ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True)
+    spechi = models.ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi',null=True)
     listtype = models.PositiveSmallIntegerField(null=True,blank=True)
     r1 = models.PositiveSmallIntegerField(null=True, blank=True)
     r2 = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -52,7 +52,8 @@ class Source(models.Model):
     r9 = models.PositiveSmallIntegerField(null=True, blank=True)
     srcdescr = models.CharField(max_length=128, blank=True, null=True)
     def __unicode__(self):
-        return u'%d'%self.id
+        return u'%s'%self.id.encode('utf8') if self.id else u'NULL'
+        
     class Meta:
         db_table = u'sources'
         verbose_name = _('Source')
@@ -61,10 +62,10 @@ class Source(models.Model):
 class State(models.Model):
     charid = models.CharField(max_length=128, db_index=True,unique=True,null=False)
     species = models.ForeignKey(Species,db_column='species', db_index=True)
-    energy = models.DecimalField(max_digits=10, decimal_places=4,null=True,blank=True, db_index=True) 
-    lande = models.DecimalField(max_digits=4, decimal_places=2,null=True,blank=True)
+    energy = models.DecimalField(max_digits=15, decimal_places=4,null=True,blank=True, db_index=True) 
+    lande = models.DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     coupling = models.CharField(max_length=2, null=True,blank=True)
-    term = models.CharField(max_length=46, null=True,blank=True)
+    term = models.CharField(max_length=56, null=True,blank=True)
     energy_ref = models.PositiveSmallIntegerField(null=True,blank=True)
     lande_ref = models.PositiveSmallIntegerField(null=True,blank=True)
     level_ref = models.PositiveSmallIntegerField(null=True,blank=True)
@@ -78,7 +79,8 @@ class State(models.Model):
     s2 = models.DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True,blank=True)
     jc = models.DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
     def __unicode__(self):
-        return self.id.encode('utf8')
+        id=self.id.encode('utf8') if self.id else u'NULL'
+        return u'%s %s'%(self.energy,self.lande)
     class Meta:
         db_table = u'states'
         verbose_name = _('State')
@@ -115,7 +117,8 @@ class Transition(models.Model):
     upstateid = models.CharField(max_length=128,null=True)
     lostateid = models.CharField(max_length=128,null=True)
     def __unicode__(self):
-        return u'%d'%self.id
+        id=self.id.encode('utf8') if self.id else u'NULL'
+        return u'%s'%self.id
     class Meta:
         db_table = u'transitions'
         verbose_name = _('Transition')

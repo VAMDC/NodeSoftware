@@ -10,11 +10,22 @@
   <li>Raw query string: {{ query.query }}</li>
 </ul>
 
+<h2>Please note:</h2>
+<ul>
+<li>Below you see a table with results for this query from each node. The total number is displayed, but the table is limited to the first 100 rows.</li>
+<li>Below the table you find links for downloading the whole set in either XSAMS for VO-Table XML-format.</li>
+<li>Currently the "nodes" are just two times the VALD node, to illustrate that there is actually more than one query sent from the portal and results gathered.</li>
+</ul>
 {% for result in results %}
 
 <h2>Results from {{ result.nodename }}</h2>
 
+
 {% autoescape off %}{{ result.html }}{% endautoescape %}
+
+<ul><li><a href="{{ result.xsamsurl }}">Download as XSAMS</a></li>
+<li><a href="{{ result.vourl }}">Download as VO-Table</a></li></ul>
+
 
 {% endfor %}
 

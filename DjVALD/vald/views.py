@@ -31,22 +31,7 @@ def index(request):
     c=RequestContext(request,{})
     return render_to_response('vald/index.html', c)
 
-
-def getVALDsources(transs):
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
-        sids=sids.union(s)
-    return Source.objects.filter(pk__in=sids)
-
-def getVALDstates(transs):
-    #lostates=State.objects.filter(islowerstate_trans__in=transs)
-    #histates=State.objects.filter(islowerstate_trans__in=transs)
-    #states = lostates | histates
-    q1,q2=Q(islowerstate_trans__in=transs),Q(islowerstate_trans__in=transs)
-    return State.objects.filter(q1|q2).distinct()
-
-
+######################## GENERATORS START HERE
 
 def valdsources2xsams(sources):
     for source in sources:
@@ -200,19 +185,19 @@ def valdtransitions2votable(transs,count):
     yield u"""<TABLE name="transitions" ID="transitions">
       <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>
       <FIELD name="wavelength (air)" ID="airwave" datatype="float" unit="Angstrom"/>
+      <FIELD name="wavelength (vacuum)" ID="vacwave" datatype="float" unit="Angstrom"/>
       <FIELD name="log(g*f)"   ID="loggf" datatype="float"/>
-   <!--   <FIELD name="effective lande factor" ID="landeff" datatype="float"/>
+      <FIELD name="effective lande factor" ID="landeff" datatype="float"/>
       <FIELD name="radiative gamma" ID="gammarad" datatype="float"/>
       <FIELD name="stark gamma" ID="gammastark" datatype="float"/>
       <FIELD name="waals gamma" ID="gammawaals" datatype="float"/>
-  -->    <FIELD name="upper state id" ID="upstateid" datatype="char" arraysize="*"/>
+      <FIELD name="upper state id" ID="upstateid" datatype="char" arraysize="*"/>
       <FIELD name="lower state id" ID="lostateid" datatype="char" arraysize="*"/>
       <DATA>
         <TABLEDATA>"""%(count or n,n)
 
     for trans in transs:
-        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.loggf, #trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , 
-trans.upstateid.replace('<','').replace('>','') if trans.upstateid else None, trans.lostateid.replace('<','').replace('>','') if trans.lostateid else None)
+        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.vacwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , trans.upstateid.replace('<','').replace('>','') if trans.upstateid else None, trans.lostateid.replace('<','').replace('>','') if trans.lostateid else None)
         
     yield """</TABLEDATA></DATA></TABLE>"""
 
@@ -230,37 +215,95 @@ def vald2votable(transitions,states,sources,totalcount=None):
     <LINK></LINK>
     
 """
-    #yield valdsources2votable(sources):
-    #yield valdstates2votable(states):
+    for source in valdsources2votable(sources):
+        yield source
+    for state in valdstates2votable(states):
+        yield state
     for trans in valdtransitions2votable(transitions,totalcount):
         yield trans
     yield """
 </RESOURCE>
 </VOTABLE>
 """
+#######################
 
+def valdtransitions2embedhtml(transs,count):
+    n=len(transs) if (type(transs)==type([])) else transs.count()
+    yield u"""<TABLE name="transitions" ID="transitions">
+      <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>
+      <FIELD name="AtomicNr" ID="atomic" datatype="int"/>
+      <FIELD name="Ioniz" ID="ion" datatype="int"/>
+      <FIELD name="wavelength (air)" ID="airwave" datatype="float" unit="Angstrom"/>
+      <FIELD name="log(g*f)"   ID="loggf" datatype="float"/>
+   <!--   <FIELD name="effective lande factor" ID="landeff" datatype="float"/>
+      <FIELD name="radiative gamma" ID="gammarad" datatype="float"/>
+      <FIELD name="stark gamma" ID="gammastark" datatype="float"/>
+      <FIELD name="waals gamma" ID="gammawaals" datatype="float"/>
+  -->    <FIELD name="upper state id" ID="upstateid" datatype="char" arraysize="*"/>
+      <FIELD name="lower state id" ID="lostateid" datatype="char" arraysize="*"/>
+      <DATA>
+        <TABLEDATA>"""%(count or n,n)
 
+    for trans in transs:
+        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.species.atomic, trans.species.ion,trans.airwave, trans.loggf, #trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , 
+trans.upstateid.replace('<','').replace('>','') if trans.upstateid else None, trans.lostateid.replace('<','').replace('>','') if trans.lostateid else None)
+        
+    yield """</TABLEDATA></DATA></TABLE>"""
 
+def vald2embedhtml(transitions,totalcount=None):
+    yield """<?xml version="1.0"?>
+<!--
+<?xml-stylesheet type="text/xml" href="http://vamdc.fysast.uu.se:8888/VOTable2XHTMLbasic.xsl"?>
+-->
+<VOTABLE version="1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns="http://www.ivoa.net/xml/VOTable/v1.2" 
+ xmlns:stc="http://www.ivoa.net/xml/STC/v1.30" >
+  <RESOURCE name="queryresults">
+    <DESCRIPTION>
+    </DESCRIPTION>
+    <LINK></LINK>
+    
+"""
+    for trans in valdtransitions2embedhtml(transitions,totalcount):
+        yield trans
+    yield """
+</RESOURCE>
+</VOTABLE>
+"""
 
+##############################
+### GENERATORS END HERE
 ###########################################################
 
-def setupGenerator(transs,states,sources,total):
-    if tap.format == 'xsams': return vald2xsams(transs,states,sources)
-    if tap.format == 'votable': return vald2votable(transs,states,sources,totalcount)
 
-def setupResults(tap,limit=False):
+def getVALDsources(transs):
+    sids=set([])
+    for trans in transs:
+        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
+        sids=sids.union(s)
+    return Source.objects.filter(pk__in=sids)
+
+def getVALDstates(transs):
+    #lostates=State.objects.filter(islowerstate_trans__in=transs)
+    #histates=State.objects.filter(islowerstate_trans__in=transs)
+    #states = lostates | histates
+    q1,q2=Q(islowerstate_trans__in=transs),Q(islowerstate_trans__in=transs)
+    return State.objects.filter(q1|q2).distinct()
+    
+
+def setupResults(tap,limit=0):
     if tap.lang=='vamdc':
         tap.query=tap.query%VALD_DICT
         print tap.query
-        transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostateid=states.id OR transitions.upstateid=states.id)','transitions.species=species.id'],).order_by('vacwave')
+        transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostateid=states.id OR transitions.upstateid=states.id)','transitions.species=species.id'],).order_by('airwave')
     else:
         qtup=parseSQL(tap.query)
-        transs = Transition.objects.filter(*qtup).order_by('vacwave')
-
+        transs = Transition.objects.filter(*qtup).order_by('airwave')
+    
     totalcount=transs.count()
-    if limit and (totalcount > 100):
-        step=totalcount/100
-        transs = transs[::step]
+    if limit :
+        transs = transids[:limit]
+
     sources = getVALDsources(transs)
     states = getVALDstates(transs)
     if limit:
@@ -287,10 +330,10 @@ def sync(request):
         response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
     elif tap.format == 'embedhtml':
-        transs,states,sources,count=setupResults(tap,limit=True)
-        generator=vald2votable(transs,states,sources,count)
+        transs,states,sources,count=setupResults(tap,limit=100)
+        generator=vald2embedhtml(transs,count)
         xml='\n'.join(generator)
-        open('/tmp/bla.xml','w').write(xml)
+        #open('/tmp/bla.xml','w').write(xml)
         html=vo2html(E.fromstring(xml))
         response=HttpResponse(html,mimetype='text/html')
 
