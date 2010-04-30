@@ -17,13 +17,13 @@ from lxml import etree as E
 vo2html=E.XSLT(E.parse(open('/home/tom/py/vamdc/DjVAMDC/static/xsl/VOTable2XHTML_mine.xsl')))
 
 
-VALD_DICT={'1':'species.atomic',
-           '2':'species.ion',
-           '3':'transitions.vacwave',
-           '4':'transitions.airwave',
-           '5':'transitions.loggf',
-           '6':'state.energy',
-           '7':'state.J',
+VALD_DICT={'1':'species__atomic',
+           '2':'species__ion',
+           '3':'vacwave',
+           '4':'airwave',
+           '5':'loggf',
+           '6':'state__energy',
+           '7':'state__J',
            }
 
 
@@ -95,7 +95,7 @@ def valdstates2xsams(states):
 <IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
 <LandeFactor sourceRef="B%d"><Value units="unitless">%s</Value></LandeFactor>
 </AtomicNumericalData>
-"""%( state.species.atomic , state.species.name , mass , state.species.ion , enc(state.id) , state.id , state.energy_ref , state.energy , state.species.ionen , state.lande_ref , state.lande)
+"""%( state.species.atomic , state.species.name , mass , state.species.ion , state.id , state.id , state.energy_ref , state.energy , state.species.ionen , state.lande_ref , state.lande)
 
         if (state.p or state.j):
             yield "<AtomicQuantumNumbers>"
@@ -295,7 +295,9 @@ def setupResults(tap,limit=0):
     if tap.lang=='vamdc':
         tap.query=tap.query%VALD_DICT
         print tap.query
-        transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostateid=states.id OR transitions.upstateid=states.id)','transitions.species=species.id'],).order_by('airwave')
+        #transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostate=states.id OR transitions.upstate=states.id)','transitions.species=species.id'],).order_by('airwave')
+        qtup=vamdc2queryset(tap.query)
+        transs = Transition.objects.filter(*qtup).order_by('airwave')
     else:
         qtup=parseSQL(tap.query)
         transs = Transition.objects.filter(*qtup).order_by('airwave')

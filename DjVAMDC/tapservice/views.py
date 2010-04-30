@@ -64,6 +64,25 @@ def parseSQL(sql):
         exec('mq=Q(%s="%s")'%(field+op,value))
         qlist.append(mq)
     return tuple(qlist)
+
+def vamdc2queryset(sql):
+    sql=sql.lower().replace('(','').replace(')','')
+    wheres=sql.split('where')[-1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
+    qlist=[]
+    for w in wheres:
+        w=w.split()
+        field=w[0]
+        value=w[2]
+        if w[1]=='<': op='__lt'
+        if w[1]=='>': op='__gt'
+        if w[1]=='=': op='__exact'
+        if w[1]=='<=': op='__lte'
+        if w[1]=='>=': op='__gte'
+        qexe='mq=Q(%s="%s")'%(field+op,value)
+        print qexe
+        exec(qexe)
+        qlist.append(mq)
+    return tuple(qlist)
             
 
 class RenderThread(threading.Thread):
