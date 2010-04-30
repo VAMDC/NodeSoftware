@@ -22,7 +22,7 @@ VALD_DICT={'1':'species__atomic',
            '3':'vacwave',
            '4':'airwave',
            '5':'loggf',
-           '6':'state__energy',
+           '6':'upstate__energy',
            '7':'state__J',
            }
 
