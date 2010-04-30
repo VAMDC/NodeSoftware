@@ -97,9 +97,11 @@ def do_file(tconf):
                     exec(qexec)
                         
                 else: q=Q(pk=d)
-
+                if not hasattr(ref,'field'): print model, d, q, ref
                 try: d=ref.field.related.parent_model.objects.get(q)
-                except: d=None
+                except: 
+                    print d,q, ref
+                    d=None
             
             data[colconf['cname']]=d
                 

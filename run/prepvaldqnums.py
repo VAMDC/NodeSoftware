@@ -5,10 +5,10 @@ from sys import exit
 
 #v=open('vald3.dat')
 #q=open('terms500.dat')
-v=open('vald3_atomic_obs.dat')
-q=open('terms')
+v=open('/vald/vald3_atomic_obs.dat')
+q=open('/vald/terms')
 
-out=open('myterms_all.dat','w')
+out=open('/vald/myterms_all.dat','w')
 
 
 def charrange(line,start,end):
@@ -61,7 +61,7 @@ for i,l in enumerate(v):
 	if not 'S2' in qnames.split(','): S2='X'
 	if not 'Jc' in qnames.split(','): Jc='X'
 
-	out.write('%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n'%(idstring,J,L,S,parity,J1,J2,K,S2,Jc))
+	out.write('%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n'%(idstring,J,L,S,parity,J1,J2,K,S2,Jc))
             
         
         #print species,locoup,loterm,hicoup,hiterm

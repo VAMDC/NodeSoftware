@@ -40,7 +40,7 @@ are important parts to be developed and tested.
 
 <h3>The Framework and its benefits</h3>
 
-Both the portal and the nodes are based <a href="">Django</a>. This is
+Both the portal and the nodes are based <a href="http://www.djangoproject.com/">Django</a>. This is
 a wide-spread framework for websites and services, written in the
 Python programming language, open-source and well documented. In
 short, it offers a database abstraction layer, a comfortable way to
@@ -57,7 +57,91 @@ interface.
 </ul>
 </p>
 
-One advantage of using Django is that the database model
+<p>One advantage of using Django is that the database model is defined in
+an abstract way (for the example of VALD
+look <a href="http://github.com/ivh/VAMDC-VALD/blob/master/DjVALD/vald/models.py">here</a>). The
+tools that come with Django then take care of the table creation when
+the database is initialized. This makes out tools more independant
+from the start and since Django has backends for all major open-source
+databases, a later switch of the database engine will be no big
+problem.</p>
+
+<p>The database access with Django is also abstracted. This has at least
+two major advantages. For one, it offers additional funcionality, for
+example an easy way to use references bewteen tables both ways and to
+traverse table boundareis. To illustrate: In the case of VALD, each
+transition entry holds two references to entries in the state-table
+(upper and lower). In Django code, I can
+e.g. write <code>transition.upperstate.energy</code> (use value from
+state table as if it was in the transition table)
+or <code>state.isupperstatefor</code> to get all the transitions which
+have this state as upper state (using the key in reverse direction).</p>
+
+<p>The second major advantage is that this abstraction layer is just what
+we need to "hide" the custom layout of each database and access it in
+a unified way. This will facilitate both the parsing and execution of
+the generic query language as recieved from the VAMDC portal, as well
+as the generation of standard output data, without adapting the
+relevant code. This is because the model definition also "translates"
+between table names and exposed names.</p>
+
+<p>Basically, all that will be needed to be written for a new VAMDC
+database, is the model definition.</p>
+
+<p>Concerning the import tool, we are still testing whether to use the
+Django abstraction for filling the tables, or to access the database
+(with empty tables prepared by Django) directly.</p>
+
+
+<p>The implementation of the software on top of the database (recieving
+queries, running them and preparing output in standard format) is also
+much facilitated. To write a recieving interface according to TAP is
+almost trivial because Django provides ready high-level tools for HTTP
+POST and GET data, HTTP headers and communication details and the
+mapping of standard URLs to code.
+
+<p>The data output is another important point. It has been stated that
+the overhead of creating and transferring XML (XSAMS Schema) will be
+significant. We have implemented this for VALD, at first using Djangos
+template engine (which helped making this quite easy). For a typical
+query that produces 5 MB of uncompressed XSAMS data, the rendering of
+the template (i.e. looping over the relevant bits, filling in values
+at the right places) took indeed on the order of 5 seconds. There was
+however no significant difference when the same data were written into
+comma-separated tables. In compressed format (gzip) the size
+difference was less than 1.5.</p>
+
+<p>Although the template rendering was already a factor of 5 improvement
+over previous, more naive implementations, we have in the meantime
+abandoned the use of Djangos template engine for the creation of data
+output. For it seems to be the fact that a large structure has to be
+created and held in memory that slows things down. Python has
+so-called generators which are basically functions that "yield" their
+output only while looped over. Converting the XSAMS-template into a set
+of nested generators, and handing these in their unevalutated state to
+the HTTP-reply allows the reply to start immediately while the
+data-stream is constantly created. Together with the
+fact that database queries with Djangos abstraction layer are not
+actually evaluated until the data is needed, this results in a direct
+"pipeline" from the database to the HTTP-output in which at no point
+all data is held in memory.</p>
+
+<p>This made the aforementioned request finish in a little over 1
+second, including transfer. The web server (Apache) that runs the
+Django application, is configured to compress the reply (all modern
+web-browsers support recieving this) and this way it became possible
+to have <em>synchronous</em> data requests that deliver significant
+amounts of data in a timeframe that is acceptable for users. (see the
+example at the <a href="">VALD Node</a>)</p>
+
+<p>Also once more, the difference between XSAMS and CSV or VO-Tables is
+negligible if the same information is sent. However this will be
+different, if a the layout of a dataset does not fit very well with
+the strict XML Schema and requires significant logic every time a
+XSAMS document is assembled. In this case it might be worth
+considering to pre-calculate the neccessary steps once and for all at
+import time (as we for example have done with VALD by splitting the
+states from the transitions).</p>
 
 
 <h3>The Portal with Django</h3>
