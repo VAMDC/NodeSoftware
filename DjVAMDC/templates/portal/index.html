@@ -50,10 +50,10 @@ interface.</p>
 
 <h3>The Publishing Tools with Django</h3>
 
-<p>The task of the publishing tools is to provide three things:
-<ul><li>import tool of data into a relational database</li>
+<p>As you know, the publishing tools are basically to provide three things:
+<ul><li>an import tool of data into a relational database</li>
 <li>the database itself</li>
-<li>the softare on top of the database that provides the standard VAMDC interfaces.</li>
+<li>the software that runs on top of the database and provides the standard VAMDC interfaces.</li>
 </ul>
 </p>
 
@@ -61,55 +61,60 @@ interface.</p>
 an abstract way (for the example of VALD
 look <a href="http://github.com/ivh/VAMDC-VALD/blob/master/DjVALD/vald/models.py">here</a>). The
 tools that come with Django then take care of the table creation when
-the database is initialized. This makes out tools more independant
-from the start and since Django has backends for all major open-source
-databases, a later switch of the database engine will be no big
-problem.</p>
+the database is initialized. This makes our tools more database-independant
+and since Django has backends for all major open-source
+databases, a later switch of the database engine will be no problem at all.</p>
 
-<p>The database access with Django is also abstracted. This has at least
-two major advantages. For one, it offers additional funcionality, for
-example an easy way to use references bewteen tables both ways and to
-traverse table boundareis. To illustrate: In the case of VALD, each
-transition entry holds two references to entries in the state-table
-(upper and lower). In Django code, I can
-e.g. write <em>transition.upperstate.energy</em> (use value from
-state table as if it was in the transition table)
-or <em>state.isupperstatefor</em> to get all the transitions which
-have this state as upper state (using the key in reverse direction).</p>
+<p>The database access with Django is also abstracted
+(e.g. <em>Transition.objects.filter(species__name__contains="Fe")</em>). This
+has at least two major advantages. For one, it offers additional
+funcionality, for example an easy way to use references between tables
+both ways and to traverse table boundareis. To illustrate: In the case
+of VALD, each transition entry holds two references to entries in the
+state-table (upper and lower). In Django code, I can
+e.g. write <em>transition.upperstate.energy</em> (use value from state
+table as if it was in the transition table)
+or <em>state.isupperstatefor</em> to get all the states which
+are the upper states for a selection of transitions (using the key in reverse
+direction).</p>
 
-<p>The second major advantage is that this abstraction layer is just what
-we need to "hide" the custom layout of each database and access it in
-a unified way. This will facilitate both the parsing and execution of
-the generic query language as recieved from the VAMDC portal, as well
-as the generation of standard output data, without adapting the
-relevant code. This is because the model definition also "translates"
-between table names and exposed names.</p>
+<p>The second major advantage is that this abstraction layer is just
+what we need to "hide" the custom layout of each database and write a
+layer of unified access. This will facilitate both the parsing and
+execution of the generic query language (as recieved from the VAMDC
+portal), as well as the generation of standard output data, without
+the need to adapt the relevant code. This is because the model
+definition also "translates" between table names and exposed
+names.</p>
 
 <p>Basically, all that will be needed to be written for a new VAMDC
 database, is the model definition.</p>
 
 <p>Concerning the import tool, we are still testing whether to use the
 Django abstraction for filling the tables, or to access the database
-(with empty tables prepared by Django) directly.</p>
+(with empty tables prepared by Django) directly. The former approach
+is slow, but more secure since it prevents dangling references between
+the tables.</p>
 
 
-<p>The implementation of the software on top of the database (recieving
-queries, running them and preparing output in standard format) is also
-much facilitated. To write a recieving interface according to TAP is
-almost trivial because Django provides ready high-level tools for HTTP
-POST and GET data, HTTP headers and communication details and the
-mapping of standard URLs to code.
+<p>The implementation of the software on top of the database
+(recieving queries, running them and preparing output in standard
+format) was also much facilitated by the framwork. To write a
+recieving interface according to TAP is almost trivial because Django
+provides ready high-level tools for HTTP POST and GET data, HTTP
+headers and communication details, and the mapping of standard URLs to
+code.
 
-<p>The data output is another important point. It has been stated that
+<p>Concerning the data output: It has been stated that
 the overhead of creating and transferring XML (XSAMS Schema) will be
 significant. We have implemented this for VALD, at first using Djangos
-template engine (which helped making this quite easy). For a typical
+template engine (which made this quite easy). For a typical
 query that produces 5 MB of uncompressed XSAMS data, the rendering of
 the template (i.e. looping over the relevant bits, filling in values
 at the right places) took indeed on the order of 5 seconds. There was
 however no significant difference when the same data were written into
 comma-separated tables. In compressed format (gzip) the size
-difference was less than 1.5.</p>
+difference between the two was less than a factor 1.5.</p>
 
 <p>Although the template rendering was already a factor of 5 improvement
 over previous, more naive implementations, we have in the meantime
@@ -164,7 +169,7 @@ time.</p>
 
 <p>A note on the query language: As you can see on any result page (look
 at the query string), we simply use numbered placeholders for the
-different parameters at the portal. The node then simply resolves these with its own
+different parameters. The node then resolves these with its own
 dictionary
 (see <a href="http://github.com/ivh/VAMDC-VALD/blob/master/DjVALD/vald/views.py">here</a>),
 thereby automatically having a query in its own namespace.</p>
