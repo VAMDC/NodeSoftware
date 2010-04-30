@@ -302,7 +302,7 @@ def setupResults(tap,limit=0):
     
     totalcount=transs.count()
     if limit :
-        transs = transids[:limit]
+        transs = transs[:limit]
 
     sources = getVALDsources(transs)
     states = getVALDstates(transs)
