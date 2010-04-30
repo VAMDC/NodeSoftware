@@ -1,35 +1,5 @@
 A quick implementation of a mini-VAMDC, for test purposes.
 
 * Check out your copy with "git clone git://github.com/ivh/VAMDC-VALD.git"
-* Change directory into VAMDC-VALD/run
-* Run "./import.py dummy" to create dummy data with corresponding
-  config file.
-* Run "./start-server.py" to start the server on localhost:8080.
-* Run "./request.py" to send a request to the server and
-  get the answer back (JSON encoded), unpack the data and
-  print it.
-* A short sample of VALD data is also included. To use it run
-  "./import vald && ./server.py vald.db" and modify the request.
-* In general, the different subdirectories in VAMDC-VALD are sub-modules
-  of the whole package, except xml-files/ which stores sample xml-files 
-  and schema, and run/ which holds the executable scripts that make
-  use of the packages.
 
-TODO:
-import:
- * Come up with a format in the config files for connecting
-   tables and specify indices
- * generate meta-xml ?
- * treat empty fields, quotes in data etc.
- * create tables for metadata, registry
- * make it robust, testing
-
-server
- * add authentication
- * make requests more TAP-like
- * implement registry request
- * maybe switch to a higher level framework, like cherrypy or web2py
- * implement alternative to SQLite: use MySQL
-
-In general:
- * import the whole of VALD and run performance tests
+* See it running at http://vamdc.fysast.uu.se:8888/portal/ (documentation is also there)
