@@ -146,7 +146,7 @@ states from the transitions).</p>
 
 <h3>The Portal with Django</h3>
 
-Even though the portal is not primarily our responsibility, we wanted
+<p>Even though the portal is not primarily our responsibility, we wanted
 to have somethig to test the interfaces with. Setting up the simple
 query form as it is now was straight forward with Django. The portal
 assigns a random string as ID to each query and saves it with a
@@ -154,20 +154,20 @@ timestamp into its own database when it is submitted. The user then
 gets redirected to the result page for that query which is the one
 that actually sends out the request to all the nodes in the "registry"
 (just a list of names and urls to the TAP-sync interface for now) and
-displays the results inline.
+displays the results inline.</p>
 
 
-Generally, we would like to suggest to base the real VAMDC portal on
+<p>Generally, we would like to suggest to base the real VAMDC portal on
 something like Django. It brings all the necessary tools with it
 (e.g. authentification) while allowing much flexibility at the same
-time.
+time.</p>
 
-A note on the query language: As you can see on any result page (look
+<p>A note on the query language: As you can see on any result page (look
 at the query string), we simply use numbered placeholders for the
 different parameters at the portal. The node then simply resolves these with its own
 dictionary
 (see <a href="http://github.com/ivh/VAMDC-VALD/blob/master/DjVALD/vald/views.py">here</a>),
-thereby automatically having a query in its own namespace.
+thereby automatically having a query in its own namespace.</p>
 
 {% endblock %}
 
