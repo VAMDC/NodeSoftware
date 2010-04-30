@@ -7,7 +7,15 @@ helper functions to create and fill the database
 
 """
 
-from vamdc.db.cursors import *
+from __future__ import with_statement
+import contextlib
+
+@contextlib.contextmanager
+def handler():
+    try:
+        yield
+    except Exception, e:
+        print e
 
 import string as s
 import sys
@@ -41,6 +49,30 @@ def getdata(tconf,line,model):
         data=model()
     return data
                     
+def findMatchAndUpdate(tconf,data,line):
+    model=tconf['model']
+    colconf=tconf['columns'][0]
+    fu=colconf['cbyte'][0]
+    args=colconf['cbyte'][1]
+    d=fu(line,*args)
+    exec('modelq=Q(%s="%s")'%(tconf['updatematch'],d))
+    try:
+        match=model.objects.get(modelq)
+    except Exception, e: 
+        sys.stderr.write(str(e)+'\n')
+        return
+    
+    for key in data.keys(): setattr(match,key,data[key])
+    try: match.save()
+    except Exception, e:
+        sys.stderr.write(str(e)+'\n')
+
+
+def saveAsNew(model,data):
+    try:
+        model.objects.create(**data)
+    except Exception, e:
+        sys.stderr.write(str(e)+'\n')
 
 def do_file(tconf):
     print 'working on %s ...'%tconf['fname'],
@@ -72,24 +104,11 @@ def do_file(tconf):
             data[colconf['cname']]=d
                 
 
-        try:
-            if tconf.has_key('updatematch'):
-                colconf=tconf['columns'][0]
-                fu=colconf['cbyte'][0]
-                args=colconf['cbyte'][1]
-                d=fu(line,*args)
-                exec('modelq=Q(%s="%s")'%(tconf['updatematch'],d))
-                match=model.objects.get(modelq)
-                for key in data.keys(): setattr(match,key,data[key])
-            else:
-                model.objects.create(**data)
-        except IntegrityError, value:
-            if 'column charid is not unique' in value: pass
-            else: print data,value; sys.exit()
-
-        except Exception, value:
-            print data,value
-            #sys.exit()
+        if tconf.has_key('updatematch'):
+            findMatchAndUpdate(tconf,data,line)
+        else:
+            saveAsNew(model,data)
+        
     print 'done.'
            
 

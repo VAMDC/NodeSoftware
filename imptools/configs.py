@@ -41,7 +41,7 @@ vald3cfg={
          'headlines':0,   
          'commentchar':'#',   
          'columns':[          
-                {'cname':'id',  
+                {'cname':'pk',  
                  'cbyte':(charrange,(0,7))},   
                 {'cname':'name',  
                  'cbyte':(charrange,(9,19))},   
@@ -66,7 +66,7 @@ vald3cfg={
          'headlines':1,
          'commentchar':';',
          'columns':[\
-                {'cname':'id',
+                {'cname':'pk',
                  'cbyte':(bySepNr,(1,))},
                 {'cname':'srcfile',
                  'cbyte':(bySepNr,(0,))},
