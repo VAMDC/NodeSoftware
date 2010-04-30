@@ -40,13 +40,13 @@ are important parts to be developed and tested.
 
 <h3>The Framework and its benefits</h3>
 
-Both the portal and the nodes are based <a href="http://www.djangoproject.com/">Django</a>. This is
+<p>Both the portal and the nodes are based <a href="http://www.djangoproject.com/">Django</a>. This is
 a wide-spread framework for websites and services, written in the
 Python programming language, open-source and well documented. In
 short, it offers a database abstraction layer, a comfortable way to
 associate URLs with bits of code and a templating engine. It also
 facilitates the creation and use of HTML forms and provides an admin
-interface.
+interface.</p>
 
 <h3>The Publishing Tools with Django</h3>
 
@@ -72,9 +72,9 @@ example an easy way to use references bewteen tables both ways and to
 traverse table boundareis. To illustrate: In the case of VALD, each
 transition entry holds two references to entries in the state-table
 (upper and lower). In Django code, I can
-e.g. write <code>transition.upperstate.energy</code> (use value from
+e.g. write <em>transition.upperstate.energy</em> (use value from
 state table as if it was in the transition table)
-or <code>state.isupperstatefor</code> to get all the transitions which
+or <em>state.isupperstatefor</em> to get all the transitions which
 have this state as upper state (using the key in reverse direction).</p>
 
 <p>The second major advantage is that this abstraction layer is just what
@@ -146,9 +146,28 @@ states from the transitions).</p>
 
 <h3>The Portal with Django</h3>
 
+Even though the portal is not primarily our responsibility, we wanted
+to have somethig to test the interfaces with. Setting up the simple
+query form as it is now was straight forward with Django. The portal
+assigns a random string as ID to each query and saves it with a
+timestamp into its own database when it is submitted. The user then
+gets redirected to the result page for that query which is the one
+that actually sends out the request to all the nodes in the "registry"
+(just a list of names and urls to the TAP-sync interface for now) and
+displays the results inline.
 
-<h3>Performance</h3>
 
+Generally, we would like to suggest to base the real VAMDC portal on
+something like Django. It brings all the necessary tools with it
+(e.g. authentification) while allowing much flexibility at the same
+time.
+
+A note on the query language: As you can see on any result page (look
+at the query string), we simply use numbered placeholders for the
+different parameters at the portal. The node then simply resolves these with its own
+dictionary
+(see <a href="http://github.com/ivh/VAMDC-VALD/blob/master/DjVALD/vald/views.py">here</a>),
+thereby automatically having a query in its own namespace.
 
 {% endblock %}
 
