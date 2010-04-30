@@ -90,17 +90,16 @@ def do_file(tconf):
             if not d: continue
             if colconf.has_key('cnull'):
                 if d==colconf['cnull']: continue
-            if hasattr(model,colconf['cname']): ## THIS IS A FOREIGN KEY
-                ref=getattr(model,colconf['cname'])
-                if colconf.has_key('foreignpk'):
-                    qexec='q=Q(%s="%s")'%(colconf['foreignpk'],d)
-                    exec(qexec)
-                        
-                else: q=Q(pk=d)
-                if not hasattr(ref,'field'): print model, d, q, ref
-                try: d=ref.field.related.parent_model.objects.get(q)
+            #if hasattr(model,colconf['cname']): ## THIS IS A FOREIGN KEY
+            if colconf.has_key('references'):
+                refmodel=colconf['references'][0]
+                refcol=colconf['references'][1]
+                #ref=getattr(model,colconf['cname'])
+                
+                qexec='q=Q(%s="%s")'%(refcol,d)
+                exec(qexec)
+                try: d=refmodel.objects.get(q)
                 except: 
-                    print d,q, ref
                     d=None
             
             data[colconf['cname']]=d
