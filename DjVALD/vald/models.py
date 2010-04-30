@@ -1,25 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-class ColInfo(models.Model):
-    cname = models.CharField(max_length=64)
-    tname = models.CharField(max_length=64)
-    ccom = models.TextField(blank=True,null=True)
-    cunit = models.CharField(max_length=64, blank=True,null=True)
-    cfmt = models.CharField(max_length=64, blank=True,null=True)
-    def __unicode__(self):
-        return u'%d'%self.id
-    class Meta:
-        db_table = u'meta'
-        verbose_name = _('ColumnInfo')
-        verbose_name_plural = _('ColumnInfos')
-
-class Query(models.Model):
-    qid=models.CharField(max_length=6,primary_key=True,db_index=True)
-    datetime=models.DateTimeField(auto_now_add=True)
-    query=models.CharField(max_length=512)
-
-
 class Species(models.Model):
     name = models.CharField(max_length=10, db_index=True)
     ion = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
@@ -123,3 +104,11 @@ class Transition(models.Model):
         db_table = u'transitions'
         verbose_name = _('Transition')
         verbose_name_plural = _('Transitions')
+
+
+class Query(models.Model):
+    qid=models.CharField(max_length=6,primary_key=True,db_index=True)
+    datetime=models.DateTimeField(auto_now_add=True)
+    query=models.CharField(max_length=512)
+
+
