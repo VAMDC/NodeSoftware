@@ -6,12 +6,12 @@
 
 {% block content %}
 <p> This is a test implementation. It consists of
-two parts that are run by independant web-applications:</p>
+two parts that are run by independent web-applications:</p>
 
 <ul>
 <li>The <strong>portal</strong> which is the VAMDC "central" that is
 supposed to let users <a href="/portal/query/">make a data request</a>
-without knowing about individial databases, to pass this request to
+without knowing about individual databases, to pass this request to
 the connected databases and to collect the results to be displayed or
 downloaded to the user. All URLs that contain <em>/portal/</em> are
 run by this application.</li>
@@ -40,7 +40,7 @@ are important parts to be developed and tested.
 a wide-spread framework for websites and services, written in the
 Python programming language, open-source and well documented. In
 short, it offers a database abstraction layer, a comfortable way to
-associate URLs with bits of code and a templating engine. It also
+associate URLs with bits of code and a template engine. It also
 facilitates the creation and use of HTML forms and provides an admin
 interface.</p>
 
@@ -57,15 +57,15 @@ interface.</p>
 an abstract way (for the example of VALD
 look <a href="http://github.com/ivh/VAMDC-VALD/blob/master/DjVALD/vald/models.py">here</a>). The
 tools that come with Django then take care of the table creation when
-the database is initialized. This makes our tools more database-independant
+the database is initialised. This makes our tools more database-independent
 and since Django has backends for all major open-source
 databases, a later switch of the database engine will be no problem at all.</p>
 
 <p>The database access with Django is also abstracted
 (e.g. <em>Transition.objects.filter(species__name__contains="Fe")</em>). This
 has at least two major advantages. For one, it offers additional
-funcionality, for example an easy way to use references between tables
-both ways and to traverse table boundareis. To illustrate: In the case
+functionality, for example an easy way to use references between tables
+both ways and to traverse table boundaries. To illustrate: In the case
 of VALD, each transition entry holds two references to entries in the
 state-table (upper and lower). In Django code, I can
 e.g. write <em>transition.upperstate.energy</em> (use value from state
@@ -119,7 +119,7 @@ output. For it seems to be the fact that a large structure has to be
 created and held in memory that slows things down. Python has
 so-called generators which are basically functions that "yield" their
 output only while looped over. Converting the XSAMS-template into a set
-of nested generators, and handing these in their unevalutated state to
+of nested generators, and handing these in their unevaluated state to
 the HTTP-reply allows the reply to start immediately while the
 data-stream is constantly created. Together with the
 fact that database queries with Djangos abstraction layer are not
@@ -132,15 +132,15 @@ second, including transfer. The web server (Apache) that runs the
 Django application, is configured to compress the reply (all modern
 web-browsers support receiving this) and this way it became possible
 to have <em>synchronous</em> data requests that deliver significant
-amounts of data in a timeframe that is acceptable for users. (see the
+amounts of data in a time frame that is acceptable for users. (see the
 example at the <a href="http://vamdc.fysast.uu.se:8888/node/vald/">VALD Node</a>)</p>
 
 <p>Also once more, the difference between XSAMS and CSV or VO-Tables is
 negligible if the same information is sent. However this will be
-different, if a the layout of a dataset does not fit very well with
+different, if a the layout of a data-set does not fit very well with
 the strict XML Schema and requires significant logic every time a
 XSAMS document is assembled. In this case it might be worth
-considering to pre-calculate the neccessary steps once and for all at
+considering to pre-calculate the necessary steps once and for all at
 import time (as we for example have done with VALD by splitting the
 states from the transitions).</p>
 
@@ -148,19 +148,19 @@ states from the transitions).</p>
 <h3>The Portal with Django</h3>
 
 <p>Even though the portal is not primarily our responsibility, we wanted
-to have somethig to test the interfaces with. Setting up the simple
+to have something to test the interfaces with. Setting up the simple
 query form as it is now was straight forward with Django. The portal
 assigns a random string as ID to each query and saves it with a
-timestamp into its own database when it is submitted. The user then
+time-stamp into its own database when it is submitted. The user then
 gets redirected to the result page for that query which is the one
 that actually sends out the request to all the nodes in the "registry"
-(just a list of names and urls to the TAP-sync interface for now) and
+(just a list of names and URLs to the TAP-sync interface for now) and
 displays the results inline.</p>
 
 
 <p>Generally, we would like to suggest to base the real VAMDC portal on
 something like Django. It brings all the necessary tools with it
-(e.g. authentification) while allowing much flexibility at the same
+(e.g. authentication) while allowing much flexibility at the same
 time.</p>
 
 <p>A note on the query language: As you can see on any result page (look
@@ -168,7 +168,7 @@ at the query string), we simply use numbered placeholders for the
 different parameters. The node then resolves these with its own
 dictionary
 (see <a href="http://github.com/ivh/VAMDC-VALD/blob/master/DjVALD/vald/views.py">here</a>),
-thereby automatically having a query in its own namespace.</p>
+thereby automatically having a query in its own name-space.</p>
 
 
 <h3>The Source Code</h3>
