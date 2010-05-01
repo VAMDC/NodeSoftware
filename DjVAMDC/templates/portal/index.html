@@ -77,7 +77,7 @@ direction).</p>
 <p>The second major advantage is that this abstraction layer is just
 what we need to "hide" the custom layout of each database and write a
 layer of unified access. This will facilitate both the parsing and
-execution of the generic query language (as recieved from the VAMDC
+execution of the generic query language (as received from the VAMDC
 portal), as well as the generation of standard output data, without
 the need to adapt the relevant code. This is because the model
 definition also "translates" between table names and exposed
@@ -94,9 +94,9 @@ the tables.</p>
 
 
 <p>The implementation of the software on top of the database
-(recieving queries, running them and preparing output in standard
-format) was also much facilitated by the framwork. To write a
-recieving interface according to TAP is almost trivial because Django
+(receiving queries, running them and preparing output in standard
+format) was also much facilitated by the framework. To write a
+receiving interface according to TAP is almost trivial because Django
 provides ready high-level tools for HTTP POST and GET data, HTTP
 headers and communication details, and the mapping of standard URLs to
 code.</p>
@@ -130,7 +130,7 @@ all data is held in memory.</p>
 <p>This made the aforementioned request finish in a little over 1
 second, including transfer. The web server (Apache) that runs the
 Django application, is configured to compress the reply (all modern
-web-browsers support recieving this) and this way it became possible
+web-browsers support receiving this) and this way it became possible
 to have <em>synchronous</em> data requests that deliver significant
 amounts of data in a timeframe that is acceptable for users. (see the
 example at the <a href="http://vamdc.fysast.uu.se:8888/node/vald/">VALD Node</a>)</p>
