@@ -79,7 +79,7 @@ class Transition(models.Model):
     srctag = models.CharField(max_length=7, blank=True,null=True)
     acflag = models.CharField(max_length=1, blank=True,null=True)
     accur = models.CharField(max_length=10, blank=True,null=True)
-    comment = models.CharField(max_length=10, null=True,blank=True)
+    comment = models.CharField(max_length=128, null=True,blank=True)
     #wave_ref = models.ForeignKey(Source,db_column=u'wave_ref',related_name='iswaveref_trans')
     #loggf_ref = models.ForeignKey(Source,db_column=u'loggf_ref',related_name='isloggfref_trans')
     #lande_ref = models.ForeignKey(Source,db_column=u'lande_ref',related_name='islanderef_trans')
