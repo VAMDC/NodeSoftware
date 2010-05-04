@@ -51,7 +51,7 @@ def valdsources2xsams(sources):
 def valdterm2xsams(state):
     
     result='<AtomicComposition>\n<Comments>Term reference: B%s</Comments>\n'%state.level_ref
-    result+='<Component><Configuration><ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%state.term
+    result+='<Component><Configuration><ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%state.term.replace('<','').replace('>','')
     result+='<Term>'
     if state.coupling == "LS" and state.l and state.s: 
         result+='<LS>'
