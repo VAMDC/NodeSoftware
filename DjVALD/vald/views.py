@@ -163,20 +163,15 @@ def valdsources2votable(sources):
 def valdstates2votable(states):
     yield """<TABLE name="states" ID="states">
       <DESCRIPTION>The States that are involved in transitions</DESCRIPTION>
-      <GROUP ID="">
-        <PARAM datatype="char" arraysize="*" ucd="pos.frame" name="cooframe"
-             utype="stc:AstroCoords.coord_system_id" value="UTC-ICRS-TOPO" />
-        <FIELDref ref="col1"/>
-        <FIELDref ref="col2"/>
-      </GROUP>
-      <FIELD name="RA"   ID="col1" ucd="pos.eq.ra;meta.main" ref="J2000" 
-             utype="stc:AstroCoords.Position2D.Value2.C1"
-             datatype="float" width="6" precision="2" unit="deg"/>
+      <FIELD name="species name" ID="specname" datatype="char" arraysize="*"/>
+      <FIELD name="energy" ID="energy" datatype="float" unit="1/cm"/>
+      <FIELD name="id" ID="id" datatype="int"/>
+      <FIELD name="charid" ID="charid" datatype="char" arraysize="*"/>
       <DATA>
         <TABLEDATA>"""
 
     for state in states:
-        yield  '<TR><TD>010.68</TD><TD>+41.27</TD><TD>N  224</TD><TD>-297</TD><TD>5</TD><TD>0.7</TD></TR>'
+        yield  '<TR><TD>not implemented</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>'%(state.energy,state.id,state.charid)
         
     yield """</TABLEDATA></DATA></TABLE>"""
 
