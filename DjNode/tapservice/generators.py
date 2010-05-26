@@ -103,7 +103,7 @@ air wavelength: %s (Ref B%d)
 </RadiativeTransition>"""%(trans.loggf_ref,trans.loggf)
 
 
-def 2xsams(transitions,states,sources):
+def xsams(transitions,states,sources):
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
