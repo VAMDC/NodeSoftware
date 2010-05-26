@@ -4,8 +4,6 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 
-
-
 from time import time
 from datetime import date
 from string import lower
@@ -16,38 +14,7 @@ import os, math
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
-
-from DjVALD.vald.views import *
-
-def index(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
-
-class TAPQUERY(object):
-    def __init__(self,data):
-        try:
-            self.request=lower(data['REQUEST'])
-            self.lang=lower(data['LANG'])
-            self.query=lower(data['QUERY'])
-            self.format=lower(data['FORMAT'])
-            self.isvalid=True
-        except:
-            self.isvalid=False
-
-        if self.isvalid: self.validate()
-        if self.isvalid: self.assignQID()
-    def validate(self):
-        """
-        overwrite this method for
-        custom checks, depending on data set
-        """
-
-    def assignQID(self):
-        """ make a query-id """
-        self.queryid='%s-%s'%(date.today().isoformat(),randStr(8))
-
-    def __str__(self):
-        return '%s'%self.query
+from DjNode.tapservice.generators import *
 
 def parseSQL(sql):
     wheres=sql.split('where')[1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
@@ -89,6 +56,40 @@ def vamdc2queryset(sql):
             
 
 
+
+from DjVALD.vald.views import *
+
+def index(request):
+    c=RequestContext(request,{})
+    return render_to_response('node/index.html', c)
+
+class TAPQUERY(object):
+    def __init__(self,data):
+        try:
+            self.request=lower(data['REQUEST'])
+            self.lang=lower(data['LANG'])
+            self.query=lower(data['QUERY'])
+            self.format=lower(data['FORMAT'])
+            self.isvalid=True
+        except:
+            self.isvalid=False
+
+        if self.isvalid: self.validate()
+        if self.isvalid: self.assignQID()
+    def validate(self):
+        """
+        overwrite this method for
+        custom checks, depending on data set
+        """
+
+    def assignQID(self):
+        """ make a query-id """
+        self.queryid='%s-%s'%(date.today().isoformat(),randStr(8))
+
+    def __str__(self):
+        return '%s'%self.query
+
+
 def async(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)
@@ -116,19 +117,19 @@ def sync(request):
     
     if tap.format == 'xsams': 
         transs,states,sources=setupResults(tap)
-        generator=vald2xsams(transs,states,sources)
+        generator=xsams(transs,states,sources)
         response=HttpResponse(generator,mimetype='application/xml')
         response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
     elif tap.format == 'votable': 
         transs,states,sources=setupResults(tap)
-        generator=vald2votable(transs,states,sources)
+        generator=votable(transs,states,sources)
         response=HttpResponse(generator,mimetype='application/xml')
         response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
     elif tap.format == 'embedhtml':
         transs,states,sources,count=setupResults(tap,limit=100)
-        generator=vald2embedhtml(transs,count)
+        generator=embedhtml(transs,count)
         xml='\n'.join(generator)
         #open('/tmp/bla.xml','w').write(xml)
         html=vo2html(E.fromstring(xml))
