@@ -10,9 +10,9 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-    (r'^tap/', include('DjVAMDC.tapservice.urls')),
 
     (r'', include('DjNode.urls')),
-#    (r'', include('DjVALD.vald.urls')),
+    #(r'^tap/', include('DjVAMDC.tapservice.urls')),
+    (r'', include('DjVALD.vald.urls')),
 
 )

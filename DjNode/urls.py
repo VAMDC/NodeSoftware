@@ -9,10 +9,10 @@ urlpatterns = patterns('',
     #(r'^admin/', include(admin.site.urls)),
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-    # the TAP urls
-    (r'^tap/', include('DjNode.tapservice.urls')),
-
     # the basic node urls, overwrite this or add your app below
     (r'', include('DjNode.node.urls')),
+    # the TAP urls schould come with the previous line
+    #(r'^tap/', include('DjNode.tapservice.urls')),
+
     
 )
