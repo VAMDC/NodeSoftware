@@ -166,7 +166,7 @@ def transitions2votable(transs,count):
         
     yield """</TABLEDATA></DATA></TABLE>"""
 
-def 2votable(transitions,states,sources,totalcount=None):
+def votable(transitions,states,sources,totalcount=None):
     yield """<?xml version="1.0"?>
 <!--
 <?xml-stylesheet type="text/xml" href="http://vamdc.fysast.uu.se:8888/VOTable2XHTMLbasic.xsl"?>
