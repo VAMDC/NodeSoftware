@@ -11,8 +11,8 @@ urlpatterns = patterns('',
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
 
-    (r'', include('DjNode.urls')),
+    (r'^node/vald/', include('DjNode.urls')),
     #(r'^tap/', include('DjVAMDC.tapservice.urls')),
-    (r'', include('DjVALD.vald.urls')),
+    (r'^node/vald/', include('DjVALD.vald.urls')),
 
 )
