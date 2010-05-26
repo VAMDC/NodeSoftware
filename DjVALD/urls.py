@@ -12,7 +12,7 @@ urlpatterns = patterns('',
 
     (r'^tap/', include('DjVAMDC.tapservice.urls')),
 
-    (r'', include('DjNode.node.urls')),
+    (r'', include('DjNode.urls')),
 #    (r'', include('DjVALD.vald.urls')),
 
 )

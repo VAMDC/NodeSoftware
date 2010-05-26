@@ -6,11 +6,11 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
-    (r'^admin/', include(admin.site.urls)),
+    #(r'^admin/', include(admin.site.urls)),
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # the TAP urls
-    (r'^tap/', include('DjNode.tapservice')),
+    (r'^tap/', include('DjNode.tapservice.urls')),
 
     # the basic node urls, overwrite this or add your app below
     (r'', include('DjNode.node.urls')),

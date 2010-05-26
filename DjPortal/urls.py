@@ -4,7 +4,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Example:
-    # (r'^DjVAMDC/', include('DjVAMDC.foo.urls')),
+    # (r'^DjPortal/', include('DjPortal.foo.urls')),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:
@@ -12,6 +12,6 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
-    (r'', include('DjVAMDC.portal.urls')),
-#    (r'^node/', include('DjVAMDC.node.urls')),
+    (r'', include('DjPortal.portal.urls')),
+#    (r'^node/', include('DjPortal.node.urls')),
 )

@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('DjVAMDC.tapservice.views',
+urlpatterns = patterns('DjNode.tapservice.views',
                        (r'^$', 'index'),
                        (r'^sync/', 'sync'),
                        (r'^async/', 'async'),
