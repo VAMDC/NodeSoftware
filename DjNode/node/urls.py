@@ -4,6 +4,3 @@ from django.conf.urls.defaults import *
 urlpatterns = patterns('DjNode.node.views',
                        (r'^$', 'index'),
                        )
-
-import DjNode.tapservice.urls as tapurls
-urlpatterns += tapurls.urlpatterns
