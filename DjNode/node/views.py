@@ -5,8 +5,8 @@ from django.template import RequestContext
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
-
-from DjVALD.vald.models import Transition,State,Source,Species
+# import your models 
+#from DjVALD.vald.models import Transition,State,Source,Species
 
 # This imports all the generic tap views!
 from DjVAMDC.tapservice.views import *
@@ -14,9 +14,6 @@ from DjVAMDC.tapservice.views import *
 from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
-
-from lxml import etree as E
-vo2html=E.XSLT(E.parse(open('/home/tom/py/vamdc/DjVAMDC/static/xsl/VOTable2XHTML_mine.xsl')))
 
 
 VALD_DICT={'1':'species__atomic',
@@ -286,7 +283,7 @@ def getVALDstates(transs):
     #lostates=State.objects.filter(islowerstate_trans__in=transs)
     #histates=State.objects.filter(islowerstate_trans__in=transs)
     #states = lostates | histates
-    q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
+    q1,q2=Q(islowerstate_trans__in=transs),Q(islowerstate_trans__in=transs)
     return State.objects.filter(q1|q2).distinct()
     
 
