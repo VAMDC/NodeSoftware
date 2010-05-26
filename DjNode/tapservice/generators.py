@@ -1,3 +1,6 @@
+from base64 import b64encode as b64
+def enc(s):
+    return b64(s).replace('=','')
 
 
 def sources2xsams(sources):
