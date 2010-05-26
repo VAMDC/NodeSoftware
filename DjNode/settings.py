@@ -54,7 +54,7 @@ MEDIA_URL = 'http://vamdc.fysast.uu.se:8888/media/'
 ADMIN_MEDIA_PREFIX = '/admin-media/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '=4nk7k_v3p@gsdfs#¤&%¤#*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
+SECRET_KEY = '=4nk7k_v3p@gsdfs#&%&/(&/#*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
