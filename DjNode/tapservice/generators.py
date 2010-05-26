@@ -95,8 +95,8 @@ air wavelength: %s (Ref B%d)
 <Comments>Wavelength in vaccuum. For air see the comment field.</Comments><Value units="1/cm">%s</Value><Accuracy>Flag: %s, Value: %s</Accuracy>
 </Experimental></Wavelength></EnergyWavelength>"""%( trans.landeff , trans.lande_ref , trans.gammarad , trans.gammarad_ref , trans.gammastark , trans.gammastark_ref , trans.gammawaals , trans.gammawaals_ref , trans.airwave, trans.wave_ref, trans.wave_ref , trans.vacwave , trans.acflag , trans.accur)
 
-        if trans.upstateid: yield '<InitialStateRef>S%s</InitialStateRef>'%enc(trans.upstateid)
-        if trans.lostateid: yield '<FinalStateRef>S%s</FinalStateRef>'%enc(trans.lostateid)
+        if trans.upstateid: yield '<InitialStateRef>S%s</InitialStateRef>'%enc(trans.upstate.id)
+        if trans.lostateid: yield '<FinalStateRef>S%s</FinalStateRef>'%enc(trans.lostate.id)
         if trans.loggf: yield """<Probability>
 <Log10WeightedOscillatorStregnth sourceRef="B%d"><Value units="unitless">%s</Value></Log10WeightedOscillatorStregnth>
 </Probability>
