@@ -3,6 +3,10 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+BASEPATH='/home/endres/Projects/vamdc/'
+import sys
+sys.path.append(BASEPATH)
+
 ADMINS = (
     ('Christian Endres', 'endres@ph1.uni-koeln.de'),
 )
@@ -36,12 +40,12 @@ USE_I18N = False
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/home/endres/Projects/vamdc/DjVAMDC/static/media'
+MEDIA_ROOT = BASEPATH+'DjVAMDC/static/media'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = 'http://localhost:8888/media/'
+MEDIA_URL = 'http://astro.uni-koeln.de:8099/DjCDMS/media/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
@@ -80,7 +84,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'DjVAMDC.node',
-    'DjVAMDC.tapservice',
-    'DjVALD.vald',
+    'DjNode.node',
+    'DjNode.tapservice',
+    'DjCDMS.cdms',
 )
