@@ -7,12 +7,12 @@ admin.autodiscover()
 urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
-    (r'^admin/', include(admin.site.urls)),
+    #(r'^admin/', include(admin.site.urls)),
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
 
-    (r'^node/vald/', include('DjNode.urls')),
+    (r'', include('DjNode.urls')),
     #(r'^tap/', include('DjVAMDC.tapservice.urls')),
-    (r'^node/vald/', include('DjVALD.vald.urls')),
+    #(r'^node/vald/', include('DjVALD.vald.urls')),
 
 )

@@ -12,7 +12,7 @@ from django.core.urlresolvers import reverse
 from DjNode.tapservice.views import *
 
 # The generators
-from DjNode.node.generators import *
+from DjNode.tapservice.generators import *
 
 # An example of a replacement dictionary
 #VALD_DICT={'1':'species__atomic',
