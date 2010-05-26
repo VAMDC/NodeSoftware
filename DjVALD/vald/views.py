@@ -9,7 +9,7 @@ from django.conf import settings
 from DjVALD.vald.models import Transition,State,Source,Species
 
 # This imports all the generic tap views!
-from DjVAMDC.tapservice.views import *
+from DjNode.tapservice.views import *
 
 from base64 import b64encode as b64
 def enc(s):

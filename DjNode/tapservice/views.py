@@ -16,6 +16,9 @@ import os, math
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
+
+from DjVALD.vald.views import *
+
 def index(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)
