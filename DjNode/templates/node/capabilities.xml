@@ -1,0 +1,23 @@
+<?xml version='1.0'?>
+<capabilities
+    xmlns:vosi='http://www.ivoa.net/xml/VOSI/v1.0'
+    xmlns:vs='http://www.ivoa.net/xml/VODataService/v1.1' 
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+    xsi:schemaLocation='http://www.ivoa.net/xml/VODataService/v1.1 http://www.ivoa.net/xml/VODataService/VODataService-v1.1.xsd
+                        http://www.w3.org/2001/XMLSchema-instance  http://www.w3.org/2001/XMLSchema-instance'>
+    <capability standardId='ivo://vamdc/std/TAP-XSAMS'>
+        <interface xsi:type='vs:ParamHttp'>
+            <accessURL use='base'>{{accessURL}}</accessURL>
+        </interface>
+    </capability>
+    <capability standardId='ivo://ivoa.net/std/TAP'>
+        <interface xsi:type='vs:ParamHttp'>
+            <accessURL use='base'>{{accessURL}}</accessURL>
+        </interface>
+    </capability>
+    <capability standardId='ivo://ivoa.net/std/VOSI#capabilities'>
+        <interface xsi:type='vs:ParamHttp'>
+            <accessURL use='base'>{{accessURL}}/capabilities</accessURL>
+        </interface>
+    </capability>
+</vosi:capabilities>
