@@ -137,14 +137,14 @@ def Xsams(Sources,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,M
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">"""
 
     for Source in XsamsSources(sources): yield Source
-    for Method in XsamsMethods(Methods): yield Method
+#    for Method in XsamsMethods(Methods): yield Method
     
     yield '<States>\n'
-    for AtomState in XsamsAtomStates(states): yield AtomState
-    for MoleState in XsamsMoleStates(states): yield MoleState
+#    for AtomState in XsamsAtomStates(states): yield AtomState
+#    for MoleState in XsamsMoleStates(states): yield MoleState
     yield '</States>\n'
     yield '<Processes>\n'
-    for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
+#    for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
     #for CollTrans in XsamsCollTrans(CollTrans): yield CollTrans
     yield '</Processes>\n'
     yield '</XSAMSData>\n'
