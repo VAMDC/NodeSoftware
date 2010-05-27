@@ -11,7 +11,7 @@ class Species(models.Model):
     atomic = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     isotope = models.PositiveSmallIntegerField(null=True, blank=True)
     def __unicode__(self):
-        return u'%s'%self.id.encode('utf8') if self.id else u'NULL'
+        return u'ID:%s %s'%(self.id,self.name)
     class Meta:
         db_table = u'species'
         verbose_name = _('Species')
