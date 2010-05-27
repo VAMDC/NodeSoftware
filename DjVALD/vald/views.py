@@ -18,17 +18,17 @@ def enc(s):
 from lxml import etree as E
 vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
+# legacy dict
+#VALD_DICT={'1':'species__atomic',
+#           '2':'species__ion',
+#           '3':'vacwave',
+#           '4':'airwave',
+#           '5':'loggf',
+#           '6':'lostate__energy',
+#           '7':'lostate__J',
+#           }
 
-VALD_DICT={'1':'species__atomic',
-           '2':'species__ion',
-           '3':'vacwave',
-           '4':'airwave',
-           '5':'loggf',
-           '6':'lostate__energy',
-           '7':'lostate__J',
-           }
-
-VAMDC_DICT={\
+VALD_DICT={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
 'SourceCategory':'',
