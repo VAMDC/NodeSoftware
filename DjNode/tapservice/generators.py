@@ -183,7 +183,10 @@ def states2votable(states):
     yield """</TABLEDATA></DATA></TABLE>"""
 
 def transitions2votable(transs,count):
-    n=len(transs) if (type(transs)==type([])) else transs.count()
+    if type(transs)==type([]):
+        n = len(transs)
+    else:
+        transs.count()
     yield u"""<TABLE name="transitions" ID="transitions">
       <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>
       <FIELD name="wavelength (air)" ID="airwave" datatype="float" unit="Angstrom"/>
@@ -230,7 +233,10 @@ def votable(transitions,states,sources,totalcount=None):
 #######################
 
 def transitions2embedhtml(transs,count):
-    n=len(transs) if (type(transs)==type([])) else transs.count()
+    if type(transs)==type([]):
+        n = len(transs)
+    else:
+        transs.count()
     yield u"""<TABLE name="transitions" ID="transitions">
       <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>
       <FIELD name="AtomicNr" ID="atomic" datatype="int"/>
