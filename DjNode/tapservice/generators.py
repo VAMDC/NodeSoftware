@@ -53,6 +53,11 @@ def XsamsAtomTerm(state):
     result+='</Term></Component></AtomicComposition>'
     return result
 
+def parityLabel(parity):
+   if partity % 2:
+      return 'odd'
+   else:
+      return 'even'
 
 def XsamsAtomStates(AtomStates,VD):
     if not AtomStates: return
@@ -80,7 +85,7 @@ def XsamsAtomStates(AtomStates,VD):
 
         if (state.p or state.j):
             yield "<AtomicQuantumNumbers>"
-            if state.p: '<Parity>%s</Parity>'%('odd' if state.p%2 else 'even')
+            if state.p: '<Parity>%s</Parity>'%parityLabel(state.p)
             if state.j: '<TotalAngularMomentum>%s</TotalAngularMomentum>'%state.j
             yield "</AtomicQuantumNumbers>"
 
