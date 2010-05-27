@@ -16,7 +16,6 @@ randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
 from DjNode.tapservice.generators import *
 
-from DjXstarDB.settings import TAP_URL
 
 def parseSQL(sql):
     wheres=sql.split('where')[1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
@@ -97,7 +96,8 @@ def async(request):
     return render_to_response('node/index.html', c)
 
 def capabilities(request):
-    c = RequestContext(request, {"accessURL" : TAP_URL})
+    tap_url = 'http://%s/tap'%request.get_host()
+    c = RequestContext(request, {"accessURL" : tap_url})
     return render_to_response('node/capabilities.xml', c)
 
 def tables(request):
