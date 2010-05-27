@@ -116,8 +116,8 @@ def sync(request):
         print 'not valid tap!'
     
     if tap.format == 'xsams': 
-        transs,states,sources=setupResults(tap)
-        generator=xsams(transs,states,sources)
+        results=setupResults(tap)
+        generator=Xsams(**results)
         response=HttpResponse(generator,mimetype='application/xml')
         response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     

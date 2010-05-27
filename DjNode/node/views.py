@@ -14,26 +14,32 @@ from DjNode.tapservice.views import *
 # The generators
 from DjNode.tapservice.generators import *
 
-# An example of a replacement dictionary
-#VALD_DICT={'1':'species__atomic',
-#           '2':'species__ion',
-#           '3':'vacwave',
-#           '4':'airwave',
-#           '5':'loggf',
-#           '6':'lostate__energy',
-#           '7':'lostate__J',
-#           }
-
-
+## An empty index page if the node start page is accessed
 def index(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)
 
 
+### IMPORTANT NOTE
+### Here you must have a function called setupResults
+### which takes the Tap-query object, sets up the 
+### result query sets, depending on the query
+### and returns a DICTIONARY that has as keys some of
+### the following
+### Sources
+### AtomStates
+### MoleStates
+### CollTrans
+### RadTrans
+### Methods
+###
+### and the values for these keys being the querySets.
+### this dictionary will be handed into the generator.
+
+
 
 
 ### VALD-specific helper functions, as an example
-
 
 def getVALDsources(transs):
     sids=set([])
