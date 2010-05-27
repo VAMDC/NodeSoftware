@@ -11,7 +11,7 @@ class Species(models.Model):
     atomic = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     isotope = models.PositiveSmallIntegerField(null=True, blank=True)
     def __unicode__(self):
-        return u'%s'%self.id.encode('utf8') if self.id else u'NULL'
+        return u'ID:%s %s'%(self.id,self.name)
     class Meta:
         db_table = u'species'
         verbose_name = _('Species')
@@ -60,8 +60,8 @@ class State(models.Model):
     s2 = models.DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True,blank=True)
     jc = models.DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
     def __unicode__(self):
-        id=self.id.encode('utf8') if self.id else u'NULL'
-        return u'%s %s'%(self.energy,self.lande)
+        return u'ID:%s Eng:%s'%(self.id,self.energy)
+
     class Meta:
         db_table = u'states'
         verbose_name = _('State')
@@ -98,8 +98,7 @@ class Transition(models.Model):
     upstateid = models.CharField(max_length=128,null=True)
     lostateid = models.CharField(max_length=128,null=True)
     def __unicode__(self):
-        id=self.id.encode('utf8') if self.id else u'NULL'
-        return u'%s'%self.id
+        return u'ID:%s Wavel: %s'%(self.id,self.vacwave)
     class Meta:
         db_table = u'transitions'
         verbose_name = _('Transition')
