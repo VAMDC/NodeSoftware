@@ -23,6 +23,8 @@ AtomStateEnergy
 AtomStateDescription
 AtomIonCharge
 AtomMassNumber
+
+# table for radiative transitions
 RadTransComments
 
 RadTransFinalStateRef
@@ -150,21 +152,45 @@ CollisionProductsStateRef
 CollisionReactantsStateRef
 
 
-MolecularSpeciesName
-MolecularSpeciesComment
-MolecularSpeciesStructuralFormula
+# table for molecular states 
+# (maybe molecular species should be a separate table)
+    
+MolecularSpeciesChemicalName
+MolecularSpeciesOrdinaryStructuralFormula
+MolecularSpeciesStoichiometrcFormula
+MolecularSpeciesIonCharge
+MolecularSpeciesIUPACName
+MolecularSpeciesURLFigure
+MolecularSpeciesInChl
+MolecularSpeciesCASRegistryNumber
+MolecularSpeciesCNPIGroup
+MolecularSpeciesMoleculeNuclearSpins
+MolecularSpeciesStableMolecularProperties
 MolecularSpeciesMolecularWeight
-MolecularSpeciesStoichiometricFormula
-MolecularStateElectronicCharacterisation
-MolecularStateLinearNoElecNoHyperFTotalAngularMomentumNLabel
-MolecularStateLinearNoElecNoHyperFTotalAngularMomentumNValue
-MolecularStateNonLinearNoElecNoHyperFMolecularProjectionAsymmetricProjectionAsymmetricKaLabel
-MolecularStateNonLinearNoElecNoHyperFMolecularProjectionAsymmetricProjectionAsymmetricKaValue
-MolecularStateNonLinearNoElecNoHyperFMolecularProjectionAsymmetricProjectionAsymmetricTauLabel
-MolecularStateNonLinearNoElecNoHyperFMolecularProjectionAsymmetricProjectionAsymmetricTauValue
-MolecularStateNonLinearNoElecNoHyperFTotalAngularMomentumNLabel
-MolecularStateNonLinearNoElecNoHyperFTotalAngularMomentumNValue
-MolecularStateRotationalCharacterisation
-MolecularStateVibrationalCharacterisation
+MolecularSpeciesComment
+MoleculeNuclearSpinsAtomArray
+MoleculeNuclearSpinsBondArray
+
+MolecularStateStateID
 MolecularStateDescription
 MolecularStateStateEnergyValue
+MolecularStateStateEnergyOrigin
+
+MolecularStateCharacTotalStatisticalWeight
+MolecularStateCharacNuclearStatisticalWeight
+MolecularStateCharacNuclearSpinSymmetry
+MolecularStateCharacLifeTime
+MolecularStateCharacParameters
+
+# table for quantum numbers
+
+MolQnStateID (String / Integer)
+MolQnCase (String)  (for case-by-case)
+MolQnLabel (String) (for case-by-case) (should be labels suggested by Christian Hill)
+MolXPath (String)   (for classical)
+MolTag (String)     (for classical)
+MolQnValue (String)
+MolQnSpinRef (String)
+MolQnAttribute (String)
+MolQnComment (String)
+
