@@ -35,13 +35,13 @@ def parseSQL(sql):
         qlist.append(mq)
     return tuple(qlist)
 
-def vamdc2queryset(sql):
+def vamdc2queryset(query):
     sql=sql.lower().replace('(','').replace(')','')
     wheres=sql.split('where')[-1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
     qlist=[]
     for w in wheres:
         w=w.split()
-        field=w[0]
+        field=w[0].replace('.','__')
         value=w[2]
         if w[1]=='<': op='__lt'
         if w[1]=='>': op='__gt'
