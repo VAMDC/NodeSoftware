@@ -2,7 +2,13 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
-
+def get(name):
+    if type(name)!=list: 
+        name=name.split('.')
+        exec('name[0]=%s'%name[0])
+    if len(name)==2: return getattr(name[0],name[1])
+    else: get([getattr(name[0],name[1])]+name[2:])
+    
 def sources2xsams(sources):
     for source in sources:
         yield """<Source sourceID="B%d">
@@ -45,9 +51,9 @@ def term2xsams(state):
     return result
 
 
-def states2xsams(states):
-    for state in states:
-        mass = int(round(state.species.mass))
+def states2xsams(AtomStates,VD):
+    for AtomState in AtomStates:
+        mass = int(round(Atomtate.species.mass))
         yield """<Atom>
 <ChemicalElement>
 <NuclearCharge>%d</NuclearCharge>

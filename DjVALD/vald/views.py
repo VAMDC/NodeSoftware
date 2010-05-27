@@ -27,6 +27,7 @@ VALD_DICT={'1':'species__atomic',
            '6':'lostate__energy',
            '7':'lostate__J',
            }
+
 VAMDC_DICT={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
