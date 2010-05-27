@@ -111,33 +111,7 @@ class Symmetricelements(models.Model):
 ###################################
 # Energy tables
 ###################################
-class QNums(models.Model):
-    idquantumnumber = models.IntegerField(primary_key=True, db_column='idQuantumNumber') # Field name made lowercase.
-    designation = models.CharField(unique=True, max_length=60, blank=True)
-    comment = models.TextField(blank=True)
-    class Meta:
-        db_table = u'QuantumNumbers'
-
-class ELevels(models.Model):
-    idlevel = models.IntegerField(primary_key=True, db_column='idLevel') # Field name made lowercase.
-    idenergytable = models.IntegerField(unique=True, db_column='idEnergyTable') # Field name made lowercase.
-    level = models.IntegerField(unique=True)
-    energy = models.FloatField(null=True, blank=True)
-    class Meta:
-        db_table = u'EnergyTables_Levels'
-
-class EtLQNums(models.Model):
-    # idlevel = models.IntegerField(primary_key=True, db_column='idLevel') # Field name made lowercase.
-    idlevel = models.ForeignKey(ELevels,db_column='idLevel', related_name='EtLQNums')
-    # idquantumnumber = models.IntegerField(primary_key=True, db_column='idQuantumNumber') # Field name made lowercase.
-    idquantumnumber= models.ForeignKey(QNums,db_column='idQuantumNumber', related_name='EtLQNums')
-    value = models.FloatField()
-    class Meta:
-       db_table = u'EnergyTables_Levels_QuantumNumbers'
-
-
-
-class Energytables(models.Model):
+class ETables(models.Model):
     idenergytable = models.IntegerField(primary_key=True, db_column='idEnergyTable') # Field name made lowercase.
     symmelement = models.ForeignKey(Symmetricelements,db_column='idSymmetricElement')
     #idsymmetricelement = models.IntegerField(db_column='idSymmetricElement') # Field name made lowercase.
@@ -158,6 +132,32 @@ class Energytables(models.Model):
     #modificationdate = models.DateField(db_column='modificationDate') # Field name made lowercase.
     class Meta:
         db_table = u'EnergyTables'
+
+class QNums(models.Model):
+    idquantumnumber = models.IntegerField(primary_key=True, db_column='idQuantumNumber') # Field name made lowercase.
+    designation = models.CharField(unique=True, max_length=60, blank=True)
+    comment = models.TextField(blank=True)
+    class Meta:
+        db_table = u'QuantumNumbers'
+
+class ELevels(models.Model):
+    idlevel = models.IntegerField(primary_key=True, db_column='idLevel') # Field name made lowercase.
+    etable = models.ForeignKey(ETables,db_column='idEnergyTable',related_name='levels')
+    level = models.IntegerField(unique=True)
+    energy = models.FloatField(null=True, blank=True)
+    class Meta:
+        db_table = u'EnergyTables_Levels'
+
+class EtLQNums(models.Model):
+    level = models.ForeignKey(ELevels,db_column='idLevel', related_name='qnums')
+    qnum = models.ForeignKey(QNums,db_column='idQuantumNumber', related_name='level')
+    value = models.FloatField()
+    class Meta:
+       db_table = u'EnergyTables_Levels_QuantumNumbers'
+
+
+
+
 
 ###################################
 # End of Energy tables

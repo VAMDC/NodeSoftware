@@ -3,7 +3,7 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 
-from DjBASECOL.bastest.models import RefsArticles,RefsGroups,Energytables,ELevels
+from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables
 
 
 def index(request):
@@ -23,14 +23,19 @@ def authors(request, ref_id):
     return HttpResponse(resp)
     
 def etable(request, ref_id):
-    eta=Energytables.objects.select_related('symmelement__element','symmelement__symmetry').filter(pk=ref_id)
+    #eta=ETables.objects.select_related('symmelement__element','symmelement__symmetry').filter(pk=ref_id)
+    et=ETables.objects.select_related().get(pk=ref_id)
     resp="ETable:"
-    for et in eta.all():
-        resp+='<ul><li>%s'%et.title
-        resp+='<br>el %s %s'%(et.symmelement.symmetry.designation,et.symmelement.element.designation)
-        resp+='<br>levels<ol>'
-        elevs=ELevels.objects.filter(idenergytable=ref_id)
-        for elev in elevs.all():
-            resp+='<li>level %s energy %s'%(elev.level,elev.energy)
-        resp+='</ol></ul>'
+    #for et in eta.all():
+    resp+='<ul><li>%s'%et.title
+    resp+='<br>el %s %s'%(et.symmelement.symmetry.designation,et.symmelement.element.designation)
+    resp+='<br>levels<ol>'
+    #elevs=et.levels.select_related('qnums','qnums__qnum').all()
+    #elevs=ELevels.objects.filter(idenergytable=ref_id)
+    for elev in et.levels.select_related(depth=3).all():
+        resp+='<li>level %s energy %s <ol>'%(elev.level,elev.energy)
+        for qnums in elev.qnums.all():
+            resp+='<li>%s %s'%('blah',qnums.value)
+        resp+='</ol>'
+    resp+='</ol></ul>'
     return HttpResponse(resp)
