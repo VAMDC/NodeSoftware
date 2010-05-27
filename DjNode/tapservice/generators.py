@@ -2,9 +2,17 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
-
-def sources2xsams(sources):
-    for source in sources:
+def get(name):
+    if type(name)!=list: 
+        name=name.split('.')
+        exec('name[0]=%s'%name[0])
+    if len(name)==2: return getattr(name[0],name[1])
+    else: get([getattr(name[0],name[1])]+name[2:])
+    
+def XsamsSources(Sources):
+    if not Sources: return
+    yield '<Sources>'
+    for Source in Sources:
         yield """<Source sourceID="B%d">
 <Authors>
 <Author>
@@ -16,10 +24,11 @@ def sources2xsams(sources):
 <SourceName>SomeJournal</SourceName>
 <Volume>666</Volume>
 <PageBegin>666</PageBegin>
-</Source>"""%( source.id , source.srcdescr, source.listtype , source.srcfile )
+</Source>"""%( Source.id , Source.srcdescr, Source.listtype , Source.srcfile )
 
-def term2xsams(state):
-    
+    yield '<Sources>'
+
+def XsamsAtomTerm(state):    
     result='<AtomicComposition>\n<Comments>Term reference: B%s</Comments>\n'%state.level_ref
     result+='<Component><Configuration><ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%state.term.replace('<','').replace('>','')
     result+='<Term>'
@@ -45,9 +54,11 @@ def term2xsams(state):
     return result
 
 
-def states2xsams(states):
-    for state in states:
-        mass = int(round(state.species.mass))
+def XsamsAtomStates(AtomStates,VD):
+    if not AtomStates: return
+    yield '<Atoms>'
+    for AtomState in AtomStates:
+        mass = int(round(Atomtate.species.mass))
         yield """<Atom>
 <ChemicalElement>
 <NuclearCharge>%d</NuclearCharge>
@@ -73,14 +84,18 @@ def states2xsams(states):
             if state.j: '<TotalAngularMomentum>%s</TotalAngularMomentum>'%state.j
             yield "</AtomicQuantumNumbers>"
 
-        yield term2xsams(state)
+        yield XsamsAtomTerm(state)
         yield """</AtomicState>
 </IonState>
 </Isotope>
 </Atom>"""
 
-def transitions2xsams(transitions):
-    for trans in transitions:
+    yield '</Atoms>'
+
+def XsamsRadTrans(RadTrans):
+    if not RadTrans: return
+    yield '<Radiative>'
+    for RadTran in RadTrans:
         yield """
 <RadiativeTransition methodRef="MOBS">
 <Comments>Effective Lande factor and broadening gammas: 
@@ -93,36 +108,53 @@ air wavelength: %s (Ref B%d)
 <EnergyWavelength>
 <Wavelength><Experimental sourceRef="B%d">
 <Comments>Wavelength in vaccuum. For air see the comment field.</Comments><Value units="1/cm">%s</Value><Accuracy>Flag: %s, Value: %s</Accuracy>
-</Experimental></Wavelength></EnergyWavelength>"""%( trans.landeff , trans.lande_ref , trans.gammarad , trans.gammarad_ref , trans.gammastark , trans.gammastark_ref , trans.gammawaals , trans.gammawaals_ref , trans.airwave, trans.wave_ref, trans.wave_ref , trans.vacwave , trans.acflag , trans.accur)
+</Experimental></Wavelength></EnergyWavelength>"""%( RadTran.landeff , RadTran.lande_ref , RadTran.gammarad , RadTran.gammarad_ref , RadTran.gammastark , RadTran.gammastark_ref , RadTran.gammawaals , RadTran.gammawaals_ref , RadTran.airwave, RadTran.wave_ref, RadTran.wave_ref , RadTran.vacwave , RadTran.acflag , RadTran.accur)
 
-        if trans.upstateid: yield '<InitialStateRef>S%s</InitialStateRef>'%trans.upstate.id
-        if trans.lostateid: yield '<FinalStateRef>S%s</FinalStateRef>'%trans.lostate.id
-        if trans.loggf: yield """<Probability>
+        if RadTran.upstateid: yield '<InitialStateRef>S%s</InitialStateRef>'%RadTran.upstate.id
+        if RadTran.lostateid: yield '<FinalStateRef>S%s</FinalStateRef>'%RadTran.lostate.id
+        if RadTran.loggf: yield """<Probability>
 <Log10WeightedOscillatorStregnth sourceRef="B%d"><Value units="unitless">%s</Value></Log10WeightedOscillatorStregnth>
 </Probability>
-</RadiativeTransition>"""%(trans.loggf_ref,trans.loggf)
+</RadiativeTransition>"""%(RadTran.loggf_ref,RadTran.loggf)
+
+    yield '<Radiative>'
 
 
-def xsams(transitions,states,sources):
+def XsamsMethods(Methods):
+    if not Methods: return
+    yield '<Methods>\n'
+    for Method in Methods:
+        yield """<Method methodID="%s">
+<Category>%s</Category>
+<Description>%s</Description>
+</Method>
+"""%(Method.id,Method.category,Method.description)
+    yield '</Methods>\n'
+
+def Xsams(Sources,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-<Sources>"""
-    for source in sources2xsams(sources): yield source
-    yield """</Sources>
-<Methods>
-<Method methodID="MOBS">
-<Category>observed</Category>
-<Description />
-</Method>
-</Methods>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">"""
 
-<States>
-<Atoms>"""
-    for state in states2xsams(states): yield state
-    yield '</Atoms></States><Processes><Radiative>'
-    for trans in transitions2xsams(transitions): yield trans
-    yield '</Radiative></Processes >\n</XSAMSData>\n'
+    for Source in XsamsSources(sources): yield Source
+    for Method in XsamsMethods(Methods): yield Method
+    
+    yield '<States>\n'
+    for AtomState in XsamsAtomStates(states): yield AtomState
+    for MoleState in XsamsMoleStates(states): yield MoleState
+    yield '</States>\n'
+    yield '<Processes>\n'
+    for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
+    #for CollTrans in XsamsCollTrans(CollTrans): yield CollTrans
+    yield '</Processes>\n'
+    yield '</XSAMSData>\n'
+
+
+
+
+
+
+
 
 ##########################################################
 ######## VO TABLE GENERATORS ####################
