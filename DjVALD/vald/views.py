@@ -39,7 +39,7 @@ VALD_DICT={\
 'SourceURI':'',
 'SourceVolume':'',
 'SourceYear':'"2222"',
-'MethodID':'"MOBS"'
+'MethodID':'"MOBS"',
 'MethodCategory':'"observed"',
 'MethodDescription':'',
 'AtomStateID':'AtomState.id',

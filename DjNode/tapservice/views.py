@@ -35,8 +35,8 @@ def parseSQL(sql):
         qlist.append(mq)
     return tuple(qlist)
 
-def vamdc2queryset(query):
-    sql=sql.lower().replace('(','').replace(')','')
+def vamdc2queryset(sql):
+    sql=sql.replace('(','').replace(')','')
     wheres=sql.split('where')[-1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
     qlist=[]
     for w in wheres:
@@ -53,11 +53,8 @@ def vamdc2queryset(query):
         exec(qexe)
         qlist.append(mq)
     return tuple(qlist)
-            
 
-
-
-from DjVALD.vald.views import *
+from DjVALD.vald.views import setupResults
 
 def index(request):
     c=RequestContext(request,{})
@@ -68,7 +65,7 @@ class TAPQUERY(object):
         try:
             self.request=lower(data['REQUEST'])
             self.lang=lower(data['LANG'])
-            self.query=lower(data['QUERY'])
+            self.query=data['QUERY']
             self.format=lower(data['FORMAT'])
             self.isvalid=True
         except:
