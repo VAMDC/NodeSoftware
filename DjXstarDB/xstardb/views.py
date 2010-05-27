@@ -38,7 +38,7 @@ VAMDC_DICT={\
 'SourceURI':'',
 'SourceVolume':'',
 'SourceYear':'',
-'MethodID':'"MOBS"'
+'MethodID':'"MOBS"',
 'MethodCategory':'"observed"',
 'MethodDescription':'',
 'AtomStateID':'',
