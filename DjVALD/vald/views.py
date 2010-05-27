@@ -88,17 +88,10 @@ def getVALDstates(transs):
     
 
 
-
 def setupResults(tap,limit=0):
-    if tap.lang=='vamdc':
-        tap.query=tap.query%VALD_DICT
-        print tap.query
-        #transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostate=states.id OR transitions.upstate=states.id)','transitions.species=species.id'],).order_by('airwave')
-        qtup=vamdc2queryset(tap.query)
-        transs = Transition.objects.filter(*qtup).order_by('airwave')
-    else:
-        qtup=parseSQL(tap.query)
-        transs = Transition.objects.filter(*qtup).order_by('airwave')
+    query=tap.query%VALD_DICT
+    qtup=vamdc2queryset(query)
+    transs = Transition.objects.filter(*qtup)
     
     totalcount=transs.count()
     if limit :
@@ -110,8 +103,6 @@ def setupResults(tap,limit=0):
         return transs,states,sources,totalcount
     else:
         return transs,states,sources
-
-
 
 
 
