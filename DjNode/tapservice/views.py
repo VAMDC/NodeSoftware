@@ -16,6 +16,8 @@ randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
 from DjNode.tapservice.generators import *
 
+from DjXstarDB.settings import TAP_URL
+
 def parseSQL(sql):
     wheres=sql.split('where')[1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
     qlist=[]
@@ -57,7 +59,7 @@ def vamdc2queryset(sql):
 
 
 
-from DjVALD.vald.views import *
+from DjXstarDB.xstardb.views import *
 
 def index(request):
     c=RequestContext(request,{})
@@ -95,8 +97,8 @@ def async(request):
     return render_to_response('node/index.html', c)
 
 def capabilities(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
+    c = RequestContext(request, {"accessURL" : TAP_URL})
+    return render_to_response('node/capabilities.xml', c)
 
 def tables(request):
     c=RequestContext(request,{})
