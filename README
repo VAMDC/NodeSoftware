@@ -1,5 +1,44 @@
-A quick implementation of a mini-VAMDC, for test purposes.
+This repository holds a prototype for the "node software" of VAMDC,
+i.e. the standard package for importing data and putting the standard
+VAMDC interface on top of existing databases. It is based on the
+framework called Django, see http://www.djangoproject.com/
 
-* Check out your copy with "git clone git://github.com/ivh/VAMDC-VALD.git"
+The process of creating a new VAMDC-node with this codebase involves
+the following steps:
+* Create an account on GitHub and fork this repository (see here for
+how to do this: http://help.github.com/forking/ )
+* In your resulting VAMDC-VALD directory, copy DjVALD to DjYOURDBNAME
+* Now a few files in DjYOURDBNAME will have to be adapted to
+  contain the information and code that is specific for each node.
+  This includes:
+  * The data model in models.py. If you have a new dataset that needs
+    to be imported into a realtional DB, this model is written by hand
+    and can then be used to create the database. For existing databases
+    "inspectdb" can be used to autogenerate the model. The most common
+    change that needs to be made to auto-generated models is to replace
+    some detected columns by ForeignKeys, thereby telling django how the
+    db-tables are connected.
+  * In views.py, a VAMDC_DICT needs to be written. This contains as keys
+    the global names (found in VAMDCnames.txt) and as values their
+    corresponding place in the data model. This dict can then be used both
+    in understanding the commong query language and to fill the XML-Schema
+    with values at the right places.
+  * Also in views.py write the function setupResults() which will execute
+    the query and return the query-sets that are to be used by the XML
+    generator
+  * Edit settings.py to contain your database connection info and some
+    global configuration options.
+* Deployment: Django has a built-in testserver, but for real deployment,
+  a standard webserver (Apache, Lighttp, Cherokee) needs to be set up.
+  Example files for apache/wsgi are included.
 
-* See it running at http://vamdc.fysast.uu.se:8888/portal/ (documentation is also there)
+Comments and questions are welcome via a GitHub message,
+or to thomas.marquart@fysast.uu.se
+
+Finally, a short note about the name: This repository is called
+VAMDC-VALD because it was started for integrating VALD into VAMDC.  In
+the meantime, it has become the home for the more general framework of
+incorporating several database nodes into a common prototype. Renaming
+is possible, but would create unnecessary hassle for the people that
+have forked this and committed the parts that are specific for their
+nodes.

@@ -7,6 +7,8 @@ BASEPATH='/home/tom/py/vamdc/'
 import sys
 sys.path.append(BASEPATH)
 
+import DjVALD.vald as NODEPKG
+
 ADMINS = (
     ('Thomas Marquart', 'thomas@marquart.se'),
 )
