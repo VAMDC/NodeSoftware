@@ -1,0 +1,24 @@
+<?xml version='1.0'?>
+
+<!-- Template for VOSI-tables resource -->
+
+<tab:tables
+   xmlns:vr='http://www.ivoa.net/xml/VOResource/v1.0'
+   xmlns:vs='http://www.ivoa.net/xml/VODataService/v1.0'
+   xmlns:tab='urn:astrogrid:schema:TableMetadata'
+   xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+   xsi:schemaLocation='      http://www.ivoa.net/xml/VOResource/v1.0 http://software.astrogrid.org/schema/vo-resource-types/VOResource/v1.0/VOResource.xsd
+      http://www.ivoa.net/xml/VODataService/v1.0 http://software.astrogrid.org/schema/vo-resource-types/VODataService/v1.0/VODataService.xsd
+      urn:astrogrid:schema:TableMetadata Tables.xsd'>
+  <table>
+    <name>VAMDC</name>
+    <description>VAMDC standard view</description>
+      
+    {% for name in column_names_list %}
+    <column>
+      <name>{{name}}</name>
+      <description></description>
+    </column>
+    {% end for %}
+  </table>
+</tab:tables>
