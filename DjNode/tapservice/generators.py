@@ -245,6 +245,7 @@ def transitions2embedhtml(transs,count):
     if type(transs)==type([]):
         n = len(transs)
     else:
+        transs.count()
         n = transs.count()
     yield u"""<TABLE name="transitions" ID="transitions">
       <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>

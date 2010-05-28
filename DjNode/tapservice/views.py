@@ -41,7 +41,6 @@ def vamdc2queryset(sql):
 #### which is certainly the wrong way to do it and will be fixed!
 from DjVALD.vald.views import setupResults
 
-
 class TAPQUERY(object):
     def __init__(self,data):
         try:
@@ -67,7 +66,6 @@ class TAPQUERY(object):
 
     def __str__(self):
         return '%s'%self.query
-
 
 def sync(request):
     tap=TAPQUERY(request.REQUEST)
