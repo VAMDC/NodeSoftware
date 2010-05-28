@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 # Django settings for your node project.
 # you'll need to change things here!
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-BASEPATH='/home/tom/py/vamdc/'
+BASEPATH='/home/doronin/VAMDC/django/VAMDC-VALD/'
 import sys
 sys.path.append(BASEPATH)
 
@@ -16,9 +17,9 @@ MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 #DATABASE_NAME = BASEPATH+'DjVALD/vald3.db' # filename in case of sqlite
-DATABASE_NAME = 'yourdb'             # Or path to database file if using sqlite3.
-DATABASE_USER = 'youruser'             # Not used with sqlite3.
-DATABASE_PASSWORD = 'yourpasswd'         # Not used with sqlite3.
+DATABASE_NAME = 'basecol'             # Or path to database file if using sqlite3.
+DATABASE_USER = 'doronin'             # Not used with sqlite3.
+DATABASE_PASSWORD = '123'         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
