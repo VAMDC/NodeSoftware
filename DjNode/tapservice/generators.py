@@ -101,6 +101,44 @@ def XsamsAtomStates(AtomStates,VD):
 
     yield '</Atoms>'
 
+def XsamsMolStates(MolStates,VD):
+    if not MolStates: return
+    yield '<Molecules>'
+    for MolState in MolStates:
+        yield """<Molecule>
+<Molecules>
+<Molecule>
+<MolecularChemicalSpecies>
+<OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>
+<StoichiometricFormula>%s</StoichiometricFormula>
+<ChemicalName>%s</ChemicalName>
+</MolecularChemicalSpecies>
+<MolecularState stateID="S%s">
+<Description>%s</Description>
+<MolecularStateCharacterisation>
+<StateEnergy energyOrigin="%s">
+<Value units="%s">%s</Value>
+</StateEnergy>
+<TotalStatisticalWeight>%s</TotalStatisticalWeight>
+</MolecularStateCharacterisation>
+"""% (G("MolecularSpeciesOrdinaryStructuralFormula"),
+      G("MolecularSpeciesStoichiometrcFormula"),
+      G("MolecularSpeciesChemicalName"),
+      G("MolecularStateStateID"),
+      G("MolecularStateDescription"),
+      G("MolecularStateEnergyOrigin"),
+      G("MolecularStateEnergyUnit"),
+      G("MolecularStateEnergyValue"),
+      G("MolecularStateCharacTotalStatisticalWeight"))
+
+        yield """</MolecularState>
+</Molecule> """
+    yield '</Molecules>'
+
+
+
+                               
+
 def XsamsRadTrans(RadTrans):
     if not RadTrans: return
     yield '<Radiative>'
