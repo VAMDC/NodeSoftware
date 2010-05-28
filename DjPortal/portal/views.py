@@ -17,13 +17,8 @@ from urllib import urlopen,urlencode
 
 REGISTRY=[
           {'name':'VALD','url':'http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/'},
-          {'name':'VALD2','url':'http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/'},
+          {'name':'CDMS','url':'http://www.astro.uni-koeln.de:8099/DjCDMS/tap/sync/'},
           ]
-#REGISTRY=[
-#          {'name':'VALD','url':'http://localhost:8001/tap/sync/'},
-#          {'name':'VALD2','url':'http://localhost:8001/tap/sync/'},
-#          ]
-
 
 PARA_CHOICES=[(0,u''),
               (1,u'Atomic number'),
@@ -124,7 +119,7 @@ def results(request,qid):
     results=[]
     for node in REGISTRY:
         result={'nodename':node['name']}
-        result['html']=askNodeForEmbedHTML(node['url'],query.query)
+        result['html']='' #askNodeForEmbedHTML(node['url'],query.query)
         result['vourl']=makeDlLink(node['url'],query.query,format='VOTABLE')
         result['xsamsurl']=makeDlLink(node['url'],query.query,format='XSAMS')
         results.append(result)

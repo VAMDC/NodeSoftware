@@ -15,8 +15,8 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
-from lxml import etree as E
-vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
+#from lxml import etree as E
+#vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
 # legacy dict
 #VALD_DICT={'1':'species__atomic',
@@ -55,7 +55,7 @@ VALD_DICT={\
 'AtomIonCharge':'AtomState.species.ion',
 'AtomMassNumber':'AtomState.species.mass',
 'RadTransComments':'',
-'RadTransWavelengthExperimentalValue':'',
+'RadTransWavelengthExperimentalValue':'RadTrans.vacwave',
 'RadTransWavelengthAccuracyFlag':'',
 'RadTransWavelengthAccuracy':'',
 'RadTransFinalStateRef':'RadTrans.lostate.id',
