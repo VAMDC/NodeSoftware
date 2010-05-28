@@ -8,8 +8,8 @@ from django.conf import settings
 
 from DjVALD.vald.models import Transition,State,Source,Species
 
-# This imports all the generic tap views and functions
-from DjNode.tapservice.views import *
+# This imports all the generic tap views!
+from DjNode.tapservice.views import parseSQL, vamdc2queryset
 
 from base64 import b64encode as b64
 def enc(s):
@@ -18,54 +18,16 @@ def enc(s):
 from lxml import etree as E
 vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
-# legacy dict
-#VALD_DICT={'1':'species__atomic',
-#           '2':'species__ion',
-#           '3':'vacwave',
-#           '4':'airwave',
-#           '5':'loggf',
-#           '6':'lostate__energy',
-#           '7':'lostate__J',
-#           }
 
-VALD_DICT={\
-'SourceID':'Source.id',
-'SourceAuthorName':'Source.srcdescr',
-'SourceCategory':'',
-'SourcePageBegin':'',
-'SourcePageEnd':'',
-'SourceName':'',
-'SourceTitle':'',
-'SourceURI':'',
-'SourceVolume':'',
-'SourceYear':'"2222"',
-'MethodID':'"MOBS"',
-'MethodCategory':'"observed"',
-'MethodDescription':'',
-'AtomStateID':'AtomState.id',
-'AtomSymbol':'AtomState.species.name',
-'AtomNuclearCharge':'AtomState.species.ion',
-'AtomCompositionComments':'',
-'AtomConfigurationLabel':'',
-'AtomCompositionComponentTerm':'',
-'AtomIonizationEnergy':'AtomState.species.ionen',
-'AtomLandeFactor':'AtomState.coupling',
-'AtomStateEnergy':'AtomState.energy',
-'AtomStateDescription':'',
-'AtomIonCharge':'AtomState.species.ion',
-'AtomMassNumber':'AtomState.species.mass',
-'RadTransComments':'',
-'RadTransWavelengthExperimentalValue':'',
-'RadTransWavelengthAccuracyFlag':'',
-'RadTransWavelengthAccuracy':'',
-'RadTransFinalStateRef':'RadTrans.lostate.id',
-'RadTransInitialStateRef':'RadTrans.upstate.id',
-'RadTransLogGF':'RadTrans.loggf',
-'RadTransGammaRad':'',
-'RadTransGammaWaals':'',
-'RadTransGammaStark':'',
-'RadTransEffLande':'',
-}
+UMIST_DICT={'1':'species__atomic',
+           '2':'species__ion',
+           '3':'vacwave',
+           '4':'airwave',
+           '5':'loggf',
+           '6':'lostate__energy',
+           '7':'lostate__J',
+           }
+
 
 def index(request):
     c=RequestContext(request,{})
@@ -88,10 +50,17 @@ def getVALDstates(transs):
     
 
 
+
 def setupResults(tap,limit=0):
-    query=tap.query%VALD_DICT
-    qtup=vamdc2queryset(query)
-    transs = Transition.objects.filter(*qtup)
+    if tap.lang=='vamdc':
+        tap.query=tap.query%UMIST_DICT
+        print tap.query
+        #transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostate=states.id OR transitions.upstate=states.id)','transitions.species=species.id'],).order_by('airwave')
+        qtup=vamdc2queryset(tap.query)
+        transs = Transition.objects.filter(*qtup).order_by('airwave')
+    else:
+        qtup=parseSQL(tap.query)
+        transs = Transition.objects.filter(*qtup).order_by('airwave')
     
     totalcount=transs.count()
     if limit :
@@ -103,6 +72,8 @@ def setupResults(tap,limit=0):
         return transs,states,sources,totalcount
     else:
         return transs,states,sources
+
+
 
 
 

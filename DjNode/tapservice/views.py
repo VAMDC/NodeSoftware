@@ -37,12 +37,12 @@ def parseSQL(sql):
     return tuple(qlist)
 
 def vamdc2queryset(sql):
-    sql=sql.lower().replace('(','').replace(')','')
+    sql=sql.replace('(','').replace(')','')
     wheres=sql.split('where')[-1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
     qlist=[]
     for w in wheres:
         w=w.split()
-        field=w[0]
+        field=w[0].replace('.','__')
         value=w[2]
         if w[1]=='<': op='__lt'
         if w[1]=='>': op='__gt'
@@ -54,9 +54,6 @@ def vamdc2queryset(sql):
         exec(qexe)
         qlist.append(mq)
     return tuple(qlist)
-            
-
-
 
 from DjXstarDB.xstardb.views import *
 
@@ -69,7 +66,7 @@ class TAPQUERY(object):
         try:
             self.request=lower(data['REQUEST'])
             self.lang=lower(data['LANG'])
-            self.query=lower(data['QUERY'])
+            self.query=data['QUERY']
             self.format=lower(data['FORMAT'])
             self.isvalid=True
         except:
@@ -118,8 +115,8 @@ def sync(request):
         print 'not valid tap!'
     
     if tap.format == 'xsams': 
-        transs,states,sources=setupResults(tap)
-        generator=xsams(transs,states,sources)
+        results=setupResults(tap)
+        generator=Xsams(**results)
         response=HttpResponse(generator,mimetype='application/xml')
         response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
