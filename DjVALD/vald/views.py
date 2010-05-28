@@ -55,7 +55,7 @@ VALD_DICT={\
 'AtomIonCharge':'AtomState.species.ion',
 'AtomMassNumber':'AtomState.species.mass',
 'RadTransComments':'',
-'RadTransWavelengthExperimentalValue':'',
+'RadTransWavelengthExperimentalValue':'RadTrans.vacwave',
 'RadTransWavelengthAccuracyFlag':'',
 'RadTransWavelengthAccuracy':'',
 'RadTransFinalStateRef':'RadTrans.lostate.id',

@@ -41,7 +41,8 @@ def vamdc2queryset(sql):
     qlist=[]
     for w in wheres:
         w=w.split()
-        field=w[0].replace('.','__')
+	print w
+        field='__'.join(w[0].split('.')[1:])
         value=w[2]
         if w[1]=='<': op='__lt'
         if w[1]=='>': op='__gt'
