@@ -2,7 +2,11 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
-def get(name):
+def G(name):
+    """
+    the function that gets a value out of the query set, using the global name
+    and the node-specific dictionary
+    """
     if type(name)!=list: 
         name=name.split('.')
         exec('name[0]=%s'%name[0])

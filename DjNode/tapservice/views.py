@@ -39,7 +39,8 @@ def vamdc2queryset(sql):
 
 #### THIS IS THE ONE PLACE WHERE THIS FILE BECOMES NODE-SPECIFIC
 #### which is certainly the wrong way to do it and will be fixed!
-from DjVALD.vald.views import setupResults
+#from DjVALD.vald.views import setupResults
+from django.conf.settings.BASEPKG.views import *
 
 class TAPQUERY(object):
     def __init__(self,data):
