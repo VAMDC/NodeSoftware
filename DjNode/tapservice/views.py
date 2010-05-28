@@ -16,25 +16,6 @@ randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
 from DjNode.tapservice.generators import *
 
-def parseSQL(sql):
-    wheres=sql.split('where')[1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
-    qlist=[]
-    for w in wheres:
-        w=w.split()
-        print w
-        value=w[-1]
-        if 'wavelength' in w: field='vacwave'
-        if 'element' in w: field='species__name'
-        if '<' in w: op='__lt'
-        if '>' in w: op='__gt'
-        if '=' in w: op='__iexact'
-        if '<=' in w: op='__lte'
-        if '>=' in w: op='__gte'
-        
-        exec('mq=Q(%s="%s")'%(field+op,value))
-        qlist.append(mq)
-    return tuple(qlist)
-
 def vamdc2queryset(sql):
     sql=sql.replace('(','').replace(')','')
     wheres=sql.split('where')[-1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
@@ -55,11 +36,11 @@ def vamdc2queryset(sql):
         qlist.append(mq)
     return tuple(qlist)
 
+
+#### THIS IS THE ONE PLACE WHERE THIS FILE BECOMES NODE-SPECIFIC
+#### which is certainly the wrong way to do it and will be fixed!
 from DjVALD.vald.views import setupResults
 
-def index(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
 
 class TAPQUERY(object):
     def __init__(self,data):
@@ -88,25 +69,6 @@ class TAPQUERY(object):
         return '%s'%self.query
 
 
-def async(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
-
-def capabilities(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
-
-def tables(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
-
-def availability(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
-
-
-#####################################3
-
 def sync(request):
     tap=TAPQUERY(request.REQUEST)
     if not tap.isvalid:
@@ -125,15 +87,40 @@ def sync(request):
         response=HttpResponse(generator,mimetype='application/xml')
         response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
-    elif tap.format == 'embedhtml':
-        transs,states,sources,count=setupResults(tap,limit=100)
-        generator=embedhtml(transs,count)
-        xml='\n'.join(generator)
-        #open('/tmp/bla.xml','w').write(xml)
-        html=vo2html(E.fromstring(xml))
-        response=HttpResponse(html,mimetype='text/html')
+#    elif tap.format == 'embedhtml':
+#        transs,states,sources,count=setupResults(tap,limit=100)
+#        generator=embedhtml(transs,count)
+#        xml='\n'.join(generator)
+#        #open('/tmp/bla.xml','w').write(xml)
+#        html=vo2html(E.fromstring(xml))
+#        response=HttpResponse(html,mimetype='text/html')
 
     return response
+
+
+
+def async(request):
+    c=RequestContext(request,{})
+    return render_to_response('node/index.html', c)
+
+def capabilities(request):
+    c=RequestContext(request,{})
+    return render_to_response('node/index.html', c)
+
+def tables(request):
+    c=RequestContext(request,{})
+    return render_to_response('node/index.html', c)
+
+def availability(request):
+    c=RequestContext(request,{})
+    return render_to_response('node/index.html', c)
+
+def index(request):
+    c=RequestContext(request,{})
+    return render_to_response('node/index.html', c)
+
+
+
 
 
 
