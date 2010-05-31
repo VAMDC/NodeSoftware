@@ -7,7 +7,8 @@ BASEPATH='/home/tom/py/vamdc/'
 import sys
 sys.path.append(BASEPATH)
 
-import DjVALD.vald as NODEPKG
+NODEPKG='DjVALD.vald.views'
+
 
 ADMINS = (
     ('Thomas Marquart', 'thomas@marquart.se'),
@@ -90,3 +91,4 @@ INSTALLED_APPS = (
     'DjNode.tapservice',
     'DjVALD.vald',
 )
+

@@ -4,6 +4,11 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 
+# Get the node-specific pacakge!
+from django.conf import settings
+from django.utils.importlib import import_module
+NODEPKG=import_module(settings.NODEPKG)
+
 from time import time
 from datetime import date
 from string import lower
@@ -36,13 +41,6 @@ def vamdc2queryset(sql):
         qlist.append(mq)
     return tuple(qlist)
 
-
-#### THIS IS THE ONE PLACE WHERE THIS FILE BECOMES NODE-SPECIFIC
-#### which is certainly the wrong way to do it and will be fixed!
-#from DjVALD.vald.views import setupResults
-
-# testing a general way, not working yet.
-from django.conf.settings.BASEPKG.views import *
 
 class TAPQUERY(object):
     def __init__(self,data):
@@ -77,19 +75,19 @@ def sync(request):
         print 'not valid tap!'
     
     if tap.format == 'xsams': 
-        results=setupResults(tap)
+        results=NODEPKG.setupResults(tap)
         generator=Xsams(**results)
         response=HttpResponse(generator,mimetype='application/xml')
         response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
     elif tap.format == 'votable': 
-        transs,states,sources=setupResults(tap)
+        transs,states,sources=NODEPKG.setupResults(tap)
         generator=votable(transs,states,sources)
         response=HttpResponse(generator,mimetype='application/xml')
         response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
 #    elif tap.format == 'embedhtml':
-#        transs,states,sources,count=setupResults(tap,limit=100)
+#        transs,states,sources,count=NODEPKG.setupResults(tap,limit=100)
 #        generator=embedhtml(transs,count)
 #        xml='\n'.join(generator)
 #        #open('/tmp/bla.xml','w').write(xml)

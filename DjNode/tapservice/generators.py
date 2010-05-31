@@ -2,33 +2,50 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
+
+# Get the node-specific pacakge!
+from django.conf import settings
+from django.utils.importlib import import_module
+NODEPKG=import_module(settings.NODEPKG)
+D=NODEPKG.VAMDC_DICT
+
+isiterable = lambda obj: hasattr(obj, '__iter__')
+
 def G(name):
     """
     the function that gets a value out of the query set, using the global name
-    and the node-specific dictionary
+    and the node-specific dictionary.
     """
-    if type(name)!=list: 
-        name=name.split('.')
-        exec('name[0]=%s'%name[0])
-    if len(name)==2: return getattr(name[0],name[1])
-    else: get([getattr(name[0],name[1])]+name[2:])
+    try: name=D[name]
+    except: return None # The value is not in the dictionary for the node.
+                        # This is fine
+
+    exec('value=%s'%name) # This fails if the queryset with its
+                          # attributes is not there as specified
+                          # in VAMDC_DICT. Fix it there or in your query.
+    return value
     
+
 def XsamsSources(Sources):
     if not Sources: return
     yield '<Sources>'
     for Source in Sources:
-        yield """<Source sourceID="B%d">
-<Authors>
-<Author>
-<Name>%s, List type: %d, Source file: %s</Name>
-</Author>
-</Authors>
-<Category>journal</Category>
-<Year>2222</Year>
-<SourceName>SomeJournal</SourceName>
-<Volume>666</Volume>
-<PageBegin>666</PageBegin>
-</Source>"""%( Source.id , Source.srcdescr, Source.listtype , Source.srcfile )
+        yield '<Source sourceID="B%s"><Authors>'%G('SourceID') 
+        authornames=G('SourceAuthorName')
+        if not isiterable(authornames): authorname=[authornames]
+        for author in authornames:
+            yield '<Author><Name>%s</Name></Author>'%author
+
+        yield """</Authors>
+<Title>%s</Title>
+<Category>%s</Category>
+<Year>%s</Year>
+<SourceName>%s</SourceName>
+<Volume>%s</Volume>
+<PageBegin>%s</PageBegin>
+<PageEnd>%s</PageEnd>
+<UniformResourceIdentifier>%s</UniformResourceIdentifier>
+</Source>"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
 
     yield '<Sources>'
 
@@ -205,6 +222,7 @@ def Xsams(Sources,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,M
 
 ##########################################################
 ######## VO TABLE GENERATORS ####################
+
 def sources2votable(sources):
     for source in sources:
         yield ''
