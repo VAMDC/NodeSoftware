@@ -65,8 +65,9 @@ def authors(request, ref_id):
     return HttpResponse(resp)
 
 def getBASECOLSources():
-    rarts=RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=1121)
-    return rarts
+    #rarts=RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=1121)
+    return RefsGroups.objects.filter(pk=1121)
+    #return rarts
 
 def etable(request, ref_id):
     #eta=ETables.objects.select_related('symmelement__element','symmelement__symmetry').filter(pk=ref_id)
@@ -114,4 +115,4 @@ def setupResults(tap,limit=0):
         #return transs,states,sources,totalcount
     #else:
         #return transs,states,sources
-    return sources,sources,sources
+    return None,None,sources
