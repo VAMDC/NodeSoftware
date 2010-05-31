@@ -55,11 +55,15 @@ class TAPQUERY(object):
 
         if self.isvalid: self.validate()
         if self.isvalid: self.assignQID()
+	if self.isvalid: self.makeQtup()
     def validate(self):
         """
         overwrite this method for
         custom checks, depending on data set
         """
+    def makeQtup(self):
+        query=self.query%NODEPKG.VAMDC_DICT
+        self.qtup=vamdc2queryset(query)
 
     def assignQID(self):
         """ make a query-id """
@@ -75,7 +79,7 @@ def sync(request):
         print 'not valid tap!'
     
     if tap.format == 'xsams': 
-        results=NODEPKG.setupResults(tap)
+        results=NODEPKG.setupResults(tap.qtup)
         generator=Xsams(**results)
         response=HttpResponse(generator,mimetype='application/xml')
         response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)

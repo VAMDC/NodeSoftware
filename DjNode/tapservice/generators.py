@@ -7,7 +7,6 @@ def enc(s):
 from django.conf import settings
 from django.utils.importlib import import_module
 NODEPKG=import_module(settings.NODEPKG)
-D=NODEPKG.VAMDC_DICT
 
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
@@ -16,7 +15,7 @@ def G(name):
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
-    try: name=D[name]
+    try: name=NODEPKG.VAMDC_DICT[name]
     except: return None # The value is not in the dictionary for the node.
                         # This is fine
 
