@@ -28,7 +28,7 @@ def enc(s):
 #           '7':'lostate__J',
 #           }
 
-VALD_DICT={\
+VAMDC_DICT={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
 'SourceCategory':'',
@@ -88,9 +88,7 @@ def getVALDstates(transs):
     
 
 
-def setupResults(tap,limit=0):
-    query=tap.query%VALD_DICT
-    qtup=vamdc2queryset(query)
+def setupResults(qtup,limit=0):
     transs = Transition.objects.filter(*qtup)
     
     totalcount=transs.count()
