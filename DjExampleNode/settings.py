@@ -1,25 +1,45 @@
+<<<<<<< HEAD:DjNode/settings.py
 # -*- coding: utf-8 -*-
 # Django settings for your node project.
 # you'll need to change things here!
+=======
+# Django settings for DjVAMDC project.
+>>>>>>> 855bba65dbfa30ba40d471dfff89b416c10f8bdd:DjExampleNode/settings.py
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+<<<<<<< HEAD:DjNode/settings.py
 BASEPATH='/home/doronin/VAMDC/django/VAMDC-VALD/'
+=======
+# Edit this to your repository base directory!
+BASEPATH='/home/tom/py/vamdc/'
+>>>>>>> 855bba65dbfa30ba40d471dfff89b416c10f8bdd:DjExampleNode/settings.py
 import sys
 sys.path.append(BASEPATH)
 
+# Put your package name here
+NODEPKG='DjExampleNode.node'
+
 ADMINS = (
-    ('Thomas Marquart', 'thomas@marquart.se'),
+    ('Your Name', 'your@email.com'),
 )
 
 MANAGERS = ADMINS
 
+# Put your DB-connection here
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+<<<<<<< HEAD:DjNode/settings.py
 #DATABASE_NAME = BASEPATH+'DjVALD/vald3.db' # filename in case of sqlite
 DATABASE_NAME = 'basecol'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'doronin'             # Not used with sqlite3.
 DATABASE_PASSWORD = '123'         # Not used with sqlite3.
+=======
+#DATABASE_NAME = '/home/tom/py/vamdc/DjVALD/vald3.db' # sqlite example
+DATABASE_NAME = 'dbname'             # Or path to database file if using sqlite3.
+DATABASE_USER = 'dbuser'             # Not used with sqlite3.
+DATABASE_PASSWORD = 'dbpwd'         # Not used with sqlite3.
+>>>>>>> 855bba65dbfa30ba40d471dfff89b416c10f8bdd:DjExampleNode/settings.py
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
@@ -42,7 +62,7 @@ USE_I18N = False
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = BASEPATH + 'DjNode/static/media'
+MEDIA_ROOT = BASEPATH+'static/media'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -55,7 +75,7 @@ MEDIA_URL = 'http://vamdc.fysast.uu.se:8888/media/'
 ADMIN_MEDIA_PREFIX = '/admin-media/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '=4nk7k_v3p@gsdfs#&%&/(&/#*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
+SECRET_KEY = '=4nk7k_v3p@23wwvewrfbgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -70,8 +90,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'DjNode.urls'
+ROOT_URLCONF = NODEPKG + '.urls'
 
+# Edit this if you put new templates into your node directory
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
@@ -86,7 +107,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'DjNode.node',
     'DjNode.tapservice',
-#    'DjVALD.vald', ## ADD your app here!
+    NODEPKG,
 )
+
