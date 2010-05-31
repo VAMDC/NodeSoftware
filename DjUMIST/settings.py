@@ -7,6 +7,8 @@ BASEPATH='/Users/kws/Documents/code/django/VAMDC-VALD/'
 import sys
 sys.path.append(BASEPATH)
 
+NODEPKG='DjUMIST.umist'
+
 ADMINS = (
     ('Ken Smith', 'k.w.smith@qub.ac.uk'),
 )
@@ -83,7 +85,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'DjNode.node',
     'DjNode.tapservice',
     'DjUMIST.umist',
 )

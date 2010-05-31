@@ -7,7 +7,7 @@ from django.db.models import Q
 # Get the node-specific pacakge!
 from django.conf import settings
 from django.utils.importlib import import_module
-NODEPKG=import_module(settings.NODEPKG)
+NODEPKG=import_module(settings.NODEPKG+'.views')
 
 from time import time
 from datetime import date
