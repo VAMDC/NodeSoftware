@@ -6,7 +6,7 @@ def enc(s):
 # Get the node-specific pacakge!
 from django.conf import settings
 from django.utils.importlib import import_module
-NODEPKG=import_module(settings.NODEPKG)
+NODEPKG=import_module(settings.NODEPKG+'.views')
 
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
@@ -194,12 +194,12 @@ def XsamsMethods(Methods):
 """%(Method.id,Method.category,Method.description)
     yield '</Methods>\n'
 
-def Xsams(Sources,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
+def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">"""
 
-    for Source in XsamsSources(sources): yield Source
+    for Source in XsamsSources(Sources): yield Source
 #    for Method in XsamsMethods(Methods): yield Method
     
     yield '<States>\n'
