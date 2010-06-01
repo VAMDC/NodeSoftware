@@ -10,22 +10,23 @@ NODEPKG=import_module(settings.NODEPKG+'.views')
 
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-def G(name):
+def G(name,**kwargs):
     """
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
+    for key in kwargs: exec('key=kwargs[key]')
     try: name=NODEPKG.VAMDC_DICT[name]
     except: return None # The value is not in the dictionary for the node.
                         # This is fine
 
-    exec('value=%s'%name) # This fails if the queryset with its
+    return eval(name)     # This fails if the queryset with its
                           # attributes is not there as specified
                           # in VAMDC_DICT. Fix it there or in your query.
-    return value
     
 
 def XsamsSources(Sources):
+    G=lambda name: G(name,Sources=Sources)
     if not Sources: return
     yield '<Sources>'
     for Source in Sources:
