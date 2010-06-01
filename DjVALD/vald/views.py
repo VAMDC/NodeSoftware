@@ -8,9 +8,6 @@ from django.conf import settings
 
 from DjVALD.vald.models import Transition,State,Source,Species
 
-# This imports all the generic tap views and functions
-from DjNode.tapservice.views import *
-
 from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
@@ -80,11 +77,12 @@ def getVALDsources(transs):
     return Source.objects.filter(pk__in=sids)
 
 def getVALDstates(transs):
-    #lostates=State.objects.filter(islowerstate_trans__in=transs)
-    #histates=State.objects.filter(islowerstate_trans__in=transs)
-    #states = lostates | histates
-    q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
-    return State.objects.filter(q1|q2).distinct()
+    #q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
+    #return State.objects.filter(q1|q2).distinct()
+    lostates=State.objects.filter(islowerstate_trans__in=transs)
+    histates=State.objects.filter(islowerstate_trans__in=transs)
+    states = lostates | histates
+    return states.distinct()
     
 
 
@@ -97,10 +95,10 @@ def setupResults(qtup,limit=0):
 
     sources = getVALDsources(transs)
     states = getVALDstates(transs)
-    if limit:
-        return transs,states,sources,totalcount
-    else:
-        return transs,states,sources
+    return {'RadTrans':transs,
+            'AtomStates':states,
+            'Sources':sources,
+           }
 
 
 
