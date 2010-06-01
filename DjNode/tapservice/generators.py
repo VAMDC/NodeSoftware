@@ -6,26 +6,27 @@ def enc(s):
 # Get the node-specific pacakge!
 from django.conf import settings
 from django.utils.importlib import import_module
-NODEPKG=import_module(settings.NODEPKG)
+NODEPKG=import_module(settings.NODEPKG+'.views')
 
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-def G(name):
+def G(name,**kwargs):
     """
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
+    for key in kwargs: exec('key=kwargs[key]')
     try: name=NODEPKG.VAMDC_DICT[name]
     except: return None # The value is not in the dictionary for the node.
                         # This is fine
 
-    exec('value=%s'%name) # This fails if the queryset with its
+    return eval(name)     # This fails if the queryset with its
                           # attributes is not there as specified
                           # in VAMDC_DICT. Fix it there or in your query.
-    return value
     
 
 def XsamsSources(Sources):
+    G=lambda name: G(name,Sources=Sources)
     if not Sources: return
     yield '<Sources>'
     for Source in Sources:
@@ -194,12 +195,12 @@ def XsamsMethods(Methods):
 """%(Method.id,Method.category,Method.description)
     yield '</Methods>\n'
 
-def Xsams(Sources,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
+def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">"""
 
-    for Source in XsamsSources(sources): yield Source
+    for Source in XsamsSources(Sources): yield Source
 #    for Method in XsamsMethods(Methods): yield Method
     
     yield '<States>\n'
