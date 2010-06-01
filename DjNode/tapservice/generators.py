@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
@@ -47,7 +48,7 @@ def XsamsSources(Sources):
 <UniformResourceIdentifier>%s</UniformResourceIdentifier>
 </Source>"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
 
-    yield '<Sources>'
+    yield '</Sources>'
 
 def XsamsAtomTerm(state):    
     result='<AtomicComposition>\n<Comments>Term reference: B%s</Comments>\n'%state.level_ref

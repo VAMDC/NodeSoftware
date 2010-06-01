@@ -6,49 +6,14 @@ from django.shortcuts import get_object_or_404
 from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables
 
 
+VAMDC_DICT={\
+'SourceID':'Sources.idArticle',
+'SourceAuthorName':'Sources.journal.smallname',
+
+}
+
 def index(request):
     return HttpResponse("Hello, world. You're at the basecol index.")
-    
-BASECOL_DICT={\
-'SourceID':'RefsArticles.idarticle',
-'SourceAuthorName':'',
-'SourceCategory':'',
-'SourcePageBegin':'',
-'SourcePageEnd':'',
-'SourceName':'',
-'SourceTitle':'',
-'SourceURI':'',
-'SourceVolume':'',
-'SourceYear':'',
-'MethodID':'"MOBS"',
-'MethodCategory':'"observed"',
-'MethodDescription':'',
-'AtomStateID':'',
-'AtomSymbol':'AtomState.species.name',
-'AtomNuclearCharge':'AtomState.species.ion',
-'AtomCompositionComments':'',
-'AtomConfigurationLabel':'',
-'AtomCompositionComponentTerm':'',
-'AtomIonizationEnergy':'',
-'AtomLandeFactor':'',
-'AtomStateEnergy':'',
-'AtomStateDescription':'',
-'AtomIonCharge':'',
-'AtomMassNumber':'atomstate.species.mass',
-'RadTransComments':'',
-'RadTransWavelengthAir':'',
-'RadTransWavelengthVac':'',
-'RadTransWavelengthAccuracyFlag':'',
-'RadTransWavelengthAccuracy':'',
-'RadTransFinalStateRef':'',
-'RadTransInitialStateRef':'',
-'RadTransLogGF':'',
-'RadTransGammaRad':'',
-'RadTransGammaWaals':'',
-'RadTransGammaStark':'',
-'RadTransEffLande':'',
-}
-    
 
     
 def authors(request, ref_id):
@@ -66,7 +31,7 @@ def authors(request, ref_id):
 
 def getBASECOLSources():
     #rarts=RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=1121)
-    return RefsGroups.objects.filter(pk=1121)
+    return RefsGroups.objects.filter(pk=1211)
     #return rarts
 
 def etable(request, ref_id):
@@ -94,7 +59,7 @@ def etable(request, ref_id):
 #
 
 def setupResults(tap,limit=0):
-    sources = getBASECOLSources()
+    sources = getBASECOLSources().all()
     #if tap.lang=='vamdc':
         #tap.query=tap.query%VALD_DICT
         #print tap.query
@@ -115,4 +80,8 @@ def setupResults(tap,limit=0):
         #return transs,states,sources,totalcount
     #else:
         #return transs,states,sources
-    return None,None,sources
+    return {\
+    
+    'Sources':sources,
+   
+    }

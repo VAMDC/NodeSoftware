@@ -1,45 +1,27 @@
-<<<<<<< HEAD:DjNode/settings.py
 # -*- coding: utf-8 -*-
-# Django settings for your node project.
-# you'll need to change things here!
-=======
-# Django settings for DjVAMDC project.
->>>>>>> 855bba65dbfa30ba40d471dfff89b416c10f8bdd:DjExampleNode/settings.py
-
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-<<<<<<< HEAD:DjNode/settings.py
 BASEPATH='/home/doronin/VAMDC/django/VAMDC-VALD/'
-=======
-# Edit this to your repository base directory!
-BASEPATH='/home/tom/py/vamdc/'
->>>>>>> 855bba65dbfa30ba40d471dfff89b416c10f8bdd:DjExampleNode/settings.py
+
 import sys
 sys.path.append(BASEPATH)
 
 # Put your package name here
-NODEPKG='DjExampleNode.node'
+NODEPKG='DjBASECOL.node'
 
 ADMINS = (
-    ('Your Name', 'your@email.com'),
+    ('Misha Doronin', 'misha@doronin.org'),
 )
 
 MANAGERS = ADMINS
 
 # Put your DB-connection here
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-<<<<<<< HEAD:DjNode/settings.py
 #DATABASE_NAME = BASEPATH+'DjVALD/vald3.db' # filename in case of sqlite
 DATABASE_NAME = 'basecol'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'doronin'             # Not used with sqlite3.
 DATABASE_PASSWORD = '123'         # Not used with sqlite3.
-=======
-#DATABASE_NAME = '/home/tom/py/vamdc/DjVALD/vald3.db' # sqlite example
-DATABASE_NAME = 'dbname'             # Or path to database file if using sqlite3.
-DATABASE_USER = 'dbuser'             # Not used with sqlite3.
-DATABASE_PASSWORD = 'dbpwd'         # Not used with sqlite3.
->>>>>>> 855bba65dbfa30ba40d471dfff89b416c10f8bdd:DjExampleNode/settings.py
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
