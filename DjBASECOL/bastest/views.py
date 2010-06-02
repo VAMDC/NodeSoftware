@@ -8,7 +8,7 @@ from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables
 
 VAMDC_DICT={\
 'SourceID':'Sources.idArticle',
-'SourceAuthorName':'Sources.journal.smallname',
+#'SourceAuthorName':'Source.journal.smallname',
 
 }
 
@@ -59,7 +59,7 @@ def etable(request, ref_id):
 #
 
 def setupResults(tap,limit=0):
-    sources = getBASECOLSources().all()
+    sources = getBASECOLSources()
     #if tap.lang=='vamdc':
         #tap.query=tap.query%VALD_DICT
         #print tap.query

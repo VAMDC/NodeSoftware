@@ -11,7 +11,7 @@ NODEPKG=import_module(settings.NODEPKG+'.views')
 
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-def G(name,**kwargs):
+def Gf(name,**kwargs):
     """
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
@@ -27,7 +27,7 @@ def G(name,**kwargs):
     
 
 def XsamsSources(Sources):
-    G=lambda name: G(name,Sources=Sources)
+    G=lambda name: Gf(name,Sources=Sources)
     if not Sources: return
     yield '<Sources>'
     for Source in Sources:
