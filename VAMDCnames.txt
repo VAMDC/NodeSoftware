@@ -21,7 +21,9 @@ AtomConfigurationLabel:::(String):
 AtomCompositionComponentTerm:::(String):
 AtomIonizationEnergy:Ionization energy:Ionization energy in eV:(Float|Double):>0
 AtomLandeFactor:Lande factor:Lande factor:(Float|Double):
+AtomStateLandeFactorRef:Reference-ID for AtomStateLandeFactor:(String):
 AtomStateEnergy:Level energy:Energy of the level in eV:(Float|Double):>=0
+AtomStateEnergyRef:Reference-ID for AtomStateEnergy:(String):
 AtomStateDescription:Level description:Good luck:(String):
 AtomIonCharge:Atomic charge:Ionization stage with 0 for neutral:(Integer):>=0
 AtomMassNumber:Atomic mass:Atomic mass in Daltons, which is the same as the unified mass units (1Da = 1u = 1.660 538 86 (28) e-27):(Float|Double):>1
