@@ -11,31 +11,32 @@ NODEPKG=import_module(settings.NODEPKG+'.views')
 
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-def Gf(name,**kwargs):
+def GetValue(name,**kwargs):
     """
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
-    for key in kwargs: exec('key=kwargs[key]')
     try: name=NODEPKG.VAMDC_DICT[name]
-    except: return None # The value is not in the dictionary for the node.
-                        # This is fine
+    except: return '' # The value is not in the dictionary for the node.
+                      # This is fine
+    if not name: return ''
 
+    for key in kwargs: exec('%s=kwargs["%s"]'%(key,key))
     return eval(name)     # This fails if the queryset with its
                           # attributes is not there as specified
                           # in VAMDC_DICT. Fix it there or in your query.
     
 
 def XsamsSources(Sources):
-    G=lambda name: Gf(name,Sources=Sources)
     if not Sources: return
     yield '<Sources>'
     for Source in Sources:
-        yield '<Source sourceID="B%s"><Authors>'%G('SourceID') 
+        G=lambda name: GetValue(name,Source=Source)
+        yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
         authornames=G('SourceAuthorName')
-        if not isiterable(authornames): authorname=[authornames]
+        if not isiterable(authornames): authornames=[authornames]
         for author in authornames:
-            yield '<Author><Name>%s</Name></Author>'%author
+            yield '<Author><Name>%s</Name></Author>\n'%author
 
         yield """</Authors>
 <Title>%s</Title>
@@ -85,25 +86,26 @@ def XsamsAtomStates(AtomStates,VD):
     if not AtomStates: return
     yield '<Atoms>'
     for AtomState in AtomStates:
+        G=lambda name: GetValue(name,AtomState=AtomState)
         mass = int(round(Atomtate.species.mass))
         yield """<Atom>
 <ChemicalElement>
-<NuclearCharge>%d</NuclearCharge>
+<NuclearCharge>%s</NuclearCharge>
 <ElementSymbol>%s</ElementSymbol>
 </ChemicalElement>
 <Isotope>
 <IsotopeParameters>
-<MassNumber>%d</MassNumber>
+<MassNumber>%s</MassNumber>
 </IsotopeParameters>
 <IonState>
-<IonCharge>%d</IonCharge>
+<IonCharge>%s</IonCharge>
 <AtomicState stateID="S%s"><Description>%s</Description>
 <AtomicNumericalData>
-<StateEnergy sourceRef="B%d"><Value units="1/cm">%s</Value></StateEnergy>
+<StateEnergy sourceRef="B%s"><Value units="1/cm">%s</Value></StateEnergy>
 <IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
-<LandeFactor sourceRef="B%d"><Value units="unitless">%s</Value></LandeFactor>
+<LandeFactor sourceRef="B%s"><Value units="unitless">%s</Value></LandeFactor>
 </AtomicNumericalData>
-"""%( state.species.atomic , state.species.name , mass , state.species.ion , state.id , state.id , state.energy_ref , state.energy , state.species.ionen , state.lande_ref , state.lande)
+"""%( G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''))
 
         if (state.p or state.j):
             yield "<AtomicQuantumNumbers>"

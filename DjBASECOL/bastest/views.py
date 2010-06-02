@@ -7,8 +7,8 @@ from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables
 
 
 VAMDC_DICT={\
-'SourceID':'Sources.idArticle',
-#'SourceAuthorName':'Source.journal.smallname',
+'SourceID':'"BAS"+str(Source.article.idarticle)',
+'SourceAuthorName':'Source.article.journal.smallname',
 
 }
 
@@ -31,7 +31,7 @@ def authors(request, ref_id):
 
 def getBASECOLSources():
     #rarts=RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=1121)
-    return RefsGroups.objects.filter(pk=1211)
+    return RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=1211)
     #return rarts
 
 def etable(request, ref_id):
