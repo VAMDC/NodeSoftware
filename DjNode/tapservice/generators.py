@@ -3,6 +3,7 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
+#Import regexps
 import re
 # Get the node-specific pacakge!
 from django.conf import settings
