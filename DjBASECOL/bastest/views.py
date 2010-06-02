@@ -8,7 +8,16 @@ from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables
 
 VAMDC_DICT={\
 'SourceID':'"BAS"+str(Source.article.idarticle)',
-'SourceAuthorName':'Source.article.journal.smallname',
+'SourceTitle':'Source.article.title',
+'SourceCategory':'"journal"',
+'SourceYear':'Source.article.year',
+'SourceName':'Source.article.journal.name',
+'SourceVolume':'Source.article.volume',
+'SourcePageBegin':'re.compile(r"\D+").split(Source.article.page)[0]',
+'SourcePageEnd':'re.compile(r"\D+").split(Source.article.page)[1]',
+'SourceURI':'Source.article.url',
+'SourceAuthorName':'Source.article.authors.all()',
+
 
 }
 
