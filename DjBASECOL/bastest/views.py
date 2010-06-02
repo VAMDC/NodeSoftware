@@ -16,7 +16,7 @@ VAMDC_DICT={\
 'SourcePageBegin':'re.compile(r"\D+").split(Source.article.page)[0]',
 'SourcePageEnd':'re.compile(r"\D+").split(Source.article.page)[1]',
 'SourceURI':'Source.article.url',
-'SourceAuthorName':'Source.article.authors.all()',
+'SourceAuthorName':'[obj.fullname for obj in Source.article.authors.all()]',
 
 
 }

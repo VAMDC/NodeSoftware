@@ -3,6 +3,7 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
+#Import regexps
 import re
 # Get the node-specific pacakge!
 from django.conf import settings
@@ -36,7 +37,7 @@ def XsamsSources(Sources):
         authornames=G('SourceAuthorName')
         if not isiterable(authornames): authornames=[authornames]
         for author in authornames:
-            yield '<Author><Name>%s</Name></Author>\n'%(author.firstname+" "+author.surname)
+            yield '<Author><Name>%s</Name></Author>\n'%author
 
         yield """</Authors>
 <Title>%s</Title>

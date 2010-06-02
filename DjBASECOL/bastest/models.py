@@ -15,8 +15,12 @@ class RefsAuthors(models.Model):
     idauthor = models.IntegerField(primary_key=True, db_column='idAuthor') # Field name made lowercase.
     surname = models.CharField(unique=True, max_length=60, blank=True)
     firstname = models.CharField(unique=True, max_length=60, db_column='firstName', blank=True) # Field name made lowercase.
+
     class Meta:
         db_table = u'Refs_Authors'
+    def _get_fullname(self):
+        return self.firstname + ' ' + self.surname
+    fullname = property(_get_fullname)
 
 class ManyToManyFieldWithCustomColumns(models.ManyToManyField):
     def _get_m2m_column_name(self, related):
