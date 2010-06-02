@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
-
+import re
 # Get the node-specific pacakge!
 from django.conf import settings
 from django.utils.importlib import import_module
@@ -35,7 +36,7 @@ def XsamsSources(Sources):
         authornames=G('SourceAuthorName')
         if not isiterable(authornames): authornames=[authornames]
         for author in authornames:
-            yield '<Author><Name>%s</Name></Author>\n'%author
+            yield '<Author><Name>%s</Name></Author>\n'%(author.firstname+" "+author.surname)
 
         yield """</Authors>
 <Title>%s</Title>
@@ -46,9 +47,9 @@ def XsamsSources(Sources):
 <PageBegin>%s</PageBegin>
 <PageEnd>%s</PageEnd>
 <UniformResourceIdentifier>%s</UniformResourceIdentifier>
-</Source>"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
+</Source>\n"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
 
-    yield '<Sources>'
+    yield '</Sources>\n'
 
 def XsamsAtomTerm(state):    
     result='<AtomicComposition>\n<Comments>Term reference: B%s</Comments>\n'%state.level_ref
