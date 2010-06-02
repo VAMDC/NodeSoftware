@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
-
+import re
 # Get the node-specific pacakge!
 from django.conf import settings
 from django.utils.importlib import import_module
@@ -46,9 +47,9 @@ def XsamsSources(Sources):
 <PageBegin>%s</PageBegin>
 <PageEnd>%s</PageEnd>
 <UniformResourceIdentifier>%s</UniformResourceIdentifier>
-</Source>"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
+</Source>\n"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
 
-    yield '<Sources>'
+    yield '</Sources>\n'
 
 def XsamsAtomTerm(state):    
     result='<AtomicComposition>\n<Comments>Term reference: B%s</Comments>\n'%state.level_ref
@@ -100,11 +101,11 @@ def XsamsAtomStates(AtomStates,VD):
 <IonCharge>%s</IonCharge>
 <AtomicState stateID="S%s"><Description>%s</Description>
 <AtomicNumericalData>
-<StateEnergy sourceRef="B%s"><Value units="1/cm">%s</Value></StateEnergy>
+<StateEnergy sourceRef="B%s"><Value units="eV">%s</Value></StateEnergy>
 <IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
 <LandeFactor sourceRef="B%s"><Value units="unitless">%s</Value></LandeFactor>
 </AtomicNumericalData>
-"""%( G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''))
+"""%( G('AtomNuclearCharge'), G('AtomSymbol'), G('AtomMassNumber'), G('AtomIonCharge'), G('AtomStateID'), G('AtomStateDescription'), G('AtomStateEnergyRef'), G('AtomStateEnergy'), G(''), G(''), G(''))
 
         if (state.p or state.j):
             yield "<AtomicQuantumNumbers>"
