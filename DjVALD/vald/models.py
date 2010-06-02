@@ -33,7 +33,7 @@ class Source(models.Model):
     r9 = models.PositiveSmallIntegerField(null=True, blank=True)
     srcdescr = models.CharField(max_length=128, blank=True, null=True)
     def __unicode__(self):
-        return u'%s'%self.id.encode('utf8') if self.id else u'NULL'
+        return u'ID%s: %s'%(self.id,self.srcdescr)
         
     class Meta:
         db_table = u'sources'

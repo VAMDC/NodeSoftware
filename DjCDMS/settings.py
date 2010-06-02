@@ -7,6 +7,8 @@ BASEPATH='/home/endres/Projects/vamdc/'
 import sys
 sys.path.append(BASEPATH)
 
+NODEPKG='DjCDMS.cdms'
+
 ADMINS = (
     ('Christian Endres', 'endres@ph1.uni-koeln.de'),
 )
@@ -84,7 +86,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'DjNode.node',
     'DjNode.tapservice',
     'DjCDMS.cdms',
 )

@@ -2,33 +2,51 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
-def G(name):
+
+# Get the node-specific pacakge!
+from django.conf import settings
+from django.utils.importlib import import_module
+NODEPKG=import_module(settings.NODEPKG+'.views')
+
+isiterable = lambda obj: hasattr(obj, '__iter__')
+
+def GetValue(name,**kwargs):
     """
     the function that gets a value out of the query set, using the global name
-    and the node-specific dictionary
+    and the node-specific dictionary.
     """
-    if type(name)!=list: 
-        name=name.split('.')
-        exec('name[0]=%s'%name[0])
-    if len(name)==2: return getattr(name[0],name[1])
-    else: get([getattr(name[0],name[1])]+name[2:])
+    try: name=NODEPKG.VAMDC_DICT[name]
+    except: return '' # The value is not in the dictionary for the node.
+                      # This is fine
+    if not name: return ''
+
+    for key in kwargs: exec('%s=kwargs["%s"]'%(key,key))
+    return eval(name)     # This fails if the queryset with its
+                          # attributes is not there as specified
+                          # in VAMDC_DICT. Fix it there or in your query.
     
+
 def XsamsSources(Sources):
     if not Sources: return
     yield '<Sources>'
     for Source in Sources:
-        yield """<Source sourceID="B%d">
-<Authors>
-<Author>
-<Name>%s, List type: %d, Source file: %s</Name>
-</Author>
-</Authors>
-<Category>journal</Category>
-<Year>2222</Year>
-<SourceName>SomeJournal</SourceName>
-<Volume>666</Volume>
-<PageBegin>666</PageBegin>
-</Source>"""%( Source.id , Source.srcdescr, Source.listtype , Source.srcfile )
+        G=lambda name: GetValue(name,Source=Source)
+        yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
+        authornames=G('SourceAuthorName')
+        if not isiterable(authornames): authornames=[authornames]
+        for author in authornames:
+            yield '<Author><Name>%s</Name></Author>\n'%author
+
+        yield """</Authors>
+<Title>%s</Title>
+<Category>%s</Category>
+<Year>%s</Year>
+<SourceName>%s</SourceName>
+<Volume>%s</Volume>
+<PageBegin>%s</PageBegin>
+<PageEnd>%s</PageEnd>
+<UniformResourceIdentifier>%s</UniformResourceIdentifier>
+</Source>"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
 
     yield '<Sources>'
 
@@ -67,25 +85,26 @@ def XsamsAtomStates(AtomStates,VD):
     if not AtomStates: return
     yield '<Atoms>'
     for AtomState in AtomStates:
+        G=lambda name: GetValue(name,AtomState=AtomState)
         mass = int(round(Atomtate.species.mass))
         yield """<Atom>
 <ChemicalElement>
-<NuclearCharge>%d</NuclearCharge>
+<NuclearCharge>%s</NuclearCharge>
 <ElementSymbol>%s</ElementSymbol>
 </ChemicalElement>
 <Isotope>
 <IsotopeParameters>
-<MassNumber>%d</MassNumber>
+<MassNumber>%s</MassNumber>
 </IsotopeParameters>
 <IonState>
-<IonCharge>%d</IonCharge>
+<IonCharge>%s</IonCharge>
 <AtomicState stateID="S%s"><Description>%s</Description>
 <AtomicNumericalData>
-<StateEnergy sourceRef="B%d"><Value units="1/cm">%s</Value></StateEnergy>
+<StateEnergy sourceRef="B%s"><Value units="1/cm">%s</Value></StateEnergy>
 <IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
-<LandeFactor sourceRef="B%d"><Value units="unitless">%s</Value></LandeFactor>
+<LandeFactor sourceRef="B%s"><Value units="unitless">%s</Value></LandeFactor>
 </AtomicNumericalData>
-"""%( state.species.atomic , state.species.name , mass , state.species.ion , state.id , state.id , state.energy_ref , state.energy , state.species.ionen , state.lande_ref , state.lande)
+"""%( G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''), G(''))
 
         if (state.p or state.j):
             yield "<AtomicQuantumNumbers>"
@@ -178,12 +197,12 @@ def XsamsMethods(Methods):
 """%(Method.id,Method.category,Method.description)
     yield '</Methods>\n'
 
-def Xsams(Sources,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
+def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">"""
 
-    for Source in XsamsSources(sources): yield Source
+    for Source in XsamsSources(Sources): yield Source
 #    for Method in XsamsMethods(Methods): yield Method
     
     yield '<States>\n'
@@ -205,6 +224,7 @@ def Xsams(Sources,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,M
 
 ##########################################################
 ######## VO TABLE GENERATORS ####################
+
 def sources2votable(sources):
     for source in sources:
         yield ''
