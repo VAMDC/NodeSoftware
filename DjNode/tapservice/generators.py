@@ -36,7 +36,7 @@ def XsamsSources(Sources):
         authornames=G('SourceAuthorName')
         if not isiterable(authornames): authornames=[authornames]
         for author in authornames:
-            yield '<Author><Name>%s</Name></Author>\n'%(author.firstname+" "+author.surname)
+            yield '<Author><Name>%s</Name></Author>\n'%author
 
         yield """</Authors>
 <Title>%s</Title>
