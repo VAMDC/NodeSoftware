@@ -20,7 +20,7 @@ AtomCompositionComments:::(String):
 AtomConfigurationLabel:::(String):
 AtomCompositionComponentTerm:::(String):
 AtomIonizationEnergy:Ionization energy:Ionization energy in eV:(Float|Double):>0
-AtomLandeFactor:Lande factor:Lande factor:(Float|Double):
+AtomStateLandeFactor:Lande factor:Lande factor:(Float|Double):
 AtomStateLandeFactorRef:Reference-ID for AtomStateLandeFactor:(String):
 AtomStateEnergy:Level energy:Energy of the level in eV:(Float|Double):>=0
 AtomStateEnergyRef:Reference-ID for AtomStateEnergy:(String):
