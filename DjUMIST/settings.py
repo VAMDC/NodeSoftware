@@ -3,23 +3,20 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-BASEPATH='/home/tom/py/vamdc/'
+BASEPATH='/Users/kws/Documents/code/django/VAMDC-VALD/'
 import sys
 sys.path.append(BASEPATH)
 
-import DjVALD.vald as NODEPKG
-
 ADMINS = (
-    ('Thomas Marquart', 'thomas@marquart.se'),
+    ('Ken Smith', 'k.w.smith@qub.ac.uk'),
 )
 
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-#DATABASE_NAME = '/home/tom/py/vamdc/DjVALD/vald3.db'
-DATABASE_NAME = 'vald'             # Or path to database file if using sqlite3.
-DATABASE_USER = 'vald'             # Not used with sqlite3.
-DATABASE_PASSWORD = 'V@ld'         # Not used with sqlite3.
+DATABASE_NAME = 'umist_django'             # Or path to database file if using sqlite3.
+DATABASE_USER = 'umist_django'             # Not used with sqlite3.
+DATABASE_PASSWORD = 'umist_django'         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
@@ -70,7 +67,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'DjVALD.urls'
+ROOT_URLCONF = 'DjUMIST.urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -88,5 +85,5 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'DjNode.node',
     'DjNode.tapservice',
-    'DjVALD.vald',
+    'DjUMIST.umist',
 )

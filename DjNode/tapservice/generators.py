@@ -2,7 +2,11 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
-def get(name):
+def G(name):
+    """
+    the function that gets a value out of the query set, using the global name
+    and the node-specific dictionary
+    """
     if type(name)!=list: 
         name=name.split('.')
         exec('name[0]=%s'%name[0])
@@ -53,6 +57,11 @@ def XsamsAtomTerm(state):
     result+='</Term></Component></AtomicComposition>'
     return result
 
+def parityLabel(parity):
+   if partity % 2:
+      return 'odd'
+   else:
+      return 'even'
 
 def XsamsAtomStates(AtomStates,VD):
     if not AtomStates: return
@@ -80,7 +89,7 @@ def XsamsAtomStates(AtomStates,VD):
 
         if (state.p or state.j):
             yield "<AtomicQuantumNumbers>"
-            if state.p: '<Parity>%s</Parity>'%('odd' if state.p%2 else 'even')
+            if state.p: '<Parity>%s</Parity>'%parityLabel(state.p)
             if state.j: '<TotalAngularMomentum>%s</TotalAngularMomentum>'%state.j
             yield "</AtomicQuantumNumbers>"
 
@@ -175,14 +184,14 @@ def Xsams(Sources,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,M
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">"""
 
     for Source in XsamsSources(sources): yield Source
-    for Method in XsamsMethods(Methods): yield Method
+#    for Method in XsamsMethods(Methods): yield Method
     
     yield '<States>\n'
-    for AtomState in XsamsAtomStates(states): yield AtomState
-    for MoleState in XsamsMoleStates(states): yield MoleState
+#    for AtomState in XsamsAtomStates(states): yield AtomState
+#    for MoleState in XsamsMoleStates(states): yield MoleState
     yield '</States>\n'
     yield '<Processes>\n'
-    for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
+#    for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
     #for CollTrans in XsamsCollTrans(CollTrans): yield CollTrans
     yield '</Processes>\n'
     yield '</XSAMSData>\n'
@@ -216,7 +225,10 @@ def states2votable(states):
     yield """</TABLEDATA></DATA></TABLE>"""
 
 def transitions2votable(transs,count):
-    n=len(transs) if (type(transs)==type([])) else transs.count()
+    if type(transs)==type([]):
+        n = len(transs)
+    else:
+        transs.count()
     yield u"""<TABLE name="transitions" ID="transitions">
       <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>
       <FIELD name="wavelength (air)" ID="airwave" datatype="float" unit="Angstrom"/>
@@ -232,9 +244,18 @@ def transitions2votable(transs,count):
         <TABLEDATA>"""%(count or n,n)
 
     for trans in transs:
-        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.vacwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , trans.upstateid.replace('<','').replace('>','') if trans.upstateid else None, trans.lostateid.replace('<','').replace('>','') if trans.lostateid else None)
+        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.vacwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , xmlEscape(trans.upstateid), xmlEscape(trans.lostateid))
         
     yield """</TABLEDATA></DATA></TABLE>"""
+
+
+# Returns an XML-escaped version of a given string. The &, < and > characters are escaped.
+def xmlEscape(s):
+    if s:
+        return s.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
+    else:
+        return None
+
 
 def votable(transitions,states,sources,totalcount=None):
     yield """<?xml version="1.0"?>
@@ -263,7 +284,11 @@ def votable(transitions,states,sources,totalcount=None):
 #######################
 
 def transitions2embedhtml(transs,count):
-    n=len(transs) if (type(transs)==type([])) else transs.count()
+    if type(transs)==type([]):
+        n = len(transs)
+    else:
+        transs.count()
+        n = transs.count()
     yield u"""<TABLE name="transitions" ID="transitions">
       <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>
       <FIELD name="AtomicNr" ID="atomic" datatype="int"/>
@@ -280,10 +305,9 @@ def transitions2embedhtml(transs,count):
         <TABLEDATA>"""%(count or n,n)
 
     for trans in transs:
-        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.species.atomic, trans.species.ion,trans.airwave, trans.loggf, #trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , 
-trans.upstateid.replace('<','').replace('>','') if trans.upstateid else None, trans.lostateid.replace('<','').replace('>','') if trans.lostateid else None)
+        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.species.atomic, trans.species.ion,trans.airwave, trans.loggf,) #trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , xmlEscape(trans.upstateid), xmlEscape(trans.lostateid))
         
-    yield """</TABLEDATA></DATA></TABLE>"""
+    yield '</TABLEDATA></DATA></TABLE>'
 
 def embedhtml(transitions,totalcount=None):
     yield """<?xml version="1.0"?>

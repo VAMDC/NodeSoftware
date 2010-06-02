@@ -1,26 +1,23 @@
-# Django settings for DjVAMDC project.
+# Django settings for XstarDB app in ag02.ast.cam.ac.uk.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-BASEPATH='/home/tom/py/vamdc/'
+BASEPATH='/vamdc/VAMDC-Django/'
 import sys
 sys.path.append(BASEPATH)
 
-import DjVALD.vald as NODEPKG
-
 ADMINS = (
-    ('Thomas Marquart', 'thomas@marquart.se'),
+    ('Guy Rixon', 'gtr@ast.cam.ac.uk'),
 )
 
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-#DATABASE_NAME = '/home/tom/py/vamdc/DjVALD/vald3.db'
-DATABASE_NAME = 'vald'             # Or path to database file if using sqlite3.
-DATABASE_USER = 'vald'             # Not used with sqlite3.
-DATABASE_PASSWORD = 'V@ld'         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
+DATABASE_NAME = 'xstar'             # Or path to database file if using sqlite3.
+DATABASE_USER = 'vamdc'             # Not used with sqlite3.
+DATABASE_PASSWORD = ''         # SELECT-only access without password
+DATABASE_HOST = 'casx019-zone1.ast.cam.ac.uk'             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
 # Local time zone for this installation. Choices can be found here:
@@ -28,11 +25,11 @@ DATABASE_PORT = ''             # Set to empty string for default. Not used with 
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'Europe/Stockholm'
+TIME_ZONE = 'Europe/London'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-gb'
 
 SITE_ID = 1
 
@@ -42,12 +39,12 @@ USE_I18N = False
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = BASEPATH+'static/media'
+MEDIA_ROOT = BASEPATH+'DjNode/static/media'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = 'http://vamdc.fysast.uu.se:8888/media/'
+MEDIA_URL = 'http://ag02.ast.cam.ac.uk/media/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
@@ -70,7 +67,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'DjVALD.urls'
+ROOT_URLCONF = 'DjXstarDB.urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -88,5 +85,5 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'DjNode.node',
     'DjNode.tapservice',
-    'DjVALD.vald',
+    'DjXstarDB.xstardb',
 )

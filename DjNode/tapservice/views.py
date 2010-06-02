@@ -16,32 +16,14 @@ randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
 from DjNode.tapservice.generators import *
 
-def parseSQL(sql):
-    wheres=sql.split('where')[1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
-    qlist=[]
-    for w in wheres:
-        w=w.split()
-        print w
-        value=w[-1]
-        if 'wavelength' in w: field='vacwave'
-        if 'element' in w: field='species__name'
-        if '<' in w: op='__lt'
-        if '>' in w: op='__gt'
-        if '=' in w: op='__iexact'
-        if '<=' in w: op='__lte'
-        if '>=' in w: op='__gte'
-        
-        exec('mq=Q(%s="%s")'%(field+op,value))
-        qlist.append(mq)
-    return tuple(qlist)
-
 def vamdc2queryset(sql):
-    sql=sql.lower().replace('(','').replace(')','')
+    sql=sql.replace('(','').replace(')','')
     wheres=sql.split('where')[-1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
     qlist=[]
     for w in wheres:
         w=w.split()
-        field=w[0]
+	print w
+        field='__'.join(w[0].split('.')[1:])
         value=w[2]
         if w[1]=='<': op='__lt'
         if w[1]=='>': op='__gt'
@@ -53,22 +35,21 @@ def vamdc2queryset(sql):
         exec(qexe)
         qlist.append(mq)
     return tuple(qlist)
-            
 
 
+#### THIS IS THE ONE PLACE WHERE THIS FILE BECOMES NODE-SPECIFIC
+#### which is certainly the wrong way to do it and will be fixed!
+#from DjVALD.vald.views import setupResults
 
-from DjVALD.vald.views import *
-
-def index(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
+# testing a general way, not working yet.
+from django.conf.settings.BASEPKG.views import *
 
 class TAPQUERY(object):
     def __init__(self,data):
         try:
             self.request=lower(data['REQUEST'])
             self.lang=lower(data['LANG'])
-            self.query=lower(data['QUERY'])
+            self.query=data['QUERY']
             self.format=lower(data['FORMAT'])
             self.isvalid=True
         except:
@@ -89,6 +70,35 @@ class TAPQUERY(object):
     def __str__(self):
         return '%s'%self.query
 
+def sync(request):
+    tap=TAPQUERY(request.REQUEST)
+    if not tap.isvalid:
+        # return http error
+        print 'not valid tap!'
+    
+    if tap.format == 'xsams': 
+        results=setupResults(tap)
+        generator=Xsams(**results)
+        response=HttpResponse(generator,mimetype='application/xml')
+        response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+    
+    elif tap.format == 'votable': 
+        transs,states,sources=setupResults(tap)
+        generator=votable(transs,states,sources)
+        response=HttpResponse(generator,mimetype='application/xml')
+        response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+    
+#    elif tap.format == 'embedhtml':
+#        transs,states,sources,count=setupResults(tap,limit=100)
+#        generator=embedhtml(transs,count)
+#        xml='\n'.join(generator)
+#        #open('/tmp/bla.xml','w').write(xml)
+#        html=vo2html(E.fromstring(xml))
+#        response=HttpResponse(html,mimetype='text/html')
+
+    return response
+
+
 
 def async(request):
     c=RequestContext(request,{})
@@ -106,36 +116,12 @@ def availability(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)
 
+def index(request):
+    c=RequestContext(request,{})
+    return render_to_response('node/index.html', c)
 
-#####################################3
 
-def sync(request):
-    tap=TAPQUERY(request.REQUEST)
-    if not tap.isvalid:
-        # return http error
-        print 'not valid tap!'
-    
-    if tap.format == 'xsams': 
-        transs,states,sources=setupResults(tap)
-        generator=xsams(transs,states,sources)
-        response=HttpResponse(generator,mimetype='application/xml')
-        response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
-    
-    elif tap.format == 'votable': 
-        transs,states,sources=setupResults(tap)
-        generator=votable(transs,states,sources)
-        response=HttpResponse(generator,mimetype='application/xml')
-        response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
-    
-    elif tap.format == 'embedhtml':
-        transs,states,sources,count=setupResults(tap,limit=100)
-        generator=embedhtml(transs,count)
-        xml='\n'.join(generator)
-        #open('/tmp/bla.xml','w').write(xml)
-        html=vo2html(E.fromstring(xml))
-        response=HttpResponse(html,mimetype='text/html')
 
-    return response
 
 
 
