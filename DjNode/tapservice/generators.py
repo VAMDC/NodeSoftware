@@ -106,7 +106,7 @@ def XsamsAtomStates(AtomStates,VD):
 <IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
 <LandeFactor sourceRef="B%s"><Value units="unitless">%s</Value></LandeFactor>
 </AtomicNumericalData>
-"""%( G('AtomNuclearCharge'), G('AtomSymbol'), G('AtomMassNumber'), G('AtomIonCharge'), G('AtomStateID'), G('AtomStateDescription'), G('AtomStateEnergyRef'), G('AtomStateEnergy'), G(''), G(''), G(''))
+"""%( G('AtomNuclearCharge'), G('AtomSymbol'), G('AtomMassNumber'), G('AtomIonCharge'), G('AtomStateID'), G('AtomStateDescription'), G('AtomStateEnergyRef'), G('AtomStateEnergy'), G('AtomIonizationEnergy'), G('AtomStateLandeFactorRef'), G('AtomStateLandeFactor'))
 
         if (state.p or state.j):
             yield "<AtomicQuantumNumbers>"
