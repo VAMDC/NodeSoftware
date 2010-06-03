@@ -123,6 +123,7 @@ def XsamsMolStates(MolStates):
     if not MolStates: return
     yield '<Molecules>'
     for MolState in MolStates:
+        G=lambda name: GetValue(name,MolState=MolState)
         yield """<Molecule>
 <Molecules>
 <Molecule>
@@ -161,19 +162,37 @@ def XsamsRadTrans(RadTrans):
     if not RadTrans: return
     yield '<Radiative>'
     for RadTran in RadTrans:
+        G=lambda name: GetValue(name,RadTrans=RadTrans)
         yield """
-<RadiativeTransition methodRef="MOBS">
-<Comments>Effective Lande factor and broadening gammas: 
-lande_eff: %s (Ref B%d)
-gamma_rad: %s (Ref B%d)
-gamma_stark: %s (Ref B%d)
-gamma_waals: %s (Ref B%d)
-air wavelength: %s (Ref B%d)
-</Comments>
-<EnergyWavelength>
-<Wavelength><Experimental sourceRef="B%d">
-<Comments>Wavelength in vaccuum. For air see the comment field.</Comments><Value units="1/cm">%s</Value><Accuracy>Flag: %s, Value: %s</Accuracy>
-</Experimental></Wavelength></EnergyWavelength>"""%( RadTran.landeff , RadTran.lande_ref , RadTran.gammarad , RadTran.gammarad_ref , RadTran.gammastark , RadTran.gammastark_ref , RadTran.gammawaals , RadTran.gammawaals_ref , RadTran.airwave, RadTran.wave_ref, RadTran.wave_ref , RadTran.vacwave , RadTran.acflag , RadTran.accur)
+<RadiativeTransition methodRef="M%s">
+<Comments>%s</Comments>
+<EnergyWavelength>"""%(G(''),G(''))
+        # fetch the ones that decide which branch to enter
+        WaveLenE=G('RadTransWavelengthExperimentalValue')
+        WaveLenT=G('RadTransWavelengthTheoreticalValue')
+        WaveLenR=G('RadTransWavelengthRitzValue')
+        WaveNumE=G('RadTransWavenumberExperimentalValue')
+        WaveNumT=G('RadTransWavenumberTheoreticalValue')
+        WaveNumR=G('RadTransWavenumberRitzValue')
+        if WaveLenE: yield """<Wavelength><Experimental sourceRef="B%d">
+<Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
+</Experimental></Wavelength>"""%(G(''),G(''),G(''),G(''),G(''))
+        if WaveLenT: yield """<Wavelength><Theoretical sourceRef="B%d">
+<Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
+</Theoretical></Wavelength>"""%( )
+        if WaveLenR: yield """<Wavelength><Ritz sourceRef="B%d">
+<Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
+</Ritz></Wavelength>"""%( )
+        if WaveNumE: yield """<Wavenumber><Experimental sourceRef="B%d">
+<Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
+</Experimental></Wavenumber>"""%( )
+        if WaveNumT: yield """<Wavenumber><Theoretical sourceRef="B%d">
+<Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
+</Theoretical></Wavenumber>"""%( )
+        if WaveNumR: yield """<Wavenumber><Ritz sourceRef="B%d">
+<Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
+</Ritz></Wavenumber>"""%( )
+        yield '</EnergyWavelength>'
 
         if RadTran.upstateid: yield '<InitialStateRef>S%s</InitialStateRef>'%RadTran.upstate.id
         if RadTran.lostateid: yield '<FinalStateRef>S%s</FinalStateRef>'%RadTran.lostate.id
@@ -181,19 +200,20 @@ air wavelength: %s (Ref B%d)
 <Log10WeightedOscillatorStregnth sourceRef="B%d"><Value units="unitless">%s</Value></Log10WeightedOscillatorStregnth>
 </Probability>
 </RadiativeTransition>"""%(RadTran.loggf_ref,RadTran.loggf)
-
-    yield '<Radiative>'
+        # loop ends
+    yield '</Radiative>'
 
 
 def XsamsMethods(Methods):
     if not Methods: return
     yield '<Methods>\n'
     for Method in Methods:
+        G=lambda name: GetValue(name,Method=Method)
         yield """<Method methodID="%s">
 <Category>%s</Category>
 <Description>%s</Description>
 </Method>
-"""%(Method.id,Method.category,Method.description)
+"""%(G('MethodID'),G('MethodCategory'),G('MethodDescription'))
     yield '</Methods>\n'
 
 def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
@@ -202,7 +222,7 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">"""
 
     for Source in XsamsSources(Sources): yield Source
-#    for Method in XsamsMethods(Methods): yield Method
+    for Method in XsamsMethods(Methods): yield Method
     
     yield '<States>\n'
     for AtomState in XsamsAtomStates(AtomStates): yield AtomState
