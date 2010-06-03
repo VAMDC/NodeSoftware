@@ -40,6 +40,7 @@ AtomStateDescription:Level description:Good luck:(String):
 # Radiative transitions
 
 RadTransComments:::(String):
+RadTransMethodRef:determination method:E.g. ab initio, semi-empirical, experimental::(String):
 
 RadTransFinalStateRef:::(String):
 RadTransInitialStateRef:::(String):
@@ -50,73 +51,61 @@ RadTransEffLande::::
 
 RadTransWavenumberRitzComments:::(String):
 RadTransWavenumberRitzSourceRef:Ritz wavenumber source::(String):
-RadTransWavenumberRitzMethodRef:Ritz wavenumber determination method:E.g. ab initio, semi-empirical, experimental:(String):
 RadTransWavenumberRitzValue:Ritz wavenumber:The difference between the upper and the lower level energies:(Double):>0
 RadTransWavenumberRitzUnits:Ritz wavenumber units:The units of wavenumbers as 1/units of length. E.g. 1/cm:(String):
 RadTransWavenumberRitzAccuracy:Ritz wavenumber accuracy:Absolute accuracy of the Ritz wavenumbers:(String):
 RadTransWavenumberExperimentalComments:Wavenumber value:Measured wavenumber value:(String):
 RadTransWavenumberExperimentalSourceRef:::(String):
-RadTransWavenumberExperimentalMethodRef:::(String):
 RadTransWavenumberExperimentalValue:::(Double):
 RadTransWavenumberExperimentalUnits:::(String):
 RadTransWavenumberExperimentalAccuracy:::(String):
 RadTransWavenumberTheoreticalComments:::(String):
 RadTransWavenumberTheoreticalSourceRef:::(String):
-RadTransWavenumberTheoreticalMethodRef:::(String):
 RadTransWavenumberTheoreticalValue:::(Double):
 RadTransWavenumberTheoreticalUnits:::(String):
 RadTransWavenumberTheoreticalAccuracy:::(String):
 RadTransWavelengthRitzComments:::(String):
 RadTransWavelengthRitzSourceRef:::(String):
-RadTransWavelengthRitzMethodRef:::(String):
 RadTransWavelengthRitzValue:::(Double):
 RadTransWavelengthRitzUnits:::(String):
 RadTransWavelengthRitzAccuracy:::(String):
 RadTransWavelengthExperimentalComments:::(String):
 RadTransWavelengthExperimentalSourceRef:::(String):
-RadTransWavelengthExperimentalMethodRef:::(String):
 RadTransWavelengthExperimentalValue:::(Double):
 RadTransWavelengthExperimentalUnits:::(String):
 RadTransWavelengthExperimentalAccuracy:::(String):
 RadTransWavelengthTheoreticalComments:::(String):
 RadTransWavelengthTheoreticalSourceRef:::(String):
-RadTransWavelengthTheoreticalMethodRef:::(String):
 RadTransWavelengthTheoreticalValue:::(Double):
 RadTransWavelengthTheoreticalUnits:::(String):
 RadTransWavelengthTheoreticalAccuracy:::(String):
 RadTransEnergyRitzComments:::(String):
 RadTransEnergyRitzSourceRef:::(String):
-RadTransEnergyRitzMethodRef:::(String):
 RadTransEnergyRitzValue:::(Double):
 RadTransEnergyRitzUnits:::(String):
 RadTransEnergyRitzAccuracy:::(String):
 RadTransEnergyExperimentalComments:::(String):
 RadTransEnergyExperimentalSourceRef:::(String):
-RadTransEnergyExperimentalMethodRef:::(String):
 RadTransEnergyExperimentalValue:::(Double):
 RadTransEnergyExperimentalUnits:::(String):
 RadTransEnergyExperimentalAccuracy:::(String):
 RadTransEnergyTheoreticalComments:::(String):
 RadTransEnergyTheoreticalSourceRef:::(String):
-RadTransEnergyTheoreticalMethodRef:::(String):
 RadTransEnergyTheoreticalValue:::(Double):
 RadTransEnergyTheoreticalUnits:::(String):
 RadTransEnergyTheoreticalAccuracy:::(String):
 RadTransFrequencyRitzComments:::(String):
 RadTransFrequencyRitzSourceRef:::(String):
-RadTransFrequencyRitzMethodRef:::(String):
 RadTransFrequencyRitzValue:::(Double):
 RadTransFrequencyRitzUnits:::(String):
 RadTransFrequencyRitzAccuracy:::(String):
 RadTransFrequencyExperimentalComments:::(String):
 RadTransFrequencyExperimentalSourceRef:::(String):
-RadTransFrequencyExperimentalMethodRef:::(String):
 RadTransFrequencyExperimentalValue:::(Double):
 RadTransFrequencyExperimentalUnits:::(String):
 RadTransFrequencyExperimentalAccuracy:::(String):
 RadTransFrequencyTheoreticalComments:::(String):
 RadTransFrequencyTheoreticalSourceRef:::(String):
-RadTransFrequencyTheoreticalMethodRef:::(String):
 RadTransFrequencyTheoreticalValue:::(Double):
 RadTransFrequencyTheoreticalUnits:::(String):
 RadTransFrequencyTheoreticalAccuracy:::(String):
