@@ -52,7 +52,7 @@ def XsamsSources(Sources):
 
     yield '</Sources>\n'
 
-def XsamsAtomTerm(AtomState):
+def XsamsAtomTerm(AtomState,G):
     #pre-fetch the ones that weill be tested for below
     coupling=G('AtomStateCoupling')
     l=G('AtomStateL')
@@ -84,12 +84,11 @@ def parityLabel(parity):
    else:
       return 'even'
 
-def XsamsAtomStates(AtomStates,VD):
+def XsamsAtomStates(AtomStates):
     if not AtomStates: return
     yield '<Atoms>'
     for AtomState in AtomStates:
         G=lambda name: GetValue(name,AtomState=AtomState)
-        mass = int(round(Atomtate.species.mass))
         yield """<Atom>
 <ChemicalElement>
 <NuclearCharge>%s</NuclearCharge>
@@ -206,7 +205,7 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
 #    for Method in XsamsMethods(Methods): yield Method
     
     yield '<States>\n'
-#    for AtomState in XsamsAtomStates(states): yield AtomState
+    for AtomState in XsamsAtomStates(AtomStates): yield AtomState
 #    for MoleState in XsamsMoleStates(states): yield MoleState
     yield '</States>\n'
     yield '<Processes>\n'
