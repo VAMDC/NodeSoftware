@@ -52,27 +52,28 @@ def XsamsSources(Sources):
 
     yield '</Sources>\n'
 
-def XsamsAtomTerm(state):    
-    result='<AtomicComposition>\n<Comments>Term reference: B%s</Comments>\n'%state.level_ref
-    result+='<Component><Configuration><ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%state.term.replace('<','').replace('>','')
+def XsamsAtomTerm(AtomState):
+    #pre-fetch the ones that weill be tested for below
+    coupling=G('AtomStateCoupling')
+    l=G('AtomStateL')
+    s=G('AtomStateS')
+    k=G('AtomStateK')
+    s2=G('AtomStateS2')
+    j1=G('AtomStateJ1')
+    j2=G('AtomStateJ2')
+    
+    result='<AtomicComposition>\n<Comments>Term reference: B%s</Comments>\n'%G('AtomStateCompositionComments')
+    result+='<Component><Configuration><ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%G('AtomStateConfigurationLabel')
     result+='<Term>'
-    if state.coupling == "LS" and state.l and state.s: 
-        result+='<LS>'
-        if state.l: result+='<L><Value>%d</Value></L>'%state.l
-        if state.s: result+='<S>%.1f</S>'%state.s
-        result+='</LS>'
+
+    if coupling == "LS" and l and s: 
+        result+='<LS><L><Value>%d</Value></L><S>%.1f</S></LS>'%(l,s)
         
-    elif state.coupling == "JK" and state.s2 and state.k: 
-        result+='<jK>'
-        if state.s2: result+='<j>%s</j>'%state.s2
-        if state.k: result+='<K> %s</K>'%state.k
-        result+='</jK>'
+    elif coupling == "JK" and s2 and k: 
+        result+='<jK><j>%s</j><K> %s</K></jK>'%(s2,k)
         
-    elif state.coupling == "JJ" and state.j1 and state.j2:
-        result+='<J1J2>'
-        if state.j1: result+='<j>%s</j>'%state.j1
-        if state.j2: result+='<j>%s</j>'%state.j2
-        result+='</J1J2>'
+    elif coupling == "JJ" and j1 and j2:
+        result+='<J1J2><j>%s</j><j>%s</j></J1J2>'%(j1,j2)
         
     result+='</Term></Component></AtomicComposition>'
     return result
@@ -108,21 +109,18 @@ def XsamsAtomStates(AtomStates,VD):
 </AtomicNumericalData>
 """%( G('AtomNuclearCharge'), G('AtomSymbol'), G('AtomMassNumber'), G('AtomIonCharge'), G('AtomStateID'), G('AtomStateDescription'), G('AtomStateEnergyRef'), G('AtomStateEnergy'), G('AtomIonizationEnergy'), G('AtomStateLandeFactorRef'), G('AtomStateLandeFactor'))
 
-        if (state.p or state.j):
-            yield "<AtomicQuantumNumbers>"
-            if state.p: '<Parity>%s</Parity>'%parityLabel(state.p)
-            if state.j: '<TotalAngularMomentum>%s</TotalAngularMomentum>'%state.j
-            yield "</AtomicQuantumNumbers>"
+        if (G('AtomStateParity') or G('AtomStateTotalAngMom')):
+            yield '<AtomicQuantumNumbers><Parity>%s</Parity><TotalAngularMomentum>%s</TotalAngularMomentum></AtomicQuantumNumbers>'%(G('AtomStateParity'),G('AtomStateTotalAngMom'))
 
-        yield XsamsAtomTerm(state)
+        yield XsamsAtomTerm(AtomState,G)
         yield """</AtomicState>
 </IonState>
 </Isotope>
 </Atom>"""
-
+        #end of loop
     yield '</Atoms>'
 
-def XsamsMolStates(MolStates,VD):
+def XsamsMolStates(MolStates):
     if not MolStates: return
     yield '<Molecules>'
     for MolState in MolStates:
