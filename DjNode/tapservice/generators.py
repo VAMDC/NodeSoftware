@@ -19,13 +19,16 @@ def GetValue(name,**kwargs):
     """
     try: name=NODEPKG.VAMDC_DICT[name]
     except: return '' # The value is not in the dictionary for the node.
-                      # This is fine
-    if not name: return ''
+                      # This is fine.
 
-    for key in kwargs: exec('%s=kwargs["%s"]'%(key,key))
-    return eval(name)     # This fails if the queryset with its
-                          # attributes is not there as specified
-                          # in VAMDC_DICT. Fix it there or in your query.
+    if not name: return '' # if the key was in the dict, but the value empty or None
+
+    for key in kwargs: # assign the dict-value to a local variable named as the dict-key
+        exec('%s=kwargs["%s"]'%(key,key))
+
+    try: value=eval(name) # this works, if the dict-value is named correctly as the query-set attribute
+    except: value=name  # this catches the case where the dict-value is a string or mistyped.
+    return value
     
 
 def XsamsSources(Sources):
@@ -156,17 +159,15 @@ def XsamsMolStates(MolStates):
 
 
 
-                               
-
 def XsamsRadTrans(RadTrans):
     if not RadTrans: return
     yield '<Radiative>'
     for RadTran in RadTrans:
-        G=lambda name: GetValue(name,RadTrans=RadTrans)
+        G=lambda name: GetValue(name,RadTran=RadTran)
         yield """
 <RadiativeTransition methodRef="M%s">
 <Comments>%s</Comments>
-<EnergyWavelength>"""%(G(''),G(''))
+<EnergyWavelength>"""%(G('RadTransMethodRef'),G('RadTransComments'))
         # fetch the ones that decide which branch to enter
         WaveLenE=G('RadTransWavelengthExperimentalValue')
         WaveLenT=G('RadTransWavelengthTheoreticalValue')
@@ -174,32 +175,61 @@ def XsamsRadTrans(RadTrans):
         WaveNumE=G('RadTransWavenumberExperimentalValue')
         WaveNumT=G('RadTransWavenumberTheoreticalValue')
         WaveNumR=G('RadTransWavenumberRitzValue')
-        if WaveLenE: yield """<Wavelength><Experimental sourceRef="B%d">
+        if WaveLenE: yield """<Wavelength><Experimental sourceRef="B%s">
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
-</Experimental></Wavelength>"""%(G(''),G(''),G(''),G(''),G(''))
-        if WaveLenT: yield """<Wavelength><Theoretical sourceRef="B%d">
+</Experimental></Wavelength>"""%(G('RadTransWavelengthExperimentalSourceRef'),
+                                 G('RadTransWavelengthExperimentalComments'),
+                                 G('RadTransWavelengthExperimentalUnits'),
+                                 WaveLenE,
+                                 G('RadTransWavelengthExperimentalAccuracy'))
+
+        if WaveLenT: yield """<Wavelength><Theoretical sourceRef="B%s">
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
-</Theoretical></Wavelength>"""%( )
-        if WaveLenR: yield """<Wavelength><Ritz sourceRef="B%d">
+</Theoretical></Wavelength>"""%(G('RadTransWavelengthTheoreticalSourceRef'),
+                                G('RadTransWavelengthTheoreticalComments'),
+                                G('RadTransWavelengthTheoreticalUnits'),
+                                WaveLenT,
+                                G('RadTransWavelengthTheoreticalAccuracy'))
+
+        if WaveLenR: yield """<Wavelength><Ritz sourceRef="B%s">
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
-</Ritz></Wavelength>"""%( )
-        if WaveNumE: yield """<Wavenumber><Experimental sourceRef="B%d">
+</Ritz></Wavelength>"""%(G('RadTransWavelengthRitzSourceRef'),
+                         G('RadTransWavelengthRitzComments'),
+                         G('RadTransWavelengthRitzUnits'),
+                         WaveLenR,
+                         G('RadTransWavelengthRitzAccuracy'))
+
+        if WaveNumE: yield """<Wavenumber><Experimental sourceRef="B%s">
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
-</Experimental></Wavenumber>"""%( )
-        if WaveNumT: yield """<Wavenumber><Theoretical sourceRef="B%d">
+</Experimental></Wavenumber>"""%(G('RadTransWavenumberExperimentalSourceRef'),
+                                 G('RadTransWavenumberExperimentalComments'),
+                                 G('RadTransWavenumberExperimentalUnits'),
+                                 WaveNumE,
+                                 G('RadTransWavenumberExperimentalAccuracy'))
+
+        if WaveNumT: yield """<Wavenumber><Theoretical sourceRef="B%s">
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
-</Theoretical></Wavenumber>"""%( )
-        if WaveNumR: yield """<Wavenumber><Ritz sourceRef="B%d">
+</Theoretical></Wavenumber>"""%(G('RadTransWavenumberTheoreticalSourceRef'),
+                                G('RadTransWavenumberTheoreticalComments'),
+                                G('RadTransWavenumberTheoreticalUnits'),
+                                WaveNumT,
+                                G('RadTransWavenumberTheoreticalAccuracy'))
+
+        if WaveNumR: yield """<Wavenumber><Ritz sourceRef="B%s">
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
-</Ritz></Wavenumber>"""%( )
+</Ritz></Wavenumber>"""%(G('RadTransWavenumberRitzSourceRef'),
+                         G('RadTransWavenumberRitzComments'),
+                         G('RadTransWavenumberRitzUnits'),
+                         WaveNumR,
+                         G('RadTransWavenumberRitzAccuracy'))
         yield '</EnergyWavelength>'
 
-        if RadTran.upstateid: yield '<InitialStateRef>S%s</InitialStateRef>'%RadTran.upstate.id
-        if RadTran.lostateid: yield '<FinalStateRef>S%s</FinalStateRef>'%RadTran.lostate.id
+        if RadTran.upstateid: yield '<InitialStateRef>S%s</InitialStateRef>'%G('RadTransIntitialStateRef')
+        if RadTran.lostateid: yield '<FinalStateRef>S%s</FinalStateRef>'%G('RadTransFinalStateRef')
         if RadTran.loggf: yield """<Probability>
-<Log10WeightedOscillatorStregnth sourceRef="B%d"><Value units="unitless">%s</Value></Log10WeightedOscillatorStregnth>
+<Log10WeightedOscillatorStregnth sourceRef="B%s"><Value units="unitless">%s</Value></Log10WeightedOscillatorStregnth>
 </Probability>
-</RadiativeTransition>"""%(RadTran.loggf_ref,RadTran.loggf)
+</RadiativeTransition>"""%(G('RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef'),G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'))
         # loop ends
     yield '</Radiative>'
 
@@ -229,7 +259,7 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
 #    for MoleState in XsamsMoleStates(states): yield MoleState
     yield '</States>\n'
     yield '<Processes>\n'
-#    for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
+    for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
     #for CollTrans in XsamsCollTrans(CollTrans): yield CollTrans
     yield '</Processes>\n'
     yield '</XSAMSData>\n'
