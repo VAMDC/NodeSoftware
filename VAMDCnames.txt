@@ -137,7 +137,6 @@ RadTransProbabilityLog10WeightedOscillatorStrengthComments:::(String):
 RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef:::(String):
 RadTransProbabilityLog10WeightedOscillatorStrengthMethodRef:::(String):
 RadTransProbabilityLog10WeightedOscillatorStrengthValue:::(Double):
-RadTransProbabilityLog10WeightedOscillatorStrengthUnits:::(String):
 RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy:::(String):
 RadTransProbabilityIdealisedIntensityComments:::(String):
 RadTransProbabilityIdealisedIntensitySourceRef:::(String):
@@ -146,6 +145,9 @@ RadTransProbabilityIdealisedIntensityValue:::(Double):
 RadTransProbabilityIdealisedIntensityUnits:::(String):
 RadTransProbabilityIdealisedIntensityAccuracy:::(String):
 RadTransProbabilityProbability:MultipoleValue:::(String):
+RadTransIntitialStateRef::::
+RadTransFinalStateRef::::
+
 
 CollisionComments:::(String):
 CollisionTabulatedData::::
