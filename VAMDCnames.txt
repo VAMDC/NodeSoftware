@@ -13,22 +13,34 @@ MethodID:::(String):
 MethodCategory:::(String):
 MethodDescription::::
 
-AtomStateID:::(String):
 AtomSymbol:Atom:Atomic name:(String):
 AtomNuclearCharge:Atomic number:Atomic number or nuclear charge:(Integer):>0
-AtomCompositionComments:::(String):
-AtomConfigurationLabel:::(String):
-AtomCompositionComponentTerm:::(String):
-AtomIonizationEnergy:Ionization energy:Ionization energy in eV:(Float|Double):>0
-AtomLandeFactor:Lande factor:Lande factor:(Float|Double):
-AtomStateEnergy:Level energy:Energy of the level in eV:(Float|Double):>=0
-AtomStateDescription:Level description:Good luck:(String):
 AtomIonCharge:Atomic charge:Ionization stage with 0 for neutral:(Integer):>=0
+AtomIonizationEnergy:Ionization energy:Ionization energy in eV:(Float|Double):>0
 AtomMassNumber:Atomic mass:Atomic mass in Daltons, which is the same as the unified mass units (1Da = 1u = 1.660 538 86 (28) e-27):(Float|Double):>1
+AtomStateID:::(String):
+AtomStateCompositionComments:::(String):
+AtomStateConfigurationLabel:::(String):
+AtomStateParity::::
+AtomStateTotalAngMom::::
+AtomStateTerm:::(String):
+AtomStateCoupling:::(String):
+AtomStateL::::
+AtomStateS::::
+AtomStateK::::
+AtomStateS2::::
+AtomStateJ1::::
+AtomStateJ2::::
+AtomStateLandeFactor:Lande factor:Lande factor:(Float|Double):
+AtomStateLandeFactorRef:Reference-ID for AtomStateLandeFactor:(String):
+AtomStateEnergy:Level energy:Energy of the level in eV:(Float|Double):>=0
+AtomStateEnergyRef:Reference-ID for AtomStateEnergy:(String):
+AtomStateDescription:Level description:Good luck:(String):
 
 # Radiative transitions
 
 RadTransComments:::(String):
+RadTransMethodRef:determination method:E.g. ab initio, semi-empirical, experimental::(String):
 
 RadTransFinalStateRef:::(String):
 RadTransInitialStateRef:::(String):
@@ -39,73 +51,61 @@ RadTransEffLande::::
 
 RadTransWavenumberRitzComments:::(String):
 RadTransWavenumberRitzSourceRef:Ritz wavenumber source::(String):
-RadTransWavenumberRitzMethodRef:Ritz wavenumber determination method:E.g. ab initio, semi-empirical, experimental:(String):
 RadTransWavenumberRitzValue:Ritz wavenumber:The difference between the upper and the lower level energies:(Double):>0
 RadTransWavenumberRitzUnits:Ritz wavenumber units:The units of wavenumbers as 1/units of length. E.g. 1/cm:(String):
 RadTransWavenumberRitzAccuracy:Ritz wavenumber accuracy:Absolute accuracy of the Ritz wavenumbers:(String):
 RadTransWavenumberExperimentalComments:Wavenumber value:Measured wavenumber value:(String):
 RadTransWavenumberExperimentalSourceRef:::(String):
-RadTransWavenumberExperimentalMethodRef:::(String):
 RadTransWavenumberExperimentalValue:::(Double):
 RadTransWavenumberExperimentalUnits:::(String):
 RadTransWavenumberExperimentalAccuracy:::(String):
 RadTransWavenumberTheoreticalComments:::(String):
 RadTransWavenumberTheoreticalSourceRef:::(String):
-RadTransWavenumberTheoreticalMethodRef:::(String):
 RadTransWavenumberTheoreticalValue:::(Double):
 RadTransWavenumberTheoreticalUnits:::(String):
 RadTransWavenumberTheoreticalAccuracy:::(String):
 RadTransWavelengthRitzComments:::(String):
 RadTransWavelengthRitzSourceRef:::(String):
-RadTransWavelengthRitzMethodRef:::(String):
 RadTransWavelengthRitzValue:::(Double):
 RadTransWavelengthRitzUnits:::(String):
 RadTransWavelengthRitzAccuracy:::(String):
 RadTransWavelengthExperimentalComments:::(String):
 RadTransWavelengthExperimentalSourceRef:::(String):
-RadTransWavelengthExperimentalMethodRef:::(String):
 RadTransWavelengthExperimentalValue:::(Double):
 RadTransWavelengthExperimentalUnits:::(String):
 RadTransWavelengthExperimentalAccuracy:::(String):
 RadTransWavelengthTheoreticalComments:::(String):
 RadTransWavelengthTheoreticalSourceRef:::(String):
-RadTransWavelengthTheoreticalMethodRef:::(String):
 RadTransWavelengthTheoreticalValue:::(Double):
 RadTransWavelengthTheoreticalUnits:::(String):
 RadTransWavelengthTheoreticalAccuracy:::(String):
 RadTransEnergyRitzComments:::(String):
 RadTransEnergyRitzSourceRef:::(String):
-RadTransEnergyRitzMethodRef:::(String):
 RadTransEnergyRitzValue:::(Double):
 RadTransEnergyRitzUnits:::(String):
 RadTransEnergyRitzAccuracy:::(String):
 RadTransEnergyExperimentalComments:::(String):
 RadTransEnergyExperimentalSourceRef:::(String):
-RadTransEnergyExperimentalMethodRef:::(String):
 RadTransEnergyExperimentalValue:::(Double):
 RadTransEnergyExperimentalUnits:::(String):
 RadTransEnergyExperimentalAccuracy:::(String):
 RadTransEnergyTheoreticalComments:::(String):
 RadTransEnergyTheoreticalSourceRef:::(String):
-RadTransEnergyTheoreticalMethodRef:::(String):
 RadTransEnergyTheoreticalValue:::(Double):
 RadTransEnergyTheoreticalUnits:::(String):
 RadTransEnergyTheoreticalAccuracy:::(String):
 RadTransFrequencyRitzComments:::(String):
 RadTransFrequencyRitzSourceRef:::(String):
-RadTransFrequencyRitzMethodRef:::(String):
 RadTransFrequencyRitzValue:::(Double):
 RadTransFrequencyRitzUnits:::(String):
 RadTransFrequencyRitzAccuracy:::(String):
 RadTransFrequencyExperimentalComments:::(String):
 RadTransFrequencyExperimentalSourceRef:::(String):
-RadTransFrequencyExperimentalMethodRef:::(String):
 RadTransFrequencyExperimentalValue:::(Double):
 RadTransFrequencyExperimentalUnits:::(String):
 RadTransFrequencyExperimentalAccuracy:::(String):
 RadTransFrequencyTheoreticalComments:::(String):
 RadTransFrequencyTheoreticalSourceRef:::(String):
-RadTransFrequencyTheoreticalMethodRef:::(String):
 RadTransFrequencyTheoreticalValue:::(Double):
 RadTransFrequencyTheoreticalUnits:::(String):
 RadTransFrequencyTheoreticalAccuracy:::(String):
@@ -137,7 +137,6 @@ RadTransProbabilityLog10WeightedOscillatorStrengthComments:::(String):
 RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef:::(String):
 RadTransProbabilityLog10WeightedOscillatorStrengthMethodRef:::(String):
 RadTransProbabilityLog10WeightedOscillatorStrengthValue:::(Double):
-RadTransProbabilityLog10WeightedOscillatorStrengthUnits:::(String):
 RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy:::(String):
 RadTransProbabilityIdealisedIntensityComments:::(String):
 RadTransProbabilityIdealisedIntensitySourceRef:::(String):
@@ -146,6 +145,9 @@ RadTransProbabilityIdealisedIntensityValue:::(Double):
 RadTransProbabilityIdealisedIntensityUnits:::(String):
 RadTransProbabilityIdealisedIntensityAccuracy:::(String):
 RadTransProbabilityProbability:MultipoleValue:::(String):
+RadTransIntitialStateRef::::
+RadTransFinalStateRef::::
+
 
 CollisionComments:::(String):
 CollisionTabulatedData::::
@@ -201,4 +203,3 @@ MolQnValue:Molecular quantuum number value:Value of specific molecular quantum n
 MolQnSpinRef:Reference for the nuclear spin:Which of the atoms the nuclear spin quantum number refers to:(String):
 MolQnAttribute:Molecular quantum number attribute(s):Molecular quantum number attribute(s):(String):
 MolQnComment:Description of molecular quantum numbers:Additional comments for molecular quantum numbers:(String):
-

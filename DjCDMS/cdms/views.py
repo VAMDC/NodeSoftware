@@ -29,6 +29,7 @@ VALD_DICT={'1':'species__atomic',
            }
 
 VAMDC_DICT={\
+'4':'RadiativeTransitions.frequencyvalue',
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
 'SourceCategory':'',
@@ -39,7 +40,7 @@ VAMDC_DICT={\
 'SourceURI':'',
 'SourceVolume':'',
 'SourceYear':'',
-'MethodID':'"MCALC"'
+'MethodID':'"MCALC"',
 'MethodCategory':'"calculated"',
 'MethodDescription':'',
 'AtomStateID':'',
