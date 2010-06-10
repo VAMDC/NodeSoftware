@@ -4,8 +4,12 @@
 import os
 import sys
 
-from vamdc.imptools import dbhelpers
-from vamdc.imptools import mapping_vald3
+# making the import non-dependent on main folder name
+sys.path.append("..")
+os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
+
+from imptools import dbhelpers
+from imptools import mapping_vald3
 
 def import_to_db():
     """
