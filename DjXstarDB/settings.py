@@ -7,6 +7,9 @@ BASEPATH='/vamdc/VAMDC-Django/'
 import sys
 sys.path.append(BASEPATH)
 
+NODEPKG='DjXstarDB.xstardb'
+
+
 ADMINS = (
     ('Guy Rixon', 'gtr@ast.cam.ac.uk'),
 )
@@ -83,7 +86,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'DjNode.node',
     'DjNode.tapservice',
     'DjXstarDB.xstardb',
 )

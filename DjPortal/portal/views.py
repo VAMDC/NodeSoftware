@@ -17,23 +17,16 @@ from urllib import urlopen,urlencode
 
 REGISTRY=[
           {'name':'VALD','url':'http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/'},
-          {'name':'VALD2','url':'http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/'},
+          {'name':'CDMS','url':'http://www.astro.uni-koeln.de:8098/DjCDMS/tap/sync/'},
           ]
-#REGISTRY=[
-#          {'name':'VALD','url':'http://localhost:8001/tap/sync/'},
-#          {'name':'VALD2','url':'http://localhost:8001/tap/sync/'},
-#          ]
 
-
-PARA_CHOICES=[(0,u''),
-              (1,u'Atomic number'),
-              (2,u'Ionization'),
-              (3,u'Wavelength in vaccum (Å)'),
-              (4,u'Wavelength in air (Å)'),
-              (5,u'log(g*f)'),
-              (6,u'Level energy (1/cm)'),
-              (7,u'Total angular momentum J'),
-              (8,u'Species from species list (not implemented)'),
+PARA_CHOICES=[('',u''),
+#              ('',u'Atomic number'),
+#              ('',u'Ionization'),
+              ('RadTransWavelengthExperimentalValue',u'(Radiative transition) Wavelength in vaccum (Å)'),
+              ('RadTransProbabilityLog10WeightedOscillatorStrengthValue',u'(Radiative transition) Oscillator strength, log(g*f)'),
+#              ('',u'Level energy (1/cm)'),
+#              ('',u'Species from species list (not implemented)'),
 ]
 
 class ConditionForm(forms.Form):
@@ -47,13 +40,15 @@ class ConditionForm(forms.Form):
         super(ConditionForm,self).validate(value)              
 
 def constructQuery(constraints):
-    q=''
+    q='select all where '
     for c in constraints:
-        if c['parameter']=='0': continue
+        print c
+        if c == {}: continue
+        if not c['parameter']: continue
         if c['lower'] and c['upper']:
             if c['lower'] == c['upper']: q+='( %%(%s)s = %s )'%(c['parameter'],c['upper'])
             else:
-                q+='( %%(%s)s > %s AND '%(c['parameter'],c['lower'])
+                q+='( %%(%s)s > %s and '%(c['parameter'],c['lower'])
                 q+='%%(%s)s < %s )'%(c['parameter'],c['upper'])
         elif c['lower']:
             q+='( %%(%s)s > %s )'%(c['parameter'],c['lower'])
@@ -77,18 +72,8 @@ def query(request):
     else:
         selectionset = ConditionSet(initial=[
                 {'lower': u'5000',
-                 'upper': u'7500',
-                 'parameter':4,
-                 'connection':True,
-                 },
-                {'lower': u'26',
-                 'upper': u'26',
-                 'parameter':1,
-                 'connection':True,
-                 },
-                {'lower': u'1',
-                 'upper': u'3',
-                 'parameter':2,
+                 'upper': u'5050',
+                 'parameter':'RadTransWavelengthExperimentalValue',
                  'connection':True,
                  },
                 ])
@@ -98,12 +83,12 @@ def query(request):
 
 #####################
 
-def askNodeForEmbedHTML(url,query):
+def askNodeForCount(url,query):
     data={}
     data['LANG']='VAMDC'
     data['REQUEST']='doQuery'
     data['QUERY']=query
-    data['FORMAT']='embedhtml'
+    data['FORMAT']='count'
     data=urlencode(data)
     req=urlopen(url,data)
     html=req.read()
@@ -124,8 +109,9 @@ def results(request,qid):
     results=[]
     for node in REGISTRY:
         result={'nodename':node['name']}
-        result['html']=askNodeForEmbedHTML(node['url'],query.query)
-        result['vourl']=makeDlLink(node['url'],query.query,format='VOTABLE')
+        result['count']=askNodeForCount(node['url'],query.query)
+        #result['html']=askNodeForEmbedHTML(node['url'],query.query)
+        #result['vourl']=makeDlLink(node['url'],query.query,format='VOTABLE')
         result['xsamsurl']=makeDlLink(node['url'],query.query,format='XSAMS')
         results.append(result)
         

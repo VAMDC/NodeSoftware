@@ -8,15 +8,12 @@ from django.conf import settings
 
 from DjVALD.vald.models import Transition,State,Source,Species
 
-# This imports all the generic tap views and functions
-from DjNode.tapservice.views import *
-
 from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
-from lxml import etree as E
-vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
+#from lxml import etree as E
+#vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
 # legacy dict
 #VALD_DICT={'1':'species__atomic',
@@ -28,7 +25,8 @@ vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_m
 #           '7':'lostate__J',
 #           }
 
-VALD_DICT={\
+
+VAMDC_DICT={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
 'SourceCategory':'',
@@ -38,33 +36,31 @@ VALD_DICT={\
 'SourceTitle':'',
 'SourceURI':'',
 'SourceVolume':'',
-'SourceYear':'"2222"',
-'MethodID':'"MOBS"',
-'MethodCategory':'"observed"',
-'MethodDescription':'',
+'SourceYear':'2222',
+'MethodID':'OBS',
+'MethodCategory':'observed',
+'MethodDescription':'so far all vald data is marked as observed although that is not necessarily true :)',
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'AtomState.species.name',
 'AtomNuclearCharge':'AtomState.species.ion',
-'AtomCompositionComments':'',
-'AtomConfigurationLabel':'',
-'AtomCompositionComponentTerm':'',
+'AtomConfigurationLabel':'AtomState.charid',
+'AtomCompositionComponentTerm':'AtomState.term',
 'AtomIonizationEnergy':'AtomState.species.ionen',
 'AtomLandeFactor':'AtomState.coupling',
 'AtomStateEnergy':'AtomState.energy',
-'AtomStateDescription':'',
 'AtomIonCharge':'AtomState.species.ion',
 'AtomMassNumber':'AtomState.species.mass',
-'RadTransComments':'',
-'RadTransWavelengthExperimentalValue':'',
-'RadTransWavelengthAccuracyFlag':'',
-'RadTransWavelengthAccuracy':'',
-'RadTransFinalStateRef':'RadTrans.lostate.id',
-'RadTransInitialStateRef':'RadTrans.upstate.id',
-'RadTransLogGF':'RadTrans.loggf',
-'RadTransGammaRad':'',
-'RadTransGammaWaals':'',
-'RadTransGammaStark':'',
-'RadTransEffLande':'',
+'RadTransComments':'Wavelength is for vaccum.',
+'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
+'RadTransWavelengthExperimentalUnits':'Angstrom',
+'RadTransWavelengthExperimentalAccuracy':'RadTran.accur',
+'RadTransWavelengthExperimentalSourceRef':'RadTran.wave_ref',
+'RadTransFinalStateRef':'RadTran.lostate.id',
+'RadTransInitialStateRef':'RadTran.upstate.id',
+'RadTransLogGF':'RadTran.loggf',
+'RadTransMethodRef':'OBS',
+'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref',
+'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
 }
 
 def index(request):
@@ -80,17 +76,16 @@ def getVALDsources(transs):
     return Source.objects.filter(pk__in=sids)
 
 def getVALDstates(transs):
-    #lostates=State.objects.filter(islowerstate_trans__in=transs)
-    #histates=State.objects.filter(islowerstate_trans__in=transs)
-    #states = lostates | histates
-    q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
-    return State.objects.filter(q1|q2).distinct()
+    #q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
+    #return State.objects.filter(q1|q2).distinct()
+    lostates=State.objects.filter(islowerstate_trans__in=transs).distinct()
+    histates=State.objects.filter(islowerstate_trans__in=transs).distinct()
+    states = lostates | histates
+    return states
     
 
 
-def setupResults(tap,limit=0):
-    query=tap.query%VALD_DICT
-    qtup=vamdc2queryset(query)
+def setupResults(qtup,limit=0):
     transs = Transition.objects.filter(*qtup)
     
     totalcount=transs.count()
@@ -99,10 +94,10 @@ def setupResults(tap,limit=0):
 
     sources = getVALDsources(transs)
     states = getVALDstates(transs)
-    if limit:
-        return transs,states,sources,totalcount
-    else:
-        return transs,states,sources
+    return {'RadTrans':transs,
+            'AtomStates':states,
+            'Sources':sources,
+           }
 
 
 

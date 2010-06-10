@@ -7,6 +7,8 @@ BASEPATH='/home/tom/py/vamdc/'
 import sys
 sys.path.append(BASEPATH)
 
+NODEPKG='DjVALD.vald'
+
 ADMINS = (
     ('Thomas Marquart', 'thomas@marquart.se'),
 )
@@ -84,7 +86,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'DjNode.node',
     'DjNode.tapservice',
     'DjVALD.vald',
 )
+
