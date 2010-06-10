@@ -4,7 +4,14 @@
 """
 Defines a mapping dictionary that maps between data columns 
 in raw ascii data files and defines how they should be stored
-into a relational (django) database. 
+into a relational (django) database.
+
+A file like this should be created for every unique database.
+It should normally contain a global list, conventionally named
+'mappings', that define how data fields are to be translated into
+django fields. To properly map, a custom processor also probably
+has to be constructed in dbhelper as well.
+
 """
 
 from string import strip
@@ -71,7 +78,7 @@ from DjVALD.vald import models as valdmodel
 
 
 # Setup file names 
-base = #"/vald/"
+#base = "/vald/"
 base = "/home/samreg/Project/VAMDC/vamdc-griatch/imptools/vald_raw/"
 
 species_list_file = base + 'VALD_list_of_species'
@@ -80,8 +87,7 @@ states_file = base + 'states_u.dat'
 vald_file = base = 'vald3.dat'
 terms_file = base = 'myterms.dat'
 
-vald3cfg = [
-
+mapping = [
     # species file 
     {'model':valdmodel.Species,     
      'fname':species_list_file,
@@ -278,7 +284,7 @@ vald3cfg = [
             ] 
      } # end of term def  
 
-] # end of vald3cfg file def list
+] # end of vald3 mapping file def list
 
 
 
