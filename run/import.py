@@ -4,27 +4,37 @@
 import os
 import sys
 
-from vamdc.imptools import *
+from vamdc.imptools import dbhelpers
+from vamdc.imptools import mapping_vald3
 
-def main():
+def import_to_db():
+    """
+    Starts the importer.
+    """
     if len(sys.argv) < 2:
-        print "need more arguments"
+        print "Usage: import.py dummy|vald|<path-to-mapping-file>"  
         return
 
-    if sys.argv[1]=='dummy':
-        pass # not implemented right now
+    if sys.argv[1] == 'dummy':
+        print "This feature is not yet implemented."
+        return
     
-    elif sys.argv[1]=='vald':
-        config=vald3cfg
+    elif sys.argv[1] == 'vald':
+        mapping = mapping_vald3.mapping
         
     else:
-        config=readcfg(sys.argv[1])
-        
+        # read file 
+        mapping = dbhelpers.readcfg(sys.argv[1])
 
-    do_all(config)
-
+    if mapping:
+        # do the import 
+        dbhelpers.parse_mapping(mapping)
+    else:
+        # likely an error in reading a mapping file. 
+        return 
+    
 if __name__ == '__main__':
-    main()
+    import_to_db()
 
 
 
