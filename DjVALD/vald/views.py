@@ -25,7 +25,6 @@ def enc(s):
 #           '7':'lostate__J',
 #           }
 
-
 VAMDC_DICT={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
@@ -36,31 +35,33 @@ VAMDC_DICT={\
 'SourceTitle':'',
 'SourceURI':'',
 'SourceVolume':'',
-'SourceYear':'2222',
-'MethodID':'OBS',
-'MethodCategory':'observed',
-'MethodDescription':'so far all vald data is marked as observed although that is not necessarily true :)',
+'SourceYear':'"2222"',
+'MethodID':'"MOBS"',
+'MethodCategory':'"observed"',
+'MethodDescription':'',
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'AtomState.species.name',
 'AtomNuclearCharge':'AtomState.species.ion',
-'AtomConfigurationLabel':'AtomState.charid',
-'AtomCompositionComponentTerm':'AtomState.term',
+'AtomCompositionComments':'',
+'AtomConfigurationLabel':'',
+'AtomCompositionComponentTerm':'',
 'AtomIonizationEnergy':'AtomState.species.ionen',
 'AtomLandeFactor':'AtomState.coupling',
 'AtomStateEnergy':'AtomState.energy',
+'AtomStateDescription':'',
 'AtomIonCharge':'AtomState.species.ion',
 'AtomMassNumber':'AtomState.species.mass',
-'RadTransComments':'Wavelength is for vaccum.',
-'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
-'RadTransWavelengthExperimentalUnits':'Angstrom',
-'RadTransWavelengthExperimentalAccuracy':'RadTran.accur',
-'RadTransWavelengthExperimentalSourceRef':'RadTran.wave_ref',
-'RadTransFinalStateRef':'RadTran.lostate.id',
-'RadTransInitialStateRef':'RadTran.upstate.id',
-'RadTransLogGF':'RadTran.loggf',
-'RadTransMethodRef':'OBS',
-'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref',
-'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
+'RadTransComments':'',
+'RadTransWavelengthExperimentalValue':'RadTrans.vacwave',
+'RadTransWavelengthAccuracyFlag':'',
+'RadTransWavelengthAccuracy':'',
+'RadTransFinalStateRef':'RadTrans.lostate.id',
+'RadTransInitialStateRef':'RadTrans.upstate.id',
+'RadTransLogGF':'RadTrans.loggf',
+'RadTransGammaRad':'',
+'RadTransGammaWaals':'',
+'RadTransGammaStark':'',
+'RadTransEffLande':'',
 }
 
 def index(request):
@@ -78,10 +79,10 @@ def getVALDsources(transs):
 def getVALDstates(transs):
     #q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
     #return State.objects.filter(q1|q2).distinct()
-    lostates=State.objects.filter(islowerstate_trans__in=transs).distinct()
-    histates=State.objects.filter(islowerstate_trans__in=transs).distinct()
+    lostates=State.objects.filter(islowerstate_trans__in=transs)
+    histates=State.objects.filter(islowerstate_trans__in=transs)
     states = lostates | histates
-    return states
+    return states.distinct()
     
 
 
