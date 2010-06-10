@@ -23,7 +23,7 @@ import os
 
 def charrange(line,start,end):
     """
-    Cut out part of a line of texs based on indices
+    Cut out part of a line of texts based on indices
     """
     return strip(line[start:end])
 
@@ -76,16 +76,16 @@ def makeValdLowerStateKey(line):
 os.environ['DJANGO_SETTINGS_MODULE']="vamdc.DjVALD.settings"
 from DjVALD.vald import models as valdmodel
 
+# Base directory for the data files
 
-# Setup file names 
 #base = "/vald/"
 base = "/home/samreg/Project/VAMDC/vamdc-griatch/imptools/vald_raw/"
 
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'vald3_test.cfg'
 states_file = base + 'states_u.dat'
-vald_file = base = 'vald3.dat'
-terms_file = base = 'myterms.dat'
+vald_file = base + 'vald3_500.dat'
+terms_file = base + 'myterms.dat'
 
 mapping = [
     # species file 

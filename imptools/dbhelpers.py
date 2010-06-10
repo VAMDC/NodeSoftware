@@ -6,11 +6,10 @@
 helper functions to create and fill the database
 
 """
-
 from __future__ import with_statement
-import contextlib
 import sys
 from django.db.models import Q
+import contextlib
 #from django.db.utils import IntegrityError
 #import string as s
 
@@ -23,9 +22,9 @@ def handler():
 
 def readcfg(fname):
     """
-       Read the config dictionary from a file.
-       Note: very unsafe, since the content gets executed.
-       Have a look at createcfg() to see how it should look like.
+    Read the config dictionary from a file.
+    Note: very unsafe, since the content gets executed.
+    Have a look at createcfg() to see how it should look like.
     """
     try:
         f=open(fname)
@@ -49,19 +48,20 @@ def validate_mapping(mapping):
     if not mapping:
         raise Exception("Empty/malformed mapping.")
     if not type(mapping) == list or \
-           any(True for fdict in mapping if type(fdict) != dict): 
+           any([True for fdict in mapping if type(fdict) != dict]): 
         raise Exception("Mapping must be a list of dictionaries, one for each file to convert.")
     for fdict in mapping: 
-        if len(True for key in fdict.keys() if key in required_fdict_keys) < len(required_fdict_keys):
+        if len([True for key in fdict.keys() if key in required_fdict_keys]) < len(required_fdict_keys):
             string = "Mapping error: One of the keys %s is missing from the mapping %s."
             raise Exception(string % (required_fdict_keys, fdict.keys()))
-        if not fdict.columns:
-            raise Exception("No column matchings defined.")
-        if not type(fdict.columns) == list or not type(fdict.columns[0]) == dict:
-            raise Exception("Mapping error: 'column' must be a list of dicts.")        
-        if len(True for key in fdict.columns.keys() if key in required_col_keys) < len(required_col_keys):
-            string = "Mapping error: Columns must have at least keys %s" % required_col_keys
-            raise Exception(string)
+        if not fdict['columns'] or type(fdict['columns']) != list:
+            raise Exception("Mapping error: 'column' must be a list of dicts.")     
+        for col in fdict['columns']:            
+            if not type(col) == dict or \
+                len([True for key in col.keys()
+                     if key in required_col_keys]) < len(required_col_keys):
+                string = "Mapping error: Columns must have at least keys %s" 
+                raise Exception(string % required_col_keys)
     return True 
 
     
@@ -95,7 +95,7 @@ def get_model_instance(tconf, line, model):
         data=model()
     return data
                     
-def find_match_and_update(tconf, data, line):
+def find_match_and_update(tconf, data, line, info=""):
     """
     Don't create a new database object, instead search
     the database and update an existing one.
@@ -115,18 +115,22 @@ def find_match_and_update(tconf, data, line):
     for key in data.keys(): setattr(match,key,data[key])
     try: match.save()
     except Exception, e:
-        sys.stderr.write(str(e)+'\n')
+        sys.stderr.write("%s%s\n" % (info, str(e)))
 
 
-def create_new(model, data):
+def create_new(model, inpdict, info=""):
     """
     Create a new object of type model and store
-    it in the database. 
+    it in the database.
+
+    model - django model type
+    inpdict - dictionary of fieldname:value that should be created.
+    info - sring of extra info to print in case of errors.
     """
     try:
-        model.objects.create(**data)
+        model.objects.create(**inpdict)
     except Exception, e:
-        sys.stderr.write(str(e)+'\n')
+        sys.stderr.write("%s%s\n" % (info, str(e)))
 
 def parse_fdict(fdict):
     """
@@ -137,8 +141,10 @@ def parse_fdict(fdict):
     fdict - config dictionary representing one input file structure
     (for an example see e.g. mapping_vald3.py)
     """
-    
-    print 'working on %s ...' % fdict['fname'],
+    fname = fdict['fname']
+    fname_short = fname.split('/')[-1]
+    print 'working on %s ...' % fname 
+
     model = fdict['model']
     f = open(fdict['fname'])
     for i in range(fdict['headlines']):
@@ -175,16 +181,17 @@ def parse_fdict(fdict):
                     dat = refmodel.objects.get(q)
                 except: 
                     dat = None            
+
             data[column['cname']] = dat
                 
         if fdict.has_key('updatematch'):
             # Model was already created; this run is for
             # updating it properly (e.g. for vald 
-            find_match_and_update(fdict, data, line)
+            find_match_and_update(fdict, data, line, info="updating from %s: "%fname_short)
         else:
             # create a new instance of model and store it in database,
             # populated with the relevant fields. 
-            create_new(model, data)
+            create_new(model, data, info="%s: "%fname_short)
         
     print 'done.'
            
@@ -199,3 +206,5 @@ def parse_mapping(mapping):
     if validate_mapping(mapping):    
         for fdict in mapping:
             parse_fdict(fdict) 
+
+
