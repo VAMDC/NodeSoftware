@@ -168,8 +168,8 @@ def parse_file_dict(file_dict):
             # process this line extracting all columns
             # and converting them to db fields
             dat = process_line(line, column_dict)
-            if fname_short == "VALD_list_of_species":
-                print "dat:", dat
+            #if fname_short == "VALD_list_of_species":
+            #    print "dat:", dat
 
             if not dat or \
                    (column_dict.has_key('cnull') and dat == column_dict['cnull']):
