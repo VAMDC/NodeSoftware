@@ -21,13 +21,13 @@ import os
 # Functions applied to data after reading
 #
 
-def charrange(line,start,end):
+def charrange(line, start, end):
     """
     Cut out part of a line of texts based on indices
     """
     return strip(line[start:end])
 
-def bySepNr(line,number,sep=','):
+def bySepNr(line, number, sep=','):
     """
     Split a text line by sep argument and return
     the split section with given number
@@ -39,22 +39,22 @@ def makeValdUpperStateKey(line):
     Create a hash string linking a particular record to
     an upper state.
     """
-    species=charrange(line,30,36)
-    coup=charrange(line,170,172)
-    term=charrange(line,172,218)
+    species=charrange(line,30,36) # id number
+    coup=charrange(line,170,172) # coupling (e.g. LS)
+    term=charrange(line,172,218) # term id
     if not (coup and term and species): return None
-    return '%s-%s-%s'%(species,coup,term)
+    return '%s-%s-%s' % (species, coup, term)
 
 def makeValdLowerStateKey(line):
     """
     Create a hash string linking a particular record to
     a lower state.
     """
-    species=charrange(line,30,36)
-    coup=charrange(line,122,124)
-    term=charrange(line,124,170)
+    species=charrange(line,30,36) # id number
+    coup=charrange(line,122,124) # coupling (e.g. LS)
+    term=charrange(line,124,170) # term id 
     if not (coup and term and species): return None
-    return '%s-%s-%s'%(species,coup,term)
+    return '%s-%s-%s' % (species, coup, term)
 
 # 
 # Create a config, a list of file definitions. Each entry in this
@@ -105,7 +105,7 @@ mapping = [
             {'cname':'ionen',  
              'cbyte':(charrange,(31,40))},   
             {'cname':'solariso',  
-             'cbyte':(charrange,(41,46))},   
+             'cbyte':(charrange,(41,47))},   
             {'cname':'ncomp',  
              'cbyte':(charrange,(132,133))},   
             {'cname':'atomic',  
