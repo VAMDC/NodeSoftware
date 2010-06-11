@@ -11,6 +11,7 @@ It should normally contain a global list, conventionally named
 'mappings', that define how data fields are to be translated into
 django fields. To properly map, a custom processor also probably
 has to be constructed in dbhelper as well.
+
 """
 
 from string import strip
@@ -26,9 +27,6 @@ def charrange(line, start, end):
     return strip(line[start:end])
 
 def charrange2int(line, start, end):
-    """
-    Character to integer extraction
-    """
     return int(round(float(charrange(line, start, end))))
 
 def bySepNr(line, number, sep=','):
