@@ -3,23 +3,23 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-BASEPATH='/home/samreg/Project/VAMDC/vamdc-griatch/'
+BASEPATH='/home/tom/py/vamdc/'
 import sys
 sys.path.append(BASEPATH)
 
 NODEPKG='DjVALD.vald'
 
 ADMINS = (
-    ('Samuel Regandell', 'samreg@astro.uu.se'),
+    ('Thomas Marquart', 'thomas@marquart.se'),
 )
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'sqlite3' #'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = '/home/samreg/Project/VAMDC/vamdc-griatch/DjVALD/vald3.db' 
-#DATABASE_NAME = 'vald'             # Or path to database file if using sqlite3.
-#DATABASE_USER = 'vald'             # Not used with sqlite3.
-#DATABASE_PASSWORD = 'V@ld'         # Not used with sqlite3.
+DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+#DATABASE_NAME = '/home/tom/py/vamdc/DjVALD/vald3.db'
+DATABASE_NAME = 'vald'             # Or path to database file if using sqlite3.
+DATABASE_USER = 'vald'             # Not used with sqlite3.
+DATABASE_PASSWORD = 'V@ld'         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 

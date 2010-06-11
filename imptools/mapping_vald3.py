@@ -88,7 +88,7 @@ base = "/vald/"
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'vald3_test.cfg'
 states_file = base + 'states_u.dat'
-vald_file = base + 'vald3_500.dat'
+vald_file = base + 'vald3.dat'
 terms_file = base + 'myterms.dat'
 
 mapping = [
