@@ -127,8 +127,7 @@ def XsamsMolStates(MolStates):
     yield '<Molecules>'
     for MolState in MolStates:
         G=lambda name: GetValue(name,MolState=MolState)
-        yield """<Molecule>
-<Molecules>
+        yield """
 <Molecule>
 <MolecularChemicalSpecies>
 <OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>
@@ -157,6 +156,45 @@ def XsamsMolStates(MolStates):
 </Molecule> """
     yield '</Molecules>'
 
+#This thing yields MolecularChemicalSpecies
+def XsamsMCSBuild(Moldesc):
+    G=lambda name: GetValue(name,Moldesc=Moldesc)
+    yield '<MolecularChemicalSpecies>\n'
+    yield """
+    <OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>
+    <StoichiometricFormula>%s</StoichiometricFormula>
+    <ChemicalName>%s</ChemicalName>
+    <StableMolecularProperties>
+    <MolecularWeight>
+        <Value units="%s">%s</Value>
+    </MolecularWeight>
+    </StableMolecularProperties>
+    <Comment>%s</Comment>
+    """%(G("MolecularSpeciesOrdinaryStructuralFormula"),
+      G("MolecularSpeciesStoichiometrcFormula"),
+      G("MolecularSpeciesChemicalName"),
+      G("MolecularSpeciesMolecularWeightUnits")
+      G("MolecularSpeciesMolecularWeight"),
+      G("MolecularSpeciesComment")),
+    
+    yield '</MolecularChemicalSpecies>\n'
+
+def XsamsMSBuild(Molstate)
+    G=lambda name: GetValue(name,Molstate=Molstate)
+    
+
+def XsamsMolecs(Molecules):
+    if not Molecules: return
+    yield '<Molecules>\n'
+    for Moldesc in Molecules:
+        G=lambda name: GetValue(name,Moldesc=Moldesc)
+        yield '<Molecule>\n'
+        yield XsamsMCSBuild(Moldesc)
+        for Molstate in G('MolecularStates'):
+            yield XsamsMSBuild(Molstate)
+        yield '</Molecule>\n'
+    yield '</Molecules>\n'
+    
 
 
 def XsamsRadTrans(RadTrans):

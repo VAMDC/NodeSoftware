@@ -15,21 +15,11 @@ def enc(s):
 #from lxml import etree as E
 #vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
-# legacy dict
-#VALD_DICT={'1':'species__atomic',
-#           '2':'species__ion',
-#           '3':'vacwave',
-#           '4':'airwave',
-#           '5':'loggf',
-#           '6':'lostate__energy',
-#           '7':'lostate__J',
-#           }
-
 
 VAMDC_DICT={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
-'SourceCategory':'',
+'SourceCategory':'journal',
 'SourcePageBegin':'',
 'SourcePageEnd':'',
 'SourceName':'',
@@ -49,7 +39,7 @@ VAMDC_DICT={\
 'AtomLandeFactor':'AtomState.coupling',
 'AtomStateEnergy':'AtomState.energy',
 'AtomIonCharge':'AtomState.species.ion',
-'AtomMassNumber':'AtomState.species.mass',
+'AtomMassNumber':'AtomState.species.massno',
 'RadTransComments':'Wavelength is for vaccum.',
 'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
 'RadTransWavelengthExperimentalUnits':'Angstrom',

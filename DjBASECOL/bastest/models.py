@@ -117,7 +117,7 @@ class Symmetricelements(models.Model):
 ###################################
 class ETables(models.Model):
     idenergytable = models.IntegerField(primary_key=True, db_column='idEnergyTable') # Field name made lowercase.
-    symmelement = models.ForeignKey(Symmetricelements,db_column='idSymmetricElement')
+    symmelement = models.ForeignKey(Symmetricelements,db_column='idSymmetricElement',related_name='etables')
     #idsymmetricelement = models.IntegerField(db_column='idSymmetricElement') # Field name made lowercase.
     title = models.TextField()
     idrefgroup = models.IntegerField(db_column='idRefGroup') # Field name made lowercase.

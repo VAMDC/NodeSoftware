@@ -27,6 +27,10 @@ def charrange(line, start, end):
     """
     return strip(line[start:end])
 
+def charrange2int(line, start, end):
+    return int(round(float(charrange(line, start, end))))
+
+
 def bySepNr(line, number, sep=','):
     """
     Split a text line by sep argument and return
@@ -78,14 +82,16 @@ from DjVALD.vald import models as valdmodel
 
 # Base directory for the data files
 
-base = "/vald/" 
+base = "/vald/"
 #base = "/home/samreg/Project/VAMDC/vamdc-griatch/imptools/vald_raw/"
 
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'vald3_test.cfg'
 states_file = base + 'states_u.dat'
 vald_file = base + 'vald3_500.dat'
-terms_file = base + 'myterms.dat'iv
+terms_file = base + 'myterms.dat'
+vald_file = base + 'vald3.dat'
+terms_file = base + 'myterms.dat'
 
 mapping = [
     # species file 
@@ -102,6 +108,8 @@ mapping = [
              'cbyte':(charrange,(20,22))},   
             {'cname':'mass',  
              'cbyte':(charrange,(23,30))},   
+            {'cname':'massno',  
+             'cbyte':(charrange2int,(23,30))},   
             {'cname':'ionen',  
              'cbyte':(charrange,(31,40))},   
             {'cname':'solariso',  
