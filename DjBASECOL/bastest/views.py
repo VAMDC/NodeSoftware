@@ -3,7 +3,7 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 
-from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables
+from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables,Elements
 
 
 VAMDC_DICT={\
@@ -38,10 +38,19 @@ def authors(request, ref_id):
     resp+="</UL>"
     return HttpResponse(resp)
 
-def getBASECOLSources():
+def getBASECOLSources(states):
+    ris=[]
+    for se in states.all():
+        for syme in se.symmels.all():
+          for et in syme.etables.all():
+              ris.append(et.idrefgroup)
+      #refids = [obj.symmels.all().etables.all().idrefgroup for obj in states.all()]
     #rarts=RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=1121)
-    return RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=1211)
+    return RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk__in= ris)
     #return rarts
+
+def getBASECOLStates():
+    return Elements.objects.select_related(depth=4).filter(pk=34)
 
 def etable(request, ref_id):
     #eta=ETables.objects.select_related('symmelement__element','symmelement__symmetry').filter(pk=ref_id)
@@ -68,7 +77,9 @@ def etable(request, ref_id):
 #
 
 def setupResults(tap,limit=0):
-    sources = getBASECOLSources()
+    
+    states = getBASECOLStates()
+    sources = getBASECOLSources(states)
     #if tap.lang=='vamdc':
         #tap.query=tap.query%VALD_DICT
         #print tap.query
@@ -92,5 +103,5 @@ def setupResults(tap,limit=0):
     return {\
     
     'Sources':sources,
-   
+    'MoleStates':states
     }
