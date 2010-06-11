@@ -11,7 +11,6 @@ It should normally contain a global list, conventionally named
 'mappings', that define how data fields are to be translated into
 django fields. To properly map, a custom processor also probably
 has to be constructed in dbhelper as well.
-
 """
 
 from string import strip
@@ -20,7 +19,6 @@ import os
 #
 # Functions applied to data after reading
 #
-
 def charrange(line, start, end):
     """
     Cut out part of a line of texts based on indices
@@ -28,6 +26,9 @@ def charrange(line, start, end):
     return strip(line[start:end])
 
 def charrange2int(line, start, end):
+    """
+    Character to integer extraction
+    """
     return int(round(float(charrange(line, start, end))))
 
 def bySepNr(line, number, sep=','):
@@ -88,8 +89,6 @@ species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'vald3_test.cfg'
 states_file = base + 'states_u.dat'
 vald_file = base + 'vald3_500.dat'
-terms_file = base + 'myterms.dat'
-vald_file = base + 'vald3.dat'
 terms_file = base + 'myterms.dat'
 
 mapping = [

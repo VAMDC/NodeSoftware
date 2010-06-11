@@ -3,27 +3,11 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 
-from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables
+from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables,Elements
 
-
-VAMDC_DICT={\
-'SourceID':'"BAS"+str(Source.article.idarticle)',
-'SourceTitle':'Source.article.title',
-'SourceCategory':'"journal"',
-'SourceYear':'Source.article.year',
-'SourceName':'Source.article.journal.name',
-'SourceVolume':'Source.article.volume',
-'SourcePageBegin':'re.compile(r"\D+").split(Source.article.page)[0]',
-'SourcePageEnd':'re.compile(r"\D+").split(Source.article.page)[1]',
-'SourceURI':'Source.article.url',
-'SourceAuthorName':'[obj.fullname for obj in Source.article.authors.all()]',
-
-
-}
 
 def index(request):
     return HttpResponse("Hello, world. You're at the basecol index.")
-
     
 def authors(request, ref_id):
     rarts=RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=ref_id)
@@ -38,27 +22,31 @@ def authors(request, ref_id):
     resp+="</UL>"
     return HttpResponse(resp)
 
-def getBASECOLSources():
+def getBASECOLSources(states):
+    ris=[]
+    for se in states.all():
+        for syme in se.symmels.all():
+          for et in syme.etables.all():
+              ris.append(et.idrefgroup)
+      #refids = [obj.symmels.all().etables.all().idrefgroup for obj in states.all()]
     #rarts=RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=1121)
-    return RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=1211)
+    return RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk__in= ris)
     #return rarts
 
+def getBASECOLStates():
+    return Elements.objects.select_related(depth=4).filter(pk=34)
+
 def etable(request, ref_id):
-    #eta=ETables.objects.select_related('symmelement__element','symmelement__symmetry').filter(pk=ref_id)
-    et=ETables.objects.select_related().get(pk=ref_id)
+    eta=Energytables.objects.select_related('symmelement__element','symmelement__symmetry').filter(pk=ref_id)
     resp="ETable:"
-    #for et in eta.all():
-    resp+='<ul><li>%s'%et.title
-    resp+='<br>el %s %s'%(et.symmelement.symmetry.designation,et.symmelement.element.designation)
-    resp+='<br>levels<ol>'
-    #elevs=et.levels.select_related('qnums','qnums__qnum').all()
-    #elevs=ELevels.objects.filter(idenergytable=ref_id)
-    for elev in et.levels.select_related(depth=3).all():
-        resp+='<li>level %s energy %s <ol>'%(elev.level,elev.energy)
-        for qnums in elev.qnums.all():
-            resp+='<li>%s %s'%('blah',qnums.value)
-        resp+='</ol>'
-    resp+='</ol></ul>'
+    for et in eta.all():
+        resp+='<ul><li>%s'%et.title
+        resp+='<br>el %s %s'%(et.symmelement.symmetry.designation,et.symmelement.element.designation)
+        resp+='<br>levels<ol>'
+        elevs=ELevels.objects.filter(idenergytable=ref_id)
+        for elev in elevs.all():
+            resp+='<li>level %s energy %s'%(elev.level,elev.energy)
+        resp+='</ol></ul>'
     return HttpResponse(resp)
 
 
@@ -68,7 +56,9 @@ def etable(request, ref_id):
 #
 
 def setupResults(tap,limit=0):
-    sources = getBASECOLSources()
+    
+    states = getBASECOLStates()
+    sources = getBASECOLSources(states)
     #if tap.lang=='vamdc':
         #tap.query=tap.query%VALD_DICT
         #print tap.query
@@ -92,5 +82,5 @@ def setupResults(tap,limit=0):
     return {\
     
     'Sources':sources,
-   
+    'MoleStates':states
     }
