@@ -7,6 +7,6 @@
 <div class="descr">April 23, 2010 by Thomas</div>
 
 <p>If you really want to submit a query to this node directly, instead of via the portal, you can send it to /node/vald/tap/sync/ via POST or GET.</p>
-<p><a href="http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/?REQUEST=doQuery&LANG=ADQL&FORMAT=XSAMS&QUERY=SELECT ALL WHERE WAVELENGTH > 3000 AND WAVELENGTH < 3500 AND ELEMENT = Fe">Example</a>. (Clicking this link should make a query and download the result in valid xsams-xml to you.)</p>
+<p><a href="http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/?REQUEST=doQuery&LANG=vamdc&FORMAT=xsams&QUERY=SELECT ALL where %(RadTransWavelengthExperimentalValue)s < 90">Example</a>. (Clicking this link should make a query and download the result in valid xsams-xml to you.)</p>
 {% endblock %}
 
