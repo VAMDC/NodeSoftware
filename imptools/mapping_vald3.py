@@ -20,12 +20,14 @@ import os
 #
 # Functions applied to data after reading
 #
-
 def charrange(line, start, end):
     """
     Cut out part of a line of texts based on indices
     """
     return strip(line[start:end])
+
+def charrange2int(line, start, end):
+    return int(round(float(charrange(line, start, end))))
 
 def bySepNr(line, number, sep=','):
     """
@@ -84,7 +86,7 @@ base = "/vald/"
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'vald3_test.cfg'
 states_file = base + 'states_u.dat'
-vald_file = base + 'vald3_500.dat'
+vald_file = base + 'vald3.dat'
 terms_file = base + 'myterms.dat'
 
 mapping = [
@@ -102,6 +104,8 @@ mapping = [
              'cbyte':(charrange,(20,22))},   
             {'cname':'mass',  
              'cbyte':(charrange,(23,30))},   
+            {'cname':'massno',  
+             'cbyte':(charrange2int,(23,30))},   
             {'cname':'ionen',  
              'cbyte':(charrange,(31,40))},   
             {'cname':'solariso',  
