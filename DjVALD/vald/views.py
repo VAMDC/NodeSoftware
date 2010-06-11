@@ -15,20 +15,10 @@ def enc(s):
 #from lxml import etree as E
 #vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
-# legacy dict
-#VALD_DICT={'1':'species__atomic',
-#           '2':'species__ion',
-#           '3':'vacwave',
-#           '4':'airwave',
-#           '5':'loggf',
-#           '6':'lostate__energy',
-#           '7':'lostate__J',
-#           }
-
 VAMDC_DICT={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
-'SourceCategory':'',
+'SourceCategory':'journal',
 'SourcePageBegin':'',
 'SourcePageEnd':'',
 'SourceName':'',
@@ -50,18 +40,18 @@ VAMDC_DICT={\
 'AtomStateEnergy':'AtomState.energy',
 'AtomStateDescription':'',
 'AtomIonCharge':'AtomState.species.ion',
-'AtomMassNumber':'AtomState.species.mass',
-'RadTransComments':'',
-'RadTransWavelengthExperimentalValue':'RadTrans.vacwave',
-'RadTransWavelengthAccuracyFlag':'',
-'RadTransWavelengthAccuracy':'',
-'RadTransFinalStateRef':'RadTrans.lostate.id',
-'RadTransInitialStateRef':'RadTrans.upstate.id',
-'RadTransLogGF':'RadTrans.loggf',
-'RadTransGammaRad':'',
-'RadTransGammaWaals':'',
-'RadTransGammaStark':'',
-'RadTransEffLande':'',
+'AtomMassNumber':'AtomState.species.massno',
+'RadTransComments':'Wavelength is for vaccum.',
+'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
+'RadTransWavelengthExperimentalUnits':'Angstrom',
+'RadTransWavelengthExperimentalAccuracy':'RadTran.accur',
+'RadTransWavelengthExperimentalSourceRef':'RadTran.wave_ref',
+'RadTransFinalStateRef':'RadTran.lostate.id',
+'RadTransInitialStateRef':'RadTran.upstate.id',
+'RadTransLogGF':'RadTran.loggf',
+'RadTransMethodRef':'OBS',
+'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref',
+'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
 }
 
 def index(request):
