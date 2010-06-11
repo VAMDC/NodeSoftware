@@ -30,7 +30,6 @@ def charrange(line, start, end):
 def charrange2int(line, start, end):
     return int(round(float(charrange(line, start, end))))
 
-
 def bySepNr(line, number, sep=','):
     """
     Split a text line by sep argument and return
