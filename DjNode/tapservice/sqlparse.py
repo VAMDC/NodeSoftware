@@ -58,6 +58,11 @@ OPTRANS= { # transfer SQL operators to django-style
     'in': '__in',
 }
 
+import sys
+def LOG(s):
+    print >> sys.stderr, s
+
+
 def singleWhere(w,RESTRICTABLES):
     if not RESTRICTABLES.has_key(w[0]): return
     if not OPTRANS.has_key(w[1]): return
@@ -69,7 +74,11 @@ def where2q(ws,RESTRICTABLES):
         if w=='and': q+=' & '
         elif w=='or': q+=' | '
         elif len(w)==3: q+=singleWhere(w,RESTRICTABLES)
-        elif w[0]=='(' and w[-1]==')':
-            q+=sql2q(w[1:-1])
+        elif w[0]=='(' and w[-1]==')': 
+            q+=' ( '
+            q+=where2q(w[1:-1])
+            q+=' ) '
+        LOG(q)
+        
 
     return q
