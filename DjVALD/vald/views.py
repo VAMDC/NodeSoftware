@@ -66,14 +66,9 @@ RESTRICTABLES = {\
 'AtomIonCharge':'species__ion',
 }
 
-OPTRANS= {\
-    '<':  '__lt',
-    '>':  '__gt',
-    '=':  '__exact',
-    '<=': '__lte',
-    '>=': '__gte',
-    'in': '__in',
-}
+from DjNode.tapservice.sqlparse import *
+
+
 def index(request):
     c=RequestContext(request,{})
     return render_to_response('vald/index.html', c)
@@ -95,28 +90,11 @@ def getVALDstates(transs):
     return states
     
 
-def singleWhere(w):
-    if not RESTRICTABLES.has_key(w[0]): return
-    if not OPTRANS.has_key(w[1]): return
-    return 'Q(%s=%s)'%(RESTRICTABLES[w[0]] + OPTRANS[w[1]],w[2])
-
-def where2q(ws):
-    q=''
-    for w in ws:
-        if w=='and': q+=' & '
-        elif w=='or': q+=' | '
-        elif len(w)==3: q+=singleWhere(w)
-        elif w[0]=='(' and w[-1]==')':
-            q+=sql2q(w[1:-1])
-        LOG(q)
-
-    return q
-
 def setupResults(sql,limit=0):
     LOG(sql)
-    q=where2q(sql.where)
+    q=where2q(sql.where,RESTRICTABLES)
     try: q=eval(q)
-    except: pass
+    except: return {}
     
     transs = Transition.objects.select_related(depth=2).filter(q)
     
