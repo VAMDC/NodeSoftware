@@ -28,9 +28,10 @@ RETURNABLES={\
 }
 
 RESTRICTABLES={\
-'MolecularStateEnergyValue':'Elements.symmels__etables__levels__energy',
-'MolecularSpeciesChemicalName':'Elements.designation',
-'MolecularSpeciesMolecularWeight':'Elements.molecularmass',
+'MolecularStateEnergyValue':'symmels__etables__levels__energy',
+'mscn':'designation',
+'MolecularSpeciesChemicalName':'designation',
+'MolecularSpeciesMolecularWeight':'molecularmass',
 }
 
 
@@ -56,7 +57,9 @@ def setupResults(sql):
     except: return {}
 
     #states = getBASECOLStates(q)
-    states = Elements.objects.filter(q)
+    #states = Elements.objects.filter(q)
+    print q
+    states = Elements.objects.filter(designation='HCN')
     sources = getBASECOLSources(states)
     
     return {\
