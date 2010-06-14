@@ -32,11 +32,11 @@ RESTRICTABLES={\
 from DjNode.tapservice.sqlparse import *
 
 def getBASECOLSources(states):
-    ris=[]
+    ris=set([])
     for se in states.all():
         for syme in se.symmels.all():
           for et in syme.etables.all():
-              ris.append(et.idrefgroup)
+              ris.add(et.idrefgroup)
       #refids = [obj.symmels.all().etables.all().idrefgroup for obj in states.all()]
     #rarts=RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk=1121)
     return RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk__in= ris)
