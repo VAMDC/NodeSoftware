@@ -29,9 +29,11 @@ whereCondition = Group(
     )
 whereExpression << whereCondition + ZeroOrMore( ( and_ | or_ ) + whereExpression ) 
 
-selectStmt      << ( selectToken + Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") + 
-                   ( oneOf('* ALL', caseless=True) | columnNameList ).setResultsName( "columns" ) + 
-                   Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) )
+selectStmt      << ( selectToken + 
+                     Optional(CaselessLiteral('count')).setResultsName("count")  + 
+                     Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") + 
+                     ( oneOf('* ALL', caseless=True) | columnNameList ).setResultsName( "columns" ) + 
+                     Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) )
 
 SQL=selectStmt
 

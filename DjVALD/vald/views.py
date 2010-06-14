@@ -118,7 +118,7 @@ def setupResults(sql,limit=0):
     try: q=eval(q)
     except: pass
     
-    transs = Transition.objects.filter(q)
+    transs = Transition.objects.select_related(depth=2).filter(q)
     
     totalcount=transs.count()
     if limit :
