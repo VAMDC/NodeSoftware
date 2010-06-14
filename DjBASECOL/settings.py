@@ -6,6 +6,18 @@ TEMPLATE_DEBUG = DEBUG
 
 FORCE_SCRIPT_NAME = ''
 
+#BASEPATH='/home/tom/py/vamdc/'
+BASEPATH='/home/doronin/VAMDC/django/VAMDC-VALD/'
+
+FORCE_SCRIPT_NAME = ''
+
+import sys
+sys.path.append(BASEPATH)
+
+# Put your package name here
+NODEPKG='DjBASECOL.bastest'
+ROOT_URLCONF = 'DjBASECOL.urls'
+
 ADMINS = (
     ('Misha Doronin', 'misha@doronin.org'),
 )
@@ -68,8 +80,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'DjBASECOL.urls'
-
+# Edit this if you put new templates into your node directory
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
