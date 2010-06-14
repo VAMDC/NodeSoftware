@@ -21,7 +21,13 @@ RETURNABLES={\
 }
 
 RESTRICTABLES={\
+'MolecularStateEnergyValue':'symmels__etables__levels__energy',
+'MolecularSpeciesChemicalName':'designation',
+'MolecularSpeciesMolecularWeight':'molecularmass',
 }
+
+
+from DjNode.tapservice.sqlparse import *
 
 def getBASECOLSources(states):
     ris=[]
@@ -34,8 +40,8 @@ def getBASECOLSources(states):
     return RefsGroups.objects.select_related('article__journal','article__authors','article__adsnote').filter(pk__in= ris)
     #return rarts
 
-def getBASECOLStates():
-    return Elements.objects.select_related(depth=4).filter(pk=34)
+def getBASECOLStates(q):
+    return Elements.objects.select_related(depth=4).filter(q)
 
 def setupResults(sql):
     q=where2q(sql.where,RESTRICTABLES)
