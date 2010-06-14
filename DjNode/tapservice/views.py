@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse
@@ -22,24 +23,24 @@ randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 from DjNode.tapservice.generators import *
 
 def vamdc2queryset(sql):
-    sql=sql.replace('(','').replace(')','')
-    wheres=sql.split('where')[-1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
-    qlist=[]
-    for w in wheres:
-        w=w.split()
-	print w
-        field='__'.join(w[0].split('.')[1:])
-        value=w[2]
-        if w[1]=='<': op='__lt'
-        if w[1]=='>': op='__gt'
-        if w[1]=='=': op='__exact'
-        if w[1]=='<=': op='__lte'
-        if w[1]=='>=': op='__gte'
-        qexe='mq=Q(%s="%s")'%(field+op,value)
-        print qexe
-        exec(qexe)
-        qlist.append(mq)
-    return tuple(qlist)
+    #sql=sql.replace('(','').replace(')','')
+    #wheres=sql.split('where')[-1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
+    #qlist=[]
+    #for w in wheres:
+        #w=w.split()
+	#print w
+        #field='__'.join(w[0].split('.')[1:])
+        #value=w[2]
+        #if w[1]=='<': op='__lt'
+        #if w[1]=='>': op='__gt'
+        #if w[1]=='=': op='__exact'
+        #if w[1]=='<=': op='__lte'
+        #if w[1]=='>=': op='__gte'
+        #qexe='mq=Q(%s="%s")'%(field+op,value)
+        #print qexe
+        #exec(qexe)
+        #qlist.append(mq)
+    return []
 
 
 class TAPQUERY(object):
@@ -81,14 +82,14 @@ def sync(request):
     if tap.format == 'xsams': 
         results=NODEPKG.setupResults(tap.qtup)
         generator=Xsams(**results)
-        response=HttpResponse(generator,mimetype='application/xml')
-        response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+        response=HttpResponse(generator,mimetype='text/xml')
+        #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
     elif tap.format == 'votable': 
         transs,states,sources=NODEPKG.setupResults(tap)
         generator=votable(transs,states,sources)
-        response=HttpResponse(generator,mimetype='application/xml')
-        response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+        response=HttpResponse(generator,mimetype='text/xml')
+        #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
 #    elif tap.format == 'embedhtml':
 #        transs,states,sources,count=NODEPKG.setupResults(tap,limit=100)
