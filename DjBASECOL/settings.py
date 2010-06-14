@@ -2,6 +2,7 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+#BASEPATH='/home/tom/py/vamdc/'
 BASEPATH='/home/doronin/VAMDC/django/VAMDC-VALD/'
 
 FORCE_SCRIPT_NAME = ''
@@ -11,6 +12,7 @@ sys.path.append(BASEPATH)
 
 # Put your package name here
 NODEPKG='DjBASECOL.bastest'
+ROOT_URLCONF = 'DjBASECOL.urls'
 
 ADMINS = (
     ('Misha Doronin', 'misha@doronin.org'),
@@ -73,8 +75,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
-
-ROOT_URLCONF = NODEPKG + '.urls'
 
 # Edit this if you put new templates into your node directory
 TEMPLATE_DIRS = (
