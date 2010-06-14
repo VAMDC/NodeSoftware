@@ -25,7 +25,10 @@ randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 def LOG(s):
     print >> sys.stderr, s
 
-from DjNode.tapservice.generators import *
+
+# import helper modules that reside in the same directory
+from generators import *
+from sqlparse import SQL
 
 def vamdc2queryset(sql):
     sql=sql.replace('(','').replace(')','')
@@ -57,15 +60,21 @@ class TAPQUERY(object):
 
         if self.isvalid: self.validate()
         if self.isvalid: self.assignQID()
-	if self.isvalid: self.makeQtup()
+	#if self.isvalid: self.makeQtup()
+        if self.isvalid: self.parseSQL()
+
     def validate(self):
         """
         overwrite this method for
         custom checks, depending on data set
         """
-    def makeQtup(self):
-        query=self.query%NODEPKG.VAMDC_DICT
-        self.qtup=vamdc2queryset(query)
+
+    def parseSQL(self):
+        self.parsedSQL=SQL.parseString(self.query)
+
+#    def makeQtup(self):
+#        query=self.query%NODEPKG.VAMDC_DICT
+#        self.qtup=vamdc2queryset(query)
 
     def assignQID(self):
         """ make a query-id """
@@ -81,7 +90,7 @@ def sync(request):
         LOG('not valid tap!')
     
     if tap.format == 'xsams': 
-        results=NODEPKG.setupResults(tap.qtup)
+        results=NODEPKG.setupResults(tap.parsedSQL)
         generator=Xsams(**results)
         response=HttpResponse(generator,mimetype='application/xml')
         response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)

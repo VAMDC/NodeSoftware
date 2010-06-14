@@ -12,11 +12,15 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
+import sys
+def LOG(s):
+    print >> sys.stderr, s
+
 #from lxml import etree as E
 #vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
 
-VAMDC_DICT={\
+RETURNABLES={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
 'SourceCategory':'journal',
@@ -32,7 +36,7 @@ VAMDC_DICT={\
 'MethodDescription':'so far all vald data is marked as observed although that is not necessarily true :)',
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'AtomState.species.name',
-'AtomNuclearCharge':'AtomState.species.ion',
+'AtomNuclearCharge':'AtomState.species.atomic',
 'AtomConfigurationLabel':'AtomState.charid',
 'AtomCompositionComponentTerm':'AtomState.term',
 'AtomIonizationEnergy':'AtomState.species.ionen',
@@ -53,6 +57,23 @@ VAMDC_DICT={\
 'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
 }
 
+RESTRICTABLES = {\
+'AtomSymbol':'species__name',
+'AtomNuclearCharge':'species__atomic',
+'AtomStateEnergy':'upstate__energy',
+'RadTransWavelengthExperimentalValue':'vacwave',
+'RadTransLogGF':'loggf',
+'AtomIonCharge':'species__ion',
+}
+
+OPTRANS= {\
+    '<':  '__lt',
+    '>':  '__gt',
+    '=':  '__exact',
+    '<=': '__lte',
+    '>=': '__gte',
+    'in': '__in',
+}
 def index(request):
     c=RequestContext(request,{})
     return render_to_response('vald/index.html', c)
@@ -74,9 +95,30 @@ def getVALDstates(transs):
     return states
     
 
+def singleWhere(w):
+    if not RESTRICTABLES.has_key(w[0]): return
+    if not OPTRANS.has_key(w[1]): return
+    return 'Q(%s=%s)'%(RESTRICTABLES[w[0]] + OPTRANS[w[1]],w[2])
 
-def setupResults(qtup,limit=0):
-    transs = Transition.objects.filter(*qtup)
+def where2q(ws):
+    q=''
+    for w in ws:
+        if w=='and': q+=' & '
+        elif w=='or': q+=' | '
+        elif len(w)==3: q+=singleWhere(w)
+        elif w[0]=='(' and w[-1]==')':
+            q+=sql2q(w[1:-1])
+        LOG(q)
+
+    return q
+
+def setupResults(sql,limit=0):
+    LOG(sql)
+    q=where2q(sql.where)
+    try: q=eval(q)
+    except: pass
+    
+    transs = Transition.objects.filter(q)
     
     totalcount=transs.count()
     if limit :
