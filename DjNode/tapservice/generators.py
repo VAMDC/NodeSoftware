@@ -174,19 +174,12 @@ def XsamsMCSBuild(Moldesc):
     </MolecularWeight>
     </StableMolecularProperties>
     <Comment>%s</Comment>
-    """%(
-    Moldesc.designation,
-    Moldesc.stchform,
-    Moldesc.latex,
-    "amu",
-    Moldesc.molecularmass,
-    Moldesc.idelementtype)
-    #(G("MolecularSpeciesOrdinaryStructuralFormula"),
-      #G("MolecularSpeciesStoichiometrcFormula"),
-      #G("MolecularSpeciesChemicalName"),
-      #G("MolecularSpeciesMolecularWeightUnits")
-      #G("MolecularSpeciesMolecularWeight"),
-      #G("MolecularSpeciesComment")),
+    """%(G("MolecularSpeciesOrdinaryStructuralFormula"),
+    G("MolecularSpeciesStoichiometrcFormula"),
+    G("MolecularSpeciesChemicalName"),
+    G("MolecularSpeciesMolecularWeightUnits"),
+    G("MolecularSpeciesMolecularWeight"),
+    G("MolecularSpeciesComment"))
     
     yield '</MolecularChemicalSpecies>\n'
 
