@@ -15,9 +15,15 @@ from string import lower
 import gzip
 from cStringIO import StringIO
 import threading
-import os, math
+import os, math, sys
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
+
+# deploying in apache/wsgi does not like plain "print" to stdout
+# so use LOG() instead
+# at some point we might want to use the "logging" module
+def LOG(s):
+    print >> sys.stderr, s
 
 from DjNode.tapservice.generators import *
 
@@ -27,7 +33,6 @@ def vamdc2queryset(sql):
     qlist=[]
     for w in wheres:
         w=w.split()
-	print w
         field='__'.join(w[0].split('.')[1:])
         value=w[2]
         if w[1]=='<': op='__lt'
@@ -35,10 +40,7 @@ def vamdc2queryset(sql):
         if w[1]=='=': op='__exact'
         if w[1]=='<=': op='__lte'
         if w[1]=='>=': op='__gte'
-        qexe='mq=Q(%s="%s")'%(field+op,value)
-        print qexe
-        exec(qexe)
-        qlist.append(mq)
+        qlist.append(eval('Q(%s="%s")'%(field+op,value)))
     return tuple(qlist)
 
 
@@ -76,7 +78,7 @@ def sync(request):
     tap=TAPQUERY(request.REQUEST)
     if not tap.isvalid:
         # return http error
-        print 'not valid tap!'
+        LOG('not valid tap!')
     
     if tap.format == 'xsams': 
         results=NODEPKG.setupResults(tap.qtup)
