@@ -194,7 +194,7 @@ def XsamsMSBuild(Molstate):
 <TotalStatisticalWeight>%s</TotalStatisticalWeight>
 </MolecularStateCharacterisation>"""%(
 "",
-"BAS"+Molstate.title,
+quoteattr(Molstate.title),
 "calc",
 "1/cm",
 "0",

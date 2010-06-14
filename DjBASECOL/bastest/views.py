@@ -59,9 +59,7 @@ def setupResults(sql):
     except: return {}
 
     #states = getBASECOLStates(q)
-    #states = Elements.objects.filter(q)
-    print q
-    states = Elements.objects.filter(designation='HCN')
+    states = Elements.objects.filter(q)
     sources = getBASECOLSources(states)
     
     return {\
