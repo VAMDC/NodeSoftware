@@ -8,27 +8,13 @@ from django.conf import settings
 
 from DjVALD.vald.models import Transition,State,Source,Species
 
-# This imports all the generic tap views and functions
-from DjNode.tapservice.views import *
-
-from base64 import b64encode as b64
-def enc(s):
-    return b64(s).replace('=','')
-
-from lxml import etree as E
-vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
+import sys
+def LOG(s):
+    print >> sys.stderr, s
 
 
-VALD_DICT={'1':'species__atomic',
-           '2':'species__ion',
-           '3':'vacwave',
-           '4':'airwave',
-           '5':'loggf',
-           '6':'lostate__energy',
-           '7':'lostate__J',
-           }
 
-VAMDC_DICT={\
+RETURNABLES={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
 'SourceCategory':'',
@@ -233,19 +219,23 @@ VAMDC_DICT={\
 
 }
 
-def index(request):
-    c=RequestContext(request,{})
-    return render_to_response('vald/index.html', c)
+RESTRICTABLES = {\
+'AtomSymbol':'species__name',
+'AtomNuclearCharge':'species__atomic',
+'AtomStateEnergy':'upstate__energy',
+'RadTransWavelengthExperimentalValue':'vacwave',
+'RadTransLogGF':'loggf',
+'AtomIonCharge':'species__ion',
+}
 
 
-def getVALDsources(transs):
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
-        sids=sids.union(s)
-    return Source.objects.filter(pk__in=sids)
+from DjNode.tapservice.sqlparse import *
 
-def getVALDstates(transs):
+def getCDMSsources(transs):
+    return # no sources yet for CDMS, afaik
+    #return Source.objects.filter(pk__in=sids)
+
+def getCDMSstates(transs):
     #lostates=State.objects.filter(islowerstate_trans__in=transs)
     #histates=State.objects.filter(islowerstate_trans__in=transs)
     #states = lostates | histates
@@ -255,28 +245,23 @@ def getVALDstates(transs):
 
 
 
-def setupResults(tap,limit=0):
-    if tap.lang=='vamdc':
-        tap.query=tap.query%VALD_DICT
-        print tap.query
-        #transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostate=states.id OR transitions.upstate=states.id)','transitions.species=species.id'],).order_by('airwave')
-        qtup=vamdc2queryset(tap.query)
-        transs = Transition.objects.filter(*qtup).order_by('airwave')
-    else:
-        qtup=parseSQL(tap.query)
-        transs = Transition.objects.filter(*qtup).order_by('airwave')
-    
-    totalcount=transs.count()
-    if limit :
-        transs = transs[:limit]
+def setupResults(sql):
+    LOG(sql)
+    q=where2q(sql.where,RESTRICTABLES)
+    try: q=eval(q)
+    except: return {}
+   
+    transs = Transition.objects.select_related().filter(q)
 
-    sources = getVALDsources(transs)
-    states = getVALDstates(transs)
-    if limit:
-        return transs,states,sources,totalcount
-    else:
-        return transs,states,sources
+    #if limit : # rewrite this to check if there was a TOP statement in the sql
+    #    transs = transs[:limit]
 
+    sources = getCDMSsources(transs)
+    states = getCDMSstates(transs)
+    return {'RadTrans':transs,
+            'AtomStates':states,
+            'Sources':sources,
+            }
 
 
 
