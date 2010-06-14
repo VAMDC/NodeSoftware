@@ -2,6 +2,7 @@
 # Create your views here.
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables,Elements
 
@@ -27,6 +28,7 @@ RESTRICTABLES={\
 }
 
 
+# this imports the sql-parser and some helper-functions, notably where2q()
 from DjNode.tapservice.sqlparse import *
 
 def getBASECOLSources(states):

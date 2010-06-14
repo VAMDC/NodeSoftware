@@ -64,13 +64,14 @@ def LOG(s):
 
 
 def singleWhere(w,RESTRICTABLES):
-    if not RESTRICTABLES.has_key(w[0]): return
-    if not OPTRANS.has_key(w[1]): return
+    if not RESTRICTABLES.has_key(w[0]): LOG('cant find name %s'%w[0]); return ''
+    if not OPTRANS.has_key(w[1]): LOG('cant find operator %s'%w[1]); return ''
     return 'Q(%s=%s)'%(RESTRICTABLES[w[0]] + OPTRANS[w[1]],w[2])
 
 def where2q(ws,RESTRICTABLES):
     q=''
     for w in ws:
+        #LOG(w)
         if w=='and': q+=' & '
         elif w=='or': q+=' | '
         elif len(w)==3: q+=singleWhere(w,RESTRICTABLES)
@@ -78,7 +79,7 @@ def where2q(ws,RESTRICTABLES):
             q+=' ( '
             q+=where2q(w[1:-1])
             q+=' ) '
-        LOG(q)
         
 
+    LOG(q)
     return q
