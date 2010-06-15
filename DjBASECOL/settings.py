@@ -4,10 +4,10 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-FORCE_SCRIPT_NAME = ''
 
-#BASEPATH='/home/tom/py/vamdc/'
-BASEPATH='/home/doronin/VAMDC/django/VAMDC-VALD/'
+BASEPATH='/home/tom/py/vamdc/'
+#BASEPATH='/home/doronin/VAMDC/django/VAMDC-VALD/'
+
 
 FORCE_SCRIPT_NAME = ''
 

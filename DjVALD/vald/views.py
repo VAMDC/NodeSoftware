@@ -12,10 +12,16 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
+import sys
+def LOG(s):
+    print >> sys.stderr, s
+
 #from lxml import etree as E
 #vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
-VAMDC_DICT={\
+
+
+RETURNABLES={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
 'SourceCategory':'journal',
@@ -31,10 +37,9 @@ VAMDC_DICT={\
 'MethodDescription':'',
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'AtomState.species.name',
-'AtomNuclearCharge':'AtomState.species.ion',
-'AtomCompositionComments':'',
-'AtomConfigurationLabel':'',
-'AtomCompositionComponentTerm':'',
+'AtomNuclearCharge':'AtomState.species.atomic',
+'AtomConfigurationLabel':'AtomState.charid',
+'AtomCompositionComponentTerm':'AtomState.term',
 'AtomIonizationEnergy':'AtomState.species.ionen',
 'AtomLandeFactor':'AtomState.coupling',
 'AtomStateEnergy':'AtomState.energy',
@@ -53,6 +58,18 @@ VAMDC_DICT={\
 'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref',
 'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
 }
+
+RESTRICTABLES = {\
+'AtomSymbol':'species__name',
+'AtomNuclearCharge':'species__atomic',
+'AtomStateEnergy':'upstate__energy',
+'RadTransWavelengthExperimentalValue':'vacwave',
+'RadTransLogGF':'loggf',
+'AtomIonCharge':'species__ion',
+}
+
+from DjNode.tapservice.sqlparse import *
+
 
 def index(request):
     c=RequestContext(request,{})
@@ -75,9 +92,13 @@ def getVALDstates(transs):
     return states.distinct()
     
 
-
-def setupResults(qtup,limit=0):
-    transs = Transition.objects.filter(*qtup)
+def setupResults(sql,limit=0):
+    LOG(sql)
+    q=where2q(sql.where,RESTRICTABLES)
+    try: q=eval(q)
+    except: return {}
+    
+    transs = Transition.objects.select_related(depth=2).filter(q)
     
     totalcount=transs.count()
     if limit :

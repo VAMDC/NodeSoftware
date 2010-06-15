@@ -19,7 +19,7 @@ def GetValue(name,**kwargs):
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
-    try: name=NODEPKG.VAMDC_DICT[name]
+    try: name=NODEPKG.RETURNABLES[name]
     except: return '' # The value is not in the dictionary for the node.
                       # This is fine
     if not name: return ''
