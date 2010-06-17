@@ -12,24 +12,18 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
+import sys
+def LOG(s):
+    print >> sys.stderr, s
+
 #from lxml import etree as E
 #vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
-# legacy dict
-#VALD_DICT={'1':'species__atomic',
-#           '2':'species__ion',
-#           '3':'vacwave',
-#           '4':'airwave',
-#           '5':'loggf',
-#           '6':'lostate__energy',
-#           '7':'lostate__J',
-#           }
 
-
-VAMDC_DICT={\
+RETURNABLES={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
-'SourceCategory':'',
+'SourceCategory':'journal',
 'SourcePageBegin':'',
 'SourcePageEnd':'',
 'SourceName':'',
@@ -42,14 +36,14 @@ VAMDC_DICT={\
 'MethodDescription':'so far all vald data is marked as observed although that is not necessarily true :)',
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'AtomState.species.name',
-'AtomNuclearCharge':'AtomState.species.ion',
+'AtomNuclearCharge':'AtomState.species.atomic',
 'AtomConfigurationLabel':'AtomState.charid',
 'AtomCompositionComponentTerm':'AtomState.term',
 'AtomIonizationEnergy':'AtomState.species.ionen',
 'AtomLandeFactor':'AtomState.coupling',
 'AtomStateEnergy':'AtomState.energy',
 'AtomIonCharge':'AtomState.species.ion',
-'AtomMassNumber':'AtomState.species.mass',
+'AtomMassNumber':'AtomState.species.massno',
 'RadTransComments':'Wavelength is for vaccum.',
 'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
 'RadTransWavelengthExperimentalUnits':'Angstrom',
@@ -62,6 +56,18 @@ VAMDC_DICT={\
 'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref',
 'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
 }
+
+RESTRICTABLES = {\
+'AtomSymbol':'species__name',
+'AtomNuclearCharge':'species__atomic',
+'AtomStateEnergy':'upstate__energy',
+'RadTransWavelengthExperimentalValue':'vacwave',
+'RadTransLogGF':'loggf',
+'AtomIonCharge':'species__ion',
+}
+
+from DjNode.tapservice.sqlparse import *
+
 
 def index(request):
     c=RequestContext(request,{})
@@ -84,9 +90,13 @@ def getVALDstates(transs):
     return states
     
 
-
-def setupResults(qtup,limit=0):
-    transs = Transition.objects.filter(*qtup)
+def setupResults(sql,limit=0):
+    LOG(sql)
+    q=where2q(sql.where,RESTRICTABLES)
+    try: q=eval(q)
+    except: return {}
+    
+    transs = Transition.objects.select_related(depth=2).filter(q)
     
     totalcount=transs.count()
     if limit :

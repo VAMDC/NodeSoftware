@@ -84,7 +84,7 @@ class RefsGroups(models.Model):
 class Elements(models.Model):
     idelement = models.IntegerField(primary_key=True, db_column='idElement') # Field name made lowercase.
     designation = models.CharField(max_length=60, blank=True)
-    stoichiometricformula = models.CharField(max_length=150, db_column='stoichiometricFormula', blank=True) # Field name made lowercase.
+    stchform = models.CharField(max_length=150, db_column='stoichiometricFormula', blank=True) # Field name made lowercase.
     latex = models.CharField(max_length=60, blank=True)
     molecularmass = models.FloatField(db_column='molecularMass') # Field name made lowercase.
     molecularconstant = models.FloatField(db_column='molecularConstant') # Field name made lowercase.
@@ -101,7 +101,7 @@ class Symmetries(models.Model):
         
 class Symmetricelements(models.Model):
     idsymmel = models.IntegerField(primary_key=True, db_column='idSymmetricElement') # Field name made lowercase.
-    element = models.ForeignKey(Elements, db_column='idElement')
+    element = models.ForeignKey(Elements, db_column='idElement', related_name='symmels')
     #idelement = models.IntegerField(unique=True, db_column='idElement') # Field name made lowercase.
     symmetry = models.ForeignKey(Symmetries, db_column='idSymmetry')
     #idsymmetry = models.IntegerField(unique=True, db_column='idSymmetry') # Field name made lowercase.
@@ -117,7 +117,7 @@ class Symmetricelements(models.Model):
 ###################################
 class ETables(models.Model):
     idenergytable = models.IntegerField(primary_key=True, db_column='idEnergyTable') # Field name made lowercase.
-    symmelement = models.ForeignKey(Symmetricelements,db_column='idSymmetricElement')
+    symmelement = models.ForeignKey(Symmetricelements,db_column='idSymmetricElement',related_name='etables')
     #idsymmetricelement = models.IntegerField(db_column='idSymmetricElement') # Field name made lowercase.
     title = models.TextField()
     idrefgroup = models.IntegerField(db_column='idRefGroup') # Field name made lowercase.

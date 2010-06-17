@@ -8,6 +8,10 @@ import re
 # Get the node-specific pacakge!
 from django.conf import settings
 from django.utils.importlib import import_module
+
+from xml.sax.saxutils import quoteattr
+
+
 NODEPKG=import_module(settings.NODEPKG+'.views')
 
 isiterable = lambda obj: hasattr(obj, '__iter__')
@@ -17,7 +21,7 @@ def GetValue(name,**kwargs):
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
-    try: name=NODEPKG.VAMDC_DICT[name]
+    try: name=NODEPKG.RETURNABLES[name]
     except: return '' # The value is not in the dictionary for the node.
                       # This is fine.
 
@@ -51,7 +55,7 @@ def XsamsSources(Sources):
 <PageBegin>%s</PageBegin>
 <PageEnd>%s</PageEnd>
 <UniformResourceIdentifier>%s</UniformResourceIdentifier>
-</Source>\n"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
+</Source>\n"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), quoteattr(G('SourceURI')) )
 
     yield '</Sources>\n'
 
@@ -127,8 +131,7 @@ def XsamsMolStates(MolStates):
     yield '<Molecules>'
     for MolState in MolStates:
         G=lambda name: GetValue(name,MolState=MolState)
-        yield """<Molecule>
-<Molecules>
+        yield """
 <Molecule>
 <MolecularChemicalSpecies>
 <OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>
@@ -157,6 +160,78 @@ def XsamsMolStates(MolStates):
 </Molecule> """
     yield '</Molecules>'
 
+#This thing yields MolecularChemicalSpecies
+def XsamsMCSBuild(Moldesc):
+    G=lambda name: GetValue(name,Moldesc=Moldesc)
+    yield '<MolecularChemicalSpecies>\n'
+    yield """
+    <OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>
+    <StoichiometricFormula>%s</StoichiometricFormula>
+    <ChemicalName>%s</ChemicalName>
+    <StableMolecularProperties>
+    <MolecularWeight>
+        <Value units="%s">%s</Value>
+    </MolecularWeight>
+    </StableMolecularProperties>
+    <Comment>%s</Comment>
+    """%(
+    Moldesc.designation,
+    Moldesc.stchform,
+    Moldesc.latex,
+    "amu",
+    Moldesc.molecularmass,
+    Moldesc.idelementtype)
+    #(G("MolecularSpeciesOrdinaryStructuralFormula"),
+      #G("MolecularSpeciesStoichiometrcFormula"),
+      #G("MolecularSpeciesChemicalName"),
+      #G("MolecularSpeciesMolecularWeightUnits")
+      #G("MolecularSpeciesMolecularWeight"),
+      #G("MolecularSpeciesComment")),
+    
+    yield '</MolecularChemicalSpecies>\n'
+
+def XsamsMSBuild(Molstate):
+    G=lambda name: GetValue(name,Molstate=Molstate)
+    ret="""<MolecularState stateID="S%s">
+<Description>%s</Description>
+<MolecularStateCharacterisation>
+<StateEnergy energyOrigin="%s">
+<Value units="%s">%s</Value>
+</StateEnergy>
+<TotalStatisticalWeight>%s</TotalStatisticalWeight>
+</MolecularStateCharacterisation>"""%(
+"",
+"BAS"+Molstate.title,
+"calc",
+"1/cm",
+"0",
+"1")
+    ret+="</MolecularState>"
+    return ret
+
+
+def XsamsMolecs(Molecules):
+    if not Molecules: return
+    yield '<Molecules>\n'
+    for Moldesc in Molecules:
+        #G=lambda name: GetValue(name,Moldesc=Moldesc)
+        yield '<Molecule>\n'
+        for MCS in XsamsMCSBuild(Moldesc):
+            yield MCS
+            
+        #Build all levels for element:
+        for syme in Moldesc.symmels.all():
+            for et in syme.etables.all():
+                yield XsamsMSBuild(et)
+        
+        
+        #for Molstate in G('MolecularStates'):
+        #for elev in Moldesc.symmel.all().levels.select_related.all():
+        #    yield XsamsMSBuild(elev)
+        #    yield molst#yield XsamsMSBuild(Molstate)
+        yield '</Molecule>\n'
+    yield '</Molecules>\n'
+    
 
 
 def XsamsRadTrans(RadTrans):
@@ -256,7 +331,7 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
     
     yield '<States>\n'
     for AtomState in XsamsAtomStates(AtomStates): yield AtomState
-#    for MoleState in XsamsMoleStates(states): yield MoleState
+    for MolState in XsamsMolecs(MoleStates): yield MolState
     yield '</States>\n'
     yield '<Processes>\n'
     for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
