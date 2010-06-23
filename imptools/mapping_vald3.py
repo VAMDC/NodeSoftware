@@ -18,8 +18,9 @@ from string import strip
 import os
 
 #
-# Functions applied to data after reading
+# Utility functions applied to data after reading
 #
+
 def charrange(line, start, end):
     """
     Cut out part of a line of texts based on indices
@@ -35,28 +36,6 @@ def bySepNr(line, number, sep=','):
     the split section with given number
     """
     return strip(line.split(sep)[number])
-
-def makeValdUpperStateKey(line):
-    """
-    Create a hash string linking a particular record to
-    an upper state.
-    """
-    species=charrange(line,30,36) # id number
-    coup=charrange(line,170,172) # coupling (e.g. LS)
-    term=charrange(line,172,218) # term id
-    if not (coup and term and species): return None
-    return '%s-%s-%s' % (species, coup, term)
-
-def makeValdLowerStateKey(line):
-    """
-    Create a hash string linking a particular record to
-    a lower state.
-    """
-    species=charrange(line,30,36) # id number
-    coup=charrange(line,122,124) # coupling (e.g. LS)
-    term=charrange(line,124,170) # term id 
-    if not (coup and term and species): return None
-    return '%s-%s-%s' % (species, coup, term)
 
 # 
 # Create a config, a list of file definitions. Each entry in this
@@ -80,16 +59,17 @@ from DjVALD.vald import models as valdmodel
 
 # Base directory for the data files
 
-base = "/vald/"
-#base = "/home/samreg/Project/VAMDC/vamdc-griatch/imptools/vald_raw/"
+#base = "/vald/"
+base = "/home/samreg/Project/VAMDC/vamdc-git/imptools/vald_raw/"
 
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'vald3_test.cfg'
-states_file = base + 'states_u.dat'
-vald_file = base + 'vald3.dat'
-terms_file = base + 'myterms.dat'
+states_file = base + 'states_preprocessed.dat'
+transitions_file = base + 'transitions_preprocessed.dat'
+terms_file = base + 'terms_preprocessed.dat'
 
 mapping = [
+    
     # species file 
     {'model':valdmodel.Species,     
      'fname':species_list_file,
@@ -160,7 +140,9 @@ mapping = [
             ],
     }, # end of definition for vald_cnf file
 
-    # state file (used for first pass, to get upper states)
+    # reading from preprocessed files (create these with run/prepvald.py)   
+
+ # state file - merged result from the upper/lower states
     {'model':valdmodel.State,   
      'fname':states_file,
      'headlines':0,     
@@ -187,74 +169,14 @@ mapping = [
             {'cname':'level_ref',
              'cbyte':(bySepNr,(8,';'))},
             ]
-     }, # end of state file 
+     }, # end of state file    
 
-    # vald file 
-    {'model':valdmodel.Transition,    
-     'fname':vald_file,
-     'headlines':2,        
-     'commentchar':'#',    
-     'columns':[           
-            {'cname':'vacwave',
-             'cbyte':(charrange,(0,15))},  
-            {'cname':'airwave',
-             'cbyte':(charrange,(15,30))},  
-            {'cname':'species',
-             'cbyte':(charrange,(30,36)),
-             'references':(valdmodel.Species,'pk')},
-            {'cname':'loggf',
-             'cbyte':(charrange,(36,44))},
-            {'cname':'landeff',
-             'cbyte':(charrange,(94,100)),
-             'cnull':'99.00'},
-            {'cname':'gammarad',
-             'cbyte':(charrange,(100,107)),
-             'cnull':'0.0'},
-            {'cname':'gammastark',
-             'cbyte':(charrange,(107,114)),
-             'cnull':'0.0'},
-            {'cname':'gammawaals',
-             'cbyte':(charrange,(114,122)),
-             'cnull':'0.0'},
-            {'cname':'srctag',
-             'cbyte':(charrange,(218,225))},
-            {'cname':'acflag',
-             'cbyte':(charrange,(225,226))},
-            {'cname':'accur',
-             'cbyte':(charrange,(226,236))},
-            {'cname':'comment',
-             'cbyte':(charrange,(236,252))},
-            {'cname':'wave_ref',
-             'cbyte':(charrange,(252,256))},
-            {'cname':'loggf_ref',
-             'cbyte':(charrange,(256,260))},
-            {'cname':'lande_ref',
-             'cbyte':(charrange,(268,272))},
-            {'cname':'gammarad_ref',
-             'cbyte':(charrange,(272,276))},
-            {'cname':'gammastark_ref',
-             'cbyte':(charrange,(276,280))},
-            {'cname':'gammawaals_ref',
-             'cbyte':(charrange,(280,284))},
-            {'cname':'upstateid',
-             'cbyte':(makeValdUpperStateKey,())},
-            {'cname':'lostateid',
-             'cbyte':(makeValdLowerStateKey,())},
-            {'cname':'upstate',
-             'cbyte':(makeValdUpperStateKey,()),
-             'references':(valdmodel.State,'charid')},
-            {'cname':'lostate',
-             'cbyte':(makeValdLowerStateKey,()),
-             'references':(valdmodel.State,'charid')},
-            ],
-    }, # end of vald file def 
-
-    # term file 
+    # term file - preprocessed data from vald file 
     {'model':valdmodel.State,
      'fname':terms_file,
      'headlines':0,
      'commentchar':'#',
-     'updatematch':'charid',
+     'updatematch':'charid', #don't create a new State - update an existing State object retrieved by charid
      'columns':[\
             {'cname':'charid',
              'cbyte':(bySepNr,(0,';'))},
@@ -285,8 +207,68 @@ mapping = [
             {'cname':'Jc',
              'cbyte':(bySepNr,(9,';')),
              'cnull':'X',},
-            ] 
-     } # end of term def  
+            ]
+     }, # end of term def  
+
+    # transitions file - preprocessed data from vald file 
+    {'model':valdmodel.Transition,    
+     'fname':transitions_file,
+     'headlines':0,        
+     'commentchar':'#',    
+     'columns':[           
+            {'cname':'vacwave',
+             'cbyte':(bySepNr, (0,';'))},  
+            {'cname':'airwave',
+             'cbyte':(bySepNr,(1, ';'))},  
+            {'cname':'species',
+             'cbyte':(bySepNr,(2, ';')),
+             'references':(valdmodel.Species,'pk')},
+            {'cname':'loggf',
+             'cbyte':(bySepNr,(3, ';'))},
+            {'cname':'landeff',
+             'cbyte':(bySepNr,(4, ';')),
+             'cnull':'99.00'},
+            {'cname':'gammarad',
+             'cbyte':(bySepNr,(5, ';')),
+             'cnull':'0.0'},
+            {'cname':'gammastark',
+             'cbyte':(bySepNr,(6, ';')),
+             'cnull':'0.0'},
+            {'cname':'gammawaals',
+             'cbyte':(bySepNr,(7, ';')),
+             'cnull':'0.0'},
+            {'cname':'srctag',
+             'cbyte':(bySepNr,(8, ';'))},
+            {'cname':'acflag',
+             'cbyte':(bySepNr,(9, ';'))},
+            {'cname':'accur',
+             'cbyte':(bySepNr,(10, ';'))},
+            {'cname':'comment',
+             'cbyte':(bySepNr,(11, ';'))},
+            {'cname':'wave_ref',
+             'cbyte':(bySepNr,(12, ';'))},
+            {'cname':'loggf_ref',
+             'cbyte':(bySepNr,(13, ';'))},
+            {'cname':'lande_ref',
+             'cbyte':(bySepNr,(14, ';'))},
+            {'cname':'gammarad_ref',
+             'cbyte':(bySepNr,(15, ';'))},
+            {'cname':'gammastark_ref',
+             'cbyte':(bySepNr,(16, ';'))},
+            {'cname':'gammawaals_ref',
+             'cbyte':(bySepNr,(17, ';'))},
+            {'cname':'upstateid',
+             'cbyte':(bySepNr, (18, ';'))},
+            {'cname':'lostateid',
+             'cbyte':(bySepNr, (19, ';'))},
+            {'cname':'upstate',
+             'cbyte':(bySepNr, (20, ';')),
+             'references':(valdmodel.State,'charid')},
+            {'cname':'lostate',
+             'cbyte':(bySepNr, (21, ';')),
+             'references':(valdmodel.State,'charid')},
+            ],
+    } # end of transition file def 
 
 ] # end of vald3 mapping file def list
 

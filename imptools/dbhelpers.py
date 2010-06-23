@@ -29,6 +29,7 @@ def log_trace(e, info=""):
     the exception object as first argument.
     Captures the latest traceback. 
     """
+    #exc = format_exc()
     sys.stderr.write("%s%s\n" % (info, str(e)))
 
 def readcfg(fname):
@@ -116,14 +117,23 @@ def find_match_and_update(tconf, data, line):
     if not dat:
         return 
     # this instances variable 'modelq' as a quertyset 
-    exec('modelq=Q(%s="%s")' % (tconf['updatematch'], dat))
+    modelq = eval('Q(%s="%s")' % (tconf['updatematch'], dat))
 
-    match=model.objects.get(modelq) # exception caught higher up
+    try:
+        match=model.objects.get(modelq) 
+    except Exception, e:
+        raise Exception("%s: Q(%s=%s)" % (e, tconf['updatematch'], dat))
 
-    for key in data.keys():
+    for key in (key for key in data.keys()):
+                #if key != tconf['updatematch']):
+        #sys.stderr.write("%s=%s, " % (key, data[key]))
         setattr(match, key, data[key])
-    match.save() # exceptions are caught higher up
-    
+        try:
+            match.save() 
+        except Exception, e:       
+            sys.stderr.write("%s: model.%s=%s\n" % (e, key, data[key]))
+            #continue
+            #raise Exception("%s: model.%s=%s" % (e, key, data[key]))
 
 def create_new(model, inpdict):
     """
@@ -133,9 +143,11 @@ def create_new(model, inpdict):
     model - django model type
     inpdict - dictionary of fieldname:value that should be created.
     """
-    model.objects.create(**inpdict)
-
-
+    try:
+        model.objects.create(**inpdict)
+    except Exception, e:
+        raise Exception("%s: %s" % (e, inpdict["charid"]))
+    
 def parse_file_dict(file_dict):
     """
     Process one file definition from a config dictionary by
@@ -184,30 +196,33 @@ def parse_file_dict(file_dict):
                 refcol = column_dict['references'][1]            
                 # create a query object q for locating
                 # the referenced model and field
-                exec('q=Q(%s="%s")' % (refcol, dat))
+                Qquery = eval('Q(%s="%s")' % (refcol, dat))
                 try:
-                    dat = refmodel.objects.get(q)
-                except: 
+                    dat = refmodel.objects.get(Qquery)
+                except:
+                    sys.stderr.write("reference for Q(%s='%s') not found.\n" % (refcol, dat))
+                    raw_input("paused...")
                     dat = None            
 
             data[column_dict['cname']] = dat
                 
         if file_dict.has_key('updatematch'):
             # Model was already created; this run is for
-            # updating it properly (e.g. for vald
+            # updating it properly (e.g. for vald)
             try:            
                 find_match_and_update(file_dict, data, line)
             except Exception, e:
                 errors += 1
-                log_trace(e, "(%i/%i) %s: " % (errors, total, fname_short))
+                log_trace(e, "match&update: (%i/%i) %s: " % (errors, total, fname_short))
         else:
             # create a new instance of model and store it in database,
             # populated with the relevant fields. 
+
             try:
                 create_new(model, data)
             except Exception, e:
                 errors += 1
-                log_trace(e, "(%i/%i) %s: " % (errors, total, fname_short))
+                log_trace(e, "new: (%i/%i) %s: " % (errors, total, fname_short))
                 
     print 'done. %i collisions/errors out of %i lines.' % (errors, total)
            

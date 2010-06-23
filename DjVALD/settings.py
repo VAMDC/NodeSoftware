@@ -3,21 +3,21 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-BASEPATH='/home/tom/py/vamdc/'
+BASEPATH='/home/samreg/Project/VAMDC/vamdc-git/'
 import sys
 sys.path.append(BASEPATH)
 
 NODEPKG='DjVALD.vald'
 
 ADMINS = (
-    ('Thomas Marquart', 'thomas@marquart.se'),
+    ('samreg', 'samreg@astro.uu.se'),
 )
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-#DATABASE_NAME = '/home/tom/py/vamdc/DjVALD/vald3.db'
-DATABASE_NAME = 'vald'             # Or path to database file if using sqlite3.
+#DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+DATABASE_ENGINE = 'sqlite3'
+DATABASE_NAME = BASEPATH + "DjVALD/vald3.db"
 DATABASE_USER = 'vald'             # Not used with sqlite3.
 DATABASE_PASSWORD = 'V@ld'         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
@@ -80,7 +80,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
+    #'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
