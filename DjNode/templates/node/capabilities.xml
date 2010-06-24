@@ -19,7 +19,7 @@
     </capability>
     <capability standardID='ivo://ivoa.net/std/VOSI#capabilities'>
         <interface xsi:type='vs:ParamHTTP'>
-            <accessURL use='base'>{{accessURL}}/capabilities</accessURL>
+            <accessURL use='base'>{{accessURL}}capabilities/</accessURL>
         </interface>
     </capability>
 </cap:capabilities>
