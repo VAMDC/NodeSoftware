@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
 from DjBASECOL.bastest.models import RefsArticles,RefsGroups,ETables,Elements
-
+from DjNode.tapservice.sqlparse import where2q
 
 
 RETURNABLES={\
@@ -20,10 +20,18 @@ RETURNABLES={\
 'SourceURI':'Source.article.url',
 'SourceAuthorName':'[obj.fullname for obj in Source.article.authors.all()]',
 
+'MolecularSpeciesOrdinaryStructuralFormula':'Moldesc.designation',
+'MolecularSpeciesStoichiometrcFormula':'Moldesc.stchform',
+'MolecularSpeciesChemicalName':'Moldesc.latex',
+'MolecularSpeciesMolecularWeightUnits':'amu',
+'MolecularSpeciesMolecularWeight':'Moldesc.molecularmass',
+'MolecularSpeciesComment':'Moldesc.idelementtype'
+
 }
 
 RESTRICTABLES={\
 'MolecularStateEnergyValue':'symmels__etables__levels__energy',
+'mscn':'designation',
 'MolecularSpeciesChemicalName':'designation',
 'MolecularSpeciesMolecularWeight':'molecularmass',
 }
@@ -51,7 +59,8 @@ def setupResults(sql):
     try: q=eval(q)
     except: return {}
 
-    states = getBASECOLStates(q)
+    #states = getBASECOLStates(q)
+    states = Elements.objects.filter(q)
     sources = getBASECOLSources(states)
     
     return {\

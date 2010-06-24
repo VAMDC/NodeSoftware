@@ -1,6 +1,8 @@
-from base64 import b64encode as b64
-def enc(s):
-    return b64(s).replace('=','')
+# -*- coding: utf-8 -*-
+
+import sys
+def LOG(s):
+    print >> sys.stderr, s
 
 
 # Get the node-specific pacakge!
@@ -24,10 +26,12 @@ def GetValue(name,**kwargs):
                       # This is fine
     if not name: return ''
 
-    for key in kwargs: exec('%s=kwargs["%s"]'%(key,key))
-    return eval(name)     # This fails if the queryset with its
-                          # attributes is not there as specified
-                          # in VAMDC_DICT. Fix it there or in your query.
+    try: value=eval(name) # this works, if the dict-value is named correctly as the query-set attribute
+    except Exception,e: 
+        LOG(e)
+        LOG(name)
+        value=name  # this catches the case where the dict-value is a string or mistyped.
+    return value
     
 
 def XsamsSources(Sources):
@@ -56,7 +60,7 @@ def XsamsSources(Sources):
     yield '</Sources>\n'
 
 def XsamsAtomTerm(AtomState,G):
-    #pre-fetch the ones that weill be tested for below
+    #pre-fetch the ones that will be tested for below
     coupling=G('AtomStateCoupling')
     l=G('AtomStateL')
     s=G('AtomStateS')
@@ -187,19 +191,12 @@ def XsamsMCSBuild(Moldesc):
     </MolecularWeight>
     </StableMolecularProperties>
     <Comment>%s</Comment>
-    """%(
-    Moldesc.designation,
-    Moldesc.stchform,
-    Moldesc.latex,
-    "amu",
-    Moldesc.molecularmass,
-    Moldesc.idelementtype)
-    #(G("MolecularSpeciesOrdinaryStructuralFormula"),
-      #G("MolecularSpeciesStoichiometrcFormula"),
-      #G("MolecularSpeciesChemicalName"),
-      #G("MolecularSpeciesMolecularWeightUnits")
-      #G("MolecularSpeciesMolecularWeight"),
-      #G("MolecularSpeciesComment")),
+    """%(G("MolecularSpeciesOrdinaryStructuralFormula"),
+    G("MolecularSpeciesStoichiometrcFormula"),
+    G("MolecularSpeciesChemicalName"),
+    G("MolecularSpeciesMolecularWeightUnits"),
+    G("MolecularSpeciesMolecularWeight"),
+    G("MolecularSpeciesComment"))
     
     yield '</MolecularChemicalSpecies>\n'
 
@@ -214,7 +211,7 @@ def XsamsMSBuild(Molstate):
 <TotalStatisticalWeight>%s</TotalStatisticalWeight>
 </MolecularStateCharacterisation>"""%(
 "",
-"BAS"+Molstate.title,
+quoteattr(Molstate.title),
 "calc",
 "1/cm",
 "0",
@@ -291,8 +288,8 @@ def XsamsMethods(Methods):
 def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">"""
-
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+"""
     for Source in XsamsSources(Sources): yield Source
 #    for Method in XsamsMethods(Methods): yield Method
     
