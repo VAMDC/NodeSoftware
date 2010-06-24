@@ -123,13 +123,13 @@ def find_match_and_update(tconf, data, line):
         match=model.objects.get(modelq) 
     except Exception, e:
         raise Exception("%s: Q(%s=%s)" % (e, tconf['updatematch'], dat))
-
-    for key in (key for key in data.keys()):
-                #if key != tconf['updatematch']):
+    #print data
+    for key in (key for key in data.keys()
+                if key != tconf['updatematch']):
         #sys.stderr.write("%s=%s, " % (key, data[key]))
         setattr(match, key, data[key])
         try:
-            match.save() 
+            match.save(force_update=True) 
         except Exception, e:       
             sys.stderr.write("%s: model.%s=%s\n" % (e, key, data[key]))
             #continue
@@ -181,7 +181,7 @@ def parse_file_dict(file_dict):
             # and converting them to db fields
             dat = process_line(line, column_dict)
             #if fname_short == "VALD_list_of_species":
-            #    print "dat:", dat
+            #print "dat:", dat
 
             if not dat or \
                    (column_dict.has_key('cnull') and dat == column_dict['cnull']):
