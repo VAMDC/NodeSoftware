@@ -10,6 +10,13 @@ to create two new files, one for terms and one for states.
 """
 
 import os
+from time import time
+
+def ftime(t0, t1):
+    "formats time to nice format."
+    ds = t1 - t0
+    dm, ds = int(ds) / 60, ds % 60
+    return "%s min, %s s." % (dm, ds) 
 
 def charrange(line, start, end):
     "Extract substring by indexes"
@@ -21,12 +28,22 @@ def make_vald_upperstate_key(line, jnum=None):
         # jnum not supplied: get it from vald3 line
         jnum = charrange(line, 77, 82).strip()   
     species = charrange(line, 30, 36)
+    energy = charrange(line, 63, 77)
     coup = charrange(line, 170, 172)
     term = charrange(line, 172, 218)
-    tstate = tuple(str(t).strip() for t in (species, coup, jnum, term))
-    if not (tstate[1] and tstate[2]):
-        return 'Unknown'
-    return '%s-%s-%s-%s' % tstate
+
+    tstate = [str(t).strip() for t in (species, coup, jnum, term, energy)]
+    if not tstate[1]:
+        tstate[1] = 'Unknown'
+    if not tstate[2]:
+        tstate[2] = 'Unknown'    
+    return '%s-%s-%s-%s-%s' % tuple(tstate)
+
+    ## ##old way
+    ## tstate = tuple(str(t).strip() for t in (species, coup, jnum, term))
+    ## if not (tstate[1] and tstate[2]):
+    ##    return 'Unknown'
+    ## return '%s-%s-%s-%s' % tstate
 
 def make_vald_lowerstate_key(line, jnum=None):
     "Create an unique lower state identifier string"
@@ -34,12 +51,22 @@ def make_vald_lowerstate_key(line, jnum=None):
         # jnum not supplied: get it from vald3 line
         jnum = charrange(line, 58, 63).strip()     
     species = charrange(line, 30, 36)
+    energy = charrange(line, 44, 58)
     coup = charrange(line, 122, 124)
     term = charrange(line, 124, 170)
-    tstate = tuple(str(t).strip() for t in (species, coup, jnum, term))
-    if not (tstate[1] and tstate[2]):
-        return 'Unknown'
-    return '%s-%s-%s-%s' % tstate
+
+    tstate = [str(t).strip() for t in (species, coup, jnum, term, energy)]
+    if not tstate[1]:
+        tstate[1] = 'Unknown'
+    if not tstate[2]:
+        tstate[2] = 'Unknown'
+    return '%s-%s-%s-%s-%s' % tuple(tstate)
+
+    ## ##old way
+    ## tstate = tuple(str(t).strip() for t in (species, coup, jnum, term))
+    ## if not (tstate[1] and tstate[2]):
+    ##    return 'Unknown'
+    ## return '%s-%s-%s-%s' % tstate
 
 def create_state_file(valdfile_filename, output_filename):
     """
@@ -287,18 +314,26 @@ if __name__ == '__main__':
     states_out_filename = 'states_preprocessed.dat'
 
     # running
-    print "Creating Term file by merging %s and %s ... " % (vald_filename,
-                                                            term_filename)
+    
+    print "Creating Term file by merging %s and %s ... " % (vald_filename, term_filename)
+    t0 = time()                                                        
     create_term_file(vald_filename, term_filename,
                      term_out_filename)
-    print "Creating State file from %s ..." % vald_filename
+    print " ... time used: %s" % ftime(t0, time())
+    print "Creating State file from %s ..." % vald_filename    
+    t1 = time()
     create_state_file(vald_filename, states_out_filename)
+    print " ... time used: %s" % ftime(t1, time())
     print "Creating Transition file from %s ..." % vald_filename
+    t2 = time()
     create_transition_file(vald_filename, transitions_out_filename)
-
+    print " ... time used: %s" % ftime(t2, time())
     print "Running 'sort -u' on all output files ... "
+    t3 = time()
     run_sortu(term_out_filename)
     run_sortu(states_out_filename)
     run_sortu(transitions_out_filename)
-    print "Created files '%s', '%s' and '%s'." % \
-          (term_out_filename, states_out_filename, transitions_out_filename)
+    print " ... time used: %s" % ftime(t3, time())
+    print "Created files '%s', '%s' and '%s' in %s" % \
+          (term_out_filename, states_out_filename,
+           transitions_out_filename, ftime(t0, time()))
