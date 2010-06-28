@@ -102,8 +102,8 @@ def async(request):
     return render_to_response('node/index.html', c)
 
 def capabilities(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
+    c = RequestContext(request, {"accessURL" : settings.TAP_URL})
+    return render_to_response('node/capabilities.xml', c)
 
 def tables(request):
     c=RequestContext(request,{})
