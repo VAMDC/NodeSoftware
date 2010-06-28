@@ -30,22 +30,22 @@ VALD_DICT={'1':'species__atomic',
 
 VAMDC_DICT={\
 '4':'RadiativeTransitions.frequencyvalue',
-'SourceID':'Source.id',
-'SourceAuthorName':'Source.srcdescr',
-'SourceCategory':'',
-'SourcePageBegin':'',
-'SourcePageEnd':'',
-'SourceName':'',
-'SourceTitle':'',
-'SourceURI':'',
-'SourceVolume':'',
-'SourceYear':'',
+'SourceID':'Sources.rId',
+'SourceAuthorName':'Sources.authors',
+'SourceCategory':'Sources.category',
+'SourcePageBegin':'Sources.pageBegin',
+'SourcePageEnd':'Sources.pageEnd',
+'SourceName':'Sources.name',
+'SourceTitle':'Sources.title',
+'SourceURI':'Sources.uri',
+'SourceVolume':'Sources.vol',
+'SourceYear':'Sources.year',
 'MethodID':'"MCALC"',
 'MethodCategory':'"calculated"',
 'MethodDescription':'',
 'AtomStateID':'',
-'AtomSymbol':'AtomState.species.name',
-'AtomNuclearCharge':'AtomState.species.ion',
+'AtomSymbol':'',
+'AtomNuclearCharge':'',
 'AtomCompositionComments':'',
 'AtomConfigurationLabel':'',
 'AtomCompositionComponentTerm':'',
@@ -54,7 +54,7 @@ VAMDC_DICT={\
 'AtomStateEnergy':'',
 'AtomStateDescription':'',
 'AtomIonCharge':'',
-'AtomMassNumber':'atomstate.species.mass',
+'AtomMassNumber':'',
 #'RadTransComments':'',
 #'RadTransWavelengthAir':'',
 #'RadTransWavelengthVac':'',
@@ -257,8 +257,8 @@ def getVALDstates(transs):
 
 
 def setupResults(tap,limit=0):
-    if tap.lang=='vamdc':
-        tap.query=tap.query%VALD_DICT
+    if (1==1): #tap.lang=='vamdc':
+        tap.query=tap.query%VAMDC_DICT
         print tap.query
         #transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostate=states.id OR transitions.upstate=states.id)','transitions.species=species.id'],).order_by('airwave')
         qtup=vamdc2queryset(tap.query)
