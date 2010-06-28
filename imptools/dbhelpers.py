@@ -11,6 +11,7 @@ import sys
 from traceback import format_exc
 from django.db.models import Q
 import contextlib
+from time import time 
 
 #from django.db.utils import IntegrityError
 #import string as s
@@ -22,6 +23,11 @@ def handler():
     except Exception, e:
         print e
 
+def ftime(t0, t1):
+    "formats time to nice format."
+    ds = t1 - t0
+    dm, ds = int(ds) / 60, ds % 60
+    return "%s min, %s s." % (dm, ds)
 
 def log_trace(e, info=""):
     """
@@ -82,8 +88,8 @@ def process_line(line, column_dict):
     colfunc = column_dict['cbyte'][0]
     args = column_dict['cbyte'][1]
     dat = colfunc(line, *args)
-    if not dat or column_dict.has_key('cnull') \
-           and dat == column_dict['cnull']:
+    if not dat or (column_dict.has_key('cnull') \
+                   and dat == column_dict['cnull']):
         return None
     return dat
 
@@ -167,8 +173,7 @@ def parse_file_dict(file_dict):
         # skip header lines 
         f.readline()
 
-    data={'pk':None}
-    
+    data = {}
     total = 0
     errors = 0
     for line in f:
@@ -217,7 +222,8 @@ def parse_file_dict(file_dict):
         else:
             # create a new instance of model and store it in database,
             # populated with the relevant fields. 
-
+            if not data.has_key('pk'):
+                data['pk'] = None
             try:
                 create_new(model, data)
             except Exception, e:
@@ -235,7 +241,9 @@ def parse_mapping(mapping):
     not have to be changed for different database types.
     """
     if validate_mapping(mapping):    
+        t0 = time()
         for file_dict in mapping:
-            parse_file_dict(file_dict) 
-
-
+            t1 = time()
+            parse_file_dict(file_dict)
+            print "Time used: %s" % ftime(t1, time())
+        print "Total time used: %s" % ftime(t0, time())
