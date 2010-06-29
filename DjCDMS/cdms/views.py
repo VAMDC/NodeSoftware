@@ -6,7 +6,8 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-from DjVALD.vald.models import Transition,State,Source,Species
+#from DjVALD.vald.models import Transition,State,Source,Species
+from DjCDMS.cdms.models import RadiativeTransitions,StatesMolecules,Sources #,Species
 
 import sys
 def LOG(s):
@@ -254,7 +255,7 @@ def setupResults(sql):
     sources = getCDMSsources(transs)
     states = getCDMSstates(transs)
     return {'RadTrans':transs,
-            'AtomStates':states,
+            'MoleStates':states,
             'Sources':sources,
             }
 
