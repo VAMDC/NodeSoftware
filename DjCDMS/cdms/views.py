@@ -237,9 +237,6 @@ def getCDMSsources(transs):
     #return Source.objects.filter(pk__in=sids)
 
 def getCDMSstates(transs):
-    #lostates=State.objects.filter(islowerstate_trans__in=transs)
-    #histates=State.objects.filter(islowerstate_trans__in=transs)
-    #states = lostates | histates
     q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
     return State.objects.filter(q1|q2).distinct()
     
@@ -254,88 +251,11 @@ def setupResults(sql):
    
     transs = Transition.objects.select_related().filter(q)
 
-    #if limit : # rewrite this to check if there was a TOP statement in the sql
-    #    transs = transs[:limit]
-
     sources = getCDMSsources(transs)
     states = getCDMSstates(transs)
     return {'RadTrans':transs,
             'AtomStates':states,
             'Sources':sources,
             }
-
-
-
-
-
-
-
-
-#############################################################     
-############### LEGACY code below ###########################
-#############################################################
-
-
-
-
-
-def getVALDstates2(transs):
-    sids=set([])
-    for trans in transs:
-        sids.add(trans.lostate)
-        sids.add(trans.upstate)
-        
-    states=[]
-    sids.remove(None)
-    for sid in sids:
-        states.append(State.objects.get(pk=sid))
-    return states
-
-def getVALDsources1(transs):
-    # this is REALLY slow
-    waverefs=Q(iswaveref_trans__in=transs)
-    landerefs=Q(islanderef_trans__in=transs)
-    loggfrefs=Q(isloggfref_trans__in=transs)
-    g1refs=Q(isgammaradref_trans__in=transs)
-    g2refs=Q(isgammastarkref_trans__in=transs)
-    g3refs=Q(isgammawaalsref_trans__in=transs)
-    refQ= waverefs | landerefs | loggfrefs | g1refs | g2refs | g3refs
-    sources=Source.objects.filter(refQ).distinct()
-    return sources
-
-def getVALDsources2(transs):
-    #resonably fast
-    waverefs=Q(iswaveref_trans__in=transs)
-    landerefs=Q(islanderef_trans__in=transs)
-    loggfrefs=Q(isloggfref_trans__in=transs)
-    g1refs=Q(isgammaradref_trans__in=transs)
-    g2refs=Q(isgammastarkref_trans__in=transs)
-    g3refs=Q(isgammawaalsref_trans__in=transs)
-    refQs=[waverefs, landerefs, loggfrefs, g1refs, g2refs, g3refs]
-    sources=set()
-    for q in refQs:
-        refs=Source.objects.filter(q).distinct()
-        for r in refs:
-            sources.add(r)
-    return sources
-
-def getVALDsources3(transs):
-    # slower than v2
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
-        sids=sids.union(s)
-    return list(sids)
-
-def getVALDsources4(transs):
-    # as slow as v3
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref.id,trans.loggf_ref.id,trans.lande_ref.id,trans.gammarad_ref.id,trans.gammastark_ref.id,trans.gammawaals_ref.id])
-        sids=sids.union(s)
-    sources=[]
-    for sid in sids:
-        sources.append(Source.objects.get(pk=sid))
-    return sources
 
 
