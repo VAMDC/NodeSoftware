@@ -1,29 +1,25 @@
-# -*- coding: utf-8 -*-
+# Django settings for DjVAMDC project.
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-BASEPATH='/home/doronin/VAMDC/django/VAMDC-VALD/'
-
-FORCE_SCRIPT_NAME = ''
-
+BASEPATH='/home/samreg/Project/VAMDC/vamdc-git/'
 import sys
 sys.path.append(BASEPATH)
 
-# Put your package name here
-NODEPKG='DjBASECOL.bastest'
+NODEPKG='DjVALD.vald'
 
 ADMINS = (
-    ('Misha Doronin', 'misha@doronin.org'),
+    ('samreg', 'samreg@astro.uu.se'),
 )
 
 MANAGERS = ADMINS
 
-# Put your DB-connection here
-DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-#DATABASE_NAME = BASEPATH+'DjVALD/vald3.db' # filename in case of sqlite
-DATABASE_NAME = 'basecol'             # Or path to database file if using sqlite3.
-DATABASE_USER = 'doronin'             # Not used with sqlite3.
-DATABASE_PASSWORD = '123'         # Not used with sqlite3.
+#DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+DATABASE_ENGINE = 'sqlite3'
+DATABASE_NAME = BASEPATH + "DjVALD/vald3.db"
+DATABASE_USER = 'vald'             # Not used with sqlite3.
+DATABASE_PASSWORD = 'V@ld'         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
@@ -59,7 +55,7 @@ MEDIA_URL = 'http://vamdc.fysast.uu.se:8888/media/'
 ADMIN_MEDIA_PREFIX = '/admin-media/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '=4nk7k_v3p@23wwvewrfbgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
+SECRET_KEY = '=4nk7k_v3p@gin!bgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -74,9 +70,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = NODEPKG + '.urls'
+ROOT_URLCONF = 'DjVALD.urls'
 
-# Edit this if you put new templates into your node directory
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
@@ -85,13 +80,15 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
+    #'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'DjNode.tapservice',
-    NODEPKG,
+    'DjVALD.vald',
 )
 
+# must have trailing slash!
+TAP_URL = 'http://vamdc.fysast.uu.se:8888/node/vald/tap/'

@@ -5,6 +5,7 @@ class Species(models.Model):
     name = models.CharField(max_length=10, db_index=True)
     ion = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     mass = models.DecimalField(max_digits=5, decimal_places=2) 
+    massno = models.PositiveSmallIntegerField(null=True, blank=True)
     ionen = models.DecimalField(max_digits=7, decimal_places=3) 
     solariso = models.DecimalField(max_digits=5, decimal_places=4) 
     ncomp = models.PositiveSmallIntegerField(null=True, blank=True)

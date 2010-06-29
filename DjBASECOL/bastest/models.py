@@ -15,12 +15,8 @@ class RefsAuthors(models.Model):
     idauthor = models.IntegerField(primary_key=True, db_column='idAuthor') # Field name made lowercase.
     surname = models.CharField(unique=True, max_length=60, blank=True)
     firstname = models.CharField(unique=True, max_length=60, db_column='firstName', blank=True) # Field name made lowercase.
-
     class Meta:
         db_table = u'Refs_Authors'
-    def _get_fullname(self):
-        return self.firstname + ' ' + self.surname
-    fullname = property(_get_fullname)
 
 class ManyToManyFieldWithCustomColumns(models.ManyToManyField):
     def _get_m2m_column_name(self, related):
@@ -84,7 +80,7 @@ class RefsGroups(models.Model):
 class Elements(models.Model):
     idelement = models.IntegerField(primary_key=True, db_column='idElement') # Field name made lowercase.
     designation = models.CharField(max_length=60, blank=True)
-    stoichiometricformula = models.CharField(max_length=150, db_column='stoichiometricFormula', blank=True) # Field name made lowercase.
+    stchform = models.CharField(max_length=150, db_column='stoichiometricFormula', blank=True) # Field name made lowercase.
     latex = models.CharField(max_length=60, blank=True)
     molecularmass = models.FloatField(db_column='molecularMass') # Field name made lowercase.
     molecularconstant = models.FloatField(db_column='molecularConstant') # Field name made lowercase.
@@ -101,7 +97,7 @@ class Symmetries(models.Model):
         
 class Symmetricelements(models.Model):
     idsymmel = models.IntegerField(primary_key=True, db_column='idSymmetricElement') # Field name made lowercase.
-    element = models.ForeignKey(Elements, db_column='idElement')
+    element = models.ForeignKey(Elements, db_column='idElement', related_name='symmels')
     #idelement = models.IntegerField(unique=True, db_column='idElement') # Field name made lowercase.
     symmetry = models.ForeignKey(Symmetries, db_column='idSymmetry')
     #idsymmetry = models.IntegerField(unique=True, db_column='idSymmetry') # Field name made lowercase.
@@ -115,9 +111,10 @@ class Symmetricelements(models.Model):
 ###################################
 # Energy tables
 ###################################
+
 class ETables(models.Model):
     idenergytable = models.IntegerField(primary_key=True, db_column='idEnergyTable') # Field name made lowercase.
-    symmelement = models.ForeignKey(Symmetricelements,db_column='idSymmetricElement')
+    symmelement = models.ForeignKey(Symmetricelements,db_column='idSymmetricElement',related_name='etables')
     #idsymmetricelement = models.IntegerField(db_column='idSymmetricElement') # Field name made lowercase.
     title = models.TextField()
     idrefgroup = models.IntegerField(db_column='idRefGroup') # Field name made lowercase.
@@ -146,22 +143,44 @@ class QNums(models.Model):
 
 class ELevels(models.Model):
     idlevel = models.IntegerField(primary_key=True, db_column='idLevel') # Field name made lowercase.
-    etable = models.ForeignKey(ETables,db_column='idEnergyTable',related_name='levels')
+    idenergytable = models.IntegerField(unique=True, db_column='idEnergyTable') # Field name made lowercase.
     level = models.IntegerField(unique=True)
     energy = models.FloatField(null=True, blank=True)
     class Meta:
         db_table = u'EnergyTables_Levels'
 
 class EtLQNums(models.Model):
-    level = models.ForeignKey(ELevels,db_column='idLevel', related_name='qnums')
-    qnum = models.ForeignKey(QNums,db_column='idQuantumNumber', related_name='level')
+    # idlevel = models.IntegerField(primary_key=True, db_column='idLevel') # Field name made lowercase.
+    idlevel = models.ForeignKey(ELevels,db_column='idLevel', related_name='EtLQNums')
+    # idquantumnumber = models.IntegerField(primary_key=True, db_column='idQuantumNumber') # Field name made lowercase.
+    idquantumnumber= models.ForeignKey(QNums,db_column='idQuantumNumber', related_name='EtLQNums')
     value = models.FloatField()
     class Meta:
        db_table = u'EnergyTables_Levels_QuantumNumbers'
 
 
 
-
+class Energytables(models.Model):
+    idenergytable = models.IntegerField(primary_key=True, db_column='idEnergyTable') # Field name made lowercase.
+    symmelement = models.ForeignKey(Symmetricelements,db_column='idSymmetricElement')
+    #idsymmetricelement = models.IntegerField(db_column='idSymmetricElement') # Field name made lowercase.
+    title = models.TextField()
+    idrefgroup = models.IntegerField(db_column='idRefGroup') # Field name made lowercase.
+    comment = models.TextField(blank=True)
+    isvisible = models.IntegerField(db_column='isVisible') # Field name made lowercase.
+    energyunit = models.IntegerField(db_column='energyUnit') # Field name made lowercase.
+    energyorigin = models.CharField(max_length=300, db_column='energyOrigin', blank=True) # Field name made lowercase.
+    termsymbol = models.CharField(max_length=300, db_column='termSymbol', blank=True) # Field name made lowercase.
+    electroniccomponentdescription = models.CharField(max_length=300, db_column='electronicComponentDescription') # Field name made lowercase.
+    vibrationalcomponentdescription = models.CharField(max_length=300, db_column='vibrationalComponentDescription') # Field name made lowercase.
+    totalspinmomentums = models.FloatField(db_column='totalSpinMomentumS') # Field name made lowercase.
+    totalmolecularprojectionl = models.FloatField(db_column='totalMolecularProjectionL') # Field name made lowercase.
+    idcoupling = models.IntegerField(db_column='idCoupling') # Field name made lowercase.
+    exp = models.CharField(max_length=9)
+    #creationdate = models.DateField(db_column='creationDate') # Field name made lowercase.
+    #modificationdate = models.DateField(db_column='modificationDate') # Field name made lowercase.
+    class Meta:
+        db_table = u'EnergyTables'
 
 ###################################
 # End of Energy tables

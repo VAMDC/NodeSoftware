@@ -17,8 +17,5 @@ information.
 
 Quite a bit of thought will be needed on how to descibe the splitting
 into several tables, indices etc.
-
 """
 
-from configs import *
-from dbhelpers import *

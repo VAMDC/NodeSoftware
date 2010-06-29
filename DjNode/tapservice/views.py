@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse
@@ -15,32 +16,20 @@ from string import lower
 import gzip
 from cStringIO import StringIO
 import threading
-import os, math
+import os, math, sys
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
-from DjNode.tapservice.generators import *
+# deploying in apache/wsgi does not like plain "print" to stdout
+# so use LOG() instead
+# at some point we might want to use the "logging" module
+def LOG(s):
+    print >> sys.stderr, s
 
-def vamdc2queryset(sql):
-    sql=sql.replace('(','').replace(')','')
-    wheres=sql.split('where')[-1].split('and') # replace this with http://code.google.com/p/python-sqlparse/ later
-    qlist=[]
-    for w in wheres:
-        w=w.split()
-	print w
-        field='__'.join(w[0].split('.')[1:])
-        value=w[2]
-        if w[1]=='<': op='__lt'
-        if w[1]=='>': op='__gt'
-        if w[1]=='=': op='__exact'
-        if w[1]=='<=': op='__lte'
-        if w[1]=='>=': op='__gte'
-        qexe='mq=Q(%s="%s")'%(field+op,value)
-        print qexe
-        exec(qexe)
-        qlist.append(mq)
-    return tuple(qlist)
 
+# import helper modules that reside in the same directory
+from generators import *
+from sqlparse import SQL
 
 class TAPQUERY(object):
     def __init__(self,data):
@@ -55,15 +44,21 @@ class TAPQUERY(object):
 
         if self.isvalid: self.validate()
         if self.isvalid: self.assignQID()
-	if self.isvalid: self.makeQtup()
+	#if self.isvalid: self.makeQtup()
+        if self.isvalid: self.parseSQL()
+
     def validate(self):
         """
         overwrite this method for
         custom checks, depending on data set
         """
-    def makeQtup(self):
-        query=self.query%NODEPKG.VAMDC_DICT
-        self.qtup=vamdc2queryset(query)
+
+    def parseSQL(self):
+        self.parsedSQL=SQL.parseString(self.query)
+
+#    def makeQtup(self):
+#        query=self.query%NODEPKG.VAMDC_DICT
+#        self.qtup=vamdc2queryset(query)
 
     def assignQID(self):
         """ make a query-id """
@@ -76,19 +71,19 @@ def sync(request):
     tap=TAPQUERY(request.REQUEST)
     if not tap.isvalid:
         # return http error
-        print 'not valid tap!'
+        LOG('not valid tap!')
     
     if tap.format == 'xsams': 
-        results=NODEPKG.setupResults(tap.qtup)
+        results=NODEPKG.setupResults(tap.parsedSQL)
         generator=Xsams(**results)
-        response=HttpResponse(generator,mimetype='application/xml')
-        response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+        response=HttpResponse(generator,mimetype='text/xml')
+        #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
     elif tap.format == 'votable': 
         transs,states,sources=NODEPKG.setupResults(tap)
         generator=votable(transs,states,sources)
-        response=HttpResponse(generator,mimetype='application/xml')
-        response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+        response=HttpResponse(generator,mimetype='text/xml')
+        #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
 #    elif tap.format == 'embedhtml':
 #        transs,states,sources,count=NODEPKG.setupResults(tap,limit=100)
@@ -107,8 +102,8 @@ def async(request):
     return render_to_response('node/index.html', c)
 
 def capabilities(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
+    c = RequestContext(request, {"accessURL" : settings.TAP_URL})
+    return render_to_response('node/capabilities.xml', c)
 
 def tables(request):
     c=RequestContext(request,{})
