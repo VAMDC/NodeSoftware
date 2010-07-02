@@ -80,10 +80,10 @@ class RadiativeTransitions(models.Model):
         db_table = u'RadiativeTransitions'
 
     initialstate = models.ForeignKey(StatesMolecules, related_name='isinitialstate',
-                                db_column='initialstateref', null=False)
+                                db_column='InitialStateRef', null=False)
 
     finalstate   = models.ForeignKey(StatesMolecules, related_name='isfinalstate',
-                                db_column='finalstateref', null=False)
+                                db_column='FinalStateRef', null=False)
 
 
 class SourcesIDRefs(models.Model):

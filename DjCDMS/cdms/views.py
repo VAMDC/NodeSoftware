@@ -50,8 +50,8 @@ RETURNABLES={\
 
 'RadTransComments':'',
 
-'RadTransFinalStateRef':'RadiativeTransitions.FinalStateRef',
-'RadTransInitialStateRef':'RadiativeTransitions.InitialStateRef',
+'RadTransFinalStateRef':'RadTran.finalstateref',
+'RadTransInitialStateRef':'RadTran.initialstateref',
 
 'RadTransWavenumberRitzComments':'',
 'RadTransWavenumberRitzSourceRef':'',
@@ -122,9 +122,9 @@ RETURNABLES={\
 'RadTransFrequencyTheoreticalComments':'',
 'RadTransFrequencyTheoreticalSourceRef':'',
 'RadTransFrequencyTheoreticalMethodRef':'',
-'RadTransFrequencyTheoreticalValue':'RadiativeTransitions.frequencyvalue',
-'RadTransFrequencyTheoreticalUnits':'RadiativeTransitions.frequencyunit',
-'RadTransFrequencyTheoreticalAccuracy':'RadiativeTransitions.energywavelengthaccuracy',
+'RadTransFrequencyTheoreticalValue':'RadTran.frequencyvalue',
+'RadTransFrequencyTheoreticalUnits':'RadTran.frequencyunit',
+'RadTransFrequencyTheoreticalAccuracy':'RadTran.energywavelengthaccuracy',
 'RadTransProbabilityTransitionProbabilityAComments ':'',
 'RadTransProbabilityTransitionProbabilityASourceRef':'',
 'RadTransProbabilityTransitionProbabilityAMethodRef':'',
@@ -152,8 +152,8 @@ RETURNABLES={\
 'RadTransProbabilityLog10WeightedOscillatorStrengthComments ':'',
 'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'',
 'RadTransProbabilityLog10WeightedOscillatorStrengthMethodRef':'',
-'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadiativeTransitions.log10weightedoscillatorstrengthvalue',
-'RadTransProbabilityLog10WeightedOscillatorStrengthUnits':'RadiativeTransitions.log10weightedoscillatorstrengthunit',
+'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.log10weightedoscillatorstrengthvalue',
+'RadTransProbabilityLog10WeightedOscillatorStrengthUnits':'RadTran.log10weightedoscillatorstrengthunit',
 'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'',
 'RadTransProbabilityIdealisedIntensityComments ':'',
 'RadTransProbabilityIdealisedIntensitySourceRef':'',
@@ -161,7 +161,7 @@ RETURNABLES={\
 'RadTransProbabilityIdealisedIntensityValue':'',
 'RadTransProbabilityIdealisedIntensityUnits':'',
 'RadTransProbabilityIdealisedIntensityAccuracy':'',
-'RadTransProbabilityProbability:MultipoleValue':'RadiativeTransitions.multipole',
+'RadTransProbabilityProbability:MultipoleValue':'RadTran.multipole',
 
 
 'CollisionComments':'',
@@ -174,9 +174,9 @@ RETURNABLES={\
 # table for molecular states 
 # (maybe molecular species should be a separate table)
     
-'MolecularSpeciesChemicalName':'StatesMolecules.molecularchemicalspecies',
+'MolecularSpeciesChemicalName':'MolState.molecularchemicalspecies',
 'MolecularSpeciesOrdinaryStructuralFormula':'',
-'MolecularSpeciesStoichiometrcFormula':'StatesMolecules.isotopomer',
+'MolecularSpeciesStoichiometrcFormula':'MolState.isotopomer',
 'MolecularSpeciesIonCharge':'',
 'MolecularSpeciesIUPACName':'',
 'MolecularSpeciesURLFigure':'',
@@ -190,19 +190,19 @@ RETURNABLES={\
 'MoleculeNuclearSpinsAtomArray':'',
 'MoleculeNuclearSpinsBondArray':'',
 
-'MolecularStateStateID':'',
+'MolecularStateStateID':'MolState.stateid',
 'MolecularStateDescription':'',
 'MolecularStateEnergyComments':'',
 'MolecularStateEnergySourceRef':'',
 'MolecularStateEnergyMethodRef':'',
-'MolecularStateEnergyValue':'StatesMolecules.stateenergyvalue',
-'MolecularStateEnergyUnit':'StatesMolecules.stateenergyunit',
-'MolecularStateEnergyAccuracy':'StatesMolecules.stateenergyaccuracy',
+'MolecularStateEnergyValue':'MolState.stateenergyvalue',
+'MolecularStateEnergyUnit':'MolState.stateenergyunit',
+'MolecularStateEnergyAccuracy':'MolState.stateenergyaccuracy',
 'MolecularStateEnergyOrigin':'',
-'MolecularStateMixingCoefficient':'StatesMolecules.mixingcoefficient',
+'MolecularStateMixingCoefficient':'MolState.mixingcoefficient',
 
 'MolecularStateCharacTotalStatisticalWeight':'',
-'MolecularStateCharacNuclearStatisticalWeight':'StatesMolecules.statenuclearstatisticalweight',
+'MolecularStateCharacNuclearStatisticalWeight':'MolState.statenuclearstatisticalweight',
 'MolecularStateCharacNuclearSpinSymmetry':'',
 'MolecularStateCharacLifeTime':'',
 'MolecularStateCharacParameters':'',
@@ -222,12 +222,16 @@ RETURNABLES={\
 }
 
 RESTRICTABLES = {\
+'MolecularChemicalSpecies':'molecularchemicalspecies',
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'AtomStateEnergy':'upstate__energy',
-'RadTransWavelengthExperimentalValue':'vacwave',
+'RadTransWavelengthExperimentalValue':'frequencyvalue',
 'RadTransLogGF':'loggf',
 'AtomIonCharge':'species__ion',
+'RadTransFrequencyTheoreticalValue':'RadiativeTransitions.frequencyvalue',
+'RadTransFrequencyTheoreticalUnits':'RadiativeTransitions.frequencyunit',
+'RadTransFrequencyTheoreticalAccuracy':'RadiativeTransitions.energywavelengthaccuracy',
 }
 
 
@@ -238,8 +242,9 @@ def getCDMSsources(transs):
     #return Source.objects.filter(pk__in=sids)
 
 def getCDMSstates(transs):
-    q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
-    return State.objects.filter(q1|q2).distinct()
+#    q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
+    q1,q2=Q(isinitialstate__in=transs),Q(isfinalstate__in=transs)
+    return StatesMolecules.objects.filter(q1|q2).distinct()
     
 
 
@@ -247,11 +252,14 @@ def getCDMSstates(transs):
 def setupResults(sql):
     LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
+    LOG(q)
     try: q=eval(q)
     except: return {}
-   
-    transs = Transition.objects.select_related().filter(q)
-
+#    q=RadiativeTransitions.molecularchemicalspecies__exact='NH3'
+    transs = RadiativeTransitions.objects.select_related(depth=2).filter(q)
+#    transs = RadiativeTransitions.objects.filter(molecularchemicalspecies__exact='NH3').filter(frequencyvalue__gt=29500).filter(frequencyvalue__lt=130000)
+#    transs = RadiativeTransitions.objects.select_related(depth=2).filter(molecularchemicalspecies='CO') #, frequencyvalue>29500, frequencyvalue<130000)
+    LOG(transs)
     sources = getCDMSsources(transs)
     states = getCDMSstates(transs)
     return {'RadTrans':transs,
