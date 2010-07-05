@@ -209,15 +209,15 @@ RETURNABLES={\
 
 # table for quantum numbers
 
-'MolQnStateID':'',
-'MolQnCase':'',  #(for case-by-case)
-'MolQnLabel':'', #(for case-by-case) (should be labels suggested by Christian Hill)
+'MolQnStateID':'StateQN.stateid',
+'MolQnCase':'StateQN.case',  #(for case-by-case)
+'MolQnLabel':'StateQN.label', #(for case-by-case) (should be labels suggested by Christian Hill)
 'MolXPath':'',   #(for classical)
 'MolTag':'',     #(for classical)
-'MolQnValue':'',
-'MolQnSpinRef':'',
-'MolQnAttribute':'',
-'MolQnComment':''
+'MolQnValue':'StateQN.value',
+'MolQnSpinRef':'StateQN.spinref',
+'MolQnAttribute':'StateQN.attribute',
+'MolQnComment':'StateQN.comment'
 
 }
 
@@ -250,18 +250,21 @@ def getCDMSstates(transs):
 
 
 def setupResults(sql):
-    LOG(sql)
+#    LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
-    LOG(q)
+#    LOG(q)
     try: q=eval(q)
     except: return {}
 #    q=RadiativeTransitions.molecularchemicalspecies__exact='NH3'
     transs = RadiativeTransitions.objects.select_related(depth=2).filter(q)
 #    transs = RadiativeTransitions.objects.filter(molecularchemicalspecies__exact='NH3').filter(frequencyvalue__gt=29500).filter(frequencyvalue__lt=130000)
 #    transs = RadiativeTransitions.objects.select_related(depth=2).filter(molecularchemicalspecies='CO') #, frequencyvalue>29500, frequencyvalue<130000)
-    LOG(transs)
+#    LOG(transs)
     sources = getCDMSsources(transs)
     states = getCDMSstates(transs)
+
+#    qn= states[0].molecularquantumnumbers_set.all()
+    qn = states[0].quantumnumbers.all()
     return {'RadTrans':transs,
             'MoleStates':states,
             'Sources':sources,

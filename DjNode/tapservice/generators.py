@@ -159,6 +159,18 @@ def XsamsMolStates(MoleStates):
       G("MolecularStateEnergyUnit"),
       G("MolecularStateEnergyValue"),
       G("MolecularStateCharacTotalStatisticalWeight"))
+        for StateQN in MolState.quantumnumbers.all():
+          G=lambda name: GetValue(name, StateQN=StateQN)
+          yield """
+<%s:%s """ % (G("MolQnCase"), G("MolQnLabel"))
+          if G("MolQnSpinRef"): yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
+          if G("MolQnAttribute"): yield G("MolQnAttribute")
+          yield """> %s </%s:%s>""" % (G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
+
+#<%s:%s %s> %s </%s:%s>
+#""" % (G("MolQnCase"), G("MolQnLabel"), G("MolQnAttribute"), G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
+#
+
 
         yield """</MolecularState>
 </Molecule> """
@@ -205,6 +217,7 @@ quoteattr(Molstate.title),
 "1")
     ret+="</MolecularState>"
     return ret
+
 
 
 def XsamsMolecs(Molecules):
@@ -351,7 +364,8 @@ def XsamsMethods(Methods):
 def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/dcs" targetNamespace="http://www.ucl.ac.uk/~ucapch0/dcs" elementFormDefault="qualified">
 """
     for Source in XsamsSources(Sources): yield Source
     for Method in XsamsMethods(Methods): yield Method

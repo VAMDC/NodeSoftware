@@ -37,6 +37,7 @@ class StatesMolecules(models.Model):
     e_tag = models.IntegerField(db_column='E_Tag') # Field name made lowercase.
     class Meta:
         db_table = u'StatesMolecules'
+    
 
 
 class RadiativeTransitions(models.Model):
@@ -84,6 +85,23 @@ class RadiativeTransitions(models.Model):
 
     finalstate   = models.ForeignKey(StatesMolecules, related_name='isfinalstate',
                                 db_column='FinalStateRef', null=False)
+
+
+class MolecularQuantumNumbers(models.Model): 
+
+    stateid = models.IntegerField(primary_key=True, db_column='StateID')
+    case = models.CharField(max_length=10, db_column='Case')
+    label = models.CharField(max_length=50, db_column='Label')
+    value = models.CharField(max_length=100, db_column='Value')
+    spinref = models.CharField(max_length=100, db_column='SpinRef')
+    attribute = models.CharField(max_length=100, db_column='Attribute')
+
+    class Meta:
+        db_table = 'V_MolQN'
+
+    statesmolecules = models.ForeignKey(StatesMolecules, related_name='quantumnumbers', 
+                            db_column='StateID')
+
 
 
 class SourcesIDRefs(models.Model):
