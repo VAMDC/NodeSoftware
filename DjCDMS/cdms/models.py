@@ -37,6 +37,7 @@ class StatesMolecules(models.Model):
     e_tag = models.IntegerField(db_column='E_Tag') # Field name made lowercase.
     class Meta:
         db_table = u'StatesMolecules'
+    
 
 
 class RadiativeTransitions(models.Model):
@@ -80,11 +81,61 @@ class RadiativeTransitions(models.Model):
         db_table = u'RadiativeTransitions'
 
     initialstate = models.ForeignKey(StatesMolecules, related_name='isinitialstate',
-                                db_column='initialstateref', null=False)
+                                db_column='InitialStateRef', null=False)
 
     finalstate   = models.ForeignKey(StatesMolecules, related_name='isfinalstate',
-                                db_column='finalstateref', null=False)
+                                db_column='FinalStateRef', null=False)
+
+
+class MolecularQuantumNumbers(models.Model): 
+
+    stateid = models.IntegerField(primary_key=True, db_column='StateID')
+    case = models.CharField(max_length=10, db_column='Case')
+    label = models.CharField(max_length=50, db_column='Label')
+    value = models.CharField(max_length=100, db_column='Value')
+    spinref = models.CharField(max_length=100, db_column='SpinRef')
+    attribute = models.CharField(max_length=100, db_column='Attribute')
+
+    class Meta:
+        db_table = 'V_MolQN'
+
+    statesmolecules = models.ForeignKey(StatesMolecules, related_name='quantumnumbers', 
+                            db_column='StateID')
 
 
 
+class SourcesIDRefs(models.Model):
+    rlId  = models.IntegerField(primary_key=True, db_column='RL_ID')
+    rId   = models.IntegerField(null=True, db_column='RL_R_ID')
+    eId   = models.IntegerField(null=True, db_column='RL_E_ID')
+    datId = models.IntegerField(null=True, db_column='RL_DAT_ID', blank=True)
+    fId   = models.IntegerField(null=True, db_column='RL_F_ID', blank=True)
+    class Meta:
+        db_table = u'ReferenceList'
+
+    stateReferenceId = models.ForeignKey(StatesMolecules, related_name='isStateRefId',
+                                db_column='eId', null=False)
+
+class Sources(models.Model):
+    rId       = models.IntegerField(primary_key=True, db_column='R_ID')
+    authors   = models.CharField(max_length=500, db_column='R_Authors', blank=True)
+    category  = models.CharField(max_length=100, db_column='R_Category', blank=True)
+    name      = models.CharField(max_length=200, db_column='R_SourceName', blank=True)
+    year      = models.IntegerField(null=True, db_column='R_Year', blank=True)
+    vol       = models.CharField(max_length=20, db_column='R_Volume', blank=True)
+    doi       = models.CharField(max_length=50, db_column='R_DOI', blank=True)
+    pageBegin = models.CharField(max_length=10, db_column='R_PageBegin', blank=True)
+    pageEnd   = models.CharField(max_length=10, db_column='R_PageEnd', blank=True)
+    uri       = models.CharField(max_length=100, db_column='R_URI', blank=True)
+    publisher = models.CharField(max_length=300, db_column='R_Publisher', blank=True)
+    city      = models.CharField(max_length=80, db_column='R_City', blank=True)
+    editors   = models.CharField(max_length=300, db_column='R_Editors', blank=True)
+    productionDate = models.DateField(max_length=12, db_column='R_ProductionDate', blank=True)
+    version   = models.CharField(max_length=20, db_column='R_Version', blank=True)
+    comments  = models.CharField(max_length=100, db_column='R_Comments', blank=True)
+    class Meta:
+        db_table = u'ReferenceBib'
+
+    referenceId = models.ForeignKey(SourcesIDRefs, related_name='isRefId',
+                                db_column='rId', null=False)
 

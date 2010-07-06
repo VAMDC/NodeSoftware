@@ -130,10 +130,10 @@ def XsamsAtomStates(AtomStates):
         #end of loop
     yield '</Atoms>'
 
-def XsamsMolStates(MolStates):
-    if not MolStates: return
+def XsamsMolStates(MoleStates):
+    if not MoleStates: return
     yield '<Molecules>'
-    for MolState in MolStates:
+    for MolState in MoleStates:
         G=lambda name: GetValue(name,MolState=MolState)
         yield """
 <Molecule>
@@ -159,6 +159,18 @@ def XsamsMolStates(MolStates):
       G("MolecularStateEnergyUnit"),
       G("MolecularStateEnergyValue"),
       G("MolecularStateCharacTotalStatisticalWeight"))
+        for StateQN in MolState.quantumnumbers.all():
+          G=lambda name: GetValue(name, StateQN=StateQN)
+          yield """
+<%s:%s """ % (G("MolQnCase"), G("MolQnLabel"))
+          if G("MolQnSpinRef"): yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
+          if G("MolQnAttribute"): yield G("MolQnAttribute")
+          yield """> %s </%s:%s>""" % (G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
+
+#<%s:%s %s> %s </%s:%s>
+#""" % (G("MolQnCase"), G("MolQnLabel"), G("MolQnAttribute"), G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
+#
+
 
         yield """</MolecularState>
 </Molecule> """
@@ -189,7 +201,7 @@ def XsamsMCSBuild(Moldesc):
 
 def XsamsMSBuild(Molstate):
     G=lambda name: GetValue(name,Molstate=Molstate)
-    ret="""<MolecularState stateID="S%s">
+    ret="""<MolecularState stateID="S%">
 <Description>%s</Description>
 <MolecularStateCharacterisation>
 <StateEnergy energyOrigin="%s">
@@ -207,6 +219,7 @@ quoteattr(Molstate.title),
     return ret
 
 
+
 def XsamsMolecs(Molecules):
     if not Molecules: return
     yield '<Molecules>\n'
@@ -217,9 +230,9 @@ def XsamsMolecs(Molecules):
             yield MCS
             
         #Build all levels for element:
-        for syme in Moldesc.symmels.all():
-            for et in syme.etables.all():
-                yield XsamsMSBuild(et)
+#        for syme in Moldesc.symmels.all():
+#            for et in syme.etables.all():
+#                yield XsamsMSBuild(et)
         
         
         #for Molstate in G('MolecularStates'):
@@ -247,6 +260,10 @@ def XsamsRadTrans(RadTrans):
         WaveNumE=G('RadTransWavenumberExperimentalValue')
         WaveNumT=G('RadTransWavenumberTheoreticalValue')
         WaveNumR=G('RadTransWavenumberRitzValue')
+        FreqE=G('RadTransFrequencyExperimentalValue')
+        FreqT=G('RadTransFrequencyTheoreticalValue')
+        FreqR=G('RadTransFrequencyRitzValue')
+
         if WaveLenE: yield """<Wavelength><Experimental sourceRef="B%s">
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
 </Experimental></Wavelength>"""%(G('RadTransWavelengthExperimentalSourceRef'),
@@ -294,11 +311,37 @@ def XsamsRadTrans(RadTrans):
                          G('RadTransWavenumberRitzUnits'),
                          WaveNumR,
                          G('RadTransWavenumberRitzAccuracy'))
+
+        if FreqE: yield """<Frequency><Experimental sourceRef="B%s">
+<Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
+</Experimental></Frequency>"""%(G('RadTransFrequencyExperimentalSourceRef'),
+                                 G('RadTransFrequencyExperimentalComments'),
+                                 G('RadTransFrequencyExperimentalUnits'),
+                                 FreqE,
+                                 G('RadTransFrequencyExperimentalAccuracy'))
+
+        if FreqT: yield """<Frequency><Theoretical sourceRef="B%s">
+<Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
+</Theoretical></Frequency>"""%(G('RadTransFrequencyTheoreticalSourceRef'),
+                                G('RadTransFrequencyTheoreticalComments'),
+                                G('RadTransFrequencyTheoreticalUnits'),
+                                FreqT,
+                                G('RadTransFrequencyTheoreticalAccuracy'))
+
+        if FreqR: yield """<Frequency><Ritz sourceRef="B%s">
+<Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
+</Ritz></Frequency>"""%(G('RadTransFrequencyRitzSourceRef'),
+                         G('RadTransFrequencyRitzComments'),
+                         G('RadTransFrequencyRitzUnits'),
+                         WaveNumR,
+                         G('RadTransFrequencyRitzAccuracy'))
+
         yield '</EnergyWavelength>'
 
-        if RadTran.upstateid: yield '<InitialStateRef>S%s</InitialStateRef>'%G('RadTransIntitialStateRef')
-        if RadTran.lostateid: yield '<FinalStateRef>S%s</FinalStateRef>'%G('RadTransFinalStateRef')
-        if RadTran.loggf: yield """<Probability>
+
+        if G('RadTransInitialStateRef'): yield '<InitialStateRef>S%s</InitialStateRef>'%G('RadTransInitialStateRef')
+        if G('RadTransFinalStateRef'): yield '<FinalStateRef>S%s</FinalStateRef>'%G('RadTransFinalStateRef')
+        if G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'): yield """<Probability>
 <Log10WeightedOscillatorStregnth sourceRef="B%s"><Value units="unitless">%s</Value></Log10WeightedOscillatorStregnth>
 </Probability>
 </RadiativeTransition>"""%(G('RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef'),G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'))
@@ -321,14 +364,16 @@ def XsamsMethods(Methods):
 def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/dcs" targetNamespace="http://www.ucl.ac.uk/~ucapch0/dcs" elementFormDefault="qualified">
 """
     for Source in XsamsSources(Sources): yield Source
     for Method in XsamsMethods(Methods): yield Method
     
     yield '<States>\n'
     for AtomState in XsamsAtomStates(AtomStates): yield AtomState
-    for MolState in XsamsMolecs(MoleStates): yield MolState
+#    for MolState in XsamsMolecs(MoleStates): yield MolState
+    for MolState in XsamsMolStates(MoleStates): yield MolState
     yield '</States>\n'
     yield '<Processes>\n'
     for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
