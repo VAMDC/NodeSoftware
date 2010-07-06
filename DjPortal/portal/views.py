@@ -22,7 +22,7 @@ REGISTRY=[
 
 PARA_CHOICES=[('',u'----'),
               ('AtomNuclearCharge',u'Atomic number'),
-              ('AtomIonCharge',u'Ionization"state (0=neutral)'),
+              ('AtomIonCharge',u'Ionization state (0=neutral)'),
               ('RadTransWavelengthExperimentalValue',u'(Radiative transition) Wavelength (Å)'),
               ('RadTransProbabilityLog10WeightedOscillatorStrengthValue',u'(Radiative transition) Oscillator strength, log(g*f)'),
               ('AtomStateEnergy',u'Atomic state energy (eV)'),
@@ -42,7 +42,6 @@ class ConditionForm(forms.Form):
 def constructQuery(constraints):
     q='select all where '
     for c in constraints:
-        print c
         if c == {}: continue
         if not c['parameter']: continue
         if c['lower'] and c['upper']:
@@ -135,7 +134,8 @@ def sqlquery(request):
     if request.method == 'POST':
         form = SQLqueryForm(request.POST) 
         if form.is_valid():
-            print form.cleaned_data
+            #print form.cleaned_data
+            pass
 
     else:
         form=SQLqueryForm()

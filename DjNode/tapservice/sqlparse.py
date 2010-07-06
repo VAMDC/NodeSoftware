@@ -77,7 +77,7 @@ def where2q(ws,RESTRICTABLES):
         elif len(w)==3: q+=singleWhere(w,RESTRICTABLES)
         elif w[0]=='(' and w[-1]==')': 
             q+=' ( '
-            q+=where2q(w[1:-1])
+            q+=where2q(w[1:-1],RESTRICTABLES)
             q+=' ) '
         
 
