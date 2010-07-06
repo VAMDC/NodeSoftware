@@ -16,7 +16,7 @@ the connected databases and to collect the results to be displayed or
 downloaded to the user. All URLs that contain <em>/portal/</em> are
 run by this application.</li>
 <li>The <strong>nodes</strong> which represent a data set, typically a
-database, with the software running on top of it that allows
+database, with software running on top of it that allows
 communication with the portal. Nodes have URLs with <em>/node/</em>
 and as you can see, there is currently just
 one: <a href="/node/vald">VALD</a>.</li>
@@ -29,154 +29,10 @@ running code. They only communicate via standard HTTP-interfaces which
 are important parts to be developed and tested.
 </p>
 
-<p>Questions and feedback are welcome at <em>thomas.marquart@fysast.uu.se</em>.</p>
+<p>Questions and feedback are welcome to <em>thomas.marquart@fysast.uu.se</em>.</p>
 
-<p><strong>Read on for more details &raquo; </strong></p>
-<p/>
-
-<h3>The Framework and its benefits</h3>
-
-<p>Both the portal and the nodes are based <a href="http://www.djangoproject.com/">Django</a>. This is
-a wide-spread framework for websites and services, written in the
-Python programming language, open-source and well documented. In
-short, it offers a database abstraction layer, a comfortable way to
-associate URLs with bits of code and a template engine. It also
-facilitates the creation and use of HTML forms and provides an admin
-interface.</p>
-
-<h3>The Publishing Tools with Django</h3>
-
-<p>As you know, the publishing tools are basically to provide three things:</p>
-<ul><li>an import tool of data into a relational database</li>
-<li>the database itself</li>
-<li>the software that runs on top of the database and provides the standard VAMDC interfaces.</li>
-</ul>
-
-
-<p>One advantage of using Django is that the database model is defined in
-an abstract way (for the example of VALD
-look <a href="http://github.com/ivh/VAMDC-VALD/blob/master/DjVALD/vald/models.py">here</a>). The
-tools that come with Django then take care of the table creation when
-the database is initialised. This makes our tools more database-independent
-and since Django has backends for all major open-source
-databases, a later switch of the database engine will be no problem at all.</p>
-
-<p>The database access with Django is also abstracted
-(e.g. <em>Transition.objects.filter(species__name__contains="Fe")</em>). This
-has at least two major advantages. For one, it offers additional
-functionality, for example an easy way to use references between tables
-both ways and to traverse table boundaries. To illustrate: In the case
-of VALD, each transition entry holds two references to entries in the
-state-table (upper and lower). In Django code, I can
-e.g. write <em>transition.upperstate.energy</em> (use value from state
-table as if it was in the transition table)
-or <em>state.isupperstatefor</em> to get all the states which
-are the upper states for a selection of transitions (using the key in reverse
-direction).</p>
-
-<p>The second major advantage is that this abstraction layer is just
-what we need to "hide" the custom layout of each database and write a
-layer of unified access. This will facilitate both the parsing and
-execution of the generic query language (as received from the VAMDC
-portal), as well as the generation of standard output data, without
-the need to adapt the relevant code. This is because the model
-definition also "translates" between table names and exposed
-names.</p>
-
-<p>Basically, all that will be needed to be written for a new VAMDC
-database, is the model definition.</p>
-
-<p>Concerning the import tool, we are still testing whether to use the
-Django abstraction for filling the tables, or to access the database
-(with empty tables prepared by Django) directly. The former approach
-is slow, but more secure since it prevents dangling references between
-the tables.</p>
-
-
-<p>The implementation of the software on top of the database
-(receiving queries, running them and preparing output in standard
-format) was also much facilitated by the framework. To write a
-receiving interface according to TAP is almost trivial because Django
-provides ready high-level tools for HTTP POST and GET data, HTTP
-headers and communication details, and the mapping of standard URLs to
-code.</p>
-
-<p>Concerning the data output: It has been stated that
-the overhead of creating and transferring XML (XSAMS Schema) will be
-significant. We have implemented this for VALD, at first using Djangos
-template engine (which made this quite easy). For a typical
-query that produces 5 MB of uncompressed XSAMS data, the rendering of
-the template (i.e. looping over the relevant bits, filling in values
-at the right places) took indeed on the order of 5 seconds. There was
-however no significant difference when the same data were written into
-comma-separated tables. In compressed format (gzip) the size
-difference between the two was less than a factor 1.5.</p>
-
-<p>Although the template rendering was already a factor of 5 improvement
-over previous, more naive implementations, we have in the meantime
-abandoned the use of Djangos template engine for the creation of data
-output. For it seems to be the fact that a large structure has to be
-created and held in memory that slows things down. Python has
-so-called generators which are basically functions that "yield" their
-output only while looped over. Converting the XSAMS-template into a set
-of nested generators, and handing these in their unevaluated state to
-the HTTP-reply allows the reply to start immediately while the
-data-stream is constantly created. Together with the
-fact that database queries with Djangos abstraction layer are not
-actually evaluated until the data is needed, this results in a direct
-"pipeline" from the database to the HTTP-output in which at no point
-all data is held in memory.</p>
-
-<p>This made the aforementioned request finish in a little over 1
-second, including transfer. The web server (Apache) that runs the
-Django application, is configured to compress the reply (all modern
-web-browsers support receiving this) and this way it became possible
-to have <em>synchronous</em> data requests that deliver significant
-amounts of data in a time frame that is acceptable for users. (see the
-example at the <a href="http://vamdc.fysast.uu.se:8888/node/vald/">VALD Node</a>)</p>
-
-<p>Also once more, the difference between XSAMS and CSV or VO-Tables is
-negligible if the same information is sent. However this will be
-different, if a the layout of a data-set does not fit very well with
-the strict XML Schema and requires significant logic every time a
-XSAMS document is assembled. In this case it might be worth
-considering to pre-calculate the necessary steps once and for all at
-import time (as we for example have done with VALD by splitting the
-states from the transitions).</p>
-
-
-<h3>The Portal with Django</h3>
-
-<p>Even though the portal is not primarily our responsibility, we wanted
-to have something to test the interfaces with. Setting up the simple
-query form as it is now was straight forward with Django. The portal
-assigns a random string as ID to each query and saves it with a
-time-stamp into its own database when it is submitted. The user then
-gets redirected to the result page for that query which is the one
-that actually sends out the request to all the nodes in the "registry"
-(just a list of names and URLs to the TAP-sync interface for now) and
-displays the results inline.</p>
-
-
-<p>Generally, we would like to suggest to base the real VAMDC portal on
-something like Django. It brings all the necessary tools with it
-(e.g. authentication) while allowing much flexibility at the same
-time.</p>
-
-<p>A note on the query language: As you can see on any result page (look
-at the query string), we simply use numbered placeholders for the
-different parameters. The node then resolves these with its own
-dictionary
-(see <a href="http://github.com/ivh/VAMDC-VALD/blob/master/DjVALD/vald/views.py">here</a>),
-thereby automatically having a query in its own name-space.</p>
-
-
-<h3>The Source Code</h3>
-
-<p>You can find all the sources in
-the <a href="http://github.com/ivh/VAMDC-VALD">repository on
-GitHub</a>, the two Django projects (node and portal) are in the
-folders DjVALD/ and DjVAMDC/.</p>
+<p><strong>For more details please visit the VAMDC-Wiki page
+<a href="http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/NodeSoftware">NodeSoftware</a>
+</strong><p/>
 
 {% endblock %}
-
