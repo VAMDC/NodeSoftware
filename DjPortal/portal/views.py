@@ -21,18 +21,23 @@ REGISTRY=[
           ]
 
 PARA_CHOICES=[('',u'----'),
+              ('AtomSymbol',u'Atom Name'),
               ('AtomNuclearCharge',u'Atomic number'),
               ('AtomIonCharge',u'Ionization state (0=neutral)'),
+              ('AtomStateEnergy',u'Atomic state energy (eV)'),
+              ('',u'----'),
               ('RadTransWavelengthExperimentalValue',u'(Radiative transition) Wavelength (Å)'),
               ('RadTransProbabilityLog10WeightedOscillatorStrengthValue',u'(Radiative transition) Oscillator strength, log(g*f)'),
-              ('AtomStateEnergy',u'Atomic state energy (eV)'),
+              ('',u'----'),
+              ('MolecularSpeciesChemicalName',u'Molecule Name'),
+              ('MolecularStateEnergyValue',u'Molecular Sate Energy'),
 #              ('',u'Species from species list (not implemented)'),
 ]
 
 class ConditionForm(forms.Form):
-    lower=forms.DecimalField(max_digits=6,required=False,initial=None,label='lower bound',widget=forms.widgets.TextInput(attrs={'size':'8'}))
+    lower=forms.CharField(max_length=8,required=False,initial=None,label='lower bound',widget=forms.widgets.TextInput(attrs={'size':'8'}))
     parameter=forms.ChoiceField(label='parameter to restrict',required=True,initial='',choices=PARA_CHOICES)
-    upper=forms.DecimalField(max_digits=6,required=False,initial=None,label='upper bound',widget=forms.widgets.TextInput(attrs={'size':'8'}))
+    upper=forms.CharField(max_length=8,required=False,initial=None,label='upper bound',widget=forms.widgets.TextInput(attrs={'size':'8'}))
     connection=forms.BooleanField(initial=True,required=False,label='Use AND to connect with next condition?')
     
     def validate(self,value):
