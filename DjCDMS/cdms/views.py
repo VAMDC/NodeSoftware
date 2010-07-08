@@ -6,7 +6,8 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-from DjVALD.vald.models import Transition,State,Source,Species
+#from DjVALD.vald.models import Transition,State,Source,Species
+from DjCDMS.cdms.models import RadiativeTransitions,StatesMolecules,Sources #,Species
 
 import sys
 def LOG(s):
@@ -14,23 +15,24 @@ def LOG(s):
 
 
 
+
 RETURNABLES={\
-'SourceID':'Source.id',
-'SourceAuthorName':'Source.srcdescr',
-'SourceCategory':'',
-'SourcePageBegin':'',
-'SourcePageEnd':'',
-'SourceName':'',
-'SourceTitle':'',
-'SourceURI':'',
-'SourceVolume':'',
-'SourceYear':'',
-'MethodID':'"MCALC"'
+'SourceID':'Sources.rId', #.id',
+'SourceAuthorName':'Sources.authors', #.srcdescr',
+'SourceCategory':'Sources.category',
+'SourcePageBegin':'Sources.pageBegin',
+'SourcePageEnd':'Sources.pageEnd',
+'SourceName':'Sources.name',
+'SourceTitle':'Sources.title',
+'SourceURI':'Sources.uri',
+'SourceVolume':'Sources.vol',
+'SourceYear':'Sources.year',
+'MethodID':'"MCALC"',
 'MethodCategory':'"calculated"',
 'MethodDescription':'',
 'AtomStateID':'',
-'AtomSymbol':'AtomState.species.name',
-'AtomNuclearCharge':'AtomState.species.ion',
+'AtomSymbol':'',
+'AtomNuclearCharge':'',
 'AtomCompositionComments':'',
 'AtomConfigurationLabel':'',
 'AtomCompositionComponentTerm':'',
@@ -39,7 +41,7 @@ RETURNABLES={\
 'AtomStateEnergy':'',
 'AtomStateDescription':'',
 'AtomIonCharge':'',
-'AtomMassNumber':'atomstate.species.mass',
+'AtomMassNumber':'',
 #'RadTransComments':'',
 #'RadTransWavelengthAir':'',
 #'RadTransWavelengthVac':'',
@@ -48,8 +50,8 @@ RETURNABLES={\
 
 'RadTransComments':'',
 
-'RadTransFinalStateRef':'RadiativeTransitions.FinalStateRef',
-'RadTransInitialStateRef':'RadiativeTransitions.InitialStateRef',
+'RadTransFinalStateRef':'RadTran.finalstateref',
+'RadTransInitialStateRef':'RadTran.initialstateref',
 
 'RadTransWavenumberRitzComments':'',
 'RadTransWavenumberRitzSourceRef':'',
@@ -120,9 +122,9 @@ RETURNABLES={\
 'RadTransFrequencyTheoreticalComments':'',
 'RadTransFrequencyTheoreticalSourceRef':'',
 'RadTransFrequencyTheoreticalMethodRef':'',
-'RadTransFrequencyTheoreticalValue':'RadiativeTransitions.frequencyvalue',
-'RadTransFrequencyTheoreticalUnits':'RadiativeTransitions.frequencyunit',
-'RadTransFrequencyTheoreticalAccuracy':'RadiativeTransitions.energywavelengthaccuracy',
+'RadTransFrequencyTheoreticalValue':'RadTran.frequencyvalue',
+'RadTransFrequencyTheoreticalUnits':'RadTran.frequencyunit',
+'RadTransFrequencyTheoreticalAccuracy':'RadTran.energywavelengthaccuracy',
 'RadTransProbabilityTransitionProbabilityAComments ':'',
 'RadTransProbabilityTransitionProbabilityASourceRef':'',
 'RadTransProbabilityTransitionProbabilityAMethodRef':'',
@@ -150,8 +152,8 @@ RETURNABLES={\
 'RadTransProbabilityLog10WeightedOscillatorStrengthComments ':'',
 'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'',
 'RadTransProbabilityLog10WeightedOscillatorStrengthMethodRef':'',
-'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadiativeTransitions.log10weightedoscillatorstrengthvalue',
-'RadTransProbabilityLog10WeightedOscillatorStrengthUnits':'RadiativeTransitions.log10weightedoscillatorstrengthunit',
+'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.log10weightedoscillatorstrengthvalue',
+'RadTransProbabilityLog10WeightedOscillatorStrengthUnits':'RadTran.log10weightedoscillatorstrengthunit',
 'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'',
 'RadTransProbabilityIdealisedIntensityComments ':'',
 'RadTransProbabilityIdealisedIntensitySourceRef':'',
@@ -159,7 +161,7 @@ RETURNABLES={\
 'RadTransProbabilityIdealisedIntensityValue':'',
 'RadTransProbabilityIdealisedIntensityUnits':'',
 'RadTransProbabilityIdealisedIntensityAccuracy':'',
-'RadTransProbabilityProbability:MultipoleValue':'RadiativeTransitions.multipole',
+'RadTransProbabilityProbability:MultipoleValue':'RadTran.multipole',
 
 
 'CollisionComments':'',
@@ -172,9 +174,9 @@ RETURNABLES={\
 # table for molecular states 
 # (maybe molecular species should be a separate table)
     
-'MolecularSpeciesChemicalName':'StatesMolecules.molecularchemicalspecies',
+'MolecularSpeciesChemicalName':'MolState.molecularchemicalspecies',
 'MolecularSpeciesOrdinaryStructuralFormula':'',
-'MolecularSpeciesStoichiometrcFormula':'StatesMolecules.isotopomer',
+'MolecularSpeciesStoichiometrcFormula':'MolState.isotopomer',
 'MolecularSpeciesIonCharge':'',
 'MolecularSpeciesIUPACName':'',
 'MolecularSpeciesURLFigure':'',
@@ -188,44 +190,48 @@ RETURNABLES={\
 'MoleculeNuclearSpinsAtomArray':'',
 'MoleculeNuclearSpinsBondArray':'',
 
-'MolecularStateStateID':'',
+'MolecularStateStateID':'MolState.stateid',
 'MolecularStateDescription':'',
 'MolecularStateEnergyComments':'',
 'MolecularStateEnergySourceRef':'',
 'MolecularStateEnergyMethodRef':'',
-'MolecularStateEnergyValue':'StatesMolecules.stateenergyvalue',
-'MolecularStateEnergyUnit':'StatesMolecules.stateenergyunit',
-'MolecularStateEnergyAccuracy':'StatesMolecules.stateenergyaccuracy',
+'MolecularStateEnergyValue':'MolState.stateenergyvalue',
+'MolecularStateEnergyUnit':'MolState.stateenergyunit',
+'MolecularStateEnergyAccuracy':'MolState.stateenergyaccuracy',
 'MolecularStateEnergyOrigin':'',
-'MolecularStateMixingCoefficient':'StatesMolecules.mixingcoefficient',
+'MolecularStateMixingCoefficient':'MolState.mixingcoefficient',
 
 'MolecularStateCharacTotalStatisticalWeight':'',
-'MolecularStateCharacNuclearStatisticalWeight':'StatesMolecules.statenuclearstatisticalweight',
+'MolecularStateCharacNuclearStatisticalWeight':'MolState.statenuclearstatisticalweight',
 'MolecularStateCharacNuclearSpinSymmetry':'',
 'MolecularStateCharacLifeTime':'',
 'MolecularStateCharacParameters':'',
 
 # table for quantum numbers
 
-'MolQnStateID':'',
-'MolQnCase':'',  #(for case-by-case)
-'MolQnLabel':'', #(for case-by-case) (should be labels suggested by Christian Hill)
+'MolQnStateID':'StateQN.stateid',
+'MolQnCase':'StateQN.case',  #(for case-by-case)
+'MolQnLabel':'StateQN.label', #(for case-by-case) (should be labels suggested by Christian Hill)
 'MolXPath':'',   #(for classical)
 'MolTag':'',     #(for classical)
-'MolQnValue':'',
-'MolQnSpinRef':'',
-'MolQnAttribute':'',
-'MolQnComment':''
+'MolQnValue':'StateQN.value',
+'MolQnSpinRef':'StateQN.spinref',
+'MolQnAttribute':'StateQN.attribute',
+'MolQnComment':'StateQN.comment'
 
 }
 
 RESTRICTABLES = {\
+'MolecularChemicalSpecies':'molecularchemicalspecies',
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'AtomStateEnergy':'upstate__energy',
-'RadTransWavelengthExperimentalValue':'vacwave',
+'RadTransWavelengthExperimentalValue':'frequencyvalue',
 'RadTransLogGF':'loggf',
 'AtomIonCharge':'species__ion',
+'RadTransFrequencyTheoreticalValue':'RadiativeTransitions.frequencyvalue',
+'RadTransFrequencyTheoreticalUnits':'RadiativeTransitions.frequencyunit',
+'RadTransFrequencyTheoreticalAccuracy':'RadiativeTransitions.energywavelengthaccuracy',
 }
 
 
@@ -236,105 +242,32 @@ def getCDMSsources(transs):
     #return Source.objects.filter(pk__in=sids)
 
 def getCDMSstates(transs):
-    #lostates=State.objects.filter(islowerstate_trans__in=transs)
-    #histates=State.objects.filter(islowerstate_trans__in=transs)
-    #states = lostates | histates
-    q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
-    return State.objects.filter(q1|q2).distinct()
+#    q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
+    q1,q2=Q(isinitialstate__in=transs),Q(isfinalstate__in=transs)
+    return StatesMolecules.objects.filter(q1|q2).distinct()
     
 
 
 
 def setupResults(sql):
-    LOG(sql)
+#    LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
+#    LOG(q)
     try: q=eval(q)
     except: return {}
-   
-    transs = Transition.objects.select_related().filter(q)
-
-    #if limit : # rewrite this to check if there was a TOP statement in the sql
-    #    transs = transs[:limit]
-
+#    q=RadiativeTransitions.molecularchemicalspecies__exact='NH3'
+    transs = RadiativeTransitions.objects.select_related(depth=2).filter(q)
+#    transs = RadiativeTransitions.objects.filter(molecularchemicalspecies__exact='NH3').filter(frequencyvalue__gt=29500).filter(frequencyvalue__lt=130000)
+#    transs = RadiativeTransitions.objects.select_related(depth=2).filter(molecularchemicalspecies='CO') #, frequencyvalue>29500, frequencyvalue<130000)
+#    LOG(transs)
     sources = getCDMSsources(transs)
     states = getCDMSstates(transs)
+
+#    qn= states[0].molecularquantumnumbers_set.all()
+    qn = states[0].quantumnumbers.all()
     return {'RadTrans':transs,
-            'AtomStates':states,
+            'MoleStates':states,
             'Sources':sources,
             }
-
-
-
-
-
-
-
-
-#############################################################     
-############### LEGACY code below ###########################
-#############################################################
-
-
-
-
-
-def getVALDstates2(transs):
-    sids=set([])
-    for trans in transs:
-        sids.add(trans.lostate)
-        sids.add(trans.upstate)
-        
-    states=[]
-    sids.remove(None)
-    for sid in sids:
-        states.append(State.objects.get(pk=sid))
-    return states
-
-def getVALDsources1(transs):
-    # this is REALLY slow
-    waverefs=Q(iswaveref_trans__in=transs)
-    landerefs=Q(islanderef_trans__in=transs)
-    loggfrefs=Q(isloggfref_trans__in=transs)
-    g1refs=Q(isgammaradref_trans__in=transs)
-    g2refs=Q(isgammastarkref_trans__in=transs)
-    g3refs=Q(isgammawaalsref_trans__in=transs)
-    refQ= waverefs | landerefs | loggfrefs | g1refs | g2refs | g3refs
-    sources=Source.objects.filter(refQ).distinct()
-    return sources
-
-def getVALDsources2(transs):
-    #resonably fast
-    waverefs=Q(iswaveref_trans__in=transs)
-    landerefs=Q(islanderef_trans__in=transs)
-    loggfrefs=Q(isloggfref_trans__in=transs)
-    g1refs=Q(isgammaradref_trans__in=transs)
-    g2refs=Q(isgammastarkref_trans__in=transs)
-    g3refs=Q(isgammawaalsref_trans__in=transs)
-    refQs=[waverefs, landerefs, loggfrefs, g1refs, g2refs, g3refs]
-    sources=set()
-    for q in refQs:
-        refs=Source.objects.filter(q).distinct()
-        for r in refs:
-            sources.add(r)
-    return sources
-
-def getVALDsources3(transs):
-    # slower than v2
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
-        sids=sids.union(s)
-    return list(sids)
-
-def getVALDsources4(transs):
-    # as slow as v3
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref.id,trans.loggf_ref.id,trans.lande_ref.id,trans.gammarad_ref.id,trans.gammastark_ref.id,trans.gammawaals_ref.id])
-        sids=sids.union(s)
-    sources=[]
-    for sid in sids:
-        sources.append(Source.objects.get(pk=sid))
-    return sources
 
 

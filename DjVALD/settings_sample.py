@@ -90,3 +90,5 @@ INSTALLED_APPS = (
     'DjVALD.vald',
 )
 
+# must have trailing slash!
+TAP_URL = 'http://vamdc.fysast.uu.se:8888/node/vald/tap/'
