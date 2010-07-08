@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 #from DjVALD.vald.models import Transition,State,Source,Species
-from DjCDMS.cdms.models import RadiativeTransitions,StatesMolecules,Sources #,Species
+from DjCDMS.cdms.models import RadiativeTransitions,StatesMolecules,Sources,MolecularQuantumNumbers #,Species
 
 import sys
 def LOG(s):
@@ -209,29 +209,30 @@ RETURNABLES={\
 
 # table for quantum numbers
 
-'MolQnStateID':'StateQN.stateid',
-'MolQnCase':'StateQN.case',  #(for case-by-case)
-'MolQnLabel':'StateQN.label', #(for case-by-case) (should be labels suggested by Christian Hill)
+'MolQnStateID':'MolQN.stateid',
+'MolQnCase':'MolQN.case',  #(for case-by-case)
+'MolQnLabel':'MolQN.label', #(for case-by-case) (should be labels suggested by Christian Hill)
 'MolXPath':'',   #(for classical)
 'MolTag':'',     #(for classical)
-'MolQnValue':'StateQN.value',
-'MolQnSpinRef':'StateQN.spinref',
-'MolQnAttribute':'StateQN.attribute',
-'MolQnComment':'StateQN.comment'
+'MolQnValue':'MolQN.value',
+'MolQnSpinRef':'MolQN.spinref',
+'MolQnAttribute':'MolQN.attribute',
+'MolQnComment':'MolQN.comment'
 
 }
 
 RESTRICTABLES = {\
-'MolecularChemicalSpecies':'molecularchemicalspecies',
+'MolecularSpeciesChemicalName':'molecularchemicalspecies',
+'MolecularSpeciesStoichiometricFormula':'isotopomer',
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'AtomStateEnergy':'upstate__energy',
 'RadTransWavelengthExperimentalValue':'frequencyvalue',
 'RadTransLogGF':'loggf',
 'AtomIonCharge':'species__ion',
-'RadTransFrequencyTheoreticalValue':'RadiativeTransitions.frequencyvalue',
-'RadTransFrequencyTheoreticalUnits':'RadiativeTransitions.frequencyunit',
-'RadTransFrequencyTheoreticalAccuracy':'RadiativeTransitions.energywavelengthaccuracy',
+'RadTransFrequencyTheoreticalValue':'frequencyvalue',
+'RadTransFrequencyTheoreticalUnits':'frequencyunit',
+'RadTransFrequencyTheoreticalAccuracy':'energywavelengthaccuracy',
 }
 
 
@@ -244,30 +245,38 @@ def getCDMSsources(transs):
 def getCDMSstates(transs):
 #    q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
     q1,q2=Q(isinitialstate__in=transs),Q(isfinalstate__in=transs)
-    return StatesMolecules.objects.filter(q1|q2).distinct()
+    return StatesMolecules.objects.order_by('isotopomer').filter(q1|q2).distinct()
     
-
+def getCDMSqns(states):
+    q = Q(statesmolecules__in=states)
+    return MolecularQuantumNumbers.objects.filter(q)
 
 
 def setupResults(sql):
-#    LOG(sql)
+    LOG("SQL:")
+    LOG(sql.where)
     q=where2q(sql.where,RESTRICTABLES)
-#    LOG(q)
-    try: q=eval(q)
-    except: return {}
-#    q=RadiativeTransitions.molecularchemicalspecies__exact='NH3'
+    LOG("Q:"+q)
+#    try: q=eval(q)
+    q=eval(q)
+    LOG(q)
+#    q='frequencyvalue=50000'
+#    except: return {}
+#    q='molecularchemicalspecies="CO"'
     transs = RadiativeTransitions.objects.select_related(depth=2).filter(q)
 #    transs = RadiativeTransitions.objects.filter(molecularchemicalspecies__exact='NH3').filter(frequencyvalue__gt=29500).filter(frequencyvalue__lt=130000)
-#    transs = RadiativeTransitions.objects.select_related(depth=2).filter(molecularchemicalspecies='CO') #, frequencyvalue>29500, frequencyvalue<130000)
+#    transs = RadiativeTransitions.objects.select_related(depth=2).filter(molecularchemicalspecies__exact='CO') #, frequencyvalue>29500, frequencyvalue<130000)
 #    LOG(transs)
     sources = getCDMSsources(transs)
     states = getCDMSstates(transs)
+    quantumnumbers = getCDMSqns(states)
 
 #    qn= states[0].molecularquantumnumbers_set.all()
     qn = states[0].quantumnumbers.all()
     return {'RadTrans':transs,
             'MoleStates':states,
             'Sources':sources,
+            'MoleQNs':quantumnumbers,
             }
 
 
