@@ -41,6 +41,12 @@ class Source(models.Model):
         verbose_name = _('Source')
         verbose_name_plural = _('Sources')
 
+class Publication(models.Model):
+    dbref = models.CharField(max_length=6, db_index=True)
+    bibref = models.CharField(max_length=25, db_index=True)
+    author = models.CharField(max_length = 128, db_index=True, null=True, blank=True)
+    bibtex = models.CharField(max_length = 512, db_index=True)
+
 class State(models.Model):
     charid = models.CharField(max_length=128, db_index=True,unique=True,null=False)
     species = models.ForeignKey(Species,db_column='species', db_index=True)

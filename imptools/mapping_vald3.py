@@ -67,9 +67,9 @@ vald_cfg_file = base + 'vald3_test.cfg'
 states_file = base + 'states_preprocessed.dat'
 transitions_file = base + 'transitions_preprocessed.dat'
 terms_file = base + 'terms_preprocessed.dat'
+publications_file = base + "publications_preprocessed.dat"
 
-mapping = [
-    
+mapping = [    
     # species file 
     {'model':valdmodel.Species,     
      'fname':species_list_file,
@@ -268,8 +268,24 @@ mapping = [
              'cbyte':(bySepNr, (21, ';')),
              'references':(valdmodel.State,'charid')},
             ],
-    } # end of transition file def 
-
+     }, # end of transition file def
+    
+    # publication bibtex data file
+     {'model':valdmodel.Publication,    
+     'fname':publications_file,
+     'headlines':0,        
+     'commentchar':'#',    
+     'columns':[           
+            {'cname':'dbref',
+             'cbyte':(bySepNr, (0,'||')),},  
+            {'cname':'bibref',
+             'cbyte':(bySepNr, (1,'||')),},  
+            {'cname':'author',
+             'cbyte':(bySepNr, (2,'||')),},  
+            {'cname':'bibtex',
+             'cbyte':(bySepNr, (3,'||')),},            
+          ], 
+      }, # end  
 ] # end of vald3 mapping file def list
 
 
