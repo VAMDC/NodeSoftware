@@ -246,7 +246,14 @@ def getCDMSstates(transs):
 #    q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
     q1,q2=Q(isinitialstate__in=transs),Q(isfinalstate__in=transs)
     return StatesMolecules.objects.order_by('isotopomer').filter(q1|q2).distinct()
-    
+   
+def getCDMSstates2(transs):
+    stateids=set([])
+    for trans in transs:
+       stateids=stateids.union(set([trans.initialstateref, trans.finalstateref]))
+    q=Q(stateid__in=stateids)
+    return StatesMolecules.objects.order_by('isotopomer').filter(q).distinct()
+       
 def getCDMSqns(states):
     sids=set([])
     LOG('Loop States')
@@ -295,7 +302,7 @@ def setupResults(sql):
 #    transs = transs[:50]
     sources = getCDMSsources(transs)
     LOG('Start Query States')
-    states = getCDMSstates(transs)
+    states = getCDMSstates2(transs)
     LOG('Start Query QN')
     quantumnumbers = getCDMSqns(states)
     LOG('Queries done')
