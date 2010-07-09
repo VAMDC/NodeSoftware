@@ -67,9 +67,9 @@ vald_cfg_file = base + 'vald3_test.cfg'
 states_file = base + 'states_preprocessed.dat'
 transitions_file = base + 'transitions_preprocessed.dat'
 terms_file = base + 'terms_preprocessed.dat'
+publications_file = base + "publications_preprocessed.dat"
 
-mapping = [
-    
+mapping = [    
     # species file 
     {'model':valdmodel.Species,     
      'fname':species_list_file,
@@ -98,6 +98,23 @@ mapping = [
              'cbyte':(charrange,(137,140))},   
            ],
      }, # end of definition for species file
+
+    # publication bibtex data file
+    {'model':valdmodel.Publication,    
+     'fname':publications_file,
+     'headlines':0,        
+     'commentchar':'#',    
+     'columns':[           
+            {'cname':'dbref',
+             'cbyte':(bySepNr, (0,'||')),},  
+            {'cname':'bibref',
+             'cbyte':(bySepNr, (1,'||')),},  
+            {'cname':'author',
+             'cbyte':(bySepNr, (2,'||')),},  
+            {'cname':'bibtex',
+             'cbyte':(bySepNr, (3,'||')),},            
+          ], 
+      }, # end of bibtex publication data
 
     # vald_cfg file
     {'model':valdmodel.Source,
@@ -163,11 +180,14 @@ mapping = [
             {'cname':'term',
              'cbyte':(bySepNr,(5,';'))},
             {'cname':'energy_ref',
-             'cbyte':(bySepNr,(6,';'))},
+             'cbyte':(bySepNr,(6,';')),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'lande_ref',
-             'cbyte':(bySepNr,(7,';'))},
+             'cbyte':(bySepNr,(7,';')),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'level_ref',
-             'cbyte':(bySepNr,(8,';'))},
+             'cbyte':(bySepNr,(8,';')),
+             'references':(valdmodel.Source,'pk')}
             ]
      }, # end of state file    
 
@@ -238,7 +258,8 @@ mapping = [
              'cbyte':(bySepNr,(7, ';')),
              'cnull':'0.0'},
             {'cname':'srctag',
-             'cbyte':(bySepNr,(8, ';'))},
+             'cbyte':(bySepNr,(8, ';')),
+             'references':(valdmodel.Publication,'dbref')},
             {'cname':'acflag',
              'cbyte':(bySepNr,(9, ';'))},
             {'cname':'accur',
@@ -246,17 +267,23 @@ mapping = [
             {'cname':'comment',
              'cbyte':(bySepNr,(11, ';'))},
             {'cname':'wave_ref',
-             'cbyte':(bySepNr,(12, ';'))},
+             'cbyte':(bySepNr,(12, ';')),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'loggf_ref',
-             'cbyte':(bySepNr,(13, ';'))},
+             'cbyte':(bySepNr,(13, ';')),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'lande_ref',
-             'cbyte':(bySepNr,(14, ';'))},
+             'cbyte':(bySepNr,(14, ';')),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'gammarad_ref',
-             'cbyte':(bySepNr,(15, ';'))},
+             'cbyte':(bySepNr,(15, ';')),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'gammastark_ref',
-             'cbyte':(bySepNr,(16, ';'))},
+             'cbyte':(bySepNr,(16, ';')),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'gammawaals_ref',
-             'cbyte':(bySepNr,(17, ';'))},
+             'cbyte':(bySepNr,(17, ';')),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'upstateid',
              'cbyte':(bySepNr, (18, ';'))},
             {'cname':'lostateid',
@@ -268,8 +295,8 @@ mapping = [
              'cbyte':(bySepNr, (21, ';')),
              'references':(valdmodel.State,'charid')},
             ],
-    } # end of transition file def 
-
+     }, # end of transition file def
+       
 ] # end of vald3 mapping file def list
 
 
