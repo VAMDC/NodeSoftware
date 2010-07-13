@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-<h1>Results for Query</h1>
+<h1>Query information</h1>
 
 <ul>
   <li>ID: {{ query.qid }}</li>
@@ -11,21 +11,27 @@
 </ul>
 
 <h2>Please note:</h2>
-<ul>
-<li>Below you see a table with results for this query from each node. The total number is displayed, but the table is limited to the first 100 rows. Only a fixed set of columns is shown for the time being, but the download contains all available fields and all entries that matched the query.</li>
-<li>Beneath the table you find links for downloading the whole set in either XSAMS for VO-Table XML-format. (These files are not pre-made, but generated on the fly via the TAP/sync interface.</li>
-<li>Currently the "nodes" are just two times the VALD node, to illustrate that there is actually more than one query sent from the portal and results gathered.</li>
-</ul>
+
+<p>Below you find links for downloading the data from each node in either XSAMS for VO-Table XML-format (temporarily disabled). Note that these files are not pre-made, but generated on the fly via the TAP/sync interface.</p>
+
+
 {% for result in results %}
 
 <h2>Results from {{ result.nodename }}</h2>
 
-
+{% if result.html %}
 {% autoescape off %}{{ result.html }}{% endautoescape %}
+{% endif %}
 
-<ul><li><a href="{{ result.xsamsurl }}">Download as XSAMS</a></li>
-<li><a href="{{ result.vourl }}">Download as VO-Table</a></li></ul>
+<ul>
+{% if result.xsamsurl %}
+<li><a href="{{ result.xsamsurl }}">Download as XSAMS</a></li>
+{% endif %}
 
+{% if result.vourl %}
+<li><a href="{{ result.vourl }}">Download as VO-Table</a></li>
+{% endif %}
+</ul>
 
 {% endfor %}
 

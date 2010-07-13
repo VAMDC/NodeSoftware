@@ -20,19 +20,24 @@ REGISTRY=[
           {'name':'CDMS','url':'http://www.astro.uni-koeln.de:8098/DjCDMS/tap/sync/'},
           ]
 
-PARA_CHOICES=[('',u''),
-#              ('',u'Atomic number'),
-#              ('',u'Ionization'),
-              ('RadTransWavelengthExperimentalValue',u'(Radiative transition) Wavelength in vaccum (Å)'),
+PARA_CHOICES=[('',u'----'),
+              ('AtomSymbol',u'Atom Name'),
+              ('AtomNuclearCharge',u'Atomic number'),
+              ('AtomIonCharge',u'Ionization state (0=neutral)'),
+              ('AtomStateEnergy',u'Atomic state energy (eV)'),
+              ('',u'----'),
+              ('RadTransWavelengthExperimentalValue',u'(Radiative transition) Wavelength (Å)'),
               ('RadTransProbabilityLog10WeightedOscillatorStrengthValue',u'(Radiative transition) Oscillator strength, log(g*f)'),
-#              ('',u'Level energy (1/cm)'),
+              ('',u'----'),
+              ('MolecularSpeciesChemicalName',u'Molecule Name'),
+              ('MolecularStateEnergyValue',u'Molecular Sate Energy'),
 #              ('',u'Species from species list (not implemented)'),
 ]
 
 class ConditionForm(forms.Form):
-    lower=forms.DecimalField(max_digits=6,required=False,initial=None,label='lower bound',widget=forms.widgets.TextInput(attrs={'size':'8'}))
+    lower=forms.CharField(max_length=8,required=False,initial=None,label='lower bound',widget=forms.widgets.TextInput(attrs={'size':'8'}))
     parameter=forms.ChoiceField(label='parameter to restrict',required=True,initial='',choices=PARA_CHOICES)
-    upper=forms.DecimalField(max_digits=6,required=False,initial=None,label='upper bound',widget=forms.widgets.TextInput(attrs={'size':'8'}))
+    upper=forms.CharField(max_length=8,required=False,initial=None,label='upper bound',widget=forms.widgets.TextInput(attrs={'size':'8'}))
     connection=forms.BooleanField(initial=True,required=False,label='Use AND to connect with next condition?')
     
     def validate(self,value):
@@ -42,20 +47,19 @@ class ConditionForm(forms.Form):
 def constructQuery(constraints):
     q='select all where '
     for c in constraints:
-        print c
         if c == {}: continue
         if not c['parameter']: continue
         if c['lower'] and c['upper']:
-            if c['lower'] == c['upper']: q+='( %%(%s)s = %s )'%(c['parameter'],c['upper'])
+            if c['lower'] == c['upper']: q+='( %s = %s )'%(c['parameter'],c['upper'])
             else:
-                q+='( %%(%s)s > %s and '%(c['parameter'],c['lower'])
-                q+='%%(%s)s < %s )'%(c['parameter'],c['upper'])
+                q+='( %s > %s and '%(c['parameter'],c['lower'])
+                q+='%s < %s )'%(c['parameter'],c['upper'])
         elif c['lower']:
-            q+='( %%(%s)s > %s )'%(c['parameter'],c['lower'])
+            q+='( %s > %s )'%(c['parameter'],c['lower'])
         elif c['upper']:
-            q+='( %%(%s)s < %s )'%(c['parameter'],c['upper'])
+            q+='( %s < %s )'%(c['parameter'],c['upper'])
         else:
-            q+='( %%(%s)s notnull )'%c['parameter']
+            q+='( %s notnull )'%c['parameter']
 
         if c['connection']: q+=' AND '
         else: q+=' OR  '
@@ -109,9 +113,9 @@ def results(request,qid):
     results=[]
     for node in REGISTRY:
         result={'nodename':node['name']}
-        result['count']=askNodeForCount(node['url'],query.query)
-        #result['html']=askNodeForEmbedHTML(node['url'],query.query)
+        #result['count']=askNodeForCount(node['url'],query.query)
         #result['vourl']=makeDlLink(node['url'],query.query,format='VOTABLE')
+        #result['html']=askNodeForEmbedHTML(node['url'],query.query)
         result['xsamsurl']=makeDlLink(node['url'],query.query,format='XSAMS')
         results.append(result)
         
@@ -135,7 +139,8 @@ def sqlquery(request):
     if request.method == 'POST':
         form = SQLqueryForm(request.POST) 
         if form.is_valid():
-            print form.cleaned_data
+            #print form.cleaned_data
+            pass
 
     else:
         form=SQLqueryForm()

@@ -20,6 +20,7 @@ def LOG(s):
 #vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
 
+
 RETURNABLES={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
@@ -30,10 +31,10 @@ RETURNABLES={\
 'SourceTitle':'',
 'SourceURI':'',
 'SourceVolume':'',
-'SourceYear':'2222',
-'MethodID':'OBS',
-'MethodCategory':'observed',
-'MethodDescription':'so far all vald data is marked as observed although that is not necessarily true :)',
+'SourceYear':'"2222"',
+'MethodID':'"MOBS"',
+'MethodCategory':'"observed"',
+'MethodDescription':'',
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'AtomState.species.name',
 'AtomNuclearCharge':'AtomState.species.atomic',
@@ -42,6 +43,7 @@ RETURNABLES={\
 'AtomIonizationEnergy':'AtomState.species.ionen',
 'AtomLandeFactor':'AtomState.coupling',
 'AtomStateEnergy':'AtomState.energy',
+'AtomStateDescription':'',
 'AtomIonCharge':'AtomState.species.ion',
 'AtomMassNumber':'AtomState.species.massno',
 'RadTransComments':'Wavelength is for vaccum.',
@@ -84,10 +86,10 @@ def getVALDsources(transs):
 def getVALDstates(transs):
     #q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
     #return State.objects.filter(q1|q2).distinct()
-    lostates=State.objects.filter(islowerstate_trans__in=transs).distinct()
-    histates=State.objects.filter(islowerstate_trans__in=transs).distinct()
+    lostates=State.objects.filter(islowerstate_trans__in=transs)
+    histates=State.objects.filter(islowerstate_trans__in=transs)
     states = lostates | histates
-    return states
+    return states.distinct()
     
 
 def setupResults(sql,limit=0):

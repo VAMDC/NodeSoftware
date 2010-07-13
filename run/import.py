@@ -10,6 +10,7 @@ os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
 
 from imptools import dbhelpers
 from imptools import mapping_vald3
+from time import time
 
 def import_to_db():
     """
@@ -37,7 +38,7 @@ def import_to_db():
         # likely an error in reading a mapping file. 
         return 
     
-if __name__ == '__main__':
+if __name__ == '__main__':    
     import_to_db()
 
 
