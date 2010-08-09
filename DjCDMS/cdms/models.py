@@ -97,7 +97,7 @@ class MolecularQuantumNumbers(models.Model):
     attribute = models.CharField(max_length=100, db_column='Attribute')
 
     class Meta:
-        db_table = 'V_MolQN'
+        db_table = 'MolQN'
 
     statesmolecules = models.ForeignKey(StatesMolecules, related_name='quantumnumbers', 
                             db_column='StateID')

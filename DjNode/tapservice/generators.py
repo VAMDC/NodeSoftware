@@ -130,19 +130,55 @@ def XsamsAtomStates(AtomStates):
         #end of loop
     yield '</Atoms>'
 
-def XsamsMolStates(MoleStates):
+
+# This function creates the molecular states part.
+# In its current form MoleStates contains all information
+# about the state including the species part. It does
+# not contain informations on the quantum numbers. These
+# are provided in the MoleQNs - List. Both are linked via
+# the StateId. In the first loop, the MoleQN-List copied into
+# a new list of lists using the StateID as keyword.
+# Maybe this part could be moved to the view.py in each node.
+# In this approach the molecular species information is part
+# of the MoleStates, which can be discussed, but probably 
+# this approach is faster in terms of performance and more
+# appropriate for the VO-Table output, because it reduces the
+# number of tables. Here, the MoleStates have to be sorted 
+# by Species. If we keep this approach the condition prooves
+# the identity of species should use the dictionary which
+# is currently under development
+
+def XsamsMolStates(MoleStates,MoleQNs):
     if not MoleStates: return
     yield '<Molecules>'
+    FormulaLastLoop = ""    
+
+    # rearrange QN-Lists into dictionary with stateID as key
+    QNList={}
+    for MolQN in MoleQNs:
+       G=lambda name: GetValue(name,MolQN=MolQN)
+       if QNList.has_key(G("MolQnStateID")):
+          QNList[G("MolQnStateID")].append(MolQN)
+       else:
+          QNList[G("MolQnStateID")]=[MolQN]
+
     for MolState in MoleStates:
         G=lambda name: GetValue(name,MolState=MolState)
-        yield """
-<Molecule>
+        if (FormulaLastLoop=="" or G("MolecularSpeciesStoichiometrcFormula") != FormulaLastLoop):
+                if (FormulaLastLoop!=""):
+                    yield '</Molecule>'
+	        yield """
+<Molecule> 
 <MolecularChemicalSpecies>
 <OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>
 <StoichiometricFormula>%s</StoichiometricFormula>
 <ChemicalName>%s</ChemicalName>
 </MolecularChemicalSpecies>
-<MolecularState stateID="S%s">
+"""% ( G("MolecularSpeciesOrdinaryStructuralFormula"),
+ G("MolecularSpeciesStoichiometrcFormula"),
+ G("MolecularSpeciesChemicalName")) 
+                FormulaLastLoop = G("MolecularSpeciesStoichiometrcFormula")
+        yield """<MolecularState stateID="S%s">
 <Description>%s</Description>
 <MolecularStateCharacterisation>
 <StateEnergy energyOrigin="%s">
@@ -150,30 +186,30 @@ def XsamsMolStates(MoleStates):
 </StateEnergy>
 <TotalStatisticalWeight>%s</TotalStatisticalWeight>
 </MolecularStateCharacterisation>
-"""% (G("MolecularSpeciesOrdinaryStructuralFormula"),
-      G("MolecularSpeciesStoichiometrcFormula"),
-      G("MolecularSpeciesChemicalName"),
+"""% ( #G("MolecularSpeciesOrdinaryStructuralFormula"),
+     # G("MolecularSpeciesStoichiometrcFormula"),
+     # G("MolecularSpeciesChemicalName"),
       G("MolecularStateStateID"),
       G("MolecularStateDescription"),
       G("MolecularStateEnergyOrigin"),
       G("MolecularStateEnergyUnit"),
       G("MolecularStateEnergyValue"),
       G("MolecularStateCharacTotalStatisticalWeight"))
-        for StateQN in MolState.quantumnumbers.all():
-          G=lambda name: GetValue(name, StateQN=StateQN)
-          yield """
+        if QNList.has_key(G("MolecularStateStateID")):
+          for MolQN in QNList[G("MolecularStateStateID")]:
+            G=lambda name: GetValue(name, MolQN=MolQN)
+            yield """
 <%s:%s """ % (G("MolQnCase"), G("MolQnLabel"))
-          if G("MolQnSpinRef"): yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
-          if G("MolQnAttribute"): yield G("MolQnAttribute")
-          yield """> %s </%s:%s>""" % (G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
-
-#<%s:%s %s> %s </%s:%s>
-#""" % (G("MolQnCase"), G("MolQnLabel"), G("MolQnAttribute"), G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
-#
+            if G("MolQnSpinRef"): yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
+            if G("MolQnAttribute"): yield G("MolQnAttribute")
+            yield """> %s </%s:%s>""" % (G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
 
 
         yield """</MolecularState>
-</Molecule> """
+"""
+#</Molecule> """
+    if FormulaLastLoop!="":
+            yield '</Molecule>'
     yield '</Molecules>'
 
 #This thing yields MolecularChemicalSpecies
@@ -361,24 +397,34 @@ def XsamsMethods(Methods):
 """%(G('MethodID'),G('MethodCategory'),G('MethodDescription'))
     yield '</Methods>\n'
 
-def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None):
+def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None,MoleQNs=None):
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/dcs" targetNamespace="http://www.ucl.ac.uk/~ucapch0/dcs" elementFormDefault="qualified">
+ xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/dcs"  
+ xmlns:hundb="http://www.ucl.ac.uk/~ucapch0/hundb"  
+ xmlns:ltcs="http://www.ucl.ac.uk/~ucapch0/ltcs"  
+ xmlns:nltcs="http://www.ucl.ac.uk/~ucapch0/nltcs"  
+ xmlns:stcs="http://www.ucl.ac.uk/~ucapch0/stcs"  
+ xmlns:lp="http://www.ucl.ac.uk/~ucapch0/lp"  
+ xmlns:nlp="http://www.ucl.ac.uk/~ucapch0/nlp"  
+ xmlns:lmp="http://www.ucl.ac.uk/~ucapch0/lmp"  >
 """
     for Source in XsamsSources(Sources): yield Source
     for Method in XsamsMethods(Methods): yield Method
     
+    LOG('Write States')
     yield '<States>\n'
     for AtomState in XsamsAtomStates(AtomStates): yield AtomState
 #    for MolState in XsamsMolecs(MoleStates): yield MolState
-    for MolState in XsamsMolStates(MoleStates): yield MolState
+    for MolState in XsamsMolStates(MoleStates,MoleQNs): yield MolState
     yield '</States>\n'
+    LOG('Write Processes')
     yield '<Processes>\n'
     for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
     #for CollTrans in XsamsCollTrans(CollTrans): yield CollTrans
     yield '</Processes>\n'
+    LOG('Done')
     yield '</XSAMSData>\n'
 
 

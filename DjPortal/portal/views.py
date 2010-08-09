@@ -113,9 +113,9 @@ def results(request,qid):
     results=[]
     for node in REGISTRY:
         result={'nodename':node['name']}
-        result['count']=askNodeForCount(node['url'],query.query)
-        #result['html']=askNodeForEmbedHTML(node['url'],query.query)
+        #result['count']=askNodeForCount(node['url'],query.query)
         #result['vourl']=makeDlLink(node['url'],query.query,format='VOTABLE')
+        #result['html']=askNodeForEmbedHTML(node['url'],query.query)
         result['xsamsurl']=makeDlLink(node['url'],query.query,format='XSAMS')
         results.append(result)
         
