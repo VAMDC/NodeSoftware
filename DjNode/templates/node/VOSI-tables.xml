@@ -19,6 +19,6 @@
       <name>{{name}}</name>
       <description></description>
     </column>
-    {% end for %}
+    {% endfor %}
   </table>
 </tab:tables>
