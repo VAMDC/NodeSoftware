@@ -1,4 +1,3 @@
-
 This repository holds a prototype for the "node software" of VAMDC,
 i.e. the standard package for importing data and putting the standard
 VAMDC interface on top of existing databases. It is based on the
@@ -36,9 +35,20 @@ how to do this: http://help.github.com/forking/ )
   Example files for apache/wsgi are included.
 
 Comments and questions are welcome via a GitHub message,
-or to thomas.marquart@fysast.uu.se
+or to thomas.marquart@fysast.uu.se. Also feel free to submit "issues" 
+(i.e. bugs or something you wish to change or be added) here on GitHub.
 
-Finally, a short note about the name: This repository is called
+All directories named DjXXXXX are related to the Django-prototype. Apart
+from these, you find the following in this repository:
+* imptools/ the current status of the import tool, that can import
+  (almost) arbitrary ascii-tables into an existing Django-model.
+* xml/ contains some Python scripts and tools for handling xml-data,
+  including a class definition for the xsams format, generated from
+  xsams-0.1.xsd
+* old code that has become unused resides in legacy/
+
+
+Finally, a short note about the repository name: It is called
 VAMDC-VALD because it was started for integrating VALD into VAMDC.  In
 the meantime, it has become the home for the more general framework of
 incorporating several database nodes into a common prototype. Renaming
