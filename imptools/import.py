@@ -8,8 +8,8 @@ import sys
 sys.path.append("..")
 os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
 
-from imptools import dbhelpers
-from imptools import mapping_vald3
+import dbhelpers
+import mapping_vald3
 from time import time
 
 def import_to_db():
