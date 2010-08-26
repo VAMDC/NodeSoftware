@@ -1,0 +1,41 @@
+<html>
+<head>
+	<title>HITRAN Search</title>
+</head>
+<body>
+
+<p>HITRAN Search</p>
+<form action="/HITRAN/search/" method="POST">
+{% csrf_token %}
+<table>
+{% for molec_name in molec_names %}
+<tr>
+{# we need |safe here to stop Django from escaping our HTML: #}
+<td><input type="checkbox" name="{{ molec_name.molec_name }}">&nbsp;{{ molec_name.molec_name_html|safe }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<table>
+<tr>
+<td><em>&nu;</em><sub>min</sub></td>
+<td><input type="text" name="numin"></td>
+<td>cm<sup>-1</sup></td>
+</tr>
+<tr>
+<td><em>&nu;</em><sub>max</sub></td>
+<td><input type="text" name="numax"></td>
+<td>cm<sup>-1</sup></td>
+</tr>
+<tr>
+<td><em>S</em><sub>min</sub></td>
+<td><input type="text" name="Smin"></td>
+<td>cm<sup>-1</sup>/molec.cm<sup>-2</sup></td>
+</tr>
+</table>
+
+<input type="submit" value="Search" />
+</form>
+
+</body>
+</html>
