@@ -106,12 +106,20 @@ def capabilities(request):
     return render_to_response('node/capabilities.xml', c)
 
 def tables(request):
-    c=RequestContext(request,{"column_names_list" : NODEPKG.VAMDC_DICT.keys()})
+    c=RequestContext(request,{"column_names_list" : NODEPKG.VAMDC_DICT.keys(), 'baseURL' : settings.TAP_URL})
     return render_to_response('node/VOSI-tables.xml', c)
 
 def availability(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)
+
+def tablesXsd(request):
+    c = RequestContext(request,{})
+    return render_to_response('node/Tables.xsd', c)
+
+def capabilitiesXsd(request):
+    c = RequestContext(request, {})
+    return render_to_response('node/Capabilities.xsd', c)
 
 def index(request):
     c=RequestContext(request,{})
