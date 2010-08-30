@@ -7,6 +7,8 @@ urlpatterns = patterns('DjNode.tapservice.views',
                        (r'^availability/', 'availability'),
                        (r'^capabilities/', 'capabilities'),
                        (r'^tables/', 'tables'),
+                       (r'^Tables.xsd', 'tablesXsd'),
+                       (r'^Capabilities.xsd', 'capabilitiesXsd'),
                        #(r'^/', ''),
                        #(r'^/', ''),
                        )

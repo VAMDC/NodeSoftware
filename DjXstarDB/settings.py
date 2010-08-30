@@ -3,7 +3,7 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-BASEPATH='/vamdc/VAMDC-Django/'
+BASEPATH='/home/guy/VAMDC/VAMDC-VALD/'
 import sys
 sys.path.append(BASEPATH)
 
@@ -20,7 +20,7 @@ DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysq
 DATABASE_NAME = 'xstar'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'vamdc'             # Not used with sqlite3.
 DATABASE_PASSWORD = ''         # SELECT-only access without password
-DATABASE_HOST = 'casx019-zone1.ast.cam.ac.uk'             # Set to empty string for localhost. Not used with sqlite3.
+DATABASE_HOST = 'localhost'             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
 # Local time zone for this installation. Choices can be found here:
@@ -47,7 +47,7 @@ MEDIA_ROOT = BASEPATH+'DjNode/static/media'
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = 'http://ag02.ast.cam.ac.uk/media/'
+MEDIA_URL = 'http://192.168.1.4:8000/media/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
@@ -89,3 +89,5 @@ INSTALLED_APPS = (
     'DjNode.tapservice',
     'DjXstarDB.xstardb',
 )
+
+TAP_URL = 'http://192.168.1.4:8000/tap/'
