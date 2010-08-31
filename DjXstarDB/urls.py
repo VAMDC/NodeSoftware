@@ -16,3 +16,6 @@ urlpatterns = patterns('',
     (r'', include('DjXstarDB.xstardb.urls')),
 
 )
+
+handler500 = 'DjNode.tapservice.views.tapServerError'
+handler404 = 'DjNode.tapservice.views.tapNotFoundError'

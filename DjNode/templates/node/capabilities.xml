@@ -6,7 +6,7 @@
     xsi:schemaLocation='http://www.ivoa.net/xml/VOResource/v1.0 http://www.ivoa.net/xml/VOResource/v1.0
         http://www.ivoa.net/xml/VODataService/v1.1 http://www.ivoa.net/xml/VODataService/VODataService-v1.0.xsd
         http://www.w3.org/2001/XMLSchema-instance  http://www.w3.org/2001/XMLSchema-instance
-        urn:astrogrid:schema:Capabilities http://hera.ph1.uni-koeln.de:8080/DSA_cdms/VOSI/Capabilities.xsd'>
+        urn:astrogrid:schema:Capabilities {{accessURL}}Capabilities.xsd'>
     <capability standardID='ivo://vamdc/std/TAP-XSAMS'>
         <interface xsi:type='vs:ParamHTTP'>
             <accessURL use='base'>{{accessURL}}</accessURL>
