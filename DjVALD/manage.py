@@ -16,17 +16,16 @@ you need to run syncdb again.
 import sys
 import os
 import traceback
-from django.core.management import execute_manager    
 
 # Tack on the vamdc root directory to the python path.
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 _CREATED_SETTINGS = False    
 if not os.path.exists('settings.py'):
     # If settings.py doesn't already exist, create it and populate it with some
     # basic stuff.
-    string = "\n Welcome to the VAMDC node setup."
-    string += "\n\n Created a fresh settings.py file for you.\n\n"
+    string = "-"*50 + "\n Welcome to the VAMDC node setup."
+    string += "\n\n Created a fresh settings.py file for you."
+    print string
     settings_file = open('settings.py', 'w')
     _CREATED_SETTINGS = True
     string = \
@@ -34,18 +33,38 @@ if not os.path.exists('settings.py'):
 # VAMDC-node config file
 #
 # You may customize your setup by copy&pasting the variables you want
-# to change from the master config file settings_default.py to
+# to change from the master config file DjNode/settings_default.py to
 # this file. Try to only copy over things you really need to customize
-# and do *not* make any changes to config_defaults.py
+# and do *not* make any changes to settings_defaults.py
 # directly. That way you'll always have a sane default to fall back on
 # (also, the master file may change with updates).
 
 from DjNode.settings_default import *
 
+###################################################
+# Basic node setup 
+###################################################
+
+###################################################
+# Database setup 
+###################################################
+
+###################################################
+# Django components
+###################################################
+
+###################################################
+# Misc settings
+###################################################
+
+###################################################
+# Web features
+###################################################
+
 """
     settings_file.write(string)
     settings_file.close()
-
+    
 # Settings file created or already existed. Test it.
     
 try:
@@ -67,9 +86,13 @@ containing %r. There can be two reasons for this:
 # At this point we have an imported settings module, although it may be empty.            
 if __name__ == "__main__":
     if _CREATED_SETTINGS:
-        string =  " Edit your new settings.py file as needed, then run\n"
-        string += " 'python manage syncdb'."
-        sys.stdout.write(string)
+        string =  "\n Edit your new settings.py file as needed, then run\n"
+        string += " 'python manage syncdb'.\n"
+        string += "-"*50
+        print string
         sys.exit()
-    # Run the django setup using our settings file. 
+    # Run the django setup using our settings file.
+    from django.core.management import execute_manager
+    print sys.path
+    from xml.sax import saxutils
     execute_manager(settings)

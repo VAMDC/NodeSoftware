@@ -4,7 +4,7 @@
  Test implementation for parsing bibtex reference files.
 
  Keeping this in a separate file from prepvald.py since
- this one is quite generically usable and has no specifi
+ this one is quite generically usable and has no specific
  vald-dependencies.  
 
 """
@@ -19,7 +19,7 @@ def get_entries_from_file(filename):
     bibtex seem mostly interested in extracting .aux files
     rather than already nicely formatted bibtex files. In
     the end it was easier to just hand-code it, although
-    one need to look into it again for building a
+    one need to look into it again for building an even
     more generic module. 
     """
     try:

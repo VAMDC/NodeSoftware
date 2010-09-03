@@ -37,6 +37,7 @@ def bySepNr(line, number, sep=','):
     """
     return strip(line.split(sep)[number])
 
+
 # 
 # Create a config, a list of file definitions. Each entry in this
 # list is a dictionary describing an input ascii file to build from.
