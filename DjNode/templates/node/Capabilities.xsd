@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:astrogrid:schema:Capabilities"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified"
+  xmlns:tns="urn:astrogrid:schema:Capabilities"
+  xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+  xmlns:vr="http://www.ivoa.net/xml/VOResource/v1.0">
+  
+  <xs:import namespace="http://www.ivoa.net/xml/VOResource/v1.0" schemaLocation="http://software.astrogrid.org/schema/vo-resource-types/VOResource/v1.0/VOResource.xsd"/>
+  
+  <xs:element name="capabilities">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="capability" form="unqualified" type="vr:Capability" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

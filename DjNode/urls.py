@@ -12,3 +12,5 @@ urlpatterns = patterns('',
     # include the TAP urls
     (r'^tap/', include('DjNode.tapservice.urls')),
 )
+
+handler500 = 'DjNode.tapservice.views.tapServerError'

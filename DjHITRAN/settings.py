@@ -1,26 +1,29 @@
-# Django settings for XstarDB app in ag02.ast.cam.ac.uk.
+# Django settings for DjVAMDC project.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-BASEPATH='/home/guy/VAMDC/VAMDC-VALD/'
+# Edit this to your repository base directory!
+BASEPATH='/home/christian/research/VAMDC-VALD/'
 import sys
 sys.path.append(BASEPATH)
 
-NODEPKG='DjXstarDB.xstardb'
-
+# Put your package name here
+NODEPKG='DjHITRAN.HITRAN'
 
 ADMINS = (
-    ('Guy Rixon', 'gtr@ast.cam.ac.uk'),
+    ('Christian Hill', 'xn.hill@gmail.com'),
 )
 
 MANAGERS = ADMINS
 
+# Put your DB-connection here
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = 'xstar'             # Or path to database file if using sqlite3.
-DATABASE_USER = 'vamdc'             # Not used with sqlite3.
-DATABASE_PASSWORD = ''         # SELECT-only access without password
-DATABASE_HOST = 'localhost'             # Set to empty string for localhost. Not used with sqlite3.
+#DATABASE_NAME = '/home/tom/py/vamdc/DjVALD/vald3.db' # sqlite example
+DATABASE_NAME = 'HITRAN'             # Or path to database file if using sqlite3.
+DATABASE_USER = 'christian'             # Not used with sqlite3.
+DATABASE_PASSWORD = 'whatever'         # Not used with sqlite3.
+DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
 # Local time zone for this installation. Choices can be found here:
@@ -42,12 +45,12 @@ USE_I18N = False
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = BASEPATH+'DjNode/static/media'
+MEDIA_ROOT = BASEPATH+'static/media'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = 'http://192.168.1.4:8000/media/'
+MEDIA_URL = 'http://vamdc.fysast.uu.se:8888/media/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
@@ -55,7 +58,7 @@ MEDIA_URL = 'http://192.168.1.4:8000/media/'
 ADMIN_MEDIA_PREFIX = '/admin-media/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '=4nk7k_v3p@gin!bgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
+SECRET_KEY = '=4nk7k_v3p@23wwvewrfbgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -70,13 +73,15 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'DjXstarDB.urls'
+ROOT_URLCONF = NODEPKG + '.urls'
 
+# Edit this if you put new templates into your node directory
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     BASEPATH+'DjNode/templates',
+    BASEPATH+'DjHITRAN/templates',
 )
 
 INSTALLED_APPS = (
@@ -87,7 +92,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'DjNode.tapservice',
-    'DjXstarDB.xstardb',
+    NODEPKG,
 )
 
-TAP_URL = 'http://192.168.1.4:8000/tap/'

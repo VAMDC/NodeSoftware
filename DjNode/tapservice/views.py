@@ -106,19 +106,36 @@ def capabilities(request):
     return render_to_response('node/capabilities.xml', c)
 
 def tables(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
+    c=RequestContext(request,{"column_names_list" : NODEPKG.VAMDC_DICT.keys(), 'baseURL' : settings.TAP_URL})
+    return render_to_response('node/VOSI-tables.xml', c)
 
 def availability(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)
 
+def tablesXsd(request):
+    c = RequestContext(request,{})
+    return render_to_response('node/Tables.xsd', c)
+
+def capabilitiesXsd(request):
+    c = RequestContext(request, {})
+    return render_to_response('node/Capabilities.xsd', c)
+
 def index(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)
 
+# This turns a 404 "not found" error into a TAP error-document
+def tapNotFoundError(request):
+    text = 'Resource not found: %s'%request.path();
+    document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    return HttpResponse(document, status=404);
 
-
+# This turns a 500 "internal server error" into a TAP error-document
+def tapServerError(request):
+    text = 'Unknown error inside TAP service';
+    document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    return HttpResponse(document, status=500);
 
 
 
