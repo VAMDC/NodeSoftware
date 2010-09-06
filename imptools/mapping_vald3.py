@@ -37,6 +37,28 @@ def bySepNr(line, number, sep=','):
     """
     return strip(line.split(sep)[number])
 
+def make_id_from_line(line, linesep, *linefuncs):
+    """
+    Extract strings from a line using one or more
+    line functions. The line functions must be stored
+    as tuples (func, (arg1,arg2,..)). These results
+    will be merged together using the linesep marker. 
+
+    Example of call:
+      make_id_from_line(line, (bySepNr,(3,';'), (charrange2int,(45,67))) )
+    """
+    if not linesep:
+        linesep = "-"
+    dbref = []
+    for func, args in linefuncs:
+        string str(func(*args)).strip()        
+        if not string:
+            string = linesep
+        dbref.append(string)
+    return "-".join(dbref)
+    
+    
+
 
 # 
 # Create a config, a list of file definitions. Each entry in this
@@ -61,7 +83,7 @@ from DjVALD.vald import models as valdmodel
 # Base directory for the data files
 
 #base = "/vald/"
-base = "/home/samreg/Project/VAMDC/vamdc-git/imptools/vald_raw/"
+base = "/home/samreg/vamdc-git/imptools/vald_raw/"
 
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'vald3_test.cfg'
@@ -70,7 +92,7 @@ transitions_file = base + 'transitions_preprocessed.dat'
 terms_file = base + 'terms_preprocessed.dat'
 publications_file = base + "publications_preprocessed.dat"
 
-mapping = [    
+mapping = [
     # species file 
     {'model':valdmodel.Species,     
      'fname':species_list_file,
@@ -260,7 +282,7 @@ mapping = [
              'cnull':'0.0'},
             {'cname':'srctag',
              'cbyte':(bySepNr,(8, ';')),
-             'references':(valdmodel.Publication,'dbref')},
+             'references':(valdmodel.Publication,'dbref','skiperror')},
             {'cname':'acflag',
              'cbyte':(bySepNr,(9, ';'))},
             {'cname':'accur',

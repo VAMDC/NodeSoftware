@@ -39,7 +39,7 @@ if not os.path.exists('settings.py'):
 # directly. That way you'll always have a sane default to fall back on
 # (also, the master file may change with updates).
 
-from DjNode.settings_default import *
+from settings_default import *
 
 ###################################################
 # Basic node setup 

@@ -16,6 +16,8 @@ from time import time
 #from django.db.utils import IntegrityError
 #import string as s
 
+TOTAL_ERRS = 0
+
 @contextlib.contextmanager
 def handler():
     try:
@@ -152,7 +154,7 @@ def create_new(model, inpdict):
     try:
         model.objects.create(**inpdict)
     except Exception, e:
-        raise Exception("%s: %s" % (e, inpdict["charid"]))
+        raise Exception("%s: %s" % (e, inpdict))
     
 def parse_file_dict(file_dict):
     """
@@ -162,9 +164,11 @@ def parse_file_dict(file_dict):
 
     file_dict - config dictionary representing one input file structure
     (for an example see e.g. mapping_vald3.py)
-    """
+    """    
+    
     fname = file_dict['fname']
     fname_short = fname.split('/')[-1]
+    
     print 'working on %s ...' % fname 
 
     model = file_dict['model']
@@ -176,6 +180,7 @@ def parse_file_dict(file_dict):
     data = {}
     total = 0
     errors = 0
+
     for line in f:
         if line.startswith(file_dict['commentchar']):
             # wean out comments 
@@ -185,9 +190,7 @@ def parse_file_dict(file_dict):
             # process this line extracting all columns
             # and converting them to db fields
             dat = process_line(line, column_dict)
-            #if fname_short == "VALD_list_of_species":
-            #print "dat:", dat
-
+           
             if not dat or \
                    (column_dict.has_key('cnull') and dat == column_dict['cnull']):
                 # not a valid line for whatever reason 
@@ -205,7 +208,16 @@ def parse_file_dict(file_dict):
                 try:
                     dat = refmodel.objects.get(Qquery)
                 except:
-                    sys.stderr.write("reference for Q(%s='%s') not found.\n" % (refcol, dat))
+                    errors += 1
+                    if len(column_dict['references']) > 2 \
+                            and column_dict['references'][2] == 'skiperror':
+                        # Don't create an entry for this (this requires
+                        # null=True in the relevant field)
+                        string = "Skipping not found db reference %s.%s='%s'.\n"
+                        sys.stderr.write(string % (refmodel, refcol, dat))                        
+                        continue
+                    string = "reference %s.%s='%s' not found.\n"                     
+                    sys.stderr.write(string % (refmodel,refcol, dat))
                     raw_input("paused...")
                     dat = None            
 
@@ -218,7 +230,7 @@ def parse_file_dict(file_dict):
                 find_match_and_update(file_dict, data, line)
             except Exception, e:
                 errors += 1
-                log_trace(e, "match&update: (%i/%i) %s: " % (errors, total, fname_short))
+                log_trace(e, "ERROR %s: updating %s: " % (fname_short, model))
         else:
             # create a new instance of model and store it in database,
             # populated with the relevant fields. 
@@ -226,11 +238,11 @@ def parse_file_dict(file_dict):
                 data['pk'] = None
             try:
                 create_new(model, data)
-            except Exception, e:
+            except Exception, e:                
                 errors += 1
-                log_trace(e, "new: (%i/%i) %s: " % (errors, total, fname_short))
+                log_trace(e, "ERROR %s: creating %s: " % (fname_short, model))
                 
-    print 'done. %i collisions/errors out of %i lines.' % (errors, total)
+    print 'done. %i collisions/errors/not founds out of %i lines.' % (errors, total)
            
 
 def parse_mapping(mapping):
