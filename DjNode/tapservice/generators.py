@@ -421,7 +421,7 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
     yield '</States>\n'
     LOG('Write Processes')
     yield '<Processes>\n'
-    for RadTrans in XsamsRadTrans(RadTrans): yield RadTrans
+    for RadTran in XsamsRadTrans(RadTrans): yield RadTran
     #for CollTrans in XsamsCollTrans(CollTrans): yield CollTrans
     yield '</Processes>\n'
     LOG('Done')

@@ -15,22 +15,19 @@ from base64 import b64encode as b64
 def enc(s):
     return b64(s).replace('=','')
 
-from lxml import etree as E
-vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
+import sys
+def LOG(s):
+    print >> sys.stderr, s
+
+#from lxml import etree as E
+#vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
 
-VALD_DICT={'1':'species__atomic',
-           '2':'species__ion',
-           '3':'vacwave',
-           '4':'airwave',
-           '5':'loggf',
-           '6':'lostate__energy',
-           '7':'lostate__J',
-           }
-VAMDC_DICT={\
+
+RETURNABLES={\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.srcdescr',
-'SourceCategory':'',
+'SourceCategory':'journal',
 'SourcePageBegin':'',
 'SourcePageEnd':'',
 'SourceName':'',
@@ -41,31 +38,41 @@ VAMDC_DICT={\
 'MethodID':'"MOBS"',
 'MethodCategory':'"observed"',
 'MethodDescription':'',
-'AtomStateID':'',
+'AtomStateID':'AtomState.id',
 'AtomSymbol':'AtomState.species.name',
-'AtomNuclearCharge':'AtomState.species.ion',
-'AtomCompositionComments':'',
-'AtomConfigurationLabel':'',
-'AtomCompositionComponentTerm':'',
-'AtomIonizationEnergy':'',
-'AtomLandeFactor':'',
-'AtomStateEnergy':'',
+'AtomNuclearCharge':'AtomState.species.atomic',
+'AtomConfigurationLabel':'AtomState.charid',
+'AtomCompositionComponentTerm':'AtomState.term',
+'AtomIonizationEnergy':'AtomState.species.ionen',
+'AtomLandeFactor':'AtomState.coupling',
+'AtomStateEnergy':'AtomState.energy',
 'AtomStateDescription':'',
-'AtomIonCharge':'',
-'AtomMassNumber':'atomstate.species.mass',
-'RadTransComments':'',
-'RadTransWavelengthAir':'',
-'RadTransWavelengthVac':'',
-'RadTransWavelengthAccuracyFlag':'',
-'RadTransWavelengthAccuracy':'',
-'RadTransFinalStateRef':'',
-'RadTransInitialStateRef':'',
-'RadTransLogGF':'',
-'RadTransGammaRad':'',
-'RadTransGammaWaals':'',
-'RadTransGammaStark':'',
-'RadTransEffLande':'',
+'AtomIonCharge':'AtomState.species.ion',
+'AtomMassNumber':'AtomState.species.massno',
+'RadTransComments':'Wavelength is for vaccum.',
+'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
+'RadTransWavelengthExperimentalUnits':'Angstrom',
+'RadTransWavelengthExperimentalAccuracy':'RadTran.accur',
+'RadTransWavelengthExperimentalSourceRef':'RadTran.wave_ref',
+'RadTransFinalStateRef':'RadTran.lostate.id',
+'RadTransInitialStateRef':'RadTran.upstate.id',
+'RadTransLogGF':'RadTran.loggf',
+'RadTransMethodRef':'OBS',
+'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref',
+'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
 }
+
+RESTRICTABLES = {\
+'AtomSymbol':'species__name',
+'AtomNuclearCharge':'species__atomic',
+'AtomStateEnergy':'upstate__energy',
+'RadTransWavelengthExperimentalValue':'vacwave',
+'RadTransLogGF':'loggf',
+'AtomIonCharge':'species__ion',
+}
+
+from DjNode.tapservice.sqlparse import *
+
 
 def index(request):
     c=RequestContext(request,{})
@@ -80,25 +87,21 @@ def getVALDsources(transs):
     return Source.objects.filter(pk__in=sids)
 
 def getVALDstates(transs):
-    #lostates=State.objects.filter(islowerstate_trans__in=transs)
-    #histates=State.objects.filter(islowerstate_trans__in=transs)
-    #states = lostates | histates
-    q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
-    return State.objects.filter(q1|q2).distinct()
+    #q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
+    #return State.objects.filter(q1|q2).distinct()
+    lostates=State.objects.filter(islowerstate_trans__in=transs)
+    histates=State.objects.filter(islowerstate_trans__in=transs)
+    states = lostates | histates
+    return states.distinct()
     
 
-
-
-def setupResults(tap,limit=0):
-    if tap.lang=='vamdc':
-        tap.query=tap.query%VALD_DICT
-        print tap.query
-        #transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostate=states.id OR transitions.upstate=states.id)','transitions.species=species.id'],).order_by('airwave')
-        qtup=vamdc2queryset(tap.query)
-        transs = Transition.objects.filter(*qtup).order_by('airwave')
-    else:
-        qtup=parseSQL(tap.query)
-        transs = Transition.objects.filter(*qtup).order_by('airwave')
+def setupResults(sql,limit=0):
+    LOG(sql)
+    q=where2q(sql.where,RESTRICTABLES)
+    try: q=eval(q)
+    except: return {}
+    
+    transs = Transition.objects.select_related(depth=2).filter(q)
     
     totalcount=transs.count()
     if limit :
@@ -106,12 +109,10 @@ def setupResults(tap,limit=0):
 
     sources = getVALDsources(transs)
     states = getVALDstates(transs)
-    if limit:
-        return transs,states,sources,totalcount
-    else:
-        return transs,states,sources
-
-
+    return {'RadTrans':transs,
+            'AtomStates':states,
+            'Sources':sources,
+           }
 
 
 
