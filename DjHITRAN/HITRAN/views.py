@@ -3,6 +3,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext
+from django.db.models import Q
 
 # import your models 
 from DjHITRAN.HITRAN.models import *
@@ -66,9 +67,9 @@ def getVALDsources(transs):
 
 
 RETURNABLES={\
-'MolecularSpeciesChemicalName':'molec_name',
-'RadTransWavenumberExperimentalValue':'nu',
-'RadTransProbabilityTransitionProbabilityAValue':'a',
+'MolecularSpeciesChemicalName':'RadTran.molec_name',
+'RadTransWavenumberExperimentalValue':'RadTran.nu',
+'RadTransProbabilityTransitionProbabilityAValue':'RadTran.a',
 }
 
 RESTRICTABLES = {\
@@ -112,21 +113,20 @@ def search(request):
 	return render_to_response('search_results.html', {'transitions': q, 'selected_molecules': selected_molecules})
 
 def setupResults(sql):
-    #q=where2q(sql.where,RESTRICTABLES)
-    #try: q=eval(q)
-    #except: return {}
-	q = 'molec_name="CO"'
+    q=where2q(sql.where,RESTRICTABLES)
+    try: q=eval(q)
+    except Exception,e: LOG(e); return {}
+    #q = 'molec_name="CO"'
 
-	LOG('Start Query Transitions')
-	#transs = Trans.objects.filter(q)
-	transs = Trans.objects.select_related(depth=2).filter(q) 
+    transs = Trans.objects.filter(q) 
     # use the functions from above  
     #sources = getVALDsources(transs)
     #states = getVALDstates(transs)
+    LOG('Count: %s'%transs.count())
 
     # return the dictionary as described above
-	return {\
-	'RadTrans':transs,
+    return {\
+        'RadTrans':transs,
 	#'Sources':sources,
 	#'AtomStates':states,
-	}
+    }
