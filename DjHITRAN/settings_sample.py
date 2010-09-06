@@ -4,7 +4,8 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 # Edit this to your repository base directory!
-BASEPATH='/home/christian/research/VAMDC-VALD/'
+# BASEPATH='/home/christian/research/VAMDC-VALD/'
+BASEPATH='/home/tom/py/vamdc/'
 import sys
 sys.path.append(BASEPATH)
 
@@ -20,7 +21,7 @@ MANAGERS = ADMINS
 # Put your DB-connection here
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 #DATABASE_NAME = '/home/tom/py/vamdc/DjVALD/vald3.db' # sqlite example
-DATABASE_NAME = 'HITRAN'             # Or path to database file if using sqlite3.
+DATABASE_NAME = 'hitran'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'christian'             # Not used with sqlite3.
 DATABASE_PASSWORD = 'whatever'         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
@@ -73,7 +74,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = NODEPKG + '.urls'
+ROOT_URLCONF = 'DjHITRAN.urls'
 
 # Edit this if you put new templates into your node directory
 TEMPLATE_DIRS = (
@@ -94,4 +95,6 @@ INSTALLED_APPS = (
     'DjNode.tapservice',
     NODEPKG,
 )
+
+TAP_URL = 'http://vamdc.fysast.uu.se:8888/node/vald/tap/'
 
