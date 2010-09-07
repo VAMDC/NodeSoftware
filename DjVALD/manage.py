@@ -92,7 +92,6 @@ if __name__ == "__main__":
         print string
         sys.exit()
     # Run the django setup using our settings file.
-    from django.core.management import execute_manager
-    print sys.path
+    from django.core.management import execute_manager    
     from xml.sax import saxutils
     execute_manager(settings)
