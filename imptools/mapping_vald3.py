@@ -102,12 +102,12 @@ def idFromLine(linedata, sep, *linefuncs):
 
 # Import models for one particular node
 os.environ['DJANGO_SETTINGS_MODULE']="vamdc.DjVALD.settings"
-from DjVALD.vald import models as valdmodel
+from DjVALD.node import models as valdmodel
 
 # Base directory for the data files
 
-#base = "/vald/"
-base = "/home/samreg/vamdc-git/imptools/vald_raw/"
+base = "/vald/"
+#base = "/home/samreg/vamdc-git/imptools/vald_raw/"
 
 # species_list_file = base + 'VALD_list_of_species'
 # vald_cfg_file = base + 'vald3_test.cfg'

@@ -15,7 +15,7 @@ sys.path.append(BASE_PATH)
 # Path to this node 
 NODE_PATH = os.path.dirname(os.path.abspath(__file__))
 # Python-path to app folder (usually <yournodename>.node)
-NODEPKG= os.path.join(NODE_PATH, 'node')
+NODEPKG= os.path.basename(NODE_PATH)+'.node'
 # TAP base url. Must have trailing slash!
 TAP_URL = 'http://vamdc.fysast.uu.se:8888/node/vald/tap/'
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email). 
@@ -46,7 +46,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'DjNode.tapservice',
-    'DjVALD.vald', #example
+    NODEPKG,
 )
 # Setup of Django middleware components (shouldn't have to change this))
 MIDDLEWARE_CLASSES = (
@@ -101,7 +101,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(NODE_PATH, 'templates'),
+    os.path.join(BASE_PATH,'DjNode', 'templates'),
 )
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
