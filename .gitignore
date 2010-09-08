@@ -1,3 +1,7 @@
+# Below are common suffixes and things to be ignored by git.
+# Feel free to add stuff here, e.g. temporary files that your editor
+# creates. 
+#
 *~
 *.pyc
 *.db
@@ -5,7 +9,6 @@
 dummy*
 /.pydevproject
 /.project
-/xml-files
 /.settings
 \#*
 .#*
