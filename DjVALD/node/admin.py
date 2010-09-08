@@ -1,4 +1,4 @@
-from DjVALD.vald.models import Species,Transition,State,Source
+from DjVALD.node.models import *
 from django.contrib import admin
 
 

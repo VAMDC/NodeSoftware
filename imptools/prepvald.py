@@ -296,18 +296,18 @@ def run_sortu(filename):
     makes each line unique (supposedly this is more efficient than to
     do it line by line in Python)
     """    
-    os.popen("sort -u %s >& %s_temp && mv %s_temp %s" % \
+    os.popen("sort -u %s > %s_temp && mv %s_temp %s" % \
              (filename, filename, filename, filename))
     
 if __name__ == '__main__':    
     
     # i/o files
     
-    vald_filename = 'vald3_500.dat'
+    #vald_filename = 'vald3_500.dat'
     #vald_filename = 'vald3_atomic_obs.dat'
-    term_filename =  'terms'
-    #vald3_filename = '/vald/vald3_atomic_obs.dat'
-    #term_filename = '/vald/terms'
+    #term_filename =  'terms'
+    vald_filename = '/vald/vald3_atomic_obs.dat'
+    term_filename = '/vald/terms'
 
     term_out_filename = 'terms_preprocessed.dat'
     transitions_out_filename = 'transitions_preprocessed.dat'
