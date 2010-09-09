@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+This program implements a database importer that reads from
+ascii-input files to the django database. It's generic and is
+controlled from a mapping file.
+"""
+
 import os
 import sys
 
@@ -8,10 +14,14 @@ import sys
 sys.path.append("..")
 os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
 
-import dbhelpers
+# the mapping file
+import imptools
 import mapping_vald3
-from time import time
 
+
+# The main program
+#        
+        
 def import_to_db():
     """
     Starts the importer.
@@ -29,11 +39,11 @@ def import_to_db():
         
     else:
         # read file 
-        mapping = dbhelpers.readcfg(sys.argv[1])
+        mapping = imptools.readcfg(sys.argv[1])
 
     if mapping:
         # do the import 
-        dbhelpers.parse_mapping(mapping)
+        imptools.parse_mapping(mapping, debug=False)
     else:
         # likely an error in reading a mapping file. 
         return 

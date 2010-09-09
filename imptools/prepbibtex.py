@@ -149,5 +149,5 @@ def create_bibtex_preprocessed_file(bibtex_file,
     print "Finished parsing bibtex file. Created output file %s." % outfilename
 
 if __name__ == "__main__":
-    filename = "/home/samreg/vamdc-git/imptools/vald_raw/refs/vald3_new_ref.bib"
+    filename = "/vald/vald3_new_ref.bib"
     create_bibtex_preprocessed_file(filename)

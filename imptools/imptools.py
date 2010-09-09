@@ -2,21 +2,90 @@
 # -*- coding: utf-8 -*-
 
 """
+This program implements a database importer that reads from
+ascii-input files to the django database. It's generic and is
+controlled from a mapping file.
 
-helper functions to create and fill the database
+This is the working methods.
 
 """
-from __future__ import with_statement
-import sys, pdb
-from traceback import format_exc
+import sys
 from django.db.models import Q
-import contextlib
 from time import time 
 
 #from django.db.utils import IntegrityError
 #import string as s
 
+TOTAL_LINES = 0
 TOTAL_ERRS = 0
+
+# Line functions
+
+def charrange(linedata, start, end, filenum=0):
+    """
+    Cut out part of a line of texts based on indices
+    """
+    try:
+        return linedata[filenum][start:end].strip()
+    except Exception, e:
+        pass
+        #print "charrange skipping '%s': %s" % (linedata, e)
+    
+def charrange2int(linedata, start, end, filenum=0):
+    return int(round(float(charrange(linedata[filenum], start, end))))
+
+def bySepNr(linedata, number, sep=',',filenum=0):
+    """
+    Split a text line by sep argument and return
+    the split section with given number
+    """
+    try:
+        return linedata[filenum].split(sep)[number].strip()
+    except Exception, e:
+        pass
+        #print "bySepNr skipping line '%s': %s" % (linedata, e)
+
+def chainCmds(linedata, *linefuncs):
+    """
+    This command allows for chaining together several line functions in
+    sequence. The results of the first function will be passed to the second
+    one etc.
+
+    linefuncs should be a list [(func1, (arg1,arg2,...)), (func2,(arg1,arg2,..)),...]
+    """
+
+    data = linedata
+    for func, args in linefuncs:
+        data = [func(data, *args)]
+    if data:
+        return data[0]
+    #print "chainCommands skipping line." 
+         
+def idFromLine(linedata, sep, *linefuncs):
+    """
+    Extract strings from a line in order to build a unique id-string,
+    using one or more line functions to extract parts of a line and
+    paste them together with a separator given by 'sep'.
+    The line functions must be stored as tuples (func, (arg1,arg2,..)). 
+
+    Example of call:
+      idFromLine('-', (bySepNr,(3,';'), (charrange2int,(45,67))) )    
+    """
+    #print linedata
+    #pdb.set_trace()
+    if not sep:
+        sep = "-"
+    dbref = []
+    for func, args in linefuncs:
+        string = str(func(linedata, *args)).strip()        
+        if not string:
+            string = sep
+        #print string 
+        dbref.append(string)
+    #print sep.join(dbref)
+    return sep.join(dbref)
+
+
 
 # Helper methods for parsing and displaying 
 
@@ -48,10 +117,9 @@ def log_trace(e, info=""):
     the exception object as first argument.
     Captures the latest traceback. 
     """
-    #exc = format_exc()
     sys.stderr.write("%s%s\n" % (info, str(e)))
 
-def readcfg(fname):
+def read_mapping(fname):
     """
     Read the config dictionary from a file.
     Note: very unsafe, since the content gets executed.
@@ -213,7 +281,7 @@ class MappingFile(object):
             self.line = ""
         return self.line
     
-def parse_file_dict(file_dict):
+def parse_file_dict(file_dict, debug=False):
     """
     Process one file definition from a config dictionary by
     processing the file name stored in it and parse it according
@@ -271,7 +339,7 @@ def parse_file_dict(file_dict):
     mapfiles = []
     for fnum, filepath in enumerate(filepaths):
         mapfiles.append(MappingFile(filepath, headlines[fnum], commentchars[fnum],
-                                    lineoffsets[fnum], linesteps[fnum], errlines[fnum]))                
+                                    lineoffsets[fnum], linesteps[fnum], errlines[fnum]))
     data = {}
     total = 0
     errors = 0   
@@ -311,10 +379,13 @@ def parse_file_dict(file_dict):
                     if len(map_dict['references']) > 2 \
                             and map_dict['references'][2] == 'skiperror':
                         # Don't create an entry for this (this requires
-                        # null=True in the relevant field)                                                    
+                        # null=True in the relevant field)
+                        if debug:
+                            print "skipping unfound reference %s" % dat
                         continue
+                    # this is a real error, should always stop.
                     string = "reference %s.%s='%s' not found.\n"                     
-                    sys.stderr.write(string % (refmodel,refcol, dat))
+                    print string % (refmodel,refcol, dat)
                     raw_input("paused...")
                     dat = None            
 
@@ -330,8 +401,9 @@ def parse_file_dict(file_dict):
                 find_match_and_update(updatematch, match_key, model, data)
             except Exception, e:
                 errors += 1
-                log_trace(e, "ERROR updating %s: " % model)
-                raise #TODO
+                if debug:
+                    log_trace(e, "ERROR updating %s: " % model)
+                
         else:
             # create a new instance of model and store it in database,
             # populated with the relevant fields. 
@@ -341,12 +413,16 @@ def parse_file_dict(file_dict):
                 create_new(model, data)
             except Exception, e:                
                 errors += 1
-                log_trace(e, "ERROR creating %s: " % model)
+                if debug:
+                    log_trace(e, "ERROR creating %s: " % model)
 
     print '%s done. %i collisions/errors/nomatches out of %i lines.' % (" + ".join(filenames), errors, total)
-           
 
-def parse_mapping(mapping):
+    global TOTAL_LINES, TOTAL_ERRS
+    TOTAL_LINES += total
+    TOTAL_ERRS += errors
+    
+def parse_mapping(mapping, debug=False):
     """
     Step through a list of mappings describing
     the relation between (usually ascii-)files and
@@ -356,8 +432,10 @@ def parse_mapping(mapping):
     if validate_mapping(mapping):    
         t0 = time()
         for file_dict in mapping:
-            t1 = time()
-            pdb.set_trace()
-            parse_file_dict(file_dict)
+            t1 = time()            
+            parse_file_dict(file_dict, debug=debug)
             print "Time used: %s" % ftime(t1, time())
         print "Total time used: %s" % ftime(t0, time())
+        print "Total number of errors/fails/skips: %s/%s (%g%%)" % (TOTAL_ERRS,
+                                                                TOTAL_LINES,
+                                                                100*float(TOTAL_ERRS)/TOTAL_LINES)
