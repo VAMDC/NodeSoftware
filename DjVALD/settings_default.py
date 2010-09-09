@@ -69,9 +69,9 @@ TIME_ZONE = 'CET'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 # Give debug messages
-DEBUG = True
+DEBUG = False
 # For web templates, use Python traceback instead of Server Error message. 
-TEMPLATE_DEBUG = DEBUG
+TEMPLATE_DEBUG = True
 # site id number (you shouldn't have to change this)
 SITE_ID = 1
 # If you set this to False, Django will make some optimizations so as not
