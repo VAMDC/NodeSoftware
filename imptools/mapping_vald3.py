@@ -72,6 +72,8 @@ mapping = [
              'cbyte':(charrange,(20,22))},
             {'cname':'mass',
              'cbyte':(charrange,(23,30))},
+            {'cname':'massno',
+             'cbyte':(charrange2int,(23,30))},
             {'cname':'ionen',
              'cbyte':(charrange,(31,40))},
             {'cname':'solariso',
