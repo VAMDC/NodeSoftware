@@ -13,76 +13,15 @@ django fields. To properly map, a custom processor also probably
 has to be constructed in dbhelper as well.
 
 """
+import os, sys
 
-from string import strip
-import os
-import pdb
+# Import models for one particular node
+#sys.path.append("..")
+#os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
+from DjVALD.node import models as valdmodel
 
-#
-# Utility functions applied to data after reading
-#
-
-def charrange(linedata, start, end, filenum=0):
-    """
-    Cut out part of a line of texts based on indices
-    """
-    try:
-        return strip(linedata[filenum][start:end])
-    except Exception, e:
-        print "charrange skipping '%s': %s" % (linedata, e)
-    
-def charrange2int(linedata, start, end, filenum=0):
-    return int(round(float(charrange(linedata[filenum], start, end))))
-
-def bySepNr(linedata, number, sep=',',filenum=0):
-    """
-    Split a text line by sep argument and return
-    the split section with given number
-    """
-    try:
-        return strip(linedata[filenum].split(sep)[number])
-    except Exception, e:
-        print "bySepNr skipping line '%s': %s" % (linedata, e)
-
-def chainCmds(linedata, *linefuncs):
-    """
-    This command allows for chaining together several line functions in
-    sequence. The results of the first function will be passed to the second
-    one etc.
-
-    linefuncs should be a list [(func1, (arg1,arg2,...)), (func2,(arg1,arg2,..)),...]
-    """
-
-    data = linedata
-    for func, args in linefuncs:
-        data = [func(data, *args)]
-    if data:
-        return data[0]
-    print "chainCommands skipping line." 
-         
-def idFromLine(linedata, sep, *linefuncs):
-    """
-    Extract strings from a line in order to build a unique id-string,
-    using one or more line functions to extract parts of a line and
-    paste them together with a separator given by 'sep'.
-    The line functions must be stored as tuples (func, (arg1,arg2,..)). 
-
-    Example of call:
-      idFromLine('-', (bySepNr,(3,';'), (charrange2int,(45,67))) )    
-    """
-    #print linedata
-    #pdb.set_trace()
-    if not sep:
-        sep = "-"
-    dbref = []
-    for func, args in linefuncs:
-        string = str(func(linedata, *args)).strip()        
-        if not string:
-            string = sep
-        #print string 
-        dbref.append(string)
-    print sep.join(dbref)
-    return sep.join(dbref)
+# import the line funcs
+from imptools import charrange, charrange2int, bySepNr, chainCmds, idFromLine
     
 # 
 # Create a config, a list of file definitions. Each entry in this
@@ -99,10 +38,6 @@ def idFromLine(linedata, sep, *linefuncs):
 #                cbyte (tup)      - method to process the line and tuple to be fed to this method
 #                references (tup) - which django model referenced by this collumn, and which field name
 # 
-
-# Import models for one particular node
-os.environ['DJANGO_SETTINGS_MODULE']="vamdc.DjVALD.settings"
-from DjVALD.node import models as valdmodel
 
 # Base directory for the data files
 
@@ -250,39 +185,39 @@ mapping = [
              'cbyte':(charrange,(284,288)),
              'references':(valdmodel.Source,'pk')},
             # these are read from term file
-            {'cname':'J',
+            {'cname':'j',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(1,',')))),
              'cnull':'X',},
-            {'cname':'L',
+            {'cname':'l',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(2,',')))),         
              'cnull':'X',},
-            {'cname':'S',
+            {'cname':'s',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(3,',')))), 
              'cnull':'X',},
-            {'cname':'P',
+            {'cname':'p',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(4,',')))),
              'cnull':'X',},
-            {'cname':'J1',
+            {'cname':'j1',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(5,',')))),
              'cnull':'X',},
-            {'cname':'J2',
+            {'cname':'j2',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(6,',')))),
              'cnull':'X',},
-            {'cname':'K',
+            {'cname':'k',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(7,',')))),
              'cnull':'X',},
-            {'cname':'S2',
+            {'cname':'s2',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(8,',')))),
              'cnull':'X',},
-            {'cname':'Jc',
+            {'cname':'jc',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(9,',')))),
              'cnull':'X',},
@@ -295,21 +230,15 @@ mapping = [
      'fname':(vald_file, terms_file),
      'headlines':(2, 0), 
      'commentchar':('#','#'),
-     'linestep':(1, 2),
-     'updatematch':'charid',
+     'linestep':(1, 2),     
      'errline':("Unknown", "Unknown"),
      'linemap':[
-            {'cname':'charid',         #species,coup,jnum,term,energy (lower states)
+            {'cname':'charid',         #species,coup,jnum,term,energy (lower states) 
              'cbyte':(idFromLine,('-',(charrange,(30,36)),
-                                      (charrange,(170,172)), # use upper state as id
-                                      (charrange,(77,82)),
-                                      (charrange,(172,218)),
-                                      (charrange,(63,77)) ))},           
-             #'cbyte':(idFromLine,('-',(charrange,(30,36)),
-             #                         (charrange,(122,124)),
-             #                         (charrange,(58,63)),
-             #                         (charrange,(124,170)),
-             #                         (charrange,(44,58)) ))},            
+                                      (charrange,(122,124)),
+                                      (charrange,(58,63)),
+                                      (charrange,(124,170)),
+                                      (charrange,(44,58)) ))},            
             {'cname':'species',
              'cbyte':(charrange,(30,36)),
              'references':(valdmodel.Species,'pk')},
@@ -334,39 +263,39 @@ mapping = [
              'cbyte':(charrange,(284,288)),
              'references':(valdmodel.Source,'pk')},
             # these are read from term file
-            {'cname':'J',
+            {'cname':'j',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(1,',')))),
              'cnull':'X',},
-            {'cname':'L',
+            {'cname':'l',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(2,',')))),         
              'cnull':'X',},
-            {'cname':'S',
+            {'cname':'s',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(3,',')))), 
              'cnull':'X',},
-            {'cname':'P',
+            {'cname':'p',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(4,',')))),
              'cnull':'X',},
-            {'cname':'J1',
+            {'cname':'j1',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(5,',')))),
              'cnull':'X',},
-            {'cname':'J2',
+            {'cname':'j2',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(6,',')))),
              'cnull':'X',},
-            {'cname':'K',
+            {'cname':'k',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(7,',')))),
              'cnull':'X',},
-            {'cname':'S2',
+            {'cname':'s2',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(8,',')))),
              'cnull':'X',},
-            {'cname':'Jc',
+            {'cname':'jc',
              'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
                                   (bySepNr,(9,',')))),
              'cnull':'X',},
@@ -409,18 +338,24 @@ mapping = [
              'cbyte':(charrange,(226,236))},
             {'cname':'comment',
              'cbyte':(charrange,(236,252))},
-            {'cname':'wave_ref',
-             'cbyte':(charrange,(252,256))},
+            {'cname':'wave_ref',             
+             'cbyte':(charrange,(252,256)),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'loggf_ref',
-             'cbyte':(charrange,(256,260))},
+             'cbyte':(charrange,(256,260)),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'lande_ref',
-             'cbyte':(charrange,(268,272))},
+             'cbyte':(charrange,(268,272)),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'gammarad_ref',
-             'cbyte':(charrange,(272,276))},
+             'cbyte':(charrange,(272,276)),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'gammastark_ref',
-             'cbyte':(charrange,(276,280))},
+             'cbyte':(charrange,(276,280)),
+             'references':(valdmodel.Source,'pk')},
             {'cname':'gammawaals_ref',  
-             'cbyte':(charrange,(280,284))},            
+             'cbyte':(charrange,(280,284)),
+             'references':(valdmodel.Source,'pk')},            
             {'cname':'upstateid',     #species,coup,jnum,term,energy   
              'cbyte':(idFromLine,('-',(charrange,(30,36,)),
                                       (charrange,(170,172)),
