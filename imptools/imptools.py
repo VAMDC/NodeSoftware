@@ -429,12 +429,19 @@ def parse_mapping(mapping, debug=False):
     django database fields. This should ideally
     not have to be changed for different database types.
     """
+    import gc, pdb
     if validate_mapping(mapping):    
         t0 = time()
+        gc.DEBUG_SAVEALL = True
+        import cProfile as profile
         for file_dict in mapping:
             t1 = time()            
             parse_file_dict(file_dict, debug=debug)
             print "Time used: %s" % ftime(t1, time())
+            #pdb.set_trace()
+            #print gc.garbage
+            #print gc.get_count()
+        
         print "Total time used: %s" % ftime(t0, time())
         print "Total number of errors/fails/skips: %s/%s (%g%%)" % (TOTAL_ERRS,
                                                                 TOTAL_LINES,

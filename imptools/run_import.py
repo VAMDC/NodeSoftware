@@ -26,6 +26,7 @@ def import_to_db():
     """
     Starts the importer.
     """
+    
     if len(sys.argv) < 2:
         print "Usage: import.py dummy|vald|<path-to-mapping-file>"  
         return
@@ -42,14 +43,11 @@ def import_to_db():
         mapping = imptools.readcfg(sys.argv[1])
 
     if mapping:
-        # do the import 
+        # do the import        
         imptools.parse_mapping(mapping, debug=False)
     else:
         # likely an error in reading a mapping file. 
         return 
     
-if __name__ == '__main__':    
+if __name__ == '__main__':       
     import_to_db()
-
-
-
