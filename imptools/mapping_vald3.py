@@ -341,6 +341,7 @@ mapping = [
              'cbyte':(charrange,(252,256)),
              'references':(valdmodel.Source,'pk')},
             {'cname':'loggf_ref',
+
              'cbyte':(charrange,(256,260))},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'lande_ref',
@@ -355,6 +356,7 @@ mapping = [
             {'cname':'gammawaals_ref',  
              'cbyte':(charrange,(280,284))},
              #'references':(valdmodel.Source,'pk')},            
+
             {'cname':'upstateid',     #species,coup,jnum,term,energy   
              'cbyte':(idFromLine,('-',(charrange,(30,36,)),
                                       (charrange,(170,172)),
