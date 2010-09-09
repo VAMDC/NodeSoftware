@@ -53,7 +53,7 @@ base = "/vald/"
 
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'vald3_test.cfg'
-vald_file = base + 'vald3_500.dat'
+vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
 publications_file = base + "publications_preprocessed.dat"
 
@@ -341,7 +341,10 @@ mapping = [
              'cbyte':(charrange,(252,256)),
              'references':(valdmodel.Source,'pk')},
             {'cname':'loggf_ref',
+<<<<<<< HEAD
 
+=======
+>>>>>>> f01c480c774e379ed616d2f638dbf41a85b133ad
              'cbyte':(charrange,(256,260))},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'lande_ref',
