@@ -341,10 +341,6 @@ mapping = [
              'cbyte':(charrange,(252,256))},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'loggf_ref',
-<<<<<<< HEAD
-
-=======
->>>>>>> f01c480c774e379ed616d2f638dbf41a85b133ad
              'cbyte':(charrange,(256,260))},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'lande_ref',
