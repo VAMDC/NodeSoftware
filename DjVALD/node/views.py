@@ -89,7 +89,7 @@ def getVALDstates(transs):
     #q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
     #return State.objects.filter(q1|q2).distinct()
     lostates=State.objects.filter(islowerstate_trans__in=transs)
-    histates=State.objects.filter(islowerstate_trans__in=transs)
+    histates=State.objects.filter(isupperstate_trans__in=transs)
     states = lostates | histates
     return states.distinct()
     
