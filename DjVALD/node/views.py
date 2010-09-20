@@ -86,13 +86,24 @@ def getVALDsources(transs):
     return Source.objects.filter(pk__in=sids)
 
 def getVALDstates(transs):
+    
+    #solution 1
     #q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
     #return State.objects.filter(q1|q2).distinct()
-    lostates=State.objects.filter(islowerstate_trans__in=transs)
-    histates=State.objects.filter(isupperstate_trans__in=transs)
-    states = lostates | histates
-    return states.distinct()
-    
+
+    # solution 2
+    #lostates=State.objects.filter(islowerstate_trans__in=transs)
+    #histates=State.objects.filter(isupperstate_trans__in=transs)
+    #states = lostates | histates
+    #return states.distinct()
+
+    #solution 3, similar to sources
+    sids=set([])
+    for trans in transs:
+        s=set([trans.upstate.pk,trans.lostate.pk])
+        sids=sids.union(s)
+    return State.objects.filter(pk__in=sids)
+   
 
 def setupResults(sql,limit=0):
     LOG(sql)
