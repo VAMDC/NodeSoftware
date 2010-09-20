@@ -119,6 +119,14 @@ def setupResults(sql,limit=0):
 
     sources = getVALDsources(transs)
     states = getVALDstates(transs)
+
+    # in order to not forget it:
+    # write a small function that defines/fixes the
+    # string representation of the wavelengths which
+    # should have 8 significant dicits, i.e. variable
+    # number of decimals.
+    # maybe this can be achieved in the model itself.
+
     return {'RadTrans':transs,
             'AtomStates':states,
             'Sources':sources,
