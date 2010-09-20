@@ -33,8 +33,11 @@ def charrange(linedata, start, end, filenum=0):
         #print "charrange skipping '%s': %s" % (linedata, e)
     
 def charrange2int(linedata, start, end, filenum=0):
-    return int(round(float(charrange(linedata[filenum], start, end))))
-
+    try:
+        return int(round(float(charrange(linedata[filenum], start, end))))
+    except Exception:
+        pass
+    
 def bySepNr(linedata, number, sep=',',filenum=0):
     """
     Split a text line by sep argument and return

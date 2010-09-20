@@ -332,7 +332,7 @@ mapping = [
              'cnull':'0.0'},
             {'cname':'srctag',
              'cbyte':(charrange,(218,225)),
-             'references':(valdmodel.Publication,'dbref','skiperror')},
+             'references':(valdmodel.Publication,'dbref', 'skiperror')},
             {'cname':'acflag',
              'cbyte':(charrange,(225,226))},
             {'cname':'accur',

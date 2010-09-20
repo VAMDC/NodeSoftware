@@ -140,7 +140,7 @@ def create_bibtex_preprocessed_file(bibtex_file,
         if entry_dict['errors'] or not 'author' or not entry_dict["bibref"] or '||' in entry_dict["raw_entry"]:
             raise Exception("There were errors in parsing entry %s (%s).\n unparsed text: %s" % 
                             (entry_dict['dbref'], entry_dict["bibref"], entry_dict['errors']))
-        string += "\n%s||%s||%s||" % (entry_dict["dbref"], entry_dict["bibref"], entry_dict["author"])
+        string += "\n%s||%s||%s||" % (entry_dict["dbref"].strip('"').lstrip('(').rstrip(')'), entry_dict["bibref"], entry_dict["author"])
         string += "%s" % entry_dict["raw_entry"].encode("string-escape") # retain all line breaks
     string = string.strip()
     # save 
