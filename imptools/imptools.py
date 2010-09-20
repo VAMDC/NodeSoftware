@@ -12,6 +12,7 @@ This is the working methods.
 import sys
 from django.db.models import Q
 from time import time 
+from django.db import transaction
 
 #from django.db.utils import IntegrityError
 #import string as s
@@ -202,7 +203,7 @@ def get_model_instance(tconf, line, model):
         # create a new instance of the model
         data=model()
     return data
-                    
+
 def find_match_and_update(property_name, match_key, model, data):
     """
     Don't create a new database object, instead search
@@ -281,6 +282,7 @@ class MappingFile(object):
             self.line = ""
         return self.line
     
+@transaction.commit_on_success
 def parse_file_dict(file_dict, debug=False):
     """
     Process one file definition from a config dictionary by
