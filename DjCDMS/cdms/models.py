@@ -52,6 +52,8 @@ class RadiativeTransitions(models.Model):
     frequencyvalue = models.FloatField(null=True, db_column='FrequencyValue', blank=True) # Field name made lowercase.
     frequencyunit = models.CharField(max_length=9, db_column='FrequencyUnit') # Field name made lowercase.
     energywavelengthaccuracy = models.FloatField(null=True, db_column='EnergyWavelengthAccuracy', blank=True) # Field name made lowercase.
+    wavelengthvalue = models.FloatField(null=True, db_column='WavelengthValue', blank=True) # Wavelength 
+    wavelengthunit = models.CharField(max_length=15, db_column='WavelengthUnit')
     multipole = models.CharField(max_length=6, db_column='Multipole') # Field name made lowercase.
     log10weightedoscillatorstrengthvalue = models.FloatField(null=True, db_column='Log10WeightedOscillatorStrengthValue', blank=True) # Field name made lowercase.
     log10weightedoscillatorstrengthunit = models.CharField(max_length=24, db_column='Log10WeightedOscillatorStrengthUnit') # Field name made lowercase.
