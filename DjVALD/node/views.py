@@ -48,7 +48,7 @@ RETURNABLES={\
 'AtomStateDescription':'',
 'AtomIonCharge':'AtomState.species.ion',
 'AtomMassNumber':'AtomState.species.massno',
-'RadTransComments':'Wavelength is for vaccum.',
+'RadTransComments':'Wavelength is for vacuum.',
 'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
 'RadTransWavelengthExperimentalUnits':'A',
 'RadTransWavelengthExperimentalAccuracy':'RadTran.accur',
