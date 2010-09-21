@@ -33,8 +33,8 @@ def GetValue(name,**kwargs):
 
     try: value=eval(name) # this works, if the dict-value is named correctly as the query-set attribute
     except Exception,e: 
-        LOG(e)
-        LOG(name)
+#        LOG(e)
+#        LOG(name)
         value=name  # this catches the case where the dict-value is a string or mistyped.
     return value
     
@@ -113,11 +113,11 @@ def XsamsAtomStates(AtomStates):
 <IonCharge>%s</IonCharge>
 <AtomicState stateID="S%s"><Description>%s</Description>
 <AtomicNumericalData>
-<StateEnergy sourceRef="B%s"><Value units="eV">%s</Value></StateEnergy>
+<StateEnergy sourceRef="B%s"><Value units="%s">%s</Value></StateEnergy>
 <IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
 <LandeFactor sourceRef="B%s"><Value units="unitless">%s</Value></LandeFactor>
 </AtomicNumericalData>
-"""%( G('AtomNuclearCharge'), G('AtomSymbol'), G('AtomMassNumber'), G('AtomIonCharge'), G('AtomStateID'), G('AtomStateDescription'), G('AtomStateEnergyRef'), G('AtomStateEnergy'), G('AtomIonizationEnergy'), G('AtomStateLandeFactorRef'), G('AtomStateLandeFactor'))
+"""%( G('AtomNuclearCharge'), G('AtomSymbol'), G('AtomMassNumber'), G('AtomIonCharge'), G('AtomStateID'), G('AtomStateDescription'), G('AtomStateEnergyRef'), G('AtomStateEnergyUnits'), G('AtomStateEnergy'), G('AtomIonizationEnergy'), G('AtomStateLandeFactorRef'), G('AtomStateLandeFactor'))
 
         if (G('AtomStateParity') or G('AtomStateTotalAngMom')):
             yield '<AtomicQuantumNumbers><Parity>%s</Parity><TotalAngularMomentum>%s</TotalAngularMomentum></AtomicQuantumNumbers>'%(G('AtomStateParity'),G('AtomStateTotalAngMom'))
