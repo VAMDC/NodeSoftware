@@ -45,12 +45,13 @@ RETURNABLES={\
 'AtomStateLandeFactorRef':'AtomState.lande_ref',
 'AtomStateEnergy':'AtomState.energy',
 'AtomStateEnergyRef':'AtomState.energy_ref',
+'AtomStateEnergyUnits':'1/cm',
 'AtomStateDescription':'',
 'AtomIonCharge':'AtomState.species.ion',
 'AtomMassNumber':'AtomState.species.massno',
-'RadTransComments':'Wavelength is for vaccum.',
+'RadTransComments':'Wavelength is for vacuum.',
 'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
-'RadTransWavelengthExperimentalUnits':'A',
+'RadTransWavelengthExperimentalUnits':u'\xc5',
 'RadTransWavelengthExperimentalAccuracy':'RadTran.accur',
 'RadTransWavelengthExperimentalSourceRef':'RadTran.wave_ref',
 'RadTransFinalStateRef':'RadTran.lostate.id',
@@ -86,13 +87,24 @@ def getVALDsources(transs):
     return Source.objects.filter(pk__in=sids)
 
 def getVALDstates(transs):
+    
+    #solution 1
     #q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
     #return State.objects.filter(q1|q2).distinct()
-    lostates=State.objects.filter(islowerstate_trans__in=transs)
-    histates=State.objects.filter(islowerstate_trans__in=transs)
-    states = lostates | histates
-    return states.distinct()
-    
+
+    # solution 2
+    #lostates=State.objects.filter(islowerstate_trans__in=transs)
+    #histates=State.objects.filter(isupperstate_trans__in=transs)
+    #states = lostates | histates
+    #return states.distinct()
+
+    #solution 3, similar to sources
+    sids=set([])
+    for trans in transs:
+        s=set([trans.upstate.pk,trans.lostate.pk])
+        sids=sids.union(s)
+    return State.objects.filter(pk__in=sids)
+   
 
 def setupResults(sql,limit=0):
     LOG(sql)
@@ -108,6 +120,14 @@ def setupResults(sql,limit=0):
 
     sources = getVALDsources(transs)
     states = getVALDstates(transs)
+
+    # in order to not forget it:
+    # write a small function that defines/fixes the
+    # string representation of the wavelengths which
+    # should have 8 significant dicits, i.e. variable
+    # number of decimals.
+    # maybe this can be achieved in the model itself.
+
     return {'RadTrans':transs,
             'AtomStates':states,
             'Sources':sources,

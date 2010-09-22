@@ -12,6 +12,7 @@ This is the working methods.
 import sys
 from django.db.models import Q
 from time import time 
+#from django.db import transaction
 
 #from django.db.utils import IntegrityError
 #import string as s
@@ -205,7 +206,7 @@ def get_model_instance(tconf, line, model):
         # create a new instance of the model
         data=model()
     return data
-                    
+
 def find_match_and_update(property_name, match_key, model, data):
     """
     Don't create a new database object, instead search
@@ -236,6 +237,10 @@ def create_new(model, data):
     inpdict - dictionary of fieldname:value that should be created.
     """
     model.objects.create(**data)
+    #m=model()
+    #for key in data.keys():
+    #    setattr(m,key,data[key])
+    #m.save()
 
 class MappingFile(object):
     """
@@ -284,6 +289,7 @@ class MappingFile(object):
             self.line = ""
         return self.line
     
+#@transaction.commit_on_success
 def parse_file_dict(file_dict, debug=False):
     """
     Process one file definition from a config dictionary by
@@ -367,31 +373,31 @@ def parse_file_dict(file_dict, debug=False):
                 # not a valid line for whatever reason 
                 continue
 
-            if map_dict.has_key('references'):
-                # this collumn references another field
-                # (i.e. a foreign key)
-                refmodel = map_dict['references'][0]
-                refcol = map_dict['references'][1]            
-                # create a query object q for locating
-                # the referenced model and field
-                Qquery = eval('Q(%s="%s")' % (refcol, dat))
-                try:
-                    dat = refmodel.objects.get(Qquery)
-                except Exception:
-                    errors += 1
-                    if len(map_dict['references']) > 2 \
-                            and map_dict['references'][2] == 'skiperror':
-                        # Don't create an entry for this (this requires
-                        # null=True in the relevant field)
-                        if debug:
-                            print "skipping unfound reference %s" % dat
-                        continue
-                    # this is a real error, should always stop.
-                    string = "reference %s.%s='%s' not found.\n"                     
-                    print string % (refmodel,refcol, dat)
-                    raw_input("paused...")
-                    dat = None            
-
+            #if map_dict.has_key('references'):
+            #    # this collumn references another field
+            #    # (i.e. a foreign key)
+            #    refmodel = map_dict['references'][0]
+            #    refcol = map_dict['references'][1]            
+            #    # create a query object q for locating
+            #    # the referenced model and field
+            #    Qquery = eval('Q(%s="%s")' % (refcol, dat))
+            #    try:
+            #        dat = refmodel.objects.get(Qquery)
+            #    except Exception:
+            #        errors += 1
+            #        if len(map_dict['references']) > 2 \
+            #                and map_dict['references'][2] == 'skiperror':
+            #            # Don't create an entry for this (this requires
+            #            # null=True in the relevant field)
+            #            if debug:
+            #                print "skipping unfound reference %s" % dat
+            #            continue
+            #        # this is a real error, should always stop.
+            #        string = "reference %s.%s='%s' not found.\n"                     
+            #        print string % (refmodel,refcol, dat)
+            #        raw_input("paused...")
+            #        dat = None            
+                
             data[map_dict['cname']] = dat
 
             # line columns parsed; now move to database 

@@ -33,7 +33,8 @@ AtomStateJ1::::
 AtomStateJ2::::
 AtomStateLandeFactor:Lande factor:Lande factor:(Float|Double):
 AtomStateLandeFactorRef:Reference-ID for AtomStateLandeFactor:(String):
-AtomStateEnergy:Level energy:Energy of the level in eV:(Float|Double):>=0
+AtomStateEnergy:Level energy:Energy of the level:(Float|Double):>=0
+AtomStateEnergyUnits:Unit for the level energy:(String):
 AtomStateEnergyRef:Reference-ID for AtomStateEnergy:(String):
 AtomStateDescription:Level description:Good luck:(String):
 
