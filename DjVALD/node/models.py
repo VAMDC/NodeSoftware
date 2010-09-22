@@ -115,10 +115,36 @@ class Transition(models.Model):
         verbose_name = _('Transition')
         verbose_name_plural = _('Transitions')
 
-
+# dynamically created models
+            
 class Query(models.Model):
     qid=models.CharField(max_length=6,primary_key=True,db_index=True)
     datetime=models.DateTimeField(auto_now_add=True)
     query=models.CharField(max_length=512)
 
 
+class LogManager(models.Manager):
+    """
+    Handles log object searches
+    """
+    def makeQID(self, length=6, chars=s.letters + s.digits):
+        return ''.join([choice(chars) for i in xrange(length)])
+
+    def create(self, request):
+        """
+        Create a query log based on a request
+        """
+
+    
+    pass
+    
+class Log(models.Model):
+    """
+    Stores data of a query
+    """
+    qid = models.CharField(max_length=128)
+    datetime = datetime=models.DateTimeField(auto_now_add=True)
+    query = models.ForeignKey(Query, related_name='dbquery', db_column='query')
+    request = models.TextField()
+
+    objects = LogManager()
