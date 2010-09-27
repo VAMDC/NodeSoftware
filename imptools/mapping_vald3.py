@@ -241,7 +241,7 @@ mapping = [
                                       (charrange,(124,170)),
                                       (charrange,(44,58)) ))},            
             {'cname':'species',
-             'cbyte':(charrange,(30,36)),
+             'cbyte':(charrange,(30,36)) ,
              'references':(valdmodel.Species,'pk')},
             {'cname':'energy',
              'cbyte':(charrange,(44,58))},
