@@ -18,6 +18,21 @@ def enc(s):
 from lxml import etree as E
 vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
+RESTRICTABLES = {
+    'AtomIonCharge' : 'Ions.charge',
+    'AtomSymbol' : 'Elements.sym',
+    'AtomNuclearCharge' : 'Elements.z',
+    'AtomStateEnergy' : 'Levels.energy'
+}
+
+RETURNABLES = {
+    'AtomIonCharge' : 'Ions.charge',
+    'AtomNuclearCharge' : 'Elements.z',
+    'AtomSymbol' : 'Elements.sym',
+    'AtomMassNumber' : 'Elements.mass',
+    'AtomStateEnergy' : 'Levels.energy',
+    'AtomStateDescription' : 'Levels.label'
+}
 
 VALD_DICT={'1':'species__atomic',
            '2':'species__ion',
@@ -90,9 +105,8 @@ def getVALDstates(transs):
 
 
 def setupResults(tap,limit=0):
-    if tap.lang=='vamdc':
+    if tap.lang=='vss1':
         tap.query=tap.query%VALD_DICT
-        print tap.query
         #transs = Transition.objects.extra(tables=['species','states'],where=[tap.query,'(transitions.lostate=states.id OR transitions.upstate=states.id)','transitions.species=species.id'],).order_by('airwave')
         qtup=vamdc2queryset(tap.query)
         transs = Transition.objects.filter(*qtup).order_by('airwave')
