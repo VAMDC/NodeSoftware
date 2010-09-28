@@ -93,21 +93,7 @@ def idFromLine(linedata, sep, *linefuncs):
 
 # Helper methods for parsing and displaying 
 
-def is_iter(iterable):
-    """
-    Checks if an object behaves iterably. 
-    Strings are not accepted as iterable (although
-    they are actually iterable), since string iterations
-    are usually not what we want to do with a string.
-    """
-    if isinstance(iterable, basestring):
-        # skip all forms of strings (str, unicode etc)
-        return False     
-    try:
-        # check if object implements iter protocol
-        return iter(iterable)
-    except TypeError:
-        return False 
+is_iter = lambda iterable: hasattr(iterable, '__iter__')
 
 def ftime(t0, t1):
     "formats time to nice format."
@@ -287,6 +273,7 @@ class MappingFile(object):
                         break        
         if self.line.startswith(self.errline):            
             self.line = ""
+        #print self.line
         return self.line
     
 #@transaction.commit_on_success
@@ -348,14 +335,15 @@ def parse_file_dict(file_dict, debug=False):
     mapfiles = []
     for fnum, filepath in enumerate(filepaths):
         mapfiles.append(MappingFile(filepath, headlines[fnum], commentchars[fnum],
-                                    lineoffsets[fnum], linesteps[fnum], errlines[fnum]))
-    data = {}
+                                    lineoffsets[fnum], linesteps[fnum], errlines[fnum]))    
+   
     total = 0
     errors = 0   
     while True:
         # step and read one line from all files 
         total += 1
         lines = []
+        data = {}
         try:
             for mapfile in mapfiles:
                 # this automatically syncs all files' lines
@@ -365,7 +353,7 @@ def parse_file_dict(file_dict, debug=False):
             break 
                             
         for map_dict in mapping:
-
+            
             # parse the mapping for this line(s)
             dat = process_line(lines, map_dict)           
             if not dat or (map_dict.has_key('cnull') 
@@ -373,30 +361,30 @@ def parse_file_dict(file_dict, debug=False):
                 # not a valid line for whatever reason 
                 continue
 
-            #if map_dict.has_key('references'):
-            #    # this collumn references another field
-            #    # (i.e. a foreign key)
-            #    refmodel = map_dict['references'][0]
-            #    refcol = map_dict['references'][1]            
-            #    # create a query object q for locating
-            #    # the referenced model and field
-            #    Qquery = eval('Q(%s="%s")' % (refcol, dat))
-            #    try:
-            #        dat = refmodel.objects.get(Qquery)
-            #    except Exception:
-            #        errors += 1
-            #        if len(map_dict['references']) > 2 \
-            #                and map_dict['references'][2] == 'skiperror':
-            #            # Don't create an entry for this (this requires
-            #            # null=True in the relevant field)
-            #            if debug:
-            #                print "skipping unfound reference %s" % dat
-            #            continue
-            #        # this is a real error, should always stop.
-            #        string = "reference %s.%s='%s' not found.\n"                     
-            #        print string % (refmodel,refcol, dat)
-            #        raw_input("paused...")
-            #        dat = None            
+            if map_dict.has_key('references'):
+               # this collumn references another field
+               # (i.e. a foreign key)
+               refmodel = map_dict['references'][0]
+               refcol = map_dict['references'][1]            
+               # create a query object q for locating
+               # the referenced model and field
+               Qquery = eval('Q(%s="%s")' % (refcol, dat))
+               try:
+                   dat = refmodel.objects.get(Qquery)
+               except Exception:
+                   errors += 1
+                   if len(map_dict['references']) > 2 \
+                           and map_dict['references'][2] == 'skiperror':
+                       # Don't create an entry for this (this requires
+                       # null=True in the relevant field)
+                       if debug:
+                           print "skipping unfound reference %s" % dat
+                       continue
+                   # this is a real error, should always stop.
+                   string = "reference %s.%s='%s' not found.\n"                     
+                   print string % (refmodel,refcol, dat)
+                   raw_input("paused...")
+                   dat = None            
                 
             data[map_dict['cname']] = dat
 

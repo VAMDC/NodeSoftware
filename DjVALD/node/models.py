@@ -1,6 +1,86 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+# def myvalidate(value):
+#     print "myvalidate=%s" % value
+#     return 
+
+# class IntegerForeignKey(models.ForeignKey):
+#     """
+#     This custom field also accepts an integer value, if it
+#     is given; this integer is assumed to match the pk value
+#     of an existing reference. The use of this is an improved speed
+#     during load but means less erro checking.    
+#     """       
+
+#     # def __init__(self, *args, **kwargs):
+#     #     print "in __init__"
+#     #     super(IntegerForeignKey, self).__init__(*args, **kwargs)
+        
+#     # def validate(self, value, model_instance):
+#     #     """
+#     #     Run a different validation
+#     #     """        
+#     #     print "validate"
+#     #     print value
+#     #     if isinstance(value, int):
+#     #         # this is not a django object but an integer, so we assume this
+#     #         # is in fact the pk of the object we are referencing. We don't error
+#     #         # check this!
+#     #         return True 
+#     #         print self.field.attname            
+#     #         setattr(instance, self.field.attname, value)
+#     #     else:
+#     #         # normal operation; this will raise a ValueError for all other
+#     #         # problems
+#     #         super(IntegerForeignKey, self).__validate__(instance, value)
+
+#     # def get_attname(self):
+#     #     print "get_attname"
+#     #     return super(IntegerForeignKey, self).get_attname()
+
+#     # def get_validator_unique_lookup_type(self):
+#     #     print " get_validator_unique_lookup_type"
+#     #     return super(IntegerForeignKey, self).get_validator_unique_lookup_type()
+
+#     # def get_db_prep_save(self, value, connection):   
+#     #     print "get_db_prep_save"
+#     #     super(IntegerForeignKey, self).get_db_prep_save(value, connection)
+
+#     # def formfield(self, **kwargs):
+#     #     print "formfield"
+#     #     return super(IntegerForeignKey, self).formfield(**kwargs)
+        
+#     # def db_type(self, connection):
+#     #     print "db_type"
+#     #     return super(IntegerForeignKey, self).db_type(connection)
+        
+#     __metaclass__ = models.SubfieldBase
+    
+#     def __init__(self, *args, **kwargs):
+#         print "In creation!"
+#         super(IntegerForeignKey, self).__init__(*args, **kwargs)
+        
+#     def __set__(self, instance, value):
+#         """
+#         Custom set operation when assigning to the field. 
+#         """
+#         print "test"
+#         print instance, value
+#         if isinstance(value, int):
+#             # this is not a django object but an integer, so we assume this
+#             # is in fact the pk of the object we are referencing. We don't error
+#             # check this!
+#             print self.field.attname            
+#             setattr(instance, self.field.attname, value)
+#         else:
+#             # normal operation; this will raise a ValueError for all other
+#             # problems
+#             super(IntegerForeignKey, self).__set__(instance, value)
+        
+#     def get_internal_type(self):
+#         return "ForeignKey"
+
 class Species(models.Model):
     name = models.CharField(max_length=10, db_index=True)
     ion = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
@@ -19,10 +99,10 @@ class Species(models.Model):
         verbose_name_plural = _('Species')
 
 class Publication(models.Model):
-    dbref = models.CharField(max_length=6, db_index=True)
-    bibref = models.CharField(max_length=25, db_index=True)
-    author = models.CharField(max_length = 128, db_index=True, null=True, blank=True)
-    bibtex = models.CharField(max_length = 512, db_index=True)
+    dbref = models.CharField(max_length=10, db_index=True)
+    bibref = models.CharField(max_length=128, db_index=True)
+    author = models.TextField(db_index=True, null=True, blank=True)
+    bibtex = models.TextField(db_index=True, null=True, blank=True)
 
 class Source(models.Model):
     srcfile = models.CharField(max_length=128)
@@ -49,7 +129,8 @@ class Source(models.Model):
 
 class State(models.Model):
     charid = models.CharField(max_length=128, db_index=True,unique=True,null=False)
-    species = models.ForeignKey(Species,db_column='species', db_index=True)
+    species = models.ForeignKey(Species, db_column='species', db_index=True)#, validators=[myvalidate])    
+    #species = models.PositiveSmallIntegerField()    
     energy = models.DecimalField(max_digits=15, decimal_places=4,null=True,blank=True, db_index=True) 
     lande = models.DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     coupling = models.CharField(max_length=2, null=True,blank=True)
@@ -81,6 +162,7 @@ class Transition(models.Model):
     vacwave = models.DecimalField(max_digits=20, decimal_places=8) 
     airwave = models.DecimalField(max_digits=20, decimal_places=8) 
     species = models.ForeignKey(Species,db_column='species',related_name='isspecies_trans')
+    #species = models.PositiveSmallIntegerField()
     loggf = models.DecimalField(max_digits=8, decimal_places=3,null=True,blank=True)
     landeff = models.DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     gammarad = models.DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
@@ -115,10 +197,33 @@ class Transition(models.Model):
         verbose_name = _('Transition')
         verbose_name_plural = _('Transitions')
 
-
+# dynamically created models
+            
 class Query(models.Model):
     qid=models.CharField(max_length=6,primary_key=True,db_index=True)
     datetime=models.DateTimeField(auto_now_add=True)
     query=models.CharField(max_length=512)
 
+class LogManager(models.Manager):
+    """
+    Handles log object searches
+    """
+    #def makeQID(self, length=6, chars=s.letters + s.digits):
+    #    return ''.join([choice(chars) for i in xrange(length)])
 
+    def create(self, request):
+        """
+        Create a query log based on a request
+        """
+        pass
+    
+class Log(models.Model):
+    """
+    Stores data of a query
+    """
+    qid = models.CharField(max_length=128)
+    datetime = datetime=models.DateTimeField(auto_now_add=True)
+    query = models.ForeignKey(Query, related_name='dbquery', db_column='query')
+    request = models.TextField()
+
+    objects = LogManager()
