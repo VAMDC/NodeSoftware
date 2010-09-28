@@ -15,7 +15,7 @@ sys.path.append(BASE_PATH)
 # Path to this node 
 NODE_PATH = os.path.dirname(os.path.abspath(__file__))
 # Python-path to app folder (usually <yournodename>.node)
-NODEPKG= os.path.join(NODE_PATH, 'node')
+NODEPKG= os.path.basename(NODE_PATH)+'.node'
 # TAP base url. Must have trailing slash!
 TAP_URL = 'http://vamdc.fysast.uu.se:8888/node/vald/tap/'
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email). 
@@ -69,9 +69,9 @@ TIME_ZONE = 'CET'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 # Give debug messages
-DEBUG = True
+DEBUG = False
 # For web templates, use Python traceback instead of Server Error message. 
-TEMPLATE_DEBUG = DEBUG
+TEMPLATE_DEBUG = True
 # site id number (you shouldn't have to change this)
 SITE_ID = 1
 # If you set this to False, Django will make some optimizations so as not
@@ -101,7 +101,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(NODE_PATH, 'templates'),
+    os.path.join(BASE_PATH,'DjNode', 'templates'),
 )
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
