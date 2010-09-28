@@ -39,7 +39,7 @@ def GetValue(name,**kwargs):
 #        LOG(e)
 #        LOG(name)
         value=name  # this catches the case where the dict-value is a string or mistyped.
-    return quoteattr(value)
+    return quoteattr('%s'%value)
     
 
 def XsamsSources(Sources):
