@@ -11,9 +11,9 @@
         <interface xsi:type='vs:ParamHTTP'>
             <accessURL use='base'>{{accessURL}}</accessURL>
         </interface>
-{% if RESTRICTABLES %}{% for restrictable in RESTRICTABLES %}<restrictable>{{ restrictable }}</restrictable>
-{% endfor %}{% endif %}
 {% if RETURNABLES %}{% for returnable in RETURNABLES %}<returnable>{{ returnable }}</returnable>
+{% endfor %}{% endif %}
+{% if RESTRICTABLES %}{% for restrictable in RESTRICTABLES %}<restrictable>{{ restrictable }}</restrictable>
 {% endfor %}{% endif %}
     </capability>
     <capability standardID='ivo://ivoa.net/std/TAP'>
