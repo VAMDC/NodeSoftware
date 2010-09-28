@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import sys
-def LOG(s):
-    print >> sys.stderr, s
 
 import re
+import sys
 from xml.sax.saxutils import quoteattr
 
 # Get the node-specific parts
 from django.conf import settings
 from django.utils.importlib import import_module
 NODEPKG=import_module(settings.NODEPKG+'.views')
+
+
+def LOG(s):
+    if settings.DEBUG: print >> sys.stderr, s
 
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
