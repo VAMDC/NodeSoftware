@@ -533,17 +533,18 @@ def transitions2votable(transs,count):
         <TABLEDATA>"""%(count or n,n)
 
     for trans in transs:
-        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.vacwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , xmlEscape(trans.upstateid), xmlEscape(trans.lostateid))
+        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.vacwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , trans.upstateid, trans.lostateid)
         
     yield """</TABLEDATA></DATA></TABLE>"""
 
 
+# DO NOT USE THIS, but quoteattr() as imported above
 # Returns an XML-escaped version of a given string. The &, < and > characters are escaped.
-def xmlEscape(s):
-    if s:
-        return s.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
-    else:
-        return None
+#def xmlEscape(s):
+#    if s:
+#        return s.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
+#    else:
+#        return None
 
 
 def votable(transitions,states,sources,totalcount=None):
