@@ -39,7 +39,9 @@ def GetValue(name,**kwargs):
 #        LOG(e)
 #        LOG(name)
         value=name  # this catches the case where the dict-value is a string or mistyped.
-    return quoteattr('%s'%value)
+
+    # turn it into a string, quote it, but skip the quotation marks
+    return quoteattr('%s'%value)[1:-1] # re
     
 
 def XsamsSources(Sources):
