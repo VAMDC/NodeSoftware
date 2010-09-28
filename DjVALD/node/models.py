@@ -99,9 +99,9 @@ class Species(models.Model):
         verbose_name_plural = _('Species')
 
 class Publication(models.Model):
-    dbref = models.CharField(max_length=6, db_index=True)
+    dbref = models.CharField(max_length=64, db_index=True)
     bibref = models.CharField(max_length=25, db_index=True)
-    author = models.CharField(max_length = 128, db_index=True, null=True, blank=True)
+    author = models.CharField(max_length = 512, db_index=True, null=True, blank=True)
     bibtex = models.CharField(max_length = 512, db_index=True)
 
 class Source(models.Model):
