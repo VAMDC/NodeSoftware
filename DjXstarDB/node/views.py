@@ -6,10 +6,7 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-from DjXstarDB.xstardb.models import Transition,State,Source,Species
-
-# This imports all the generic tap views and functions
-from DjNode.tapservice.views import *
+from DjXstarDB.node.models import *
 
 from base64 import b64encode as b64
 def enc(s):
