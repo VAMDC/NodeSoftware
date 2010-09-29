@@ -12,7 +12,7 @@ NODEPKG=import_module(settings.NODEPKG+'.views')
 
 
 def LOG(s):
-    if settings.DEBUG: print >> sys.stderr, s
+    if settings.DEBUG: print >> sys.stderr, s.encode('utf-8')
 
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
@@ -28,7 +28,6 @@ def GetValue(name,**kwargs):
                       # This is fine.
                       # Note that this is also used by if-clauses below
                       # since the empty string evaluates as False.
-
     if not name: return '' # if the key was in the dict, but the value empty or None
 
     for key in kwargs: # assign the dict-value to a local variable named as the dict-key
@@ -39,6 +38,8 @@ def GetValue(name,**kwargs):
 #        LOG(e)
 #        LOG(name)
         value=name  # this catches the case where the dict-value is a string or mistyped.
+
+    if not value: return ''  # if the database return NULL
 
     # turn it into a string, quote it, but skip the quotation marks
     return quoteattr('%s'%value)[1:-1] # re
