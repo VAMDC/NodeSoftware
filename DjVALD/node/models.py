@@ -1,86 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-# def myvalidate(value):
-#     print "myvalidate=%s" % value
-#     return 
-
-# class IntegerForeignKey(models.ForeignKey):
-#     """
-#     This custom field also accepts an integer value, if it
-#     is given; this integer is assumed to match the pk value
-#     of an existing reference. The use of this is an improved speed
-#     during load but means less erro checking.    
-#     """       
-
-#     # def __init__(self, *args, **kwargs):
-#     #     print "in __init__"
-#     #     super(IntegerForeignKey, self).__init__(*args, **kwargs)
-        
-#     # def validate(self, value, model_instance):
-#     #     """
-#     #     Run a different validation
-#     #     """        
-#     #     print "validate"
-#     #     print value
-#     #     if isinstance(value, int):
-#     #         # this is not a django object but an integer, so we assume this
-#     #         # is in fact the pk of the object we are referencing. We don't error
-#     #         # check this!
-#     #         return True 
-#     #         print self.field.attname            
-#     #         setattr(instance, self.field.attname, value)
-#     #     else:
-#     #         # normal operation; this will raise a ValueError for all other
-#     #         # problems
-#     #         super(IntegerForeignKey, self).__validate__(instance, value)
-
-#     # def get_attname(self):
-#     #     print "get_attname"
-#     #     return super(IntegerForeignKey, self).get_attname()
-
-#     # def get_validator_unique_lookup_type(self):
-#     #     print " get_validator_unique_lookup_type"
-#     #     return super(IntegerForeignKey, self).get_validator_unique_lookup_type()
-
-#     # def get_db_prep_save(self, value, connection):   
-#     #     print "get_db_prep_save"
-#     #     super(IntegerForeignKey, self).get_db_prep_save(value, connection)
-
-#     # def formfield(self, **kwargs):
-#     #     print "formfield"
-#     #     return super(IntegerForeignKey, self).formfield(**kwargs)
-        
-#     # def db_type(self, connection):
-#     #     print "db_type"
-#     #     return super(IntegerForeignKey, self).db_type(connection)
-        
-#     __metaclass__ = models.SubfieldBase
-    
-#     def __init__(self, *args, **kwargs):
-#         print "In creation!"
-#         super(IntegerForeignKey, self).__init__(*args, **kwargs)
-        
-#     def __set__(self, instance, value):
-#         """
-#         Custom set operation when assigning to the field. 
-#         """
-#         print "test"
-#         print instance, value
-#         if isinstance(value, int):
-#             # this is not a django object but an integer, so we assume this
-#             # is in fact the pk of the object we are referencing. We don't error
-#             # check this!
-#             print self.field.attname            
-#             setattr(instance, self.field.attname, value)
-#         else:
-#             # normal operation; this will raise a ValueError for all other
-#             # problems
-#             super(IntegerForeignKey, self).__set__(instance, value)
-        
-#     def get_internal_type(self):
-#         return "ForeignKey"
-
 class Species(models.Model):
     name = models.CharField(max_length=10, db_index=True)
     ion = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
@@ -110,7 +30,7 @@ class Publication(models.Model):
     pages = models.CharField(max_length=64, null=True, db_index=True)
     pagebegin = models.PositiveSmallIntegerField(null=True, db_index=True)
     pageend = models.PositiveSmallIntegerField(null=True, db_index=True)
-    url = models.CharField(max_length = 256, db_index=True, null=True)    
+    url = models.CharField(max_length = 4096, db_index=True, null=True)    
     bibtex = models.TextField(null=True, db_index=True)
 
     class Meta:
@@ -246,3 +166,87 @@ class Log(models.Model):
     request = models.TextField()
 
     objects = LogManager()
+
+
+
+
+
+# def myvalidate(value):
+#     print "myvalidate=%s" % value
+#     return 
+
+# class IntegerForeignKey(models.ForeignKey):
+#     """
+#     This custom field also accepts an integer value, if it
+#     is given; this integer is assumed to match the pk value
+#     of an existing reference. The use of this is an improved speed
+#     during load but means less erro checking.    
+#     """       
+
+#     # def __init__(self, *args, **kwargs):
+#     #     print "in __init__"
+#     #     super(IntegerForeignKey, self).__init__(*args, **kwargs)
+        
+#     # def validate(self, value, model_instance):
+#     #     """
+#     #     Run a different validation
+#     #     """        
+#     #     print "validate"
+#     #     print value
+#     #     if isinstance(value, int):
+#     #         # this is not a django object but an integer, so we assume this
+#     #         # is in fact the pk of the object we are referencing. We don't error
+#     #         # check this!
+#     #         return True 
+#     #         print self.field.attname            
+#     #         setattr(instance, self.field.attname, value)
+#     #     else:
+#     #         # normal operation; this will raise a ValueError for all other
+#     #         # problems
+#     #         super(IntegerForeignKey, self).__validate__(instance, value)
+
+#     # def get_attname(self):
+#     #     print "get_attname"
+#     #     return super(IntegerForeignKey, self).get_attname()
+
+#     # def get_validator_unique_lookup_type(self):
+#     #     print " get_validator_unique_lookup_type"
+#     #     return super(IntegerForeignKey, self).get_validator_unique_lookup_type()
+
+#     # def get_db_prep_save(self, value, connection):   
+#     #     print "get_db_prep_save"
+#     #     super(IntegerForeignKey, self).get_db_prep_save(value, connection)
+
+#     # def formfield(self, **kwargs):
+#     #     print "formfield"
+#     #     return super(IntegerForeignKey, self).formfield(**kwargs)
+        
+#     # def db_type(self, connection):
+#     #     print "db_type"
+#     #     return super(IntegerForeignKey, self).db_type(connection)
+        
+#     __metaclass__ = models.SubfieldBase
+    
+#     def __init__(self, *args, **kwargs):
+#         print "In creation!"
+#         super(IntegerForeignKey, self).__init__(*args, **kwargs)
+        
+#     def __set__(self, instance, value):
+#         """
+#         Custom set operation when assigning to the field. 
+#         """
+#         print "test"
+#         print instance, value
+#         if isinstance(value, int):
+#             # this is not a django object but an integer, so we assume this
+#             # is in fact the pk of the object we are referencing. We don't error
+#             # check this!
+#             print self.field.attname            
+#             setattr(instance, self.field.attname, value)
+#         else:
+#             # normal operation; this will raise a ValueError for all other
+#             # problems
+#             super(IntegerForeignKey, self).__set__(instance, value)
+        
+#     def get_internal_type(self):
+#         return "ForeignKey"
