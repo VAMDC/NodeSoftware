@@ -400,7 +400,6 @@ def parse_file_dict(file_dict, debug=False):
     errors = 0   
     while True:
         # step and read one line from all files 
-        total += 1
         lines = []
         data = {}
 
@@ -413,7 +412,9 @@ def parse_file_dict(file_dict, debug=False):
         except StopIteration:
             # we are done.
             break 
-                            
+
+        total += 1
+
         for map_dict in mapping:
 
             # check if debug flag is set for this line
@@ -444,12 +445,12 @@ def parse_file_dict(file_dict, debug=False):
                 try:
                     dat = refmodel.objects.get(Qquery)
                 except Exception, e:
-                    errors += 1
                     errstring = "reference %s.%s='%s (%s)' not found." % (refmodel,refcol, dat, e)
                     if skiperrors:                
                         if debug:       
                             print "DEBUG: %s" % errstring
                     else:                            
+                        errors += 1
                         print "ERROR: %s" % errstring
                     dat = None
                     
@@ -463,7 +464,8 @@ def parse_file_dict(file_dict, debug=False):
                         if debug:
                             print "DEBUG: Skipping malformed multireference field: %s (%s)" % (dat, map_dict['references'])
                     else:
-                        raw_input("ERROR: Malformed multireference field: %s (%s)" % (dat, map_dict['references'])) 
+                        errors += 1
+                        print "ERROR: Malformed multireference field: %s (%s)" % (dat, map_dict['references'])
                     continue
 
                 refmodel = map_dict['multireferences'][0]
@@ -534,7 +536,7 @@ def parse_file_dict(file_dict, debug=False):
                 add_many2many(modelinstance, mdict["fieldname"], mdict["objlist"])
                 modelinstance.save()
             
-    print '%s done. %i collisions/errors/nomatches out of %i lines.' % (" + ".join(filenames), errors, total)
+    print 'Read %s. %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), total, errors)
 
     global TOTAL_LINES, TOTAL_ERRS
     TOTAL_LINES += total
