@@ -101,10 +101,21 @@ def async(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)
 
+def cleandict(dict):
+    """
+    throw out keys where the value is ''
+    """
+    ret={}
+    for key in dict.keys():
+        if dict[key]: ret[key]=dict[key]
+    return ret
+
+
 def capabilities(request):
     c = RequestContext(request, {"accessURL" : settings.TAP_URL,
-                                 "RESTRICTABLES" : NODEPKG.RESTRICTABLES,
-                                 "RETURNABLES" : NODEPKG.RETURNABLES})
+                                 "RESTRICTABLES" : cleandict(NODEPKG.RESTRICTABLES),
+                                 "RETURNABLES" : cleandict(NODEPKG.RETURNABLES),
+                                 })
     return render_to_response('node/capabilities.xml', c)
 
 def tables(request):
