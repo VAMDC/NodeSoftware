@@ -72,17 +72,17 @@ def sync(request):
     if not tap.isvalid:
         # return http error
         LOG('not valid tap!')
+
+#    if tap.format == 'xsams':  # for now always assume we want XSAMS    
+    results=NODEPKG.setupResults(tap.parsedSQL)
+    generator=Xsams(**results)
+    response=HttpResponse(generator,mimetype='text/xml')
+    #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
-    if tap.format == 'xsams': 
-        results=NODEPKG.setupResults(tap.parsedSQL)
-        generator=Xsams(**results)
-        response=HttpResponse(generator,mimetype='text/xml')
-        #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
-    
-    elif tap.format == 'votable': 
-        transs,states,sources=NODEPKG.setupResults(tap)
-        generator=votable(transs,states,sources)
-        response=HttpResponse(generator,mimetype='text/xml')
+#    elif tap.format == 'votable': 
+#        transs,states,sources=NODEPKG.setupResults(tap)
+#        generator=votable(transs,states,sources)
+#        response=HttpResponse(generator,mimetype='text/xml')
         #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
 #    elif tap.format == 'embedhtml':
@@ -101,10 +101,21 @@ def async(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)
 
+def cleandict(dict):
+    """
+    throw out keys where the value is ''
+    """
+    ret={}
+    for key in dict.keys():
+        if dict[key]: ret[key]=dict[key]
+    return ret
+
+
 def capabilities(request):
     c = RequestContext(request, {"accessURL" : settings.TAP_URL,
-                                 "RESTRICTABLES" : NODEPKG.RESTRICTABLES,
-                                 "RETURNABLES" : NODEPKG.RETURNABLES})
+                                 "RESTRICTABLES" : cleandict(NODEPKG.RESTRICTABLES),
+                                 "RETURNABLES" : cleandict(NODEPKG.RETURNABLES),
+                                 })
     return render_to_response('node/capabilities.xml', c)
 
 def tables(request):
