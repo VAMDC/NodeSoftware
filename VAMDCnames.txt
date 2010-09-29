@@ -164,7 +164,7 @@ MolecularSpeciesStoichiometrcFormula::::
 MolecularSpeciesIonCharge::::
 MolecularSpeciesIUPACName::::
 MolecularSpeciesURLFigure::::
-MolecularSpeciesInChl:InChI key:International Chemical Identifier (InChI) key (27-character):(String): 
+MolecularSpeciesInChIKey:InChI key:International Chemical Identifier (InChI) key (27-character or 14-character first part):(String): 
 MolecularSpeciesCASRegistryNumber::::
 MolecularSpeciesCNPIGroup::::
 MolecularSpeciesMoleculeNuclearSpins::::
