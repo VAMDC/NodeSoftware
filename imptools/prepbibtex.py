@@ -30,13 +30,12 @@ def get_entries_from_file(filename):
         
     # get all lines, stripping TeX comments
     biblines = r"\n".join([line.strip() for line in bibfile.readlines()
-                          if line and not line.strip().startswith('%')])
+                          if line.strip() and not line.strip().startswith('%')])
     # split the file by @, yet retain the starting @
     bibentries = ["@%s" % line for line in biblines.split('@') if line]
-
     return bibentries
     
-def parse_bibtex_entry(entry, dbref_key="note"):
+def parse_bibtex_entry(entry, dbref_key="bibref"):
     """
     Parses bibtech entries on the form
 
@@ -63,7 +62,8 @@ def parse_bibtex_entry(entry, dbref_key="note"):
 
     # strip all unneccesary whitespaces
     entry = r" ".join(word for word in entry.split())
-
+    #print entry
+    
     # we store the full entry for easy retreaval later
     field_dict['raw_entry'] = entry
 
@@ -76,7 +76,20 @@ def parse_bibtex_entry(entry, dbref_key="note"):
     # entrytype (most often 'article')
     entrytype, entry = entry.split('{', 1)     
     field_dict['entry_type'] = entrytype
-    field_list = [field.strip() for field in entry.split(',')]
+    field_list_temp = [field for field in entry.split(',')]
+    field_list = []
+    lcurb = rcurb = 0
+    temp = ""
+    for field in field_list_temp:
+        lcurb += field.count('{')
+        rcurb += field.count('}')        
+        temp += field
+        if lcurb == rcurb:
+            field_list.append(temp.strip())
+            lcurb = rcurb = 0
+            temp = ""
+    if temp:
+        field_list.append(temp.rstrip('}').strip())
 
     # we have a list of all fields.     
     if not field_list:
@@ -85,23 +98,22 @@ def parse_bibtex_entry(entry, dbref_key="note"):
     # the first (?) field is the reference name #TODO: check bibtex standard
 
     field_dict["bibref"] = field_list.pop(0)
-
-    # next, we loop through all the fields and add them to dict
-    fieldkey = "errors"        
-    fieldval = ""
+    
+    # next, we loop through all the fields and add them to dict. To do this we assume they
+    # all are defined on a key = value format.
+    print "field_list: ", field_list
     for field in field_list:
         if '=' in field:
-            fieldkey, fieldval = [arg.strip() for arg in field.split('=')]
-            field_dict[fieldkey] = fieldval.replace('{','').replace('}','')       
+            fieldkey, fieldval = [arg.strip() for arg in field.split('=', 1)]
+            field_dict[fieldkey.lower()] = fieldval.replace('{','').replace('}','')       
         else:
-            # there was a comma, but the field is not yet over (e.g. an author name)
-            # - append this to the previously found field instead of creating a new one.
-            field = field.strip().replace('{','').replace('}','')   
-            field_dict[fieldkey] = "%s, %s" % (field_dict[fieldkey], field)        
+            # malformed field
+            field_dict["errors"] = field
 
+    print field_dict
     # store one of the entries as a special dbref field.
     if dbref_key:
-        dbref = field_dict.get(dbref_key, None)
+        dbref = field_dict.get(dbref_key.lower(), None)
         if not dbref:
             print "entry '%s' do not have a valid key '%s'. Ignoring this entry." % (field_dict["bibref"], dbref_key)
             return None 
@@ -114,7 +126,8 @@ def parse_bibtex_entry(entry, dbref_key="note"):
 
 
 def create_bibtex_preprocessed_file(bibtex_file,
-                                    outfilename="publications_preprocessed.dat"):
+                                    outfilename,
+                                    dbref_key='bibref'):
     """
     Takes a bibtech file and converts it into a format
     suitable for reading by the database importer
@@ -133,7 +146,7 @@ def create_bibtex_preprocessed_file(bibtex_file,
     # the model (for now) using '||' as separator.
     string = ""
     for ib, bibentry in enumerate(bibentries):
-        entry_dict = parse_bibtex_entry(bibentry)
+        entry_dict = parse_bibtex_entry(bibentry, dbref_key=dbref_key)
         if not entry_dict:
             continue
         
@@ -149,5 +162,7 @@ def create_bibtex_preprocessed_file(bibtex_file,
     print "Finished parsing bibtex file. Created output file %s." % outfilename
 
 if __name__ == "__main__":
-    filename = "/vald/vald3_new_ref.bib"
-    create_bibtex_preprocessed_file(filename)
+    #filename = "/vald/vald3_new_ref.bib"
+    infile = "VALD3_ref2.bib"
+    outfile = "publications_preprocessed.dat"
+    create_bibtex_preprocessed_file(infile, outfile, dbref_key="bibref")
