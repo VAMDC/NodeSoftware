@@ -55,7 +55,6 @@ base = "/vald/"
 # publications_file = base + "publications_preprocessed.dat"
 
 species_list_file = base + 'VALD_list_of_species'
-#vald_cfg_file = base + 'vald3_test.cfg'
 vald_cfg_file = base + 'VALD3_config_2010.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
