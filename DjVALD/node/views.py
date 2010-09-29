@@ -52,7 +52,7 @@ RETURNABLES={\
 'RadTransComments':'Wavelength is for vacuum.',
 'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
 'RadTransWavelengthExperimentalUnits':u'\xc5',
-'RadTransWavelengthExperimentalAccuracy':'RadTran.accur',
+'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.accur',
 'RadTransWavelengthExperimentalSourceRef':'RadTran.wave_ref',
 'RadTransFinalStateRef':'RadTran.lostate.id',
 'RadTransInitialStateRef':'RadTran.upstate.id',
