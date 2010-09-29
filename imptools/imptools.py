@@ -22,6 +22,15 @@ TOTAL_ERRS = 0
 
 # Line functions
 
+def lineStrip(linedata, stripstring=None, fileneum=0):
+    """
+    String a line of a given string. None clears all whitespace.
+    """
+    try:
+        return linedata[filenum].strip(stripstring)
+    except Exception, e:
+        pass 
+    
 def charrange(linedata, start, end, filenum=0):
     """
     Cut out part of a line of texts based on indices
@@ -29,16 +38,16 @@ def charrange(linedata, start, end, filenum=0):
     try:
         return linedata[filenum][start:end].strip()
     except Exception, e:
+        #print "charrange skipping '%s': %s" % (linedata, e)        
         pass
-        #print "charrange skipping '%s': %s" % (linedata, e)
     
 def charrange2int(linedata, start, end, filenum=0):
     try:
-        return int(round(float(charrange(linedata[filenum], start, end))))
-    except Exception:
-        pass
+        return int(round(float(linedata[filenum][start:end].strip())))
+    except Exception, e:
+        print "charrange2int failure: %s: %s" % (linedata, e)
     
-def bySepNr(linedata, number, sep=',',filenum=0):
+def bySepNr(linedata, number, sep=',', filenum=0):
     """
     Split a text line by sep argument and return
     the split section with given number
@@ -63,7 +72,7 @@ def chainCmds(linedata, *linefuncs):
         data = [func(data, *args)]
     if data:
         return data[0]
-    #print "chainCommands skipping line." 
+    print "chainCommands skipping line." 
          
 def idFromLine(linedata, sep, *linefuncs):
     """
