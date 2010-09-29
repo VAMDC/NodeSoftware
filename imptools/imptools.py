@@ -50,7 +50,7 @@ def charrange(linedata, start, end, filenum=0):
     try:
         return linedata[filenum][start:end].strip()
     except Exception, e:
-        #print "charrange skipping '%s': %s" % (linedata, e)        
+        #print "charrange skipping '%s': %s (%s)" % (linedata, e)        
         pass
     
 def charrange2int(linedata, start, end, filenum=0):
@@ -445,7 +445,7 @@ def parse_file_dict(file_dict, debug=False):
                     dat = refmodel.objects.get(Qquery)
                 except Exception, e:
                     errors += 1
-                    errstring = "reference %s.%s='%s (e)' not found." % (refmodel,refcol, dat, e)
+                    errstring = "reference %s.%s='%s (%s)' not found." % (refmodel,refcol, dat, e)
                     if skiperrors:                
                         if debug:       
                             print "DEBUG: %s" % errstring
