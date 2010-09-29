@@ -6,7 +6,10 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-from DjXstarDB.node.models import *
+from django.utils.importlib import import_module
+models=import_module(settings.NODEPKG+'.models')
+
+from models import *
 
 from base64 import b64encode as b64
 def enc(s):
@@ -14,31 +17,44 @@ def enc(s):
 
 import sys
 def LOG(s):
-    print >> sys.stderr, s
+    if settings.DEBUG: print >> sys.stderr, s
 
 RESTRICTABLES = {\
-'AtomIonCharge' : 'Ions.charge',
-'AtomSymbol' : 'Elements.sym',
-'AtomNuclearCharge' : 'Elements.z',
-'AtomStateEnergy' : 'Levels.energy'
+'AtomIonCharge' : 'charge',
+'AtomSymbol' : 'element__sym',
+'AtomNuclearCharge' : 'element__z',
+#'AtomStateEnergy' : 'Levels.energy'
 }
 RETURNABLES = {\
-'AtomIonCharge' : 'Ions.charge',
-'AtomNuclearCharge' : 'Elements.z',
-'AtomSymbol' : 'Elements.sym',
-'AtomMassNumber' : 'Elements.mass',
-'AtomStateEnergy' : 'Levels.energy',
-'AtomStateDescription' : 'Levels.label'
+'AtomIonCharge' : 'AtomState.charge',
+'AtomNuclearCharge' : 'AtomState.element.z',
+'AtomSymbol' : 'AtomState.element.sym',
+'AtomMassNumber' : 'AtomState.element.mass',
+#'AtomStateEnergy' : 'Levels.energy',
+#'AtomStateDescription' : 'Levels.label'
 }
 
 
 from DjNode.tapservice.sqlparse import *
 
 
-def index(request):
-    c=RequestContext(request,{})
-    return render_to_response('vald/index.html', c)
+def setupResults(sql):
+    LOG(sql)
+    q=where2q(sql.where,RESTRICTABLES)
+    try: q=eval(q)
+    except: return {}
+    
+    ions = Ion.objects.filter(q)
+    
+    return {#'RadTrans':transs,
+            'AtomStates':ions,
+            #'Sources':sources,
+           }
 
+
+
+
+# VALD examples below
 
 def getVALDsources(transs):
     sids=set([])
@@ -56,22 +72,7 @@ def getVALDstates(transs):
     return states.distinct()
     
 
-def setupResults(sql,limit=0):
-    LOG(sql)
-    q=where2q(sql.where,RESTRICTABLES)
-    try: q=eval(q)
-    except: return {}
-    
-    transs = Transition.objects.select_related(depth=2).filter(q)
-    
-    totalcount=transs.count()
-    if limit :
-        transs = transs[:limit]
-
-    sources = getVALDsources(transs)
-    states = getVALDstates(transs)
-    return {'RadTrans':transs,
-            'AtomStates':states,
-            'Sources':sources,
-           }
-
+# use this if you want a webpage appear at the node's root url
+#def index(request):
+#    c=RequestContext(request,{})
+#    return render_to_response('vald/index.html', c)
