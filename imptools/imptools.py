@@ -450,7 +450,7 @@ def parse_file_dict(file_dict, debug=False):
                         if debug:       
                             print "DEBUG: %s" % errstring
                     else:                            
-                        raw_input("ERROR: %s" % errstring)                        
+                        print "ERROR: %s" % errstring
                     dat = None
                     
             if map_dict.has_key('multireferences'):
@@ -487,7 +487,7 @@ def parse_file_dict(file_dict, debug=False):
                             if debug:                        
                                 print "DEBUG: %s" % errstring
                         else:                            
-                            raw_input("ERROR: %s" % errstring)                        
+                            print "ERROR: %s" % errstring                        
                         # we don't add anything to data dict, we just skip. For this to     
                         # work we required null=True in the model.
                         continue

@@ -166,7 +166,7 @@ def create_bibtex_preprocessed_file(bibtex_file,
 
 if __name__ == "__main__":
     #filename = "/vald/vald3_new_ref.bib"
-    infile = "VALD3_ref2.bib"
+    infile = "VALD3_ref.bib"
     outfile = "publications_preprocessed.dat"
 
     field_map = ["dbref", "bibref", "Author", "Title", "Category", "Year", "Journal", "Volume", "Page", "Bdsk-Url-1", "bibtex"]
