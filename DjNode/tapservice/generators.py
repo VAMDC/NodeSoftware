@@ -423,9 +423,9 @@ def XsamsRadTrans(RadTrans):
         if G('RadTransInitialStateRef'): yield '<InitialStateRef>S%s</InitialStateRef>'%G('RadTransInitialStateRef')
         if G('RadTransFinalStateRef'): yield '<FinalStateRef>S%s</FinalStateRef>'%G('RadTransFinalStateRef')
         if G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'): yield """<Probability>
-<Log10WeightedOscillatorStregnth sourceRef="B%s"><Value units="unitless">%s</Value></Log10WeightedOscillatorStregnth>
+<Log10WeightedOscillatorStregnth sourceRef="B%s"><Value units="unitless">%s</Value><Accuracy>%s</Accuracy></Log10WeightedOscillatorStregnth>
 </Probability>
-</RadiativeTransition>"""%(G('RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef'),G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'))
+</RadiativeTransition>"""%(G('RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef'),G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'),G('RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy'))
         # loop ends
     yield '</Radiative>'
 
