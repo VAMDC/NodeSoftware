@@ -103,6 +103,12 @@ class Publication(models.Model):
     bibref = models.CharField(max_length=25, db_index=True)
     author = models.CharField(max_length = 512, db_index=True, null=True, blank=True)
     bibtex = models.CharField(max_length = 512, db_index=True)
+    class Meta:
+        db_table = u'publications'
+        verbose_name = _('Publication')
+        verbose_name_plural = _('Publications')
+    def __unicode__(self):
+        return u'ID:%s %s'%(self.id,self.dbref)
 
 class Source(models.Model):
     srcfile = models.CharField(max_length=128)
