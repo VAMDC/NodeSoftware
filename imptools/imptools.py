@@ -22,13 +22,14 @@ TOTAL_ERRS = 0
 
 # Line functions
 
-def lineStrip(linedata, stripstring=None, fileneum=0):
+def lineStrip(linedata, stripstring=None, filenum=0):
     """
     String a line of a given string. None clears all whitespace.
     """
     try:
         return linedata[filenum].strip(stripstring)
     except Exception, e:
+        print "linestrip error: %s" % e
         pass 
     
 def charrange(linedata, start, end, filenum=0):
@@ -47,7 +48,7 @@ def charrange2int(linedata, start, end, filenum=0):
     except Exception, e:
         print "charrange2int failure: %s: %s" % (linedata, e)
     
-def bySepNr(linedata, number, sep=',', filenum=0):
+def bySepNr(linedata, number, sep=',',filenum=0):
     """
     Split a text line by sep argument and return
     the split section with given number
@@ -362,14 +363,19 @@ def parse_file_dict(file_dict, debug=False):
             break 
                             
         for map_dict in mapping:
-            
+
+            # check if debug flag is set for this line
+            debug = map_dict.has_key('debug') and map_dict['debug']
+
             # parse the mapping for this line(s)
             dat = process_line(lines, map_dict)           
+            if debug: print "DEBUG: process_line dat = '%s'" % dat
+
             if not dat or (map_dict.has_key('cnull') 
                    and dat == map_dict['cnull']):
                 # not a valid line for whatever reason 
                 continue
-
+            
             if map_dict.has_key('references'):
                # this collumn references another field
                # (i.e. a foreign key)

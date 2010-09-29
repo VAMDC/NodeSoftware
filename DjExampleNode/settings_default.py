@@ -46,7 +46,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'DjNode.tapservice',
-    'DjVALD.vald', #example
+    NODEPKG
 )
 # Setup of Django middleware components (shouldn't have to change this))
 MIDDLEWARE_CLASSES = (
