@@ -107,7 +107,7 @@ class Publication(models.Model):
     year = models.PositiveSmallIntegerField(null=True, db_index=True)
     journal = models.CharField(max_length=256, null=True, db_index=True)
     volume = models.PositiveSmallIntegerField(null=True, db_index=True)
-    page = models.CharField(max_length=64, null=True, db_index=True)
+    pages = models.CharField(max_length=64, null=True, db_index=True)
     pagebegin = models.PositiveSmallIntegerField(null=True, db_index=True)
     pageend = models.PositiveSmallIntegerField(null=True, db_index=True)
     url = models.CharField(max_length = 256, db_index=True, null=True)    
