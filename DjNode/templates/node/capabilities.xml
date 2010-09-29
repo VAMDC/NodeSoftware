@@ -3,13 +3,18 @@
     xmlns:cap='urn:astrogrid:schema:Capabilities'
     xmlns:vs='http://www.ivoa.net/xml/VODataService/v1.0'
     xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xmlns:tx='http://www.vamdc.eu/xml/TAPXSAMS/v1.0'
     xsi:schemaLocation='http://www.ivoa.net/xml/VOResource/v1.0 http://www.ivoa.net/xml/VOResource/v1.0
         http://www.ivoa.net/xml/VODataService/v1.1 http://www.ivoa.net/xml/VODataService/VODataService-v1.0.xsd
         urn:astrogrid:schema:Capabilities {{accessURL}}Capabilities.xsd'>
-    <capability standardID='ivo://vamdc/std/TAP-XSAMS'>
+    <capability standardID='ivo://vamdc/std/TAP-XSAMS' xsi:type='tx:TapXsams'>
         <interface xsi:type='vs:ParamHTTP'>
             <accessURL use='base'>{{accessURL}}</accessURL>
         </interface>
+{% if RETURNABLES %}{% for returnable in RETURNABLES %}<returnable>{{ returnable }}</returnable>
+{% endfor %}{% endif %}
+{% if RESTRICTABLES %}{% for restrictable in RESTRICTABLES %}<restrictable>{{ restrictable }}</restrictable>
+{% endfor %}{% endif %}
     </capability>
     <capability standardID='ivo://ivoa.net/std/TAP'>
         <interface xsi:type='vs:ParamHTTP'>

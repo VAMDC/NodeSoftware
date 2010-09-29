@@ -102,7 +102,9 @@ def async(request):
     return render_to_response('node/index.html', c)
 
 def capabilities(request):
-    c = RequestContext(request, {"accessURL" : settings.TAP_URL})
+    c = RequestContext(request, {"accessURL" : settings.TAP_URL,
+                                 "RESTRICTABLES" : NODEPKG.RESTRICTABLES,
+                                 "RETURNABLES" : NODEPKG.RETURNABLES})
     return render_to_response('node/capabilities.xml', c)
 
 def tables(request):

@@ -46,11 +46,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'DjNode.tapservice',
-<<<<<<< HEAD
-    NODEPKG
-=======
     NODEPKG,
->>>>>>> upstream/master
 )
 # Setup of Django middleware components (shouldn't have to change this))
 MIDDLEWARE_CLASSES = (
