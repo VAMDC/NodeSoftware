@@ -60,8 +60,7 @@ vald_cfg_file = base + 'VALD3_config_2010.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
 publications_file = base + "publications_preprocessed.dat"
-pub2source_file = base + "publications_to_sources_map.dat"
-
+pub2source_file = base + "VALD3linelists.dat"
 
 mapping = [
     # Populate Species model, using the species input file.
@@ -377,8 +376,10 @@ mapping = [
              'cnull':'0.0'},
             {'cname':'srctag',
              'cbyte':(charrange,(218,225)),
-             'references':(valdmodel.Publication,'dbref')},             
-#            {'cname':'acflag',
+             'references':(valdmodel.Publication,'dbref'),
+             'skiperror':True},             
+
+            #            {'cname':'acflag',
 #             'cbyte':(charrange,(225,226))},
 #            {'cname':'accur',
 #             'cbyte':(charrange,(226,236))},
