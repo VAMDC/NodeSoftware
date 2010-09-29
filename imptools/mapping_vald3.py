@@ -21,7 +21,8 @@ import os, sys
 from DjVALD.node import models as valdmodel
 
 # import the line funcs
-from imptools import charrange, charrange2int, bySepNr, chainCmds, idFromLine, lineStrip, lineSplit
+from imptools import charrange, charrange2int, bySepNr, chainCmds
+from imptools import idFromLine, lineStrip, lineSplit, mergeCols
     
 # 
 # Create a config, a list of file definitions. Each entry in this
@@ -359,10 +360,14 @@ mapping = [
             {'cname':'srctag',
              'cbyte':(charrange,(218,225)),
              'references':(valdmodel.Publication,'dbref')},             
-            {'cname':'acflag',
-             'cbyte':(charrange,(225,226))},
+#            {'cname':'acflag',
+#             'cbyte':(charrange,(225,226))},
+#            {'cname':'accur',
+#             'cbyte':(charrange,(226,236))},
             {'cname':'accur',
-             'cbyte':(charrange,(226,236))},
+             'cbyte':(mergeCols,(',',(charrange,(225,226)),
+                                     (charrange,(226,236)))),
+             'debug':True},
             {'cname':'comment',
              'cbyte':(charrange,(236,252))},
             {'cname':'wave_ref',             
