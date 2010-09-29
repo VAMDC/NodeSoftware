@@ -417,7 +417,7 @@ def parse_file_dict(file_dict, debug=False):
         for map_dict in mapping:
 
             # check if debug flag is set for this line
-            debug = map_dict.has_key('debug') and map_dict['debug']
+            debug = debug or map_dict.has_key('debug') and map_dict['debug']
             # do not stop or log on errors (this does not hide debug messages if debug is active)
             skiperrors = map_dict.has_key("skiperrors") and map_dict["skip_errors"]
             
