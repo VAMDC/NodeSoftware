@@ -21,7 +21,7 @@ import os, sys
 from DjVALD.node import models as valdmodel
 
 # import the line funcs
-from imptools import charrange, charrange2int, bySepNr, chainCmds, idFromLine
+from imptools import charrange, charrange2int, bySepNr, chainCmds, idFromLine, lineStrip
     
 # 
 # Create a config, a list of file definitions. Each entry in this
@@ -31,8 +31,10 @@ from imptools import charrange, charrange2int, bySepNr, chainCmds, idFromLine
 #   fname       (str)             - the file name
 #   headlines   (int)             - number of header lines to skip   
 #   commentchar (str)             - comment symbol (like #, ; etc) used in file
-#   updatematch (str)             - TODO
+#   updatematch (str)             - gives the field used when updating an existing model of the given type.
+#                                   The value in this column will be matched in the database to retrieve such an object. 
 #   cnull       (str/value)       - if defined, defines a str/value that should be ignored (e.g. 'N/A')
+#   debug       (bool)            - optional flag for debugging the parsing of a particular column
 #   columns     (dict)
 #                cname (str)      - collumn name
 #                cbyte (tup)      - method to process the line and tuple to be fed to this method
@@ -56,6 +58,8 @@ vald_cfg_file = base + 'vald3_test.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
 publications_file = base + "publications_preprocessed.dat"
+pub2source_file = base + "publications_to_sources_map.dat"
+
 
 mapping = [
     # Populate Species model, using the species input file.
@@ -87,8 +91,7 @@ mapping = [
            ],
      }, # end of definition for species file
 
-    # Populate Publication model with 
-    # pre-processed bibtex data file
+    # Populate Publication model with pre-processed bibtex data file
     {'model':valdmodel.Publication,    
      'fname':publications_file,
      'headlines':0,        
@@ -104,7 +107,7 @@ mapping = [
              'cbyte':(bySepNr, (3,'||')),},            
           ], 
       }, # end of bibtex publication data
-
+    
     # Populate Source model from vald_cfg file
     {'model':valdmodel.Source,
      'fname':vald_cfg_file,
@@ -115,6 +118,10 @@ mapping = [
              'cbyte':(bySepNr,(1,))},
             {'cname':'srcfile',
              'cbyte':(bySepNr,(0,))},
+            {'cname':'srcfile_ref',             
+             'cbyte':(chainCmds, ((bySepNr,(0,)),
+                                  (bySepNr,(3,'/')),
+                                  (lineStrip, ("'"))))},
             {'cname':'speclo',
              'cbyte':(bySepNr,(2,)),
              'references':(valdmodel.Species,'pk')},
@@ -145,6 +152,21 @@ mapping = [
              'cbyte':(bySepNr,(14,)),},
             ],
     }, # end of definition for vald_cnf file
+
+    # Populate Source model with publications through pub2source file 
+    {'model':valdmodel.Source,
+     'fname':pub2source_file,
+     'headlines':3,
+     'commentchar':'#',
+     'updatematch': 'srcfile_ref',
+     'linemap':[
+            {'cname':'srcfile_ref',
+             'cbyte':(bySepNr,(1,'||'))},
+            {'cname':'publication',
+             'cbyte':(bySepNr,(4,'||')),
+             'references':(valdmodel.Publication, 'dbref')},
+            ]
+    },
 
 # State model read from states_file -upper states
     # (first section) 
@@ -357,6 +379,7 @@ mapping = [
             {'cname':'gammawaals_ref',  
              'cbyte':(charrange,(280,284))},
              #'references':(valdmodel.Source,'pk')},            
+
             {'cname':'upstateid',     #species,coup,jnum,term,energy   
              'cbyte':(idFromLine,('-',(charrange,(30,36,)),
                                       (charrange,(170,172)),
