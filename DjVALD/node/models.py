@@ -19,19 +19,19 @@ class Species(models.Model):
         verbose_name_plural = _('Species')
 
 class Publication(models.Model):
-    dbref = models.CharField(max_length=64, db_index=True, unique=True)
-    bibref = models.CharField(max_length=25, db_index=True)
-    title = models.CharField(max_length=256, null=True, db_index=True)
-    author = models.CharField(max_length = 256, db_index=True, null=True)
-    category = models.CharField(max_length=128, null=True, db_index=True)
-    year = models.PositiveSmallIntegerField(null=True, db_index=True)
-    journal = models.CharField(max_length=256, null=True, db_index=True)
-    volume = models.PositiveSmallIntegerField(null=True, db_index=True)
-    pages = models.CharField(max_length=64, null=True, db_index=True)
-    pagebegin = models.PositiveSmallIntegerField(null=True, db_index=True)
-    pageend = models.PositiveSmallIntegerField(null=True, db_index=True)
-    url = models.CharField(max_length = 4096, db_index=True, null=True)    
-    bibtex = models.TextField(null=True, db_index=True)
+    dbref = models.CharField(max_length=64, unique=True, db_index=True)
+    bibref = models.CharField(max_length=25)
+    title = models.CharField(max_length=256, null=True)
+    author = models.CharField(max_length = 256, null=True)
+    category = models.CharField(max_length=128, null=True)
+    year = models.PositiveSmallIntegerField(null=True)
+    journal = models.CharField(max_length=256, null=True)
+    volume = models.PositiveSmallIntegerField(null=True)
+    pages = models.CharField(max_length=64, null=True)
+    pagebegin = models.PositiveSmallIntegerField(null=True)
+    pageend = models.PositiveSmallIntegerField(null=True)
+    url = models.CharField(max_length = 4096, db_index=True)    
+    bibtex = models.TextField(null=True)
 
     class Meta:
         db_table = u'publications'
