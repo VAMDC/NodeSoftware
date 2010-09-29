@@ -32,7 +32,7 @@ def lineSplit(linedata, splitsep=',', filenum=0):
     except Exception, e:
         #print "ERROR: linesplit %s: %s" % (linedata, e)
         pass
-        
+    
 def lineStrip(linedata, stripstring=None, filenum=0):
     """
     String a line of a given string. None clears all whitespace.
@@ -102,7 +102,24 @@ def chainCmds(linedata, *linefuncs):
     if data:
         return data[0]
     print "chainCommands skipping line." 
-         
+
+def mergeCols(linedata, sep, *linefuncs):
+    """
+    This merges strings taken from the given linefuncs into a single
+    string. The difference from ifFromLine below is that it will not use empty
+    strings and will possibly return an empty string. Sep may also be None.
+    """
+    if not sep:
+        sep = ""
+    dbref = []
+    for func, args in linefuncs:
+        string = str(func(linedata, *args)).strip()        
+        if not string:
+            continue
+        dbref.append(string)
+    return sep.join(dbref)
+
+    
 def idFromLine(linedata, sep, *linefuncs):
     """
     Extract strings from a line in order to build a unique id-string,
