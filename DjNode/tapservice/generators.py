@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
 
-import sys
-def LOG(s):
-    print >> sys.stderr, s
 
-#Import regexps
 import re
-# Get the node-specific pacakge!
-from django.conf import settings
-from django.utils.importlib import import_module
-
+import sys
 from xml.sax.saxutils import quoteattr
 
-
+# Get the node-specific parts
+from django.conf import settings
+from django.utils.importlib import import_module
 NODEPKG=import_module(settings.NODEPKG+'.views')
 
+
+def LOG(s):
+    if settings.DEBUG: print >> sys.stderr, s
+
+# Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
+
 
 def GetValue(name,**kwargs):
     """
@@ -25,6 +26,8 @@ def GetValue(name,**kwargs):
     try: name=NODEPKG.RETURNABLES[name]
     except: return '' # The value is not in the dictionary for the node.
                       # This is fine.
+                      # Note that this is also used by if-clauses below
+                      # since the empty string evaluates as False.
 
     if not name: return '' # if the key was in the dict, but the value empty or None
 
@@ -36,7 +39,9 @@ def GetValue(name,**kwargs):
 #        LOG(e)
 #        LOG(name)
         value=name  # this catches the case where the dict-value is a string or mistyped.
-    return value
+
+    # turn it into a string, quote it, but skip the quotation marks
+    return quoteattr('%s'%value)[1:-1] # re
     
 
 def XsamsSources(Sources):
@@ -46,6 +51,7 @@ def XsamsSources(Sources):
         G=lambda name: GetValue(name,Source=Source)
         yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
         authornames=G('SourceAuthorName')
+        # make it always into a list to be looped over, even if only single entry
         if not isiterable(authornames): authornames=[authornames]
         for author in authornames:
             yield '<Author><Name>%s</Name></Author>\n'%author
@@ -59,12 +65,18 @@ def XsamsSources(Sources):
 <PageBegin>%s</PageBegin>
 <PageEnd>%s</PageEnd>
 <UniformResourceIdentifier>%s</UniformResourceIdentifier>
-</Source>\n"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), quoteattr(G('SourceURI')) )
+</Source>\n"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
 
     yield '</Sources>\n'
 
 def XsamsAtomTerm(AtomState,G):
-    #pre-fetch the ones that will be tested for below
+    """
+    The part of XSAMS with the term designation and coupling for atoms.
+    Note that this is not a generator but a plain function that returns
+    its result.
+    """
+
+    #pre-fetch the values that will be tested for below
     coupling=G('AtomStateCoupling')
     l=G('AtomStateL')
     s=G('AtomStateS')
@@ -73,7 +85,7 @@ def XsamsAtomTerm(AtomState,G):
     j1=G('AtomStateJ1')
     j2=G('AtomStateJ2')
     
-    result='<AtomicComposition>\n<Comments>Term reference: B%s</Comments>\n'%G('AtomStateCompositionComments')
+    result='<AtomicComposition>\n<Comments>%s</Comments>\n'%G('AtomStateCompositionComments')
     result+='<Component><Configuration><ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%G('AtomStateConfigurationLabel')
     result+='<Term>'
 
@@ -89,15 +101,32 @@ def XsamsAtomTerm(AtomState,G):
     result+='</Term></Component></AtomicComposition>'
     return result
 
+
 def parityLabel(parity):
-   if partity % 2:
-      return 'odd'
-   else:
-      return 'even'
+    """
+    XSAMS whats this as strings "odd" or "even", not numerical
+    """
+    if partity % 2: return 'odd'
+    else: return 'even'
+
 
 def XsamsAtomStates(AtomStates):
+    """
+    Generator (yield) for the main block of XSAMS for the atomic states.
+    """
+
+    # if the data has no atomic states, there is nothing to see here...
     if not AtomStates: return
+
     yield '<Atoms>'
+
+    # Note and Todo: In principle we here abuse the Atom-tag by writing it
+    # for new into each state. With some clever re-ordering, we could
+    # order the states by atoms and write each of them only once with all
+    # its states inside.
+    # It needs to be seen however if this is at all possible when we get in
+    # data from various nodes.
+
     for AtomState in AtomStates:
         G=lambda name: GetValue(name,AtomState=AtomState)
         yield """<Atom>
@@ -122,6 +151,7 @@ def XsamsAtomStates(AtomStates):
         if (G('AtomStateParity') or G('AtomStateTotalAngMom')):
             yield '<AtomicQuantumNumbers><Parity>%s</Parity><TotalAngularMomentum>%s</TotalAngularMomentum></AtomicQuantumNumbers>'%(G('AtomStateParity'),G('AtomStateTotalAngMom'))
 
+        # call the function that returns the term part
         yield XsamsAtomTerm(AtomState,G)
         yield """</AtomicState>
 </IonState>
@@ -131,25 +161,31 @@ def XsamsAtomStates(AtomStates):
     yield '</Atoms>'
 
 
-# This function creates the molecular states part.
-# In its current form MoleStates contains all information
-# about the state including the species part. It does
-# not contain informations on the quantum numbers. These
-# are provided in the MoleQNs - List. Both are linked via
-# the StateId. In the first loop, the MoleQN-List copied into
-# a new list of lists using the StateID as keyword.
-# Maybe this part could be moved to the view.py in each node.
-# In this approach the molecular species information is part
-# of the MoleStates, which can be discussed, but probably 
-# this approach is faster in terms of performance and more
-# appropriate for the VO-Table output, because it reduces the
-# number of tables. Here, the MoleStates have to be sorted 
-# by Species. If we keep this approach the condition prooves
-# the identity of species should use the dictionary which
-# is currently under development
+
 
 def XsamsMolStates(MoleStates,MoleQNs):
+    """
+    This function creates the molecular states part.
+    In its current form MoleStates contains all information
+    about the state including the species part. It does
+    not contain informations on the quantum numbers. These
+    are provided in the MoleQNs - List. Both are linked via
+    the StateId. In the first loop, the MoleQN-List copied into
+    a new list of lists using the StateID as keyword.
+    Maybe this part could be moved to the view.py in each node.
+    In this approach the molecular species information is part
+    of the MoleStates, which can be discussed, but probably 
+    this approach is faster in terms of performance and more
+    appropriate for the VO-Table output, because it reduces the
+    number of tables. Here, the MoleStates have to be sorted 
+    by Species. If we keep this approach the condition prooves
+    the identity of species should use the dictionary which
+    is currently under development
+    """
+
+    # nothing to see here if the data has no molecular states
     if not MoleStates: return
+
     yield '<Molecules>'
     FormulaLastLoop = ""    
 
@@ -174,10 +210,10 @@ def XsamsMolStates(MoleStates,MoleQNs):
 <StoichiometricFormula>%s</StoichiometricFormula>
 <ChemicalName>%s</ChemicalName>
 </MolecularChemicalSpecies>
-"""% ( G("MolecularSpeciesOrdinaryStructuralFormula"),
- G("MolecularSpeciesStoichiometrcFormula"),
- G("MolecularSpeciesChemicalName")) 
+"""% ( G("MolecularSpeciesOrdinaryStructuralFormula"), G("MolecularSpeciesStoichiometrcFormula"),  G("MolecularSpeciesChemicalName")) 
+
                 FormulaLastLoop = G("MolecularSpeciesStoichiometrcFormula")
+
         yield """<MolecularState stateID="S%s">
 <Description>%s</Description>
 <MolecularStateCharacterisation>
@@ -205,15 +241,15 @@ def XsamsMolStates(MoleStates,MoleQNs):
             yield """> %s </%s:%s>""" % (G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
 
 
-        yield """</MolecularState>
-"""
-#</Molecule> """
+        yield """</MolecularState>"""  #</Molecule> """
     if FormulaLastLoop!="":
             yield '</Molecule>'
     yield '</Molecules>'
 
-#This thing yields MolecularChemicalSpecies
 def XsamsMCSBuild(Moldesc):
+    """
+    Generator for the MolecularChemicalSpecies
+    """
     G=lambda name: GetValue(name,Moldesc=Moldesc)
     yield '<MolecularChemicalSpecies>\n'
     yield """
@@ -235,6 +271,8 @@ def XsamsMCSBuild(Moldesc):
     
     yield '</MolecularChemicalSpecies>\n'
 
+
+# THIS NEEDS WORK, CDMS-specific things ahead.
 def XsamsMSBuild(Molstate):
     G=lambda name: GetValue(name,Molstate=Molstate)
     ret="""<MolecularState stateID="S%">
@@ -253,7 +291,6 @@ quoteattr(Molstate.title),
 "1")
     ret+="</MolecularState>"
     return ret
-
 
 
 def XsamsMolecs(Molecules):
@@ -281,7 +318,13 @@ def XsamsMolecs(Molecules):
 
 
 def XsamsRadTrans(RadTrans):
+    """
+    Generator for the XSAMS radiative transitions.
+    """
+
+    # nothing to do, if data has no radiative transitions
     if not RadTrans: return
+
     yield '<Radiative>'
     for RadTran in RadTrans:
         G=lambda name: GetValue(name,RadTran=RadTran)
@@ -289,7 +332,8 @@ def XsamsRadTrans(RadTrans):
 <RadiativeTransition methodRef="M%s">
 <Comments>%s</Comments>
 <EnergyWavelength>"""%(G('RadTransMethodRef'),G('RadTransComments'))
-        # fetch the ones that decide which branch to enter
+
+        # pre-fetch the values that decide which branch to enter
         WaveLenE=G('RadTransWavelengthExperimentalValue')
         WaveLenT=G('RadTransWavelengthTheoreticalValue')
         WaveLenR=G('RadTransWavelengthRitzValue')
@@ -386,6 +430,9 @@ def XsamsRadTrans(RadTrans):
 
 
 def XsamsMethods(Methods):
+    """
+    Generator for the methods block of XSAMS
+    """
     if not Methods: return
     yield '<Methods>\n'
     for Method in Methods:
@@ -397,7 +444,16 @@ def XsamsMethods(Methods):
 """%(G('MethodID'),G('MethodCategory'),G('MethodDescription'))
     yield '</Methods>\n'
 
+
 def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None,MoleQNs=None):
+    """
+    The main generator function of XSAMS. This one calles all the sub-generators above.
+    It takes the query sets that the node's setupResult() has constructed as arguments
+    with given names.
+    This function is to be passed to the HTTP-respose object directly and not to be 
+    looped over beforehand.
+    """
+
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -410,23 +466,26 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
  xmlns:nlp="http://www.ucl.ac.uk/~ucapch0/nlp"  
  xmlns:lmp="http://www.ucl.ac.uk/~ucapch0/lmp"  >
 """
+    LOG('Writing Sources.')
     for Source in XsamsSources(Sources): yield Source
+
+    LOG('Writing Methods.')
     for Method in XsamsMethods(Methods): yield Method
     
-    LOG('Write States')
+    LOG('Writing States.')
     yield '<States>\n'
     for AtomState in XsamsAtomStates(AtomStates): yield AtomState
 #    for MolState in XsamsMolecs(MoleStates): yield MolState
     for MolState in XsamsMolStates(MoleStates,MoleQNs): yield MolState
     yield '</States>\n'
-    LOG('Write Processes')
+
+    LOG('Writing Processes.')
     yield '<Processes>\n'
     for RadTran in XsamsRadTrans(RadTrans): yield RadTran
     #for CollTrans in XsamsCollTrans(CollTrans): yield CollTrans
     yield '</Processes>\n'
-    LOG('Done')
     yield '</XSAMSData>\n'
-
+    LOG('Done with XSAMS')
 
 
 
@@ -476,17 +535,18 @@ def transitions2votable(transs,count):
         <TABLEDATA>"""%(count or n,n)
 
     for trans in transs:
-        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.vacwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , xmlEscape(trans.upstateid), xmlEscape(trans.lostateid))
+        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.vacwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , trans.upstateid, trans.lostateid)
         
     yield """</TABLEDATA></DATA></TABLE>"""
 
 
+# DO NOT USE THIS, but quoteattr() as imported above
 # Returns an XML-escaped version of a given string. The &, < and > characters are escaped.
-def xmlEscape(s):
-    if s:
-        return s.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
-    else:
-        return None
+#def xmlEscape(s):
+#    if s:
+#        return s.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
+#    else:
+#        return None
 
 
 def votable(transitions,states,sources,totalcount=None):

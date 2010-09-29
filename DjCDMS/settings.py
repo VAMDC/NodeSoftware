@@ -15,6 +15,8 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+TAP_URL = 'http://www.astro.uni-koeln.de:8098/DjCDMS/tap/'
+
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 #DATABASE_NAME = '/home/tom/py/vamdc/DjVALD/vald3.db'
 DATABASE_NAME = 'CDMS'             # Or path to database file if using sqlite3.

@@ -66,7 +66,7 @@ def LOG(s):
 def singleWhere(w,RESTRICTABLES):
     if not RESTRICTABLES.has_key(w[0]): LOG('cant find name %s'%w[0]); return ''
     if not OPTRANS.has_key(w[1]): LOG('cant find operator %s'%w[1]); return ''
-    return 'Q(%s="%s")'%(RESTRICTABLES[w[0]] + OPTRANS[w[1]],w[2])
+    return 'Q(%s=%s)'%(RESTRICTABLES[w[0]] + OPTRANS[w[1]],w[2])
 
 def where2q(ws,RESTRICTABLES):
     q=''
