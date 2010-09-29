@@ -21,7 +21,7 @@ import os, sys
 from DjVALD.node import models as valdmodel
 
 # import the line funcs
-from imptools import charrange, charrange2int, bySepNr, chainCmds, idFromLine, lineStrip
+from imptools import charrange, charrange2int, bySepNr, chainCmds, idFromLine, lineStrip, lineSplit
     
 # 
 # Create a config, a list of file definitions. Each entry in this
@@ -54,7 +54,8 @@ base = "/vald/"
 # publications_file = base + "publications_preprocessed.dat"
 
 species_list_file = base + 'VALD_list_of_species'
-vald_cfg_file = base + 'vald3_test.cfg'
+#vald_cfg_file = base + 'vald3_test.cfg'
+vald_cfg_file = base + 'VALD3_config_2010.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
 publications_file = base + "publications_preprocessed.dat"
@@ -106,7 +107,7 @@ mapping = [
             {'cname':'bibtex',
              'cbyte':(bySepNr, (3,'||')),},            
           ], 
-      }, # end of bibtex publication data
+      }, # end of bibtex public5Bation data
     
     # Populate Source model from vald_cfg file
     {'model':valdmodel.Source,
@@ -151,7 +152,7 @@ mapping = [
             {'cname':'srcdescr',
              'cbyte':(bySepNr,(14,)),},
             ],
-    }, # end of definition for vald_cnf file
+    }, # end of definition for vald_conf file
 
     # Populate Source model with publications through pub2source file 
     {'model':valdmodel.Source,
@@ -161,11 +162,14 @@ mapping = [
      'updatematch': 'srcfile_ref',
      'linemap':[
             {'cname':'srcfile_ref',
-             'cbyte':(bySepNr,(1,'||'))},
-            {'cname':'publication',
-             'cbyte':(bySepNr,(4,'||')),
-             'references':(valdmodel.Publication, 'dbref')},
-            ]
+             'cbyte':(bySepNr,(1,'||')),
+             'debug':False},
+            {'cname':'publications',
+             'cbyte':(chainCmds, ((bySepNr,(4,'||')),
+                                  (lineSplit,(',',)))), # returns a list! 
+             'multireferences':(valdmodel.Publication, 'dbref'),
+             'debug':False}
+             ]
     },
 
 # State model read from states_file -upper states
@@ -354,7 +358,7 @@ mapping = [
              'cnull':'0.0'},
             {'cname':'srctag',
              'cbyte':(charrange,(218,225)),
-             'references':(valdmodel.Publication,'dbref', 'skiperror')},
+             'references':(valdmodel.Publication,'dbref')},             
             {'cname':'acflag',
              'cbyte':(charrange,(225,226))},
             {'cname':'accur',

@@ -99,7 +99,7 @@ class Species(models.Model):
         verbose_name_plural = _('Species')
 
 class Publication(models.Model):
-    dbref = models.CharField(max_length=64, db_index=True)
+    dbref = models.CharField(max_length=64, db_index=True, unique=True)
     bibref = models.CharField(max_length=25, db_index=True)
     author = models.CharField(max_length = 512, db_index=True, null=True, blank=True)
     bibtex = models.CharField(max_length = 512, db_index=True)
@@ -109,7 +109,8 @@ class Source(models.Model):
     srcfile_ref = models.CharField(max_length=128, null=True)
     speclo = models.ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True)
     spechi = models.ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi',null=True)
-    publication = models.ForeignKey(Publication,related_name='publication_set',null=True)
+    #publication = models.ForeignKey(Publication,related_name='publication_set',null=True)
+    publications = models.ManyToManyField(Publication, symmetrical=False, related_name='publications_set', null=True)
     listtype = models.PositiveSmallIntegerField(null=True,blank=True)
     r1 = models.PositiveSmallIntegerField(null=True, blank=True)
     r2 = models.PositiveSmallIntegerField(null=True, blank=True)

@@ -22,6 +22,17 @@ TOTAL_ERRS = 0
 
 # Line functions
 
+def lineSplit(linedata, splitsep=',', filenum=0):
+    """
+    Splits a line by splitsep, returns a list. The main use for this
+    method is multireferencing; normally you don't want to create lists within lists otherwise.
+    """    
+    try:
+        return [string.strip() for string in linedata[filenum].split(splitsep)]
+    except Exception, e:
+        #print "ERROR: linesplit %s: %s" % (linedata, e)
+        pass
+        
 def lineStrip(linedata, stripstring=None, filenum=0):
     """
     String a line of a given string. None clears all whitespace.
@@ -29,7 +40,7 @@ def lineStrip(linedata, stripstring=None, filenum=0):
     try:
         return linedata[filenum].strip(stripstring)
     except Exception, e:
-        print "linestrip error: %s" % e
+        #print "ERROR: linestrip %s: %s" % (linedata, e)
         pass 
     
 def charrange(linedata, start, end, filenum=0):
@@ -46,19 +57,36 @@ def charrange2int(linedata, start, end, filenum=0):
     try:
         return int(round(float(linedata[filenum][start:end].strip())))
     except Exception, e:
-        print "charrange2int failure: %s: %s" % (linedata, e)
-    
+        #print "ERROR: charrange2int: %s: %s" % (linedata, e)
+        pass
+        
 def bySepNr(linedata, number, sep=',',filenum=0):
     """
     Split a text line by sep argument and return
-    the split section with given number
+    the number:ed split section
     """
     try:
         return linedata[filenum].split(sep)[number].strip()
     except Exception, e:
         pass
-        #print "bySepNr skipping line '%s': %s" % (linedata, e)
+        #print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
 
+def selectCmds(linedata, condition, funcdefTrue, funcdefFalse, filenum=0):
+    """
+    Optional choice of commands. The argument 'condition' is a string that is evaluated. In this
+    evaluation, a variable 'line' may be refered to, meaning the currently working line.
+    funcdefTrue is used if condition is True, funcdefFalse otherwise. The linefuncs should be given as
+    tuple definifitions + arguments, e.g. (linefunc1, (arg1, arg2)), (linefunc2, (arg1)).     
+    """
+    try:
+        line = linedata[filenum]
+        if eval(condition):
+            return funcdefTrue[0](linedata, *funcdefTrue[1])
+        else:
+            return funcdefFalse[0](linedata, *funcdefFalse[1])
+    except Exception, e:
+        print "ERROR: selectCmds: %s: %s" % (linedata, e)
+    
 def chainCmds(linedata, *linefuncs):
     """
     This command allows for chaining together several line functions in
@@ -223,6 +251,7 @@ def find_match_and_update(property_name, match_key, model, data):
             match.save(force_update=True) 
         except Exception, e:
             sys.stderr.write("%s: model.%s=%s\n" % (e, key, data[key]))
+    return match
             
 def create_new(model, data):
     """
@@ -232,12 +261,15 @@ def create_new(model, data):
     model - django model type
     inpdict - dictionary of fieldname:value that should be created.
     """
-    model.objects.create(**data)
-    #m=model()
-    #for key in data.keys():
-    #    setattr(m,key,data[key])
-    #m.save()
+    return model.objects.create(**data)
 
+def add_many2many(model, fieldname, objrefs):
+    """
+    Add a set of already located references to a many-to-many
+    field named fieldname on a model. 
+    """     
+    eval("model.%s.add(*objrefs)" % (fieldname))
+    
 class MappingFile(object):
     """
     This class implements an object that represents
@@ -333,7 +365,7 @@ def parse_file_dict(file_dict, debug=False):
     errlines = file_dict.get('errlines', ["Unknown" for i in range(nfiles)])
     if not is_iter(errlines):
         errlines = [errlines]
-    
+        
     # -----
         
     if len(filenames) == 1:
@@ -354,6 +386,9 @@ def parse_file_dict(file_dict, debug=False):
         total += 1
         lines = []
         data = {}
+
+        many2manyfield_list = []
+
         try:
             for mapfile in mapfiles:
                 # this automatically syncs all files' lines
@@ -366,10 +401,13 @@ def parse_file_dict(file_dict, debug=False):
 
             # check if debug flag is set for this line
             debug = map_dict.has_key('debug') and map_dict['debug']
-
+            # do not stop or log on errors (this does not hide debug messages if debug is active)
+            skiperrors = map_dict.has_key("skiperrors") and map_dict["skip_errors"]
+            
             # parse the mapping for this line(s)
             dat = process_line(lines, map_dict)           
-            if debug: print "DEBUG: process_line dat = '%s'" % dat
+            if debug:
+                print "DEBUG: process_line returns '%s'" % dat
 
             if not dat or (map_dict.has_key('cnull') 
                    and dat == map_dict['cnull']):
@@ -377,40 +415,83 @@ def parse_file_dict(file_dict, debug=False):
                 continue
             
             if map_dict.has_key('references'):
-               # this collumn references another field
-               # (i.e. a foreign key)
-               refmodel = map_dict['references'][0]
-               refcol = map_dict['references'][1]            
-               # create a query object q for locating
-               # the referenced model and field
-               Qquery = eval('Q(%s="%s")' % (refcol, dat))
-               try:
-                   dat = refmodel.objects.get(Qquery)
-               except Exception:
-                   errors += 1
-                   if len(map_dict['references']) > 2 \
-                           and map_dict['references'][2] == 'skiperror':
-                       # Don't create an entry for this (this requires
-                       # null=True in the relevant field)
-                       if debug:
-                           print "skipping unfound reference %s" % dat
-                       continue
-                   # this is a real error, should always stop.
-                   string = "reference %s.%s='%s' not found.\n"                     
-                   print string % (refmodel,refcol, dat)
-                   raw_input("paused...")
-                   dat = None            
-                
+                # this collumn references another field
+                # (i.e. a foreign key)
+                refmodel = map_dict['references'][0]
+                refcol = map_dict['references'][1]            
+                # create a query object q for locating
+                # the referenced model and field
+                Qquery = eval('Q(%s="%s")' % (refcol, dat))
+                try:
+                    dat = refmodel.objects.get(Qquery)
+                except Exception, e:
+                    errors += 1
+                    errstring = "reference %s.%s='%s (e)' not found." % (refmodel,refcol, dat, e)
+                    if skiperrors:                
+                        if debug:       
+                            print "DEBUG: %s" % errstring
+                    else:                            
+                        raw_input("ERROR: %s" % errstring)                        
+                    dat = None
+                    
+            if map_dict.has_key('multireferences'):
+                # this collumn references multiple other objects
+                # (i.e. a many-to-many relation). It requres that 'dat' is a list of
+                # equal length to the given reference fields.                
+
+                if not is_iter(dat):
+                    if skiperrors:
+                        if debug:
+                            print "DEBUG: Skipping malformed multireference field: %s (%s)" % (dat, map_dict['references'])
+                    else:
+                        raw_input("ERROR: Malformed multireference field: %s (%s)" % (dat, map_dict['references'])) 
+                    continue
+
+                refmodel = map_dict['multireferences'][0]
+                refcol = map_dict['multireferences'][1]
+
+                many2many_dict = {"refmodel":refmodel,
+                                  "fieldname":map_dict["cname"],
+                                  "objlist":[]}
+                # create a query object q for locating
+                # the referenced model and field
+                for ref in dat:
+                    if not ref:
+                        continue 
+                    Qquery = eval('Q(%s="%s")' % (refcol, ref))
+                    try:
+                        obj = refmodel.objects.get(Qquery)
+                    except Exception, e:
+                        errors += 1
+                        errstring = "reference %s.%s='%s' not found (%s)." % (refmodel,refcol, ref, e)
+                        if skiperrors:                    
+                            if debug:                        
+                                print "DEBUG: %s" % errstring
+                        else:                            
+                            raw_input("ERROR: %s" % errstring)                        
+                        # we don't add anything to data dict, we just skip. For this to     
+                        # work we required null=True in the model.
+                        continue
+                    many2many_dict['objlist'].append(obj)
+
+                # this particular set of data should not go into the data dict
+                # but is stored for post-processing
+                many2manyfield_list.append(many2many_dict)
+                continue 
+                    
+            # move result(s) into database
             data[map_dict['cname']] = dat
 
             # line columns parsed; now move to database 
+
+        modelinstance = None 
 
         if updatematch:
             # Model was already created; this run is for
             # updating it properly (e.g. for vald)            
             try:
                 match_key = data[updatematch]
-                find_match_and_update(updatematch, match_key, model, data)
+                modelinstance = find_match_and_update(updatematch, match_key, model, data)
             except Exception, e:
                 errors += 1
                 if debug:
@@ -422,12 +503,18 @@ def parse_file_dict(file_dict, debug=False):
             if not data.has_key('pk'):
                 data['pk'] = None
             try:
-                create_new(model, data)
+                modelinstance = create_new(model, data)
             except Exception, e:                
                 errors += 1
                 if debug:
                     log_trace(e, "ERROR creating %s: " % model)
-
+            
+        # post processing: many-to-many fields
+        if modelinstance:
+            for mdict in many2manyfield_list:            
+                add_many2many(modelinstance, mdict["fieldname"], mdict["objlist"])
+                modelinstance.save()
+            
     print '%s done. %i collisions/errors/nomatches out of %i lines.' % (" + ".join(filenames), errors, total)
 
     global TOTAL_LINES, TOTAL_ERRS
