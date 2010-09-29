@@ -99,6 +99,7 @@ class Species(models.Model):
         verbose_name_plural = _('Species')
 
 class Publication(models.Model):
+    
     dbref = models.CharField(max_length=64, unique=True, db_index=True)
     bibref = models.CharField(max_length=25)
     title = models.CharField(max_length=256, null=True)
