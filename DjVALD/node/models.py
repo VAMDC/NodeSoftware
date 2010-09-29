@@ -101,8 +101,18 @@ class Species(models.Model):
 class Publication(models.Model):
     dbref = models.CharField(max_length=64, db_index=True, unique=True)
     bibref = models.CharField(max_length=25, db_index=True)
-    author = models.CharField(max_length = 512, db_index=True, null=True, blank=True)
-    bibtex = models.CharField(max_length = 512, db_index=True)
+    title = models.CharField(max_length=256, null=True, db_index=True)
+    author = models.CharField(max_length = 256, db_index=True, null=True)
+    category = models.CharField(max_length=128, null=True, db_index=True)
+    year = models.PositiveSmallIntegerField(null=True, db_index=True)
+    journal = models.CharField(max_length=256, null=True, db_index=True)
+    volume = models.PositiveSmallIntegerField(null=True, db_index=True)
+    page = models.CharField(max_length=64, null=True, db_index=True)
+    pagebegin = models.PositiveSmallIntegerField(null=True, db_index=True)
+    pageend = models.PositiveSmallIntegerField(null=True, db_index=True)
+    url = models.CharField(max_length = 256, db_index=True, null=True)    
+    bibtex = models.TextField(null=True, db_index=True)
+
     class Meta:
         db_table = u'publications'
         verbose_name = _('Publication')
