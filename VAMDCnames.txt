@@ -38,24 +38,31 @@ AtomStateEnergyUnits:Unit for the level energy:(String):
 AtomStateEnergyRef:Reference-ID for AtomStateEnergy:(String):
 AtomStateDescription:Level description:Good luck:(String):
 
-# Radiative transitions
 
+# Radiative transitions
 RadTransComments:::(String):
 RadTransMethodRef:determination method:E.g. ab initio, semi-empirical, experimental::(String):
 
 RadTransInitialStateRef:Reference for the initial level:A label referring to the description of the intial level for the radiative transition:(String):
 RadTransFinalStateRef:Reference for the final level:A label referring to the description of the final level for the radiative transition:(String):
-RadTransGammaRadLog:Radiative damping constant in rad/s:log10 of the radiative damping constant in radians per second:(Float|Double):<=0
-RadTransGammaRadRef::::
-RadTransGammaStarkLog:Quadratic Stark broadening in rad/s for 10000 K:log10 quadratic Stark damping constant computed for 10000 K per one charged particle:(Float|Double):<=0
-RadTransGammaStarkSD:Fit to the quadratic Stark broadening in rad/s:4-parameter Saha-Breshaut, Dimitrievic fit to the quadratic Stark damping as function of temperature one charged particle:(Float|Double):
-RadTransGammaStarkRef::::
-RadTransGammaWaalsLog:Van der Waals damping constant:Van der Waals damping constant in rad/s:log10 van der Waals damping constant for 10000 K and per one neutral particle:(Float|Double):<=0
-RadTransGammaWaalsBP:Van der Waals damping constant:Anstee-Barklem fit to the van der Waals damping constant:(Float|Double):
-RadTransGammaWaalsRef::::
+
+RadTransBroadRadGammaLog:Radiative damping constant in rad/s:log10 of the radiative damping constant in radians per second:(Float|Double):<=0
+RadTransBroadRadRef::::
+
+RadTransBroadStarkGammaLog:Quadratic Stark broadening in rad/s for 10000 K:log10 quadratic Stark damping constant computed for 10000 K per one charged particle:(Float|Double):<=0
+RadTransBroadStarkGammaSD:Fit to the quadratic Stark broadening in rad/s:4-parameter Saha-Breshaut, Dimitrievic fit to the quadratic Stark damping as function of temperature one charged particle:(Float|Double):
+RadTransBroadStarkRef::::
+
+RadTransBroadWaalsGammaLog:Van der Waals damping constant:Van der Waals damping constant in rad/s:log10 van der Waals damping constant for 10000 K and per one neutral particle:(Float|Double):<=0
+RadTransBroadWaalsAlpha:Van der Waals damping constant alpha:Anstee-Barklem fit to the van der Waals damping constant:(Float|Double):
+RadTransBroadWaalsSigma:Van der Waals damping constant sigma:Anstee-Barklem fit to the van der Waals damping constant:(Float|Double):
+RadTransBroadWaalsRef::::
+
+RadTransBroadEnvironment::::
+RadTransBroadSpecies::::
+
 RadTransEffLande:Effective Lande factor:Effective Lande factor for a given transition:(Float|Double):
 RadTransEffLandeRef::::
-
 
 RadTransWavenumberRitzComments:::(String):
 RadTransWavenumberRitzSourceRef:Ritz wavenumber source::(String):
