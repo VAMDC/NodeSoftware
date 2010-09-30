@@ -87,7 +87,7 @@ def index(request):
 def getVALDsources(transs):
     sids=set([])
     for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
+        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.waals_ref])
         sids=sids.union(s)
     return Source.objects.filter(pk__in=sids)
 

@@ -321,8 +321,8 @@ def XsamsRadTranBroadening(typedescr,ref,params):
     helper function for line broadening below
     """
 
-    result='<Broadening><BroadeningProcess sourceRef="%s"><BroadeningSpecies>'%ref
-    result+='<Comments>%s<Comments>'%typedescr
+    result='<Broadening><BroadeningProcess sourceRef="B%s"><BroadeningSpecies>'%ref
+    result+='<Comments>%s</Comments>'%typedescr
     for par in params:
         result+='<LineshapeParameter><Value>%s</Value></LineshapeParameter>'%par
 
@@ -430,9 +430,8 @@ def XsamsRadTrans(RadTrans):
 
         yield '</EnergyWavelength>'
 
-        if G('RadTransEffLande'): yield """<EffLandeFactor><Value sourceRef="%s">%s</Value</EffLandeFactor>"""%(G('RadTransEffLande'),G('RadTransEffLandeRef'))
+        if G('RadTransEffLande'): yield """<EffLandeFactor><Value sourceRef="B%s">%s</Value></EffLandeFactor>"""%(G('RadTransEffLandeRef'),G('RadTransEffLande'))
 
-        typedescr,ref,params
         if G('RadTransBroadRadGammaLog'): yield XsamsRadTranBroadening('log10 of the radiative damping constant in radians per second',G('RadTransBroadRadRef'),[G('RadTransBroadRadGammaLog')])
         if G('RadTransBroadStarkGammaLog'): yield XsamsRadTranBroadening('log10 quadratic Stark damping constant computed for 10000 K per one charged particle',G('RadTransBroadStarkRef'),[G('RadTransBroadStarkGammaLog')])
         if G('RadTransBroadWaalsGammaLog'): yield XsamsRadTranBroadening('log10 van der Waals damping constant for 10000 K and per one neutral particle',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsGammaLog')])
