@@ -55,6 +55,16 @@ RETURNABLES={\
 'RadTransMethodRef':'OBS',
 'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref',
 'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
+'RadTransBroadRadGammaLog':'RadTran.gammarad'
+'RadTransBroadRadRef':'RadTran.'
+'RadTransBroadStarkGammaLog':'RadTran.gammastark'
+'RadTransBroadStarkRef':'RadTran.'
+'RadTransBroadWaalsGammaLog':'RadTran.'
+'RadTransBroadWaalsAlpha':'RadTran.'
+'RadTransBroadWaalsSigma':'RadTran.'
+'RadTransBroadWaalsRef':'RadTran.'
+'RadTransEffLande':'RadTran.'
+'RadTransEffLandeRef':'RadTran.'
 }
 
 RESTRICTABLES = {\
