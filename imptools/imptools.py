@@ -94,8 +94,7 @@ def ifCond(linedata, condition, funcdefTrue, funcdefFalse, filenum=0):
     """
     #print "into ifCond:", linedata, funcdefTrue, funcdefFalse
     try:
-        line = linedata[filenum]
-        print eval(condition)
+        line = linedata[filenum]        
         if eval(condition):
             return funcdefTrue[0](linedata, *funcdefTrue[1])
         else:
