@@ -54,8 +54,8 @@ RadTransBroadStarkGammaSD:Fit to the quadratic Stark broadening in rad/s:4-param
 RadTransBroadStarkRef::::
 
 RadTransBroadWaalsGammaLog:Van der Waals damping constant:Van der Waals damping constant in rad/s:log10 van der Waals damping constant for 10000 K and per one neutral particle:(Float|Double):<=0
-RadTransBroadWaalsAlpha:Van der Waals damping constant alpha:Anstee-Barklem fit to the van der Waals damping constant:(Float|Double):
-RadTransBroadWaalsSigma:Van der Waals damping constant sigma:Anstee-Barklem fit to the van der Waals damping constant:(Float|Double):
+RadTransBroadWaalsAlpha:Van der Waals damping constant alpha:Anstee-Barklem fit to the van der Waals damping constant alpha:(Float|Double):
+RadTransBroadWaalsSigma:Van der Waals damping constant sigma:Anstee-Barklem fit to the van der Waals damping constant sigma:(Float|Double):
 RadTransBroadWaalsRef::::
 
 RadTransBroadEnvironment::::

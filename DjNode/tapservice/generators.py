@@ -316,7 +316,18 @@ def XsamsMolecs(Molecules):
         yield '</Molecule>\n'
     yield '</Molecules>\n'
     
+def XsamsRadTranBroadening(typedescr,ref,params):
+    """
+    helper function for line broadening below
+    """
 
+    result='<Broadening><BroadeningProcess sourceRef="%s"><BroadeningSpecies>'%ref
+    result+='<Comments>%s<Comments>'%typedescr
+    for par in params:
+        result+='<LineshapeParameter><Value>%s</Value></LineshapeParameter>'%par
+
+    result+='</BroadeningSpecies></BroadeningProcess></Broadening>'
+    return result
 
 def XsamsRadTrans(RadTrans):
     """
@@ -419,7 +430,14 @@ def XsamsRadTrans(RadTrans):
 
         yield '</EnergyWavelength>'
 
+        if G('RadTransEffLande'): yield """<EffLandeFactor><Value sourceRef="%s">%s</Value</EffLandeFactor>"""%(G('RadTransEffLande'),G('RadTransEffLandeRef'))
 
+        typedescr,ref,params
+        if G('RadTransBroadRadGammaLog'): yield XsamsRadTranBroadening('log10 of the radiative damping constant in radians per second',G('RadTransBroadRadRef'),[G('RadTransBroadRadGammaLog')])
+        if G('RadTransBroadStarkGammaLog'): yield XsamsRadTranBroadening('log10 quadratic Stark damping constant computed for 10000 K per one charged particle',G('RadTransBroadStarkRef'),[G('RadTransBroadStarkGammaLog')])
+        if G('RadTransBroadWaalsGammaLog'): yield XsamsRadTranBroadening('log10 van der Waals damping constant for 10000 K and per one neutral particle',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsGammaLog')])
+        if G('RadTransBroadWaalsAlpha'): yield XsamsRadTranBroadening('Anstee-Barklem fit to the van der Waals damping constants alpha and sigma',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsAlpha'),G('RadTransBroadWaalsSigma')])
+        
         if G('RadTransInitialStateRef'): yield '<InitialStateRef>S%s</InitialStateRef>'%G('RadTransInitialStateRef')
         if G('RadTransFinalStateRef'): yield '<FinalStateRef>S%s</FinalStateRef>'%G('RadTransFinalStateRef')
         if G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'): yield """<Probability>
