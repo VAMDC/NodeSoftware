@@ -18,7 +18,7 @@ os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
 import imptools
 import mapping_vald3
 
-DEBUG = False 
+DEBUG = False
 
 
 # The main program
