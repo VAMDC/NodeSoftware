@@ -26,14 +26,14 @@ def passLine(linedata, filenum=0):
     """
     This method simply returns the line unaltered.
     """
-    print "into passLine: ", linedata
+    #print "into passLine: ", linedata
     return linedata[filenum]
 
 def setLine(linedata, value, filenum=0):
     """
     Replace line with a given value instead of what is actually given
     """
-    print "into setLine:", linedata, value
+    #print "into setLine:", linedata, value
     return value 
 
 def lineSplit(linedata, splitsep=',', filenum=0):
@@ -92,7 +92,7 @@ def ifCond(linedata, condition, funcdefTrue, funcdefFalse, filenum=0):
     funcdefTrue is used if condition is True, funcdefFalse otherwise. The linefuncs should be given as
     tuple definifitions + arguments, e.g. (linefunc1, (arg1, arg2)), (linefunc2, (arg1)).     
     """
-    print "into ifCond:", linedata, funcdefTrue, funcdefFalse
+    #print "into ifCond:", linedata, funcdefTrue, funcdefFalse
     try:
         line = linedata[filenum]
         print eval(condition)
