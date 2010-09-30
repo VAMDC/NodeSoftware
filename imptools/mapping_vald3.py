@@ -98,7 +98,7 @@ mapping = [
      'commentchar':'#',    
      'linemap':[           
             {'cname':'dbref',
-             'cbyte':(bySepNr, (0,'||'))},  
+             'cbyte':(bySepNr, (0,'||')),},
             {'cname':'bibref',
              'cbyte':(bySepNr, (1,'||')),},  
             {'cname':'author',

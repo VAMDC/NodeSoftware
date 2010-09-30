@@ -26,7 +26,7 @@ class Publication(models.Model):
     category = models.CharField(max_length=128, null=True)
     year = models.PositiveSmallIntegerField(null=True)
     journal = models.CharField(max_length=256, null=True)
-    volume = models.PositiveSmallIntegerField(null=True)
+    volume = models.CharField(max_length=64, null=True)
     pages = models.CharField(max_length=64, null=True)
     pagebegin = models.PositiveSmallIntegerField(null=True)
     pageend = models.PositiveSmallIntegerField(null=True)
