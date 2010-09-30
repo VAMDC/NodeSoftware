@@ -8,30 +8,25 @@ from django.conf import settings
 
 from DjVALD.node.models import *
 
-from base64 import b64encode as b64
-def enc(s):
-    return b64(s).replace('=','')
-
 import sys
 def LOG(s):
-    print >> sys.stderr, s
+    if settings.DEBUG: print >> sys.stderr, s
 
 #from lxml import etree as E
 #vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
 
-
 RETURNABLES={\
 'SourceID':'Source.id',
-'SourceAuthorName':'Source.srcdescr',
-'SourceCategory':'journal',
-'SourcePageBegin':'',
-'SourcePageEnd':'',
-'SourceName':'',
-'SourceTitle':'',
-'SourceURI':'',
-'SourceVolume':'',
-'SourceYear':'"2222"',
+'SourceAuthorName':'Source.publications.all()[0].author',
+'SourceCategory':'Source.publications.all()[0].category',
+'SourcePageBegin':'Source.publications.all()[0].pages',
+'SourcePageEnd':'Source.publications.all()[0].pages',
+'SourceName':'Source.publications.all()[0].journal',
+'SourceTitle':'Source.publications.all()[0].title',
+'SourceURI':'Source.publications.all()[0].url',
+'SourceVolume':'Source.publications.all()[0].volume',
+'SourceYear':'Source.publications.all()[0].year',
 'MethodID':'"MOBS"',
 'MethodCategory':'"observed"',
 'MethodDescription':'',

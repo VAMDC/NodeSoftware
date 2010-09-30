@@ -30,7 +30,7 @@ class Publication(models.Model):
     pages = models.CharField(max_length=64, null=True)
     pagebegin = models.PositiveSmallIntegerField(null=True)
     pageend = models.PositiveSmallIntegerField(null=True)
-    url = models.CharField(max_length = 4096, db_index=True)    
+    url = models.TextField(null=True)    
     bibtex = models.TextField(null=True)
 
     class Meta:
