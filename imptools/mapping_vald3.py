@@ -21,8 +21,8 @@ import os, sys
 from DjVALD.node import models as valdmodel
 
 # import the line funcs
-from imptools import charrange, charrange2int, bySepNr, chainCmds
-from imptools import idFromLine, lineStrip, lineSplit, mergeCols
+from imptools import charrange, charrange2int, bySepNr, chainCmds, passLine, setLine
+from imptools import idFromLine, lineStrip, lineSplit, mergeCols, ifCond, formatLine
     
 # 
 # Create a config, a list of file definitions. Each entry in this
@@ -369,10 +369,23 @@ mapping = [
              'cnull':'0.0'},
             {'cname':'gammastark',
              'cbyte':(charrange,(107,114)),
-             'cnull':'0.0'},
-            {'cname':'gammawaals',
+             'cnull':'0.0'},            
+            {'cname':'sigmawaals', # only filled if raw value > 0.  
+             'cbyte':(chainCmds, ( (charrange,(114,122)),
+                                 (ifCond, ("float(line) > 0",
+                                           (bySepNr, (0,'.')),
+                                           (setLine, (0.000,)))))),
+
+             'cnull':'0.000',"debug":False},
+            {'cname':'alphawaals',
              'cbyte':(charrange,(114,122)),
-             'cnull':'0.0'},
+             'cbyte':(chainCmds,( (charrange,(114,122)),
+                                  (ifCond, ("float(line) > 0",
+                                            (formatLine, ("%s.%s",
+                                                          (setLine, ("0",)),
+                                                          (bySepNr, (1, '.')))),                                           
+                                           (passLine, ()))))),
+             'cnull':'0.000',"debug":False},
             {'cname':'srctag',
              'cbyte':(charrange,(218,225)),
              'references':(valdmodel.Publication,'dbref'),

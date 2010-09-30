@@ -18,6 +18,8 @@ os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
 import imptools
 import mapping_vald3
 
+DEBUG = False 
+
 
 # The main program
 #        
@@ -44,7 +46,7 @@ def import_to_db():
 
     if mapping:
         # do the import        
-        imptools.parse_mapping(mapping, debug=False)
+        imptools.parse_mapping(mapping, debug=DEBUG)
     else:
         # likely an error in reading a mapping file. 
         return 

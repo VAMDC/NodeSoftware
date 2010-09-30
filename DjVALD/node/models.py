@@ -105,8 +105,9 @@ class Transition(models.Model):
     loggf = models.DecimalField(max_digits=8, decimal_places=3,null=True,blank=True)
     landeff = models.DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     gammarad = models.DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
-    gammastark = models.DecimalField(max_digits=6, decimal_places=2,null=True,blank=True) 
-    gammawaals = models.DecimalField(max_digits=6, decimal_places=2,null=True,blank=True) 
+    gammastark = models.DecimalField(max_digits=7, decimal_places=3,null=True,blank=True)     
+    sigmawaals = models.IntegerField(null=True,blank=True)                                #split out of the raw data field into two    
+    alphawaals = models.DecimalField(max_digits=6, decimal_places=3,null=True,blank=True) #                 "
     srctag = models.ForeignKey(Publication, db_column='publication', db_index=True, null=True)
     #acflag = models.CharField(max_length=1, blank=True,null=True)
     accur = models.CharField(max_length=11, blank=True,null=True)
