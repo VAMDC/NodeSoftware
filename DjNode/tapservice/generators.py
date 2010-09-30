@@ -321,12 +321,14 @@ def XsamsRadTranBroadening(typedescr,ref,params):
     helper function for line broadening below
     """
 
-    result='<Broadening><BroadeningProcess sourceRef="B%s"><BroadeningSpecies>'%ref
+    result='<BroadeningProcess sourceRef="B%s"><BroadeningSpecies>'%ref
     result+='<Comments>%s</Comments>'%typedescr
+    result+='<LineshapeParameter>'
     for par in params:
-        result+='<LineshapeParameter><Value>%s</Value></LineshapeParameter>'%par
+        result+='<Value>%s</Value>'%par
 
-    result+='</BroadeningSpecies></BroadeningProcess></Broadening>'
+    result+='</LineshapeParameter>'
+    result+='</BroadeningSpecies></BroadeningProcess>'
     return result
 
 def XsamsRadTrans(RadTrans):
@@ -432,10 +434,12 @@ def XsamsRadTrans(RadTrans):
 
         if G('RadTransEffLande'): yield """<EffLandeFactor><Value sourceRef="B%s">%s</Value></EffLandeFactor>"""%(G('RadTransEffLandeRef'),G('RadTransEffLande'))
 
+	yield '<Broadening>'
         if G('RadTransBroadRadGammaLog'): yield XsamsRadTranBroadening('log10 of the radiative damping constant in radians per second',G('RadTransBroadRadRef'),[G('RadTransBroadRadGammaLog')])
         if G('RadTransBroadStarkGammaLog'): yield XsamsRadTranBroadening('log10 quadratic Stark damping constant computed for 10000 K per one charged particle',G('RadTransBroadStarkRef'),[G('RadTransBroadStarkGammaLog')])
         if G('RadTransBroadWaalsGammaLog'): yield XsamsRadTranBroadening('log10 van der Waals damping constant for 10000 K and per one neutral particle',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsGammaLog')])
         if G('RadTransBroadWaalsAlpha'): yield XsamsRadTranBroadening('Anstee-Barklem fit to the van der Waals damping constants alpha and sigma',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsAlpha'),G('RadTransBroadWaalsSigma')])
+	yield '</Broadening>'
         
         if G('RadTransInitialStateRef'): yield '<InitialStateRef>S%s</InitialStateRef>'%G('RadTransInitialStateRef')
         if G('RadTransFinalStateRef'): yield '<FinalStateRef>S%s</FinalStateRef>'%G('RadTransFinalStateRef')
