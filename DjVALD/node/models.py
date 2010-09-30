@@ -106,8 +106,9 @@ class Transition(models.Model):
     landeff = models.DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     gammarad = models.DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     gammastark = models.DecimalField(max_digits=7, decimal_places=3,null=True,blank=True)     
-    sigmawaals = models.IntegerField(null=True,blank=True)                                #split out of the raw data field into two    
-    alphawaals = models.DecimalField(max_digits=6, decimal_places=3,null=True,blank=True) #                 "
+    gammawaals = models.DecimalField(max_digits=6, decimal_places=3,null=True,blank=True)
+    sigmawaals = models.IntegerField(null=True,blank=True)                               
+    alphawaals = models.DecimalField(max_digits=6, decimal_places=3,null=True,blank=True) 
     srctag = models.ForeignKey(Publication, db_column='publication', db_index=True, null=True)
     #acflag = models.CharField(max_length=1, blank=True,null=True)
     accur = models.CharField(max_length=11, blank=True,null=True)
@@ -117,13 +118,13 @@ class Transition(models.Model):
     #lande_ref = models.ForeignKey(Source,db_column=u'lande_ref',related_name='islanderef_trans')
     #gammarad_ref = models.ForeignKey(Source,db_column=u'gammarad_ref',related_name='isgammaradref_trans')
     #gammastark_ref = models.ForeignKey(Source,db_column=u'gammastark_ref',related_name='isgammastarkref_trans')
-    #gammawaals_ref = models.ForeignKey(Source,db_column=u'gammawaals_ref',related_name='isgammawaalsref_trans')
+    #waals_ref = models.ForeignKey(Source,db_column=u'waals_ref',related_name='iswaalsref_trans')
     wave_ref = models.PositiveSmallIntegerField()
     loggf_ref = models.PositiveSmallIntegerField()
     lande_ref = models.PositiveSmallIntegerField()
     gammarad_ref = models.PositiveSmallIntegerField()
     gammastark_ref = models.PositiveSmallIntegerField()
-    gammawaals_ref = models.PositiveSmallIntegerField()
+    waals_ref = models.PositiveSmallIntegerField()
 
     upstate = models.ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True)
     lostate = models.ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True)
