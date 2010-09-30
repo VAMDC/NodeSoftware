@@ -55,6 +55,16 @@ RETURNABLES={\
 'RadTransMethodRef':'OBS',
 'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref',
 'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
+'RadTransBroadRadGammaLog':'RadTran.gammarad',
+'RadTransBroadRadRef':'RadTran.gammarad_ref',
+'RadTransBroadStarkGammaLog':'RadTran.gammastark',
+'RadTransBroadStarkRef':'RadTran.gammastark_ref',
+'RadTransBroadWaalsGammaLog':'RadTran.gammawaals',
+'RadTransBroadWaalsAlpha':'RadTran.alphawaals',
+'RadTransBroadWaalsSigma':'RadTran.sigmawaals',
+'RadTransBroadWaalsRef':'RadTran.waals_ref',
+'RadTransEffLande':'RadTran.landeff',
+'RadTransEffLandeRef':'RadTran.lande_ref',
 }
 
 RESTRICTABLES = {\
@@ -77,7 +87,7 @@ def index(request):
 def getVALDsources(transs):
     sids=set([])
     for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
+        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.waals_ref])
         sids=sids.union(s)
     return Source.objects.filter(pk__in=sids)
 
