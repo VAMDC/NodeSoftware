@@ -45,14 +45,6 @@ from imptools import idFromLine, lineStrip, lineSplit, mergeCols, ifCond, format
 # Base directory for the data files
 
 base = "/vald/"
-#base = "/home/samreg/vamdc-git/imptools/vald_raw/"
-
-# species_list_file = base + 'VALD_list_of_species'
-# vald_cfg_file = base + 'vald3_test.cfg'
-# states_file = base + 'states_preprocessed.dat'
-# transitions_file = base + 'transitions_preprocessed.dat'
-# terms_file = base + 'terms_preprocessed.dat'
-# publications_file = base + "publications_preprocessed.dat"
 
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'VALD3_config_2010.cfg'
@@ -456,3 +448,18 @@ mapping = [
     } # end of vald file def
 
 ] # end of vald3 mapping file def list
+
+
+
+#proposed new format for cbyte - string evaluation
+
+## straight forward command extraction with one command 
+# {'cname':'j1',
+#  'cbyte': "bySepNr,(2,':',1)"}
+# {"cname":"updateid",
+#  "cbyte":"idFromLine('-', charrange(30,36), charrange(170,172))"}
+
+## chained command execution: 
+# {'cname':'gammawaals', 
+#  'cbyte': ("charrange(114,122)", "ifCond(float(line) > 0, bySepNr(0,'.'), setLine(0.000))")
+# }

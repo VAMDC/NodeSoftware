@@ -145,17 +145,20 @@ class Query(models.Model):
     datetime=models.DateTimeField(auto_now_add=True)
     query=models.CharField(max_length=512)
 
+import string, random
 class LogManager(models.Manager):
     """
     Handles log object searches
-    """
-    #def makeQID(self, length=6, chars=s.letters + s.digits):
-    #    return ''.join([choice(chars) for i in xrange(length)])
-
+    """    
+    def makeQID(self, length=6, chars=string.letters + string.digits):
+        return ''.join([random.choice(chars) for i in xrange(length)])
     def create(self, request):
         """
         Create a query log based on a request
         """
+        log = self.model(qid=self.makeQID(),
+                         query=None, #TODO!
+                         request=request)
         pass
     
 class Log(models.Model):
@@ -168,10 +171,6 @@ class Log(models.Model):
     request = models.TextField()
 
     objects = LogManager()
-
-
-
-
 
 # def myvalidate(value):
 #     print "myvalidate=%s" % value
