@@ -111,7 +111,7 @@ def getVALDstates(transs):
     return State.objects.filter(pk__in=sids)
    
 
-def setupResults(sql,limit=0):
+def setupResults(sql,limit=1000):
     LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
     try: q=eval(q)
@@ -120,8 +120,10 @@ def setupResults(sql,limit=0):
     transs = Transition.objects.select_related(depth=2).filter(q)
     
     totalcount=transs.count()
-    if limit :
+    if limit < totalcount :
         transs = transs[:limit]
+        percentage='%.1f'%(float(limit)/totalcount *100)
+    else: percentage=None
 
     sources = getVALDsources(transs)
     states = getVALDstates(transs)
@@ -136,6 +138,7 @@ def setupResults(sql,limit=0):
     return {'RadTrans':transs,
             'AtomStates':states,
             'Sources':sources,
+            'Truncation':percentage
            }
 
 

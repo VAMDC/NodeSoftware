@@ -79,6 +79,12 @@ def sync(request):
     response=HttpResponse(generator,mimetype='text/xml')
     #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
+    if results.has_key('Truncation'):
+        trunc=results['Truncation']
+        if trunc!=None:
+            response['TAP-XSAMS-TRUNCATED'] = '%s %%'%trunc
+            
+    
 #    elif tap.format == 'votable': 
 #        transs,states,sources=NODEPKG.setupResults(tap)
 #        generator=votable(transs,states,sources)

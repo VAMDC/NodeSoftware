@@ -467,7 +467,7 @@ def XsamsMethods(Methods):
     yield '</Methods>\n'
 
 
-def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None,MoleQNs=None):
+def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None,MoleQNs=None,Truncation=None):
     """
     The main generator function of XSAMS. This one calles all the sub-generators above.
     It takes the query sets that the node's setupResult() has constructed as arguments
@@ -488,6 +488,16 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
  xmlns:nlp="http://www.ucl.ac.uk/~ucapch0/nlp"  
  xmlns:lmp="http://www.ucl.ac.uk/~ucapch0/lmp"  >
 """
+
+    if Truncation!=None: # note: allow 0 percent
+        yield """
+<!--
+   ATTENTION: The amount of data returned has been truncated by the node.
+   The data below represent %s percent of all available data at this node that
+   matched the query.
+-->
+"""%Truncation
+
     LOG('Writing Sources.')
     for Source in XsamsSources(Sources): yield Source
 
@@ -508,6 +518,7 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
     yield '</Processes>\n'
     yield '</XSAMSData>\n'
     LOG('Done with XSAMS')
+
 
 
 
