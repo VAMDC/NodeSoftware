@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>HITRAN cross section Search</title>
+
+<body>
+
+<h1>HITRAN Cross Section Search</h1>
+
+<form action="/HITRAN/search/" method="POST">
+{% csrf_token %}
+<table>
+{% for molec_name in xsec_molecules %}
+<tr>
+{# we need |safe here to stop Django from escaping our HTML: #}
+<td><input type="checkbox" name="{{ molec_name.molec_name }}">&nbsp;{{ molec_name.molec_name_html|safe }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<table>
+<tr>
+<td><em>&nu;</em><sub>min</sub></td>
+<td><input type="text" name="numin"></td>
+<td>cm<sup>-1</sup></td>
+</tr>
+<tr>
+<td><em>&nu;</em><sub>max</sub></td>
+<td><input type="text" name="numax"></td>
+<td>cm<sup>-1</sup></td>
+</tr>
+</table>
+
+<input type="submit" value="Search" />
+</form>
+
+</body>
+</html>
+

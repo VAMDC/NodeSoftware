@@ -5,10 +5,14 @@ from django.conf import settings
 #admin.autodiscover()
 
 urlpatterns = patterns('',
-		(r'^HITRAN/search-form/$', views.search_form),
-		(r'^HITRAN/search/$', views.search),
+		(r'', include('DjNode.urls')),
+		(r'^HITRAN/search_xsec/$', views.search_xsec),
+        (r'^node/HITRAN/tap/sync/$', views.sync),
+		#(r'^HITRAN/search/$', views.search),
 		(r'^HITRAN/media/(?P<path>.*)$', 'django.views.static.serve',
 			{'document_root': settings.BASEPATH+'DjHITRAN/media'} ),
+		(r'^HITRAN/scripts/(?P<path>.*)$', 'django.views.static.serve',
+			{'document_root': settings.BASEPATH+'DjHITRAN/scripts'} ),
 )
 
 # Replace the base by your node name and add urls
