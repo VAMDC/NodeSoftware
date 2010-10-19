@@ -13,6 +13,9 @@ MethodID:::(String):
 MethodCategory:::(String):
 MethodDescription::::
 
+# a unique species identifier for each atomic or molecular isotope / isotopologue
+SpeciesID:::(String):
+
 AtomSymbol:Atom:Atomic name:(String):
 AtomNuclearCharge:Atomic number:Atomic number or nuclear charge:(Integer):>0
 AtomIonCharge:Atomic charge:Ionization stage with 0 for neutral:(Integer):>=0
