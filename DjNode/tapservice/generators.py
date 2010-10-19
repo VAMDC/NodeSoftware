@@ -35,6 +35,7 @@ def GetValue(name,**kwargs):
 
     try: value=eval(name) # this works, if the dict-value is named correctly as the query-set attribute
     except Exception,e: 
+#        LOG('Exception in generators.py: GetValue()')
 #        LOG(e)
 #        LOG(name)
         value=name  # this catches the case where the dict-value is a string or mistyped.
@@ -164,7 +165,7 @@ def XsamsAtomStates(AtomStates):
 
 
 
-def XsamsMolStates(MoleStates,MoleQNs):
+def XsamsMolStates(MoleStates,MoleQNs=[]):
     """
     This function creates the molecular states part.
     In its current form MoleStates contains all information
