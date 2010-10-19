@@ -14,7 +14,7 @@ MethodCategory:::(String):
 MethodDescription::::
 
 # a unique species identifier for each atomic or molecular isotope / isotopologue
-SpeciesID:::(String):
+InchiKey:InChI key:International Chemical Identifier (InChI) key (27-character or 14-character first part):(String): 
 
 AtomSymbol:Atom:Atomic name:(String):
 AtomNuclearCharge:Atomic number:Atomic number or nuclear charge:(Integer):>0
@@ -179,7 +179,6 @@ MolecularSpeciesStoichiometrcFormula::::
 MolecularSpeciesIonCharge::::
 MolecularSpeciesIUPACName::::
 MolecularSpeciesURLFigure::::
-MolecularSpeciesInChIKey:InChI key:International Chemical Identifier (InChI) key (27-character or 14-character first part):(String): 
 MolecularSpeciesCASRegistryNumber::::
 MolecularSpeciesCNPIGroup::::
 MolecularSpeciesMoleculeNuclearSpins::::
