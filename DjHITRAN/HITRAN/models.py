@@ -194,7 +194,8 @@ class Trans(models.Model):
         yield '    <Wavenumber>\n'
         yield '      <Experimental sourceRef="%s">\n' % self.nu_ref
         yield '        <Value units="1/cm">%12.6f</Value>\n' % self.nu
-        yield '        <Accuracy>%10.3e</Accuracy>\n' % self.nu_err
+        if self.nu_err:
+            yield '        <Accuracy>%10.3e</Accuracy>\n' % self.nu_err
         yield '      </Experimental>\n'
         yield '    </Wavenumber>\n'
         yield '  </EnergyWavelength>\n'
