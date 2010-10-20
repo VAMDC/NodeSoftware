@@ -11,7 +11,8 @@ from django.db.models import Q
 from DjHITRAN.node.models import *
 
 import DjNode.tapservice.sqlparse as sqlparse
-from tap import TapQuery
+from DjNode.tapservice.views import TAPQUERY as TapQuery
+#from tap import TapQuery
 from xsams_generator import *
 
 #import os
