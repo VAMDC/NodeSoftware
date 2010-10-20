@@ -10,13 +10,13 @@
 from django.db import models
 
 import datetime, time
-import HITRANdb
-import HITRANrequest
-from Output.OutputPAR import *
-from Output.OutputTXT import *
-from Output.OutputXML import *
+#import HITRANdb
+#import HITRANrequest
+#from Output.OutputPAR import *
+#from Output.OutputTXT import *
+#from Output.OutputXML import *
 
-HITRAN = HITRANdb.HITRANdb()
+#HITRAN = HITRANdb.HITRANdb()
 def make_request(numin, numax, Smin, selected_molecids, output_params,
                     output_formats, compression=None):
     """

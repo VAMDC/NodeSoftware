@@ -8,10 +8,11 @@ import time
 from django.db.models import Q
 
 # import your models 
-from DjHITRAN.HITRAN.models import *
+from DjHITRAN.node.models import *
 
 import DjNode.tapservice.sqlparse as sqlparse
-from tap import TapQuery
+from DjNode.tapservice.views import TAPQUERY as TapQuery
+#from tap import TapQuery
 from xsams_generator import *
 
 #import os
@@ -107,6 +108,11 @@ molecules = Molecules.objects.filter(molecid__in=loaded_molecules).values(
 # Do the same for molecules with cross sections in the HITRAN database:
 xsec_molecules = Molecules.objects.filter(molecid__in=Xsec.objects.values(
         'molecid').distinct()).values('molecid','molec_name','molec_name_html')
+
+def index(request):
+    c=RequestContext(request,{})
+    return render_to_response('index.html', c)
+
 
 #counter=0
 def poll(request):
