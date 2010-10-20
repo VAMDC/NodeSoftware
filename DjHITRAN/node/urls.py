@@ -12,6 +12,7 @@ urlpatterns = patterns('DjHITRAN.node.views',
 		#(r'^HITRAN/scripts/(?P<path>.*)$', 'django.views.static.serve',
 		#	{'document_root': settings.BASEPATH+'DjHITRAN/scripts'} ),
                 (r'^$', 'index'),
+                (r'^tap/sync/', 'sync'),
 )
 
 # Replace the base by your node name and add urls

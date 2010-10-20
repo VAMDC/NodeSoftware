@@ -10,8 +10,8 @@ urlpatterns = patterns('',
     #(r'^admin/', include(admin.site.urls)),
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-    (r'', include('DjNode.urls')),
     (r'', include('DjHITRAN.node.urls')),
+    (r'', include('DjNode.urls')),
 
 )
 
