@@ -8,30 +8,25 @@ from django.conf import settings
 
 from DjVALD.node.models import *
 
-from base64 import b64encode as b64
-def enc(s):
-    return b64(s).replace('=','')
-
 import sys
 def LOG(s):
-    print >> sys.stderr, s
+    if settings.DEBUG: print >> sys.stderr, s
 
 #from lxml import etree as E
 #vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
 
-
 RETURNABLES={\
 'SourceID':'Source.id',
-'SourceAuthorName':'Source.srcdescr',
-'SourceCategory':'journal',
-'SourcePageBegin':'',
-'SourcePageEnd':'',
-'SourceName':'',
-'SourceTitle':'',
-'SourceURI':'',
-'SourceVolume':'',
-'SourceYear':'"2222"',
+'SourceAuthorName':'Source.publications.all()[0].author',
+'SourceCategory':'Source.publications.all()[0].category',
+'SourcePageBegin':'Source.publications.all()[0].pages',
+'SourcePageEnd':'Source.publications.all()[0].pages',
+'SourceName':'Source.publications.all()[0].journal',
+'SourceTitle':'Source.publications.all()[0].title',
+'SourceURI':'Source.publications.all()[0].url',
+'SourceVolume':'Source.publications.all()[0].volume',
+'SourceYear':'Source.publications.all()[0].year',
 'MethodID':'"MOBS"',
 'MethodCategory':'"observed"',
 'MethodDescription':'',
@@ -52,7 +47,7 @@ RETURNABLES={\
 'RadTransComments':'Wavelength is for vacuum.',
 'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
 'RadTransWavelengthExperimentalUnits':u'\xc5',
-'RadTransWavelengthExperimentalAccuracy':'RadTran.accur',
+'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.accur',
 'RadTransWavelengthExperimentalSourceRef':'RadTran.wave_ref',
 'RadTransFinalStateRef':'RadTran.lostate.id',
 'RadTransInitialStateRef':'RadTran.upstate.id',
@@ -60,6 +55,16 @@ RETURNABLES={\
 'RadTransMethodRef':'OBS',
 'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref',
 'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
+'RadTransBroadRadGammaLog':'RadTran.gammarad',
+'RadTransBroadRadRef':'RadTran.gammarad_ref',
+'RadTransBroadStarkGammaLog':'RadTran.gammastark',
+'RadTransBroadStarkRef':'RadTran.gammastark_ref',
+'RadTransBroadWaalsGammaLog':'RadTran.gammawaals',
+'RadTransBroadWaalsAlpha':'RadTran.alphawaals',
+'RadTransBroadWaalsSigma':'RadTran.sigmawaals',
+'RadTransBroadWaalsRef':'RadTran.waals_ref',
+'RadTransEffLande':'RadTran.landeff',
+'RadTransEffLandeRef':'RadTran.lande_ref',
 }
 
 RESTRICTABLES = {\
@@ -82,7 +87,7 @@ def index(request):
 def getVALDsources(transs):
     sids=set([])
     for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
+        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.waals_ref])
         sids=sids.union(s)
     return Source.objects.filter(pk__in=sids)
 
@@ -106,7 +111,7 @@ def getVALDstates(transs):
     return State.objects.filter(pk__in=sids)
    
 
-def setupResults(sql,limit=0):
+def setupResults(sql,limit=1000):
     LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
     try: q=eval(q)
@@ -115,8 +120,10 @@ def setupResults(sql,limit=0):
     transs = Transition.objects.select_related(depth=2).filter(q)
     
     totalcount=transs.count()
-    if limit :
+    if limit < totalcount :
         transs = transs[:limit]
+        percentage='%.1f'%(float(limit)/totalcount *100)
+    else: percentage=None
 
     sources = getVALDsources(transs)
     states = getVALDstates(transs)
@@ -131,6 +138,7 @@ def setupResults(sql,limit=0):
     return {'RadTrans':transs,
             'AtomStates':states,
             'Sources':sources,
+            'Truncation':percentage
            }
 
 

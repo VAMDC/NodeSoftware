@@ -12,7 +12,7 @@ NODEPKG=import_module(settings.NODEPKG+'.views')
 
 
 def LOG(s):
-    if settings.DEBUG: print >> sys.stderr, s
+    if settings.DEBUG: print >> sys.stderr, s.encode('utf-8')
 
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
@@ -28,7 +28,6 @@ def GetValue(name,**kwargs):
                       # This is fine.
                       # Note that this is also used by if-clauses below
                       # since the empty string evaluates as False.
-
     if not name: return '' # if the key was in the dict, but the value empty or None
 
     for key in kwargs: # assign the dict-value to a local variable named as the dict-key
@@ -36,9 +35,12 @@ def GetValue(name,**kwargs):
 
     try: value=eval(name) # this works, if the dict-value is named correctly as the query-set attribute
     except Exception,e: 
+#        LOG('Exception in generators.py: GetValue()')
 #        LOG(e)
 #        LOG(name)
         value=name  # this catches the case where the dict-value is a string or mistyped.
+
+    if not value: return ''  # if the database return NULL
 
     # turn it into a string, quote it, but skip the quotation marks
     return quoteattr('%s'%value)[1:-1] # re
@@ -163,7 +165,7 @@ def XsamsAtomStates(AtomStates):
 
 
 
-def XsamsMolStates(MoleStates,MoleQNs):
+def XsamsMolStates(MoleStates,MoleQNs=[]):
     """
     This function creates the molecular states part.
     In its current form MoleStates contains all information
@@ -315,7 +317,20 @@ def XsamsMolecs(Molecules):
         yield '</Molecule>\n'
     yield '</Molecules>\n'
     
+def XsamsRadTranBroadening(typedescr,ref,params):
+    """
+    helper function for line broadening below
+    """
 
+    result='<BroadeningProcess sourceRef="B%s"><BroadeningSpecies>'%ref
+    result+='<Comments>%s</Comments>'%typedescr
+    result+='<LineshapeParameter>'
+    for par in params:
+        result+='<Value>%s</Value>'%par
+
+    result+='</LineshapeParameter>'
+    result+='</BroadeningSpecies></BroadeningProcess>'
+    return result
 
 def XsamsRadTrans(RadTrans):
     """
@@ -418,13 +433,21 @@ def XsamsRadTrans(RadTrans):
 
         yield '</EnergyWavelength>'
 
+        if G('RadTransEffLande'): yield """<EffLandeFactor><Value sourceRef="B%s">%s</Value></EffLandeFactor>"""%(G('RadTransEffLandeRef'),G('RadTransEffLande'))
 
+	yield '<Broadening>'
+        if G('RadTransBroadRadGammaLog'): yield XsamsRadTranBroadening('log10 of the radiative damping constant in radians per second',G('RadTransBroadRadRef'),[G('RadTransBroadRadGammaLog')])
+        if G('RadTransBroadStarkGammaLog'): yield XsamsRadTranBroadening('log10 quadratic Stark damping constant computed for 10000 K per one charged particle',G('RadTransBroadStarkRef'),[G('RadTransBroadStarkGammaLog')])
+        if G('RadTransBroadWaalsGammaLog'): yield XsamsRadTranBroadening('log10 van der Waals damping constant for 10000 K and per one neutral particle',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsGammaLog')])
+        if G('RadTransBroadWaalsAlpha'): yield XsamsRadTranBroadening('Anstee-Barklem fit to the van der Waals damping constants alpha and sigma',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsAlpha'),G('RadTransBroadWaalsSigma')])
+	yield '</Broadening>'
+        
         if G('RadTransInitialStateRef'): yield '<InitialStateRef>S%s</InitialStateRef>'%G('RadTransInitialStateRef')
         if G('RadTransFinalStateRef'): yield '<FinalStateRef>S%s</FinalStateRef>'%G('RadTransFinalStateRef')
         if G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'): yield """<Probability>
-<Log10WeightedOscillatorStregnth sourceRef="B%s"><Value units="unitless">%s</Value></Log10WeightedOscillatorStregnth>
+<Log10WeightedOscillatorStregnth sourceRef="B%s"><Value units="unitless">%s</Value><Accuracy>%s</Accuracy></Log10WeightedOscillatorStregnth>
 </Probability>
-</RadiativeTransition>"""%(G('RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef'),G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'))
+</RadiativeTransition>"""%(G('RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef'),G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'),G('RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy'))
         # loop ends
     yield '</Radiative>'
 
@@ -445,7 +468,7 @@ def XsamsMethods(Methods):
     yield '</Methods>\n'
 
 
-def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None,MoleQNs=None):
+def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None,MoleQNs=None,Truncation=None):
     """
     The main generator function of XSAMS. This one calles all the sub-generators above.
     It takes the query sets that the node's setupResult() has constructed as arguments
@@ -466,6 +489,16 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
  xmlns:nlp="http://www.ucl.ac.uk/~ucapch0/nlp"  
  xmlns:lmp="http://www.ucl.ac.uk/~ucapch0/lmp"  >
 """
+
+    if Truncation!=None: # note: allow 0 percent
+        yield """
+<!--
+   ATTENTION: The amount of data returned has been truncated by the node.
+   The data below represent %s percent of all available data at this node that
+   matched the query.
+-->
+"""%Truncation
+
     LOG('Writing Sources.')
     for Source in XsamsSources(Sources): yield Source
 
@@ -486,6 +519,7 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
     yield '</Processes>\n'
     yield '</XSAMSData>\n'
     LOG('Done with XSAMS')
+
 
 
 

@@ -21,7 +21,8 @@ import os, sys
 from DjVALD.node import models as valdmodel
 
 # import the line funcs
-from imptools import charrange, charrange2int, bySepNr, chainCmds, idFromLine, lineStrip
+from imptools import charrange, charrange2int, bySepNr, chainCmds, passLine, setLine
+from imptools import idFromLine, lineStrip, lineSplit, mergeCols, ifCond, formatLine
     
 # 
 # Create a config, a list of file definitions. Each entry in this
@@ -54,12 +55,11 @@ base = "/vald/"
 # publications_file = base + "publications_preprocessed.dat"
 
 species_list_file = base + 'VALD_list_of_species'
-vald_cfg_file = base + 'vald3_test.cfg'
+vald_cfg_file = base + 'VALD3_config_2010.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
 publications_file = base + "publications_preprocessed.dat"
-pub2source_file = base + "publications_to_sources_map.dat"
-
+pub2source_file = base + "VALD3linelists.dat"
 
 mapping = [
     # Populate Species model, using the species input file.
@@ -98,15 +98,33 @@ mapping = [
      'commentchar':'#',    
      'linemap':[           
             {'cname':'dbref',
-             'cbyte':(bySepNr, (0,'||')),},  
+             'cbyte':(bySepNr, (0,'||')),},
             {'cname':'bibref',
              'cbyte':(bySepNr, (1,'||')),},  
             {'cname':'author',
              'cbyte':(bySepNr, (2,'||')),},  
+            {'cname':'title',
+             'cbyte':(bySepNr, (3,'||'))},  
+            {'cname':'category',
+             'cbyte':(bySepNr, (4,'||'))},  
+            {'cname':'year',
+             'cbyte':(bySepNr, (5,'||')),},  
+            {'cname':'journal',
+             'cbyte':(bySepNr, (6,'||')),},  
+            {'cname':'volume',
+             'cbyte':(bySepNr, (7,'||')),},  
+            {'cname':'pages',
+             'cbyte':(bySepNr, (8,'||')),},  
+#            {'cname':'pagebegin',
+#             'cbyte':(bySepNr, (9,'||')),},  
+#            {'cname':'pageend',
+#             'cbyte':(bySepNr, (10,'||')),},              
+            {'cname':'url',
+             'cbyte':(bySepNr, (9,'||')),},            
             {'cname':'bibtex',
-             'cbyte':(bySepNr, (3,'||')),},            
+             'cbyte':(bySepNr, (10,'||')),}, 
           ], 
-      }, # end of bibtex publication data
+      }, # end of bibtex public5Bation data
     
     # Populate Source model from vald_cfg file
     {'model':valdmodel.Source,
@@ -151,7 +169,7 @@ mapping = [
             {'cname':'srcdescr',
              'cbyte':(bySepNr,(14,)),},
             ],
-    }, # end of definition for vald_cnf file
+    }, # end of definition for vald_conf file
 
     # Populate Source model with publications through pub2source file 
     {'model':valdmodel.Source,
@@ -161,11 +179,14 @@ mapping = [
      'updatematch': 'srcfile_ref',
      'linemap':[
             {'cname':'srcfile_ref',
-             'cbyte':(bySepNr,(1,'||'))},
-            {'cname':'publication',
-             'cbyte':(bySepNr,(4,'||')),
-             'references':(valdmodel.Publication, 'dbref')},
-            ]
+             'cbyte':(bySepNr,(1,'||')),
+             'debug':False},
+            {'cname':'publications',
+             'cbyte':(chainCmds, ((bySepNr,(4,'||')),
+                                  (lineSplit,(',',)))), # returns a list! 
+             'multireferences':(valdmodel.Publication, 'dbref'),
+             'debug':False}
+             ]
     },
 
 # State model read from states_file -upper states
@@ -348,17 +369,42 @@ mapping = [
              'cnull':'0.0'},
             {'cname':'gammastark',
              'cbyte':(charrange,(107,114)),
-             'cnull':'0.0'},
+             'cnull':'0.000'},            
             {'cname':'gammawaals',
+             'cbyte':(chainCmds, ( (charrange,(114,122)),
+                                   (ifCond, ("float(line) < 0",
+                                             (passLine, ()),
+                                             (setLine, (0,000,)))))),
+             'cnull':'0.000',"debug":False},
+            {'cname':'sigmawaals', # only filled if raw value > 0.  
+             'cbyte':(chainCmds, ( (charrange,(114,122)),
+                                 (ifCond, ("float(line) > 0",
+                                           (bySepNr, (0,'.')),
+                                           (setLine, (0.000,)))))),
+
+             'cnull':'0.000',"debug":False},
+            {'cname':'alphawaals',
              'cbyte':(charrange,(114,122)),
-             'cnull':'0.0'},
+             'cbyte':(chainCmds,( (charrange,(114,122)),
+                                  (ifCond, ("float(line) > 0",
+                                            (formatLine, ("%s.%s",
+                                                          (setLine, ("0",)),
+                                                          (bySepNr, (1, '.')))),                                           
+                                            (setLine, (0.000,)))))),
+             'cnull':'0.000',"debug":False},
             {'cname':'srctag',
              'cbyte':(charrange,(218,225)),
-             'references':(valdmodel.Publication,'dbref', 'skiperror')},
-            {'cname':'acflag',
-             'cbyte':(charrange,(225,226))},
+             'references':(valdmodel.Publication,'dbref'),
+             'skiperror':True},             
+
+            #            {'cname':'acflag',
+#             'cbyte':(charrange,(225,226))},
+#            {'cname':'accur',
+#             'cbyte':(charrange,(226,236))},
             {'cname':'accur',
-             'cbyte':(charrange,(226,236))},
+             'cbyte':(mergeCols,(',',(charrange,(225,226)),
+                                     (charrange,(226,236)))),
+             'debug':False},
             {'cname':'comment',
              'cbyte':(charrange,(236,252))},
             {'cname':'wave_ref',             
@@ -376,7 +422,7 @@ mapping = [
             {'cname':'gammastark_ref',
              'cbyte':(charrange,(276,280))},
              #'references':(valdmodel.Source,'pk')},
-            {'cname':'gammawaals_ref',  
+            {'cname':'waals_ref',  
              'cbyte':(charrange,(280,284))},
              #'references':(valdmodel.Source,'pk')},            
 

@@ -1,6 +1,6 @@
 body {
 	color: #000;
-	font-size: 9pt;
+	font-size: 10pt;
 	font-family: Verdana, Tahoma, Century Gothic, Helvetica, Arial, sans-serif;
 	background: #fff;
 	padding: 0; margin: 0;
@@ -11,16 +11,11 @@ h2 {
 	text-align: center;
 }
 
-h4 {
-	text-decoration: underline;
-}
-
-#container {
+#panels_container {
 	width: 800px;
-	margin: 10px auto 10px auto;
-	padding: 0 10px 10px 10px;
-	border: black 1px solid;
+	margin:auto;
 	background: #eee;
+	border: black 1px solid;
 }
 
 #searchform_left_panel {
@@ -34,18 +29,18 @@ h4 {
 	float: right;
 }
 
-#sample_output table {
+results table {
 	margin: auto;
 }
 
-#sample_output th {
+results th {
 	font-family: serif;
 	font-size: 80%;
 	background: #cfa;
 	border: black 1px dotted;
 }
 
-#sample_output td {
+results td {
 	background: #acf;
 	border: black 1px dotted;
 	text-align: center;
