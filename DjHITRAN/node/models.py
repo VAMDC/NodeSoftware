@@ -100,13 +100,15 @@ class AllStates(models.Model):
         yield '      <MolecularState stateID="%s">\n' % self.stateid
         yield '        <Description>A molecular state </Description>\n'
         yield '        <MolecularStateCharacterisation>\n'
-        yield '          <StateEnergy energyOrigin="electronic and ' \
-              'vibrational ground state">\n'
-        yield '            <Value units="1/cm">%12.6f</Value>\n' \
-                    % self.energy
-        yield '          </StateEnergy>\n'
-        yield '          <TotalStatisticalWeight>%d' \
-              '</TotalStatisticalWeight>\n' % self.g
+        if self.energy:
+            yield '          <StateEnergy energyOrigin="electronic and ' \
+                  'vibrational ground state">\n'
+            yield '            <Value units="1/cm">%12.6f</Value>\n' \
+                        % self.energy
+            yield '          </StateEnergy>\n'
+        if self.g:
+            yield '          <TotalStatisticalWeight>%d' \
+                  '</TotalStatisticalWeight>\n' % self.g
         yield '        </MolecularStateCharacterisation>\n'
         yield '      </MolecularState>\n'
 
@@ -194,7 +196,8 @@ class Trans(models.Model):
         yield '    <Wavenumber>\n'
         yield '      <Experimental sourceRef="%s">\n' % self.nu_ref
         yield '        <Value units="1/cm">%12.6f</Value>\n' % self.nu
-        yield '        <Accuracy>%10.3e</Accuracy>\n' % self.nu_err
+        if self.nu_err:
+            yield '        <Accuracy>%10.3e</Accuracy>\n' % self.nu_err
         yield '      </Experimental>\n'
         yield '    </Wavenumber>\n'
         yield '  </EnergyWavelength>\n'

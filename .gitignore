@@ -13,3 +13,5 @@ dummy*
 \#*
 .#*
 *_c.xml
+*.swp
+.DS_Store

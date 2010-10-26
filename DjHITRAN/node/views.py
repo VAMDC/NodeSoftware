@@ -81,10 +81,10 @@ RETURNABLES={\
 'RadTransProbabilityTransitionProbabilityAAccuracy':'RadTran.a_err',
 'RadTransProbabilityProbability:MultipoleValue':'RadTran.multipole',
 
-'MolecularSpeciesChemicalName':'MolState.chemical_names',
-'MolecularSpeciesOrdinaryStructuralFormula':'MolState.molec_name',
+'MolecularSpeciesChemicalName':'Molecule.chemical_names',
+'MolecularSpeciesOrdinaryStructuralFormula':'Molecule.molec_name',
 'MolecularSpeciesOrdinaryStoichiometricFormula': \
-        'MolState.stoichiometric_formula',
+        'Molecule.stoichiometric_formula',
 
 'MolecularStateStateID':'MolState.stateid',
 'MolecularStateEnergyValue':'MolState.energy',
@@ -95,7 +95,7 @@ RETURNABLES={\
 }
 
 RESTRICTABLES = {\
-'SpeciesID':'molecid',
+'InchiKey':'molecid',
 'RadTransWavenumberExperimentalValue':'nu',
 'RadTransProbabilityTransitionProbabilityAValue':'a',
 }
@@ -178,7 +178,12 @@ def search_xsec(request):
 	return render_to_response('search_xsec.html',
         {'xsec_molecules': xsec_molecules})
 
-def sync(request):
+def custom_sync(request):
+    """
+    Customized view for HITRAN TAP query, using HITRAN-specific
+    XSAMS generator routines.
+
+    """
     tap = TapQuery(request.REQUEST)
     if not tap.isvalid:
         LOG('Request is not valid TAP')
@@ -229,48 +234,45 @@ def sync(request):
 # legacy code, in which the TAP interface is handled generically
 # using Thomas Marquart's routines in DjNode:
 
-#def getHITRANstates(transs):
-    #statepps = AllStates.objects.filter(isstatepp_trans__in = transs)
-    #stateps = AllStates.objects.filter(isstatep_trans__in = transs)
-    #states = statepps | stateps
-    #return states.distinct()
+def getHITRANstates(transs):
+    stateIDs = set([])
+    for trans in transs:
+        stateIDs = stateIDs.union([trans.initialstateref,
+                                   trans.finalstateref])
 
-#    stateIDs = set([])
-#    for trans in transs:
-#        stateIDs = stateIDs.union([trans.initialstateref,
-#                                   trans.finalstateref])
+    return AllStates.objects.filter(pk__in=stateIDs)
 
-#    molecIDs = []
-#    for trans in transs:
-#        if trans.molecid not in molecIDs:
-#            molecIDs.append(trans.molecid)
+def getHITRANmolecules(transs):
+    molecIDs = set([])
+    for trans in transs:
+        molecIDs = molecIDs.union([trans.molecid])
+    return Molecules.objects.filter(pk__in=molecIDs)
 
-#    return AllStates.objects.filter(pk__in=stateIDs) & \
-#                Molecules.objects.filter(pk__in=molecIDs)
-
-#def getHITRANsources(transs):
-#    sourceIDs = set([])
-#    for trans in transs:
-#        s = set([trans.nu_ref, trans.a_ref])
-#        sourceIDs = sourceIDs.union(s)
-#    return Refs.objects.filter(pk__in=sourceIDs)
+def getHITRANsources(transs):
+    sourceIDs = set([])
+    for trans in transs:
+        s = set([trans.nu_ref, trans.a_ref])
+        sourceIDs = sourceIDs.union(s)
+    return Refs.objects.filter(pk__in=sourceIDs)
     
-#def setupResults(sql):
-#    q=where2q(sql.where,RESTRICTABLES)
-#    try:
-#        q=eval(q)
-#    except Exception,e:
-#        LOG('Exception in setupResults():')
-#        LOG(e)
-#        return {}
+def setupResults(sql):
+    q = sqlparse.where2q(sql.where,RESTRICTABLES)
+    try:
+        q=eval(q)
+    except Exception,e:
+        LOG('Exception in setupResults():')
+        LOG(e)
+        return {}
 
-#    transs = Trans.objects.filter(q) 
-#    sources = getHITRANsources(transs)
-#    states = getHITRANstates(transs)
-#    LOG('%s transitions retrieved from HITRAN database' % transs.count())
-#    LOG('%s states retrieved from HITRAN database' % states.count())
+    transs = Trans.objects.filter(q) 
+    sources = getHITRANsources(transs)
+    states = getHITRANstates(transs)
+    molecules = getHITRANmolecules(transs)
+    LOG('%s transitions retrieved from HITRAN database' % transs.count())
+    LOG('%s states retrieved from HITRAN database' % states.count())
 
-    # return the dictionary as described above
-#    return {'RadTrans': transs,
-#            'Sources': sources,
-#            'MoleStates': states}
+   # return the dictionary as described above
+    return {'RadTrans': transs,
+            'Sources': sources,
+            'MoleStates': states,
+            'Molecules': molecules}
