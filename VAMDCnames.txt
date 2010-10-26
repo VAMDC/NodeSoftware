@@ -60,6 +60,13 @@ MethodDescription::::
 # a unique species identifier for each atomic or molecular isotope / isotopologue
 InchiKey:InChI key:International Chemical Identifier (InChI) key (27-character or 14-character first part):(String): 
 
+#Environment properties
+EnvironmentTemperature:Environment temperature(K):Environment temperature (K):(Double):>0
+EnvironmentPressureBar:Environment pressure(bar):Environment pressure (bar):(Double):>0
+
+
+#Atoms
+
 AtomSymbol:Atom:Atomic name:(String):
 AtomNuclearCharge:Atomic number:Atomic number or nuclear charge:(Integer):>0
 AtomIonCharge:Atomic charge:Ionization stage with 0 for neutral:(Integer):>=0
@@ -247,8 +254,8 @@ MolecularStateMixingCoefficient:::(?):
 
 MolecularStateCharacTotalStatisticalWeight:Total statistical weight:Total statistical weight (degeneracy) for a given molecular energy level:(Integer):>0
 MolecularStateCharacNuclearStatisticalWeight:Nuclear stitistical weight:Nuclear statistical weight for a given molecular energy level:(Integer):>0
-MolecularStateCharacNuclearSpinSymmetry:Nuclear spin symmetry:?:(String):
-MolecularStateCharacLifeTime:Lifetime:Molecular state lifetime in seconds?:(Float?):>0
+MolecularStateCharacNuclearSpinSymmetry:Nuclear spin symmetry:?:(String):(ortho|para|A|E|none)
+MolecularStateCharacLifeTime:Lifetime:Molecular state lifetime in seconds:(Float):>0
 MolecularStateCharacParameters:State parameters:Additional parameters of molecular state:(String):
 
 # Molecular quantum numbers
