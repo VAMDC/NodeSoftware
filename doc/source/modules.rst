@@ -11,3 +11,5 @@ Modules:
 
    tapservice
    node
+   imptools
+   run_import
