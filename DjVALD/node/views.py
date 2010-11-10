@@ -118,15 +118,18 @@ def setupResults(sql,limit=1000):
     except: return {}
     
     transs = Transition.objects.select_related(depth=2).filter(q)
-    
-    totalcount=transs.count()
-    if limit < totalcount :
+    ntranss=transs.count()
+
+    if limit < ntranss :
         transs = transs[:limit]
-        percentage='%.1f'%(float(limit)/totalcount *100)
+        percentage='%.1f'%(float(limit)/ntranss *100)
     else: percentage=None
 
     sources = getVALDsources(transs)
+    nsources = sources.count()
     states = getVALDstates(transs)
+    nstates = states.count()
+    nspecies = transs.values('species').distinct().count()
 
     # in order to not forget it:
     # write a small function that defines/fixes the
@@ -135,10 +138,19 @@ def setupResults(sql,limit=1000):
     # number of decimals.
     # maybe this can be achieved in the model itself.
 
+    headerinfo=CaselessDict({\
+            'Truncated':'%s %%'%percentage,
+            'COUNT-SOURCES':nsources,
+            'COUNT-species':nspecies,
+            'count-states':nstates,
+            'count-radiative':ntranss
+            })
+            
+
     return {'RadTrans':transs,
             'AtomStates':states,
             'Sources':sources,
-            'Truncation':percentage
+            'HeaderInfo':headerinfo
            }
 
 
