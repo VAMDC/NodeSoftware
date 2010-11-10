@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from DjVALD.node.models import *
-
+from DjNode.tapservice.caselessdict import CaselessDict
 import sys
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s
@@ -16,7 +16,7 @@ def LOG(s):
 #vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
 
-RETURNABLES={\
+RETURNABLES = CaselessDict({\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.publications.all()[0].author',
 'SourceCategory':'Source.publications.all()[0].category',
@@ -65,16 +65,16 @@ RETURNABLES={\
 'RadTransBroadWaalsRef':'RadTran.waals_ref',
 'RadTransEffLande':'RadTran.landeff',
 'RadTransEffLandeRef':'RadTran.lande_ref',
-}
+})
 
-RESTRICTABLES = {\
+RESTRICTABLES = CaselessDict({\
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'AtomStateEnergy':'upstate__energy',
 'RadTransWavelengthExperimentalValue':'vacwave',
 'RadTransLogGF':'loggf',
 'AtomIonCharge':'species__ion',
-}
+})
 
 from DjNode.tapservice.sqlparse import *
 

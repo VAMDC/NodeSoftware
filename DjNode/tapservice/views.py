@@ -30,10 +30,15 @@ def LOG(s):
 # import helper modules that reside in the same directory
 from generators import *
 from sqlparse import SQL
+from caselessdict import CaselessDict
 
 class TAPQUERY(object):
+    """
+    This class holds the
+    """
     def __init__(self,data):
         try:
+            data=CaselessDict(data)
             self.request=lower(data['REQUEST'])
             self.lang=lower(data['LANG'])
             self.query=data['QUERY']
