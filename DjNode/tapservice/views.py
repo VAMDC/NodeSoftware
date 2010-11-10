@@ -34,18 +34,20 @@ from caselessdict import CaselessDict
 
 class TAPQUERY(object):
     """
-    This class holds the
+    This class holds the query, does some validation
+    and triggers the SQL parser.
     """
     def __init__(self,data):
         try:
-            data=CaselessDict(data)
+            data=CaselessDict(dict(data))
             self.request=lower(data['REQUEST'])
             self.lang=lower(data['LANG'])
             self.query=data['QUERY']
             self.format=lower(data['FORMAT'])
             self.isvalid=True
-        except:
+        except Exception,e:
             self.isvalid=False
+            LOG(str(e))
 
         if self.isvalid: self.validate()
         if self.isvalid: self.assignQID()
