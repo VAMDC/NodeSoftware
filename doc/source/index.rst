@@ -9,7 +9,7 @@ Welcome to VAMDC node software's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    modules
 
