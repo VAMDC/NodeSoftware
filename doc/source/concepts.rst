@@ -5,11 +5,11 @@ The main concepts behind the implementation
 TAP services
 ---------------
 
-The SQL parser
-----------------
-
 The VAMDC dictionary
 ---------------------
+
+The query language
+----------------
 
 The Django data model
 ------------------------
