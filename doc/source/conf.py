@@ -39,7 +39,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'VAMDC node software'
-copyright = u'2010, VAMDC WP7'
+copyright = u'2010, VAMDC'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
