@@ -1,15 +1,24 @@
-Project Documentation
+The source code
 =====================
 
-This page contains the Project Modules documentation.
+The source code resides at https://github.com/VAMDC/NodeSoftware
 
-Modules:
---------
+The following is the automatically generated documentation from
+the source code. It lists and describes all functions, classes etc.
+
+The VAMDC-TAP service
+----------------------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    tapservice
-   node
+   examplenode
+
+The import tool
+----------------
+.. toctree::
+   :maxdepth: 2
+
    imptools
    run_import

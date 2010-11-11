@@ -1,7 +1,8 @@
-Node Documentation
+Example Node
 ==================
 
-This page contains the Node Package documentation.
+This page contains the documentation of the example files
+that are used to set up a new node.
 
 The :mod:`views` Module
 -----------------------
