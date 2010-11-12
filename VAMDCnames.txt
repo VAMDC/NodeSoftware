@@ -1,3 +1,59 @@
+
+#########################
+#
+# THIS FILE IS NO LONGER USED!
+# See http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/VamdcDictionary
+#
+#########################
+
+
+
+
+
+#########################
+#Record fields:
+#########################
+#Keyword:Short human-readable name:Long human-readable description:Data type:constraints 
+#
+#########################
+#Supported data types:
+#########################
+#(String) - string value
+#(Integer) - integer value
+#(Float) - floating-point value, standard precision
+#(Double) - floating-point value, double precision
+#(Boolean) - boolean value, 'true' or 'false', also 0 is treated as false, any number >0 as true
+#(URI)	- any valid URI
+#(null) - no argument is applicable
+#
+#########################
+#Supported constraints:
+#########################
+#For string and URI: any valid Perl regexp
+#For numbers: any comparison
+#
+##############################
+#Keywords for returnables:
+##############################
+# They are placed in <returnable/> elements in capabilities
+# and can be put in queries instead of * (like column names in select statement)
+#
+States:States data:Return complete states information:(null):
+Elements:Element information:Return only brief element information, without states:(null):
+Processes:Process data:Return data for all available processes:(null):
+Collisions:Collisional data:Return collisional process data:(null):
+Radiative:Radiative transitions:Return radiative transitions data:(null):
+NonRadiative:Non-radiative transitions:Return non-radiative transitions data:(null):
+
+#Sources is arguable, probably we should always keep returning all available referece data
+Sources:References:Return source reference information:(null):
+Methods:Method:Return method information:(null):
+
+
+##############################
+#Keywords for restrictables:
+##############################
+
 SourceID:::(String):
 SourceAuthorName:Author:Name of one of the authors:(String):
 SourceCategory:Category:Type of publication, e.g. journal, book etc. :(String):(Journal|Book|Proceedings|On-line)
@@ -12,6 +68,16 @@ SourceYear:Year:Publication Year:(Integer):>0
 MethodID:::(String):
 MethodCategory:::(String):
 MethodDescription::::
+
+# a unique species identifier for each atomic or molecular isotope / isotopologue
+InchiKey:InChI key:International Chemical Identifier (InChI) key (27-character or 14-character first part):(String): 
+
+#Environment properties
+EnvironmentTemperature:Environment temperature(K):Environment temperature (K):(Double):>0
+EnvironmentPressureBar:Environment pressure(bar):Environment pressure (bar):(Double):>0
+
+
+#Atoms
 
 AtomSymbol:Atom:Atomic name:(String):
 AtomNuclearCharge:Atomic number:Atomic number or nuclear charge:(Integer):>0
@@ -176,7 +242,6 @@ MolecularSpeciesStoichiometrcFormula::::
 MolecularSpeciesIonCharge::::
 MolecularSpeciesIUPACName::::
 MolecularSpeciesURLFigure::::
-MolecularSpeciesInChIKey:InChI key:International Chemical Identifier (InChI) key (27-character or 14-character first part):(String): 
 MolecularSpeciesCASRegistryNumber::::
 MolecularSpeciesCNPIGroup::::
 MolecularSpeciesMoleculeNuclearSpins::::
@@ -201,8 +266,8 @@ MolecularStateMixingCoefficient:::(?):
 
 MolecularStateCharacTotalStatisticalWeight:Total statistical weight:Total statistical weight (degeneracy) for a given molecular energy level:(Integer):>0
 MolecularStateCharacNuclearStatisticalWeight:Nuclear stitistical weight:Nuclear statistical weight for a given molecular energy level:(Integer):>0
-MolecularStateCharacNuclearSpinSymmetry:Nuclear spin symmetry:?:(String):
-MolecularStateCharacLifeTime:Lifetime:Molecular state lifetime in seconds?:(Float?):>0
+MolecularStateCharacNuclearSpinSymmetry:Nuclear spin symmetry:?:(String):(ortho|para|A|E|none)
+MolecularStateCharacLifeTime:Lifetime:Molecular state lifetime in seconds:(Float):>0
 MolecularStateCharacParameters:State parameters:Additional parameters of molecular state:(String):
 
 # Molecular quantum numbers

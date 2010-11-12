@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from DjVALD.node.models import *
-
+from DjNode.tapservice.caselessdict import CaselessDict
 import sys
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s
@@ -16,7 +16,7 @@ def LOG(s):
 #vo2html=E.XSLT(E.parse(open(settings.BASEPATH+'DjNode/static/xsl/VOTable2XHTML_mine.xsl')))
 
 
-RETURNABLES={\
+RETURNABLES = CaselessDict({\
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.publications.all()[0].author',
 'SourceCategory':'Source.publications.all()[0].category',
@@ -65,16 +65,16 @@ RETURNABLES={\
 'RadTransBroadWaalsRef':'RadTran.waals_ref',
 'RadTransEffLande':'RadTran.landeff',
 'RadTransEffLandeRef':'RadTran.lande_ref',
-}
+})
 
-RESTRICTABLES = {\
+RESTRICTABLES = CaselessDict({\
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'AtomStateEnergy':'upstate__energy',
 'RadTransWavelengthExperimentalValue':'vacwave',
 'RadTransLogGF':'loggf',
 'AtomIonCharge':'species__ion',
-}
+})
 
 from DjNode.tapservice.sqlparse import *
 
@@ -111,20 +111,25 @@ def getVALDstates(transs):
     return State.objects.filter(pk__in=sids)
    
 
-def setupResults(sql,limit=0):
+def setupResults(sql,limit=1000):
     LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
     try: q=eval(q)
     except: return {}
     
     transs = Transition.objects.select_related(depth=2).filter(q)
-    
-    totalcount=transs.count()
-    if limit :
+    ntranss=transs.count()
+
+    if limit < ntranss :
         transs = transs[:limit]
+        percentage='%.1f'%(float(limit)/ntranss *100)
+    else: percentage=None
 
     sources = getVALDsources(transs)
+    nsources = sources.count()
     states = getVALDstates(transs)
+    nstates = states.count()
+    nspecies = transs.values('species').distinct().count()
 
     # in order to not forget it:
     # write a small function that defines/fixes the
@@ -133,9 +138,19 @@ def setupResults(sql,limit=0):
     # number of decimals.
     # maybe this can be achieved in the model itself.
 
+    headerinfo=CaselessDict({\
+            'Truncated':'%s %%'%percentage,
+            'COUNT-SOURCES':nsources,
+            'COUNT-species':nspecies,
+            'count-states':nstates,
+            'count-radiative':ntranss
+            })
+            
+
     return {'RadTrans':transs,
             'AtomStates':states,
             'Sources':sources,
+            'HeaderInfo':headerinfo
            }
 
 

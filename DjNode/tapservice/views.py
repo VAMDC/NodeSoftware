@@ -30,17 +30,24 @@ def LOG(s):
 # import helper modules that reside in the same directory
 from generators import *
 from sqlparse import SQL
+from caselessdict import CaselessDict
 
 class TAPQUERY(object):
+    """
+    This class holds the query, does some validation
+    and triggers the SQL parser.
+    """
     def __init__(self,data):
         try:
+            data=CaselessDict(dict(data))
             self.request=lower(data['REQUEST'])
             self.lang=lower(data['LANG'])
             self.query=data['QUERY']
             self.format=lower(data['FORMAT'])
             self.isvalid=True
-        except:
+        except Exception,e:
             self.isvalid=False
+            LOG(str(e))
 
         if self.isvalid: self.validate()
         if self.isvalid: self.assignQID()
@@ -67,6 +74,14 @@ class TAPQUERY(object):
     def __str__(self):
         return '%s'%self.query
 
+def addHeaders(headers,response):
+    HEADS=['COUNT-SOURCES','COUNT-SPECIES','COUNT-STATES','COUNT-COLLISIONS','COUNT-RADIATIVE','COUNT-NONRADIATIVE','TRUNCATED']
+
+    for h in HEADS:
+        if headers.has_key(h):
+            response['VAMDC-'+h] = '%s'%headers[h]
+    return response
+          
 def sync(request):
     tap=TAPQUERY(request.REQUEST)
     if not tap.isvalid:
@@ -78,6 +93,10 @@ def sync(request):
     generator=Xsams(**results)
     response=HttpResponse(generator,mimetype='text/xml')
     #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+    
+    if results.has_key('HeaderInfo'):
+        response=addHeaders(results['HeaderInfo'],response)
+         
     
 #    elif tap.format == 'votable': 
 #        transs,states,sources=NODEPKG.setupResults(tap)

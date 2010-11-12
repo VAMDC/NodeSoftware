@@ -3,6 +3,7 @@
 <head>
 <script type="text/javascript" src="/HITRAN/scripts/jquery.js"></script>
 
+<!-- styles for the "Select Output Fields" popup modal dialog -->
 <style>
 #mask {
 	position: absolute;
@@ -66,7 +67,7 @@ $(document).ready(function() {
 		e.preventDefault();
 		$('#mask, .window').hide();
 		var selected = $('#sortable1').sortable("toArray");
-		alert('selected = '+selected);
+		// alert('selected = '+selected);
 	});		
 	
 	// also, if the mask surrounding the dialog is clicked,
@@ -78,34 +79,12 @@ $(document).ready(function() {
 
 	// AJAXify the POST
 	$('#SearchForm').submit(function(event){
+		var refreshIntervalID = setInterval(poll,1000);
 		event.preventDefault(); // cancel the default action
 		var form = this;
 		var data = {};
 		data.post_data = $(form).serialize();
-		//alert(data.post_data);
-		/*$.post("/HITRAN/search-form/", 
-			data, 
-			function(responseData) {
-				alert(responseData.response_text);
-			},
-			"json"
-		);*/
-		//$.post("/HITRAN/search_form/", data);
-		/*$.post("/HITRAN/search/", 
-			data, 
-			//update_results('an update'),
-			update_results('1. {{ response_text }}'),
-			"json"
-		);*/
-		/*$.ajax({url: "/HITRAN/search/",
-			type: "POST",
-			context: document.body,
-			//success: update_results('1. {{ response_text }}'),//update_results('an update'),
-			success: function(o) {update_results('3. '+o.responseText);},
-			data: data,
-			dataType: "json"
-		});*/
-		var xhr = $.ajax({url: "/HITRAN/search/",
+		var xhr = $.ajax({url: "/HITRAN/search_lbl/",
 			type: "POST",
 			context: document.body,
 			success: function(return_text) {update_results('3. '+return_text);},
@@ -120,19 +99,21 @@ $(document).ready(function() {
 			if (xhr.readyState === 3) update_results(xhr.responseText);
 		};
 
-		//setInterval(counting,1000);
-		//alert('OK then');
 		return false;
-		//$.post("/HITRAN/search/", data);
 	});
 
-	var indykins=0;
-	function counting() {
-		indykins+=1;
-		update_results(indykins+' ');
+	function poll() {
+		$.post("/HITRAN/poll/",
+			"",
+			function(return_text) {update_results(return_text);},
+			"html"
+		);
 	}
 
 	function update_results(result) {
+		//if (result == 'END OF JOB') {
+		//	clearInterval(refreshIntervalID);
+		//}
 		$('#result').append(result);
 	}
 
@@ -173,41 +154,10 @@ $(document).ready(function() {
 
 <form id="SearchForm" method="POST">
 
-
-
+<!-- the lefthand panel is for the parameters to search on -->
 <div id="searchform_left_panel">
 <!-- the list of molecules -->
-<!--
-<table>
-{% for molecule in molecules %}
-<tr>
-{# we need |safe here to stop Django from escaping our HTML: #}
-<td><input type="checkbox" name="molecule" value="{{ molecule.molecid }}"/>&nbsp;{{ molecule.molec_name_html|safe }}</td>
-</tr>
-{% endfor %}
-</table>
--->
 {{ molec_cb_html|safe }}
-
-<!-- numin, numax, and Smin -->
-<!--
-<html>
-<head>
-	<title>HITRAN Search</title>
-</head>
-<body>
-
-<p>HITRAN Search</p>
-<form action="/HITRAN/search/" method="POST">
-{% csrf_token %}
-<table>
-{% for molec_name in molec_names %}
-<tr>
-{# we need |safe here to stop Django from escaping our HTML: #}
-<td><input type="checkbox" name="{{ molec_name.molec_name }}">&nbsp;{{ molec_name.molec_name_html|safe }}</td>
-</tr>
-{% endfor %}
-</table>
 
 <table>
 <tr>
@@ -226,9 +176,10 @@ $(document).ready(function() {
 <td>cm<sup>-1</sup>/molec.cm<sup>-2</sup></td>
 </tr>
 </table>
--->
+
 </div> <!-- searchform_left_panel -->
 
+<!-- the righthand panel is for output formats and status updates -->
 <div id="searchform_right_panel">
 <!-- output formats -->
 <table>
@@ -246,10 +197,6 @@ $(document).ready(function() {
 <!--<input type="submit" value="Submit Query" onclick='JavaScript:xmlhttpPost("search")'/>-->
 <input type="submit" value="Submit!!!"/>
 </div>
-
-
-
-
 
 </form>
 

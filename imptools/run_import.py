@@ -11,7 +11,7 @@ import os
 import sys
 
 # making the import non-dependent on main folder name
-sys.path.append("..")
+sys.path.append(os.path.abspath(".."))
 os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
 
 # the mapping file

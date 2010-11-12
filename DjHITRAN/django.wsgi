@@ -5,6 +5,5 @@ sys.path.append('/home/tom/py/vamdc/')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'DjHITRAN.settings'
 
-
 import django.core.handlers.wsgi
 application = django.core.handlers.wsgi.WSGIHandler()

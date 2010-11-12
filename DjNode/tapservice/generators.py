@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 import re
 import sys
 from xml.sax.saxutils import quoteattr
@@ -17,42 +16,51 @@ def LOG(s):
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-
 def GetValue(name,**kwargs):
     """
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
-    try: name=NODEPKG.RETURNABLES[name]
-    except: return '' # The value is not in the dictionary for the node.
+    try:
+        name=NODEPKG.RETURNABLES[name]
+    except:
+        return ''     # The value is not in the dictionary for the node.
                       # This is fine.
                       # Note that this is also used by if-clauses below
                       # since the empty string evaluates as False.
-    if not name: return '' # if the key was in the dict, but the value empty or None
 
-    for key in kwargs: # assign the dict-value to a local variable named as the dict-key
+    if not name:
+        return '' # if the key was in the dict, but the value empty or None
+
+    for key in kwargs:
+        # assign the dict-value to a local variable named as the dict-key
         exec('%s=kwargs["%s"]'%(key,key))
 
-    try: value=eval(name) # this works, if the dict-value is named correctly as the query-set attribute
+    try:
+        value = eval(name) # this works, if the dict-value is named
+                         # correctly as the query-set attribute
     except Exception,e: 
+#        LOG('Exception in generators.py: GetValue()')
 #        LOG(e)
 #        LOG(name)
-        value=name  # this catches the case where the dict-value is a string or mistyped.
+        value = name      # this catches the case where the dict-value
+                        # is a string or mistyped.
 
-    if not value: return ''  # if the database return NULL
+    if not value:
+        return ''       # if the database returned NULL
 
     # turn it into a string, quote it, but skip the quotation marks
     return quoteattr('%s'%value)[1:-1] # re
     
-
 def XsamsSources(Sources):
     if not Sources: return
     yield '<Sources>'
     for Source in Sources:
-        G=lambda name: GetValue(name,Source=Source)
+        G = lambda name: GetValue(name,Source=Source)
         yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
         authornames=G('SourceAuthorName')
-        # make it always into a list to be looped over, even if only single entry
+        # make it always into a list to be looped over, even if
+        # only single entry
         if not isiterable(authornames): authornames=[authornames]
         for author in authornames:
             yield '<Author><Name>%s</Name></Author>\n'%author
@@ -66,8 +74,9 @@ def XsamsSources(Sources):
 <PageBegin>%s</PageBegin>
 <PageEnd>%s</PageEnd>
 <UniformResourceIdentifier>%s</UniformResourceIdentifier>
-</Source>\n"""%( G('SourceTitle'), G('SourceCategory'), G('SourceYear'), G('SourceName'), G('SourceVolume'), G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
-
+</Source>\n""" % ( G('SourceTitle'), G('SourceCategory'),
+                   G('SourceYear'), G('SourceName'), G('SourceVolume'),
+                   G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
     yield '</Sources>\n'
 
 def XsamsAtomTerm(AtomState,G):
@@ -86,34 +95,39 @@ def XsamsAtomTerm(AtomState,G):
     j1=G('AtomStateJ1')
     j2=G('AtomStateJ2')
     
-    result='<AtomicComposition>\n<Comments>%s</Comments>\n'%G('AtomStateCompositionComments')
-    result+='<Component><Configuration><ConfigurationLabel>%s</ConfigurationLabel></Configuration>\n'%G('AtomStateConfigurationLabel')
-    result+='<Term>'
+    result = '<AtomicComposition>\n<Comments>%s</Comments>\n' \
+            % G('AtomStateCompositionComments')
+    result += '<Component><Configuration><ConfigurationLabel>%s' \
+              '</ConfigurationLabel></Configuration>\n' \
+            %G('AtomStateConfigurationLabel')
+    result += '<Term>'
 
     if coupling == "LS" and l and s: 
-        result+='<LS><L><Value>%d</Value></L><S>%.1f</S></LS>'%(l,s)
+        result += '<LS><L><Value>%d</Value></L><S>%.1f</S></LS>' % (l, s)
         
     elif coupling == "JK" and s2 and k: 
-        result+='<jK><j>%s</j><K> %s</K></jK>'%(s2,k)
+        result += '<jK><j>%s</j><K> %s</K></jK>' % (s2, k)
         
     elif coupling == "JJ" and j1 and j2:
-        result+='<J1J2><j>%s</j><j>%s</j></J1J2>'%(j1,j2)
+        result += '<J1J2><j>%s</j><j>%s</j></J1J2>' % (j1, j2)
         
-    result+='</Term></Component></AtomicComposition>'
+    result += '</Term></Component></AtomicComposition>'
     return result
-
 
 def parityLabel(parity):
     """
     XSAMS whats this as strings "odd" or "even", not numerical
-    """
-    if partity % 2: return 'odd'
-    else: return 'even'
 
+    """
+    if parity % 2:
+        return 'odd'
+    else:
+        return 'even'
 
 def XsamsAtomStates(AtomStates):
     """
     Generator (yield) for the main block of XSAMS for the atomic states.
+
     """
 
     # if the data has no atomic states, there is nothing to see here...
@@ -147,10 +161,17 @@ def XsamsAtomStates(AtomStates):
 <IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
 <LandeFactor sourceRef="B%s"><Value units="unitless">%s</Value></LandeFactor>
 </AtomicNumericalData>
-"""%( G('AtomNuclearCharge'), G('AtomSymbol'), G('AtomMassNumber'), G('AtomIonCharge'), G('AtomStateID'), G('AtomStateDescription'), G('AtomStateEnergyRef'), G('AtomStateEnergyUnits'), G('AtomStateEnergy'), G('AtomIonizationEnergy'), G('AtomStateLandeFactorRef'), G('AtomStateLandeFactor'))
+""" % ( G('AtomNuclearCharge'), G('AtomSymbol'), G('AtomMassNumber'),
+        G('AtomIonCharge'), G('AtomStateID'), G('AtomStateDescription'),
+        G('AtomStateEnergyRef'), G('AtomStateEnergyUnits'),
+        G('AtomStateEnergy'), G('AtomIonizationEnergy'),
+        G('AtomStateLandeFactorRef'), G('AtomStateLandeFactor'))
 
         if (G('AtomStateParity') or G('AtomStateTotalAngMom')):
-            yield '<AtomicQuantumNumbers><Parity>%s</Parity><TotalAngularMomentum>%s</TotalAngularMomentum></AtomicQuantumNumbers>'%(G('AtomStateParity'),G('AtomStateTotalAngMom'))
+            yield '<AtomicQuantumNumbers><Parity>%s</Parity>' \
+                  '<TotalAngularMomentum>%s</TotalAngularMomentum>' \
+                  '</AtomicQuantumNumbers>' % (G('AtomStateParity'),
+                                               G('AtomStateTotalAngMom'))
 
         # call the function that returns the term part
         yield XsamsAtomTerm(AtomState,G)
@@ -162,9 +183,7 @@ def XsamsAtomStates(AtomStates):
     yield '</Atoms>'
 
 
-
-
-def XsamsMolStates(MoleStates,MoleQNs):
+def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
     """
     This function creates the molecular states part.
     In its current form MoleStates contains all information
@@ -184,11 +203,16 @@ def XsamsMolStates(MoleStates,MoleQNs):
     is currently under development
     """
 
+    # nothing to see here if the data has no molecules
+    if not Molecules: return
+
     # nothing to see here if the data has no molecular states
     if not MoleStates: return
 
-    yield '<Molecules>'
-    FormulaLastLoop = ""    
+    # if MoleQNs was passed as None or not passed at all,
+    # it is effectively an empty list:
+    if MoleQNs is None:
+        MoleQNs = []
 
     # rearrange QN-Lists into dictionary with stateID as key
     QNList={}
@@ -199,23 +223,26 @@ def XsamsMolStates(MoleStates,MoleQNs):
        else:
           QNList[G("MolQnStateID")]=[MolQN]
 
-    for MolState in MoleStates:
-        G=lambda name: GetValue(name,MolState=MolState)
-        if (FormulaLastLoop=="" or G("MolecularSpeciesStoichiometrcFormula") != FormulaLastLoop):
-                if (FormulaLastLoop!=""):
-                    yield '</Molecule>'
-	        yield """
-<Molecule> 
-<MolecularChemicalSpecies>
-<OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>
-<StoichiometricFormula>%s</StoichiometricFormula>
-<ChemicalName>%s</ChemicalName>
-</MolecularChemicalSpecies>
-"""% ( G("MolecularSpeciesOrdinaryStructuralFormula"), G("MolecularSpeciesStoichiometrcFormula"),  G("MolecularSpeciesChemicalName")) 
+    yield '<Molecules>'
+    for Molecule in Molecules:
+        G=lambda name: GetValue(name, Molecule=Molecule)
+        yield '<Molecule>\n'
+        yield '<MolecularChemicalSpecies>\n'
+        yield '<OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>\n' \
+            % G("MolecularSpeciesOrdinaryStructuralFormula")
+        yield '<StoichiometricFormula>%s</StoichiometricFormula>\n' \
+            % G("MolecularSpeciesStoichiometricFormula")
+        yield '<ChemicalName>%s</ChemicalName>\n' \
+            % G("MolecularSpeciesChemicalName")
+        yield '</MolecularChemicalSpecies>\n'
+        thisInchiKey = G("InchiKey")
 
-                FormulaLastLoop = G("MolecularSpeciesStoichiometrcFormula")
-
-        yield """<MolecularState stateID="S%s">
+        for MolState in MoleStates:
+            G = lambda name: GetValue(name, MolState=MolState)
+            if G("InchiKey") != thisInchiKey:
+                break
+	        
+            yield """<MolecularState stateID="S%s">
 <Description>%s</Description>
 <MolecularStateCharacterisation>
 <StateEnergy energyOrigin="%s">
@@ -223,28 +250,28 @@ def XsamsMolStates(MoleStates,MoleQNs):
 </StateEnergy>
 <TotalStatisticalWeight>%s</TotalStatisticalWeight>
 </MolecularStateCharacterisation>
-"""% ( #G("MolecularSpeciesOrdinaryStructuralFormula"),
-     # G("MolecularSpeciesStoichiometrcFormula"),
-     # G("MolecularSpeciesChemicalName"),
-      G("MolecularStateStateID"),
-      G("MolecularStateDescription"),
-      G("MolecularStateEnergyOrigin"),
-      G("MolecularStateEnergyUnit"),
-      G("MolecularStateEnergyValue"),
-      G("MolecularStateCharacTotalStatisticalWeight"))
-        if QNList.has_key(G("MolecularStateStateID")):
-          for MolQN in QNList[G("MolecularStateStateID")]:
-            G=lambda name: GetValue(name, MolQN=MolQN)
-            yield """
-<%s:%s """ % (G("MolQnCase"), G("MolQnLabel"))
-            if G("MolQnSpinRef"): yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
-            if G("MolQnAttribute"): yield G("MolQnAttribute")
-            yield """> %s </%s:%s>""" % (G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
+""" %           ( 
+                G("MolecularStateStateID"),
+                G("MolecularStateDescription"),
+                G("MolecularStateEnergyOrigin"),
+                G("MolecularStateEnergyUnit"),
+                G("MolecularStateEnergyValue"),
+                G("MolecularStateCharacTotalStatisticalWeight")
+                )
+            if QNList.has_key(G("MolecularStateStateID")):
+              for MolQN in QNList[G("MolecularStateStateID")]:
+                G=lambda name: GetValue(name, MolQN=MolQN)
+                yield """
+    <%s:%s """ % (G("MolQnCase"), G("MolQnLabel"))
+                if G("MolQnSpinRef"):
+                    yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
+                if G("MolQnAttribute"):
+                    yield G("MolQnAttribute")
+                yield """> %s </%s:%s>""" \
+                    % (G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
 
-
-        yield """</MolecularState>"""  #</Molecule> """
-    if FormulaLastLoop!="":
-            yield '</Molecule>'
+            yield '</MolecularState>'
+        yield '</Molecule>'
     yield '</Molecules>'
 
 def XsamsMCSBuild(Moldesc):
@@ -446,7 +473,8 @@ def XsamsRadTrans(RadTrans):
         if G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'): yield """<Probability>
 <Log10WeightedOscillatorStregnth sourceRef="B%s"><Value units="unitless">%s</Value><Accuracy>%s</Accuracy></Log10WeightedOscillatorStregnth>
 </Probability>
-</RadiativeTransition>"""%(G('RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef'),G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'),G('RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy'))
+"""%(G('RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef'),G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'),G('RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy'))
+        yield '</RadiativeTransition>'
         # loop ends
     yield '</Radiative>'
 
@@ -467,13 +495,16 @@ def XsamsMethods(Methods):
     yield '</Methods>\n'
 
 
-def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=None,Methods=None,MoleQNs=None):
+def Xsams(Sources=None, AtomStates=None, MoleStates=None, CollTrans=None,
+          RadTrans=None, Methods=None, MoleQNs=None, Molecules=None,
+          HeaderInfo=None):
     """
-    The main generator function of XSAMS. This one calles all the sub-generators above.
-    It takes the query sets that the node's setupResult() has constructed as arguments
-    with given names.
-    This function is to be passed to the HTTP-respose object directly and not to be 
-    looped over beforehand.
+    The main generator function of XSAMS. This one calles all the
+    sub-generators above. It takes the query sets that the node's
+    setupResult() has constructed as arguments with given names.
+    This function is to be passed to the HTTP-respose object directly
+    and not to be looped over beforehand.
+
     """
 
     yield """<?xml version="1.0" encoding="UTF-8"?>
@@ -488,6 +519,18 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
  xmlns:nlp="http://www.ucl.ac.uk/~ucapch0/nlp"  
  xmlns:lmp="http://www.ucl.ac.uk/~ucapch0/lmp"  >
 """
+
+    if HeaderInfo: 
+        if HeaderInfo.has_key('Truncated'):
+            if HeaderInfo['Truncated'] != None: # note: allow 0 percent
+                yield """
+<!--
+   ATTENTION: The amount of data returned has been truncated by the node.
+   The data below represent %s percent of all available data at this node that
+   matched the query.
+-->
+""" % HeaderInfo['Truncated']
+
     LOG('Writing Sources.')
     for Source in XsamsSources(Sources): yield Source
 
@@ -497,8 +540,8 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
     LOG('Writing States.')
     yield '<States>\n'
     for AtomState in XsamsAtomStates(AtomStates): yield AtomState
-#    for MolState in XsamsMolecs(MoleStates): yield MolState
-    for MolState in XsamsMolStates(MoleStates,MoleQNs): yield MolState
+    for MolState in XsamsMolStates(Molecules, MoleStates, MoleQNs):
+        yield MolState
     yield '</States>\n'
 
     LOG('Writing Processes.')
@@ -508,7 +551,6 @@ def Xsams(Sources=None,AtomStates=None,MoleStates=None,CollTrans=None,RadTrans=N
     yield '</Processes>\n'
     yield '</XSAMSData>\n'
     LOG('Done with XSAMS')
-
 
 
 

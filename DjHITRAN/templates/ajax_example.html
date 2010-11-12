@@ -1,0 +1,26 @@
+<html>
+<head>
+<title>AJAX Example</title>
+<link href="/HITRAN/media/layout.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+
+<h2>AJAX Example</h2>
+<form id="example_form" method="POST" action="/HITRAN/ajax_example/">
+<input type="text" id="id_name" name="name" value=""/>
+<input type="text" id="id_total" name="total" value=""/>
+<input type="submit" id="send_form" value="Send"/>
+</form>
+
+<div id="results">
+{% if success %}
+<p>Success!</p>
+{% endif %}
+</div>
+
+<p>We're done!</p>
+
+</body>
+</html>
+
+
