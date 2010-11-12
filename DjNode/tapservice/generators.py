@@ -502,7 +502,7 @@ def XsamsMethods(Methods):
 
 def Xsams(Sources=None, AtomStates=None, MoleStates=None, CollTrans=None,
           RadTrans=None, Methods=None, MoleQNs=None, Molecules=None,
-          Truncation=None):
+          HeaderInfo=None):
     """
     The main generator function of XSAMS. This one calles all the
     sub-generators above. It takes the query sets that the node's
@@ -525,14 +525,16 @@ def Xsams(Sources=None, AtomStates=None, MoleStates=None, CollTrans=None,
  xmlns:lmp="http://www.ucl.ac.uk/~ucapch0/lmp"  >
 """
 
-    if Truncation!=None: # note: allow 0 percent
-        yield """
+    if HeaderInfo: 
+        if HeaderInfo.has_key('Truncated'):
+            if HeaderInfo['Truncated'] != None: # note: allow 0 percent
+                yield """
 <!--
    ATTENTION: The amount of data returned has been truncated by the node.
    The data below represent %s percent of all available data at this node that
    matched the query.
 -->
-""" % Truncation
+""" % HeaderInfo['Truncated']
 
     LOG('Writing Sources.')
     for Source in XsamsSources(Sources): yield Source

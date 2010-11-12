@@ -1,3 +1,15 @@
+
+#########################
+#
+# THIS FILE IS NO LONGER USED!
+# See http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/VamdcDictionary
+#
+#########################
+
+
+
+
+
 #########################
 #Record fields:
 #########################
