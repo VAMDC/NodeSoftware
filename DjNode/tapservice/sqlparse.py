@@ -13,7 +13,7 @@ def setupSQLparser():
     or_ = Keyword("or", caseless=True)
     in_ = Keyword("in", caseless=True)
     E = CaselessLiteral("E")
-    binop = oneOf("= != < > >= <= eq ne lt le gt ge", caseless=True)
+    binop = oneOf("= != < > >= <= eq ne lt le gt ge like", caseless=True)
     arithSign = Word("+-",exact=1)
     realNum = Combine( Optional(arithSign) + ( Word( nums ) + "." + Optional( Word(nums) )  |
                                            ( "." + Word(nums) ) ) + 
@@ -56,6 +56,7 @@ OPTRANS= { # transfer SQL operators to django-style
     '<=': '__lte',
     '>=': '__gte',
     'in': '__in',
+    'like': '__contains',
 }
 
 import sys
