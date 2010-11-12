@@ -12,10 +12,8 @@ This is the working methods.
 import sys
 from django.db.models import Q
 from time import time 
-#from django.db import transaction
-
-#from django.db.utils import IntegrityError
-#import string as s
+from django.db import transaction, connection
+import string
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
@@ -299,7 +297,7 @@ def find_match_and_update(property_name, match_key, model, data):
             sys.stderr.write("%s: model.%s=%s\n" % (e, key, data[key]))
     return match
             
-def create_new(model, data):
+def create_new(cursor, data, db_table):
     """
     Create a new object of type model and store
     it in the database.
@@ -307,7 +305,11 @@ def create_new(model, data):
     model - django model type
     inpdict - dictionary of fieldname:value that should be created.
     """
-    return model.objects.create(**data)
+    data.pop('pk',None)
+    nplaceholders=string.join(['%s']*len(data),',')
+    sql='INSERT INTO %s (%s) VALUES (%s);'%(db_table,nplaceholders,nplaceholders)
+    print sql,data.keys()+data.values()
+    cursor.execute(sql,data.keys()+data.values())
 
 def add_many2many(model, fieldname, objrefs):
     """
@@ -364,7 +366,7 @@ class MappingFile(object):
         #print self.line
         return self.line
     
-#@transaction.commit_on_success
+@transaction.commit_on_success
 def parse_file_dict(file_dict, global_debug=False):
     """
     Process one file definition from a config dictionary by
@@ -382,7 +384,19 @@ def parse_file_dict(file_dict, global_debug=False):
     
     # model to work on
     model = file_dict['model']    
+    db_table=model._meta.db_table
+
+    cursor = connection.cursor()
+    transaction.set_dirty()
+
     mapping = file_dict['linemap']
+
+    # replace cname by db_column if it is set in the model
+    for mapp in mapping:
+        if mapp['cname']=='pk': mapp['cname']=model._meta.pk.name
+        if model._meta.get_field(mapp['cname']).db_column:
+            mapp['cname']=model._meta.get_field(mapp['cname']).db_column
+
     # update an existing model using field named updatematch
     updatematch = file_dict.get('updatematch', None) 
 
@@ -531,11 +545,11 @@ def parse_file_dict(file_dict, global_debug=False):
                     
             # move result(s) into database
             data[map_dict['cname']] = dat
-
+            
             # line columns parsed; now move to database 
 
         modelinstance = None 
-
+        
         if updatematch:
             # Model was already created; this run is for
             # updating it properly (e.g. for vald)            
@@ -552,12 +566,12 @@ def parse_file_dict(file_dict, global_debug=False):
             # populated with the relevant fields. 
             if not data.has_key('pk'):
                 data['pk'] = None
-            try:
-                modelinstance = create_new(model, data)
-            except Exception, e:                
-                errors += 1
-                if debug:
-                    log_trace(e, "ERROR creating %s: " % model)
+            #try:
+            create_new(cursor, data, db_table)
+            #except Exception, e:                
+            #    errors += 1
+            #    if debug:
+            #        log_trace(e, "ERROR creating %s: " % model)
             
         # post processing: many-to-many fields
         if modelinstance:
@@ -578,11 +592,11 @@ def parse_mapping(mapping, debug=False):
     django database fields. This should ideally
     not have to be changed for different database types.
     """
-    import gc, pdb
+    #import gc, pdb
     if validate_mapping(mapping):    
         t0 = time()
-        gc.DEBUG_SAVEALL = True
-        import cProfile as profile
+        #gc.DEBUG_SAVEALL = True
+        #import cProfile as profile
         for file_dict in mapping:
             t1 = time()            
             parse_file_dict(file_dict, global_debug=debug)

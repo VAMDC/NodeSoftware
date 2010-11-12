@@ -456,3 +456,5 @@ mapping = [
     } # end of vald file def
 
 ] # end of vald3 mapping file def list
+
+mapping=[mapping[0]]
