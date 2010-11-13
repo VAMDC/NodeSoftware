@@ -218,15 +218,15 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
     QNList={}
     for MolQN in MoleQNs:
        G=lambda name: GetValue(name,MolQN=MolQN)
-       print '+++G("MolQnStateID") =',G("MolQnStateID")
+       #print '+++G("MolQnStateID") =',G("MolQnStateID")
        if QNList.has_key(G("MolQnStateID")):
           QNList[G("MolQnStateID")].append(MolQN)
           #print G("MolQnStateID")
        else:
           QNList[G("MolQnStateID")]=[MolQN]
-    print 'MoleQNs is %d items long' % len(MoleQNs)
-    print 'QNList is %d items long' % len(QNList)
-    print QNList.keys()
+    #print 'MoleQNs is %d items long' % len(MoleQNs)
+    #print 'QNList is %d items long' % len(QNList)
+    #print QNList.keys()
 
     yield '<Molecules>'
     for Molecule in Molecules:
