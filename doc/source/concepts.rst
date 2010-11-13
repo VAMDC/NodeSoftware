@@ -9,7 +9,7 @@ The VAMDC dictionary
 ---------------------
 
 The query language
-----------------
+---------------------
 
 The Django data model
 ------------------------
