@@ -13,7 +13,8 @@ from DjHITRAN.node.models import *
 import DjNode.tapservice.sqlparse as sqlparse
 from DjNode.tapservice.views import TAPQUERY as TapQuery
 #from tap import TapQuery
-from xsams_generator import *
+#from xsams_generator import *
+#from MoleculeCases import *
 
 #import os
 #import sys
@@ -92,10 +93,14 @@ RETURNABLES={\
 'MolecularStateEnergyOrigin':'Zero-point energy',
 'MolecularStateCharacTotalStatisticalWeight':'MolState.g',
 
+'MolQnStateID': 'MolQN.stateid',
+'MolQnCase': 'MolQN.case',      # e.g. 'dcs', 'ltcs', ...
+'MolQnLabel': 'MolQN.label',    # e.g. 'J', 'asSym', ...
+'MolQnValue': 'MolQN.value'
 }
 
 RESTRICTABLES = {\
-'InchiKey':'molecid',
+'Inchikey':'inchikey',
 'RadTransWavenumberExperimentalValue':'nu',
 'RadTransProbabilityTransitionProbabilityAValue':'a',
 }
@@ -108,6 +113,15 @@ molecules = Molecules.objects.filter(molecid__in=loaded_molecules).values(
 # Do the same for molecules with cross sections in the HITRAN database:
 xsec_molecules = Molecules.objects.filter(molecid__in=Xsec.objects.values(
         'molecid').distinct()).values('molecid','molec_name','molec_name_html')
+
+# metadata concerning the quantum numbers in the case-by-case description,
+# retrieved from the QNdesc table and used by the parseHITRANstates method:
+case_desc = QNdesc.objects.values('caseid', 'case_prefix', 'name', 'col_index',
+                                  'col_name')
+
+case_prefixes = {}
+case_prefixes[1] = 'dcs'
+case_prefixes[5] = 'nltcs'
 
 def index(request):
     c=RequestContext(request,{})
@@ -254,7 +268,22 @@ def getHITRANsources(transs):
         s = set([trans.nu_ref, trans.a_ref])
         sourceIDs = sourceIDs.union(s)
     return Refs.objects.filter(pk__in=sourceIDs)
-    
+
+def parseHITRANstates(states):
+    qns = []
+    sids=set([])
+    for state in states:
+        s=set([state.stateid])
+        sids=sids.union(s)
+
+    for qn in AllQns.objects.filter(stateid__in=sids):
+        label, value = qn.qn.split('=')
+        qns.append(MolQN(qn.stateid, case_prefixes[qn.caseid], label, value))
+
+    LOG('%d state quantum numbers obtained' % len(qns))
+    #sys.exit(0)
+    return qns
+
 def setupResults(sql):
     q = sqlparse.where2q(sql.where,RESTRICTABLES)
     try:
@@ -267,6 +296,8 @@ def setupResults(sql):
     transs = Trans.objects.filter(q) 
     sources = getHITRANsources(transs)
     states = getHITRANstates(transs)
+    # extract the state quantum numbers in a form that generators.py can use:
+    qns = parseHITRANstates(states)
     molecules = getHITRANmolecules(transs)
     LOG('%s transitions retrieved from HITRAN database' % transs.count())
     LOG('%s states retrieved from HITRAN database' % states.count())
@@ -275,4 +306,5 @@ def setupResults(sql):
     return {'RadTrans': transs,
             'Sources': sources,
             'MoleStates': states,
+            'MoleQNs': qns,
             'Molecules': molecules}

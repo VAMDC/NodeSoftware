@@ -2,10 +2,11 @@
 # You'll have to do the following manually to clean this up:
 #     * Rearrange models' order
 #     * Make sure each model has one field with primary_key=True
-# Feel free to rename the models, but don't rename db_table values or field names.
+# Feel free to rename the models, but don't rename db_table values or
+# field names.
 #
-# Also note: You'll have to insert the output of 'django-admin.py sqlcustom [appname]'
-# into your database.
+# Also note: You'll have to insert the output of
+# 'django-admin.py sqlcustom [appname]' into your database.
 
 from django.db import models
 
@@ -57,6 +58,8 @@ def make_request(numin, numax, Smin, selected_molecids, output_params,
 class AllStates(models.Model):
     molecid = models.IntegerField(null=True, db_column='molecID', blank=True)
     isoid = models.IntegerField(null=True, db_column='isoID', blank=True)
+    # XXX why does django multiply may VARCHAR lengths by 3???
+    inchikey = models.CharField(max_length=81, db_column='InChIKey')
     stateid = models.CharField(max_length=192, primary_key=True,
                                db_column='stateID')
     assigned = models.IntegerField(null=True, blank=True)
@@ -112,6 +115,12 @@ class AllStates(models.Model):
         yield '        </MolecularStateCharacterisation>\n'
         yield '      </MolecularState>\n'
 
+# this class only exists so that generators.py can output quantum numbers
+# - a list of MolecularQuantumNumbers objects will be built from the
+# search on all_states.
+#class MolecularQuantumNumbers:
+   
+
 class Refs(models.Model):
     sourceid = models.CharField(max_length=192, primary_key=True,
                                 db_column='sourceID')
@@ -155,6 +164,7 @@ class Trans(models.Model):
     id = models.IntegerField(db_column='id', primary_key=True)
     molecid = models.IntegerField(db_column='molecID')
     isoid = models.IntegerField(db_column='isoID')
+    inchikey = models.CharField(max_length=81, db_column='InChIKey')
     initialstateref = models.CharField(max_length=192,
                                        db_column='InitialStateRef', blank=True)
     finalstateref = models.CharField(max_length=192,
@@ -216,6 +226,7 @@ class Trans(models.Model):
 
 class Molecules(models.Model):
     molecid = models.IntegerField(primary_key=True, null=False)
+    inchikeystem = models.CharField(max_length=42)
     molec_name = models.CharField(max_length=20, null=False)
     molec_name_html = models.CharField(max_length=128, null=False)
     molec_name_latex = models.CharField(max_length=128, null=False)
@@ -236,6 +247,31 @@ class Molecules(models.Model):
                   '</ChemicalName>\n' % self.chemical_names
         yield '      </MolecularChemicalSpecies>\n'
 
+class AllQns(models.Model):
+    id = models.IntegerField(primary_key=True, null=False, db_column='id')
+    molecid = models.IntegerField(db_column='molecID')
+    isoid = models.IntegerField(db_column='isoID')
+    inchikey = models.CharField(max_length=81, db_column='InChIKey')
+    stateid = models.CharField(max_length=192, db_column='stateID')
+    caseid = models.IntegerField(db_column='caseID')
+    qn = models.CharField(max_length=192, db_column='qn')
+    qn_attr = models.CharField(max_length=384)
+    xml = models.CharField(max_length=768, db_column='xml')
+    class Meta:
+        db_table = u'all_qns'
+
+# This is a plumbing class to make my quantum numbers table play nicely
+# with Christian's generator code:
+class MolQN:
+   def __init__(self, stateid, case_prefix, label, value):
+        self.stateid = stateid
+        self.case = case_prefix
+        self.label = label
+        self.value = value
+
+   def __getitem__(self, name):
+        return self.__dict__[name]
+
 class Xsec(models.Model):
     id = models.IntegerField(primary_key=True, null=False)
     molecid = models.IntegerField(null=False, db_column='molecID', blank=True)
@@ -251,3 +287,17 @@ class Xsec(models.Model):
     class Meta:
             db_table = u'xsec'
 
+class QNdesc(models.Model):
+    caseid = models.IntegerField(primary_key=True, null=False)
+    case_prefix = models.CharField(max_length=32, null=False)
+    name = models.CharField(max_length=32, null=False)
+    HTMLname = models.CharField(max_length=64, null=False)
+    attributes = models.TextField(blank=True)
+    HTMLattributes = models.TextField(blank=True)
+    description = models.TextField(blank=False)
+    restrictions = models.TextField(blank=True)
+    HTMLrestrictions = models.TextField(blank=True)
+    col_index = models.IntegerField(null=True)
+    col_name = models.IntegerField(null=True)
+    class Meta:
+        db_table = u'QNdesc'
