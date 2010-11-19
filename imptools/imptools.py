@@ -6,76 +6,19 @@ This program implements a database importer that reads from
 ascii-input files to the django database. It's generic and is
 controlled from a mapping file.
 
-This is the working methods.
-
 """
 import sys
 from django.db.models import Q
 from time import time 
-#from django.db import transaction
 
-#from django.db.utils import IntegrityError
-#import string as s
+# import statistics trackers
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
+        
+# Helper methods for parsing and displaying 
 
 is_iter = lambda iterable: hasattr(iterable, '__iter__')
-
-# Line functions
-    
-def charrange(linedata, start, end, filenum=0):
-    """
-    Cut out part of a line of texts based on indices
-    """
-    if is_iter(linedata):
-        linedata = linedata[filenum]        
-    try:
-        return linedata[start:end].strip()
-    except Exception, e:
-        #print "charrange skipping '%s': %s (%s)" % (linedata, e)        
-        pass
-    
-def charrange2int(linedata, start, end, filenum=0):
-    """
-    Cut out part of a line based on indices, return as integer
-    """
-    if is_iter(linedata):
-        linedata = linedata[filenum] 
-    try:
-        return int(round(float(linedata[start:end].strip())))
-    except Exception, e:
-        #print "ERROR: charrange2int: %s: %s" % (linedata, e)
-        pass
-        
-def bySepNr(linedata, number, sep=',',filenum=0):
-    """
-    Split a text line by sep argument and return
-    the number:ed split section
-    """
-    if is_iter(linedata):
-        linedata = linedata[filenum] 
-    try:
-        return linedata.split(sep)[number].strip()
-    except Exception, e:
-        pass
-        #print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
-
-def lineSplit(linedata, splitsep=',', filenum=0):
-    """
-    Splits a line by splitsep, returns a list. The main use for this
-    method is multireferencing; normally you don't want to create lists within lists otherwise.
-    """    
-
-    if is_iter(linedata):
-        linedata = linedata[filenum]    
-    try:
-        return [string.strip() for string in linedata.split(splitsep)]
-    except Exception, e:
-        #print "ERROR: linesplit %s: %s" % (linedata, e)
-        pass
-    
-# Helper methods for parsing and displaying 
 
 def ftime(t0, t1):
     "formats time to nice format."
@@ -149,7 +92,8 @@ def process_line(linedata, column_dict):
     if len(cbyte) > 1:
         args = cbyte[1:]    
     kwargs = column_dict.get('kwargs', {})
-        
+    if len(linedata) == 1:
+        linedata = linedata[0]
     try:        
         dat = colfunc(linedata,  *args, **kwargs)
     except Exception, e:
