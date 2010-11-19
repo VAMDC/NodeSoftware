@@ -1,7 +1,13 @@
+.. _source:
+
 The source code
 =====================
 
-The source code resides at https://github.com/VAMDC/NodeSoftware
+The node software resides at https://github.com/VAMDC/NodeSoftware
+
+You can download a zip or tar.gz archive from this website or - preferrably - use git to check out your copy::
+
+   $ git clone https://ivh@github.com/VAMDC/NodeSoftware.git
 
 The following is the automatically generated documentation from
 the source code. It lists and describes all functions, classes etc.
