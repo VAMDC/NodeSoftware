@@ -101,7 +101,7 @@ vald_cfg_file = base + 'VALD3_config_2010.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
 publications_file = base + "publications_preprocessed.dat"
-pub2source_file = base + "VALD3linelists.dat"
+pub2source_file = base + "publications_to_sources_map.dat"
 
 mapping = [
     # Populate Species model, using the species input file.
@@ -451,5 +451,3 @@ mapping = [
     } # end of vald file def
 
 ] # end of vald3 mapping file def list
-
-#mapping = [mapping[6]]
