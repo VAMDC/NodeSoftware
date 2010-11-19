@@ -21,7 +21,7 @@ import os, sys
 from DjVALD.node import models as valdmodel
 
 # import the line funcs
-from imptools import charrange, charrange2int, bySepNr, lineSplit
+from linefuncs import charrange, charrange2int, bySepNr, lineSplit
 
 # 
 # Create a config, a list of file definitions. Each entry in this
@@ -56,44 +56,41 @@ def get_srcfile_ref(linedata, sep1, sep2):
     return l2.strip("'").strip()
 def get_publications(linedata):
     "extract publication data. This returns a list since it is for a multi-reference."
-    return bySepNr(linedata, 4, '||').split(',')
-def get_id_from_linedata(linedata, *ranges):
-    """
-    Create a string id from data on a line.
-    Takes any number of tuples with index ranges inside the line.
-    These ranges are used to cut out data and merge it into the id.
-    Creates an id on the form "val1-val2-val3-val4-..."
-    """    
-    return "-".join(charrange(linedata, *ran) for ran in ranges)
+    return [p.strip() for p in bySepNr(linedata, 4, '||').split(',')]
 def get_term_val(linedata, sep1, sep2):
     "extract configurations from term file"
     l1 = bySepNr(linedata, sep1, ':', filenum=1)
     return bySepNr(l1, sep2, ',')
 def get_gammawaals(linedata, sep1, sep2):
     "extract gamma - van der waal value"
-    l1 = charrange(linedata, sep1, sep2)
+    l1 = charrange(linedata, sep1, sep2)    
     if float(l1) < 0:
-        return linedata[0]
+        return l1
     else:
-        return 0.000
+        return '0.000'
 def get_alphawaals(linedata, sep1, sep2):
     "extract alpha - van der waal value"
-    l1 = charrange(linedata, sep1, sep2)
+    l1 = charrange(linedata, sep1, sep2)    
     if float(l1) > 0:
         return "%s.%s" % (0, bySepNr(linedata, 1, '.'))
     else:
-        return 0.000    
+        return '0.000'    
 def get_sigmawaals(linedata, sep1, sep2):
     "extract sigma - van der waal value"
-    l1 = charrange(linedata, sep1, sep2)
+    l1 = charrange(linedata, sep1, sep2)   
     if float(l1) > 0:
         return bySepNr(0, '.')
     else:
-        return 0.000
+        return '0.000'
 def get_accur(linedata, range1, range2):
     "extract accuracy"
-    return "%s,%s" % (charrange(linedata, range1), charrange(linedata, range2))
-    
+    return "%s,%s" % (charrange(linedata, *range1), charrange(linedata, *range2))
+def merge_cols(linedata, *ranges):
+    """
+    Merges data from several columns into one, separating them with '-'.
+     ranges are any number of tuples (indexstart, indexend) defining the columns.
+    """
+    return '-'.join([charrange(linedata, *ran) for ran in ranges])
     
 # Base directory for the data files
 
@@ -238,7 +235,7 @@ mapping = [
      'errline':("Unknown", "Unknown"),
      'linemap':[
             {'cname':'charid',        #species,coup,jnum,term,energy (upper states)             
-             'cbyte':(get_id_from_line,
+             'cbyte':(merge_cols,
                       (30,36), (170,172), (77,82), (172,218), (63,77))}, 
             {'cname':'species',
              'cbyte':(charrange, 30,36),
@@ -313,7 +310,7 @@ mapping = [
      'errline':("Unknown", "Unknown"),
      'linemap':[
             {'cname':'charid',         #species,coup,jnum,term,energy (lower states) 
-             'cbyte':(get_id_from_line,
+             'cbyte':(merge_cols,
                       (30,36), (122,124), (58,63), (124,170), (44,58))},
             {'cname':'species',
              'cbyte':(charrange, 30,36) ,
@@ -437,20 +434,22 @@ mapping = [
              'cbyte':(charrange, 280,284)},
              #'references':(valdmodel.Source,'pk')},            
             {'cname':'upstateid',     #species,coup,jnum,term,energy   
-             'cbyte':(get_id_from_line,
+             'cbyte':(merge_cols,
                       (30,36), (170,172), (77,82), (172,218),(63,77))},
             {'cname':'lostateid',
-             'cbyte':(get_id_from_line,
+             'cbyte':(merge_cols,
                       (30,36), (122,124), (58,63), (124,170), (44,58))},
             {'cname':'upstate',
-             'cbyte':(get_id_from_line,
+             'cbyte':(merge_cols,
                       (30,36), (170,172), (77,82), (172,218), (63,77)),
              'references':(valdmodel.State,'charid')},
             {'cname':'lostate',
-             'cbyte':(get_id_from_line,
+             'cbyte':(merge_cols,
                       (30,36), (122,124), (58,63), (124,170), (44,58)),
              'references':(valdmodel.State,'charid')},
             ],
     } # end of vald file def
 
 ] # end of vald3 mapping file def list
+
+#mapping = [mapping[6]]
