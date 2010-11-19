@@ -8,6 +8,16 @@ TAP services
 The VAMDC dictionary
 ---------------------
 
+Returnables
+~~~~~~~~~~~~~~~~~
+
+Restrictables
+~~~~~~~~~~~~~~~~~
+
+Requestables
+~~~~~~~~~~~~~~~~~
+
+
 The query language
 ---------------------
 
@@ -24,4 +34,8 @@ The generic XSAMS generator
 ------------------------------
 
 
+The registry
+---------------
 
+The portal
+---------------
