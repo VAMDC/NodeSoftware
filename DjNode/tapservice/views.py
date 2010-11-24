@@ -143,7 +143,7 @@ def tables(request):
 
 def availability(request):
     c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
+    return render_to_response('node/availability.xml', c)
 
 def tablesXsd(request):
     c = RequestContext(request,{})
