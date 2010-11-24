@@ -6,175 +6,16 @@ This program implements a database importer that reads from
 ascii-input files to the django database. It's generic and is
 controlled from a mapping file.
 
-This is the working methods.
-
 """
 import sys
 from django.db.models import Q
 from time import time 
-#from django.db import transaction
 
-#from django.db.utils import IntegrityError
-#import string as s
+# import statistics trackers
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
-
-# Line functions
-
-def passLine(linedata, filenum=0):
-    """
-    This method simply returns the line unaltered.
-    """
-    #print "into passLine: ", linedata
-    return linedata[filenum]
-
-def setLine(linedata, value, filenum=0):
-    """
-    Replace line with a given value instead of what is actually given
-    """
-    #print "into setLine:", linedata, value
-    return value 
-
-def lineSplit(linedata, splitsep=',', filenum=0):
-    """
-    Splits a line by splitsep, returns a list. The main use for this
-    method is multireferencing; normally you don't want to create lists within lists otherwise.
-    """    
-    try:
-        return [string.strip() for string in linedata[filenum].split(splitsep)]
-    except Exception, e:
-        #print "ERROR: linesplit %s: %s" % (linedata, e)
-        pass
-    
-def lineStrip(linedata, stripstring=None, filenum=0):
-    """
-    String a line of a given string. None clears all whitespace.
-    """
-    try:
-        return linedata[filenum].strip(stripstring)
-    except Exception, e:
-        #print "ERROR: linestrip %s: %s" % (linedata, e)
-        pass 
-    
-def charrange(linedata, start, end, filenum=0):
-    """
-    Cut out part of a line of texts based on indices
-    """
-    try:
-        return linedata[filenum][start:end].strip()
-    except Exception, e:
-        #print "charrange skipping '%s': %s (%s)" % (linedata, e)        
-        pass
-    
-def charrange2int(linedata, start, end, filenum=0):
-    try:
-        return int(round(float(linedata[filenum][start:end].strip())))
-    except Exception, e:
-        #print "ERROR: charrange2int: %s: %s" % (linedata, e)
-        pass
         
-def bySepNr(linedata, number, sep=',',filenum=0):
-    """
-    Split a text line by sep argument and return
-    the number:ed split section
-    """
-    try:
-        return linedata[filenum].split(sep)[number].strip()
-    except Exception, e:
-        pass
-        #print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
-
-def ifCond(linedata, condition, funcdefTrue, funcdefFalse, filenum=0):
-    """
-    Optional choice of commands. The argument 'condition' is a string that is evaluated. In this
-    evaluation, a variable 'line' may be refered to, meaning the currently working line.
-    funcdefTrue is used if condition is True, funcdefFalse otherwise. The linefuncs should be given as
-    tuple definifitions + arguments, e.g. (linefunc1, (arg1, arg2)), (linefunc2, (arg1)).     
-    """
-    #print "into ifCond:", linedata, funcdefTrue, funcdefFalse
-    try:
-        line = linedata[filenum]        
-        if eval(condition):
-            return funcdefTrue[0](linedata, *funcdefTrue[1])
-        else:
-            return funcdefFalse[0](linedata, *funcdefFalse[1])
-    except Exception, e:
-        print "ERROR: selectCmds: %s: %s" % (linedata, e)
-    
-def formatLine(linedata, formatstr, *linefuncs):
-    """
-    Replace the line with a formatting created by a given set of linefuncs. Linefuncs
-    should be valid tuple function definitions.
-    
-    Example:    
-    formatLine(linedata, "%s.%s", (charrange,(234,256)), (bySepNr, (2, ',')))
-    """    
-    fmtlist = []
-    for func, args in linefuncs:
-        fmtlist.append(func(linedata, *args))
-    fmt = tuple(fmtlist)
-    return formatstr % fmt
-        
-def chainCmds(linedata, *linefuncs):
-    """
-    This command allows for chaining together several line functions in
-    sequence. The results of the first function will be passed to the second
-    one etc.
-
-    linefuncs should be a list [(func1, (arg1,arg2,...)), (func2,(arg1,arg2,..)),...]
-    """
-
-    data = linedata
-    for func, args in linefuncs:
-        data = [func(data, *args)]
-    if data:
-        return data[0]
-    print "chainCommands skipping line." 
-
-def mergeCols(linedata, sep, *linefuncs):
-    """
-    This merges strings taken from the given linefuncs into a single
-    string. The difference from ifFromLine below is that it will not use empty
-    strings and will possibly return an empty string. Sep may also be None.
-    """
-    if not sep:
-        sep = ""
-    dbref = []
-    for func, args in linefuncs:
-        string = str(func(linedata, *args)).strip()        
-        if not string:
-            continue
-        dbref.append(string)
-    return sep.join(dbref)
-
-    
-def idFromLine(linedata, sep, *linefuncs):
-    """
-    Extract strings from a line in order to build a unique id-string,
-    using one or more line functions to extract parts of a line and
-    paste them together with a separator given by 'sep'.
-    The line functions must be stored as tuples (func, (arg1,arg2,..)). 
-
-    Example of call:
-      idFromLine('-', (bySepNr,(3,';'), (charrange2int,(45,67))) )    
-    """
-    #print linedata
-    #pdb.set_trace()
-    if not sep:
-        sep = "-"
-    dbref = []
-    for func, args in linefuncs:
-        string = str(func(linedata, *args)).strip()        
-        if not string:
-            string = sep
-        #print string 
-        dbref.append(string)
-    #print sep.join(dbref)
-    return sep.join(dbref)
-
-
-
 # Helper methods for parsing and displaying 
 
 is_iter = lambda iterable: hasattr(iterable, '__iter__')
@@ -245,15 +86,21 @@ def process_line(linedata, column_dict):
     Process one line of data. Linedata is a tuple that always starts with
     the raw string for the line.    
     """
-    colfunc = column_dict['cbyte'][0]
-    args = column_dict['cbyte'][1]
+    cbyte = column_dict['cbyte']    
+    colfunc = cbyte[0]
+    args = ()
+    if len(cbyte) > 1:
+        args = cbyte[1:]    
+    kwargs = column_dict.get('kwargs', {})
+    if len(linedata) == 1:
+        linedata = linedata[0]
     try:        
-        dat = colfunc(linedata,  *args)
+        dat = colfunc(linedata,  *args, **kwargs)
     except Exception, e:
         log_trace(e, "error processing lines '%s' - in %s%s: " % (linedata, colfunc, args))
         raise 
     if not dat or (column_dict.has_key('cnull') \
-                   and dat == column_dict['cnull']):
+                       and dat == column_dict['cnull']):
         return None
     return dat
 
