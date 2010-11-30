@@ -241,13 +241,13 @@ def parse_file_dict(file_dict, global_debug=False):
     nfiles = len(filepaths)
     filenames = [path.split('/')[-1] for path in filepaths]
 
-    headlines = file_dict['headlines']
+    # optional  
+    headlines = file_dict.get('headlines', [0])
     if not is_iter(headlines):
         headlines = [headlines]
-    commentchars = file_dict['commentchar']
+    commentchars = file_dict.get('commentchar', ['#'])
     if not is_iter(commentchars):
-        commentchars = [commentchars]       
-    # optional  
+        commentchars = [commentchars]          
     linesteps = file_dict.get('linestep', [1 for i in range(nfiles)])
     if not is_iter(linesteps):
         linesteps = [linesteps]

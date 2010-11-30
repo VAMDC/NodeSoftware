@@ -24,7 +24,8 @@ The VAMDC-TAP service
 The import tool
 ----------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    imptools
    run_import
+   linefuncs
