@@ -32,34 +32,43 @@ if not os.path.exists('settings.py'):
     """#
 # VAMDC-node config file
 #
-# You may customize your setup by copy&pasting the variables you want
-# to change from the master config file DjNode/settings_default.py to
-# this file. Try to only copy over things you really need to customize
-# and do *not* make any changes to settings_defaults.py
-# directly. That way you'll always have a sane default to fall back on
-# (also, the master file may change with updates).
+# You may customize your setup by copy&pasting the variables you want to 
+# change from the default config file settings_default.py to this file. 
+# Try to only copy over things you really need to customize and do *not* 
+# make any changes to settings_defaults.py directly. That way you'll 
+# always have a sane default to fall back on (also, the master file may 
+# change with updates).
 
 from settings_default import *
 
-###################################################
-# Basic node setup 
-###################################################
+# Comment out the following line once your node goes live.
+DEBUG=True
 
 ###################################################
-# Database setup 
+# Database connection
+# Setting up the database type and information.
+# Simplest for testing is sqlite3.
 ###################################################
+DATABASE_ENGINE = 'sqlite3' # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'
+DATABASE_NAME = 'node.db'   # the path to the db file for sqlite3, the DB-name for other engines
+DATABASE_USER = ''             # Not used with sqlite3.
+DATABASE_PASSWORD = ''         # Not used with sqlite3.
+DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3
+DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3
 
-###################################################
-# Django components
-###################################################
 
-###################################################
-# Misc settings
-###################################################
+#########################################
+# TAP URL (Must have trailing slash!)
+#########################################
+TAP_URL = 'http://example.com/YourDBname/tap/'
 
-###################################################
-# Web features
-###################################################
+#########################################
+# Admin information
+#########################################
+ADMINS = (\
+            ('Admin 1 Name', 'name1@mail.net'),
+            ('Admin 2 Name', 'name2@mail.net'),
+        )
 
 """
     settings_file.write(string)

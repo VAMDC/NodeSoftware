@@ -17,22 +17,23 @@ NODE_PATH = os.path.dirname(os.path.abspath(__file__))
 # Python-path to app folder (usually <yournodename>.node)
 NODEPKG= os.path.basename(NODE_PATH)+'.node'
 # TAP base url. Must have trailing slash!
-TAP_URL = 'http://vamdc.fysast.uu.se:8888/node/vald/tap/'
+TAP_URL = 'http://example.com/YourDBname/tap/'
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email). 
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
 ADMINS = (('yourname', 'name@mail.net'),) 
 MANAGERS = ADMINS
 
 ###################################################
-# Database setup 
+# Database connection
+# Setting up the database type and information.
+# Simplest for testing is sqlite3.
 ###################################################
-# Setting up the database type and information. Simplest for testing is sqlite3.
-DATABASE_ENGINE = 'sqlite3' # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = os.path.join(NODE_PATH, "node.db") # the path to the db file for sqlite3
+DATABASE_ENGINE = 'sqlite3' # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sq$
+DATABASE_NAME = 'node.db'   # the path to the db file for sqlite3, the DB-name $
 DATABASE_USER = ''             # Not used with sqlite3.
 DATABASE_PASSWORD = ''         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
+DATABASE_HOST = ''             # Set to empty string for localhost. Not used wi$
+DATABASE_PORT = ''             # Set to empty string for default. Not used with$
 
 ###################################################
 # Django components
@@ -64,14 +65,14 @@ MIDDLEWARE_CLASSES = (
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'CET'
+TIME_ZONE = 'Europe/Berlin'
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 # Give debug messages
 DEBUG = False
 # For web templates, use Python traceback instead of Server Error message. 
-TEMPLATE_DEBUG = True
+TEMPLATE_DEBUG = DEBUG
 # site id number (you shouldn't have to change this)
 SITE_ID = 1
 # If you set this to False, Django will make some optimizations so as not
