@@ -19,8 +19,9 @@ Contents:
    prereq
    newnode
    importing
-   modules
    contact
+   addit
+   modules
 
 Indices and tables
 ==================

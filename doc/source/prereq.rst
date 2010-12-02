@@ -121,8 +121,7 @@ See :ref:`source` on how to obtain the source code.
 .. _testprereq:
 
 Test your installation
-=======================
-
+----------------------------
 
 None of the following commands should give you an error::
 
@@ -139,9 +138,9 @@ The last command will open an interactive Python shell for you (IPython,
 if you have it installed, otherwise standard Python) and in there you 
 should be able to run::
 
-    $ from node.models import *
-    $ import nodelib
-    $ exit()
+    >>> from node.models import *
+    >>> import nodelib
+    >>> exit()
 
 
 If any of this fails, please make sure you have installed all of the 
