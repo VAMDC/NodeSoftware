@@ -20,6 +20,7 @@ Contents:
    newnode
    importing
    modules
+   contact
 
 Indices and tables
 ==================
