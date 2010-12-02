@@ -42,17 +42,17 @@ DATABASE_PORT = ''             # Set to empty string for default. Not used with$
 # the node that you want to run.
 INSTALLED_APPS = (
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.admin',
-    'django.contrib.admindocs',
+#    'django.contrib.sessions',
+#    'django.contrib.sites',
+#    'django.contrib.admin',
+#    'django.contrib.admindocs',
     'DjNode.tapservice',
     NODEPKG
 )
 # Setup of Django middleware components (shouldn't have to change this))
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+ #   'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
