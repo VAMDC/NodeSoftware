@@ -99,7 +99,7 @@ attributes for these that correspond to the table columns. An example may look l
             db_table = u'species'
 
 There is one important thing to do with these model definitions, apart 
-from checking that the columns were detected corretly: The columns that 
+from checking that the columns were detected correctly: The columns that 
 act as a pointer to another table need to be replaced by *ForeignKeys*, 
 thereby telling the framework how the tables relate to each other. This 
 is best illustrated in an example. Suppose you have a second model, in 
@@ -137,13 +137,37 @@ example above you could do::
     >>> somestates = States.objects.filter(species__name='He')
     >>> for state in somestates: print state.energy
 
+
+
+
 The dictionaries
 ----------------------------------
+
+Now that we have a database with data in it and the data model in place, 
+we need to define how the data relates to the VAMDC *dictionary*. If you 
+have not done so yet, please read :ref:`conceptdict` before continuing.
+
+What needs to be put into the file *node/dictionaries.py* is the 
+definition of two variables that map the individual fields of the 
+data model to the names from the dictionary, like this::
+
+    RETURNABLES={\
+    'SourceID':'Source.id',
+    'SourceCategory':'journal', # using a constant string works
+    'AtomStateEnergy':'AtomState.energy', 
+    'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
+    }
+    
+    RESTRICTABLES = {\
+    'AtomSymbol':'species__name',
+    'AtomStateEnergy':'upstate__energy',
+    'RadTransWavelengthExperimentalValue':'vacwave',
+    }
+
 
 
 The query routine
 -----------------------------------
-
 
 This file must implement a function called setupResults() which 
 takes the parsed SQL from the query parser. setupResults() must pass 
