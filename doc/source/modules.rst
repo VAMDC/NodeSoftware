@@ -19,7 +19,6 @@ The VAMDC-TAP service
    :maxdepth: 2
 
    tapservice
-   examplenode
 
 The import tool
 ----------------
