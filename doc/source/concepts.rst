@@ -7,10 +7,34 @@ The database
 ----------------
 
 As already mentioned in the :ref:`intro`, data needs to reside in a 
-relational database in order to use the node software for a VAMDC node.
+relational database in order to use the node software for a VAMDC node. 
+This is what we mean by *database* in the following, in contrast to 
+*data set* which means the data in any format or *data model*:
 
-The data model
+The data model(s)
 ------------------------
+
+The *data model* is a definition of the database layout in form of 
+Python code where a *class* is defined for each column in the database 
+and the members of the class *fields* that correspond to the columns. 
+The data model also defines the connections between tables. For an 
+existing database the data model can be automatically generated, 
+otherwise it needs to be written from scratch for a new node (see 
+:ref:`newnode` later) and will then be used to create the database 
+itself.
+
+Having this programming code representation of the database layout has 
+many advantages, among these are:
+* automatic (re-)creation of the database, independant of the engine
+* no need to learn SQL
+* easy queries
+* additional features like easily traversing linked tables in both directions.
+
+.. note::
+    Sometimes the singular *data model* refers to a single model 
+    (i.e. a table in the database) and sometimes the full set of models, 
+    describing the whole database layout.
+
 
 
 TAP services
@@ -33,6 +57,8 @@ users will not primarily query an indivudual node but use a higher level
 tool like the VAMDC portal for querying many nodes at once.
 
 The more detailed specification of the VAMDC variant of a TAP service can be found at the `wiki-page TapXsamsSpecification <http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/TapXsamsSpecification>`_.
+
+
 
 .. _conceptdict:
 
@@ -62,14 +88,15 @@ resides as a simple table `in the wiki
 A tool for selecting subsets and for easier updates of the dictionary is 
 a work in progress.
 
-
 At the nodes, the dictionary is used in the following different ways. 
 Note that some keywords do not make sense being used in all three 
 cases. Common sense applies.
 
-Note also that the Returnables and Restrictables, as described in the 
-following, are different for each node (depending on the data it offers 
-and its structure) and need to be written when setting up a new node.
+.. note::
+    The Returnables and Restrictables, as described in the 
+    following, are different for each node (depending on the data it offers 
+    and its structure) and need to be written when setting up a new node.
+
 
 Returnables
 ~~~~~~~~~~~~~~~~~
@@ -110,6 +137,7 @@ between the two - this time when the query is parsed at arrival. The
 code for parsing the query uses this and can thus be re-used by all 
 nodes without altering the code.
 
+
 Requestables
 ~~~~~~~~~~~~~~~~~
 
@@ -118,22 +146,46 @@ implemented in the node software. Just mentioning for sake of
 completeness.
 
 
+
 The query language
 ---------------------
 
-The node software uses the 
+The node software uses the *VAMDC SQL-subset 1* (VSS1) and will 
+implement the future iterations of the VAMDC query language. VSS1 is 
+basically a SQL-like string where one does not need to know the layout 
+of the database that will answer - instead on uses the keywords from the 
+dictionary in the WHERE part to restrict the selection of data. This 
+means that all nodes understand identical queries and there is no need 
+to adapt the query to a certain node.
 
+Details can be found in the VAMDC-TAP specification (see link above) and 
+are not necessary for setting up a new VAMDC node. Defining the 
+Restrictables and Returnables is enough for allowing the node software 
+to take care of the rest.
 
 
 The XSAMS schema
 -------------------
 
+
+
 The generic XSAMS generator
 ------------------------------
+
 
 
 The registry
 ---------------
 
+The registry is a central instance where all VAMDC nodes are registered 
+with their access URL and some additional information. This allows 
+finding nodes before sending queries to them. These lines are just to 
+remind you that you need to register your node there once it is set up 
+properly.
+
+
 The portal
 ---------------
+
+is the best example of a *user application* that uses VAMDC nodes. It is 
+a web site that facilitates the submission of a 

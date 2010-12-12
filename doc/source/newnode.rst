@@ -25,10 +25,12 @@ command, unless you moved it elsewhere and/or renamed it, which is
 absolutely no problem) a name and call it *$VAMDCROOT*. Let's also assume
 the name of the dataset is *YourDBname*.
 
-Inside $VAMDCROOT you find several subdirectories. For setting up a new
-node, you only need to care about the one called *nodes/*. The very first thing to do, is to make a copy of the ExampleNode::
+Inside $VAMDCROOT you find several subdirectories. For setting up a new 
+node, you only need to care about the one called *nodes/*. The very 
+first thing to do, is to make a copy of the ExampleNode::
 
-    $ export $VAMDCROOT=/path/to/where/you/downloaded/NodeSoftware
+    $ git clone https://ivh@github.com/VAMDC/NodeSoftware.git
+    $ export $VAMDCROOT=`pwd`/NodeSoftware/
     $ # (the last line is for Bash-like shells, for C-Shell use *setenv* instead of *export*
     $ cd $VAMDCROOT/nodes/
     $ cp -a ExampleNode YourDBname
@@ -54,7 +56,7 @@ fill in.
 
 There are only three more files that you will need to care about:
 
-* *node/models.py* is where you put the database model,
+* *node/models.py* is where you put the data model,
 * *node/dictionaries.py* is where you put the dictionaries and
 * *node/queryfunc.py* is where you write the query function,
 
