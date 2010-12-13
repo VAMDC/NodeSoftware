@@ -29,8 +29,8 @@ Inside $VAMDCROOT you find several subdirectories. For setting up a new
 node, you only need to care about the one called *nodes/*. The very 
 first thing to do, is to make a copy of the ExampleNode::
 
-    $ git clone https://ivh@github.com/VAMDC/NodeSoftware.git
-    $ export $VAMDCROOT=`pwd`/NodeSoftware/
+    $ git clone git://github.com/VAMDC/NodeSoftware.git
+    $ export VAMDCROOT=`pwd`/NodeSoftware/
     $ # (the last line is for Bash-like shells, for C-Shell use *setenv* instead of *export*
     $ cd $VAMDCROOT/nodes/
     $ cp -a ExampleNode YourDBname
