@@ -12,7 +12,7 @@ import os, sys, imp, optparse
 # making the import non-dependent on main folder name
 sys.path.append(os.path.abspath(".."))
 #sys.path.append(os.path.abspath("../imptools"))
-os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
+os.environ['DJANGO_SETTINGS_MODULE']="nodes.vald.settings"
 
 # the mapping file
 import imptools
