@@ -42,7 +42,7 @@ DATABASE_PORT = ''             # Set to empty string for default. Not used with$
 #Copy this field to settings and append the path to
 # the node that you want to run.
 INSTALLED_APPS = (
-    'django.contrib.contenttypes',
+#    'django.contrib.contenttypes',
 #    'django.contrib.sessions',
 #    'django.contrib.sites',
 #    'django.contrib.admin',
