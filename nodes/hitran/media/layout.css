@@ -1,0 +1,53 @@
+body {
+	color: #000;
+	font-size: 9pt;
+	font-family: Verdana, Tahoma, Century Gothic, Helvetica, Arial, sans-serif;
+	background: #fff;
+	padding: 0; margin: 0;
+	text-align: justify;
+}
+
+h2 {
+	text-align: center;
+}
+
+h4 {
+	text-decoration: underline;
+}
+
+#container {
+	width: 800px;
+	margin: 10px auto 10px auto;
+	padding: 0 10px 10px 10px;
+	border: black 1px solid;
+	background: #eee;
+}
+
+#searchform_left_panel {
+	width: 400px;
+	margin: auto;
+	float: left;
+}
+#searchform_right_panel {
+	width: 400px;
+	margin: auto;
+	float: right;
+}
+
+#sample_output table {
+	margin: auto;
+}
+
+#sample_output th {
+	font-family: serif;
+	font-size: 80%;
+	background: #cfa;
+	border: black 1px dotted;
+}
+
+#sample_output td {
+	background: #acf;
+	border: black 1px dotted;
+	text-align: center;
+}
+

@@ -65,7 +65,7 @@ def parse_bibtex_entry(entry, dbref_key="bibref"):
     #print entry
     
     # we store the full entry for easy retreaval later
-    field_dict['raw_entry'] = entry
+    field_dict['bibtex'] = entry
 
     # now that we've stored the raw entry, strip bibtex markup
     entry = " ".join(line for line in entry.split(r'\n')).strip()
@@ -75,7 +75,7 @@ def parse_bibtex_entry(entry, dbref_key="bibref"):
     
     # entrytype (most often 'article')
     entrytype, entry = entry.split('{', 1)     
-    field_dict['entry_type'] = entrytype
+    field_dict['category'] = entrytype
     field_list_temp = [field for field in entry.split(',')]
     field_list = []
     lcurb = rcurb = 0
@@ -127,12 +127,13 @@ def parse_bibtex_entry(entry, dbref_key="bibref"):
 
 def create_bibtex_preprocessed_file(bibtex_file,
                                     outfilename,
+                                    field_map,
                                     dbref_key='bibref'):
     """
     Takes a bibtech file and converts it into a format
     suitable for reading by the database importer
 
-    dbref || ref || author || raw bibtex entry
+    dbref || ref || author || etc ...
 
     
     """
@@ -149,12 +150,14 @@ def create_bibtex_preprocessed_file(bibtex_file,
         entry_dict = parse_bibtex_entry(bibentry, dbref_key=dbref_key)
         if not entry_dict:
             continue
+        string += "||".join([entry_dict.get(fieldname.lower(),"") for fieldname in field_map])
+        string += "\n"
         
-        if entry_dict['errors'] or not 'author' or not entry_dict["bibref"] or '||' in entry_dict["raw_entry"]:
-            raise Exception("There were errors in parsing entry %s (%s).\n unparsed text: %s" % 
-                            (entry_dict['dbref'], entry_dict["bibref"], entry_dict['errors']))
-        string += "\n%s||%s||%s||" % (entry_dict["dbref"].strip('"').lstrip('(').rstrip(')'), entry_dict["bibref"], entry_dict["author"])
-        string += "%s" % entry_dict["raw_entry"].encode("string-escape") # retain all line breaks
+        # if entry_dict['errors'] or not entry_dict.has_key('author') or not entry_dict["bibref"] or '||' in entry_dict["bibtex"]:
+        #     raise Exception("There were errors in parsing entry %s (%s).\n unparsed text: %s" % 
+        #                     (entry_dict['dbref'], entry_dict["bibref"], entry_dict['errors']))
+        # string += "\n%s||%s||%s||" % (entry_dict["dbref"].strip('"').lstrip('(').rstrip(')'), entry_dict["bibref"], entry_dict["author"])
+        # string += "%s" % entry_dict["bibtex"].encode("string-escape") # retain all line breaks
     string = string.strip()
     # save 
     outfile.write(string)
@@ -163,6 +166,8 @@ def create_bibtex_preprocessed_file(bibtex_file,
 
 if __name__ == "__main__":
     #filename = "/vald/vald3_new_ref.bib"
-    infile = "VALD3_ref2.bib"
+    infile = "/vald/VALD3_ref.bib"
     outfile = "publications_preprocessed.dat"
-    create_bibtex_preprocessed_file(infile, outfile, dbref_key="bibref")
+
+    field_map = ["dbref", "bibref", "Author", "Title", "Category", "Year", "Journal", "Volume", "Page", "Bdsk-Url-1", "bibtex"]
+    create_bibtex_preprocessed_file(infile, outfile, field_map, dbref_key="bibref")

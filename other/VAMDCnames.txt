@@ -1,0 +1,283 @@
+
+#########################
+#
+# THIS FILE IS NO LONGER USED!
+# See http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/VamdcDictionary
+#
+#########################
+
+
+
+
+
+#########################
+#Record fields:
+#########################
+#Keyword:Short human-readable name:Long human-readable description:Data type:constraints 
+#
+#########################
+#Supported data types:
+#########################
+#(String) - string value
+#(Integer) - integer value
+#(Float) - floating-point value, standard precision
+#(Double) - floating-point value, double precision
+#(Boolean) - boolean value, 'true' or 'false', also 0 is treated as false, any number >0 as true
+#(URI)	- any valid URI
+#(null) - no argument is applicable
+#
+#########################
+#Supported constraints:
+#########################
+#For string and URI: any valid Perl regexp
+#For numbers: any comparison
+#
+##############################
+#Keywords for returnables:
+##############################
+# They are placed in <returnable/> elements in capabilities
+# and can be put in queries instead of * (like column names in select statement)
+#
+States:States data:Return complete states information:(null):
+Elements:Element information:Return only brief element information, without states:(null):
+Processes:Process data:Return data for all available processes:(null):
+Collisions:Collisional data:Return collisional process data:(null):
+Radiative:Radiative transitions:Return radiative transitions data:(null):
+NonRadiative:Non-radiative transitions:Return non-radiative transitions data:(null):
+
+#Sources is arguable, probably we should always keep returning all available referece data
+Sources:References:Return source reference information:(null):
+Methods:Method:Return method information:(null):
+
+
+##############################
+#Keywords for restrictables:
+##############################
+
+SourceID:::(String):
+SourceAuthorName:Author:Name of one of the authors:(String):
+SourceCategory:Category:Type of publication, e.g. journal, book etc. :(String):(Journal|Book|Proceedings|On-line)
+SourcePageBegin:Page:Starting page number:(Integer):>=0
+SourcePageEnd
+SourceName:Publication name:E.g. JQSRT:(String):
+SourceTitle:Title:Full title of the paper:(String):
+SourceURI:URI:Webb link to the publication:(URI):
+SourceVolume:Volume:Volumen number:(Integer):>0
+SourceYear:Year:Publication Year:(Integer):>0
+
+MethodID:::(String):
+MethodCategory:::(String):
+MethodDescription::::
+
+# a unique species identifier for each atomic or molecular isotope / isotopologue
+InchiKey:InChI key:International Chemical Identifier (InChI) key (27-character or 14-character first part):(String): 
+
+#Environment properties
+EnvironmentTemperature:Environment temperature(K):Environment temperature (K):(Double):>0
+EnvironmentPressureBar:Environment pressure(bar):Environment pressure (bar):(Double):>0
+
+
+#Atoms
+
+AtomSymbol:Atom:Atomic name:(String):
+AtomNuclearCharge:Atomic number:Atomic number or nuclear charge:(Integer):>0
+AtomIonCharge:Atomic charge:Ionization stage with 0 for neutral:(Integer):>=0
+AtomIonizationEnergy:Ionization energy:Ionization energy in eV:(Float|Double):>0
+AtomMassNumber:Atomic mass:Atomic mass in Daltons, which is the same as the unified mass units (1Da = 1u = 1.660 538 86 (28) e-27):(Float|Double):>1
+AtomStateID:::(String):
+AtomStateCompositionComments:::(String):
+AtomStateConfigurationLabel:::(String):
+AtomStateParity::::
+AtomStateTotalAngMom::::
+AtomStateTerm:::(String):
+AtomStateCoupling:::(String):
+AtomStateL::::
+AtomStateS::::
+AtomStateK::::
+AtomStateS2::::
+AtomStateJ1::::
+AtomStateJ2::::
+AtomStateLandeFactor:Lande factor:Lande factor:(Float|Double):
+AtomStateLandeFactorRef:Reference-ID for AtomStateLandeFactor:(String):
+AtomStateEnergy:Level energy:Energy of the level:(Float|Double):>=0
+AtomStateEnergyUnits:Unit for the level energy:(String):
+AtomStateEnergyRef:Reference-ID for AtomStateEnergy:(String):
+AtomStateDescription:Level description:Good luck:(String):
+
+
+# Radiative transitions
+RadTransComments:::(String):
+RadTransMethodRef:determination method:E.g. ab initio, semi-empirical, experimental::(String):
+
+RadTransInitialStateRef:Reference for the initial level:A label referring to the description of the intial level for the radiative transition:(String):
+RadTransFinalStateRef:Reference for the final level:A label referring to the description of the final level for the radiative transition:(String):
+
+RadTransBroadRadGammaLog:Radiative damping constant in rad/s:log10 of the radiative damping constant in radians per second:(Float|Double):<=0
+RadTransBroadRadRef::::
+
+RadTransBroadStarkGammaLog:Quadratic Stark broadening in rad/s for 10000 K:log10 quadratic Stark damping constant computed for 10000 K per one charged particle:(Float|Double):<=0
+RadTransBroadStarkGammaSD:Fit to the quadratic Stark broadening in rad/s:4-parameter Saha-Breshaut, Dimitrievic fit to the quadratic Stark damping as function of temperature one charged particle:(Float|Double):
+RadTransBroadStarkRef::::
+
+RadTransBroadWaalsGammaLog:Van der Waals damping constant:Van der Waals damping constant in rad/s:log10 van der Waals damping constant for 10000 K and per one neutral particle:(Float|Double):<=0
+RadTransBroadWaalsAlpha:Van der Waals damping constant alpha:Anstee-Barklem fit to the van der Waals damping constant alpha:(Float|Double):
+RadTransBroadWaalsSigma:Van der Waals damping constant sigma:Anstee-Barklem fit to the van der Waals damping constant sigma:(Float|Double):
+RadTransBroadWaalsRef::::
+
+RadTransBroadEnvironment::::
+RadTransBroadSpecies::::
+
+RadTransEffLande:Effective Lande factor:Effective Lande factor for a given transition:(Float|Double):
+RadTransEffLandeRef::::
+
+RadTransWavenumberRitzComments:::(String):
+RadTransWavenumberRitzSourceRef:Ritz wavenumber source::(String):
+RadTransWavenumberRitzValue:Ritz wavenumber:The difference between the upper and the lower level energies:(Double):>0
+RadTransWavenumberRitzUnits:Ritz wavenumber units:The units of wavenumbers as 1/units of length. E.g. 1/cm:(String):
+RadTransWavenumberRitzAccuracy:Ritz wavenumber accuracy:Absolute accuracy of the Ritz wavenumbers:(String):
+RadTransWavenumberExperimentalComments:Wavenumber value:Measured wavenumber value:(String):
+RadTransWavenumberExperimentalSourceRef:::(String):
+RadTransWavenumberExperimentalValue:::(Double):
+RadTransWavenumberExperimentalUnits:::(String):
+RadTransWavenumberExperimentalAccuracy:::(String):
+RadTransWavenumberTheoreticalComments:::(String):
+RadTransWavenumberTheoreticalSourceRef:::(String):
+RadTransWavenumberTheoreticalValue:::(Double):
+RadTransWavenumberTheoreticalUnits:::(String):
+RadTransWavenumberTheoreticalAccuracy:::(String):
+RadTransWavelengthRitzComments:::(String):
+RadTransWavelengthRitzSourceRef:::(String):
+RadTransWavelengthRitzValue:::(Double):
+RadTransWavelengthRitzUnits:::(String):
+RadTransWavelengthRitzAccuracy:::(String):
+RadTransWavelengthExperimentalComments:::(String):
+RadTransWavelengthExperimentalSourceRef:::(String):
+RadTransWavelengthExperimentalValue:::(Double):
+RadTransWavelengthExperimentalUnits:::(String):
+RadTransWavelengthExperimentalAccuracy:::(String):
+RadTransWavelengthTheoreticalComments:::(String):
+RadTransWavelengthTheoreticalSourceRef:::(String):
+RadTransWavelengthTheoreticalValue:::(Double):
+RadTransWavelengthTheoreticalUnits:::(String):
+RadTransWavelengthTheoreticalAccuracy:::(String):
+RadTransEnergyRitzComments:::(String):
+RadTransEnergyRitzSourceRef:::(String):
+RadTransEnergyRitzValue:::(Double):
+RadTransEnergyRitzUnits:::(String):
+RadTransEnergyRitzAccuracy:::(String):
+RadTransEnergyExperimentalComments:::(String):
+RadTransEnergyExperimentalSourceRef:::(String):
+RadTransEnergyExperimentalValue:::(Double):
+RadTransEnergyExperimentalUnits:::(String):
+RadTransEnergyExperimentalAccuracy:::(String):
+RadTransEnergyTheoreticalComments:::(String):
+RadTransEnergyTheoreticalSourceRef:::(String):
+RadTransEnergyTheoreticalValue:::(Double):
+RadTransEnergyTheoreticalUnits:::(String):
+RadTransEnergyTheoreticalAccuracy:::(String):
+RadTransFrequencyRitzComments:::(String):
+RadTransFrequencyRitzSourceRef:::(String):
+RadTransFrequencyRitzValue:::(Double):
+RadTransFrequencyRitzUnits:::(String):
+RadTransFrequencyRitzAccuracy:::(String):
+RadTransFrequencyExperimentalComments:::(String):
+RadTransFrequencyExperimentalSourceRef:::(String):
+RadTransFrequencyExperimentalValue:::(Double):
+RadTransFrequencyExperimentalUnits:::(String):
+RadTransFrequencyExperimentalAccuracy:::(String):
+RadTransFrequencyTheoreticalComments:::(String):
+RadTransFrequencyTheoreticalSourceRef:::(String):
+RadTransFrequencyTheoreticalValue:::(Double):
+RadTransFrequencyTheoreticalUnits:::(String):
+RadTransFrequencyTheoreticalAccuracy:::(String):
+RadTransProbabilityTransitionProbabilityAComments:::(String):
+RadTransProbabilityTransitionProbabilityASourceRef:::(String):
+RadTransProbabilityTransitionProbabilityAMethodRef:::(String):
+RadTransProbabilityTransitionProbabilityAValue:::(Double):
+RadTransProbabilityTransitionProbabilityAUnits:::(String):
+RadTransProbabilityTransitionProbabilityAAccuracy:::(String):
+RadTransProbabilityOscillatorStrengthComments:::(String):
+RadTransProbabilityOscillatorStrengthSourceRef:::(String):
+RadTransProbabilityOscillatorStrengthMethodRef:::(String):
+RadTransProbabilityOscillatorStrengthValue:::(Double):
+RadTransProbabilityOscillatorStrengthUnits:::(String):
+RadTransProbabilityOscillatorStrengthAccuracy:::(String):
+RadTransProbabilityLineStrengthComments:::(String):
+RadTransProbabilityLineStrengthSourceRef:::(String):
+RadTransProbabilityLineStrengthMethodRef:::(String):
+RadTransProbabilityLineStrengthValue:::(Double):
+RadTransProbabilityLineStrengthUnits:::(String):
+RadTransProbabilityLineStrengthAccuracy:::(String):
+RadTransProbabilityWeightedOscillatorStrengthComments:::(String):
+RadTransProbabilityWeightedOscillatorStrengthSourceRef:::(String):
+RadTransProbabilityWeightedOscillatorStrengthMethodRef:::(String):
+RadTransProbabilityWeightedOscillatorStrengthValue:::(Double):
+RadTransProbabilityWeightedOscillatorStrengthUnits:::(String):
+RadTransProbabilityWeightedOscillatorStrengthAccuracy:::(String):
+RadTransProbabilityLog10WeightedOscillatorStrengthComments:::(String):
+RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef:::(String):
+RadTransProbabilityLog10WeightedOscillatorStrengthMethodRef:::(String):
+RadTransProbabilityLog10WeightedOscillatorStrengthValue:::(Double):
+RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy:::(String):
+RadTransProbabilityIdealisedIntensityComments:::(String):
+RadTransProbabilityIdealisedIntensitySourceRef:::(String):
+RadTransProbabilityIdealisedIntensityMethodRef:::(String):
+RadTransProbabilityIdealisedIntensityValue:::(Double):
+RadTransProbabilityIdealisedIntensityUnits:::(String):
+RadTransProbabilityIdealisedIntensityAccuracy:::(String):
+RadTransProbabilityProbability:MultipoleValue:::(String):
+
+
+CollisionComments:::(String):
+CollisionTabulatedData::::
+CollisionProcessClassCode:::(String):
+CollisionProductsStateRef:::(String):
+CollisionReactantsStateRef:::(String):
+
+# Molecular species
+    
+MolecularSpeciesChemicalName:Molecule name:Conventional molecule name, e.g. CO2, NH3, Feh (may not be unique):(String):
+MolecularSpeciesOrdinaryStructuralFormula::::
+MolecularSpeciesStoichiometrcFormula::::
+MolecularSpeciesIonCharge::::
+MolecularSpeciesIUPACName::::
+MolecularSpeciesURLFigure::::
+MolecularSpeciesCASRegistryNumber::::
+MolecularSpeciesCNPIGroup::::
+MolecularSpeciesMoleculeNuclearSpins::::
+MolecularSpeciesStableMolecularProperties::::
+MolecularSpeciesMolecularWeight:::(Float):
+MolecularSpeciesComment:::(String):
+MoleculeNuclearSpinsAtomArray::::
+MoleculeNuclearSpinsBondArray::::
+
+# Molecular states 
+
+MolecularStateID:::(String):
+MolecularStateDescription:::(String):
+MolecularStateEnergyComments:::(String):
+MolecularStateEnergySourceRef:::(String):
+MolecularStateEnergyMethodRef:::(String):
+MolecularStateEnergyValue:::(?):
+MolecularStateEnergyUnit:::(String):
+MolecularStateEnergyAccuracy:::(?):
+MolecularStateEnergyOrigin:?:?:(String):
+MolecularStateMixingCoefficient:::(?):
+
+MolecularStateCharacTotalStatisticalWeight:Total statistical weight:Total statistical weight (degeneracy) for a given molecular energy level:(Integer):>0
+MolecularStateCharacNuclearStatisticalWeight:Nuclear stitistical weight:Nuclear statistical weight for a given molecular energy level:(Integer):>0
+MolecularStateCharacNuclearSpinSymmetry:Nuclear spin symmetry:?:(String):(ortho|para|A|E|none)
+MolecularStateCharacLifeTime:Lifetime:Molecular state lifetime in seconds:(Float):>0
+MolecularStateCharacParameters:State parameters:Additional parameters of molecular state:(String):
+
+# Molecular quantum numbers
+
+MolQnStateID (String/Integer)
+MolQnCase:Case name:Case name for the case-by-case molecular state description:(String):
+MolQnLabel:Case label:Case label for the case-by-case molecular state description:(String):
+MolXPath:XSAMS path:The XML tree path for this entry in the pure XSAMS molecule description:(String):
+MolTag:XSAMS tag:The XML tag for the pure XSAMS molecule description:(String):
+MolQnValue:Molecular quantuum number value:Value of specific molecular quantum number:(String):
+MolQnSpinRef:Reference for the nuclear spin:Which of the atoms the nuclear spin quantum number refers to:(String):
+MolQnAttribute:Molecular quantum number attribute(s):Molecular quantum number attribute(s):(String):
+MolQnComment:Description of molecular quantum numbers:Additional comments for molecular quantum numbers:(String):

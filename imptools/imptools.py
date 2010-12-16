@@ -6,101 +6,16 @@ This program implements a database importer that reads from
 ascii-input files to the django database. It's generic and is
 controlled from a mapping file.
 
-This is the working methods.
-
 """
 import sys
 from django.db.models import Q
 from time import time 
-#from django.db import transaction
 
-#from django.db.utils import IntegrityError
-#import string as s
+# import statistics trackers
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
-
-# Line functions
-
-def lineStrip(linedata, stripstring=None, filenum=0):
-    """
-    String a line of a given string. None clears all whitespace.
-    """
-    try:
-        return linedata[filenum].strip(stripstring)
-    except Exception, e:
-        print "linestrip error: %s" % e
-        pass 
-    
-def charrange(linedata, start, end, filenum=0):
-    """
-    Cut out part of a line of texts based on indices
-    """
-    try:
-        return linedata[filenum][start:end].strip()
-    except Exception, e:
-        #print "charrange skipping '%s': %s" % (linedata, e)        
-        pass
-    
-def charrange2int(linedata, start, end, filenum=0):
-    try:
-        return int(round(float(linedata[filenum][start:end].strip())))
-    except Exception, e:
-        print "charrange2int failure: %s: %s" % (linedata, e)
-    
-def bySepNr(linedata, number, sep=',',filenum=0):
-    """
-    Split a text line by sep argument and return
-    the split section with given number
-    """
-    try:
-        return linedata[filenum].split(sep)[number].strip()
-    except Exception, e:
-        pass
-        #print "bySepNr skipping line '%s': %s" % (linedata, e)
-
-def chainCmds(linedata, *linefuncs):
-    """
-    This command allows for chaining together several line functions in
-    sequence. The results of the first function will be passed to the second
-    one etc.
-
-    linefuncs should be a list [(func1, (arg1,arg2,...)), (func2,(arg1,arg2,..)),...]
-    """
-
-    data = linedata
-    for func, args in linefuncs:
-        data = [func(data, *args)]
-    if data:
-        return data[0]
-    print "chainCommands skipping line." 
-         
-def idFromLine(linedata, sep, *linefuncs):
-    """
-    Extract strings from a line in order to build a unique id-string,
-    using one or more line functions to extract parts of a line and
-    paste them together with a separator given by 'sep'.
-    The line functions must be stored as tuples (func, (arg1,arg2,..)). 
-
-    Example of call:
-      idFromLine('-', (bySepNr,(3,';'), (charrange2int,(45,67))) )    
-    """
-    #print linedata
-    #pdb.set_trace()
-    if not sep:
-        sep = "-"
-    dbref = []
-    for func, args in linefuncs:
-        string = str(func(linedata, *args)).strip()        
-        if not string:
-            string = sep
-        #print string 
-        dbref.append(string)
-    #print sep.join(dbref)
-    return sep.join(dbref)
-
-
-
+        
 # Helper methods for parsing and displaying 
 
 is_iter = lambda iterable: hasattr(iterable, '__iter__')
@@ -171,15 +86,21 @@ def process_line(linedata, column_dict):
     Process one line of data. Linedata is a tuple that always starts with
     the raw string for the line.    
     """
-    colfunc = column_dict['cbyte'][0]
-    args = column_dict['cbyte'][1]
+    cbyte = column_dict['cbyte']    
+    colfunc = cbyte[0]
+    args = ()
+    if len(cbyte) > 1:
+        args = cbyte[1:]    
+    kwargs = column_dict.get('kwargs', {})
+    if len(linedata) == 1:
+        linedata = linedata[0]
     try:        
-        dat = colfunc(linedata,  *args)
+        dat = colfunc(linedata,  *args, **kwargs)
     except Exception, e:
         log_trace(e, "error processing lines '%s' - in %s%s: " % (linedata, colfunc, args))
         raise 
     if not dat or (column_dict.has_key('cnull') \
-                   and dat == column_dict['cnull']):
+                       and dat == column_dict['cnull']):
         return None
     return dat
 
@@ -223,6 +144,7 @@ def find_match_and_update(property_name, match_key, model, data):
             match.save(force_update=True) 
         except Exception, e:
             sys.stderr.write("%s: model.%s=%s\n" % (e, key, data[key]))
+    return match
             
 def create_new(model, data):
     """
@@ -232,12 +154,15 @@ def create_new(model, data):
     model - django model type
     inpdict - dictionary of fieldname:value that should be created.
     """
-    model.objects.create(**data)
-    #m=model()
-    #for key in data.keys():
-    #    setattr(m,key,data[key])
-    #m.save()
+    return model.objects.create(**data)
 
+def add_many2many(model, fieldname, objrefs):
+    """
+    Add a set of already located references to a many-to-many
+    field named fieldname on a model. 
+    """     
+    eval("model.%s.add(*objrefs)" % (fieldname))
+    
 class MappingFile(object):
     """
     This class implements an object that represents
@@ -287,7 +212,7 @@ class MappingFile(object):
         return self.line
     
 #@transaction.commit_on_success
-def parse_file_dict(file_dict, debug=False):
+def parse_file_dict(file_dict, global_debug=False):
     """
     Process one file definition from a config dictionary by
     processing the file name stored in it and parse it according
@@ -316,13 +241,13 @@ def parse_file_dict(file_dict, debug=False):
     nfiles = len(filepaths)
     filenames = [path.split('/')[-1] for path in filepaths]
 
-    headlines = file_dict['headlines']
+    # optional  
+    headlines = file_dict.get('headlines', [0])
     if not is_iter(headlines):
         headlines = [headlines]
-    commentchars = file_dict['commentchar']
+    commentchars = file_dict.get('commentchar', ['#'])
     if not is_iter(commentchars):
-        commentchars = [commentchars]       
-    # optional  
+        commentchars = [commentchars]          
     linesteps = file_dict.get('linestep', [1 for i in range(nfiles)])
     if not is_iter(linesteps):
         linesteps = [linesteps]
@@ -333,7 +258,7 @@ def parse_file_dict(file_dict, debug=False):
     errlines = file_dict.get('errlines', ["Unknown" for i in range(nfiles)])
     if not is_iter(errlines):
         errlines = [errlines]
-    
+        
     # -----
         
     if len(filenames) == 1:
@@ -351,9 +276,11 @@ def parse_file_dict(file_dict, debug=False):
     errors = 0   
     while True:
         # step and read one line from all files 
-        total += 1
         lines = []
         data = {}
+
+        many2manyfield_list = []
+
         try:
             for mapfile in mapfiles:
                 # this automatically syncs all files' lines
@@ -361,15 +288,22 @@ def parse_file_dict(file_dict, debug=False):
         except StopIteration:
             # we are done.
             break 
-                            
+
+        total += 1
+
         for map_dict in mapping:
 
             # check if debug flag is set for this line
-            debug = map_dict.has_key('debug') and map_dict['debug']
 
+            debug = global_debug or map_dict.has_key('debug') and map_dict['debug']
+
+            # do not stop or log on errors (this does not hide debug messages if debug is active)
+            skiperrors = map_dict.has_key("skiperrors") and map_dict["skip_errors"]
+            
             # parse the mapping for this line(s)
             dat = process_line(lines, map_dict)           
-            if debug: print "DEBUG: process_line dat = '%s'" % dat
+            if debug:
+                print "DEBUG: process_line returns '%s'" % dat
 
             if not dat or (map_dict.has_key('cnull') 
                    and dat == map_dict['cnull']):
@@ -377,40 +311,84 @@ def parse_file_dict(file_dict, debug=False):
                 continue
             
             if map_dict.has_key('references'):
-               # this collumn references another field
-               # (i.e. a foreign key)
-               refmodel = map_dict['references'][0]
-               refcol = map_dict['references'][1]            
-               # create a query object q for locating
-               # the referenced model and field
-               Qquery = eval('Q(%s="%s")' % (refcol, dat))
-               try:
-                   dat = refmodel.objects.get(Qquery)
-               except Exception:
-                   errors += 1
-                   if len(map_dict['references']) > 2 \
-                           and map_dict['references'][2] == 'skiperror':
-                       # Don't create an entry for this (this requires
-                       # null=True in the relevant field)
-                       if debug:
-                           print "skipping unfound reference %s" % dat
-                       continue
-                   # this is a real error, should always stop.
-                   string = "reference %s.%s='%s' not found.\n"                     
-                   print string % (refmodel,refcol, dat)
-                   raw_input("paused...")
-                   dat = None            
-                
+                # this collumn references another field
+                # (i.e. a foreign key)
+                refmodel = map_dict['references'][0]
+                refcol = map_dict['references'][1]            
+                # create a query object q for locating
+                # the referenced model and field
+                Qquery = eval('Q(%s="%s")' % (refcol, dat))
+                try:
+                    dat = refmodel.objects.get(Qquery)
+                except Exception, e:
+                    errstring = "reference %s.%s='%s (%s)' not found." % (refmodel,refcol, dat, e)
+                    if skiperrors:                
+                        if debug:       
+                            print "DEBUG: %s" % errstring
+                    else:                            
+                        errors += 1
+                        print "ERROR: %s" % errstring
+                    dat = None
+                    
+            if map_dict.has_key('multireferences'):
+                # this collumn references multiple other objects
+                # (i.e. a many-to-many relation). It requres that 'dat' is a list of
+                # equal length to the given reference fields.                
+
+                if not is_iter(dat):
+                    if skiperrors:
+                        if debug:
+                            print "DEBUG: Skipping malformed multireference field: %s (%s)" % (dat, map_dict['references'])
+                    else:
+                        errors += 1
+                        print "ERROR: Malformed multireference field: %s (%s)" % (dat, map_dict['references'])
+                    continue
+
+                refmodel = map_dict['multireferences'][0]
+                refcol = map_dict['multireferences'][1]
+
+                many2many_dict = {"refmodel":refmodel,
+                                  "fieldname":map_dict["cname"],
+                                  "objlist":[]}
+                # create a query object q for locating
+                # the referenced model and field
+                for ref in dat:
+                    if not ref:
+                        continue 
+                    Qquery = eval('Q(%s="%s")' % (refcol, ref))
+                    try:
+                        obj = refmodel.objects.get(Qquery)
+                    except Exception, e:
+                        errors += 1
+                        errstring = "reference %s.%s='%s' not found (%s)." % (refmodel,refcol, ref, e)
+                        if skiperrors:                    
+                            if debug:                        
+                                print "DEBUG: %s" % errstring
+                        else:                            
+                            print "ERROR: %s" % errstring                        
+                        # we don't add anything to data dict, we just skip. For this to     
+                        # work we required null=True in the model.
+                        continue
+                    many2many_dict['objlist'].append(obj)
+
+                # this particular set of data should not go into the data dict
+                # but is stored for post-processing
+                many2manyfield_list.append(many2many_dict)
+                continue 
+                    
+            # move result(s) into database
             data[map_dict['cname']] = dat
 
             # line columns parsed; now move to database 
+
+        modelinstance = None 
 
         if updatematch:
             # Model was already created; this run is for
             # updating it properly (e.g. for vald)            
             try:
                 match_key = data[updatematch]
-                find_match_and_update(updatematch, match_key, model, data)
+                modelinstance = find_match_and_update(updatematch, match_key, model, data)
             except Exception, e:
                 errors += 1
                 if debug:
@@ -422,13 +400,19 @@ def parse_file_dict(file_dict, debug=False):
             if not data.has_key('pk'):
                 data['pk'] = None
             try:
-                create_new(model, data)
+                modelinstance = create_new(model, data)
             except Exception, e:                
                 errors += 1
                 if debug:
                     log_trace(e, "ERROR creating %s: " % model)
-
-    print '%s done. %i collisions/errors/nomatches out of %i lines.' % (" + ".join(filenames), errors, total)
+            
+        # post processing: many-to-many fields
+        if modelinstance:
+            for mdict in many2manyfield_list:            
+                add_many2many(modelinstance, mdict["fieldname"], mdict["objlist"])
+                modelinstance.save()
+            
+    print 'Read %s. %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), total, errors)
 
     global TOTAL_LINES, TOTAL_ERRS
     TOTAL_LINES += total
@@ -448,7 +432,7 @@ def parse_mapping(mapping, debug=False):
         import cProfile as profile
         for file_dict in mapping:
             t1 = time()            
-            parse_file_dict(file_dict, debug=debug)
+            parse_file_dict(file_dict, global_debug=debug)
             print "Time used: %s" % ftime(t1, time())
             #pdb.set_trace()
             #print gc.garbage

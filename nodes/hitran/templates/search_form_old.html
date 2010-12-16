@@ -1,0 +1,289 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script type="text/javascript" src="/HITRAN/scripts/jquery.js"></script>
+
+<style>
+#mask {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 100%;
+	display: none;
+	background-color: #000;
+	z-index: 90;
+} 
+
+#select_output_fields_dialog {
+	position: absolute;
+	display: none;
+	width: 640px; 
+	height: 450px;
+	padding: 10px;
+	background: #fff;
+	border: black 1pt solid;
+	z-index: 99;
+}
+</style>
+
+<script>
+
+$(document).ready(function() {	
+
+	//select all the a tag with name equal to modal
+	$('input[name=select_output_fields]').click(function(e) {
+		// id identifies the div for the modal dialog we want to show:
+		var id = 'select_output_fields_dialog';
+	
+		// get the page's height and width:
+		var window_height = $(window).height();
+		var window_width = $(window).width();
+	
+		// get the modal dialog's height and width:
+		var modal_height = $('#'+id).outerHeight();
+		var modal_width = $('#'+id).outerWidth();
+
+		var modal_top = (window_height - modal_height)/2;
+		var modal_left = (window_width - modal_width)/2;
+		$('#'+id).css({ 'top': modal_top, 'left': modal_left});
+
+		show_modal(id);
+	});
+
+	function show_modal(id) {
+		// set display to block and opacity to 0 so we can use fadeTo
+		$('#mask').css({ 'display': 'block', opacity: 0});
+		$('#mask').fadeTo(500,0.4);
+		$('#'+id).fadeIn(500);
+		
+	}
+	
+	// if the close button is clicked, hide the modal dialog:
+	$('.window .close').click(function (e) {
+		// disable whatever the button would have otherwise
+		// done (nothing much, probably)
+		e.preventDefault();
+		$('#mask, .window').hide();
+		var selected = $('#sortable1').sortable("toArray");
+		alert('selected = '+selected);
+	});		
+	
+	// also, if the mask surrounding the dialog is clicked,
+	// hide the modal dialog:
+	$('#mask').click(function () {
+		$(this).hide();
+		$('.window').hide();
+	});			
+
+	// AJAXify the POST
+	$('#SearchForm').submit(function(event){
+		event.preventDefault(); // cancel the default action
+		var form = this;
+		var data = {};
+		data.post_data = $(form).serialize();
+		//alert(data.post_data);
+		/*$.post("/HITRAN/search-form/", 
+			data, 
+			function(responseData) {
+				alert(responseData.response_text);
+			},
+			"json"
+		);*/
+		//$.post("/HITRAN/search_form/", data);
+		/*$.post("/HITRAN/search/", 
+			data, 
+			//update_results('an update'),
+			update_results('1. {{ response_text }}'),
+			"json"
+		);*/
+		/*$.ajax({url: "/HITRAN/search/",
+			type: "POST",
+			context: document.body,
+			//success: update_results('1. {{ response_text }}'),//update_results('an update'),
+			success: function(o) {update_results('3. '+o.responseText);},
+			data: data,
+			dataType: "json"
+		});*/
+		var xhr = $.ajax({url: "/HITRAN/search/",
+			type: "POST",
+			context: document.body,
+			success: function(return_text) {update_results('3. '+return_text);},
+			data: data,
+			dataType: "html"
+		});
+		// save the original handler:
+		//xhr._cachedOnreadystatechange = xhr.onreadystatechange;
+		xhr.onreadystatechange = function() {
+			// execute original handler
+			//xhr._cachedOnreadystatechange();
+			if (xhr.readyState === 3) update_results(xhr.responseText);
+		};
+
+		//setInterval(counting,1000);
+		//alert('OK then');
+		return false;
+		//$.post("/HITRAN/search/", data);
+	});
+
+	var indykins=0;
+	function counting() {
+		indykins+=1;
+		update_results(indykins+' ');
+	}
+
+	function update_results(result) {
+		$('#result').append(result);
+	}
+
+});
+
+</script>
+
+<!-- styles and scripts for the sortable lists -->
+<style type="text/css">
+	#sortable1, #sortable2 { list-style-type: none; margin: 0; padding: 0; float: left; margin-right: 10px; }
+	#sortable1 li, #sortable2 li { margin: 0 3px 3px 0; padding: 3px; width: 120px; border: black 1px solid; background: #cfa;}
+	.sortable_list_container {width: 40%; padding: 5px; background: #acf; border: black 1px solid; font-size: 80%;}
+</style>
+<script type="text/javascript">
+	$(function() {
+		$("#sortable1, #sortable2").sortable({
+			connectWith: '.connectedSortable'
+		}).disableSelection();
+	});
+</script>
+<script type="text/javascript" src="/HITRAN/scripts/jquery.ui.core.js"></script>
+<script type="text/javascript" src="/HITRAN/scripts/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="/HITRAN/scripts/jquery.ui.mouse.js"></script>
+<script type="text/javascript" src="/HITRAN/scripts/jquery.ui.sortable.js"></script>
+
+<!-- global styles for the page -->
+<link href="/HITRAN/media/layout.css" rel="stylesheet" type="text/css"/>
+
+<script type="text/javascript" src="/HITRAN/scripts/validate_searchform.js"></script>
+
+</head>
+
+<body>
+
+<div id="container">
+
+<h2>HITRAN Line List Search</h2>
+
+<form id="SearchForm" method="POST">
+
+
+
+<div id="searchform_left_panel">
+<!-- the list of molecules -->
+<!--
+<table>
+{% for molecule in molecules %}
+<tr>
+{# we need |safe here to stop Django from escaping our HTML: #}
+<td><input type="checkbox" name="molecule" value="{{ molecule.molecid }}"/>&nbsp;{{ molecule.molec_name_html|safe }}</td>
+</tr>
+{% endfor %}
+</table>
+-->
+{{ molec_cb_html|safe }}
+
+<!-- numin, numax, and Smin -->
+<!--
+<html>
+<head>
+	<title>HITRAN Search</title>
+</head>
+<body>
+
+<p>HITRAN Search</p>
+<form action="/HITRAN/search/" method="POST">
+{% csrf_token %}
+<table>
+{% for molec_name in molec_names %}
+<tr>
+{# we need |safe here to stop Django from escaping our HTML: #}
+<td><input type="checkbox" name="{{ molec_name.molec_name }}">&nbsp;{{ molec_name.molec_name_html|safe }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<table>
+<tr>
+<td><em>&nu;</em><sub>min</sub></td>
+<td><input type="text" name="numin"></td>
+<td>cm<sup>-1</sup></td>
+</tr>
+<tr>
+<td><em>&nu;</em><sub>max</sub></td>
+<td><input type="text" name="numax"></td>
+<td>cm<sup>-1</sup></td>
+</tr>
+<tr>
+<td><em>S</em><sub>min</sub></td>
+<td><input type="text" name="Smin"></td>
+<td>cm<sup>-1</sup>/molec.cm<sup>-2</sup></td>
+</tr>
+</table>
+-->
+</div> <!-- searchform_left_panel -->
+
+<div id="searchform_right_panel">
+<!-- output formats -->
+<table>
+<tr><td><input type="checkbox" name="output" value="par"/>&nbsp;Produce HITRAN-format .par file</td></tr> 
+<tr><td><input type="checkbox" name="output" value="xml"/>&nbsp;Produce XSAMS-file (case-by-case)</td></tr> 
+<tr><td><input type="checkbox" name="output" value="txt"/>&nbsp;Produce text table output&nbsp;<input type="button" name="select_output_fields" value="Select Output Fields"/></td></tr> 
+</table>
+<div id="result" style="font-size: 100%; font-family: monospace; width: 90%; background: #fff; height: 200px; padding: 10px; margin: 20px 10px 0 10px; margin-left: auto; margin-right: auto; overflow: auto; border: 1px solid #000;">
+{{ results }}
+</div>
+</div> <!-- searchform_right_panel -->
+
+<div style="clear: both; width: 200px; margin: auto;">
+<br/><br/>
+<!--<input type="submit" value="Submit Query" onclick='JavaScript:xmlhttpPost("search")'/>-->
+<input type="submit" value="Submit!!!"/>
+</div>
+
+
+
+
+
+</form>
+
+	<div id="select_output_fields_dialog" class="window">
+		<h3>Select Output Fields</h3>
+		<p>Drag and drop the items in the lists below to select and reorder the fields you require in the output.</p>
+		<p>Click OK to close this window when you're done.&nbsp;&nbsp;
+		<!-- the close button is of class 'close' -->
+		<button class="close">OK</button></p>
+
+		<div class="fields_lists">
+		<div class="sortable_list_container" style="float: left;">
+		<h4>Selected Fields</h4>
+		<ul id="sortable1" class="connectedSortable">
+			{% for selected_output_field in selected_output_fields %}
+				<li class="selected_list" id="{{ selected_output_field }}">{{ selected_output_field }}</li> 
+			{% endfor %}
+		</ul>
+		</div>
+		<div class="sortable_list_container" style="float: right;">
+		<h4>Available Fields</h4>
+		<ul id="sortable2" class="connectedSortable">
+			{% for available_output_field in available_output_fields %}
+				<li class="available_list" id="{{ available_output_field }}">{{ available_output_field }}</li> 
+			{% endfor %}
+		</ul>
+		</div>
+		</div><!-- fields_lists -->
+	</div> <!-- select_output_fields_dialog -->
+</div> <!-- container -->
+
+	<!-- the mask fills the whole screen and goes dark when the modal dialog
+	is activated -->
+ 	<div id="mask"></div>
+
+</body>
+</html>

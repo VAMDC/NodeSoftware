@@ -19,3 +19,8 @@ Quite a bit of thought will be needed on how to descibe the splitting
 into several tables, indices etc.
 """
 
+import sys, os
+if not os.environ.has_key('DJANGO_SETTINGS_MODULE'):
+    sys.path.append(os.path.abspath('../..'))
+    os.environ['DJANGO_SETTINGS_MODULE']='nodes.ExampleNode.settings_default'
+
