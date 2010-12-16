@@ -7,7 +7,7 @@ from xml.sax.saxutils import quoteattr
 # Get the node-specific parts
 from django.conf import settings
 from django.utils.importlib import import_module
-NODEPKG=import_module(settings.NODEPKG+'.views')
+DICTS=import_module(settings.NODEPKG+'.dictionaries')
 
 
 def LOG(s):
@@ -22,7 +22,7 @@ def GetValue(name,**kwargs):
     and the node-specific dictionary.
     """
     try:
-        name=NODEPKG.RETURNABLES[name]
+        name=DICTS.RETURNABLES[name]
     except:
         return ''     # The value is not in the dictionary for the node.
                       # This is fine.
