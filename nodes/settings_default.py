@@ -10,14 +10,17 @@ import sys, os
 # Basic node setup 
 ###################################################
 # root path of the VAMDC install on your system (should be automatically set)
-BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_PATH)
-# Path to this node 
-NODE_PATH = os.path.dirname(os.path.abspath(__file__))
-# Python-path to app folder (usually <yournodename>.node)
-NODEPKG= os.path.basename(NODE_PATH)+'.node'
-# TAP base url. Must have trailing slash!
-TAP_URL = 'http://example.com/YourDBname/tap/'
+sys.path.append(BASE_PATH+'/nodes')
+NODENAME = os.path.basename(os.path.dirname(__file__))
+NODEPKG= NODENAME+'.node'
+
+# Where to load url info from 
+ROOT_URLCONF = NODENAME+'.urls'
+
+print BASE_PATH, NODENAME, NODEPKG, ROOT_URLCONF
+
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email). 
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
 ADMINS = (('yourname', 'name@mail.net'),) 
@@ -46,14 +49,14 @@ INSTALLED_APPS = (
 #    'django.contrib.sites',
 #    'django.contrib.admin',
 #    'django.contrib.admindocs',
-    'DjNode.tapservice',
+    'vamdctap',
     NODEPKG
 )
 # Setup of Django middleware components (shouldn't have to change this))
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
- #   'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+#    'django.contrib.sessions.middleware.SessionMiddleware',
+#    'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
 ###################################################
@@ -84,7 +87,7 @@ USE_I18N = False
 ###################################################
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = os.path.join(NODE_PATH, 'static/media')
+MEDIA_ROOT = os.path.join(BASE_PATH, 'static/media')
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
@@ -95,8 +98,7 @@ MEDIA_URL = 'http://vamdc.fysast.uu.se:8888/media/'
 ADMIN_MEDIA_PREFIX = '/admin-media/'
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '=4nk7k_v3p@gin!bgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
-# Where to load url info from 
-ROOT_URLCONF = 'DjVALD.urls'
+
 # Web template locations
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".

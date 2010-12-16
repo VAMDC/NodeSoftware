@@ -6,8 +6,8 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-from DjVALD.node.models import *
-from DjNode.tapservice.caselessdict import CaselessDict
+from models import *
+from vamdctap.caselessdict import CaselessDict
 import sys
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s
@@ -76,7 +76,7 @@ RESTRICTABLES = CaselessDict({\
 'AtomIonCharge':'species__ion',
 })
 
-from DjNode.tapservice.sqlparse import *
+from vamdctap.sqlparse import *
 
 
 def index(request):
