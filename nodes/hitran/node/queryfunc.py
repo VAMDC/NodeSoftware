@@ -11,6 +11,9 @@ def LOG(s):
 from models import *
 from vamdctap.sqlparse import *
 
+case_prefixes = {}
+case_prefixes[1] = 'dcs'
+case_prefixes[5] = 'nltcs'
 
 
 def getHITRANstates(transs):

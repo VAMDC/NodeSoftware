@@ -20,10 +20,6 @@ xsec_molecules = Molecules.objects.filter(molecid__in=Xsec.objects.values(
 case_desc = QNdesc.objects.values('caseid', 'case_prefix', 'name', 'col_index',
                                   'col_name')
 
-case_prefixes = {}
-case_prefixes[1] = 'dcs'
-case_prefixes[5] = 'nltcs'
-
 def index(request):
     c=RequestContext(request,{})
     return render_to_response('index.html', c)
