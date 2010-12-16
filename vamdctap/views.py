@@ -72,7 +72,7 @@ class TAPQUERY(object):
         return '%s'%self.query
 
 def getBaseURL(request):
-    return request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
+    return 'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
 
 def addHeaders(headers,response):
     HEADS=['COUNT-SOURCES','COUNT-SPECIES','COUNT-STATES','COUNT-COLLISIONS','COUNT-RADIATIVE','COUNT-NONRADIATIVE','TRUNCATED']
