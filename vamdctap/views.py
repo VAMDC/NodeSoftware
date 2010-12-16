@@ -8,7 +8,8 @@ from django.db.models import Q
 # Get the node-specific pacakge!
 from django.conf import settings
 from django.utils.importlib import import_module
-NODEPKG=import_module(settings.NODEPKG+'.views')
+QUERYFUNC=import_module(settings.NODEPKG+'.queryfunc')
+DICTS=import_module(settings.NODEPKG+'.dictionaries')
 
 from time import time
 from datetime import date
@@ -63,16 +64,15 @@ class TAPQUERY(object):
     def parseSQL(self):
         self.parsedSQL=SQL.parseString(self.query)
 
-#    def makeQtup(self):
-#        query=self.query%NODEPKG.VAMDC_DICT
-#        self.qtup=vamdc2queryset(query)
-
     def assignQID(self):
         """ make a query-id """
         self.queryid='%s-%s'%(date.today().isoformat(),randStr(8))
 
     def __str__(self):
         return '%s'%self.query
+
+def getBaseURL(request):
+    return request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
 
 def addHeaders(headers,response):
     HEADS=['COUNT-SOURCES','COUNT-SPECIES','COUNT-STATES','COUNT-COLLISIONS','COUNT-RADIATIVE','COUNT-NONRADIATIVE','TRUNCATED']
@@ -89,7 +89,7 @@ def sync(request):
         LOG('not valid tap!')
 
 #    if tap.format == 'xsams':  # for now always assume we want XSAMS    
-    results=NODEPKG.setupResults(tap.parsedSQL)
+    results=QUERYFUNC.setupResults(tap.parsedSQL)
     generator=Xsams(**results)
     response=HttpResponse(generator,mimetype='text/xml')
     #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
@@ -99,13 +99,13 @@ def sync(request):
          
     
 #    elif tap.format == 'votable': 
-#        transs,states,sources=NODEPKG.setupResults(tap)
+#        transs,states,sources=QUERYFUNC.setupResults(tap)
 #        generator=votable(transs,states,sources)
 #        response=HttpResponse(generator,mimetype='text/xml')
         #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
     
 #    elif tap.format == 'embedhtml':
-#        transs,states,sources,count=NODEPKG.setupResults(tap,limit=100)
+#        transs,states,sources,count=QUERYFUNC.setupResults(tap,limit=100)
 #        generator=embedhtml(transs,count)
 #        xml='\n'.join(generator)
 #        #open('/tmp/bla.xml','w').write(xml)
@@ -131,14 +131,14 @@ def cleandict(dict):
 
 
 def capabilities(request):
-    c = RequestContext(request, {"accessURL" : settings.TAP_URL,
-                                 "RESTRICTABLES" : cleandict(NODEPKG.RESTRICTABLES),
-                                 "RETURNABLES" : cleandict(NODEPKG.RETURNABLES),
+    c = RequestContext(request, {"accessURL" : getBaseUrl(request),
+                                 "RESTRICTABLES" : cleandict(DICTS.RESTRICTABLES),
+                                 "RETURNABLES" : cleandict(DICTS.RETURNABLES),
                                  })
     return render_to_response('node/capabilities.xml', c)
 
 def tables(request):
-    c=RequestContext(request,{"column_names_list" : NODEPKG.VAMDC_DICT.keys(), 'baseURL' : settings.TAP_URL})
+    c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseUrl(request)})
     return render_to_response('node/VOSI-tables.xml', c)
 
 def availability(request):
