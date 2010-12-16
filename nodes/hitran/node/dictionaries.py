@@ -30,7 +30,7 @@ RETURNABLES=CaselessDict({\
 
 'MolecularStateStateID':'MolState.stateid',
 'MolecularStateEnergyValue':'MolState.energy',
-'MolecularStateEnergyUnit':'cm-1',
+'MolecularStateEnergyUnit':'1/cm',
 'MolecularStateEnergyOrigin':'Zero-point energy',
 'MolecularStateCharacTotalStatisticalWeight':'MolState.g',
 
