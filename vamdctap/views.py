@@ -135,15 +135,15 @@ def capabilities(request):
                                  "RESTRICTABLES" : cleandict(DICTS.RESTRICTABLES),
                                  "RETURNABLES" : cleandict(DICTS.RETURNABLES),
                                  })
-    return render_to_response('node/capabilities.xml', c)
+    return render_to_response('node/capabilities.xml', c, mimetype='text/xml')
 
 def tables(request):
     c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
-    return render_to_response('node/VOSI-tables.xml', c)
+    return render_to_response('node/VOSI-tables.xml', c, mimetype='text/xml')
 
 def availability(request):
     c=RequestContext(request,{})
-    return render_to_response('node/availability.xml', c)
+    return render_to_response('node/availability.xml', c, mimetype='text/xml')
 
 def tablesXsd(request):
     c = RequestContext(request,{})
@@ -161,13 +161,13 @@ def index(request):
 def tapNotFoundError(request):
     text = 'Resource not found: %s'%request.path();
     document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
-    return HttpResponse(document, status=404);
+    return HttpResponse(document, status=404, mimetype='text/xml');
 
 # This turns a 500 "internal server error" into a TAP error-document
 def tapServerError(request):
     text = 'Unknown error inside TAP service';
     document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
-    return HttpResponse(document, status=500);
+    return HttpResponse(document, status=500, mimetype='text/xml');
 
 
 
