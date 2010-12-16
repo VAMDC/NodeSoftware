@@ -131,14 +131,14 @@ def cleandict(dict):
 
 
 def capabilities(request):
-    c = RequestContext(request, {"accessURL" : getBaseUrl(request),
+    c = RequestContext(request, {"accessURL" : getBaseURL(request),
                                  "RESTRICTABLES" : cleandict(DICTS.RESTRICTABLES),
                                  "RETURNABLES" : cleandict(DICTS.RETURNABLES),
                                  })
     return render_to_response('node/capabilities.xml', c)
 
 def tables(request):
-    c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseUrl(request)})
+    c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
     return render_to_response('node/VOSI-tables.xml', c)
 
 def availability(request):

@@ -19,8 +19,6 @@ NODEPKG= NODENAME+'.node'
 # Where to load url info from 
 ROOT_URLCONF = NODENAME+'.urls'
 
-print BASE_PATH, NODENAME, NODEPKG, ROOT_URLCONF
-
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email). 
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
 ADMINS = (('yourname', 'name@mail.net'),) 
@@ -104,7 +102,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(BASE_PATH,'DjNode', 'templates'),
+    os.path.join(BASE_PATH,'static', 'templates'),
 )
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (

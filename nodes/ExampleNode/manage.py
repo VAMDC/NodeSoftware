@@ -1,17 +1,12 @@
 #!/usr/bin/env python
-"""
-Set up the node.
-A first startup consists of giving
-the command 'python manage'. This will create an empty settings
-file. Copy&paste variables you want to change from settings_default.py
-to setup your node.
-Next define your models.
-You'll need to add the folder containing the 'models'
-directory to the INSTALLED_APPS tuple at least. Don't edit settings_default.py directly.
-Next run 'pythn manage.py syncdb'. This will read your settings
-file and create an empty database using your models. If you change the models
-you need to run syncdb again. 
-"""
+""" Set up the node. A first startup consists of giving the command 
+'python manage'. This will create an empty settings file. Copy&paste 
+variables you want to change from settings_default.py to setup your 
+node. Next define your models. You'll need to add the folder containing 
+the 'models' directory to the INSTALLED_APPS tuple at least. Don't edit 
+settings_default.py directly. Next run 'python manage.py syncdb'. This 
+will read your settings file and create an empty database using your 
+models. If you change the models you need to run syncdb again. """
 
 import sys
 import os
@@ -19,10 +14,11 @@ import traceback
 
 # Tack on the vamdc root directory to the python path.
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 _CREATED_SETTINGS = False    
+
 if not os.path.exists('settings.py'):
-    # If settings.py doesn't already exist, create it and populate it with some
-    # basic stuff.
+    # If settings.py doesn't already exist, create it
     string = "-"*50 + "\n Welcome to the VAMDC node setup."
     string += "\n\n Created a fresh settings.py file for you."
     print string
@@ -33,11 +29,11 @@ if not os.path.exists('settings.py'):
 # VAMDC-node config file
 #
 # You may customize your setup by copy&pasting the variables you want to 
-# change from the default config file settings_default.py to this file. 
-# Try to only copy over things you really need to customize and do *not* 
-# make any changes to settings_defaults.py directly. That way you'll 
-# always have a sane default to fall back on (also, the master file may 
-# change with updates).
+# change from the default config file in nodes/settings_default.py to 
+# this file. Try to only copy over things you really need to customize 
+# and do *not* make any changes to settings_defaults.py directly. That 
+# way you'll always have a sane default to fall back on (also, the 
+# master file may change with updates).
 
 from settings_default import *
 
@@ -55,12 +51,6 @@ DATABASE_USER = ''             # Not used with sqlite3.
 DATABASE_PASSWORD = ''         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3
-
-
-#########################################
-# TAP URL (Must have trailing slash!)
-#########################################
-TAP_URL = 'http://example.com/YourDBname/tap/'
 
 #########################################
 # Admin information

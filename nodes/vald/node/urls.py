@@ -1,5 +1,6 @@
 from django.conf.urls.defaults import *
+from django.conf import settings
 
-urlpatterns = patterns('DjVALD.node.views',
+urlpatterns = patterns(settings.NODENAME+'.node.views',
                        (r'^$', 'index'),
                        )

@@ -33,7 +33,7 @@ if not os.path.exists('settings.py'):
 # VAMDC-node config file
 #
 # You may customize your setup by copy&pasting the variables you want
-# to change from the master config file DjNode/settings_default.py to
+# to change from the master config file nodes/settings_default.py to
 # this file. Try to only copy over things you really need to customize
 # and do *not* make any changes to settings_defaults.py
 # directly. That way you'll always have a sane default to fall back on
