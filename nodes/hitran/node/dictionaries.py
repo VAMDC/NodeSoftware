@@ -1,10 +1,50 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-from django.http import HttpResponse, QueryDict
 
-from models import *
+from vamdctap.caselessdict import CaselessDict
 
+RETURNABLES=CaselessDict({\
+'SourceID':'Refs.sourceid',
+'SourceAuthorName':'Refs.author',
+'SourceTitle':'Refs.title',
+# NB my Refs model has pages, not page_begin and page_end:
+'SourcePageBegin':'Refs.pages',		
+'SourceVolume':'Refs.volume',
+'SourceYear':'Refs.year',
+'SourceName':'Refs.journal',    # closest we can get to the journal name
+
+'RadTransComments':'',
+'RadTransFinalStateRef':'RadTran.finalstateref',
+'RadTransInitialStateRef':'RadTran.initialstateref',
+'RadTransWavenumberExperimentalValue':'RadTran.nu',
+'RadTransWavenumberExperimentalSourceRef':'RadTran.nu_ref',
+'RadTransWavenumberExperimentalAccuracy':'RadTran.nu_err',
+'RadTransProbabilityTransitionProbabilityAValue':'RadTran.a',
+'RadTransProbabilityTransitionProbabilityASourceRef':'RadTran.a_ref',
+'RadTransProbabilityTransitionProbabilityAAccuracy':'RadTran.a_err',
+'RadTransProbabilityProbability:MultipoleValue':'RadTran.multipole',
+
+'MolecularSpeciesChemicalName':'Molecule.chemical_names',
+'MolecularSpeciesOrdinaryStructuralFormula':'Molecule.molec_name',
+'MolecularSpeciesOrdinaryStoichiometricFormula': \
+        'Molecule.stoichiometric_formula',
+
+'MolecularStateStateID':'MolState.stateid',
+'MolecularStateEnergyValue':'MolState.energy',
+'MolecularStateEnergyUnit':'cm-1',
+'MolecularStateEnergyOrigin':'Zero-point energy',
+'MolecularStateCharacTotalStatisticalWeight':'MolState.g',
+
+'MolQnStateID': 'MolQN.stateid',
+'MolQnCase': 'MolQN.case',      # e.g. 'dcs', 'ltcs', ...
+'MolQnLabel': 'MolQN.label',    # e.g. 'J', 'asSym', ...
+'MolQnValue': 'MolQN.value'
+})
+
+RESTRICTABLES = CaselessDict({\
+'Inchikey':'inchikey',
+'RadTransWavenumberExperimentalValue':'nu',
+'RadTransProbabilityTransitionProbabilityAValue':'a',
+})
 
 # work out which molecules are present in the database ...
 loaded_molecules = Trans.objects.values('molecid').distinct()
@@ -27,6 +67,7 @@ case_prefixes[5] = 'nltcs'
 def index(request):
     c=RequestContext(request,{})
     return render_to_response('index.html', c)
+
 
 #counter=0
 def poll(request):
@@ -144,3 +185,67 @@ def custom_sync(request):
     response = HttpResponse(generator, mimetype='application/xml')
     return response
 
+###############################################################################
+# legacy code, in which the TAP interface is handled generically
+# using Thomas Marquart's routines in DjNode:
+
+def getHITRANstates(transs):
+    stateIDs = set([])
+    for trans in transs:
+        stateIDs = stateIDs.union([trans.initialstateref,
+                                   trans.finalstateref])
+
+    return AllStates.objects.filter(pk__in=stateIDs)
+
+def getHITRANmolecules(transs):
+    molecIDs = set([])
+    for trans in transs:
+        molecIDs = molecIDs.union([trans.molecid])
+    return Molecules.objects.filter(pk__in=molecIDs)
+
+def getHITRANsources(transs):
+    sourceIDs = set([])
+    for trans in transs:
+        s = set([trans.nu_ref, trans.a_ref])
+        sourceIDs = sourceIDs.union(s)
+    return Refs.objects.filter(pk__in=sourceIDs)
+
+def parseHITRANstates(states):
+    qns = []
+    sids=set([])
+    for state in states:
+        s=set([state.stateid])
+        sids=sids.union(s)
+
+    for qn in AllQns.objects.filter(stateid__in=sids):
+        label, value = qn.qn.split('=')
+        qns.append(MolQN(qn.stateid, case_prefixes[qn.caseid], label, value))
+
+    LOG('%d state quantum numbers obtained' % len(qns))
+    #sys.exit(0)
+    return qns
+
+def setupResults(sql):
+    q = sqlparse.where2q(sql.where,RESTRICTABLES)
+    try:
+        q=eval(q)
+    except Exception,e:
+        LOG('Exception in setupResults():')
+        LOG(e)
+        return {}
+
+    transs = Trans.objects.filter(q) 
+    sources = getHITRANsources(transs)
+    states = getHITRANstates(transs)
+    # extract the state quantum numbers in a form that generators.py can use:
+    qns = parseHITRANstates(states)
+    molecules = getHITRANmolecules(transs)
+    LOG('%s transitions retrieved from HITRAN database' % transs.count())
+    LOG('%s states retrieved from HITRAN database' % states.count())
+
+   # return the dictionary as described above
+    return {'RadTrans': transs,
+            'Sources': sources,
+            'MoleStates': states,
+            'MoleQNs': qns,
+            'Molecules': molecules}

@@ -3,7 +3,7 @@ import sys
 sys.path.append('/home/tom/py/')
 sys.path.append('/home/tom/py/vamdc/')
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'DjHITRAN.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.hitran.settings'
 
 import django.core.handlers.wsgi
 application = django.core.handlers.wsgi.WSGIHandler()

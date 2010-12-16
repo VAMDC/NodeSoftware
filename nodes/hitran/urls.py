@@ -1,8 +1,8 @@
 from django.conf.urls.defaults import *
 
 # Uncomment the next two lines to enable the admin:
-from django.contrib import admin
-admin.autodiscover()
+#from django.contrib import admin
+#admin.autodiscover()
 
 urlpatterns = patterns('',
 
@@ -10,9 +10,8 @@ urlpatterns = patterns('',
     #(r'^admin/', include(admin.site.urls)),
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-    (r'', include('DjHITRAN.node.urls')),
-    (r'^tap/', include('DjNode.tapservice.urls')),
-    #(r'', include('DjNode.urls')),
+    (r'^tap/', include('vamdctap.urls')),
+    #(r'', include('hitran.node.urls')),
 
 )
 
