@@ -2,13 +2,14 @@
 from django.db.models import Q
 
 from models import *
+from dictionaries import *
+
+from vamdctap.sqlparse import *
+
 
 import sys
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s
-
-
-from vamdctap.sqlparse import *
 
 
 def setupResults(sql):

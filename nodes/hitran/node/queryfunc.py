@@ -3,13 +3,13 @@
 from django.db.models import Q
 from django.conf import settings
 from dictionaries import *
+from models import *
+from vamdctap.sqlparse import *
 
 import sys
 def LOG(s):
     print >> sys.stderr, s
 
-from models import *
-from vamdctap.sqlparse import *
 
 case_prefixes = {}
 case_prefixes[1] = 'dcs'
