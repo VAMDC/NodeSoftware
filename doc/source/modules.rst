@@ -18,8 +18,7 @@ The VAMDC-TAP service
 .. toctree::
    :maxdepth: 2
 
-   tapservice
-   examplenode
+   vamdctap
 
 The import tool
 ----------------

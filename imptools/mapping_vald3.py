@@ -18,7 +18,7 @@ import os, sys
 # Import models for one particular node
 #sys.path.append("..")
 #os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
-from DjVALD.node import models as valdmodel
+from nodes.vald.node import models as valdmodel
 
 # import the line funcs
 from linefuncs import charrange, charrange2int, bySepNr, lineSplit
