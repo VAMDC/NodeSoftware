@@ -139,7 +139,7 @@ if you have it installed, otherwise standard Python) and in there you
 should be able to run::
 
     >>> from node.models import *
-    >>> import nodelib
+    >>> import vamdctap
     >>> exit()
 
 
