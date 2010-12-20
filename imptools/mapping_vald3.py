@@ -18,12 +18,11 @@ import os, sys
 # Import models for one particular node
 #sys.path.append("..")
 #os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
-from DjVALD.node import models as valdmodel
+from nodes.vald.node import models as valdmodel
 
 # import the line funcs
-from imptools import charrange, charrange2int, bySepNr, chainCmds, passLine, setLine
-from imptools import idFromLine, lineStrip, lineSplit, mergeCols, ifCond, formatLine
-    
+from linefuncs import charrange, charrange2int, bySepNr, lineSplit
+
 # 
 # Create a config, a list of file definitions. Each entry in this
 # list is a dictionary describing an input ascii file to build from.
@@ -42,24 +41,67 @@ from imptools import idFromLine, lineStrip, lineSplit, mergeCols, ifCond, format
 #                references (tup) - which django model referenced by this collumn, and which field name
 # 
 
+# 
+# Custom parser commands
+#
+# These always take line as the first argument; this is a list of line-strings
+# (that may be only one line long) from all the files referenced in this step.
+# All utility functions (bySepNr etc) make use of linedata[0] unless the keyword 'filenum'
+# is given with a different index.
+
+def get_srcfile_ref(linedata, sep1, sep2):
+    "extract srcfile reference"
+    l1 = bySepNr(linedata, sep1)
+    l2 = bySepNr(l1, sep2, '/')
+    return l2.strip("'").strip()
+def get_publications(linedata):
+    "extract publication data. This returns a list since it is for a multi-reference."
+    return [p.strip() for p in bySepNr(linedata, 4, '||').split(',')]
+def get_term_val(linedata, sep1, sep2):
+    "extract configurations from term file"
+    l1 = bySepNr(linedata, sep1, ':', filenum=1)
+    return bySepNr(l1, sep2, ',')
+def get_gammawaals(linedata, sep1, sep2):
+    "extract gamma - van der waal value"
+    l1 = charrange(linedata, sep1, sep2)    
+    if float(l1) < 0:
+        return l1
+    else:
+        return '0.000'
+def get_alphawaals(linedata, sep1, sep2):
+    "extract alpha - van der waal value"
+    l1 = charrange(linedata, sep1, sep2)    
+    if float(l1) > 0:
+        return "%s.%s" % (0, bySepNr(linedata, 1, '.'))
+    else:
+        return '0.000'    
+def get_sigmawaals(linedata, sep1, sep2):
+    "extract sigma - van der waal value"
+    l1 = charrange(linedata, sep1, sep2)   
+    if float(l1) > 0:
+        return bySepNr(0, '.')
+    else:
+        return '0.000'
+def get_accur(linedata, range1, range2):
+    "extract accuracy"
+    return "%s,%s" % (charrange(linedata, *range1), charrange(linedata, *range2))
+def merge_cols(linedata, *ranges):
+    """
+    Merges data from several columns into one, separating them with '-'.
+     ranges are any number of tuples (indexstart, indexend) defining the columns.
+    """
+    return '-'.join([charrange(linedata, *ran) for ran in ranges])
+    
 # Base directory for the data files
 
 base = "/vald/"
-#base = "/home/samreg/vamdc-git/imptools/vald_raw/"
-
-# species_list_file = base + 'VALD_list_of_species'
-# vald_cfg_file = base + 'vald3_test.cfg'
-# states_file = base + 'states_preprocessed.dat'
-# transitions_file = base + 'transitions_preprocessed.dat'
-# terms_file = base + 'terms_preprocessed.dat'
-# publications_file = base + "publications_preprocessed.dat"
 
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'VALD3_config_2010.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
 publications_file = base + "publications_preprocessed.dat"
-pub2source_file = base + "VALD3linelists.dat"
+pub2source_file = base + "publications_to_sources_map.dat"
 
 mapping = [
     # Populate Species model, using the species input file.
@@ -69,25 +111,25 @@ mapping = [
      'commentchar':'#',
      'linemap':[
             {'cname':'pk',
-             'cbyte':(charrange,(0,7))},
+             'cbyte':(charrange, 0,7)},
             {'cname':'name',
-             'cbyte':(charrange,(9,19))},
+             'cbyte':(charrange, 9,19)},
             {'cname':'ion',
-             'cbyte':(charrange,(20,22))},
+             'cbyte':(charrange, 20,22)},
             {'cname':'mass',
-             'cbyte':(charrange,(23,30))},
+             'cbyte':(charrange, 23,30)},
             {'cname':'massno',
-             'cbyte':(charrange2int,(23,30))},
+             'cbyte':(charrange2int, 23,30)},
             {'cname':'ionen',
-             'cbyte':(charrange,(31,40))},
+             'cbyte':(charrange, 31,40)},
             {'cname':'solariso',
-             'cbyte':(charrange,(41,46))},
+             'cbyte':(charrange, 41,46)},
             {'cname':'ncomp',
-             'cbyte':(charrange,(132,133))},
+             'cbyte':(charrange, 132,133)},
             {'cname':'atomic',
-             'cbyte':(charrange,(134,136))},
+             'cbyte':(charrange, 134,136)},
             {'cname':'isotope',
-             'cbyte':(charrange,(137,140))},
+             'cbyte':(charrange, 137,140)},
            ],
      }, # end of definition for species file
 
@@ -98,31 +140,27 @@ mapping = [
      'commentchar':'#',    
      'linemap':[           
             {'cname':'dbref',
-             'cbyte':(bySepNr, (0,'||')),},
+             'cbyte':(bySepNr, 0,'||')},
             {'cname':'bibref',
-             'cbyte':(bySepNr, (1,'||')),},  
+             'cbyte':(bySepNr, 1,'||')},  
             {'cname':'author',
-             'cbyte':(bySepNr, (2,'||')),},  
+             'cbyte':(bySepNr, 2,'||')},  
             {'cname':'title',
-             'cbyte':(bySepNr, (3,'||'))},  
+             'cbyte':(bySepNr, 3,'||')},  
             {'cname':'category',
-             'cbyte':(bySepNr, (4,'||'))},  
+             'cbyte':(bySepNr, 4,'||')},  
             {'cname':'year',
-             'cbyte':(bySepNr, (5,'||')),},  
+             'cbyte':(bySepNr, 5,'||')},  
             {'cname':'journal',
-             'cbyte':(bySepNr, (6,'||')),},  
+             'cbyte':(bySepNr, 6,'||')},  
             {'cname':'volume',
-             'cbyte':(bySepNr, (7,'||')),},  
+             'cbyte':(bySepNr, 7,'||')},  
             {'cname':'pages',
-             'cbyte':(bySepNr, (8,'||')),},  
-#            {'cname':'pagebegin',
-#             'cbyte':(bySepNr, (9,'||')),},  
-#            {'cname':'pageend',
-#             'cbyte':(bySepNr, (10,'||')),},              
+             'cbyte':(bySepNr, 8,'||')},  
             {'cname':'url',
-             'cbyte':(bySepNr, (9,'||')),},            
+             'cbyte':(bySepNr, 9,'||')},            
             {'cname':'bibtex',
-             'cbyte':(bySepNr, (10,'||')),}, 
+             'cbyte':(bySepNr, 10,'||')}, 
           ], 
       }, # end of bibtex public5Bation data
     
@@ -133,41 +171,39 @@ mapping = [
      'commentchar':';',
      'linemap':[
             {'cname':'pk',
-             'cbyte':(bySepNr,(1,))},
+             'cbyte':(bySepNr, 1)},
             {'cname':'srcfile',
-             'cbyte':(bySepNr,(0,))},
+             'cbyte':(bySepNr, 0)},
             {'cname':'srcfile_ref',             
-             'cbyte':(chainCmds, ((bySepNr,(0,)),
-                                  (bySepNr,(3,'/')),
-                                  (lineStrip, ("'"))))},
+             'cbyte':(get_srcfile_ref, 0, 3)},
             {'cname':'speclo',
-             'cbyte':(bySepNr,(2,)),
+             'cbyte':(bySepNr, 2),
              'references':(valdmodel.Species,'pk')},
             {'cname':'spechi',
-             'cbyte':(bySepNr,(3,)),
+             'cbyte':(bySepNr, 3),
              'references':(valdmodel.Species,'pk')},
             {'cname':'listtype',
-             'cbyte':(bySepNr,(4,))},
+             'cbyte':(bySepNr, 4)},
             {'cname':'r1',
-             'cbyte':(bySepNr,(5,))},
+             'cbyte':(bySepNr, 5)},
             {'cname':'r2',
-             'cbyte':(bySepNr,(6,))},
+             'cbyte':(bySepNr, 6)},
             {'cname':'r3',
-             'cbyte':(bySepNr,(7,))},
+             'cbyte':(bySepNr, 7)},
             {'cname':'r4',
-             'cbyte':(bySepNr,(8,))},
+             'cbyte':(bySepNr, 8)},
             {'cname':'r5',
-             'cbyte':(bySepNr,(9,))},
+             'cbyte':(bySepNr, 9)},
             {'cname':'r6',
-             'cbyte':(bySepNr,(10,))},
+             'cbyte':(bySepNr, 10)},
             {'cname':'r7',
-             'cbyte':(bySepNr,(11,))},
+             'cbyte':(bySepNr, 11)},
             {'cname':'r8',
-             'cbyte':(bySepNr,(12,))},
+             'cbyte':(bySepNr, 12)},
             {'cname':'r9',
-             'cbyte':(bySepNr,(13,))},
+             'cbyte':(bySepNr, 13)},
             {'cname':'srcdescr',
-             'cbyte':(bySepNr,(14,)),},
+             'cbyte':(bySepNr, 14)},
             ],
     }, # end of definition for vald_conf file
 
@@ -179,11 +215,10 @@ mapping = [
      'updatematch': 'srcfile_ref',
      'linemap':[
             {'cname':'srcfile_ref',
-             'cbyte':(bySepNr,(1,'||')),
+             'cbyte':(bySepNr, 1,'||'),
              'debug':False},
             {'cname':'publications',
-             'cbyte':(chainCmds, ((bySepNr,(4,'||')),
-                                  (lineSplit,(',',)))), # returns a list! 
+             'cbyte':(get_publications, ), # must return a list!
              'multireferences':(valdmodel.Publication, 'dbref'),
              'debug':False}
              ]
@@ -200,70 +235,67 @@ mapping = [
      'errline':("Unknown", "Unknown"),
      'linemap':[
             {'cname':'charid',        #species,coup,jnum,term,energy (upper states)             
-             'cbyte':(idFromLine,('-',(charrange,(30,36)),
-                                      (charrange,(170,172)),
-                                      (charrange,(77,82)),
-                                      (charrange,(172,218)),
-                                      (charrange,(63,77)) ))},           
+             'cbyte':(merge_cols,
+                      (30,36), (170,172), (77,82), (172,218), (63,77))}, 
             {'cname':'species',
-             'cbyte':(charrange,(30,36)),
+             'cbyte':(charrange, 30,36),
              'references':(valdmodel.Species,'pk')},
             {'cname':'energy',
-             'cbyte':(charrange,(63,77))},
+             'cbyte':(charrange, 63,77)},
             #{'cname':'j',   
-            # 'cbyte':(charrange,(77,82)),},
+            # 'cbyte':(charrange, 77,82),},
             {'cname':'lande',
-             'cbyte':(charrange,(88,94)),
+             'cbyte':(charrange, 88,94),
              'cnull':'99.00'},
             {'cname':'coupling',
-             'cbyte':(charrange,(170,172))},
+             'cbyte':(charrange, 170,172)},
             {'cname':'term',
-             'cbyte':(charrange,(172,218))},
+             'cbyte':(charrange, 172,218)},
             {'cname':'energy_ref',
-             'cbyte':(charrange,(264,268))},
+             'cbyte':(charrange, 264,268)},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'lande_ref',
-             'cbyte':(charrange,(268,272))},
+             'cbyte':(charrange, 268,272)},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'level_ref',
-             'cbyte':(charrange,(284,288))},
+             'cbyte':(charrange, 284,288)},
              #'references':(valdmodel.Source,'pk')},
             # these are read from term file
             {'cname':'j',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(1,',')))),
+             'filenum':1, # use term file
+             'cbyte':(get_term_val, 2,1),
              'cnull':'X',},
             {'cname':'l',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(2,',')))),         
+             'filenum':1, # use term file
+             'cbyte':(get_term_val, 2,2),
              'cnull':'X',},
             {'cname':'s',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(3,',')))), 
+             'filenum':1, # use term file
+             'cbyte':(get_term_val, 2,3),
              'cnull':'X',},
             {'cname':'p',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(4,',')))),
+             'filenum':1, # use term file
+             'cbyte':(get_term_val, 2,4),
              'cnull':'X',},
             {'cname':'j1',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(5,',')))),
+             'filenum':1, # use term file
+             'cbyte':(get_term_val, 2,5),
              'cnull':'X',},
             {'cname':'j2',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(6,',')))),
+             'filenum':1, # use term file
+             'cbyte':(get_term_val, 2,6),
              'cnull':'X',},
             {'cname':'k',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(7,',')))),
+             'filenum':1, # use term file
+             'cbyte':(get_term_val, 2,7),
              'cnull':'X',},
             {'cname':'s2',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(8,',')))),
+             'filenum':1, # use term file
+             'cbyte':(get_term_val, 2,8),
              'cnull':'X',},
             {'cname':'jc',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(9,',')))),
+             'filenum':1, # use term file
+             'cbyte':(get_term_val, 2,9),
              'cnull':'X',},
             ]
      }, # end of State-model creation - upper states
@@ -278,70 +310,58 @@ mapping = [
      'errline':("Unknown", "Unknown"),
      'linemap':[
             {'cname':'charid',         #species,coup,jnum,term,energy (lower states) 
-             'cbyte':(idFromLine,('-',(charrange,(30,36)),
-                                      (charrange,(122,124)),
-                                      (charrange,(58,63)),
-                                      (charrange,(124,170)),
-                                      (charrange,(44,58)) ))},            
+             'cbyte':(merge_cols,
+                      (30,36), (122,124), (58,63), (124,170), (44,58))},
             {'cname':'species',
-             'cbyte':(charrange,(30,36)) ,
+             'cbyte':(charrange, 30,36) ,
              'references':(valdmodel.Species,'pk')},
             {'cname':'energy',
-             'cbyte':(charrange,(44,58))},
+             'cbyte':(charrange, 44,58)},
             #{'cname':'j',
-            # 'cbyte':(charrange,(58,63))},
+            # 'cbyte':(charrange, 58,63)},
             {'cname':'lande',
-             'cbyte':(charrange,(82,88)),
+             'cbyte':(charrange, 82,88),
              'cnull':'99.00'},
             {'cname':'coupling',
-             'cbyte':(charrange,(122,124))},
+             'cbyte':(charrange, 122,124)},
             {'cname':'term',
-             'cbyte':(charrange,(124,170))},
+             'cbyte':(charrange, 124,170)},
             {'cname':'energy_ref',
-             'cbyte':(charrange,(264,268))},
+             'cbyte':(charrange, 264,268)},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'lande_ref',
-             'cbyte':(charrange,(268,272))},
+             'cbyte':(charrange, 268,272)},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'level_ref',
-             'cbyte':(charrange,(284,288))},
+             'cbyte':(charrange, 284,288)},
              #'references':(valdmodel.Source,'pk')},
             # these are read from term file
             {'cname':'j',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(1,',')))),
+             'cbyte':(get_term_val, 2,1),           
              'cnull':'X',},
             {'cname':'l',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(2,',')))),         
+             'cbyte':(get_term_val, 2,2),
              'cnull':'X',},
             {'cname':'s',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(3,',')))), 
+             'cbyte':(get_term_val, 2,3),
              'cnull':'X',},
             {'cname':'p',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(4,',')))),
+             'cbyte':(get_term_val, 2,4),
              'cnull':'X',},
             {'cname':'j1',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(5,',')))),
+             'cbyte':(get_term_val, 2,5),
              'cnull':'X',},
             {'cname':'j2',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(6,',')))),
+             'cbyte':(get_term_val, 2,6),
              'cnull':'X',},
             {'cname':'k',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(7,',')))),
+             'cbyte':(get_term_val, 2,7),
              'cnull':'X',},
             {'cname':'s2',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(8,',')))),
+             'cbyte':(get_term_val, 2,8),
              'cnull':'X',},
             {'cname':'jc',
-             'cbyte':(chainCmds, ((bySepNr,(2,':',1)),
-                                  (bySepNr,(9,',')))),
+             'cbyte':(get_term_val, 2,9),
              'cnull':'X',},
             ]
      }, # end of State model creation - lower states
@@ -353,104 +373,79 @@ mapping = [
      'commentchar':'#',
      'linemap':[
             {'cname':'vacwave',
-             'cbyte':(charrange,(0,15))},
+             'cbyte':(charrange, 0,15)},
             {'cname':'airwave',
-             'cbyte':(charrange,(15,30))},
+             'cbyte':(charrange, 15,30)},
             {'cname':'species',
-             'cbyte':(charrange,(30,36)),
+             'cbyte':(charrange, 30,36),
              'references':(valdmodel.Species,'pk')},
             {'cname':'loggf',
-             'cbyte':(charrange,(36,44))},
+             'cbyte':(charrange, 36,44)},
             {'cname':'landeff',
-             'cbyte':(charrange,(94,100)),
+             'cbyte':(charrange, 94,100),
              'cnull':'99.00'},
             {'cname':'gammarad',
-             'cbyte':(charrange,(100,107)),
+             'cbyte':(charrange, 100,107),
              'cnull':'0.0'},
             {'cname':'gammastark',
-             'cbyte':(charrange,(107,114)),
+             'cbyte':(charrange, 107,114),
              'cnull':'0.000'},            
             {'cname':'gammawaals',
-             'cbyte':(chainCmds, ( (charrange,(114,122)),
-                                   (ifCond, ("float(line) < 0",
-                                             (passLine, ()),
-                                             (setLine, (0,000,)))))),
-             'cnull':'0.000',"debug":False},
+             'cbyte':(get_gammawaals, 114,122),
+             'cnull':'0.000',
+             'debug':False},
             {'cname':'sigmawaals', # only filled if raw value > 0.  
-             'cbyte':(chainCmds, ( (charrange,(114,122)),
-                                 (ifCond, ("float(line) > 0",
-                                           (bySepNr, (0,'.')),
-                                           (setLine, (0.000,)))))),
-
-             'cnull':'0.000',"debug":False},
+             'cbyte':(get_sigmawaals, 114,122),
+             'cnull':'0.000',
+             'debug':False},
             {'cname':'alphawaals',
-             'cbyte':(charrange,(114,122)),
-             'cbyte':(chainCmds,( (charrange,(114,122)),
-                                  (ifCond, ("float(line) > 0",
-                                            (formatLine, ("%s.%s",
-                                                          (setLine, ("0",)),
-                                                          (bySepNr, (1, '.')))),                                           
-                                            (setLine, (0.000,)))))),
-             'cnull':'0.000',"debug":False},
+             'cbyte':(get_alphawaals, 114,122),
+             'cnull':'0.000',
+             "debug":False},
             {'cname':'srctag',
-             'cbyte':(charrange,(218,225)),
+             'cbyte':(charrange, 218,225),
              'references':(valdmodel.Publication,'dbref'),
              'skiperror':True},             
-
             #            {'cname':'acflag',
 #             'cbyte':(charrange,(225,226))},
 #            {'cname':'accur',
 #             'cbyte':(charrange,(226,236))},
             {'cname':'accur',
-             'cbyte':(mergeCols,(',',(charrange,(225,226)),
-                                     (charrange,(226,236)))),
+             'cbyte':(get_accur, (225,226), (226,236)),
              'debug':False},
             {'cname':'comment',
-             'cbyte':(charrange,(236,252))},
+             'cbyte':(charrange, 236,252)},
             {'cname':'wave_ref',             
-             'cbyte':(charrange,(252,256))},
+             'cbyte':(charrange, 252,256)},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'loggf_ref',
-             'cbyte':(charrange,(256,260))},
+             'cbyte':(charrange, 256,260)},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'lande_ref',
-             'cbyte':(charrange,(268,272))},
+             'cbyte':(charrange, 268,272)},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'gammarad_ref',
-             'cbyte':(charrange,(272,276))},
+             'cbyte':(charrange, 272,276)},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'gammastark_ref',
-             'cbyte':(charrange,(276,280))},
+             'cbyte':(charrange, 276,280)},
              #'references':(valdmodel.Source,'pk')},
             {'cname':'waals_ref',  
-             'cbyte':(charrange,(280,284))},
+             'cbyte':(charrange, 280,284)},
              #'references':(valdmodel.Source,'pk')},            
-
             {'cname':'upstateid',     #species,coup,jnum,term,energy   
-             'cbyte':(idFromLine,('-',(charrange,(30,36,)),
-                                      (charrange,(170,172)),
-                                      (charrange,(77,82)),
-                                      (charrange,(172,218)),
-                                      (charrange,(63,77)) ))},
+             'cbyte':(merge_cols,
+                      (30,36), (170,172), (77,82), (172,218),(63,77))},
             {'cname':'lostateid',
-             'cbyte':(idFromLine,('-',(charrange,(30,36)),
-                                      (charrange,(122,124)),
-                                      (charrange,(58,63)),
-                                      (charrange,(124,170)),
-                                      (charrange,(44,58)) ))},
+             'cbyte':(merge_cols,
+                      (30,36), (122,124), (58,63), (124,170), (44,58))},
             {'cname':'upstate',
-             'cbyte':(idFromLine,('-',(charrange,(30,36,)),
-                                      (charrange,(170,172)),
-                                      (charrange,(77,82)),
-                                      (charrange,(172,218)),
-                                      (charrange,(63,77)) )),
+             'cbyte':(merge_cols,
+                      (30,36), (170,172), (77,82), (172,218), (63,77)),
              'references':(valdmodel.State,'charid')},
             {'cname':'lostate',
-             'cbyte':(idFromLine,('-',(charrange,(30,36)),
-                                      (charrange,(122,124)),
-                                      (charrange,(58,63)),
-                                      (charrange,(124,170)),
-                                      (charrange,(44,58)) )),
+             'cbyte':(merge_cols,
+                      (30,36), (122,124), (58,63), (124,170), (44,58)),
              'references':(valdmodel.State,'charid')},
             ],
     } # end of vald file def

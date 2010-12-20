@@ -1,57 +1,14 @@
-This repository holds a prototype for the "node software" of VAMDC,
-i.e. the standard package for importing data and putting the standard
-VAMDC interface on top of existing databases. It is based on the
-framework called Django, see http://www.djangoproject.com/
+This repository holds a prototype for the "node software" and 
+"publishing tools" of VAMDC.
 
-For general information please see
-http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/NodeSoftware
+Documentation at http://vamdc.fysast.uu.se:8888/doc/
 
-The process of creating a new VAMDC-node with this codebase involves
-the following steps:
-* Create an account on GitHub and fork this repository (see here for
-how to do this: http://help.github.com/forking/ )
-* In your resulting VAMDC-VALD directory, copy DjExampleNode to DjYOURDBNAME
-* Now a few files in DjYOURDBNAME will have to be adapted to
-  contain the information and code that is specific for each node.
-  This includes:
-  * The data model in models.py. If you have a new dataset that needs
-    to be imported into a realtional DB, this model is written by hand
-    and can then be used to create the database. For existing databases
-    "inspectdb" can be used to autogenerate the model. The most common
-    change that needs to be made to auto-generated models is to replace
-    some detected columns by ForeignKeys, thereby telling django how the
-    tables are connected.
-  * In views.py, two dictionaries need to be written. These contain as keys
-    the global names (found in VAMDCnames.txt) and as values their
-    corresponding places in the data model for query and output. See the
-    comments in the example file for more detail.
-  * Also in views.py write the function setupResults() which will execute
-    the query and return the query-sets that are to be used by the XML
-    generator
-  * Edit settings.py to contain your database connection info and some
-    global configuration options.
-* Deployment: Django has a built-in testserver, but for real deployment,
-  a standard webserver (Apache, Lighttp, Cherokee) needs to be set up.
-  Example files for apache/wsgi are included.
+The directories in this repository contain:
 
-Comments and questions are welcome via a GitHub message,
-or to thomas.marquart@fysast.uu.se. Also feel free to submit "issues" 
-(i.e. bugs or something you wish to change or be added) here on GitHub.
-
-All directories named DjXXXXX are related to the Django-prototype. Apart
-from these, you find the following in this repository:
-* imptools/ the current status of the import tool, that can import
-  (almost) arbitrary ascii-tables into an existing Django-model.
-* xml/ contains some Python scripts and tools for handling xml-data,
-  including a class definition for the xsams format, generated from
-  xsams-0.1.xsd
-* old code that has become unused resides in legacy/
-
-
-Finally, a short note about the repository name: It is called
-VAMDC-VALD because it was started for integrating VALD into VAMDC.  In
-the meantime, it has become the home for the more general framework of
-incorporating several database nodes into a common prototype. Renaming
-is possible, but would create unnecessary hassle for the people that
-have forked this and committed the parts that are specific for their
-nodes.
+vamdctap/   The library that all the nodes use.
+nodes/      The different VAMDC nodes that run with this software.
+imptools/   The import tools for reading data into a database.
+doc/        Documentation, run "make html" inside to build it.
+static/     Static files like CSS, template and the like.
+other/      Some scripts and legacy code.
+portal/     A very simple "portal" app that constructs queries and sends them to nodes.

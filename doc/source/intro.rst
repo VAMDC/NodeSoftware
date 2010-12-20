@@ -1,3 +1,5 @@
+.. _intro:
+
 Introduction
 =============
 
@@ -40,8 +42,8 @@ this software package include
 
 Since the last two points contradict each other in practice, there needs 
 to be an intermediate layer of abstraction that hides the node-specific 
-details like the database layout from the parts that are shared between 
-nodes.
+details like the database layout from the parts of code that are shared 
+between nodes.
 
 Our implementation of the VAMDC node software is therefore based on a 
 framework called `Django <http://www.djangoproject.com/>`_ (which in 
@@ -58,9 +60,8 @@ operation look schematically like this:
 
 
 
-Until this document is completed be sure to have a look at 
-http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/NodeSoftware
-for an overview.
+Until this document is completed be sure to also have a look at 
+the following page: http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/NodeSoftware
 
 
 
