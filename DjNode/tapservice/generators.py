@@ -516,13 +516,13 @@ def Xsams(Sources=None, AtomStates=None, MoleStates=None, CollTrans=None,
 <XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/dcs"  
+ xmlns:hunda="http://www.ucl.ac.uk/~ucapch0/hunda"  
  xmlns:hundb="http://www.ucl.ac.uk/~ucapch0/hundb"  
  xmlns:ltcs="http://www.ucl.ac.uk/~ucapch0/ltcs"  
  xmlns:nltcs="http://www.ucl.ac.uk/~ucapch0/nltcs"  
  xmlns:stcs="http://www.ucl.ac.uk/~ucapch0/stcs"  
- xmlns:lp="http://www.ucl.ac.uk/~ucapch0/lp"  
- xmlns:nlp="http://www.ucl.ac.uk/~ucapch0/nlp"  
- xmlns:lmp="http://www.ucl.ac.uk/~ucapch0/lmp"  >
+ xmlns:asymos="http://www.ucl.ac.uk/~ucapch0/asymos"  
+   >
 """
 
     if HeaderInfo: 
