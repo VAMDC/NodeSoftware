@@ -52,6 +52,17 @@ def getCDMSqns2(states):
     return qns
 
 
+def getCDMSspecies(states):
+    sids=set([])
+    LOG('Loop States')
+    for state in states:
+       s=set([state.speciesid])
+       sids=sids.union(s)
+
+    q=Q(statesspecies__in=sids)
+    return Molecules.objects.filter(q)
+
+
 def setupResults(sql):
 #    LOG("SQL:")
 #    LOG(sql.where)
@@ -75,6 +86,8 @@ def setupResults(sql):
     states = getCDMSstates2(transs)
     LOG('Start Query QN')
     quantumnumbers = getCDMSqns(states)
+    LOG('Start Query Species')
+    species = getCDMSspecies(states)
     LOG('Queries done')
 #    qn= states[0].molecularquantumnumbers_set.all()
 #    qn = states[0].quantumnumbers.all()
@@ -82,6 +95,7 @@ def setupResults(sql):
             'MoleStates':states,
             'Sources':sources,
             'MoleQNs':quantumnumbers,
+            'Molecules':species,
             }
 
 

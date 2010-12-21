@@ -12,6 +12,7 @@ from django.db import models
 class StatesMolecules(models.Model):
     resource = models.CharField(max_length=12, db_column='Resource') # Field name made lowercase.
     stateid = models.IntegerField(primary_key=True, db_column='StateID') # Field name made lowercase.
+    speciesid = models.IntegerField(db_column='E_ID')
     moleculeid = models.IntegerField(db_column='MoleculeID') # Field name made lowercase.
     chemicalname = models.CharField(max_length=600, db_column='ChemicalName', blank=True) # Field name made lowercase.
     molecularchemicalspecies = models.CharField(max_length=600, db_column='MolecularChemicalSpecies') # Field name made lowercase.
@@ -44,6 +45,7 @@ class RadiativeTransitions(models.Model):
     resource = models.CharField(max_length=12, db_column='Resource') # Field name made lowercase.
     radiativetransitionid = models.IntegerField(primary_key=True, db_column='RadiativeTransitionID') # Field name made lowercase.
     moleculeid = models.IntegerField(db_column='MoleculeID') # Field name made lowercase.
+    speciesid = models.IntegerField(db_column='E_ID')
     chemicalname = models.CharField(max_length=600, db_column='ChemicalName', blank=True) # Field name made lowercase.
     molecularchemicalspecies = models.CharField(max_length=600, db_column='MolecularChemicalSpecies') # Field name made lowercase.
     isotopomer = models.CharField(max_length=300, db_column='Isotopomer', blank=True) # Field name made lowercase.
@@ -57,6 +59,7 @@ class RadiativeTransitions(models.Model):
     multipole = models.CharField(max_length=6, db_column='Multipole') # Field name made lowercase.
     log10weightedoscillatorstrengthvalue = models.FloatField(null=True, db_column='Log10WeightedOscillatorStrengthValue', blank=True) # Field name made lowercase.
     log10weightedoscillatorstrengthunit = models.CharField(max_length=24, db_column='Log10WeightedOscillatorStrengthUnit') # Field name made lowercase.
+    einsteinA = models.FloatField(null=True, db_column='EinsteinA', blank=True)
     lowerstateenergyvalue = models.FloatField(null=True, db_column='LowerStateEnergyValue', blank=True) # Field name made lowercase.
     lowerstateenergyunit = models.CharField(max_length=12, db_column='LowerStateEnergyUnit') # Field name made lowercase.
     upperstatenuclearstatisticalweight = models.IntegerField(null=True, db_column='UpperStateNuclearStatisticalWeight', blank=True) # Field name made lowercase.
@@ -141,3 +144,16 @@ class Sources(models.Model):
     referenceId = models.ForeignKey(SourcesIDRefs, related_name='isRefId',
                                 db_column='rId', null=False)
 
+class Molecules(models.Model):
+     speciesid   = models.IntegerField(primary_key=True, db_column='I_ID')
+     inchikey    = models.CharField(max_length=100, db_column='I_Inchikey', blank=True)
+     name        = models.CharField(max_length=100, db_column='I_Name', blank=True)
+     htmlname    = models.CharField(max_length=200, db_column='I_HtmlName', blank=True)
+     latexname   = models.CharField(max_length=100, db_column='I_LatexName', blank=True)
+     stoichiometricformula = models.CharField(max_length=200, db_column='I_StoichiometricFormula', blank=True)
+     trivialname = models.CharField(max_length=200, db_column='I_TrivialName', blank=True)
+     class Meta:
+         db_table = u'Isotopologs'
+
+     statesspecies = models.ForeignKey(StatesMolecules, related_name='molecules',
+                            db_column='I_ID')
