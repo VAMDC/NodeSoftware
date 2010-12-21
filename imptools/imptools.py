@@ -156,9 +156,11 @@ def create_new(cursor, data, db_table):
     """
     data.pop('pk',None)
     nplaceholders=string.join(['%s']*len(data),',')
-    sql='INSERT INTO %s (%s) VALUES (%s);'%(db_table,nplaceholders,nplaceholders)
-    print sql,data.keys()+data.values()
-    cursor.execute(sql,data.keys()+data.values())
+    sql='INSERT INTO %s (%s) VALUES'%(db_table,nplaceholders)
+    sql=sql%tuple(data.keys())
+    sql+=' (%s);'%nplaceholders
+    print sql, data.values()
+    cursor.execute(sql,tuple(data.values()))
 
 def add_many2many(model, fieldname, objrefs):
     """
