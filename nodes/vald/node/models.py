@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 class Species(models.Model):
     name = models.CharField(max_length=10, db_index=True)
     ion = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
-    mass = models.DecimalField(max_digits=5, decimal_places=2) 
+    mass = models.DecimalField(max_digits=8, decimal_places=5) 
     massno = models.PositiveSmallIntegerField(null=True, blank=True)
     ionen = models.DecimalField(max_digits=7, decimal_places=3) 
     solariso = models.DecimalField(max_digits=5, decimal_places=4) 
