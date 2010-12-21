@@ -264,17 +264,23 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
                 G("MolecularStateCharacTotalStatisticalWeight")
                 )
             if QNList.has_key(G("MolecularStateStateID")):
-              for MolQN in QNList[G("MolecularStateStateID")]:
-                G=lambda name: GetValue(name, MolQN=MolQN)
-                yield """
-    <%s:%s """ % (G("MolQnCase"), G("MolQnLabel"))
-                if G("MolQnSpinRef"):
-                    yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
-                if G("MolQnAttribute"):
-                    yield G("MolQnAttribute")
-                yield """> %s </%s:%s>""" \
-                    % (G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
-
+              stateID = G("MolecularStateStateID")
+              G = lambda name: GetValue(name, MolQN=MolQN)
+              case = G("MolQnCase")
+              yield """<%s:QNs>""" % case
+              for MolQN in QNList[stateID]:
+                if MolQN.xml:
+                    yield MolQN.xml
+                else:
+                    yield """
+        <%s:%s """ % (case, G("MolQnLabel"))
+                    if G("MolQnSpinRef"):
+                        yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
+                    if G("MolQnAttribute"):
+                        yield G("MolQnAttribute")
+                    yield """> %s </%s:%s>""" \
+                        % (G("MolQnValue"), case, G("MolQnLabel") )
+              yield """</%s:QNs>""" % case
             yield '</MolecularState>'
         yield '</Molecule>'
     yield '</Molecules>'
