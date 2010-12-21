@@ -113,8 +113,8 @@ RETURNABLES=CaselessDict({\
 'RadTransProbabilityTransitionProbabilityAComments ':'',
 'RadTransProbabilityTransitionProbabilityASourceRef':'',
 'RadTransProbabilityTransitionProbabilityAMethodRef':'',
-'RadTransProbabilityTransitionProbabilityAValue':'',
-'RadTransProbabilityTransitionProbabilityAUnits':'',
+'RadTransProbabilityTransitionProbabilityAValue':'RadTran.einsteinA',
+'RadTransProbabilityTransitionProbabilityAUnits':'1/cm',
 'RadTransProbabilityTransitionProbabilityAAccuracy':'',
 'RadTransProbabilityOscillatorStrengthComments ':'',
 'RadTransProbabilityOscillatorStrengthSourceRef':'',
@@ -158,8 +158,10 @@ RETURNABLES=CaselessDict({\
 
 # table for molecular states 
 # (maybe molecular species should be a separate table)
-    
-'MolecularSpeciesChemicalName':'MolState.molecularchemicalspecies',
+
+'MolecularSpeciesID':'Molecule.speciesid',    
+#'MolecularSpeciesChemicalName':'MolState.molecularchemicalspecies',
+'MolecularSpeciesChemicalName':'Molecule.name',
 'MolecularSpeciesOrdinaryStructuralFormula':'',
 'MolecularSpeciesStoichiometrcFormula':'MolState.isotopomer',
 'MolecularSpeciesIonCharge':'',
@@ -175,6 +177,7 @@ RETURNABLES=CaselessDict({\
 'MoleculeNuclearSpinsAtomArray':'',
 'MoleculeNuclearSpinsBondArray':'',
 
+'MolecularStateMolecularSpeciesID':'MolState.speciesid',
 'MolecularStateStateID':'MolState.stateid',
 'MolecularStateDescription':'',
 'MolecularStateEnergyComments':'',
