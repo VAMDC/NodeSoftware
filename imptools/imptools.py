@@ -11,6 +11,7 @@ import sys
 from django.db.models import Q
 from time import time 
 from django.db import transaction, connection
+from django.db.utils import IntegrityError
 import string
 
 TOTAL_LINES = 0
@@ -159,8 +160,11 @@ def create_new(cursor, data, db_table):
     sql='INSERT INTO %s (%s) VALUES'%(db_table,nplaceholders)
     sql=sql%tuple(data.keys())
     sql+=' (%s);'%nplaceholders
-    print sql, data.values()
-    cursor.execute(sql,tuple(data.values()))
+    #print sql, data.values()
+    try:
+	cursor.execute(sql,tuple(data.values()))
+    except IntegrityError:
+	pass
 
 def add_many2many(model, fieldname, objrefs):
     """
@@ -328,25 +332,6 @@ def parse_file_dict(file_dict, global_debug=False):
                 # not a valid line for whatever reason 
                 continue
             
-            if map_dict.has_key('references'):
-                # this collumn references another field
-                # (i.e. a foreign key)
-                refmodel = map_dict['references'][0]
-                refcol = map_dict['references'][1]            
-                # create a query object q for locating
-                # the referenced model and field
-                Qquery = eval('Q(%s="%s")' % (refcol, dat))
-                try:
-                    dat = refmodel.objects.get(Qquery)
-                except Exception, e:
-                    errstring = "reference %s.%s='%s (%s)' not found." % (refmodel,refcol, dat, e)
-                    if skiperrors:                
-                        if debug:       
-                            print "DEBUG: %s" % errstring
-                    else:                            
-                        errors += 1
-                        print "ERROR: %s" % errstring
-                    dat = None
                     
             if map_dict.has_key('multireferences'):
                 # this collumn references multiple other objects
