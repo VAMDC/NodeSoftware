@@ -16,9 +16,9 @@ has to be constructed in dbhelper as well.
 import os, sys
 
 # Import models for one particular node
-#sys.path.append("..")
-#os.environ['DJANGO_SETTINGS_MODULE']="DjVALD.settings"
-from nodes.vald.node import models as valdmodel
+os.environ['DJANGO_SETTINGS_MODULE']="nodes.vald.settings"
+sys.path.append(os.path.abspath("."))
+import node.models as models
 
 # import the line funcs
 from linefuncs import charrange, charrange2int, bySepNr, lineSplit
@@ -105,7 +105,7 @@ pub2source_file = base + "publications_to_sources_map.dat"
 
 mapping = [
     # Populate Species model, using the species input file.
-    {'model':valdmodel.Species,
+    {'model':models.Species,
      'fname':species_list_file,
      'headlines':0,
      'commentchar':'#',
@@ -134,7 +134,7 @@ mapping = [
      }, # end of definition for species file
 
     # Populate Publication model with pre-processed bibtex data file
-    {'model':valdmodel.Publication,    
+    {'model':models.Publication,    
      'fname':publications_file,
      'headlines':0,        
      'commentchar':'#',    
@@ -165,7 +165,7 @@ mapping = [
       }, # end of bibtex public5Bation data
     
     # Populate Source model from vald_cfg file
-    {'model':valdmodel.Source,
+    {'model':models.Source,
      'fname':vald_cfg_file,
      'headlines':1,
      'commentchar':';',
@@ -178,10 +178,10 @@ mapping = [
              'cbyte':(get_srcfile_ref, 0, 3)},
             {'cname':'speclo',
              'cbyte':(bySepNr, 2),
-             'references':(valdmodel.Species,'pk')},
+             'references':(models.Species,'pk')},
             {'cname':'spechi',
              'cbyte':(bySepNr, 3),
-             'references':(valdmodel.Species,'pk')},
+             'references':(models.Species,'pk')},
             {'cname':'listtype',
              'cbyte':(bySepNr, 4)},
             {'cname':'r1',
@@ -208,7 +208,7 @@ mapping = [
     }, # end of definition for vald_conf file
 
     # Populate Source model with publications through pub2source file 
-    {'model':valdmodel.Source,
+    {'model':models.Source,
      'fname':pub2source_file,
      'headlines':3,
      'commentchar':'#',
@@ -219,14 +219,14 @@ mapping = [
              'debug':False},
             {'cname':'publications',
              'cbyte':(get_publications, ), # must return a list!
-             'multireferences':(valdmodel.Publication, 'dbref'),
+             'multireferences':(models.Publication, 'dbref'),
              'debug':False}
              ]
     },
 
 # State model read from states_file -upper states
     # (first section) 
-    {'model':valdmodel.State,    
+    {'model':models.State,    
      'fname': (vald_file, terms_file),
      'headlines':(2, 0),
      'commentchar': ('#', '#'),
@@ -239,7 +239,7 @@ mapping = [
                       (30,36), (170,172), (77,82), (172,218), (63,77))}, 
             {'cname':'species',
              'cbyte':(charrange, 30,36),
-             'references':(valdmodel.Species,'pk')},
+             'references':(models.Species,'pk')},
             {'cname':'energy',
              'cbyte':(charrange, 63,77)},
             #{'cname':'j',   
@@ -253,13 +253,13 @@ mapping = [
              'cbyte':(charrange, 172,218)},
             {'cname':'energy_ref',
              'cbyte':(charrange, 264,268)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             {'cname':'lande_ref',
              'cbyte':(charrange, 268,272)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             {'cname':'level_ref',
              'cbyte':(charrange, 284,288)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             # these are read from term file
             {'cname':'j',
              'filenum':1, # use term file
@@ -302,7 +302,7 @@ mapping = [
     
     # State model read from states_file - lower states
     # (second section)
-    {'model':valdmodel.State,
+    {'model':models.State,
      'fname':(vald_file, terms_file),
      'headlines':(2, 0), 
      'commentchar':('#','#'),
@@ -314,7 +314,7 @@ mapping = [
                       (30,36), (122,124), (58,63), (124,170), (44,58))},
             {'cname':'species',
              'cbyte':(charrange, 30,36) ,
-             'references':(valdmodel.Species,'pk')},
+             'references':(models.Species,'pk')},
             {'cname':'energy',
              'cbyte':(charrange, 44,58)},
             #{'cname':'j',
@@ -328,13 +328,13 @@ mapping = [
              'cbyte':(charrange, 124,170)},
             {'cname':'energy_ref',
              'cbyte':(charrange, 264,268)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             {'cname':'lande_ref',
              'cbyte':(charrange, 268,272)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             {'cname':'level_ref',
              'cbyte':(charrange, 284,288)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             # these are read from term file
             {'cname':'j',
              'cbyte':(get_term_val, 2,1),           
@@ -367,7 +367,7 @@ mapping = [
      }, # end of State model creation - lower states
    
     # Transition model, using the vald file    
-    {'model':valdmodel.Transition,
+    {'model':models.Transition,
      'fname':vald_file,
      'headlines':2,
      'commentchar':'#',
@@ -378,7 +378,7 @@ mapping = [
              'cbyte':(charrange, 15,30)},
             {'cname':'species',
              'cbyte':(charrange, 30,36),
-             'references':(valdmodel.Species,'pk')},
+             'references':(models.Species,'pk')},
             {'cname':'loggf',
              'cbyte':(charrange, 36,44)},
             {'cname':'landeff',
@@ -404,7 +404,7 @@ mapping = [
              "debug":False},
             {'cname':'srctag',
              'cbyte':(charrange, 218,225),
-             'references':(valdmodel.Publication,'dbref'),
+             'references':(models.Publication,'dbref'),
              'skiperror':True},             
             #            {'cname':'acflag',
 #             'cbyte':(charrange,(225,226))},
@@ -417,22 +417,22 @@ mapping = [
              'cbyte':(charrange, 236,252)},
             {'cname':'wave_ref',             
              'cbyte':(charrange, 252,256)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             {'cname':'loggf_ref',
              'cbyte':(charrange, 256,260)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             {'cname':'lande_ref',
              'cbyte':(charrange, 268,272)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             {'cname':'gammarad_ref',
              'cbyte':(charrange, 272,276)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             {'cname':'gammastark_ref',
              'cbyte':(charrange, 276,280)},
-             #'references':(valdmodel.Source,'pk')},
+             #'references':(models.Source,'pk')},
             {'cname':'waals_ref',  
              'cbyte':(charrange, 280,284)},
-             #'references':(valdmodel.Source,'pk')},            
+             #'references':(models.Source,'pk')},            
             {'cname':'upstateid',     #species,coup,jnum,term,energy   
              'cbyte':(merge_cols,
                       (30,36), (170,172), (77,82), (172,218),(63,77))},
@@ -442,14 +442,14 @@ mapping = [
             {'cname':'upstate',
              'cbyte':(merge_cols,
                       (30,36), (170,172), (77,82), (172,218), (63,77)),
-             'references':(valdmodel.State,'charid')},
+             'references':(models.State,'charid')},
             {'cname':'lostate',
              'cbyte':(merge_cols,
                       (30,36), (122,124), (58,63), (124,170), (44,58)),
-             'references':(valdmodel.State,'charid')},
+             'references':(models.State,'charid')},
             ],
     } # end of vald file def
 
 ] # end of vald3 mapping file def list
 
-mapping=[mapping[0]]
+mapping=[mapping[-1]]

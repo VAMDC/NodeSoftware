@@ -8,18 +8,9 @@ controlled from a mapping file.
 """
 
 import os, sys, imp, optparse
-
-# making the import non-dependent on main folder name
 sys.path.append(os.path.abspath(".."))
-#sys.path.append(os.path.abspath("../imptools"))
-os.environ['DJANGO_SETTINGS_MODULE']="nodes.vald.settings"
-
-# the mapping file
-import imptools
-import mapping_vald3
 
 DEBUG = False
-
 
 # The main program
 #        
@@ -41,10 +32,12 @@ def mod_import(mod_path):
     except ImportError:
         print "Could not find module '%s' (%s.py) at path '%s'" % (modname, modname, path)
         return None 
+    print result
     try:
         mod = imp.load_module(modname, *result)
-    except ImportError:
+    except ImportError,e:
         print "Could not find or import module %s at path '%s'" % (modname, path)
+        print e
         return None 
     finally:
         # we have to close the file handle manually
@@ -74,6 +67,7 @@ def import_to_db():
         return
 
     # run the full import        
+    import imptools
     imptools.parse_mapping(mapping, debug=options.debug)
     
 if __name__ == '__main__':       

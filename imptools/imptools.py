@@ -81,7 +81,6 @@ def validate_mapping(mapping):
 
 
 # working functions for the importer
-    
 def process_line(linedata, column_dict):
     """
     Process one line of data. Linedata is a tuple that always starts with
@@ -146,7 +145,7 @@ def find_match_and_update(property_name, match_key, model, data):
         except Exception, e:
             sys.stderr.write("%s: model.%s=%s\n" % (e, key, data[key]))
     return match
-            
+
 def create_new(cursor, data, db_table):
     """
     Create a new object of type model and store
@@ -221,7 +220,6 @@ class MappingFile(object):
         #print self.line
         return self.line
     
-@transaction.commit_on_success
 def parse_file_dict(file_dict, global_debug=False):
     """
     Process one file definition from a config dictionary by
@@ -414,7 +412,8 @@ def parse_file_dict(file_dict, global_debug=False):
             for mdict in many2manyfield_list:            
                 add_many2many(modelinstance, mdict["fieldname"], mdict["objlist"])
                 modelinstance.save()
-            
+
+    transaction.commit()
     print 'Read %s. %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), total, errors)
 
     global TOTAL_LINES, TOTAL_ERRS
