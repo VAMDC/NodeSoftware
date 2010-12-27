@@ -263,11 +263,14 @@ class AllQns(models.Model):
 # This is a plumbing class to make my quantum numbers table play nicely
 # with Christian's generator code:
 class MolQN:
-   def __init__(self, stateid, case_prefix, label, value):
+   def __init__(self, stateid, case_prefix, label, value,
+                qn_attr, xml=None):
         self.stateid = stateid
         self.case = case_prefix
         self.label = label
         self.value = value
+        self.qn_attr = qn_attr
+        self.xml = xml
 
    def __getitem__(self, name):
         return self.__dict__[name]
