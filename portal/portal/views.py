@@ -96,7 +96,7 @@ def makeDlLink(url,query,format='XSAMS'):
     data['QUERY']=query
     data['FORMAT']=format
     data=urlencode(data)
-    return url+'?'+data
+    return url+'sync?'+data
     
 def results(request,qid):
     query=Query.objects.get(pk=qid)
