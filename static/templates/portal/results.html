@@ -17,7 +17,7 @@
 
 {% for result in results %}
 
-<h2>Results from {{ result.nodename }}</h2>
+<h2>{{ result.nodename }}</h2>
 
 {% if result.html %}
 {% autoescape off %}{{ result.html }}{% endautoescape %}

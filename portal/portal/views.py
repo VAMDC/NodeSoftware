@@ -8,6 +8,7 @@ from django.forms.formsets import formset_factory
 
 from models import Query
 import registry
+REGISTRY = registry.getNodeList()
 
 import string as s
 from random import choice
@@ -15,11 +16,6 @@ def makeQID(length=6, chars=s.letters + s.digits):
     return ''.join([choice(chars) for i in xrange(length)])
 
 from urllib import urlopen,urlencode
-
-REGISTRY=[
-          {'name':'VALD','url':'http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/'},
-          {'name':'CDMS','url':'http://www.astro.uni-koeln.de:8098/DjCDMS/tap/sync/'},
-          ]
 
 PARA_CHOICES=[('',u'----'),
               ('AtomSymbol',u'Atom Name'),
