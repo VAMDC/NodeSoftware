@@ -164,36 +164,39 @@ First of all, you need to think about how the data should be structured.
 Data conversion (units, structure etc) can and should be done while 
 importing the data since this saves work and execution time later. Since 
 the data will need to be represented in the common XSAMS format, it is 
-recommended to adopt a layout with separate tables for
-
-* Species
-* States
-* Processes
-* References
+recommended to adopt a layout with separate tables for species, states, 
+processes (radiative, collisions etc) and references.
 
 Deviating data models are certainly possible, but will involve some more 
 work on the query function (see below). In any case, do not so much 
 think about how your data is structured now, but how you want it to be 
-structured in the database, when writing the models.
+structured in the database, when you writing the models.
 
 Writing your data models is best learned from example. Have a look at 
 the example from Case 1 above and at file *nodes/vald/node/models.py* 
 inside the NodeSoftware to see how the model for VALD looks like. Keep 
-in mind the following points
+in mind the following points:
 
 * As mentioned, a *class* in the model becomes a *table* in the 
-  database.
-* Each class should have a member with *primary_key=True*. If 
+  database and the fields/members of the class correspond to the
+  table columns.
+* Each class should have one member with *primary_key=True*. If 
   not, one called *id* will be implicitly created for you.
-* How you name your classes and fields is up to you. Sensible names will make it easier to write the dictionaries below.
+* How you name your classes and fields is up to you. Sensible names will
+  make it easier to write the dictionaries below.
 * Use the appropriate field type for each bit of data, e.g. BooleanField, 
-  CharField, PositiveSmallIntegerField, FloatField. There is a 
+  CharField, PositiveSmallIntegerField, FloatField. There is also a 
   DecimalField that allows you to specify arbitrary precision which will 
-  also be used in later ascii-representations.
+  also be used in later ascii-representations of data.
 * Use *ForeignKey()* to another class's primary key to connect your tables.
-* The full list of possible fields can be found at http://docs.djangoproject.com/en/1.2/ref/models/fields/.
-* If you know that a field will be empty sometimes, add *null=True* to the field definition inside the brackets ().
-* For fields that are frequent selection criteria (like wavelength for a transition database), you can add *db_index=True* to the field to speed up searches along this column (at the expense of some disk space and computation time at database creation).
+* The full list of possible fields can be found at
+  http://docs.djangoproject.com/en/1.2/ref/models/fields/.
+* If you know that a field will be empty sometimes, add *null=True*
+  to the field definition inside the brackets ().
+* For fields that are frequent selection criteria (like wavelength for
+  a transition database), you can add *db_index=True* to the field
+  to speed up searches along this column (at the expense of some
+  disk space and computation time at database creation).
 
 Once you have a first draft of your data model, you test it by running::
 
@@ -220,7 +223,7 @@ and "States" by you own model names.
 
 How you fill your database with information from ascii-files is 
 explained in the next chapter: :ref:`importing`. You can do this now and 
-return here later, or continue with the steps below.
+return here later, or continue with the steps below first.
 
 
 
@@ -387,8 +390,12 @@ setupResults() (see above).
 Testing the node
 ------------------------------
 
-Now you should have everything in place to run your node. Django come 
-with a built-in server for testing which you can start with::
+Now you should have everything in place to run your node. If you still 
+need to fill your database with the import tool, now is the time to do 
+so according to :ref:`importing`.
+
+Django comes with a built-in server for testing. You can start it
+with::
 
 $ ./manage.py runserver
 
@@ -400,11 +407,13 @@ You should also be able to run queries by accessing URLS like::
 
     http://127.0.0.1:8000/tap/sync?LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT ALL WHERE AtomIonCharge > 1
 
-or whatever restriction makes sense for your data set.
+replacing the last part by whatever restriction makes sense for your data set.
 
-A test framework is in the making and will be documented here soon. In 
-any case you should run test queries to your node and make sure that the 
-output in terms of volume and values matches your expectations.
+A more extensive test framework is in the making and will be documented 
+here soon. In any case you should run test queries to your node and make 
+sure that the output in terms of volume and values matches your 
+expectations.
+
 
 Deployment in Apache
 --------------------------------
