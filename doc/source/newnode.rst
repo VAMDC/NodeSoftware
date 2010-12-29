@@ -321,6 +321,7 @@ data model to the names from the dictionary, like this::
     RESTRICTABLES = {\
     'AtomSymbol':'species__name',
     'AtomStateEnergy':'upstate__energy',
+    'AtomIonCharge':'species__ion',
     'RadTransWavelengthExperimentalValue':'vacwave',
     }
 
@@ -335,11 +336,93 @@ data model to the names from the dictionary, like this::
 About the RESTRICTABLES
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-As we have learned from
+As we have learned from writing the query function above, we can use the 
+RESTRICTABLES to match the VAMDC dictionary names to places in our data 
+model. The key in each key-value-pair is a name from the VAMDC 
+dictionary and the values are the members of the model class that you 
+want to query primarily.
+
+The example above fits the one from the section about the query function 
+above, so we know that the "main" model is the Transitions. Now if a 
+query like "AtomIonCharge > 1" comes along, this can be translated into 
+*Transition.objects.filter(species__ion__gt=1)* without further ado. 
+Note that we here used a ForeignKey to the Species model; the values in 
+the RESTRICTABLES need to be written from the perspective of the main 
+model.
+
+.. note::
+    Even if you chose to not use the RESTRICTABLES in your 
+    setupResults(), you are still encouraged to fill the keys (with the 
+    values being empty), because they are automatically provided to the 
+    VAMDC registry so that external services can figure out which names make 
+    sense to query at this node.
+
 
 About the RETURNABLES
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+Equivalent to how the RESTRICTABLES take care of translating from global 
+names to your custom data model when the query comes in, the 
+RETURNABLES do the opposite on the way back, i.e. when the data reply 
+is sent.
 
-Deploying the node
+Again the keys of the key-value-pairs are the global names from the 
+VAMDC dictionary. The values now are their corresponding places in the 
+QuerySets that are constructed in setupResults() above. This means that 
+the XML generator will loop over the QuerySet, getting each element, and 
+try to evaluate the expression that you put in the RETURNABLES. 
+Continuing our example from above, assume the State model has a field 
+called *energy*, so each object in the QuerySet will have that value at 
+*AtomState.energy*. Note that the first part before the dot is not the 
+name of your model, but one of the names that you return from 
+setupResults() (see above).
+
+.. note::
+    Again, at least the keys of the RETURNABLES should be filled (even 
+    if you use your own generator for the XML output) because this allows 
+    the registry to know what kind of data your node holds before querying 
+    it.
+
+
+Testing the node
 ------------------------------
+
+Now you should have everything in place to run your node. Django come 
+with a built-in server for testing which you can start with::
+
+$ ./manage.py runserver
+
+This will use port 8000 at your local machine which means that you 
+should be able to browse to http://127.0.0.1:8000/tap/availability/ and 
+hopefully see a positive status message.
+
+You should also be able to run queries by accessing URLS like::
+
+    http://127.0.0.1:8000/tap/sync?LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT ALL WHERE AtomIonCharge > 1
+
+or whatever restriction makes sense for your data set.
+
+A test framework is in the making and will be documented here soon. In 
+any case you should run test queries to your node and make sure that the 
+output in terms of volume and values matches your expectations.
+
+Deployment in Apache
+--------------------------------
+
+How and on which server you set up your node to run permanently, is much 
+dependent on your technical resources and the solution we give here is 
+just one out of several possibilities. It involves the Apache webserver 
+and its mod_wsgi plugin to run Python code. You can find two example 
+files in your node directory:
+
+* *apache.conf*: This is an Apache config file that defines a virtual 
+  server, bound to a certain host name. You will have to edit several 
+  things in that file before it will work in Apache. On a Debian-like 
+  system you would then move this file to 
+  */etc/apache2/sites-available/vamdcnode* and run *a2ensite vamdcnode* to 
+  activate it.
+* *django.wsgi*: This is the file that the previous one points to in its 
+  WsgiScriptAlias. Edit the path and your node's name.
+
+Once you have set this up and re-started the Apache webserver, your node 
+should deliver data at the configured URL.

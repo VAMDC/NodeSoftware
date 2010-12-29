@@ -7,7 +7,7 @@ A PDF-version of this page is available `here <http://vamdc.fysast.uu.se:8888/do
 Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
    intro
    concepts
