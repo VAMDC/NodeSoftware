@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django import forms
 from django.forms.formsets import formset_factory
 
-from DjPortal.portal.models import Query
+from models import Query
 
 import string as s
 from random import choice
