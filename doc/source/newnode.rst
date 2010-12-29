@@ -217,22 +217,112 @@ and "States" by you own model names.
     you from the models, even if you change your database
     engine in *settings.py*.
 
+
 How you fill your database with information from ascii-files is 
 explained in the next chapter: :ref:`importing`. You can do this now and 
 return here later, or continue with the steps below.
 
 
 
+The query routine
+-----------------------------------
+
+Now that we have a working database and the data model in place, we need 
+to tell the framework how to run a query. This is a single function 
+called *setupResults()* that must be written in the file 
+*node/queryfunc.py* inside the directory of your node. You will find an
+example on how this should work in that same file. It works like this:
+
+* setupResults() is called from elsewhere and you need not run it 
+  yourself.
+* setupResults() gets an object as input, called *sql*.
+  This is a parsed version of the query that holds the WHERE-part
+  as *sql.where* and so on.
+* We now need to run this query on the data model in order to get so
+  called *QuerySets* which are basically unevaluated queries that
+  can are simply passed on to the XML generator that takes care of
+  the rest.
+* You can also enforce limits on how much data can be returned.
+* You should also calculate some statistics on how much information
+  a query returns and return it as header information.
+
+In a concrete example of an atomic transition database, it looks like this:
+
+.. literalinclude:: queryfunc.py
+   :linenos:
+
+Explanations on what happens here:
+
+* Lines 1-4: We import some helper functions from the sqlparser and the 
+  dictionaries and models that reside in the same directory as 
+  *queryfunc.py*
+* Line 7: This uses the helper function where2q() to 
+  convert the information in *sql.where* to QueryObjects that match your 
+  model, using the RESTRICTABLES.
+* In line 8 we simply pass these QueryObjects to the Transition model's 
+  filter function. This returns a QuerySet, an unevaluated version of the 
+  query.
+* Line 9: We use the count() method on the QuerySet to get the 
+  number of transitions.
+* Line 11-14: We check if the number is larger than our limit and shorten
+  the QuerySet if necessary. We also prepare a string with the percentage
+  for the headers.
+* Line 16-20: We use the ForeignKeys from the Transition model to the 
+  States model that tell us which are the upper and lower states for a 
+  transition. We put their ids in to a set which throws out duplicates and 
+  then use this set of state_ids to get the QuerySet for the states that 
+  belong to the selected transitions.
+* Line 22-24: An alternative, more straight forward way to achieve the 
+  same thing. This uses the ForeignKeys in the *inverse* direction, 
+  connects the two queryObjects by an OR-relation, selects the states and 
+  then throuws away dumplicates. The first approach proves faster if the 
+  number of duplicates is large.
+* Lines 26-27: We run count() on the states to get their number for the 
+  headers and do a quick selection and count on the species, again using a 
+  ForeignKey from the Transition model, this time to the Species.
+* Lines 29-34: Put the statistics into a key-value structure where the 
+  keys are the header names as definded by the VAMDC-TAP standard and the 
+  values are the strings/numbers that we calculated above.
+* Lines 37-40: Return the QuerySets and the headers, again as key-value 
+  pairs. The keys that you can use here correspond to the major parts of 
+  XSAMS and are named as:
+  * Sources
+  * AtomStates
+  * MoleStates
+  * CollTrans
+  * RadTrans
+  * Methods
+  * MoleQNs
+  * HeaderInfo
+
+.. note::
+    As you might have noticed, all restrictions are passed to the 
+    Transitions model in the above example. This does not mean that we 
+    cannot put constraints on e.g. the species here. We simply use the 
+    models ForeignKey in that case in the RESTRICTABLES. An entry there 
+    could e.g. be *'AtomIonCharge':'species__ion'* which will use the *ion* 
+    field of the species model. Depending on your database layout, it might 
+    not be possible to pass all restrictions to a single model. Then you 
+    need to write a more advanced query than the shortcuts in Lines 7-8.
+
+More comprehensive information on how to run queries within Django can be found at http://docs.djangoproject.com/en/1.2/topics/db/queries/.
+
 The dictionaries
 ----------------------------------
 
-Now that we have a database with data in it and the data model in place, 
-we need to define how the data relates to the VAMDC *dictionary*. If you 
-have not done so yet, please read :ref:`conceptdict` before continuing.
+As the last important step before the new node works, we need to define 
+how the data relates to the VAMDC *dictionary*. If you have not done so 
+yet, please read :ref:`conceptdict` before continuing.
 
 What needs to be put into the file *node/dictionaries.py* is the 
 definition of two variables that map the individual fields of the 
 data model to the names from the dictionary, like this::
+
+    RESTRICTABLES = {\
+    'AtomSymbol':'species__name',
+    'AtomStateEnergy':'upstate__energy',
+    'RadTransWavelengthExperimentalValue':'vacwave',
+    }
 
     RETURNABLES={\
     'SourceID':'Source.id',
@@ -241,47 +331,14 @@ data model to the names from the dictionary, like this::
     'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
     }
     
-    RESTRICTABLES = {\
-    'AtomSymbol':'species__name',
-    'AtomStateEnergy':'upstate__energy',
-    'RadTransWavelengthExperimentalValue':'vacwave',
-    }
 
+About the RESTRICTABLES
+~~~~~~~~~~~~~~~~~~~~~~~~
 
+As we have learned from
 
-The query routine
------------------------------------
-
-This file must implement a function called setupResults() which 
-takes the parsed SQL from the query parser. setupResults() must pass 
-the restrictions on to one or several of your models (depending on 
-the database strcture) and also fetch the corresponding items from 
-other models that are needed in the return data. setupResults() must 
-return a DICTIONARY that has as keys some of the following: Sources 
-AtomStates MoleStates CollTrans RadTrans Methods; with the 
-corresponding QuerySets as the values for these keys. This 
-dictionary will be handed into the generator an allow it to fill the 
-XML schema.
-
-Below is an example, inspired by VALD that has a data model like 
-this:
-
-* One for the Sources/References
-* One for the Species
-* One for the States (points to Species once, and to several 
-  references)
-* One for Transitions (points twice to States (upper, lower) and to 
-  several Sources)
-
-In this layout, all restrictions in the query can be passed to
-the Transitions model (using the pointers between models to
-restrict eg. Transition.species.ionization) which facilitates
-things.
-
-Now we can code two helper functions that get the corresponding
-Sources and States to a selection of Transitions:
-
-
+About the RETURNABLES
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 Deploying the node
