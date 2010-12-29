@@ -41,7 +41,6 @@ class TAPQUERY(object):
     def __init__(self,data):
         try:
             data=CaselessDict(dict(data))
-            self.request=lower(data['REQUEST'])
             self.lang=lower(data['LANG'])
             self.query=data['QUERY']
             self.format=lower(data['FORMAT'])
