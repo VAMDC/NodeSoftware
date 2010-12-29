@@ -3,6 +3,9 @@
 The main concepts behind the implementation
 =============================================
 
+The following is a glossary-like list that shortly touches upon various 
+subjects that one should be aware of before setting up a new VAMDC node.
+
 The database
 ----------------
 
@@ -15,17 +18,17 @@ The data model(s)
 ------------------------
 
 The *data model* is a definition of the database layout in form of 
-Python code where a *class* is defined for each column in the database 
-and the members of the class *fields* that correspond to the columns. 
-The data model also defines the connections between tables. For an 
-existing database the data model can be automatically generated, 
-otherwise it needs to be written from scratch for a new node (see 
-:ref:`newnode` later) and will then be used to create the database 
-itself.
+Python code where a *class* is defined for each table in the database 
+and the members of the class are *fields* that correspond to the tables' 
+columns. The data model also defines the connections between tables. For 
+an existing database the data model can be automatically generated, 
+otherwise it needs to be written for a new node (see
+:ref:`newnode` later) and will then be used to create the database.
 
-Having this programming code representation of the database layout has 
+Having this code representation of the database layout has 
 many advantages, among these are:
-* automatic (re-)creation of the database, independant of the engine
+
+* automatic (re-)creation of the database, independent of the engine
 * no need to learn SQL
 * easy queries
 * additional features like easily traversing linked tables in both directions.
@@ -34,29 +37,6 @@ many advantages, among these are:
     Sometimes the singular *data model* refers to a single model 
     (i.e. a table in the database) and sometimes the full set of models, 
     describing the whole database layout.
-
-
-
-TAP services
----------------
-
-TAP stands for *Table Access Protocol* and is a Virtual O 
-bservatorystandard definition of a web service. The detailes specs can 
-be found `here <http://www.ivoa.net/Documents/TAP/>`_. All VAMDC nodes 
-offer their data though a TAP-like interface which means that the URL 
-end-points are named like in TAP, the most important being */tap/sync* 
-for a data query which returns the data synchronously (in the immediate 
-reply). Also the attribute names for submitting a query are strongly 
-inspired by TAP so that a query to a single VAMDC node looks like this::
-
-    http://domain.of.your.node/tap/sync/?LANG=VSS1&FORMAT=XSAMS&QUERY=query string
-
-As of writing this, the VAMDC nodes only use and suport the subset of 
-the TAP standard that is needed within the VAMDC. Keep in mind that 
-users will not primarily query an indivudual node but use a higher level 
-tool like the VAMDC portal for querying many nodes at once.
-
-The more detailed specification of the VAMDC variant of a TAP service can be found at the `wiki-page TapXsamsSpecification <http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/TapXsamsSpecification>`_.
 
 
 
@@ -146,46 +126,92 @@ implemented in the node software. Just mentioning for sake of
 completeness.
 
 
+The registry
+---------------
+
+The registry is a central web service where all VAMDC nodes are 
+registered with their access URL and some additional information. This 
+allows finding nodes before sending queries to them. You will need to 
+register your node there once the setup is complete.
+
+
+
+.. note::
+    What follows below is not necessary to know for setting up a new 
+    VAMDC node.
+
+
+TAP services
+---------------
+
+TAP stands for *Table Access Protocol* and is a Virtual Observatory 
+standard definition of a web service. The detailed specs can be found 
+`here <http://www.ivoa.net/Documents/TAP/>`_. All VAMDC nodes offer 
+their data though a TAP-like interface which means that the URL 
+end-points are named like in TAP, the most important being */tap/sync* 
+for a data query which returns the data synchronously (in the immediate 
+reply). Also the attribute names for submitting a query are strongly 
+inspired by TAP so that a query to a single VAMDC node looks something 
+like this::
+
+    http://domain.of.your.node/tap/sync/?LANG=VSS1&FORMAT=XSAMS&QUERY=query string
+
+VAMDC nodes currently only use and support a subset of the TAP standard, 
+i.e. that parts that are needed within the VAMDC. Keep in mind that 
+users will not primarily query an indivudual node but use a higher level 
+tool like the VAMDC portal for querying many nodes at once. Data 
+providers that want to set up their own VAMDC node do not really need to 
+care about TAP either.
+
+The more detailed specification of the VAMDC variant of a TAP service 
+can be found at the `wiki-page TapXsamsSpecification 
+<http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/TapXsamsSpecification>`_.
+
+
 
 The query language
 ---------------------
 
 The node software uses the *VAMDC SQL-subset 1* (VSS1) and will 
 implement the future iterations of the VAMDC query language. VSS1 is 
-basically a SQL-like string where one does not need to know the layout 
-of the database that will answer - instead on uses the keywords from the 
-dictionary in the WHERE part to restrict the selection of data. This 
-means that all nodes understand identical queries and there is no need 
-to adapt the query to a certain node.
+basically a SQL-like string where the layout of the database behind the 
+answering node does not need to be known - instead one uses the keywords 
+from the dictionary in the WHERE part to restrict the selection of data. 
+This means that all nodes understand identical queries and there is no 
+need to adapt the query to a certain node.
 
 Details can be found in the VAMDC-TAP specification (see link above) and 
-are not necessary for setting up a new VAMDC node. Defining the 
-Restrictables and Returnables is enough for allowing the node software 
-to take care of the rest.
+should not be necessary to know for setting up a new VAMDC node. 
+Defining the Restrictables and Returnables is enough for allowing the 
+node software to take care of the rest.
 
 
 The XSAMS schema
 -------------------
 
+XSAMS stands for XML Schema for Atoms, Molecules and Solids. It defines 
+a strict way to represent data in XML. XSAMS is the format in which 
+VAMDC nodes send their data replies.
+
+Link to the `VAMDC-XSAMS project on Sourceforge <http://sourceforge.net/projects/xsams/>`_.
 
 
 The generic XSAMS generator
 ------------------------------
 
-
-
-The registry
----------------
-
-The registry is a central instance where all VAMDC nodes are registered 
-with their access URL and some additional information. This allows 
-finding nodes before sending queries to them. These lines are just to 
-remind you that you need to register your node there once it is set up 
-properly.
+The node software comes with an implementation of the XSAMS that can be 
+used by all nodes, aka the XSAMS *generator*. This frees data providers 
+from the need to know about XML, the schema and so on. In order for this 
+to work, all the data providers need to do is fill the Returnables as 
+described above. The generator then knows how to put the data into the 
+schema.
 
 
 The portal
 ---------------
 
-is the best example of a *user application* that uses VAMDC nodes. It is 
-a web site that facilitates the submission of a 
+The portal is the obvious example of a *user application* that makes use 
+VAMDC nodes. It is a web site that facilitates the submission of a query 
+to many nodes at once by providing a web form out of which it assembles 
+the query string which it then sends to one or many nodes, gathers the 
+results from each of them and presents them to the user.
