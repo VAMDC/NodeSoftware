@@ -220,6 +220,14 @@ and "States" by you own model names.
     you from the models, even if you change your database
     engine in *settings.py*.
 
+.. note::
+    If you use MySQL as your database engine, we recommend its internal
+    storage engine InnoDB over the standard MyISAM. You can set this in 
+    your settings.py by adding *'OPTIONS': {"init_command": 
+    "SET storage_engine=INNODB"}* to your database setup. We also
+    reccommend to use UTF8 as default in your MySQL configuration or
+    create your database with *CREATE DATABASE <dbname> CHARACTER SET utf8;*
+
 
 How you fill your database with information from ascii-files is 
 explained in the next chapter: :ref:`importing`. You can do this now and 
