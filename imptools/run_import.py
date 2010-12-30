@@ -40,6 +40,9 @@ def mod_import(mod_path):
         # we have to close the file handle manually
         result[0].close()
     return mod 
+
+
+
         
 def import_to_db():
     """
@@ -55,8 +58,6 @@ def import_to_db():
 
     # import the mapping from the given filename
     mapping_module = mod_import(args[0])
-    if not mapping_module:
-        return 
     try:
         mapping = eval("mapping_module.mapping")
     except AttributeError:

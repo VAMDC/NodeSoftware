@@ -2,64 +2,36 @@
 # -*- coding: utf-8 -*-
 
 """
-Defines a mapping dictionary that maps between data columns 
-in raw ascii data files and defines how they should be stored
-into a relational (django) database.
+The config file for importing VALD into a database.
 
-A file like this should be created for every unique database.
-It should normally contain a global list, conventionally named
-'mappings', that define how data fields are to be translated into
-django fields. To properly map, a custom processor also probably
-has to be constructed in dbhelper as well.
-
+Go to http://vamdc.fysast.uu.se:8888/doc/importing.html
+for documentation
 """
 import os, sys
 
-# Import models for one particular node
 os.environ['DJANGO_SETTINGS_MODULE']="nodes.vald.settings"
 from vald.node import models 
 
-# import the line funcs
-from linefuncs import charrange, charrange2int, bySepNr, lineSplit
-
-# 
-# Create a config, a list of file definitions. Each entry in this
-# list is a dictionary describing an input ascii file to build from.
-# Each file dict definition supports the following keys
-#   model       (django.db.model) - which Django model this file should populate
-#   fname       (str)             - the file name
-#   headlines   (int)             - number of header lines to skip   
-#   commentchar (str)             - comment symbol (like #, ; etc) used in file
-#   updatematch (str)             - gives the field used when updating an existing model of the given type.
-#                                   The value in this column will be matched in the database to retrieve such an object. 
-#   cnull       (str/value)       - if defined, defines a str/value that should be ignored (e.g. 'N/A')
-#   debug       (bool)            - optional flag for debugging the parsing of a particular column
-#   columns     (dict)
-#                cname (str)      - collumn name
-#                cbyte (tup)      - method to process the line and tuple to be fed to this method
-#                references (tup) - which django model referenced by this collumn, and which field name
-# 
+from linefuncs import *
 
 # 
 # Custom parser commands
 #
-# These always take line as the first argument; this is a list of line-strings
-# (that may be only one line long) from all the files referenced in this step.
-# All utility functions (bySepNr etc) make use of linedata[0] unless the keyword 'filenum'
-# is given with a different index.
-
 def get_srcfile_ref(linedata, sep1, sep2):
     "extract srcfile reference"
     l1 = bySepNr(linedata, sep1)
     l2 = bySepNr(l1, sep2, '/')
     return l2.strip("'").strip()
+
 def get_publications(linedata):
     "extract publication data. This returns a list since it is for a multi-reference."
     return [p.strip() for p in bySepNr(linedata, 4, '||').split(',')]
+
 def get_term_val(linedata, sep1, sep2):
     "extract configurations from term file"
     l1 = bySepNr(linedata, sep1, ':', filenum=1)
     return bySepNr(l1, sep2, ',')
+
 def get_gammawaals(linedata, sep1, sep2):
     "extract gamma - van der waal value"
     l1 = charrange(linedata, sep1, sep2)    
@@ -67,6 +39,7 @@ def get_gammawaals(linedata, sep1, sep2):
         return l1
     else:
         return '0.000'
+
 def get_alphawaals(linedata, sep1, sep2):
     "extract alpha - van der waal value"
     l1 = charrange(linedata, sep1, sep2)    
@@ -74,6 +47,7 @@ def get_alphawaals(linedata, sep1, sep2):
         return "%s.%s" % (0, bySepNr(linedata, 1, '.'))
     else:
         return '0.000'    
+
 def get_sigmawaals(linedata, sep1, sep2):
     "extract sigma - van der waal value"
     l1 = charrange(linedata, sep1, sep2)   
@@ -81,9 +55,11 @@ def get_sigmawaals(linedata, sep1, sep2):
         return bySepNr(0, '.')
     else:
         return '0.000'
+
 def get_accur(linedata, range1, range2):
     "extract accuracy"
     return "%s,%s" % (charrange(linedata, *range1), charrange(linedata, *range2))
+
 def merge_cols(linedata, *ranges):
     """
     Merges data from several columns into one, separating them with '-'.
@@ -91,10 +67,9 @@ def merge_cols(linedata, *ranges):
     """
     return '-'.join([charrange(linedata, *ran) for ran in ranges])
     
-# Base directory for the data files
 
+# Setting up filenames
 base = "/vald/"
-
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'VALD3_config_2010.cfg'
 vald_file = base + 'vald3.dat'
@@ -102,6 +77,7 @@ terms_file = base + 'terms'
 publications_file = base + "publications_preprocessed.dat"
 pub2source_file = base + "publications_to_sources_map.dat"
 
+# The mapping itself
 mapping = [
     # Populate Species model, using the species input file.
     {'model':models.Species,
@@ -447,8 +423,7 @@ mapping = [
                       (30,36), (122,124), (58,63), (124,170), (44,58)),
              'references':(models.State,'charid')},
             ],
-    } # end of vald file def
+    } # end of transitions
+]
 
-] # end of vald3 mapping file def list
-
-mapping=[mapping[-1]]
+#mapping=mapping[0:5]
