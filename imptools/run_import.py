@@ -7,24 +7,21 @@ ascii-input files to the django database. It's generic and is
 controlled from a mapping file.
 """
 
-import os, sys, imp, optparse
-sys.path.append(os.path.abspath(".."))
+import os, os.path, sys, imp, optparse
+sys.path.append(os.path.abspath(os.pardir))
+sys.path.append(os.path.abspath(os.curdir))
+sys.path.append(os.path.abspath(os.path.join(os.pardir,'nodes')))
 
 DEBUG = False
 
-# The main program
-#        
-
 def mod_import(mod_path):
     """
-    Takes a real path to a module, converts it to a python path
+    Takes filename of a module, converts it to a python path
     and imports it. 
     """
-    try:
-        path, filename = mod_path.rsplit(os.path.sep, 1)
-    except Exception:
-        print "You have to give the full absolute path to the mapping file."
-        return None 
+    if not os.path.isabs(mod_path):
+        mod_path = os.path.abspath(mod_path)
+    path, filename = mod_path.rsplit(os.path.sep, 1)
     modname = filename.rstrip('.py')
     
     try:
