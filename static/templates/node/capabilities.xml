@@ -28,7 +28,7 @@
         </interface>
     </capability>
     <capability standardID="ivo://ivoa.net/std/VOSI#availability">
-        <interface xsi:type="ns5:ParamHTTP" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns5="http://www.ivoa.net/xml/VODataService/v1.0">
+        <interface xsi:type="vs:ParamHTTP" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns5="http://www.ivoa.net/xml/VODataService/v1.0">
 	    <accessURL use="base">{{accessURL}}availability/</accessURL>
 	</interface>
     </capability>
