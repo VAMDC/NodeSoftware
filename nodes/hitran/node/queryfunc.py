@@ -42,12 +42,12 @@ def getHITRANsources(transs):
 
 def parseHITRANstates(states):
     qns = []
-    sids=set([])
+    sids = set([])
     for state in states:
-        s=set([state.stateid])
-        sids=sids.union(s)
+        s = set([state.stateid])
+        sids = sids.union(s)
 
-    for qn in AllQns.objects.filter(stateid__in=sids):
+    for qn in AllQns.objects.filter(stateid__in=sids).order_by('id'):
         label, value = qn.qn.split('=')
         if qn.qn_attr:
             # put quotes around the value of the attribute
