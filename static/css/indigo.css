@@ -20,7 +20,7 @@ a:hover {
 	color: #C60;
 }
 body {
-	background: #0094D6 url(/media/indigo/bg.gif) repeat-x;
+	background: #0094D6 url(/img/bg.gif) repeat-x;
 	color: #466;
 	font: normal 62.5% "Lucida Sans Unicode",sans-serif;
 	margin: 0;
@@ -38,7 +38,7 @@ h1 {
 	margin-bottom: 4px;
 }
 code {
-	background: url(/media/indigo/bgcode.gif);
+	background: url(/img/bgcode.gif);
 	border: 1px solid #F0F0F0;
 	border-left: 6px solid #39F;
 	color: #555;
@@ -49,7 +49,7 @@ code {
 	white-space: pre;
 }
 cite {
-	background: url(/media/indigo/quote.gif) no-repeat;
+	background: url(/img/quote.gif) no-repeat;
 	color: #666;
 	display: block;
 	font: normal 1.3em "Lucida Sans Unicode",serif;
@@ -66,7 +66,7 @@ h1,h2,h3 {
 
 /* structure */
 .container {
-	background: url(/media/indigo/topleft.gif) no-repeat;
+	background: url(/img/topleft.gif) no-repeat;
 }
 
 .header {
@@ -107,7 +107,7 @@ h1,h2,h3 {
 
 /* main */
 .main {
-	background: #FFF url(/media/indigo/bgmain.gif) no-repeat;
+	background: #FFF url(/img/bgmain.gif) no-repeat;
 	clear: both;
 	padding: 12px 12px 0 52px;
 }
@@ -142,7 +142,7 @@ h1,h2,h3 {
 }
 .sidenav li a:hover {
 	color: #111;
-	background: url(/media/indigo/nav_li.gif) no-repeat;
+	background: url(/img/nav_li.gif) no-repeat;
 }
 
 /* content */
@@ -156,7 +156,7 @@ h1,h2,h3 {
 	margin-bottom: 6px;
 }
 .content li {
-	list-style: url(/media/indigo/li.gif);
+	list-style: url(/img/li.gif);
 	margin-left: 18px;
 }
 
@@ -173,7 +173,7 @@ h1,h2,h3 {
 
 /* footer */
 .footer {
-	background: #0094D6 url(/media/indigo/bgfooter.gif) repeat-x;
+	background: #0094D6 url(/img/bgfooter.gif) repeat-x;
 	color: #C1DEF0;
 	font-size: 1.1em;
 	line-height: 40px;

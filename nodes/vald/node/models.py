@@ -1,10 +1,9 @@
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
 
 class Species(models.Model):
     name = models.CharField(max_length=10, db_index=True)
     ion = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
-    mass = models.DecimalField(max_digits=5, decimal_places=2) 
+    mass = models.DecimalField(max_digits=8, decimal_places=5) 
     massno = models.PositiveSmallIntegerField(null=True, blank=True)
     ionen = models.DecimalField(max_digits=7, decimal_places=3) 
     solariso = models.DecimalField(max_digits=5, decimal_places=4) 
@@ -15,8 +14,6 @@ class Species(models.Model):
         return u'ID:%s %s'%(self.id,self.name)
     class Meta:
         db_table = u'species'
-        verbose_name = _('Species')
-        verbose_name_plural = _('Species')
 
 class Publication(models.Model):
     dbref = models.CharField(max_length=64, unique=True, db_index=True)
@@ -35,8 +32,6 @@ class Publication(models.Model):
 
     class Meta:
         db_table = u'publications'
-        verbose_name = _('Publication')
-        verbose_name_plural = _('Publications')
     def __unicode__(self):
         return u'ID:%s %s'%(self.id,self.dbref)
 
@@ -63,8 +58,6 @@ class Source(models.Model):
         
     class Meta:
         db_table = u'sources'
-        verbose_name = _('Source')
-        verbose_name_plural = _('Sources')
 
 class State(models.Model):
     charid = models.CharField(max_length=128, db_index=True,unique=True,null=False)
@@ -94,8 +87,6 @@ class State(models.Model):
 
     class Meta:
         db_table = u'states'
-        verbose_name = _('State')
-        verbose_name_plural = _('States')
 
 class Transition(models.Model):
     vacwave = models.DecimalField(max_digits=20, decimal_places=8) 
@@ -135,11 +126,13 @@ class Transition(models.Model):
         return u'ID:%s Wavel: %s'%(self.id,self.vacwave)
     class Meta:
         db_table = u'transitions'
-        verbose_name = _('Transition')
-        verbose_name_plural = _('Transitions')
 
-# dynamically created models
-            
+
+
+
+###############################
+## Logging Queries
+###############################
 class Query(models.Model):
     qid=models.CharField(max_length=6,primary_key=True,db_index=True)
     datetime=models.DateTimeField(auto_now_add=True)
@@ -160,6 +153,7 @@ class LogManager(models.Manager):
                          query=None, #TODO!
                          request=request)
         pass
+
     
 class Log(models.Model):
     """
@@ -171,83 +165,3 @@ class Log(models.Model):
     request = models.TextField()
 
     objects = LogManager()
-
-# def myvalidate(value):
-#     print "myvalidate=%s" % value
-#     return 
-
-# class IntegerForeignKey(models.ForeignKey):
-#     """
-#     This custom field also accepts an integer value, if it
-#     is given; this integer is assumed to match the pk value
-#     of an existing reference. The use of this is an improved speed
-#     during load but means less erro checking.    
-#     """       
-
-#     # def __init__(self, *args, **kwargs):
-#     #     print "in __init__"
-#     #     super(IntegerForeignKey, self).__init__(*args, **kwargs)
-        
-#     # def validate(self, value, model_instance):
-#     #     """
-#     #     Run a different validation
-#     #     """        
-#     #     print "validate"
-#     #     print value
-#     #     if isinstance(value, int):
-#     #         # this is not a django object but an integer, so we assume this
-#     #         # is in fact the pk of the object we are referencing. We don't error
-#     #         # check this!
-#     #         return True 
-#     #         print self.field.attname            
-#     #         setattr(instance, self.field.attname, value)
-#     #     else:
-#     #         # normal operation; this will raise a ValueError for all other
-#     #         # problems
-#     #         super(IntegerForeignKey, self).__validate__(instance, value)
-
-#     # def get_attname(self):
-#     #     print "get_attname"
-#     #     return super(IntegerForeignKey, self).get_attname()
-
-#     # def get_validator_unique_lookup_type(self):
-#     #     print " get_validator_unique_lookup_type"
-#     #     return super(IntegerForeignKey, self).get_validator_unique_lookup_type()
-
-#     # def get_db_prep_save(self, value, connection):   
-#     #     print "get_db_prep_save"
-#     #     super(IntegerForeignKey, self).get_db_prep_save(value, connection)
-
-#     # def formfield(self, **kwargs):
-#     #     print "formfield"
-#     #     return super(IntegerForeignKey, self).formfield(**kwargs)
-        
-#     # def db_type(self, connection):
-#     #     print "db_type"
-#     #     return super(IntegerForeignKey, self).db_type(connection)
-        
-#     __metaclass__ = models.SubfieldBase
-    
-#     def __init__(self, *args, **kwargs):
-#         print "In creation!"
-#         super(IntegerForeignKey, self).__init__(*args, **kwargs)
-        
-#     def __set__(self, instance, value):
-#         """
-#         Custom set operation when assigning to the field. 
-#         """
-#         print "test"
-#         print instance, value
-#         if isinstance(value, int):
-#             # this is not a django object but an integer, so we assume this
-#             # is in fact the pk of the object we are referencing. We don't error
-#             # check this!
-#             print self.field.attname            
-#             setattr(instance, self.field.attname, value)
-#         else:
-#             # normal operation; this will raise a ValueError for all other
-#             # problems
-#             super(IntegerForeignKey, self).__set__(instance, value)
-        
-#     def get_internal_type(self):
-#         return "ForeignKey"

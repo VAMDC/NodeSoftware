@@ -6,7 +6,9 @@ from django.core.urlresolvers import reverse
 from django import forms
 from django.forms.formsets import formset_factory
 
-from DjPortal.portal.models import Query
+from models import Query
+import registry
+REGISTRY = registry.getNodeList()
 
 import string as s
 from random import choice
@@ -14,11 +16,6 @@ def makeQID(length=6, chars=s.letters + s.digits):
     return ''.join([choice(chars) for i in xrange(length)])
 
 from urllib import urlopen,urlencode
-
-REGISTRY=[
-          {'name':'VALD','url':'http://vamdc.fysast.uu.se:8888/node/vald/tap/sync/'},
-          {'name':'CDMS','url':'http://www.astro.uni-koeln.de:8098/DjCDMS/tap/sync/'},
-          ]
 
 PARA_CHOICES=[('',u'----'),
               ('AtomSymbol',u'Atom Name'),
@@ -85,52 +82,37 @@ def query(request):
     return render_to_response('portal/query.html', {'selectionset': selectionset})
 
 
-#####################
+def index(request):
+    c=RequestContext(request,{})
+    return render_to_response('portal/index.html', c)
 
-def askNodeForCount(url,query):
-    data={}
-    data['LANG']='VAMDC'
-    data['REQUEST']='doQuery'
-    data['QUERY']=query
-    data['FORMAT']='count'
-    data=urlencode(data)
-    req=urlopen(url,data)
-    html=req.read()
-    req.close()
-    return html
+
+
+#####################
 
 def makeDlLink(url,query,format='XSAMS'):
     data={}
-    data['LANG']='VAMDC'
-    data['REQUEST']='doQuery'
+    data['LANG']='VSS1'
     data['QUERY']=query
     data['FORMAT']=format
     data=urlencode(data)
-    return url+'?'+data
+    return url+'sync?'+data
     
 def results(request,qid):
     query=Query.objects.get(pk=qid)
     results=[]
     for node in REGISTRY:
         result={'nodename':node['name']}
-        #result['count']=askNodeForCount(node['url'],query.query)
-        #result['vourl']=makeDlLink(node['url'],query.query,format='VOTABLE')
-        #result['html']=askNodeForEmbedHTML(node['url'],query.query)
-        result['xsamsurl']=makeDlLink(node['url'],query.query,format='XSAMS')
+        result['xsamsurl']=makeDlLink(node['url'],query.query)
         results.append(result)
         
     return render_to_response('portal/results.html', {'results': results, 
                                                       'query':query,
                                                       })
 
-###################
 
-def index(request):
-    c=RequestContext(request,{})
-    return render_to_response('portal/index.html', c)
 
 ######################
-
 class SQLqueryForm(forms.Form):
     sql=forms.CharField(label='Enter your SQL query',widget=forms.widgets.Textarea(attrs={'cols':'40','rows':'5'}),required=True)
 

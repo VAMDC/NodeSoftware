@@ -85,15 +85,16 @@ USE_I18N = False
 ###################################################
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = os.path.join(BASE_PATH, 'static/media')
+#MEDIA_ROOT = os.path.join(BASE_PATH, 'static')
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = 'http://vamdc.fysast.uu.se:8888/media/'
+#MEDIA_URL = 'http://vamdc.fysast.uu.se:8888/static/'
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/admin-media/'
+#ADMIN_MEDIA_PREFIX = '/admin-media/'
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '=4nk7k_v3p@gin!bgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
 
@@ -107,7 +108,7 @@ TEMPLATE_DIRS = (
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
+#    'django.template.loaders.app_directories.load_template_source',
 #     'django.template.loaders.eggs.load_template_source',
 )
 

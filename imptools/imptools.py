@@ -10,14 +10,13 @@ controlled from a mapping file.
 import sys
 from django.db.models import Q
 from time import time 
-
-# import statistics trackers
+from django.db import connection, transaction
+from django.db.utils import IntegrityError
+import string
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
         
-# Helper methods for parsing and displaying 
-
 is_iter = lambda iterable: hasattr(iterable, '__iter__')
 
 def ftime(t0, t1):
@@ -57,7 +56,7 @@ def validate_mapping(mapping):
     Check the mapping definition to make sure it contains
     a structure suitable for the parser.
     """
-    required_fdict_keys = ("model", "fname", "headlines", "commentchar", "linemap")
+    required_fdict_keys = ("model", "fname", "linemap")
     required_col_keys = ("cname", "cbyte")
     if not mapping:
         raise Exception("Empty/malformed mapping.")
@@ -80,11 +79,12 @@ def validate_mapping(mapping):
 
 
 # working functions for the importer
-    
 def process_line(linedata, column_dict):
     """
     Process one line of data. Linedata is a tuple that always starts with
-    the raw string for the line.    
+    the raw string for the line. The function with its arguments is read from
+    the column_dict and applied to the linedata. The result is returned, after
+    checking for the NULL value.
     """
     cbyte = column_dict['cbyte']    
     colfunc = cbyte[0]
@@ -145,8 +145,8 @@ def find_match_and_update(property_name, match_key, model, data):
         except Exception, e:
             sys.stderr.write("%s: model.%s=%s\n" % (e, key, data[key]))
     return match
-            
-def create_new(model, data):
+
+def create_new(cursor, data, db_table):
     """
     Create a new object of type model and store
     it in the database.
@@ -154,7 +154,17 @@ def create_new(model, data):
     model - django model type
     inpdict - dictionary of fieldname:value that should be created.
     """
-    return model.objects.create(**data)
+    data.pop('pk',None)
+    nplaceholders=string.join(['%s']*len(data),',')
+    sql='INSERT INTO %s (%s) VALUES'%(db_table,nplaceholders)
+    sql=sql%tuple(data.keys())
+    sql+=' (%s);'%nplaceholders
+    #print sql, data.values()
+    try:
+	cursor.execute(sql,tuple(data.values()))
+    except IntegrityError, e:
+	#log_trace(e,'IntegrityError')
+        pass
 
 def add_many2many(model, fieldname, objrefs):
     """
@@ -211,8 +221,7 @@ class MappingFile(object):
         #print self.line
         return self.line
     
-#@transaction.commit_on_success
-def parse_file_dict(file_dict, global_debug=False):
+def parse_file_dict(file_dict, cursor, global_debug=False):
     """
     Process one file definition from a config dictionary by
     processing the file name stored in it and parse it according
@@ -222,14 +231,17 @@ def parse_file_dict(file_dict, global_debug=False):
     (for an example see e.g. mapping_vald3.py)
     """    
 
-    # parsing the file/model info. Everything except
-    # the mode is always an iterable.
-
-    # model specific 
-    
-    # model to work on
     model = file_dict['model']    
+    db_table=model._meta.db_table
+
     mapping = file_dict['linemap']
+
+    # replace cname by db_column if it is set in the model
+    for mapp in mapping:
+        if mapp['cname']=='pk': mapp['cname']=model._meta.pk.name
+        if model._meta.get_field(mapp['cname']).db_column:
+            mapp['cname']=model._meta.get_field(mapp['cname']).db_column
+
     # update an existing model using field named updatematch
     updatematch = file_dict.get('updatematch', None) 
 
@@ -310,25 +322,6 @@ def parse_file_dict(file_dict, global_debug=False):
                 # not a valid line for whatever reason 
                 continue
             
-            if map_dict.has_key('references'):
-                # this collumn references another field
-                # (i.e. a foreign key)
-                refmodel = map_dict['references'][0]
-                refcol = map_dict['references'][1]            
-                # create a query object q for locating
-                # the referenced model and field
-                Qquery = eval('Q(%s="%s")' % (refcol, dat))
-                try:
-                    dat = refmodel.objects.get(Qquery)
-                except Exception, e:
-                    errstring = "reference %s.%s='%s (%s)' not found." % (refmodel,refcol, dat, e)
-                    if skiperrors:                
-                        if debug:       
-                            print "DEBUG: %s" % errstring
-                    else:                            
-                        errors += 1
-                        print "ERROR: %s" % errstring
-                    dat = None
                     
             if map_dict.has_key('multireferences'):
                 # this collumn references multiple other objects
@@ -378,11 +371,11 @@ def parse_file_dict(file_dict, global_debug=False):
                     
             # move result(s) into database
             data[map_dict['cname']] = dat
-
+            
             # line columns parsed; now move to database 
 
         modelinstance = None 
-
+        
         if updatematch:
             # Model was already created; this run is for
             # updating it properly (e.g. for vald)            
@@ -399,19 +392,20 @@ def parse_file_dict(file_dict, global_debug=False):
             # populated with the relevant fields. 
             if not data.has_key('pk'):
                 data['pk'] = None
-            try:
-                modelinstance = create_new(model, data)
-            except Exception, e:                
-                errors += 1
-                if debug:
-                    log_trace(e, "ERROR creating %s: " % model)
+            #try:
+            create_new(cursor, data, db_table)
+            #except Exception, e:                
+            #    errors += 1
+            #    if debug:
+            #        log_trace(e, "ERROR creating %s: " % model)
             
         # post processing: many-to-many fields
         if modelinstance:
             for mdict in many2manyfield_list:            
                 add_many2many(modelinstance, mdict["fieldname"], mdict["objlist"])
                 modelinstance.save()
-            
+
+    transaction.commit()
     print 'Read %s. %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), total, errors)
 
     global TOTAL_LINES, TOTAL_ERRS
@@ -425,20 +419,30 @@ def parse_mapping(mapping, debug=False):
     django database fields. This should ideally
     not have to be changed for different database types.
     """
-    import gc, pdb
-    if validate_mapping(mapping):    
-        t0 = time()
-        gc.DEBUG_SAVEALL = True
-        import cProfile as profile
-        for file_dict in mapping:
-            t1 = time()            
-            parse_file_dict(file_dict, global_debug=debug)
-            print "Time used: %s" % ftime(t1, time())
-            #pdb.set_trace()
-            #print gc.garbage
-            #print gc.get_count()
-        
-        print "Total time used: %s" % ftime(t0, time())
-        print "Total number of errors/fails/skips: %s/%s (%g%%)" % (TOTAL_ERRS,
+    #import gc, pdb
+    if not validate_mapping(mapping):  return
+    t0 = time()
+
+    cursor = connection.cursor()
+    transaction.enter_transaction_management()
+
+    
+    #gc.DEBUG_SAVEALL = True
+    #import cProfile as profile
+    for file_dict in mapping:
+        t1 = time()            
+        transaction.set_dirty()
+        parse_file_dict(file_dict, cursor, global_debug=debug)
+        transaction.commit()
+        print "Time used: %s" % ftime(t1, time())
+        #pdb.set_trace()
+        #print gc.garbage
+        #print gc.get_count()
+    
+    transaction.leave_transaction_management()
+    transaction.commit()
+    connection.close()
+    print "Total time used: %s" % ftime(t0, time())
+    print "Total number of errors/fails/skips: %s/%s (%g%%)" % (TOTAL_ERRS,
                                                                 TOTAL_LINES,
                                                                 100*float(TOTAL_ERRS)/TOTAL_LINES)

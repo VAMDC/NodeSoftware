@@ -1,7 +1,7 @@
 .. _source:
 
-The source code repository and 
-===============================
+The source code repository and version control
+===============================================
 
 The node software resides at https://github.com/VAMDC/NodeSoftware
 
@@ -13,9 +13,11 @@ extend the code for your needs and we would like to include your
 improvements into the main repository.
 
 So, to get your own repository, do the following:
+
 * Go to http://github.com and make an account.
-* Go to the link above and klick "fork". This will
-  make a copy of the original repository under your account.
+* Visit the repository at https://github.com/VAMDC/NodeSoftware and 
+  klick "fork". This will make a copy of the original repository
+  under your account.
 * Github will give you instructions on how to clone your repo
   to your own computer to work in. * Follow these instructions and 
   "clone" your repo, e.g. to the server where you want to
