@@ -240,12 +240,15 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
         yield '<ChemicalName>%s</ChemicalName>\n' \
             % G("MolecularSpeciesChemicalName")
         yield '</MolecularChemicalSpecies>\n'
-        thisInchiKey = G("InchiKey")
-
+#        thisInchiKey = G("InchiKey")
+        speciesid = G("MolecularSpeciesID")
+         
         for MolState in MoleStates:
             G = lambda name: GetValue(name, MolState=MolState)
-            if G("InchiKey") != thisInchiKey:
-                break
+#            if G("InchiKey") != thisInchiKey:
+
+            if G("MolecularStateMolecularSpeciesID") != speciesid:
+                continue
 	        
             yield """<MolecularState stateID="S%s">
 <Description>%s</Description>
@@ -264,23 +267,27 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
                 G("MolecularStateCharacTotalStatisticalWeight")
                 )
             if QNList.has_key(G("MolecularStateStateID")):
-              stateID = G("MolecularStateStateID")
-              G = lambda name: GetValue(name, MolQN=MolQN)
-              case = G("MolQnCase")
-              yield """<%s:QNs>""" % case
-              for MolQN in QNList[stateID]:
-                if MolQN.xml:
-                    yield MolQN.xml
-                else:
-                    yield """
-        <%s:%s """ % (case, G("MolQnLabel"))
-                    if G("MolQnSpinRef"):
-                        yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
-                    if G("MolQnAttribute"):
-                        yield G("MolQnAttribute")
-                    yield """> %s </%s:%s>""" \
-                        % (G("MolQnValue"), case, G("MolQnLabel") )
-              yield """</%s:QNs>""" % case
+#              G=lambda name: GetValue(name, MolQN=MolQN)
+
+              case=""
+              for MolQN in QNList[G("MolecularStateStateID")]:
+                G=lambda name: GetValue(name, MolQN=MolQN)
+                if G("MolQnCase")!=case :
+                   if case:
+                       yield '</%s:QNs>' % case
+                   yield '<%s:QNs> \n' % G("MolQnCase")
+                   case=G("MolQnCase")
+
+                yield """
+    <%s:%s """ % (G("MolQnCase"), G("MolQnLabel"))
+                if G("MolQnSpinRef"):
+                    yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
+                if G("MolQnAttribute"):
+                    yield G("MolQnAttribute")
+                yield """> %s </%s:%s>""" \
+                    % (G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
+
+            yield '</%s:QNs>' % case
             yield '</MolecularState>'
         yield '</Molecule>'
     yield '</Molecules>'
@@ -481,10 +488,30 @@ def XsamsRadTrans(RadTrans):
         
         if G('RadTransInitialStateRef'): yield '<InitialStateRef>S%s</InitialStateRef>'%G('RadTransInitialStateRef')
         if G('RadTransFinalStateRef'): yield '<FinalStateRef>S%s</FinalStateRef>'%G('RadTransFinalStateRef')
-        if G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'): yield """<Probability>
-<Log10WeightedOscillatorStregnth sourceRef="B%s"><Value units="unitless">%s</Value><Accuracy>%s</Accuracy></Log10WeightedOscillatorStregnth>
-</Probability>
-"""%(G('RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef'),G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'),G('RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy'))
+        if G('RadTransProbabilityLog10WeightedOscillatorStrengthValue') or G('RadTransProbabilityTransitionProbabilityAValue'): 
+            yield '<Probability>\n'
+
+        if G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'):
+            yield """<Log10WeightedOscillatorStregnth sourceRef="B%s">\n 
+                   <Value units="unitless">%s</Value>\n 
+                   <Accuracy>%s</Accuracy>\n 
+                   </Log10WeightedOscillatorStregnth>\n """ \
+            % (G('RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef'),
+               G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'),
+               G('RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy'))
+
+        if G('RadTransProbabilityTransitionProbabilityAValue'):
+            yield '<TransitionProbabilityA sourceRef="B%s">\n \
+                   <Value units="1/cm">%s</Value>\n \
+                   <Accuracy>%s</Accuracy>\n \
+                   </TransitionProbabilityA>\n ' \
+            % (G('RadTransProbabilityTransitionProbabilityASourceRef'),
+               G('RadTransProbabilityTransitionProbabilityAValue'),
+               G('RadTransProbabilityTransitionProbabilityAAccuracy'))
+
+        if G('RadTransProbabilityLog10WeightedOscillatorStrengthValue') or G('RadTransProbabilityTransitionProbabilityAValue'):
+            yield '</Probability>\n'
+
         yield '</RadiativeTransition>'
         # loop ends
     yield '</Radiative>'
@@ -700,3 +727,4 @@ def embedhtml(transitions,totalcount=None):
 ##############################
 ### GENERATORS END HERE
 ##############################
+
