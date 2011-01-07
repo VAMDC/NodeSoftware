@@ -148,3 +148,7 @@ If any of this fails, please make sure you have installed all of the
 above correctly and ask your system administrator for help. For 
 contacting us, see :ref:`contact`.
 
+.. note::
+	The above only tests that you have installed the software
+	correctly, not the setup and configuration of the node in
+	question.

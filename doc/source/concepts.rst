@@ -121,9 +121,15 @@ nodes without altering the code.
 Requestables
 ~~~~~~~~~~~~~~~~~
 
-This is used for a future feature of the query language that is not yet 
-implemented in the node software. Just mentioning for sake of 
-completeness.
+Requestables are a third way of using the dictionary. They are used in 
+the SELECT-clause of the SQL expression when one wants to recieve only a 
+subset of the data that matches the restrictions. For example, *SELECT 
+Species, RadiativeTransitions* would return only the fields in this
+group and skip any information about the states, if it were available.
+
+.. note::
+	This is used for a future feature of the query language
+	that is not yet implemented in the node software.
 
 
 The registry

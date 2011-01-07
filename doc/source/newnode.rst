@@ -38,8 +38,9 @@ absolutely no problem) a name and call it *$VAMDCROOT*. Let's also assume
 the name of the dataset is *YourDBname*.
 
 Inside $VAMDCROOT you find several subdirectories. For setting up a new 
-node, you only need to care about the one called *nodes/*. The very 
-first thing to do, is to make a copy of the ExampleNode::
+node, you only need to care about the one called *nodes/* which contains 
+the files for several nodes already, plus the example node. The first 
+thing to do, is to make a copy of the ExampleNode::
 
     $ git clone git://github.com/VAMDC/NodeSoftware.git
     $ export VAMDCROOT=`pwd`/NodeSoftware/
@@ -269,7 +270,7 @@ Explanations on what happens here:
   *queryfunc.py*
 * Line 7: This uses the helper function where2q() to 
   convert the information in *sql.where* to QueryObjects that match your 
-  model, using the RESTRICTABLES.
+  model, using the RESTRICTABLES (see below).
 * In line 8 we simply pass these QueryObjects to the Transition model's 
   filter function. This returns a QuerySet, an unevaluated version of the 
   query.
@@ -417,6 +418,11 @@ You should also be able to run queries by accessing URLS like::
 
 replacing the last part by whatever restriction makes sense for your data set.
 
+.. note::
+	The URL has to be URL-encoded when testing from a script or
+	similar. Web browsers usually do that for you. To also see
+	the statistics headers, you can use *wget -S -O output.xml "<URL>"*.
+
 A more extensive test framework is in the making and will be documented 
 here soon. In any case you should run test queries to your node and make 
 sure that the output in terms of volume and values matches your 
@@ -434,7 +440,8 @@ files in your node directory:
 
 * *apache.conf*: This is an Apache config file that defines a virtual 
   server, bound to a certain host name. You will have to edit several 
-  things in that file before it will work in Apache. On a Debian-like 
+  things in that file before it will work in Apache: the server name
+  and the path to the node software in a few places. On a Debian-like 
   system you would then move this file to 
   */etc/apache2/sites-available/vamdcnode* and run *a2ensite vamdcnode* to 
   activate it.
