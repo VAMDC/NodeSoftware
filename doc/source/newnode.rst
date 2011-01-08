@@ -126,7 +126,7 @@ Now suppose you know that the field called *species* is acutally a
 reference to the species-table. You would then change the class *States* 
 as such::
 
-    class States(models.Model):
+    class State(models.Model):
         id = models.IntegerField(primary_key=True)
         species = models.ForeignKey(Species)
         energy = models.DecimalField(max_digits=17, decimal_places=4)
@@ -145,7 +145,7 @@ example above you could do::
     >>> allspecies = Species.objects.all()
     >>> allspecies.count()
     XX # the number of species is returned
-    >>> somestates = States.objects.filter(species__name='He')
+    >>> somestates = State.objects.filter(species__name='He')
     >>> for state in somestates: print state.energy
 
 
@@ -155,7 +155,7 @@ Case 2: Create a new database
 In this case we assume that the data are in ascii tables of arbitrary 
 layout. The steps now are as follows:
 
-#. Write the data model
+#. Write the data model in $VAMDCROOT/nodes/YourDBname/node/models.py
 #. Create an empty database with corresponding user and password
 #. Tell the node software where to find this database.
 #. Let the node software create the tables
@@ -171,10 +171,10 @@ processes (radiative, collisions etc) and references.
 Deviating data models are certainly possible, but will involve some more 
 work on the query function (see below). In any case, do not so much 
 think about how your data is structured now, but how you want it to be 
-structured in the database, when you writing the models.
+structured in the database, when writing the models.
 
 Writing your data models is best learned from example. Have a look at 
-the example from Case 1 above and at file *nodes/vald/node/models.py* 
+the example from Case 1 above and at file *$VAMDCROOT/nodes/vald/node/models.py* 
 inside the NodeSoftware to see how the model for VALD looks like. Keep 
 in mind the following points:
 
@@ -201,7 +201,8 @@ in mind the following points:
 
 Once you have a first draft of your data model, you test it by running::
 
-    $ ./manage.py sqlall
+    $ cd $VAMDCROOT/nodes/YourDBname/
+    $ ./manage.py sqlall node
 
 This will (if you have no error in the models) print the SQL statements 
 that Django will use to create the database, using the file or 
@@ -216,7 +217,7 @@ and "States" by you own model names.
 
 .. note::
     There is no harm in deleting the database and re-creating it
-    after improving your models. After all the database is still
+    after improving your models. After all, the database is still
     empty at this stage and *syncdb* will always create it for
     you from the models, even if you change your database
     engine in *settings.py*.
