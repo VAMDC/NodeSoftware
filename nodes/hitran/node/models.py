@@ -55,49 +55,86 @@ def make_request(numin, numax, Smin, selected_molecids, output_params,
                              output_params)
     return req
 
-class AllStates(models.Model):
+class Molecules(models.Model):
+    molecid = models.IntegerField(primary_key=True, null=False,
+                                  db_column='molecID')
+    inchikeystem = models.CharField(max_length=42, db_column='InChIKeyStem')
+    molec_name = models.CharField(max_length=20, null=False,
+                                  db_column='molec_name')
+    molec_name_html = models.CharField(max_length=128, null=False,
+                                       db_column='molec_name_html')
+    molec_name_latex = models.CharField(max_length=128, null=False,
+                                       db_column='molec_name_latex')
+    stoichiometric_formula = models.CharField(max_length=40, null=False,
+                                       db_column='stoichiometric_formula')
+    chemical_names = models.CharField(max_length=256,
+                                      db_column='chemical_names')
+    class Meta:
+            db_table = u'molecules'
+
+    def xsams(self):
+        yield '    <Molecule>\n'
+        yield '      <MolecularChemicalSpecies>\n'
+        yield '        <OrdinaryStructuralFormula>%s' \
+                  '</OrdinaryStructuralFormula>\n' % self.molec_name
+        yield '        <StoichiometricFormula>%s' \
+                  '</StoichiometricFormula>\n' % self.molec_name
+        yield '        <ChemicalName>%s' \
+                  '</ChemicalName>\n' % self.chemical_names
+        yield '      </MolecularChemicalSpecies>\n'
+
+class Isotopologues(models.Model):
+    inchikey = models.CharField(primary_key=True, max_length=81,
+                               db_column='InChIKey')
+    inchi = models.CharField(max_length=384, db_column='InChI')
+    molecid = models.IntegerField(null=False, db_column='molecID')
+    isoid = models.IntegerField(db_column='isoID')
+    iso_name = models.CharField(max_length=384, db_column='iso_name')
+    iso_name_html = models.CharField(max_length=1536,
+                                     db_column='iso_name_html')
+    iso_name_latex = models.CharField(max_length=384,
+                                      db_column='iso_name_latex')
+    abundance = models.FloatField(null=True, blank=True, db_column='abundance')
+    afgl_code = models.IntegerField(null=True, blank=True,
+                                    db_column='AFGL_code')
+    caseid = models.IntegerField(null=True, db_column='caseID')
+    class Meta:
+            db_table = u'isotopologues'
+
+# This is a plumbing class to make the way my database stores molecule
+# information play nicely with the generic generator code 
+class Species:
+   def __init__(self, molecid, isoid, inchikey, molec_name, iso_name,
+                chemical_names, ordinary_formula, stoichiometric_formula):
+        self.molecid = molecid
+        self.isoid = isoid
+        self.inchikey = inchikey
+        self.molec_name = molec_name
+        self.iso_name = iso_name
+        self.chemical_names = chemical_names
+        self.ordinary_formula = ordinary_formula
+        self.stoichiometric_formula = iso_name
+
+   def __getitem__(self, name):
+        return self.__dict__[name]
+
+class States(models.Model):
+    id = models.CharField(primary_key=True, max_length=192, db_column='id')
     molecid = models.IntegerField(null=True, db_column='molecID', blank=True)
     isoid = models.IntegerField(null=True, db_column='isoID', blank=True)
-    # XXX why does django multiply may VARCHAR lengths by 3???
+    # XXX why does django multiply my VARCHAR lengths by 3???
     inchikey = models.CharField(max_length=81, db_column='InChIKey')
-    stateid = models.CharField(max_length=192, primary_key=True,
-                               db_column='stateID')
-    assigned = models.IntegerField(null=True, blank=True)
-    energy = models.FloatField(null=True, blank=True)
-    energy_err = models.FloatField(null=True, blank=True)
-    energy_flag = models.CharField(max_length=3, blank=True)
-    g = models.IntegerField(null=True, blank=True)
+    assigned = models.IntegerField(null=True, db_column='assigned', blank=True)
+    energy = models.FloatField(null=True, db_column='energy', blank=True)
+    energy_err = models.FloatField(null=True, db_column='energy_err',
+                                   blank=True)
+    energy_flag = models.CharField(max_length=3, db_column='energy_flag',
+                                   blank=True)
+    g = models.IntegerField(null=True, db_column='g', blank=True)
     caseid = models.IntegerField(null=True, db_column='caseID', blank=True)
-    elecstatelabel = models.CharField(max_length=3,
-                                      db_column='ElecStateLabel', blank=True)
-    qn1 = models.IntegerField(null=True, db_column='QN1', blank=True)
-    qn2 = models.IntegerField(null=True, db_column='QN2', blank=True)
-    qn3 = models.IntegerField(null=True, db_column='QN3', blank=True)
-    qn4 = models.IntegerField(null=True, db_column='QN4', blank=True)
-    qn5 = models.IntegerField(null=True, db_column='QN5', blank=True)
-    qn6 = models.IntegerField(null=True, db_column='QN6', blank=True)
-    qn7 = models.IntegerField(null=True, db_column='QN7', blank=True)
-    qn8 = models.IntegerField(null=True, db_column='QN8', blank=True)
-    qn9 = models.IntegerField(null=True, db_column='QN9', blank=True)
-    qn10 = models.IntegerField(null=True, db_column='QN10', blank=True)
-    sym1 = models.CharField(max_length=12, db_column='Sym1', blank=True)
-    sym2 = models.CharField(max_length=12, db_column='Sym2', blank=True)
-    sym3 = models.CharField(max_length=12, db_column='Sym3', blank=True)
-    sym4 = models.CharField(max_length=12, db_column='Sym4', blank=True)
-    sym5 = models.CharField(max_length=12, db_column='Sym5', blank=True)
-    sym6 = models.CharField(max_length=12, db_column='Sym6', blank=True)
-    sym7 = models.CharField(max_length=12, db_column='Sym7', blank=True)
-    sym8 = models.CharField(max_length=12, db_column='Sym8', blank=True)
-    sym9 = models.CharField(max_length=12, db_column='Sym9', blank=True)
-    sym10 = models.CharField(max_length=12, db_column='Sym10', blank=True)
-    sqn1 = models.IntegerField(null=True, db_column='sQN1', blank=True)
-    sqn2 = models.IntegerField(null=True, db_column='sQN2', blank=True)
-    sqn3 = models.IntegerField(null=True, db_column='sQN3', blank=True)
-    sqn4 = models.IntegerField(null=True, db_column='sQN4', blank=True)
-    sqn5 = models.IntegerField(null=True, db_column='sQN5', blank=True)
-    #timestamp = models.IntegerField(null=True, blank=True)
+    qns = models.CharField(max_length=1536, db_column='qns', blank=True)
     class Meta:
-        db_table = u'all_states'
+        db_table = u'states'
 
     def xsams(self):
         yield '      <MolecularState stateID="%s">\n' % self.stateid
@@ -170,32 +207,24 @@ class Trans(models.Model):
     finalstateref = models.CharField(max_length=192,
                                        db_column='FinalStateRef', blank=True)
     nu = models.FloatField()
-    nu_err = models.FloatField(null=True, blank=True)
-    nu_ref = models.CharField(max_length=93, blank=True)
+    nu_err = models.FloatField(null=True, db_column='nu_err', blank=True)
+    nu_ref = models.CharField(max_length=93, db_column='nu_ref', blank=True)
     s = models.FloatField(null=True, db_column='S', blank=True)
     s_err = models.FloatField(null=True, db_column='S_err', blank=True)
     s_ref = models.CharField(max_length=90, db_column='S_ref', blank=True)
     a = models.FloatField(null=True, db_column='A', blank=True)
     a_err = models.FloatField(null=True, db_column='A_err', blank=True)
     a_ref = models.CharField(max_length=90, db_column='A_ref', blank=True)
-    multipole = models.CharField(max_length=6, blank=True)
-    g_air = models.FloatField(null=True, blank=True)
-    g_air_err = models.FloatField(null=True, blank=True)
-    g_air_ref = models.CharField(max_length=102, blank=True)
-    g_self = models.FloatField(null=True, blank=True)
-    g_self_err = models.FloatField(null=True, blank=True)
-    g_self_ref = models.CharField(max_length=105, blank=True)
-    n_air = models.FloatField(null=True, blank=True)
-    n_air_err = models.FloatField(null=True, blank=True)
-    n_air_ref = models.CharField(max_length=102, blank=True)
-    delta_air = models.FloatField(null=True, blank=True)
-    delta_air_err = models.FloatField(null=True, blank=True)
-    delta_air_ref = models.CharField(max_length=120, blank=True)
+    multipole = models.CharField(max_length=6, db_column='multipole',
+                                 blank=True)
     elower = models.FloatField(null=True, db_column='Elower', blank=True)
-    gp = models.IntegerField(null=True, blank=True)
-    gpp = models.IntegerField(null=True, blank=True)
-    datestamp = models.DateField(null=True, blank=True)
+    gp = models.IntegerField(null=True, db_column='gp', blank=True)
+    gpp = models.IntegerField(null=True, db_column='gpp', blank=True)
+    datestamp = models.DateField(null=True, db_column='datestamp', blank=True)
     ierr = models.CharField(max_length=18, db_column='Ierr', blank=True)
+
+    prms = []
+
     class Meta:
         db_table = u'trans'
 
@@ -223,42 +252,40 @@ class Trans(models.Model):
         yield '  </Probability>\n'
         yield '</RadiativeTransition>\n'
 
-
-class Molecules(models.Model):
-    molecid = models.IntegerField(primary_key=True, null=False)
-    inchikeystem = models.CharField(max_length=42)
-    molec_name = models.CharField(max_length=20, null=False)
-    molec_name_html = models.CharField(max_length=128, null=False)
-    molec_name_latex = models.CharField(max_length=128, null=False)
-    stoichiometric_formula = models.CharField(max_length=40, null=False)
-    chemical_names = models.CharField(max_length=256)
-    caseid = models.IntegerField(null=True)
+class Prms(models.Model):
+    id = models.IntegerField(primary_key=True, null=False, db_column='id')
+    molecid = models.IntegerField(db_column='molecID')
+    isoid = models.IntegerField(db_column='isoID')
+    inchikey = models.CharField(max_length=81, db_column='InChIKey')
+    #transid = models.CharField(max_length=192, db_column='transeID')
+    transid = models.ForeignKey('Trans', db_column='transID')
+    prm_name = models.CharField(max_length=192, db_column='prm_name')
+    prm_val = models.FloatField(db_column='prm_val')
+    prm_err = models.FloatField(db_column='prm_err')
+    prm_ref = models.CharField(max_length=90, db_column='prm_err')
     class Meta:
-            db_table = u'molecules'
+            db_table = u'prms'
 
-    def xsams(self):
-        yield '    <Molecule>\n'
-        yield '      <MolecularChemicalSpecies>\n'
-        yield '        <OrdinaryStructuralFormula>%s' \
-                  '</OrdinaryStructuralFormula>\n' % self.molec_name
-        yield '        <StoichiometricFormula>%s' \
-                  '</StoichiometricFormula>\n' % self.molec_name
-        yield '        <ChemicalName>%s' \
-                  '</ChemicalName>\n' % self.chemical_names
-        yield '      </MolecularChemicalSpecies>\n'
+class Prm():
+    def __init__(self, name, val, err, ref):
+        self.name = name
+        self.val = val
+        self.err = err
+        self.ref = ref
 
-class AllQns(models.Model):
+class Qns(models.Model):
     id = models.IntegerField(primary_key=True, null=False, db_column='id')
     molecid = models.IntegerField(db_column='molecID')
     isoid = models.IntegerField(db_column='isoID')
     inchikey = models.CharField(max_length=81, db_column='InChIKey')
     stateid = models.CharField(max_length=192, db_column='stateID')
     caseid = models.IntegerField(db_column='caseID')
-    qn = models.CharField(max_length=192, db_column='qn')
-    qn_attr = models.CharField(max_length=384)
+    qn_name = models.CharField(max_length=192, db_column='qn_name')
+    qn_val = models.CharField(max_length=48, db_column='qn_val')
+    qn_attr = models.CharField(max_length=384, db_column='qn_attr')
     xml = models.CharField(max_length=768, db_column='xml')
     class Meta:
-        db_table = u'all_qns'
+        db_table = u'qns'
 
 # This is a plumbing class to make my quantum numbers table play nicely
 # with Christian's generator code:
