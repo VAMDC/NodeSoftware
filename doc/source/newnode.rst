@@ -116,14 +116,14 @@ thereby telling the framework how the tables relate to each other. This
 is best illustrated in an example. Suppose you have a second model, in 
 addition to the one above, that was auto-detected as follows::
 
-    class States(models.Model):
+    class State(models.Model):
         id = models.IntegerField(primary_key=True)
         species = models.IntegerField()
         energy = models.DecimalField(max_digits=17, decimal_places=4)
         ...
 
 Now suppose you know that the field called *species* is acutally a 
-reference to the species-table. You would then change the class *States* 
+reference to the species-table. You would then change the class *State* 
 as such::
 
     class State(models.Model):
@@ -213,7 +213,7 @@ ignore the output and move straight on to creating the database::
 
 Now you have a fresh empty database. You can test it with the same 
 commands as mentioned at the end of Case 1 above, replacing "Species" 
-and "States" by you own model names.
+and "State" by you own model names.
 
 .. note::
     There is no harm in deleting the database and re-creating it
@@ -227,7 +227,7 @@ and "States" by you own model names.
     storage engine InnoDB over the standard MyISAM. You can set this in 
     your settings.py by adding *'OPTIONS': {"init_command": 
     "SET storage_engine=INNODB"}* to your database setup. We also
-    reccommend to use UTF8 as default in your MySQL configuration or
+    recommend to use UTF8 as default in your MySQL configuration or
     create your database with *CREATE DATABASE <dbname> CHARACTER SET utf8;*
 
 
@@ -281,14 +281,14 @@ Explanations on what happens here:
   the QuerySet if necessary. We also prepare a string with the percentage
   for the headers.
 * Line 16-20: We use the ForeignKeys from the Transition model to the 
-  States model that tell us which are the upper and lower states for a 
+  State model that tell us which are the upper and lower states for a 
   transition. We put their ids in to a set which throws out duplicates and 
   then use this set of state_ids to get the QuerySet for the states that 
   belong to the selected transitions.
 * Line 22-24: An alternative, more straight forward way to achieve the 
   same thing. This uses the ForeignKeys in the *inverse* direction, 
   connects the two queryObjects by an OR-relation, selects the states and 
-  then throuws away dumplicates. The first approach proves faster if the 
+  then throws away duplicates. The first approach proves faster if the 
   number of duplicates is large.
 * Lines 26-27: We run count() on the states to get their number for the 
   headers and do a quick selection and count on the species, again using a 
