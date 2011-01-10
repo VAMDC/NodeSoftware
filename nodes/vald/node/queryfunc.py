@@ -65,7 +65,7 @@ def setupResults(sql,limit=1000):
     # maybe this can be achieved in the model itself.
 
     headerinfo=CaselessDict({\
-            'Truncated':'%s %%'%percentage,
+            'Truncated':percentage,
             'COUNT-SOURCES':nsources,
             'COUNT-species':nspecies,
             'count-states':nstates,

@@ -41,7 +41,6 @@ class TAPQUERY(object):
     def __init__(self,data):
         try:
             data=CaselessDict(dict(data))
-            self.request=lower(data['REQUEST'])
             self.lang=lower(data['LANG'])
             self.query=data['QUERY']
             self.format=lower(data['FORMAT'])
@@ -79,7 +78,7 @@ def addHeaders(headers,response):
 
     for h in HEADS:
         if headers.has_key(h):
-            response['VAMDC-'+h] = '%s'%headers[h]
+	    if headers[h]: response['VAMDC-'+h] = '%s'%headers[h]
     return response
           
 def sync(request):
