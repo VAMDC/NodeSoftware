@@ -57,7 +57,7 @@ repositories (origin and local) do the following:
 * Github will give you instructions on how to *clone* your origin
   to your own computer, thereby creating a local repo, aka your "working copy". 
 * You can repeat the cloning on as many machines as you see fit.
-* Tell your local repos where **upstream* is by running the following
+* Tell your local repos where **upstream** is by running the following
   command in each of them: *git remote add upstream git://github.com/VAMDC/NodeSoftware.git* 
 
 Now that you are all set, a typical working session may look like this::
@@ -96,6 +96,8 @@ A few dos and don'ts that are worthwhile to keep in mind with git:
   local commits for too long but push them frequently instead.
 * Never pull into a dirty tree (i.e. one that has uncommitted changes). 
   Commit first, then pull. Alternatively read *git help stash*.
+* *Git* trusts you know what you are doing. It will allow you to do stupid
+  things, too.
 * Don't panic. Yes, git may have a comparably steep learning curve, but it
   is a powerful tool and all problems can be resolved.
 
