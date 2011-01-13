@@ -32,6 +32,7 @@ file as described in the following
 section, you give the full path to your mapping file as an argument
 to the *imptools/run_import.py* program::
 
+
     $ python run_import.py /vamdc/YourNode/mapping_mydata.py
   
 
@@ -54,6 +55,8 @@ relevant database models from your node. Finally, you will probably
 want to use some of the helper functions found in *imptools/linefuncs.py*
 .. ::
 
+
+
    # Mapping file for MyNode importing
   
    # import models and help functions. 
@@ -68,6 +71,8 @@ want to use some of the helper functions found in *imptools/linefuncs.py*
 
    mapping = [ ... ]  # described below
 
+
+
 (run_import sets up the paths so you can import directly from the
 imptools directory)
 
@@ -78,6 +83,8 @@ The ``mapping`` variable is a list of Python *dictionaries*. A python
 dictionary is written as ``{key:value, key2:value2, ... }``. One of
 these keys, *linemap*, is itself a list with further dictionaries. The
 structure looks like this::
+
+
 
  mapping = [
     {key : value, 
@@ -91,6 +98,8 @@ structure looks like this::
       key : value, 
       linemap : [ ... ]}
     ] 
+
+
 
 The keys and values of each dictionary describes how to populate one database 
 model using any number of source text files.  
@@ -214,6 +223,7 @@ read).
                    ]
         }]
 
+
 Here we define how to populate two models. The first dictionary (for
 the *References* model) makes use of the *bySepNr* line function (see
 below) to extract data from each line. The *Species* mapping
@@ -228,6 +238,7 @@ Since the mapping file is a normal Python module, you are free to code
 your own line functions to extract the data from each line in your
 file. There are only three requirements for how a line function may
 look:
+
 
 * The function must take at least one argument, which holds the current line
   being processed, as a string. The import program will automatically send this to
@@ -247,12 +258,16 @@ look:
 Below is a simple example of a line function that fulfills all these
 criteria::
 
+
+
  def charrange(linedata, start, end):
      """
      Simple extractor that cuts out part of a line 
      based on string index
      """ 
      return linedata[start:end].strip()
+
+
 
 In the mapping dictionary we call this with e.g. ``'cbyte' :
 (charrange, 12, 17)``. The first element of the tuple is the function
@@ -261,6 +276,8 @@ object, everything else will be fed to the function as arguments.
 This function assumes that linedata is a simple string, and so it will
 not work if we where to re-use it for multiple in-files (linedata will
 then be a list). So let's do a simple addition::
+
+
 
  def charrange(linedata, start, end, filenum=0):
      """
@@ -272,6 +289,8 @@ then be a list). So let's do a simple addition::
          # so pick one line based on linenum
          linedata = linedata[linenum] 
      return linedata[start:end].strip()
+
+
 
 This you can still call the same way as before, but when working with
 more than one file, you can also add an extra argument to pick which
@@ -303,6 +322,7 @@ functions directly in the mapping file.
 Here is an example of a line function that wants to create a unique id
 by parsing different parts of lines from different files::
 
+
  def get_id_from_line(linedata, sepnr, index1, index2):
      """
      extracts id from several lines. 
@@ -320,6 +340,7 @@ by parsing different parts of lines from different files::
      # create unique id
      return "%s-%s-%s" % (l1, l2, l3)
 
+
 Here we made use of the default line functions as building blocks to
 build a complex parsing using three different files. We also do some
 checking to replace data on the spot. The end result is a string
@@ -329,9 +350,3 @@ dictionary with e.g. ``cbyte: (get_id_from_line, 3, 25, 29)``.
 In the *imptools* directory you can find a fully functioning mapping
 used for importing the VALD database. It also contains a set of custom
 line functions to use for inspiration. 
-
-
-
-
-
-

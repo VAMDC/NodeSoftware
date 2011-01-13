@@ -18,7 +18,7 @@ def mod_import(mod_path):
     """
     Takes filename of a module, converts it to a python path
     and imports it. 
-    """
+    """    
     if not os.path.isabs(mod_path):
         mod_path = os.path.abspath(mod_path)
     path, filename = mod_path.rsplit(os.path.sep, 1)
@@ -40,9 +40,6 @@ def mod_import(mod_path):
         # we have to close the file handle manually
         result[0].close()
     return mod 
-
-
-
         
 def import_to_db():
     """
