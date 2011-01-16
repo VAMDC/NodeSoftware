@@ -15,7 +15,7 @@ means among other things that:
 * There is no central repository, all repos are equal (but some *can* be made more equal than others, as we'll see below).
 * Commits happen locally into your working repo, no network connection needed.
 * Repos are updated and synced with each other by pushing and pulling commits back and forth between them. 
-* There are web-platforms that offer free web-repositories which facilitates syncing and merging. We'll use GiutHub (http://www.github.com/).
+* There are web-platforms that offer free web-repositories which facilitates syncing and merging. We'll use *GitHub* (http://www.github.com/).
 
 The setup that we want looks like this:
 
@@ -48,7 +48,7 @@ repositories (origin and local) do the following:
 
 * Go to http://github.com and make an account. This includes that you 
   (create and) upload an ssh-key to be able to pull and push securely and 
-  with typing your password all the time. Simply follow the instructions
+  without typing your password all the time. Simply follow the instructions
   on GitHub.
 * Visit the repository at https://github.com/VAMDC/NodeSoftware and
   klick "fork" in the upper right corner. This will make a copy of the
@@ -90,15 +90,15 @@ A few dos and don'ts that are worthwhile to keep in mind with git:
 
 * Do commit often. It goes instantly.
 * Pull and push less often, but often enough. You certainly want to pull 
-  from upstream before
-  making changes, since you might work on outdated versions of files which
+  from upstream before making changes, since you otherwise
+  might work on outdated versions of files which
   will result in conflicts later. You also do no want to sit on your
   local commits for too long but push them frequently instead.
 * Never pull into a dirty tree (i.e. one that has uncommitted changes). 
   Commit first, then pull. Alternatively read *git help stash*.
 * *Git* trusts you know what you are doing. It will allow you to do stupid
   things, too.
-* Don't panic. Yes, git may have a comparably steep learning curve, but it
+* Don't panic. Yes, *git* may have a comparably steep learning curve, but it
   is a powerful tool and all problems can be resolved.
 
 
@@ -119,8 +119,10 @@ Commit guidelines
 * *Pull first.*
 
 The admin of *upstream* (aka the writer of these lines) might be bribed 
-and/or convinced to turn a blind eye on violations against the above 
+and/or convinced to turn a blind eye on violations against any of the above 
 points, but he will be very happy if you try to follow them.
+
+
 
 The Django admin interface
 ---------------------------
