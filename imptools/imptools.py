@@ -7,7 +7,7 @@ ascii-input files to the django database. It's generic and is
 controlled from a mapping file.
 
 """
-import sys
+import sys, os, os.path
 from django.db.models import Q
 from time import time 
 from django.db import connection, transaction
@@ -155,16 +155,19 @@ def create_new(cursor, data, db_table):
     inpdict - dictionary of fieldname:value that should be created.
     """
     data.pop('pk',None)
-    nplaceholders=string.join(['%s']*len(data),',')
-    sql='INSERT INTO %s (%s) VALUES'%(db_table,nplaceholders)
-    sql=sql%tuple(data.keys())
-    sql+=' (%s);'%nplaceholders
+    if not os.path.exists(db_table+'.datx'):
+        open(db_table+'.datx','a').write(','.join(map(str,data.keys()))+'\n')
+    open(db_table+'.datx','a').write(';'.join(map(str,data.values()))+'\n')
+    #nplaceholders=string.join(['%s']*len(data),',')
+    #sql='INSERT INTO %s (%s) VALUES'%(db_table,nplaceholders)
+    #sql=sql%tuple(data.keys())
+    #sql+=' (%s);'%nplaceholders
     #print sql, data.values()
-    try:
-	cursor.execute(sql,tuple(data.values()))
-    except IntegrityError, e:
+    #try:
+	#cursor.execute(sql,tuple(data.values()))
+    #except IntegrityError, e:
 	#log_trace(e,'IntegrityError')
-        pass
+    #    pass
 
 def add_many2many(model, fieldname, objrefs):
     """
