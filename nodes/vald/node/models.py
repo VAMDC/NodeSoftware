@@ -27,8 +27,8 @@ class Publication(models.Model):
     pages = models.CharField(max_length=64, null=True)
     pagebegin = models.PositiveSmallIntegerField(null=True)
     pageend = models.PositiveSmallIntegerField(null=True)
-    url = models.TextField(null=True)  
-    bibtex = models.TextField(null=True)
+    url = models.CharField(max_length=512, null=True)  
+    bibtex = models.CharField(max_length=1024, null=True)
 
     class Meta:
         db_table = u'publications'
@@ -89,7 +89,7 @@ class State(models.Model):
         db_table = u'states'
 
 class Transition(models.Model):
-    vacwave = models.DecimalField(max_digits=20, decimal_places=8) 
+    vacwave = models.DecimalField(max_digits=20, decimal_places=8, db_index=True) 
     airwave = models.DecimalField(max_digits=20, decimal_places=8) 
     species = models.ForeignKey(Species,db_column='species',related_name='isspecies_trans')
     #species = models.PositiveSmallIntegerField()
@@ -162,6 +162,6 @@ class Log(models.Model):
     qid = models.CharField(max_length=128)
     datetime = datetime=models.DateTimeField(auto_now_add=True)
     query = models.ForeignKey(Query, related_name='dbquery', db_column='query')
-    request = models.TextField()
+    request = models.CharField(max_length=1014)
 
     objects = LogManager()
