@@ -153,19 +153,19 @@ reset to.
 
 **Look at an earlier version.** You can check out any earlier version of 
 any file at any time. For example, *git checkout "master@{1 month ago}" 
-<FILENAME>" will give you the version of the file <FILENAME> from a 
+<filename>"* will give you the version of the file <filename> from a 
 month ago. To go back to the latest, you do *git checkout master 
-<FILENAME>* ("master" is the name of the default branch where all you 
+<filename>* ("master" is the name of the default branch where all you 
 commits are). Note that the last command can also be used to thow away 
 uncommitted changes in a specific file - a more gentle way than the 
 reset described above.
 
-You can also skip the <FILENAME> to check out an earlier version of the 
+You can also skip the <filename> to check out an earlier version of the 
 whole repo (*git checkout master* brings you back to the latest). 
 Instead of "master@{1 month ago}" you can use any of the <REF> mentioned 
 above, or have a look at http://book.git-scm.com/4_git_treeishes.html.
 
-**Make a branch** Read *git help branch* for this.
+**Make a branch**. Read *git help branch* for this.
 
 
 Commit guidelines
@@ -183,7 +183,7 @@ messages meaningful!
 
 **Good code.** Please try to avoid spaghetti-code, write modular, and follow http://www.python.org/dev/peps/pep-0008/
 
-*Pull first.* Before you send a pull request, please make sure that you 
+**Pull first.** Before you send a pull request, please make sure that you 
 have pulled from upstream. This will make the merging of your code 
 easier, since it will be you who needs to resolve potential conflicts 
 before you push to your origin again.
