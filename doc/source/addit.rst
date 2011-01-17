@@ -8,14 +8,15 @@ Advanced and additional topics
 Collaborating with git and GitHub
 -----------------------------------
 
-Git is a decentral version control system (http://git-scm.com/). This 
+Git is a decentralized version control system (http://git-scm.com/). This 
 means among other things that:
 
 * Each checked out copy of the code has the full version history.
-* There is no central repository, all repos are equal (but some *can* be made more equal than others, as we'll see below).
+* There is no central repository, all repositories ("repos") are equal (but some *can* be made more equal than others, as we'll see below).
 * Commits happen locally into your working repo, no network connection needed.
 * Repos are updated and synced with each other by pushing and pulling commits back and forth between them. 
-* There are web-platforms that offer free web-repositories which facilitates syncing and merging. We'll use *GitHub* (http://www.github.com/).
+* There are web-platforms that offer free web-repositories which
+  facilitates syncing and merging. We'll use *GitHub* (http://www.github.com/).
 
 The setup that we want looks like this:
 
@@ -24,25 +25,29 @@ The setup that we want looks like this:
    :alt: The three repositories and their relation
 
 
-* The **local repo** is the one that you work in and where you run all 
-  the commands that will be mentioned below. We'll get to how you create your
+* The **local repository** (also known as your "working copy") is your own workspace. This is where you do
+  all your work. It offers you full local version control without
+  necessarily having to upload the changes anywhere. We'll get to how you create your
   local repo in a minute.
-* Your **origin** is your repo at GitHub. This is where you push the 
-  commits to that you made in your local repo.
-* **Upsream** is the repo that serves as a "central" where all collaborators'
-  changes are merged. It lives on GitHub, too. Upstream is from where 
-  you pull other's updates into your
-  local repo. Upstream is also where you send a *pull request* when you want
-  your commits that you pushed to your **origin** to be propagated to
-  everybody else.
-* You can certainly have **several local repos**, e.g. one on your laptop, 
+* Your **origin** is an online version of your repository, stored online
+  at GitHub. When you want to sync the two you need to *push* your
+  latest local changes to origin. Once online, others will also be able to see the changes. 
+* **Upstream** is a unique repository that serves as an online
+  code "central" managed by VAMDC. It too is hosted on
+  GitHub. Upstream serves as a convenient way to update your
+  distribution; you should regularly *pull* the latest changes into your
+  local repo to stay updated. Conversely, if you want your own changes
+  to be incoorperated into the central distribution you can send a
+  *pull request* to upstream. The relevant commit(s) in your **origin**
+  repo will be reviewed and will, if accepted, be merged into upstream
+  so that others will get the changes next time they do a pull.
+* You can certainly have **several local repositories**, e.g. one on your laptop, 
   one on your desktop and one on the server where the node runs. You 
-  then use your **origin** to keep them in sync. For example: You work 
-  from your laptop and commit your changes there. You then push them to 
-  your origin and tell your other local repos to pull from origin, if you 
-  want them up-to-date immediately.
+  then use the online **origin** repository to keep them in sync. For example: You work 
+  from your laptop and commit your changes locally. You then push them to 
+  your origin repository. Next all you need to do is to tell your other local
+  repos to pull from origin and they will all be synced. 
   
-
 Now enough with theory, let's do this in practice. To create your own 
 repositories (origin and local) do the following:
 
@@ -55,7 +60,8 @@ repositories (origin and local) do the following:
   original repository under your account. This is your **origin** (see above).
   For more information on forking, you can read http://help.github.com/forking/.
 * Github will give you instructions on how to *clone* your origin
-  to your own computer, thereby creating a local repo, aka your "working copy". 
+  to your own computer, thereby creating a local repo, your **local
+  repository**, aka your "working copy". 
 * You can repeat the cloning on as many machines as you see fit.
 * Tell your local repos where **upstream** is by running the following
   command in each of them: *git remote add upstream git://github.com/VAMDC/NodeSoftware.git* 
