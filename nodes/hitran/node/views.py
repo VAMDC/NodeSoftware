@@ -26,66 +26,66 @@ def index(request):
 
 #counter=0
 def poll(request):
-	#counter+=1
-	#return_text = '<p>%d -*-</p>' % counter
-	return_text = '<p>Woop!</p>'
-	#if counter>10:
-	#	return_text='END OF JOB'
-	return HttpResponse(return_text)
+    #counter+=1
+    #return_text = '<p>%d -*-</p>' % counter
+    return_text = '<p>Woop!</p>'
+    #if counter>10:
+    #    return_text='END OF JOB'
+    return HttpResponse(return_text)
 
 def search_lbl(request):
-	if request.POST:
-		# translate the query string into a dictionary:
-		# e.g. 'numin=0.&numax=100.&...' -> {'numin': 0., 'numax': 100., ...}
-		q = QueryDict(request.POST['post_data'])
-		numin = q.get('numin')
-		if numin: numin=float(numin)
-		numax = q.get('numax')
-		if numax: numax=float(numax)
-		Smin = q.get('Smin')
-		if Smin: Smin=float(Smin)
+    if request.POST:
+        # translate the query string into a dictionary:
+        # e.g. 'numin=0.&numax=100.&...' -> {'numin': 0., 'numax': 100., ...}
+        q = QueryDict(request.POST['post_data'])
+        numin = q.get('numin')
+        if numin: numin=float(numin)
+        numax = q.get('numax')
+        if numax: numax=float(numax)
+        Smin = q.get('Smin')
+        if Smin: Smin=float(Smin)
 
-		# The form returns molecule=<molecID> for any checked
+        # The form returns molecule=<molecID> for any checked
         # <molec_name> boxes:
-		selected_molecids = q.getlist('molecule')
-		selected_molecules = Molecules.objects.filter(
+        selected_molecids = q.getlist('molecule')
+        selected_molecules = Molecules.objects.filter(
             molecid__in=selected_molecids).values(
                     'molec_name','molec_name_html')
 
-		# here's where the real work is done:
-		start = time.time()
-		req = make_request(numin, numax, Smin, selected_molecids,
+        # here's where the real work is done:
+        start = time.time()
+        req = make_request(numin, numax, Smin, selected_molecids,
                            output_params = None,
                            output_formats = 'par',
                            compression = None)
-		HITRAN.read_db_from_mysql(req,'christian','whatever')
-		finish = time.time()
-		
-		return HttpResponse('Hello Sir!')
+        HITRAN.read_db_from_mysql(req,'christian','whatever')
+        finish = time.time()
+        
+        return HttpResponse('Hello Sir!')
 
-	# make the HTML for the molecule checkboxes:
-	molec_cb_html_soup = ['<table>\n']
-	i = 0
-	for molecule in molecules:
-		if not i % 4: molec_cb_html_soup.append('<tr>')
-		molec_cb_html_soup.append('<td><input type="checkbox"' \
+    # make the HTML for the molecule checkboxes:
+    molec_cb_html_soup = ['<table>\n']
+    i = 0
+    for molecule in molecules:
+        if not i % 4: molec_cb_html_soup.append('<tr>')
+        molec_cb_html_soup.append('<td><input type="checkbox"' \
             ' name="molecule" value="%d"/>&nbsp;%s</td>'
-			% (molecule['molecid'], molecule['molec_name_html']))
-		if i%4 == 3: molec_cb_html_soup.append('</tr>\n')
-		i += 1
-	molec_cb_html_soup.append('</table>\n')
-	molec_cb_html = ''.join(molec_cb_html_soup)
+            % (molecule['molecid'], molecule['molec_name_html']))
+        if i%4 == 3: molec_cb_html_soup.append('</tr>\n')
+        i += 1
+    molec_cb_html_soup.append('</table>\n')
+    molec_cb_html = ''.join(molec_cb_html_soup)
 
-	selected_output_fields = ['nu','S']
-	available_output_fields = ['A','g_air','g_self','n_air',
+    selected_output_fields = ['nu','S']
+    available_output_fields = ['A','g_air','g_self','n_air',
         'delta_air','QN-upper','QN-lower']
-	return render_to_response('search_lbl.html',
-		{'molec_cb_html': molec_cb_html,
-		'available_output_fields': available_output_fields,
-		'selected_output_fields': selected_output_fields})
+    return render_to_response('search_lbl.html',
+        {'molec_cb_html': molec_cb_html,
+        'available_output_fields': available_output_fields,
+        'selected_output_fields': selected_output_fields})
 
 def search_xsec(request):
-	return render_to_response('search_xsec.html',
+    return render_to_response('search_xsec.html',
         {'xsec_molecules': xsec_molecules})
 
 def custom_sync(request):

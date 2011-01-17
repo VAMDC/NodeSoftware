@@ -15,8 +15,8 @@ def setupResults(sql, LIMIT=1000):
 
     state_ids = set([])
     for trans in transs:
-        s = set([trans.upstate.pk,trans.lostate.pk])
-        state_ids = state_ids.union(s)
+        state_ids.add(trans.upstate.pk)
+        state_ids.add(trans.lostate.pk)
     states = State.objects.filter(pk__in = state_ids)
 
     #upper = Q(upstate_set__in = transs)

@@ -116,17 +116,17 @@ thereby telling the framework how the tables relate to each other. This
 is best illustrated in an example. Suppose you have a second model, in 
 addition to the one above, that was auto-detected as follows::
 
-    class States(models.Model):
+    class State(models.Model):
         id = models.IntegerField(primary_key=True)
         species = models.IntegerField()
         energy = models.DecimalField(max_digits=17, decimal_places=4)
         ...
 
 Now suppose you know that the field called *species* is acutally a 
-reference to the species-table. You would then change the class *States* 
+reference to the species-table. You would then change the class *State* 
 as such::
 
-    class States(models.Model):
+    class State(models.Model):
         id = models.IntegerField(primary_key=True)
         species = models.ForeignKey(Species)
         energy = models.DecimalField(max_digits=17, decimal_places=4)
@@ -145,7 +145,7 @@ example above you could do::
     >>> allspecies = Species.objects.all()
     >>> allspecies.count()
     XX # the number of species is returned
-    >>> somestates = States.objects.filter(species__name='He')
+    >>> somestates = State.objects.filter(species__name='He')
     >>> for state in somestates: print state.energy
 
 
@@ -155,7 +155,7 @@ Case 2: Create a new database
 In this case we assume that the data are in ascii tables of arbitrary 
 layout. The steps now are as follows:
 
-#. Write the data model
+#. Write the data model in $VAMDCROOT/nodes/YourDBname/node/models.py
 #. Create an empty database with corresponding user and password
 #. Tell the node software where to find this database.
 #. Let the node software create the tables
@@ -171,10 +171,10 @@ processes (radiative, collisions etc) and references.
 Deviating data models are certainly possible, but will involve some more 
 work on the query function (see below). In any case, do not so much 
 think about how your data is structured now, but how you want it to be 
-structured in the database, when you writing the models.
+structured in the database, when writing the models.
 
 Writing your data models is best learned from example. Have a look at 
-the example from Case 1 above and at file *nodes/vald/node/models.py* 
+the example from Case 1 above and at file *$VAMDCROOT/nodes/vald/node/models.py* 
 inside the NodeSoftware to see how the model for VALD looks like. Keep 
 in mind the following points:
 
@@ -201,7 +201,8 @@ in mind the following points:
 
 Once you have a first draft of your data model, you test it by running::
 
-    $ ./manage.py sqlall
+    $ cd $VAMDCROOT/nodes/YourDBname/
+    $ ./manage.py sqlall node
 
 This will (if you have no error in the models) print the SQL statements 
 that Django will use to create the database, using the file or 
@@ -212,11 +213,11 @@ ignore the output and move straight on to creating the database::
 
 Now you have a fresh empty database. You can test it with the same 
 commands as mentioned at the end of Case 1 above, replacing "Species" 
-and "States" by you own model names.
+and "State" by you own model names.
 
 .. note::
     There is no harm in deleting the database and re-creating it
-    after improving your models. After all the database is still
+    after improving your models. After all, the database is still
     empty at this stage and *syncdb* will always create it for
     you from the models, even if you change your database
     engine in *settings.py*.
@@ -226,7 +227,7 @@ and "States" by you own model names.
     storage engine InnoDB over the standard MyISAM. You can set this in 
     your settings.py by adding *'OPTIONS': {"init_command": 
     "SET storage_engine=INNODB"}* to your database setup. We also
-    reccommend to use UTF8 as default in your MySQL configuration or
+    recommend to use UTF8 as default in your MySQL configuration or
     create your database with *CREATE DATABASE <dbname> CHARACTER SET utf8;*
 
 
@@ -280,14 +281,14 @@ Explanations on what happens here:
   the QuerySet if necessary. We also prepare a string with the percentage
   for the headers.
 * Line 16-20: We use the ForeignKeys from the Transition model to the 
-  States model that tell us which are the upper and lower states for a 
+  State model that tell us which are the upper and lower states for a 
   transition. We put their ids in to a set which throws out duplicates and 
   then use this set of state_ids to get the QuerySet for the states that 
   belong to the selected transitions.
 * Line 22-24: An alternative, more straight forward way to achieve the 
   same thing. This uses the ForeignKeys in the *inverse* direction, 
   connects the two queryObjects by an OR-relation, selects the states and 
-  then throuws away dumplicates. The first approach proves faster if the 
+  then throws away duplicates. The first approach proves faster if the 
   number of duplicates is large.
 * Lines 26-27: We run count() on the states to get their number for the 
   headers and do a quick selection and count on the species, again using a 

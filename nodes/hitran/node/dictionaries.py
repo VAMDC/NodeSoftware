@@ -23,13 +23,17 @@ RETURNABLES=CaselessDict({\
 'RadTransProbabilityTransitionProbabilityASourceRef':'RadTran.a_ref',
 'RadTransProbabilityTransitionProbabilityAAccuracy':'RadTran.a_err',
 'RadTransProbabilityProbability:MultipoleValue':'RadTran.multipole',
+# XXX test
+'RadTransMolecularBroadeningXML':'RadTran.broadening_xml',
 
 'MolecularSpeciesChemicalName':'Molecule.chemical_names',
 'MolecularSpeciesOrdinaryStructuralFormula':'Molecule.molec_name',
-'MolecularSpeciesOrdinaryStoichiometricFormula': \
+'MolecularSpeciesStoichiometricFormula': \
         'Molecule.stoichiometric_formula',
+'MolecularSpeciesID': 'Molecule.inchikey',
 
-'MolecularStateStateID':'MolState.stateid',
+'MolecularStateStateID':'MolState.id',
+'MolecularStateMolecularSpeciesID':'MolState.inchikey',
 'MolecularStateEnergyValue':'MolState.energy',
 'MolecularStateEnergyUnit':'cm-1',
 'MolecularStateEnergyOrigin':'Zero-point energy',
