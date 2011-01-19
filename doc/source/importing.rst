@@ -44,9 +44,9 @@ where <TAB> is the name of the table that matches the file that is
 loaded. 
 
 .. note:: The table names have a prefix *node_*, i.e. the table 
-for a model called *State* will be called *node_state*, unless you 
-specify the table name in the model's definition. You can see a list
-of all tables by running *SHOW TABLES;*.
+    for a model called *State* will be called *node_state*, unless you 
+    specify the table name in the model's definition. You can see a list
+    of all tables by running *SHOW TABLES;*.
 
 The LOAD DATA command has several more options and switches for setting 
 the column delimiter, skipping header lines and the like. Mathematical 
@@ -63,12 +63,24 @@ A more complete example would look like::
 Preparing the input files
 =========================================
 
-In the not so unlikely case that the data are not yet in a format that
-exacly matches the database layout, we provide a tool that can be used to
-re-write
+In the not so unlikely case that the data are not yet in a format that 
+exacly matches the database layout, we provide a tool that can be used 
+to re-write your data and create the ascii files that can be loaded as 
+described above.
+
+These files must fulfill the following criteria:
+
+* One file per database table. LOAD DATA cannot update existing rows.
+* Same number of columns in the file as in the table and in the right order. Althogh LOAD DATA can take a list of columns to circumvent this restriction, it makes sense to get this right.
+* Links between the tables are in place. The key values that link tables (e.g. states and transitions) should be already in the ascii files (even though they *can* still be generated with LOAD DATA by using some SQL magic).
+* A consistent delimiter between the columns (no fixed record length) and consistent quoting.
+* Empty (NULL) values are written as *\N*, not 0 or anything else. (Can also be fixed later if this is the only thing missing)
 
 
-OLD BELOW, IN PROCESS OF REWRITING
+
+
+
+OUTDATED BELOW, IN PROCESS OF REWRITING
 
 The VAMDC package ships with an *import tool* for importing 
 custom text files into a standard database. The tool can be used to
