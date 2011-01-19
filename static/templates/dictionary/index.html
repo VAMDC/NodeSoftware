@@ -1,0 +1,16 @@
+{% extends "indigo.html" %}
+{% load i18n %}
+{% block title %}VAMDC{% endblock %}
+
+{% block headline %}VAMDC Dictionary{% endblock %}
+
+{% block content %}
+describe dict here...
+
+{% for keyword in object_list %}
+
+<p>{{ keyword.name }}</p>
+
+{% endfor %}
+
+{% endblock %}
