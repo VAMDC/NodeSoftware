@@ -4,9 +4,9 @@ from dictionaries import *
 from models import *
 
 def setupResults(sql, LIMIT=1000):
-    q=where2q(sql.where,RESTRICTABLES)
+    q = eval( where2q(sql.where,RESTRICTABLES) )
     transs = Transition.objects.filter(q)
-    ntranss=transs.count()
+    ntranss = transs.count()
 
     if LIMIT < ntranss :
         transs = transs[:LIMIT]

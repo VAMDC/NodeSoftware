@@ -226,7 +226,7 @@ ForeignKeys to something like *'transitions_with_this_upstate'* and
 
 
 Adding more views or apps to your node
---------------------------------
+------------------------------------------
 
 tbw
 

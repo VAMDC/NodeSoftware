@@ -271,7 +271,8 @@ Explanations on what happens here:
   *queryfunc.py*
 * Line 7: This uses the helper function where2q() to 
   convert the information in *sql.where* to QueryObjects that match your 
-  model, using the RESTRICTABLES (see below).
+  model, using the RESTRICTABLES (see below). The result from where2q() is
+  a string that needs to be executed with eval().
 * In line 8 we simply pass these QueryObjects to the Transition model's 
   filter function. This returns a QuerySet, an unevaluated version of the 
   query.

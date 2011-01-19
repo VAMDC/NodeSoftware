@@ -1,7 +1,74 @@
 .. _importing:
 
-How to use the import tool
-==========================
+How to get your data into the database
+=========================================
+
+In the previous chapter, we have learned how to define the database layout
+and tell the framework to create the database accordingly. The following
+describes how to fill this database with data that reside one or many
+ascii tables.
+
+.. note::
+    There are many ways to achieve this and you are certainly free to
+    fill the database in any way you want, if you already know how to
+    do it.
+
+The strategy we adopt is to use the database's own import mechanisms 
+which are manyfold faster for large amounts of data than manually 
+inserting row by row.
+
+So the import becomes a two-step process:
+
+#. create one ascii file per data model where each of them has columns
+   that exactly match the columns in the database.
+#. run one SQL command for each of these files to load it into the
+   matching database table.
+
+
+Since you might already have step 1 finished or might be able to get it 
+with your own data handling tools, let's have a look at step 2 first.
+
+
+Loading ascii data into the database
+=====================================
+
+In the following, we assume that you use MySQL as your database engine 
+which is our recommendation when a new database is set up for the first 
+time. Other engines have similar mechanisms for bulk loading data.
+
+The command we use looks like this::
+
+    mysql> LOAD DATA INFILE '/path/to/data.file' into table <TAB>;
+
+where <TAB> is the name of the table that matches the file that is 
+loaded. 
+
+.. note:: The table names have a prefix *node_*, i.e. the table 
+for a model called *State* will be called *node_state*, unless you 
+specify the table name in the model's definition. You can see a list
+of all tables by running *SHOW TABLES;*.
+
+The LOAD DATA command has several more options and switches for setting 
+the column delimiter, skipping header lines and the like. Mathematical 
+or logical operations can be run on the columns, too, before the data 
+get inserted into the database.
+
+You can read all about LOAD DATA at http://dev.mysql.com/doc/refman/5.1/en/load-data.html
+
+A more complete example would look like::
+
+    mysql> LOAD DATA INFILE '/path/transitions.dat' IGNORE INTO TABLE transitions COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"' IGNORE 1 LINES;
+
+
+Preparing the input files
+=========================================
+
+In the not so unlikely case that the data are not yet in a format that
+exacly matches the database layout, we provide a tool that can be used to
+re-write
+
+
+OLD BELOW, IN PROCESS OF REWRITING
 
 The VAMDC package ships with an *import tool* for importing 
 custom text files into a standard database. The tool can be used to
