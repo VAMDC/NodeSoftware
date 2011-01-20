@@ -6,6 +6,7 @@ def keywords(obj):
 
 class KeyWordAdmin(admin.ModelAdmin):
     list_display = ('name', 'sdescr')
+    search_fields = ('name', 'sdescr', 'ldescr', 'unit')
 
 class UsageAdmin(admin.ModelAdmin):
     list_display = ('name',keywords)
