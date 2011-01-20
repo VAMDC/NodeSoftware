@@ -30,7 +30,7 @@ with your own data handling tools, let's have a look at step 2 first.
 
 
 Loading ascii data into the database
-=====================================
+------------------------------------------
 
 In the following, we assume that you use MySQL as your database engine 
 which is our recommendation when a new database is set up for the first 
@@ -61,7 +61,7 @@ A more complete example would look like::
 
 
 Preparing the input files
-=========================================
+----------------------------------
 
 In the not so unlikely case that the data are not yet in a format that 
 exacly matches the database layout, we provide a tool that can be used 
