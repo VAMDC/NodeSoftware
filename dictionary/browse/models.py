@@ -18,6 +18,20 @@ class KeyWord(models.Model):
     constr = models.CharField('Constraint',max_length=256,null=True,blank=True)
     unit = models.CharField('Unit',max_length=256,null=True,blank=True)
     usage = models.ManyToManyField(Usage)
+    block = models.CharField('XSAMS block',max_length=2, choices=( \
+                                                    ('so','Sources'),
+                                                    ('as','Atomic States'),
+                                                    ('ms','Molecular States'),
+                                                    ('mq','Molecular Quantum Numbers'),
+                                                    ('ct','Collisional Transitions'),
+                                                    ('rt','Radiative Transitions'),
+                                                    ('me','Methods'),
+                                                    ('mo','Molecules'),
+                                                    ('at','Atoms'),
+                                                    ('sp','Species'),
+                                                  ),
+                            null=True,blank=True)
+
 
     def __unicode__(self):
         return u'%s'%self.name
