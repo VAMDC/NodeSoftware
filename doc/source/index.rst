@@ -12,6 +12,7 @@ Documentation for the VAMDC node software.
    importing
    contact
    addit
+   virtmach
    modules
 
 PDF
