@@ -7,10 +7,21 @@
 {% block content %}
 describe dict here...
 
+<table>
+<tr><th>Keyword</th><th>Short Description</th><th>Long Description</th><th>DataType</th><th>Constraint</th><th>Unit</th><th>Usage</th><th>XSAMS Block</th></tr>
 {% for keyword in object_list %}
 
-<p>{{ keyword.name }}</p>
+<tr class="{% cycle 'row1' 'row2' %}">
+<td>{{ keyword.name }}</td>
+<td>{{ keyword.sdescr }}</td>
+<td>{{ keyword.ldescr }}</td>
+<td>{% if keyword.type %}{{ keyword.get_type_display }}{% endif %}</td>
+<td>{% if keyword.constr %}{{ keyword.constr }}{% endif %}</td>
+<td>{% if keyword.unit %}{{ keyword.unit }}{% endif %}</td>
+<td>{% for use in keyword.usage.iterator %}{{ use.name }}, {% endfor %}</td>
+<td>{% if keyword.block %}{{ keyword.get_block_display }}{% endif %}</td></tr>
 
 {% endfor %}
+</table>
 
 {% endblock %}
