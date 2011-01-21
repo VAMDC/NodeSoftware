@@ -13,10 +13,10 @@ def setupResults(sql, LIMIT=1000):
         percentage = '%.1f'%(float(LIMIT)/ntranss *100)
     else: percentage=None
 
-    state_ids = set([])
-    for trans in transs:
-        state_ids.add(trans.upstate.pk)
-        state_ids.add(trans.lostate.pk)
+    state_ids = set()
+    for ids in transs.values('upstate_id','lostate_id'):
+        state_ids = state_ids.union(ids)
+
     states = State.objects.filter(pk__in = state_ids)
 
     #upper = Q(upstate_set__in = transs)
