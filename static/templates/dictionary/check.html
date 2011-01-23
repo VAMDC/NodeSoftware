@@ -1,0 +1,20 @@
+{% extends "indigo.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>Check your dictionary</h1>
+
+<p>Paste your dictionary, Returnable or Restrictable, into the field 
+below, including the variable assignment.</p>
+
+<form action="." method="post">
+{% csrf_token %}
+<p>{{ form.content }}</p>
+<p><input type="submit" value="Check" /></p>
+
+{{ form.content.errors }}
+
+</form>
+
+{% endblock %}
+
