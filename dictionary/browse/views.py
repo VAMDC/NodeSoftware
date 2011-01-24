@@ -93,11 +93,11 @@ blockmap = {'so':'Source.',
 'sp':'Specie.'}
 
 def makedicts(selected):
-    content = '# -*- coding: utf-8 -*-\n'
-    content += 'RETURNABLES = {\ \n'
+    content = 'RETURNABLES = {\ \n'
     for kw in selected:
         if RETURNA in kw.usage.iterator():
-            prefix=blockmap[kw.block]
+            if blockmap.has_key(kw.block): prefix=blockmap[kw.block]
+            else: prefix=''
             content += '\'%s\':\'%s\',\n'%(kw.name,prefix)
 
     content += '}\n\n\n'
