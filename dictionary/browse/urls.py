@@ -10,4 +10,5 @@ urlpatterns = patterns('django.views.generic.list_detail',
 )
 urlpatterns += patterns('dictionary.browse.views',
     (r'^check/', 'check'),
+    (r'^new/', 'makenew'),
 )
