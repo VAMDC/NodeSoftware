@@ -104,48 +104,6 @@ def process_line(linedata, column_dict):
         return None
     return dat
 
-def get_model_instance(tconf, line, model):
-    """
-    Get model instance to update, alternatively create new model
-    """
-    if tconf.has_key('updatematch'):
-        # we want to update an existing model instance.
-        dat = process_line(line, tconf['columns'][0])
-        if not dat:
-            return
-        # this defines 'modelq' as a queryset
-        exec('modelq=Q(%s="%s")' % (tconf['updatematch'], dat))
-        try:
-             data = model.objects.get(modelq)
-        except Exception:
-            data = None
-    else: 
-        # create a new instance of the model
-        data=model()
-    return data
-
-def find_match_and_update(property_name, match_key, model, data):
-    """
-    Don't create a new database object, instead search
-    the database and update an existing one.
-    """       
-        
-    # this instantiates 'modelq' as a queryset 
-    modelq = eval('Q(%s="%s")' % (property_name, match_key))
-    
-    try:
-        match = model.objects.get(modelq) 
-    except Exception, e:
-        raise Exception("%s: Q(%s=%s)" % (e, property_name, match_key))
-    # set variables on the object
-    for key in (key for key in data.keys() if key != match_key):     
-        try:
-            setattr(match, key, data[key])
-            match.save(force_update=True) 
-        except Exception, e:
-            sys.stderr.write("%s: model.%s=%s\n" % (e, key, data[key]))
-    return match
-
 def create_new(cursor, data, db_table):
     """
     Create a new object of type model and store
@@ -158,16 +116,7 @@ def create_new(cursor, data, db_table):
     if not os.path.exists(db_table+'.datx'):
         open(db_table+'.datx','a').write(','.join(map(str,data.keys()))+'\n')
     open(db_table+'.datx','a').write(';'.join(map(str,data.values()))+'\n')
-    #nplaceholders=string.join(['%s']*len(data),',')
-    #sql='INSERT INTO %s (%s) VALUES'%(db_table,nplaceholders)
-    #sql=sql%tuple(data.keys())
-    #sql+=' (%s);'%nplaceholders
-    #print sql, data.values()
-    #try:
-	#cursor.execute(sql,tuple(data.values()))
-    #except IntegrityError, e:
-	#log_trace(e,'IntegrityError')
-    #    pass
+
 
 def add_many2many(model, fieldname, objrefs):
     """
@@ -422,16 +371,10 @@ def parse_mapping(mapping, debug=False):
     django database fields. This should ideally
     not have to be changed for different database types.
     """
-    #import gc, pdb
+    
     if not validate_mapping(mapping):  return
     t0 = time()
 
-    cursor = connection.cursor()
-    transaction.enter_transaction_management()
-
-    
-    #gc.DEBUG_SAVEALL = True
-    #import cProfile as profile
     for file_dict in mapping:
         t1 = time()            
         transaction.set_dirty()
