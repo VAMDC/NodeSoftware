@@ -385,11 +385,12 @@ VAMDC dictionary. The values now are their corresponding places in the
 QuerySets that are constructed in setupResults() above. This means that 
 the XML generator will loop over the QuerySet, getting each element, and 
 try to evaluate the expression that you put in the RETURNABLES. 
+
 Continuing our example from above, assume the State model has a field 
 called *energy*, so each object in the QuerySet will have that value at 
 *AtomState.energy*. Note that the first part before the dot is not the 
-name of your model, but one of the names that you return from 
-setupResults() (see above).
+name of your model, but the *singular* of one of the names that you 
+return from setupResults() (see above).
 
 .. note::
     Again, at least the keys of the RETURNABLES should be filled (even 

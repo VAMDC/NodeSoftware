@@ -2,10 +2,10 @@
 {% load i18n %}
 
 {% block content %}
-<h1>Check your dictionary</h1>
+<h1>Check your dictionaries</h1>
 
-<p>Paste your dictionary, Returnable or Restrictable, into the field 
-below, including the variable assignment.</p>
+<p>Paste your dictionary into the field 
+below, including the variable assignment. Examples below.</p>
 
 <form action="." method="post">
 {% csrf_token %}
@@ -16,5 +16,23 @@ below, including the variable assignment.</p>
 
 </form>
 
+<h2>Examples</h2>
+
+<p>
+<pre>
+RETURNABLE = {'AtomSymbol':'AtomState.species.name',
+'AtomIonCharge':'AtomState.species.ion',
+'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
+}
+</pre>
+</p>
+
+<p>
+<pre>
+RESTRICTABLE = {'AtomSymbol':'species__name',
+'RadTransLogGF':'loggf',
+}
+</pre>
+</p>
 {% endblock %}
 

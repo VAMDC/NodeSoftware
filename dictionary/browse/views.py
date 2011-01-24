@@ -4,24 +4,60 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.exceptions import ValidationError
 
+from models import *
+RETURNA=Usage.objects.get(pk=2)
+REQUESTA=Usage.objects.get(pk=3)
+RESTRICTA=Usage.objects.get(pk=1)
 
 import re
-REGEX1=re.compile(r"""^(RETURNABLE|RESTRICTABLE)\s*=\s*\{(['"]\w*['"]\s*:\s*['"][a-zA-Z0-9_\.]*['"]\s*,\s*)*\s*\}\s*$""")
+REGEX1=re.compile(r"""^\s*(RETURNABLE|RESTRICTABLE)\s*=\s*\{(['"]\w+['"]\s*:\s*['"][a-zA-Z0-9_\.]*['"]\s*,?\s*)*\s*\}\s*$""")
 
+REGEX2=re.compile(r"""^(AtomState|Sources|MoleStates|CollTrans|RadTran|Methods|MoleQNs)\.[a-zA-Z0-9_\.]*$""")
 
-def check_returnable(ret):
-    pass
+from string import strip
 
-def check_restrictable(ret):
-    pass
+def check_keywords(data,usage):
+    errors=[]
+    for name in data.keys():
+        try: r = KeyWord.objects.get(name=name)
+        except KeyWord.DoesNotExist:
+            errors.append('Keyword %s does not exist in the dictionary.'%name)
+            continue
+        if not usage in r.usage.all():
+            errors.append('%s is not a %s according to the dictionary.'%(name,usage.name))
+    if errors: return errors
+    else: return None
 
-
-
+def check_returnvalues(data):
+    errors=[]
+    for name in data.keys():
+        if not REGEX2.match(data[name]):
+            errors.append('The value "%s" of %s does not start with one of the known prefixes. This is fine, if you intend to return as a constant string.'%(data[name],name))
+    if errors: return errors
+    else: return None
+   
 def validate_dict(data):
+    print data
     errors=[]
     if not REGEX1.match(data):
-        errors.append('Basic form not met.')
+        errors.append('First syntax check did not pass. Please check.')
 
+    name,value = data.split('=')
+    name=strip(name)
+    value = ''.join(map(strip,value.splitlines()))
+    #print name,value
+    try: value=eval(value)
+    except: errors.append('Second check (evalution) did not pass. Please check that your imput is correct Python code.')
+
+    if name == 'RETURNABLE':
+        err = check_keywords(value,RETURNA)
+        if err: errors += err
+        err = check_returnvalues(value)
+        if err: errors += err
+    elif name == 'RESTRICTABLE':
+        err = check_keywords(value,RESTRICTA)
+        if err: errors += err
+    
     if errors: raise ValidationError(errors)
     
 class CheckForm(forms.Form):
