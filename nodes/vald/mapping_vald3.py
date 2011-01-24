@@ -80,8 +80,8 @@ pub2source_file = base + "publications_to_sources_map.dat"
 # The mapping itself
 mapping = [
     # Populate Species model, using the species input file.
-    {'model':models.Species,
-     'fname':species_list_file,
+    {'outfile':'species.dat',
+     'infiles':species_list_file,
      'headlines':0,
      'commentchar':'#',
      'linemap':[
@@ -108,101 +108,11 @@ mapping = [
            ],
      }, # end of definition for species file
 
-    # Populate Publication model with pre-processed bibtex data file
-    {'model':models.Publication,    
-     'fname':publications_file,
-     'headlines':0,        
-     'commentchar':'#',    
-     'linemap':[           
-            {'cname':'dbref',
-             'cbyte':(bySepNr, 0,'||')},
-            {'cname':'bibref',
-             'cbyte':(bySepNr, 1,'||')},  
-            {'cname':'author',
-             'cbyte':(bySepNr, 2,'||')},  
-            {'cname':'title',
-             'cbyte':(bySepNr, 3,'||')},  
-            {'cname':'category',
-             'cbyte':(bySepNr, 4,'||')},  
-            {'cname':'year',
-             'cbyte':(bySepNr, 5,'||')},  
-            {'cname':'journal',
-             'cbyte':(bySepNr, 6,'||')},  
-            {'cname':'volume',
-             'cbyte':(bySepNr, 7,'||')},  
-            {'cname':'pages',
-             'cbyte':(bySepNr, 8,'||')},  
-            {'cname':'url',
-             'cbyte':(bySepNr, 9,'||')},            
-            {'cname':'bibtex',
-             'cbyte':(bySepNr, 10,'||')}, 
-          ], 
-      }, # end of bibtex public5Bation data
-    
-    # Populate Source model from vald_cfg file
-    {'model':models.Source,
-     'fname':vald_cfg_file,
-     'headlines':1,
-     'commentchar':';',
-     'linemap':[
-            {'cname':'pk',
-             'cbyte':(bySepNr, 1)},
-            {'cname':'srcfile',
-             'cbyte':(bySepNr, 0)},
-            {'cname':'srcfile_ref',             
-             'cbyte':(get_srcfile_ref, 0, 3)},
-            {'cname':'speclo',
-             'cbyte':(bySepNr, 2),
-             'references':(models.Species,'pk')},
-            {'cname':'spechi',
-             'cbyte':(bySepNr, 3),
-             'references':(models.Species,'pk')},
-            {'cname':'listtype',
-             'cbyte':(bySepNr, 4)},
-            {'cname':'r1',
-             'cbyte':(bySepNr, 5)},
-            {'cname':'r2',
-             'cbyte':(bySepNr, 6)},
-            {'cname':'r3',
-             'cbyte':(bySepNr, 7)},
-            {'cname':'r4',
-             'cbyte':(bySepNr, 8)},
-            {'cname':'r5',
-             'cbyte':(bySepNr, 9)},
-            {'cname':'r6',
-             'cbyte':(bySepNr, 10)},
-            {'cname':'r7',
-             'cbyte':(bySepNr, 11)},
-            {'cname':'r8',
-             'cbyte':(bySepNr, 12)},
-            {'cname':'r9',
-             'cbyte':(bySepNr, 13)},
-            {'cname':'srcdescr',
-             'cbyte':(bySepNr, 14)},
-            ],
-    }, # end of definition for vald_conf file
-
-    # Populate Source model with publications through pub2source file 
-    {'model':models.Source,
-     'fname':pub2source_file,
-     'headlines':3,
-     'commentchar':'#',
-     'updatematch': 'srcfile_ref',
-     'linemap':[
-            {'cname':'srcfile_ref',
-             'cbyte':(bySepNr, 1,'||'),
-             'debug':False},
-            {'cname':'publications',
-             'cbyte':(get_publications, ), # must return a list!
-             'multireferences':(models.Publication, 'dbref'),
-             'debug':False}
-             ]
-    },
 
 # State model read from states_file -upper states
     # (first section) 
-    {'model':models.State,    
-     'fname': (vald_file, terms_file),
+    {'outfile':models.State,    
+     'infiles': (vald_file, terms_file),
      'headlines':(2, 0),
      'commentchar': ('#', '#'),
      'linestep':(1, 2),
@@ -277,8 +187,8 @@ mapping = [
     
     # State model read from states_file - lower states
     # (second section)
-    {'model':models.State,
-     'fname':(vald_file, terms_file),
+    {'outfile':models.State,
+     'infiles':(vald_file, terms_file),
      'headlines':(2, 0), 
      'commentchar':('#','#'),
      'linestep':(1, 2),     
@@ -342,8 +252,8 @@ mapping = [
      }, # end of State model creation - lower states
    
     # Transition model, using the vald file    
-    {'model':models.Transition,
-     'fname':vald_file,
+    {'outfile':models.Transition,
+     'infiles':vald_file,
      'headlines':2,
      'commentchar':'#',
      'linemap':[
@@ -381,10 +291,6 @@ mapping = [
              'cbyte':(charrange, 218,225),
              'references':(models.Publication,'dbref'),
              'skiperror':True},             
-            #            {'cname':'acflag',
-#             'cbyte':(charrange,(225,226))},
-#            {'cname':'accur',
-#             'cbyte':(charrange,(226,236))},
             {'cname':'accur',
              'cbyte':(get_accur, (225,226), (226,236)),
              'debug':False},
@@ -392,23 +298,17 @@ mapping = [
              'cbyte':(charrange, 236,252)},
             {'cname':'wave_ref',             
              'cbyte':(charrange, 252,256)},
-             #'references':(models.Source,'pk')},
             {'cname':'loggf_ref',
              'cbyte':(charrange, 256,260)},
-             #'references':(models.Source,'pk')},
             {'cname':'lande_ref',
              'cbyte':(charrange, 268,272)},
-             #'references':(models.Source,'pk')},
             {'cname':'gammarad_ref',
              'cbyte':(charrange, 272,276)},
-             #'references':(models.Source,'pk')},
             {'cname':'gammastark_ref',
              'cbyte':(charrange, 276,280)},
-             #'references':(models.Source,'pk')},
             {'cname':'waals_ref',  
              'cbyte':(charrange, 280,284)},
-             #'references':(models.Source,'pk')},            
-            {'cname':'upstateid',     #species,coup,jnum,term,energy   
+            {'cname':'upstateid',
              'cbyte':(merge_cols,
                       (30,36), (170,172), (77,82), (172,218),(63,77))},
             {'cname':'lostateid',
@@ -424,6 +324,102 @@ mapping = [
              'references':(models.State,'charid')},
             ],
     } # end of transitions
+
+
+######### REFERENCES START HERE
+
+    # Populate Publication model with pre-processed bibtex data file
+    {'outfile':'publcations.dat',    
+     'infiles':publications_file,
+     'headlines':0,        
+     'commentchar':'#',    
+     'linemap':[           
+            {'cname':'dbref',
+             'cbyte':(bySepNr, 0,'||')},
+            {'cname':'bibref',
+             'cbyte':(bySepNr, 1,'||')},  
+            {'cname':'author',
+             'cbyte':(bySepNr, 2,'||')},  
+            {'cname':'title',
+             'cbyte':(bySepNr, 3,'||')},  
+            {'cname':'category',
+             'cbyte':(bySepNr, 4,'||')},  
+            {'cname':'year',
+             'cbyte':(bySepNr, 5,'||')},  
+            {'cname':'journal',
+             'cbyte':(bySepNr, 6,'||')},  
+            {'cname':'volume',
+             'cbyte':(bySepNr, 7,'||')},  
+            {'cname':'pages',
+             'cbyte':(bySepNr, 8,'||')},  
+            {'cname':'url',
+             'cbyte':(bySepNr, 9,'||')},            
+            {'cname':'bibtex',
+             'cbyte':(bySepNr, 10,'||')}, 
+          ], 
+      }, # end of bibtex public5Bation data
+    
+    # Populate Source model from vald_cfg file
+    {'outfile':models.Source,
+     'infiles':vald_cfg_file,
+     'headlines':1,
+     'commentchar':';',
+     'linemap':[
+            {'cname':'pk',
+             'cbyte':(bySepNr, 1)},
+            {'cname':'srcfile',
+             'cbyte':(bySepNr, 0)},
+            {'cname':'srcfile_ref',             
+             'cbyte':(get_srcfile_ref, 0, 3)},
+            {'cname':'speclo',
+             'cbyte':(bySepNr, 2),
+             'references':(models.Species,'pk')},
+            {'cname':'spechi',
+             'cbyte':(bySepNr, 3),
+             'references':(models.Species,'pk')},
+            {'cname':'listtype',
+             'cbyte':(bySepNr, 4)},
+            {'cname':'r1',
+             'cbyte':(bySepNr, 5)},
+            {'cname':'r2',
+             'cbyte':(bySepNr, 6)},
+            {'cname':'r3',
+             'cbyte':(bySepNr, 7)},
+            {'cname':'r4',
+             'cbyte':(bySepNr, 8)},
+            {'cname':'r5',
+             'cbyte':(bySepNr, 9)},
+            {'cname':'r6',
+             'cbyte':(bySepNr, 10)},
+            {'cname':'r7',
+             'cbyte':(bySepNr, 11)},
+            {'cname':'r8',
+             'cbyte':(bySepNr, 12)},
+            {'cname':'r9',
+             'cbyte':(bySepNr, 13)},
+            {'cname':'srcdescr',
+             'cbyte':(bySepNr, 14)},
+            ],
+    }, # end of definition for vald_conf file
+
+    # Populate Source model with publications through pub2source file 
+    {'outfile':models.Source,
+     'infiles':pub2source_file,
+     'headlines':3,
+     'commentchar':'#',
+     'updatematch': 'srcfile_ref',
+     'linemap':[
+            {'cname':'srcfile_ref',
+             'cbyte':(bySepNr, 1,'||'),
+             'debug':False},
+            {'cname':'publications',
+             'cbyte':(get_publications, ), # must return a list!
+             'multireferences':(models.Publication, 'dbref'),
+             'debug':False}
+             ]
+    },
+
+
 ]
 
 #mapping=mapping[0:5]
