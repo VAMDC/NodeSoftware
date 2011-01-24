@@ -12,27 +12,31 @@ below, including the variable assignment. Examples below.</p>
 <p>{{ form.content }}</p>
 <p><input type="submit" value="Check" /></p>
 
+{% if form.content.errors %}
+<p>Check result:</p>
 {{ form.content.errors }}
-
+{% else %}
+<p>No errors found.</p>
+{% endif %}
 </form>
 
 <h2>Examples</h2>
 
 <p>
-<pre>
+<code>
 RETURNABLE = {'AtomSymbol':'AtomState.species.name',
 'AtomIonCharge':'AtomState.species.ion',
 'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
 }
-</pre>
+</code>
 </p>
 
 <p>
-<pre>
+<code>
 RESTRICTABLE = {'AtomSymbol':'species__name',
-'RadTransLogGF':'loggf',
+'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'loggf',
 }
-</pre>
+</code>
 </p>
 {% endblock %}
 

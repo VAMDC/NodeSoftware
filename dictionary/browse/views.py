@@ -37,7 +37,6 @@ def check_returnvalues(data):
     else: return None
    
 def validate_dict(data):
-    print data
     errors=[]
     if not REGEX1.match(data):
         errors.append('First syntax check did not pass. Please check.')
@@ -45,7 +44,6 @@ def validate_dict(data):
     name,value = data.split('=')
     name=strip(name)
     value = ''.join(map(strip,value.splitlines()))
-    #print name,value
     try: value=eval(value)
     except: errors.append('Second check (evalution) did not pass. Please check that your imput is correct Python code.')
 
@@ -62,7 +60,7 @@ def validate_dict(data):
     
 class CheckForm(forms.Form):
     content=forms.CharField(label='Paste your dictionary',
-	widget=forms.widgets.Textarea(attrs={'cols':'50','rows':'10'}),
+	widget=forms.widgets.Textarea(attrs={'cols':'70','rows':'20'}),
 	required=True,validators=[validate_dict])
 
 def check(request):
