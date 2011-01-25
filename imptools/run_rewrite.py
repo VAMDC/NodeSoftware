@@ -62,8 +62,8 @@ def import_to_db():
         return
 
     # run the full import        
-    import imptools
-    imptools.parse_mapping(mapping, debug=options.debug)
+    import rewrite
+    rewrite.parse_mapping(mapping, debug=options.debug)
     
 if __name__ == '__main__':       
     import_to_db()

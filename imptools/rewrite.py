@@ -13,8 +13,10 @@ import string
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
-        
 is_iter = lambda iterable: hasattr(iterable, '__iter__')
+
+DELIM = ';'
+QUOTE = '"'
 
 def ftime(t0, t1):
     "formats time to nice format."
@@ -162,7 +164,7 @@ def make_outfile(file_dict, global_debug=False):
     
     outf = open(file_dict['outfile'],'a')
 
-    mapping = file_dict['linemap']
+    linemap = file_dict['linemap']
     
     filepaths = file_dict['infiles']
     if not is_iter(filepaths):
@@ -218,23 +220,23 @@ def make_outfile(file_dict, global_debug=False):
 
         total += 1
 
-        for map_dict in mapping:
+        for linedef in linemap:
 
             # check if debug flag is set for this line
 
-            debug = global_debug or map_dict.has_key('debug') and map_dict['debug']
+            debug = global_debug or linedef.has_key('debug') and linedef['debug']
 
             # do not stop or log on errors (this does not hide debug messages if debug is active)
-            skiperrors = map_dict.has_key("skiperrors") and map_dict["skip_errors"]
+            skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
             
             # parse the mapping for this line(s)
-            dat = get_value(lines, map_dict)
+            dat = get_value(lines, linedef)
         
             if debug:
-                print "DEBUG: process_line returns '%s'" % dat
+                print "DEBUG: get_value returns '%s'" % dat
 
-            if not dat or (map_dict.has_key('cnull') 
-                   and dat == map_dict['cnull']):
+            if not dat or (linedef.has_key('cnull') 
+                   and dat == linedef['cnull']):
                 # not a valid line for whatever reason 
                 continue
             

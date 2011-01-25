@@ -9,8 +9,7 @@ for understanding what happens below.
 """
 import os, sys
 
-from linefuncs import *
-
+from imptools.linefuncs import *
 
 
 # Setting up filenames
