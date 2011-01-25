@@ -100,12 +100,14 @@ and create a Python class for each table in the database and attributes
 for these that correspond to the table columns. An example may look like 
 this::
 
-    class Species(models.Model):
-        id = models.IntegerField(primary_key=True)
-        name = models.CharField(max_length=30)
-        ion = models.IntegerField()
-        mass = models.DecimalField(max_digits=7, decimal_places=2)
-        massno = models.IntegerField()
+    from django.db.models import *
+
+    class Species(Model):
+        id = IntegerField(primary_key=True)
+        name = CharField(max_length=30)
+        ion = IntegerField()
+        mass = DecimalField(max_digits=7, decimal_places=2)
+        massno = IntegerField()
         class Meta:
             db_table = u'species'
 
@@ -116,20 +118,20 @@ thereby telling the framework how the tables relate to each other. This
 is best illustrated in an example. Suppose you have a second model, in 
 addition to the one above, that was auto-detected as follows::
 
-    class State(models.Model):
-        id = models.IntegerField(primary_key=True)
-        species = models.IntegerField()
-        energy = models.DecimalField(max_digits=17, decimal_places=4)
+    class State(Model):
+        id = IntegerField(primary_key=True)
+        species = IntegerField()
+        energy = DecimalField(max_digits=17, decimal_places=4)
         ...
 
 Now suppose you know that the field called *species* is acutally a 
 reference to the species-table. You would then change the class *State* 
 as such::
 
-    class State(models.Model):
-        id = models.IntegerField(primary_key=True)
-        species = models.ForeignKey(Species)
-        energy = models.DecimalField(max_digits=17, decimal_places=4)
+    class State(Model):
+        id = IntegerField(primary_key=True)
+        species = ForeignKey(Species)
+        energy = DecimalField(max_digits=17, decimal_places=4)
         ...
 
 .. note:: 
@@ -198,6 +200,9 @@ in mind the following points:
   a transition database), you can add *db_index=True* to the field
   to speed up searches along this column (at the expense of some
   disk space and computation time at database creation).
+* If you do not define a table name for your model with the Meta class,
+  as in the first example above, the table in the database will be named
+  as the model, but lowercase and with a prefix *node_*.
 
 Once you have a first draft of your data model, you test it by running::
 
