@@ -74,6 +74,8 @@ You find the Node Software in the home directory of the user *vamdc*::
 
     $ cd
     $ cd NodeSoftware
+    $ # alternatively: cd $VAMDCROOT
+    $ # this environment variable is pre-set.
 
 This is a version control repository and you can update the software by::
 
@@ -85,3 +87,20 @@ GitHub account with *git add remote origin <YourGitHubRepoURL>* after
 forking the main repository there.)
 
 Now you should be all set to continue with the :ref:`newnode`.
+
+MySQL
+~~~~~~~~~~~~~~~~
+
+MySQL server 5.1 is installed in the VM. You get a MySQL-prompt with::
+
+    $ mysql -u root -p
+
+The password is once more *V@mdc*. From this prompt you can create new 
+databases and set the access rights to match the ones from your node's 
+*settings.py*.
+
+Typical commands would be::
+
+    mysql> CREATE DATABASE yourDBname CHARACTER SET utf8;
+    mysql> GRANT ALL PRIVILEGES ON yourDBname.* TO YourUser@localhost IDENTIFIED BY "reeH5ohm";
+    mysql> flush privileges;
