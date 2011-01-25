@@ -41,7 +41,7 @@ def mod_import(mod_path):
         result[0].close()
     return mod 
         
-def import_to_db():
+def do_rewrite():
     """
     Starts the importer.
     """
@@ -66,4 +66,4 @@ def import_to_db():
     rewrite.parse_mapping(mapping, debug=options.debug)
     
 if __name__ == '__main__':       
-    import_to_db()
+    do_rewrite()

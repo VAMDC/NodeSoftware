@@ -17,6 +17,7 @@ is_iter = lambda iterable: hasattr(iterable, '__iter__')
 
 DELIM = ';'
 QUOTE = '"'
+NULL = '\N'
 
 def ftime(t0, t1):
     "formats time to nice format."
@@ -101,7 +102,8 @@ def get_value(linedata, column_dict):
     if not dat or (column_dict.has_key('cnull') \
                        and dat == column_dict['cnull']):
         return None
-    return dat
+
+    return QUOTE+str(dat)+QUOTE
 
 
 class MappingFile(object):
@@ -233,18 +235,10 @@ def make_outfile(file_dict, global_debug=False):
             dat = get_value(lines, linedef)
         
             if debug:
-                print "DEBUG: get_value returns '%s'" % dat
+                print "DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat)
 
-            if not dat or (linedef.has_key('cnull') 
-                   and dat == linedef['cnull']):
-                # not a valid line for whatever reason 
-                continue
-            
-                    
-
-            # move result(s) into database
-            data.append(dat)
-        outf.write(';'.join(map(str,data))+'\n')
+            data.append(dat or NULL)
+        outf.write(';'.join(data)+'\n')
     outf.close()
 
     print 'Read %s. %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), total, errors)

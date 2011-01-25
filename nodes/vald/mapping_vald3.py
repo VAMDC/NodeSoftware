@@ -29,7 +29,7 @@ mapping = [
      'headlines':0,
      'commentchar':'#',
      'linemap':[
-            {'cname':'pk',
+            {'cname':'id',
              'cbyte':(charrange, 0,7)},
             {'cname':'name',
              'cbyte':(charrange, 9,19)},
@@ -91,39 +91,39 @@ mapping = [
             # these are read from term file
             {'cname':'j',
              'filenum':1, # use term file
-             'cbyte':(get_term_val, 2,1),
+             'cbyte':(get_term_val,1),
              'cnull':'X',},
             {'cname':'l',
              'filenum':1, # use term file
-             'cbyte':(get_term_val, 2,2),
+             'cbyte':(get_term_val,2),
              'cnull':'X',},
             {'cname':'s',
              'filenum':1, # use term file
-             'cbyte':(get_term_val, 2,3),
+             'cbyte':(get_term_val,3),
              'cnull':'X',},
             {'cname':'p',
              'filenum':1, # use term file
-             'cbyte':(get_term_val, 2,4),
+             'cbyte':(get_term_val,4),
              'cnull':'X',},
             {'cname':'j1',
              'filenum':1, # use term file
-             'cbyte':(get_term_val, 2,5),
+             'cbyte':(get_term_val,5),
              'cnull':'X',},
             {'cname':'j2',
              'filenum':1, # use term file
-             'cbyte':(get_term_val, 2,6),
+             'cbyte':(get_term_val,6),
              'cnull':'X',},
             {'cname':'k',
              'filenum':1, # use term file
-             'cbyte':(get_term_val, 2,7),
+             'cbyte':(get_term_val,7),
              'cnull':'X',},
             {'cname':'s2',
              'filenum':1, # use term file
-             'cbyte':(get_term_val, 2,8),
+             'cbyte':(get_term_val,8),
              'cnull':'X',},
             {'cname':'jc',
              'filenum':1, # use term file
-             'cbyte':(get_term_val, 2,9),
+             'cbyte':(get_term_val,9),
              'cnull':'X',},
             ]
      }, # end of State-model creation - upper states
@@ -164,31 +164,31 @@ mapping = [
              #'references':(models.Source,'pk')},
             # these are read from term file
             {'cname':'j',
-             'cbyte':(get_term_val, 2,1),           
+             'cbyte':(get_term_val,1),           
              'cnull':'X',},
             {'cname':'l',
-             'cbyte':(get_term_val, 2,2),
+             'cbyte':(get_term_val,2),
              'cnull':'X',},
             {'cname':'s',
-             'cbyte':(get_term_val, 2,3),
+             'cbyte':(get_term_val,3),
              'cnull':'X',},
             {'cname':'p',
-             'cbyte':(get_term_val, 2,4),
+             'cbyte':(get_term_val,4),
              'cnull':'X',},
             {'cname':'j1',
-             'cbyte':(get_term_val, 2,5),
+             'cbyte':(get_term_val,5),
              'cnull':'X',},
             {'cname':'j2',
-             'cbyte':(get_term_val, 2,6),
+             'cbyte':(get_term_val,6),
              'cnull':'X',},
             {'cname':'k',
-             'cbyte':(get_term_val, 2,7),
+             'cbyte':(get_term_val,7),
              'cnull':'X',},
             {'cname':'s2',
-             'cbyte':(get_term_val, 2,8),
+             'cbyte':(get_term_val,8),
              'cnull':'X',},
             {'cname':'jc',
-             'cbyte':(get_term_val, 2,9),
+             'cbyte':(get_term_val,9),
              'cnull':'X',},
             ]
      }, # end of State model creation - lower states
@@ -199,6 +199,9 @@ mapping = [
      'headlines':2,
      'commentchar':'#',
      'linemap':[
+            {'cname':'id',
+             'cbyte':(constant, 'NULL'),
+             'cnull':'NULL'},
             {'cname':'vacwave',
              'cbyte':(charrange, 0,15)},
             {'cname':'airwave',
