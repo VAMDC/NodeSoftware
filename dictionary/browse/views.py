@@ -16,7 +16,7 @@ RESTRICTA=Usage.objects.get(pk=1)
 import re
 REGEX1=re.compile(r"""^\s*(RETURNABLES|RESTRICTABLES)\s*=\s*\{\s*\\?\s*(['"]\w+['"]\s*:\s*['"][a-zA-Z0-9_\.]*['"]\s*,?\s*)*\s*\}\s*$""")
 
-REGEX2=re.compile(r"""^(AtomState|Sources|MoleStates|CollTrans|RadTran|Methods|MoleQNs)\.[a-zA-Z0-9_\.]*$""")
+REGEX2=re.compile(r"""^(AtomState|Source|MoleState|CollTran|RadTran|Method|MoleQNs)\.[a-zA-Z0-9_\.]*$""")
 
 from string import strip
 
@@ -36,7 +36,7 @@ def check_returnvalues(data):
     errors=[]
     for name in data.keys():
         if not REGEX2.match(data[name]):
-            errors.append('The value "%s" of %s does not start with one of the known prefixes. This is fine, if you intend to return as a constant string.'%(data[name],name))
+            errors.append('The value "%s" of %s does not start with one of the known prefixes. This is fine, if you intend to return it as a constant string.'%(data[name],name))
     if errors: return errors
     else: return None
    
