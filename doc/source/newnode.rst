@@ -346,6 +346,9 @@ data model to the names from the dictionary, like this::
     'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
     }
     
+.. note::
+    There are tools for getting started with writing these and for
+    validiation once you are done at http://vamdc.tmy.se/dict/
 
 About the RESTRICTABLES
 ~~~~~~~~~~~~~~~~~~~~~~~~

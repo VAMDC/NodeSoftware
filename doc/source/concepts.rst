@@ -63,10 +63,8 @@ within VAMDC for a certain bit of information. This is what we mean in
 the following when we talk about "global names" or "keywords".
 
 The full VAMDC dictionary is still being worked on and it currently 
-resides as a simple table `in the wiki 
-<http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/VamdcDictionary>`_. 
-A tool for selecting subsets and for easier updates of the dictionary is 
-a work in progress.
+resides at http://vamdc.tmy.se/dict/ where also some helper tools
+are provided.
 
 At the nodes, the dictionary is used in the following different ways. 
 Note that some keywords do not make sense being used in all three 
