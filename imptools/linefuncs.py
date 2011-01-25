@@ -101,3 +101,60 @@ def lineSplit(linedata, splitsep=',', filenum=0):
     except Exception, e:
         #print "ERROR: linesplit %s: %s" % (linedata, e)
         pass
+
+
+
+#
+# VALD-specific examples below
+#
+
+def get_srcfile_ref(linedata, sep1, sep2):
+    "extract srcfile reference"
+    l1 = bySepNr(linedata, sep1)
+    l2 = bySepNr(l1, sep2, '/')
+    return l2.strip("'").strip()
+
+def get_publications(linedata):
+    "extract publication data. This returns a list since it is for a multi-reference."
+    return [p.strip() for p in bySepNr(linedata, 4, '||').split(',')]
+
+def get_term_val(linedata, sep1, sep2):
+    "extract configurations from term file"
+    l1 = bySepNr(linedata, sep1, ':', filenum=1)
+    return bySepNr(l1, sep2, ',')
+
+def get_gammawaals(linedata, sep1, sep2):
+    "extract gamma - van der waal value"
+    l1 = charrange(linedata, sep1, sep2)    
+    if float(l1) < 0:
+        return l1
+    else:
+        return '0.000'
+
+def get_alphawaals(linedata, sep1, sep2):
+    "extract alpha - van der waal value"
+    l1 = charrange(linedata, sep1, sep2)    
+    if float(l1) > 0:
+        return "%s.%s" % (0, bySepNr(linedata, 1, '.'))
+    else:
+        return '0.000'    
+
+def get_sigmawaals(linedata, sep1, sep2):
+    "extract sigma - van der waal value"
+    l1 = charrange(linedata, sep1, sep2)   
+    if float(l1) > 0:
+        return bySepNr(0, '.')
+    else:
+        return '0.000'
+
+def get_accur(linedata, range1, range2):
+    "extract accuracy"
+    return "%s,%s" % (charrange(linedata, *range1), charrange(linedata, *range2))
+
+def merge_cols(linedata, *ranges):
+    """
+    Merges data from several columns into one, separating them with '-'.
+     ranges are any number of tuples (indexstart, indexend) defining the columns.
+    """
+    return '-'.join([charrange(linedata, *ran) for ran in ranges])
+    

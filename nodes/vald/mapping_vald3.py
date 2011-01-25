@@ -4,69 +4,14 @@
 """
 The config file for importing VALD into a database.
 
-Go to http://vamdc.fysast.uu.se:8888/doc/importing.html
-for documentation
+Go to http://vamdc.tmy.se/doc/importing.html
+for understanding what happens below.
 """
 import os, sys
 
-os.environ['DJANGO_SETTINGS_MODULE']="nodes.vald.settings"
-from vald.node import models 
-
 from linefuncs import *
 
-# 
-# Custom parser commands
-#
-def get_srcfile_ref(linedata, sep1, sep2):
-    "extract srcfile reference"
-    l1 = bySepNr(linedata, sep1)
-    l2 = bySepNr(l1, sep2, '/')
-    return l2.strip("'").strip()
 
-def get_publications(linedata):
-    "extract publication data. This returns a list since it is for a multi-reference."
-    return [p.strip() for p in bySepNr(linedata, 4, '||').split(',')]
-
-def get_term_val(linedata, sep1, sep2):
-    "extract configurations from term file"
-    l1 = bySepNr(linedata, sep1, ':', filenum=1)
-    return bySepNr(l1, sep2, ',')
-
-def get_gammawaals(linedata, sep1, sep2):
-    "extract gamma - van der waal value"
-    l1 = charrange(linedata, sep1, sep2)    
-    if float(l1) < 0:
-        return l1
-    else:
-        return '0.000'
-
-def get_alphawaals(linedata, sep1, sep2):
-    "extract alpha - van der waal value"
-    l1 = charrange(linedata, sep1, sep2)    
-    if float(l1) > 0:
-        return "%s.%s" % (0, bySepNr(linedata, 1, '.'))
-    else:
-        return '0.000'    
-
-def get_sigmawaals(linedata, sep1, sep2):
-    "extract sigma - van der waal value"
-    l1 = charrange(linedata, sep1, sep2)   
-    if float(l1) > 0:
-        return bySepNr(0, '.')
-    else:
-        return '0.000'
-
-def get_accur(linedata, range1, range2):
-    "extract accuracy"
-    return "%s,%s" % (charrange(linedata, *range1), charrange(linedata, *range2))
-
-def merge_cols(linedata, *ranges):
-    """
-    Merges data from several columns into one, separating them with '-'.
-     ranges are any number of tuples (indexstart, indexend) defining the columns.
-    """
-    return '-'.join([charrange(linedata, *ran) for ran in ranges])
-    
 
 # Setting up filenames
 base = "/vald/"
@@ -111,7 +56,7 @@ mapping = [
 
 # State model read from states_file -upper states
     # (first section) 
-    {'outfile':models.State,    
+    {'outfile':'states.dat',    
      'infiles': (vald_file, terms_file),
      'headlines':(2, 0),
      'commentchar': ('#', '#'),
@@ -123,8 +68,7 @@ mapping = [
              'cbyte':(merge_cols,
                       (30,36), (170,172), (77,82), (172,218), (63,77))}, 
             {'cname':'species',
-             'cbyte':(charrange, 30,36),
-             'references':(models.Species,'pk')},
+             'cbyte':(charrange, 30,36)},
             {'cname':'energy',
              'cbyte':(charrange, 63,77)},
             #{'cname':'j',   
@@ -187,7 +131,7 @@ mapping = [
     
     # State model read from states_file - lower states
     # (second section)
-    {'outfile':models.State,
+    {'outfile':'states2.dat',
      'infiles':(vald_file, terms_file),
      'headlines':(2, 0), 
      'commentchar':('#','#'),
@@ -198,8 +142,7 @@ mapping = [
              'cbyte':(merge_cols,
                       (30,36), (122,124), (58,63), (124,170), (44,58))},
             {'cname':'species',
-             'cbyte':(charrange, 30,36) ,
-             'references':(models.Species,'pk')},
+             'cbyte':(charrange, 30,36)},
             {'cname':'energy',
              'cbyte':(charrange, 44,58)},
             #{'cname':'j',
@@ -252,7 +195,7 @@ mapping = [
      }, # end of State model creation - lower states
    
     # Transition model, using the vald file    
-    {'outfile':models.Transition,
+    {'outfile':'transitions.dat',
      'infiles':vald_file,
      'headlines':2,
      'commentchar':'#',
@@ -262,8 +205,7 @@ mapping = [
             {'cname':'airwave',
              'cbyte':(charrange, 15,30)},
             {'cname':'species',
-             'cbyte':(charrange, 30,36),
-             'references':(models.Species,'pk')},
+             'cbyte':(charrange, 30,36)},
             {'cname':'loggf',
              'cbyte':(charrange, 36,44)},
             {'cname':'landeff',
@@ -289,7 +231,6 @@ mapping = [
              "debug":False},
             {'cname':'srctag',
              'cbyte':(charrange, 218,225),
-             'references':(models.Publication,'dbref'),
              'skiperror':True},             
             {'cname':'accur',
              'cbyte':(get_accur, (225,226), (226,236)),
@@ -316,20 +257,18 @@ mapping = [
                       (30,36), (122,124), (58,63), (124,170), (44,58))},
             {'cname':'upstate',
              'cbyte':(merge_cols,
-                      (30,36), (170,172), (77,82), (172,218), (63,77)),
-             'references':(models.State,'charid')},
+                      (30,36), (170,172), (77,82), (172,218), (63,77))},
             {'cname':'lostate',
              'cbyte':(merge_cols,
-                      (30,36), (122,124), (58,63), (124,170), (44,58)),
-             'references':(models.State,'charid')},
+                      (30,36), (122,124), (58,63), (124,170), (44,58))},
             ],
-    } # end of transitions
+    }, # end of transitions
 
 
 ######### REFERENCES START HERE
 
     # Populate Publication model with pre-processed bibtex data file
-    {'outfile':'publcations.dat',    
+    {'outfile':'publications.dat',    
      'infiles':publications_file,
      'headlines':0,        
      'commentchar':'#',    
@@ -360,7 +299,7 @@ mapping = [
       }, # end of bibtex public5Bation data
     
     # Populate Source model from vald_cfg file
-    {'outfile':models.Source,
+    {'outfile':'sources.dat',
      'infiles':vald_cfg_file,
      'headlines':1,
      'commentchar':';',
@@ -372,11 +311,9 @@ mapping = [
             {'cname':'srcfile_ref',             
              'cbyte':(get_srcfile_ref, 0, 3)},
             {'cname':'speclo',
-             'cbyte':(bySepNr, 2),
-             'references':(models.Species,'pk')},
+             'cbyte':(bySepNr, 2)},
             {'cname':'spechi',
-             'cbyte':(bySepNr, 3),
-             'references':(models.Species,'pk')},
+             'cbyte':(bySepNr, 3)},
             {'cname':'listtype',
              'cbyte':(bySepNr, 4)},
             {'cname':'r1',
@@ -403,7 +340,7 @@ mapping = [
     }, # end of definition for vald_conf file
 
     # Populate Source model with publications through pub2source file 
-    {'outfile':models.Source,
+    {'outfile':'sources_publ.dat',
      'infiles':pub2source_file,
      'headlines':3,
      'commentchar':'#',
@@ -414,7 +351,7 @@ mapping = [
              'debug':False},
             {'cname':'publications',
              'cbyte':(get_publications, ), # must return a list!
-             'multireferences':(models.Publication, 'dbref'),
+#             'multireferences':(models.Publication, 'dbref'),
              'debug':False}
              ]
     },
@@ -422,4 +359,4 @@ mapping = [
 
 ]
 
-#mapping=mapping[0:5]
+mapping=mapping[0:4]
