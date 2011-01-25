@@ -17,7 +17,7 @@ class KeyWord(models.Model):
                             null=True,blank=True)
     constr = models.CharField('Constraint',max_length=256,null=True,blank=True)
     unit = models.CharField('Unit',max_length=256,null=True,blank=True)
-    usage = models.ManyToManyField(Usage)
+    usage = models.ManyToManyField(Usage,null=True,blank=True)
     block = models.CharField('XSAMS block',max_length=2, choices=( \
                                                     ('so','Sources'),
                                                     ('as','Atomic States'),
