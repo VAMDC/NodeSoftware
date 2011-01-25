@@ -49,14 +49,16 @@ def validate_dict(data):
     name=strip(name)
     value = ''.join(map(strip,map(strip,value.splitlines()),'\\'))
     try: value=eval(value)
-    except: errors.append('Second check (evalution) did not pass. Please check that your imput is correct Python code.')
+    except:
+        errors.append('Second check (evalution) did not pass. Please check that your input is correct Python code.')
+        raise ValidationError(errors)
 
-    if name == 'RETURNABLE':
+    if name == 'RETURNABLES':
         err = check_keywords(value,RETURNA)
         if err: errors += err
         err = check_returnvalues(value)
         if err: errors += err
-    elif name == 'RESTRICTABLE':
+    elif name == 'RESTRICTABLES':
         err = check_keywords(value,RESTRICTA)
         if err: errors += err
     
