@@ -7,17 +7,17 @@ ascii-input files to the django database. It's generic and is
 controlled from a mapping file.
 
 """
-import sys
-from django.db.models import Q
+import sys, os, os.path
 from time import time 
-from django.db import connection, transaction
-from django.db.utils import IntegrityError
 import string
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
-        
 is_iter = lambda iterable: hasattr(iterable, '__iter__')
+
+DELIM = ';'
+QUOTE = '"'
+NULL = '\N'
 
 def ftime(t0, t1):
     "formats time to nice format."
@@ -56,7 +56,7 @@ def validate_mapping(mapping):
     Check the mapping definition to make sure it contains
     a structure suitable for the parser.
     """
-    required_fdict_keys = ("model", "fname", "linemap")
+    required_fdict_keys = ("infiles", "linemap", "outfile")
     required_col_keys = ("cname", "cbyte")
     if not mapping:
         raise Exception("Empty/malformed mapping.")
@@ -79,7 +79,7 @@ def validate_mapping(mapping):
 
 
 # working functions for the importer
-def process_line(linedata, column_dict):
+def get_value(linedata, column_dict):
     """
     Process one line of data. Linedata is a tuple that always starts with
     the raw string for the line. The function with its arguments is read from
@@ -102,77 +102,10 @@ def process_line(linedata, column_dict):
     if not dat or (column_dict.has_key('cnull') \
                        and dat == column_dict['cnull']):
         return None
-    return dat
 
-def get_model_instance(tconf, line, model):
-    """
-    Get model instance to update, alternatively create new model
-    """
-    if tconf.has_key('updatematch'):
-        # we want to update an existing model instance.
-        dat = process_line(line, tconf['columns'][0])
-        if not dat:
-            return
-        # this defines 'modelq' as a queryset
-        exec('modelq=Q(%s="%s")' % (tconf['updatematch'], dat))
-        try:
-             data = model.objects.get(modelq)
-        except Exception:
-            data = None
-    else: 
-        # create a new instance of the model
-        data=model()
-    return data
+    return QUOTE+str(dat)+QUOTE
 
-def find_match_and_update(property_name, match_key, model, data):
-    """
-    Don't create a new database object, instead search
-    the database and update an existing one.
-    """       
-        
-    # this instantiates 'modelq' as a queryset 
-    modelq = eval('Q(%s="%s")' % (property_name, match_key))
-    
-    try:
-        match = model.objects.get(modelq) 
-    except Exception, e:
-        raise Exception("%s: Q(%s=%s)" % (e, property_name, match_key))
-    # set variables on the object
-    for key in (key for key in data.keys() if key != match_key):     
-        try:
-            setattr(match, key, data[key])
-            match.save(force_update=True) 
-        except Exception, e:
-            sys.stderr.write("%s: model.%s=%s\n" % (e, key, data[key]))
-    return match
 
-def create_new(cursor, data, db_table):
-    """
-    Create a new object of type model and store
-    it in the database.
-
-    model - django model type
-    inpdict - dictionary of fieldname:value that should be created.
-    """
-    data.pop('pk',None)
-    nplaceholders=string.join(['%s']*len(data),',')
-    sql='INSERT INTO %s (%s) VALUES'%(db_table,nplaceholders)
-    sql=sql%tuple(data.keys())
-    sql+=' (%s);'%nplaceholders
-    #print sql, data.values()
-    try:
-	cursor.execute(sql,tuple(data.values()))
-    except IntegrityError, e:
-	#log_trace(e,'IntegrityError')
-        pass
-
-def add_many2many(model, fieldname, objrefs):
-    """
-    Add a set of already located references to a many-to-many
-    field named fieldname on a model. 
-    """     
-    eval("model.%s.add(*objrefs)" % (fieldname))
-    
 class MappingFile(object):
     """
     This class implements an object that represents
@@ -221,7 +154,7 @@ class MappingFile(object):
         #print self.line
         return self.line
     
-def parse_file_dict(file_dict, cursor, global_debug=False):
+def make_outfile(file_dict, global_debug=False):
     """
     Process one file definition from a config dictionary by
     processing the file name stored in it and parse it according
@@ -230,30 +163,18 @@ def parse_file_dict(file_dict, cursor, global_debug=False):
     file_dict - config dictionary representing one input file structure
     (for an example see e.g. mapping_vald3.py)
     """    
-
-    model = file_dict['model']    
-    db_table=model._meta.db_table
-
-    mapping = file_dict['linemap']
-
-    # replace cname by db_column if it is set in the model
-    for mapp in mapping:
-        if mapp['cname']=='pk': mapp['cname']=model._meta.pk.name
-        if model._meta.get_field(mapp['cname']).db_column:
-            mapp['cname']=model._meta.get_field(mapp['cname']).db_column
-
-    # update an existing model using field named updatematch
-    updatematch = file_dict.get('updatematch', None) 
-
-    # file specifics 
     
-    filepaths = file_dict['fname']
+    outf = open(file_dict['outfile'],'a')
+
+    linemap = file_dict['linemap']
+    
+    filepaths = file_dict['infiles']
     if not is_iter(filepaths):
         filepaths = [filepaths]
     nfiles = len(filepaths)
     filenames = [path.split('/')[-1] for path in filepaths]
 
-    # optional  
+    # optional keys, set default values
     headlines = file_dict.get('headlines', [0])
     if not is_iter(headlines):
         headlines = [headlines]
@@ -289,9 +210,7 @@ def parse_file_dict(file_dict, cursor, global_debug=False):
     while True:
         # step and read one line from all files 
         lines = []
-        data = {}
-
-        many2manyfield_list = []
+        data = []
 
         try:
             for mapfile in mapfiles:
@@ -303,111 +222,27 @@ def parse_file_dict(file_dict, cursor, global_debug=False):
 
         total += 1
 
-        for map_dict in mapping:
+        for linedef in linemap:
 
             # check if debug flag is set for this line
 
-            debug = global_debug or map_dict.has_key('debug') and map_dict['debug']
+            debug = global_debug or linedef.has_key('debug') and linedef['debug']
 
             # do not stop or log on errors (this does not hide debug messages if debug is active)
-            skiperrors = map_dict.has_key("skiperrors") and map_dict["skip_errors"]
+            skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
             
             # parse the mapping for this line(s)
-            dat = process_line(lines, map_dict)           
-            if debug:
-                print "DEBUG: process_line returns '%s'" % dat
-
-            if not dat or (map_dict.has_key('cnull') 
-                   and dat == map_dict['cnull']):
-                # not a valid line for whatever reason 
-                continue
-            
-                    
-            if map_dict.has_key('multireferences'):
-                # this collumn references multiple other objects
-                # (i.e. a many-to-many relation). It requres that 'dat' is a list of
-                # equal length to the given reference fields.                
-
-                if not is_iter(dat):
-                    if skiperrors:
-                        if debug:
-                            print "DEBUG: Skipping malformed multireference field: %s (%s)" % (dat, map_dict['references'])
-                    else:
-                        errors += 1
-                        print "ERROR: Malformed multireference field: %s (%s)" % (dat, map_dict['references'])
-                    continue
-
-                refmodel = map_dict['multireferences'][0]
-                refcol = map_dict['multireferences'][1]
-
-                many2many_dict = {"refmodel":refmodel,
-                                  "fieldname":map_dict["cname"],
-                                  "objlist":[]}
-                # create a query object q for locating
-                # the referenced model and field
-                for ref in dat:
-                    if not ref:
-                        continue 
-                    Qquery = eval('Q(%s="%s")' % (refcol, ref))
-                    try:
-                        obj = refmodel.objects.get(Qquery)
-                    except Exception, e:
-                        errors += 1
-                        errstring = "reference %s.%s='%s' not found (%s)." % (refmodel,refcol, ref, e)
-                        if skiperrors:                    
-                            if debug:                        
-                                print "DEBUG: %s" % errstring
-                        else:                            
-                            print "ERROR: %s" % errstring                        
-                        # we don't add anything to data dict, we just skip. For this to     
-                        # work we required null=True in the model.
-                        continue
-                    many2many_dict['objlist'].append(obj)
-
-                # this particular set of data should not go into the data dict
-                # but is stored for post-processing
-                many2manyfield_list.append(many2many_dict)
-                continue 
-                    
-            # move result(s) into database
-            data[map_dict['cname']] = dat
-            
-            # line columns parsed; now move to database 
-
-        modelinstance = None 
+            dat = get_value(lines, linedef)
         
-        if updatematch:
-            # Model was already created; this run is for
-            # updating it properly (e.g. for vald)            
-            try:
-                match_key = data[updatematch]
-                modelinstance = find_match_and_update(updatematch, match_key, model, data)
-            except Exception, e:
-                errors += 1
-                if debug:
-                    log_trace(e, "ERROR updating %s: " % model)
-                
-        else:
-            # create a new instance of model and store it in database,
-            # populated with the relevant fields. 
-            if not data.has_key('pk'):
-                data['pk'] = None
-            #try:
-            create_new(cursor, data, db_table)
-            #except Exception, e:                
-            #    errors += 1
-            #    if debug:
-            #        log_trace(e, "ERROR creating %s: " % model)
-            
-        # post processing: many-to-many fields
-        if modelinstance:
-            for mdict in many2manyfield_list:            
-                add_many2many(modelinstance, mdict["fieldname"], mdict["objlist"])
-                modelinstance.save()
+            if debug:
+                print "DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat)
 
-    transaction.commit()
+            data.append(dat or NULL)
+        outf.write(';'.join(data)+'\n')
+    outf.close()
+
     print 'Read %s. %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), total, errors)
-
+    
     global TOTAL_LINES, TOTAL_ERRS
     TOTAL_LINES += total
     TOTAL_ERRS += errors
@@ -419,29 +254,18 @@ def parse_mapping(mapping, debug=False):
     django database fields. This should ideally
     not have to be changed for different database types.
     """
-    #import gc, pdb
+    
     if not validate_mapping(mapping):  return
     t0 = time()
 
-    cursor = connection.cursor()
-    transaction.enter_transaction_management()
-
-    
-    #gc.DEBUG_SAVEALL = True
-    #import cProfile as profile
     for file_dict in mapping:
         t1 = time()            
-        transaction.set_dirty()
-        parse_file_dict(file_dict, cursor, global_debug=debug)
-        transaction.commit()
+        make_outfile(file_dict, global_debug=debug)
         print "Time used: %s" % ftime(t1, time())
         #pdb.set_trace()
         #print gc.garbage
         #print gc.get_count()
     
-    transaction.leave_transaction_management()
-    transaction.commit()
-    connection.close()
     print "Total time used: %s" % ftime(t0, time())
     print "Total number of errors/fails/skips: %s/%s (%g%%)" % (TOTAL_ERRS,
                                                                 TOTAL_LINES,
