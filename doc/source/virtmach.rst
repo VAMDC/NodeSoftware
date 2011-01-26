@@ -19,7 +19,8 @@ The file can be downloaded from
 http://vamdc.tmy.se/files/VAMDCnode.vdi.bz2 (510MB)
 
 Unpack it (bunzip) and save it whereever it pleases you (unpacked size 
-is around 2GB). The default location is ~/.VirtualBox/HardDisks/
+is around 2GB). The default location on Linux hosts is 
+``~/.VirtualBox/HardDisks/``
 
 
 Setting up the VM
@@ -31,8 +32,8 @@ comfortably fits into your RAM. When asked to create a virtual hard
 disk, chose the one you downloaded instead.
 
 When you finished the setup, you can click "Start" to boot the VM. At 
-the end of the boot process, you will see a login prompt. Use *vamdc* as 
-username and *V@mdc* as password.
+the end of the boot process, you will see a login prompt. Use ``vamdc`` as 
+username and ``V@mdc`` as password.
 
 Once inside the VM
 -----------------------
@@ -40,24 +41,25 @@ Once inside the VM
 Passwords
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The first thing to do is change the password by typing *passwd*. The 
-user can execute commands with root-privileges by prepending *sudo*. Use 
-it to change the root password (which is also *V@mdc* from the start).
+The first thing to do is change the password by typing ``passwd``. The 
+user can execute commands with root-privileges by prepending ``sudo``. 
+Use ``sudo passwd`` to change the root password (which is also *V@mdc* 
+from the start).
 
 Network
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Check that the VM has access to the network by trying to *ssh* to 
-another machine or by running *sudo ifconfig* and checking that 
+another machine or by running ``sudo ifconfig`` and checking that 
 interface *eth0* has an IP-address assigned to it.
 
 .. note::
     After copying a VM, the operating system still remembers the old host's
     network card and will likely give a new name (eth1) to the current network
     interface. You can fix this by removing the content of the file
-    */etc/udev/rules.d/70-persistent-net.rules* and reboot (type *reboot*); 
-    alternatively by editing */etc/network/interfaces* and running 
-    */etc/init.d/networking restart*.
+    ``/etc/udev/rules.d/70-persistent-net.rules`` and reboot (type ``sudo reboot``); 
+    alternatively by editing ``/etc/network/interfaces`` and running 
+    ``/etc/init.d/networking restart``.
 
 Install system updates
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -83,7 +85,7 @@ This is a version control repository and you can update the software by::
 
 For more information on how to use this, please read :ref:`gitcollab` in 
 the previous section. (You can connect the existing repository to your
-GitHub account with *git add remote origin <YourGitHubRepoURL>* after
+GitHub account with ``git add remote origin <YourGitHubRepoURL>`` after
 forking the main repository there.)
 
 Now you should be all set to continue with the :ref:`newnode`.
@@ -95,9 +97,9 @@ MySQL server 5.1 is installed in the VM. You get a MySQL-prompt with::
 
     $ mysql -u root -p
 
-The password is once more *V@mdc*. From this prompt you can create new 
+The password is once more ``V@mdc``. From this prompt you can create new 
 databases and set the access rights to match the ones from your node's 
-*settings.py*.
+``settings.py``.
 
 Typical commands would be::
 
