@@ -71,85 +71,67 @@ described above.
 These files must fulfill the following criteria:
 
 * One file per database table. LOAD DATA cannot update existing rows.
-* Same number of columns in the file as in the table and in the right order. Althogh LOAD DATA can take a list of columns to circumvent this restriction, it makes sense to get this right.
+* Same number of columns in the file as in the table and in the right order. Although LOAD DATA can take a list of columns to circumvent this restriction, it makes sense to get this right.
 * Links between the tables are in place. The key values that link tables (e.g. states and transitions) should be already in the ascii files (even though they *can* still be generated with LOAD DATA by using some SQL magic).
 * A consistent delimiter between the columns (no fixed record length) and consistent quoting.
-* Empty (NULL) values are written as *\N*, not 0 or anything else. (Can also be fixed later if this is the only thing missing)
+* Empty (NULL) values are written as *\\N*, not 0 or anything else. (Can also be fixed later if this is the only thing missing)
 
 
+The Node Software ships with a *rewrite tool* for creating the files 
+according to these criteria. The tool can be used to import almost any 
+format of file as long as it stores its records as *lines* (blocks of 
+data stretching several lines in the file are currently only partly 
+supported).
 
+For using the rewrite tool, you need to tell it how your original data 
+files are named and how they are structured. This is done in something 
+called a *mapping file*. The mapping file describes how the rewriter 
+should extract data from your custom text files and write them into the files
+that match the data model.
 
-
-OUTDATED BELOW, IN PROCESS OF REWRITING
-
-The VAMDC package ships with an *import tool* for importing 
-custom text files into a standard database. The tool can be used to
-import almost any format of file as long as it stores its records as
-*lines* (blocks of data stretching several lines in the file are 
-currently not supported). 
-
-Using the tool consists of defining two main components: 
-
-* A set of *Django database models*. A "model" in this context is a snippet of Python code
-  that describes the layout of a database table and its fields. The Django framework abstracts the
-  process allowing for wide support for different databases with the
-  same interface. The various database models you use are always
-  defined in *YourNode/node/models.py*. How to define your database
-  models are described in :ref:`newnode`.
-* A *mapping file*. The mapping file describes how the importer should
-  extract data from your custom text files and store that into the right database model. You
   should usually import helper functions from *imptools/linefuncs.py*
   to do much of the work for you. There is a sample mapping file in
   the *imptools/* directory, you can copy that to your Node to
-  edit. 
+  edit.
 
-Starting the import
--------------------
 
-Once you have prepared your database models and defined the mapping
-file as described in the following 
-section, you give the full path to your mapping file as an argument
-to the *imptools/run_import.py* program::
+Starting the rewrite
+---------------------
 
-    $ python run_import.py /vamdc/YourNode/mapping_mydata.py
+Once you have defined the mapping file as described in the following 
+section, you give it as an argument to 
+the *imptools/run_rewrite.py* program::
+
+    $ python run_rewrite.py mapping_mynode.py
   
 
 The mapping file
 ----------------
 
-The mapping file describes how the importer should parse the lines of
-any number of text files and put the result in the correct database
-tables and fields. You must at this point have set up your database
-models. 
+The mapping file is a standard Python file. It must define a variable 
+called *mapping* which contains a list of definitions that describe
+how the rewriter should parse the lines of any number of text files and 
+put the result into the output files.
 
-.. note:: 
-   During this tutorial we use a node *MyNode* located in the top
-   vamdc directory. The mapping file will be called called
-   *MyNode/mapping_mynode.py*.
+Let's start by defining your input files::
 
-The mapping file is a standard Python file. It must contain a variable
-*mapping* pointing to a list. You also need to ``import`` the the
-relevant database models from your node. Finally, you will probably
-want to use some of the helper functions found in *imptools/linefuncs.py*
-.. ::
-
-   # Mapping file for MyNode importing
-  
-   # import models and help functions. 
-   from MyNode.node import models
-   from linefuncs import * 
+   from imptools.linefuncs import *
 
    # the names of the input files
-   basepath = "/vamdc/MyNode/raw_data/" 
-   file1 = basepath + raw_file1.txt
-   file2 = basepath + raw_file2.txt
-   file3 = basepath + raw_file3.txt
+   basepath = "/path/to/your/raw_data/" 
+   file1 = basepath + 'raw_file1.txt'
+   file2 = basepath + 'raw_file2.txt'
+   file3 = basepath + 'raw_file3.txt'
+   outfile1 = basepath + 'references.dat'
+   outfile2 = basepath + 'species.dat'
 
    mapping = [ ... ]  # described below
 
 
+
 The ``mapping`` list
 +++++++++++++++++++++
+
 
 The ``mapping`` variable is a list of Python *dictionaries*. A python
 dictionary is written as ``{key:value, key2:value2, ... }``. One of
@@ -171,19 +153,19 @@ structure looks like this::
       linemap : [ ... ]}
     ] 
 
-The keys and values of each dictionary describes how to populate one database 
-model using any number of source text files.  
+
+The keys and values of each dictionary describes how to populate one output
+file using any number of source text files.  
 
 =============  =========================================================
 **key**        **value**
 -------------  ---------------------------------------------------------
 *Mandatory*
-model          Database model to populate. 
-fname          Input file(s). If more than one file is used, this
+outfile        The name of the file that should be created. 
+infiles        Input file(s). If more than one file is used, this
                should be a list of filenames.          
 linemap        A list of dictionaries defining how to parse each line 
-               of the file(s) into its components; the result of each 
-               dictionary will be inserted into a database field.
+               of the file(s) into its components.
 *Optional*
 headlines      Number of header lines at the top of the 
                input file() (default: 0). 
@@ -199,16 +181,13 @@ lineoffset     An offset step length (in number of lines) between
                other line. So a lineoffset of (0,2) would mean that
                while every line is read in the first file, only every
                third is used in the second file (default is 0 offset).
-updatematch    A field name to use to obtain keys
-               for referencing other tables in the database
-               (e.g. One-To-Many and Many-To-Many relationships)
 =============  =========================================================
 
-If you are using more than one input file to populate a given model
+If you are using more than one input file to populate one output file
 (for example if you read one piece of data from each file and combines
-them),  you need to supply lists to all entries identifying features
+them), you need to supply lists to all entries identifying features
 in the files, such as *commentchar*, *cnull* etc. If you do not the
-importer will return errors. Note that in order to correlate several
+rewriter will return errors. Note that in order to correlate several
 files like this they all have to have its data in the form of lines,
 and be able to step systematically through those lines. Use
 *lineoffset* to step at different rates through the files.
@@ -223,8 +202,7 @@ model.
 **linemap_key**     **value**
 ------------------  ---------------------------------------------------------
 *Mandatory*
-cname               The database field. This must match an actual field
-                    name on your database model.
+cname               The name of the field in your database model.
 cbyte               A tuple ``(linefunction, arguments)``. This defines a
                     function capable of parsing the line(s) to produce
                     the data needed to feed to the field *cname*. The only
@@ -233,37 +211,19 @@ cbyte               A tuple ``(linefunction, arguments)``. This defines a
                     contains the current line to parse, or a list of lines
                     if more than one input files where read simultaneously.
 *Optional*
-references          A tuple ``(linked_model, identifying_field)``. This is only to be
-                    used if the field *cname* is defined on the model as a One-To-Many
-                    relationship (a ForeignKey). The data parsed with
-                    *cbyte* above will then not be inserted in this field -
-                    instead the result is used as a search criterion: The database will be
-                    searched for instances of *linked_model* with an
-                    *identifying_field* value equal to the parsed result.
-multireferences     A tuple ``(linked_model, identifying field).``
-                    This is similar to *references* above, but is used
-                    on a Many-to-many relation (ManyToManyField). This
-                    will use the result from the line function in
-                    *cbyte* to search and connect any number of
-                    matching model instances to this field. Note: For this
-                    to work, the linefunction you use *must* return a
-                    list of keys to match for, one for each model
-                    intance you want to relate to this field. 
 debug               This will activate verbose error messages for this
                     parsing only. Useful for finding problems with the mapping. 
 ==================  =========================================================
 
 Continuing our example, here's of how this could look in the mapping
 file (the line breaks are technically not needed, but make things easier to
-read).
-
-::
+read)::
    
    mapping = [
-     # first dictionary, populating model 'References'
+     # first dictionary, writing into references.dat
      {
-       'model': models.References,
-       'fname': file1,
+       'outfile': outfile1,
+       'infiles': file1,
        'headlines' : 3,
        'commentchar' : '#',
        'linemap' : [             
@@ -274,10 +234,10 @@ read).
                # ...
                    ]        
      } 
-     # next model dictionary, populating a model 'Species'
+     # next model dictionary, writing species.dat
      {  
-       'model' : models.Species,
-       'fname' : (file2, file3), # using more than one file!
+       'outfile' : outfile2,
+       'infiles' : (file2, file3), # using more than one file!
        'commentchar' : (';', '#'),
        'headliens' : (1, 3),
        'lineoffset' : (0, 1),  
@@ -289,16 +249,14 @@ read).
              # ...
           {'cname':'source',
            'cbyte':(charrange, 0, 10),
-           'references': (models.References, 'dbref')} 
                    ]
         }]
 
-Here we define how to populate two models. The first dictionary (for
-the *References* model) makes use of the *bySepNr* line function (see
-below) to extract data from each line. The *Species* mapping
-instead relies on a line function called *charrange* to mix info
-from two input files. It also  references back to the *References*
-model using an id that can presumably be found in the input file. 
+Here we define how to populate two models. The first dictionary makes 
+use of the *bySepNr* line function (see below) to extract data from each 
+line. The second instead relies on a line function called *charrange* to 
+mix info from two input files. 
+
 
 The line functions
 ++++++++++++++++++
