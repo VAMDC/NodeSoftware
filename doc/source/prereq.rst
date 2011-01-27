@@ -1,6 +1,6 @@
 .. _prereq:
 
-Software prerequesits and installation
+Software prerequisits and installation
 =============================================
 
 Quick start
@@ -12,10 +12,11 @@ root-rights) to install all software that you need::
 
    $ apt-get update && apt-get install python python-django python-pyparsing python-mysqldb apache2 libapache2-mod-wsgi git-core ipython
 
-There are most probably similar packages for other linux distributions. 
-All software should be able to be installed on Windows and OSX as well 
-but it probably involves some more effort and we unfortunately cannot 
-give support for this.
+This will automagically install some more packages that the above ones 
+depend upon. There are most probably similar packages for other linux 
+distributions than Debian. All software should be able to be installed 
+on Windows and OSX as well but it probably involves some more effort and 
+we unfortunately cannot give support for this.
 
 In any case, you can ask us for a virtual machine appliance with 
 Debian/Linux and all required software installed into it. You can then
@@ -89,7 +90,7 @@ between the two is of minor importance. SQLite has the advantage of not
 relying on a separate server software and is often on par with MySQL in 
 terms of speed. Its limitation in terms of concurrent write access is 
 not relevant in our typical use case where the database is only read, 
-not wrtten to, during standard operation.
+not written to, during standard operation.
 
 Webserver
 ---------------
@@ -99,8 +100,8 @@ We support the Apache webserver (http://apache.org) with the WSGI module
 node with Django.
 
 Django is known to also run in newer webservers like cherokee, nginx or 
-lighttpd which are more light-weight and faster. We did in any case not 
-find the web server to be a bottleneck for the performance.
+lighttpd which are more light-weight and maybe faster. We did in any 
+case not find the web server to be a bottleneck for the performance.
 
 
 Git version control
@@ -147,3 +148,7 @@ If any of this fails, please make sure you have installed all of the
 above correctly and ask your system administrator for help. For 
 contacting us, see :ref:`contact`.
 
+.. note::
+	The above only tests that you have installed the software
+	correctly, not the setup and configuration of the node in
+	question.

@@ -1,20 +1,13 @@
 from django.conf.urls.defaults import *
-from DjHITRAN.node import views
+from nodes.hitran.node import views
 from django.conf import settings
 #from django.contrib import admin
 #admin.autodiscover()
 
-urlpatterns = patterns('DjHITRAN.node.views',
-		#(r'^HITRAN/search_xsec/$', views.search_xsec),
-		#(r'^HITRAN/search/$', views.search),
-		#(r'^HITRAN/media/(?P<path>.*)$', 'django.views.static.serve',
-		#	{'document_root': settings.BASEPATH+'DjHITRAN/media'} ),
-		#(r'^HITRAN/scripts/(?P<path>.*)$', 'django.views.static.serve',
-		#	{'document_root': settings.BASEPATH+'DjHITRAN/scripts'} ),
+urlpatterns = patterns(settings.NODENAME+'.hitran.node',
                 (r'^$', 'index'),
-                #(r'^tap/sync/', 'sync'),
-                (r'^tap/custom/sync/', 'custom_sync'),
-                (r'^tap/', include('DjNode.tapservice.urls')),
+                #(r'^tap/custom/sync/', 'custom_sync'),
+                (r'^tap/', include('vamdctap.urls')),
 )
 
 # Replace the base by your node name and add urls

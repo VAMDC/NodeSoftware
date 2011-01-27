@@ -1,8 +1,8 @@
 import os
 import sys
-sys.path.append('/home/tom/py/')
-sys.path.append('/home/tom/py/vamdc/')
 
+# EDIT THE FOLLOWING TWO LINES
+sys.path.append('/home/tom/py/vamdc/')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.YourNode.settings'
 
 

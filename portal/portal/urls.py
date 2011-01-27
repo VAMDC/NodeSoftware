@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('DjPortal.portal.views',
+urlpatterns = patterns('portal.portal.views',
                        (r'^$', 'index'),
                        (r'^query/$', 'query'),
                        (r'^sqlquery/$', 'sqlquery'),
