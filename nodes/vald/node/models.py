@@ -27,8 +27,8 @@ class Publication(models.Model):
     pages = models.CharField(max_length=64, null=True)
     pagebegin = models.PositiveSmallIntegerField(null=True)
     pageend = models.PositiveSmallIntegerField(null=True)
-    url = models.TextField(null=True)  
-    bibtex = models.TextField(null=True)
+    url = models.CharField(max_length=512, null=True)  
+    bibtex = models.CharField(max_length=1024, null=True)
 
     class Meta:
         db_table = u'publications'
@@ -60,7 +60,7 @@ class Source(models.Model):
         db_table = u'sources'
 
 class State(models.Model):
-    charid = models.CharField(max_length=128, db_index=True,unique=True,null=False)
+    id = models.CharField(max_length=128, primary_key=True)
     species = models.ForeignKey(Species, db_column='species', db_index=True)#, validators=[myvalidate])    
     #species = models.PositiveSmallIntegerField()    
     energy = models.DecimalField(max_digits=15, decimal_places=4,null=True,blank=True, db_index=True) 
@@ -89,7 +89,7 @@ class State(models.Model):
         db_table = u'states'
 
 class Transition(models.Model):
-    vacwave = models.DecimalField(max_digits=20, decimal_places=8) 
+    vacwave = models.DecimalField(max_digits=20, decimal_places=8, db_index=True) 
     airwave = models.DecimalField(max_digits=20, decimal_places=8) 
     species = models.ForeignKey(Species,db_column='species',related_name='isspecies_trans')
     #species = models.PositiveSmallIntegerField()
@@ -100,7 +100,8 @@ class Transition(models.Model):
     gammawaals = models.DecimalField(max_digits=6, decimal_places=3,null=True,blank=True)
     sigmawaals = models.IntegerField(null=True,blank=True)                               
     alphawaals = models.DecimalField(max_digits=6, decimal_places=3,null=True,blank=True) 
-    srctag = models.ForeignKey(Publication, db_column='publication', db_index=True, null=True)
+    #srctag = models.ForeignKey(Publication, db_column='publication', db_index=True, null=True)
+    srctag = models.CharField(max_length=11, blank=True,null=True)
     #acflag = models.CharField(max_length=1, blank=True,null=True)
     accur = models.CharField(max_length=11, blank=True,null=True)
     comment = models.CharField(max_length=128, null=True,blank=True)
@@ -162,6 +163,6 @@ class Log(models.Model):
     qid = models.CharField(max_length=128)
     datetime = datetime=models.DateTimeField(auto_now_add=True)
     query = models.ForeignKey(Query, related_name='dbquery', db_column='query')
-    request = models.TextField()
+    request = models.CharField(max_length=1014)
 
     objects = LogManager()

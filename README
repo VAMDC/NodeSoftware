@@ -1,7 +1,7 @@
 This repository holds a prototype for the "node software" and 
 "publishing tools" of VAMDC.
 
-Documentation at http://vamdc.fysast.uu.se:8888/doc/
+Documentation at http://vamdc.tmy.se/doc/
 
 The directories in this repository contain:
 
@@ -12,3 +12,4 @@ doc/        Documentation, run "make html" inside to build it.
 static/     Static files like CSS, template and the like.
 other/      Some scripts and legacy code.
 portal/     A very simple "portal" app that constructs queries and sends them to nodes.
+dictionary/ The application that manages the VAMDC dictionary and provides tools around it.

@@ -100,12 +100,14 @@ and create a Python class for each table in the database and attributes
 for these that correspond to the table columns. An example may look like 
 this::
 
-    class Species(models.Model):
-        id = models.IntegerField(primary_key=True)
-        name = models.CharField(max_length=30)
-        ion = models.IntegerField()
-        mass = models.DecimalField(max_digits=7, decimal_places=2)
-        massno = models.IntegerField()
+    from django.db.models import *
+
+    class Species(Model):
+        id = IntegerField(primary_key=True)
+        name = CharField(max_length=30)
+        ion = IntegerField()
+        mass = DecimalField(max_digits=7, decimal_places=2)
+        massno = IntegerField()
         class Meta:
             db_table = u'species'
 
@@ -116,20 +118,20 @@ thereby telling the framework how the tables relate to each other. This
 is best illustrated in an example. Suppose you have a second model, in 
 addition to the one above, that was auto-detected as follows::
 
-    class State(models.Model):
-        id = models.IntegerField(primary_key=True)
-        species = models.IntegerField()
-        energy = models.DecimalField(max_digits=17, decimal_places=4)
+    class State(Model):
+        id = IntegerField(primary_key=True)
+        species = IntegerField()
+        energy = DecimalField(max_digits=17, decimal_places=4)
         ...
 
 Now suppose you know that the field called *species* is acutally a 
 reference to the species-table. You would then change the class *State* 
 as such::
 
-    class State(models.Model):
-        id = models.IntegerField(primary_key=True)
-        species = models.ForeignKey(Species)
-        energy = models.DecimalField(max_digits=17, decimal_places=4)
+    class State(Model):
+        id = IntegerField(primary_key=True)
+        species = ForeignKey(Species)
+        energy = DecimalField(max_digits=17, decimal_places=4)
         ...
 
 .. note:: 
@@ -198,6 +200,9 @@ in mind the following points:
   a transition database), you can add *db_index=True* to the field
   to speed up searches along this column (at the expense of some
   disk space and computation time at database creation).
+* If you do not define a table name for your model with the Meta class,
+  as in the first example above, the table in the database will be named
+  as the model, but lowercase and with a prefix *node_*.
 
 Once you have a first draft of your data model, you test it by running::
 
@@ -271,7 +276,8 @@ Explanations on what happens here:
   *queryfunc.py*
 * Line 7: This uses the helper function where2q() to 
   convert the information in *sql.where* to QueryObjects that match your 
-  model, using the RESTRICTABLES (see below).
+  model, using the RESTRICTABLES (see below). The result from where2q() is
+  a string that needs to be executed with eval().
 * In line 8 we simply pass these QueryObjects to the Transition model's 
   filter function. This returns a QuerySet, an unevaluated version of the 
   query.
@@ -345,6 +351,9 @@ data model to the names from the dictionary, like this::
     'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
     }
     
+.. note::
+    There are tools for getting started with writing these and for
+    validiation once you are done at http://vamdc.tmy.se/dict/
 
 About the RESTRICTABLES
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -384,11 +393,12 @@ VAMDC dictionary. The values now are their corresponding places in the
 QuerySets that are constructed in setupResults() above. This means that 
 the XML generator will loop over the QuerySet, getting each element, and 
 try to evaluate the expression that you put in the RETURNABLES. 
+
 Continuing our example from above, assume the State model has a field 
 called *energy*, so each object in the QuerySet will have that value at 
 *AtomState.energy*. Note that the first part before the dot is not the 
-name of your model, but one of the names that you return from 
-setupResults() (see above).
+name of your model, but the *singular* of one of the names that you 
+return from setupResults() (see above).
 
 .. note::
     Again, at least the keys of the RETURNABLES should be filled (even 

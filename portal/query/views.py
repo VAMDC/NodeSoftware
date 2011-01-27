@@ -8,7 +8,9 @@ from django.forms.formsets import formset_factory
 
 from models import Query
 import registry
-REGISTRY = registry.getNodeList()
+
+try: REGISTRY = registry.getNodeList()
+except: REGISTRY = [{'name':'Registry is down','url':None}]
 
 import string as s
 from random import choice
@@ -103,7 +105,9 @@ def results(request,qid):
     results=[]
     for node in REGISTRY:
         result={'nodename':node['name']}
-        result['xsamsurl']=makeDlLink(node['url'],query.query)
+        if node['url']:
+	    result['xsamsurl']=makeDlLink(node['url'],query.query)
+	else: result['xsamsurl']=None
         results.append(result)
         
     return render_to_response('portal/results.html', {'results': results, 

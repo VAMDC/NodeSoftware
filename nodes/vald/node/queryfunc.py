@@ -2,6 +2,7 @@
 from django.db.models import Q
 from django.conf import settings
 from dictionaries import *
+from itertools import chain
 
 import sys
 def LOG(s):
@@ -11,10 +12,9 @@ from models import *
 from vamdctap.sqlparse import *
 
 def getVALDsources(transs):
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.waals_ref])
-        sids=sids.union(s)
+    sids=set()
+    for t in transs.values_list('wave_ref','loggf_ref','lande_ref','gammarad_ref','gammastark_ref','waals_ref'):
+        sids = sids.union(t)
     return Source.objects.filter(pk__in=sids)
 
 def getVALDstates(transs):
@@ -30,12 +30,18 @@ def getVALDstates(transs):
     #return states.distinct()
 
     #solution 3, similar to sources
-    sids=set([])
-    for trans in transs:
-        s=set([trans.upstate.pk,trans.lostate.pk])
-        sids=sids.union(s)
-    return State.objects.filter(pk__in=sids)
+    #sids=set([])
+    #for trans in transs:
+    #    s=set([trans.upstate.pk,trans.lostate.pk])
+    #    sids=sids.union(s)
+    #return State.objects.filter(pk__in=sids)
    
+    # solution 4
+    up=transs.values_list('upstate_id',flat=True)
+    lo=transs.values_list('lostate_id',flat=True)
+    sids=set( chain(up,lo) )
+    return State.objects.filter(pk__in=sids)
+
 
 def setupResults(sql,limit=1000):
     LOG(sql)
