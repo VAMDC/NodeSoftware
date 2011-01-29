@@ -108,6 +108,8 @@ A few dos and don'ts that are worthwhile to keep in mind with git:
   local commits for too long but push them frequently instead.
 * Never pull into a dirty tree (i.e. one that has uncommitted changes). 
   Commit first, then pull. Alternatively read *git help stash*.
+* Do *not* commit data files that you have put in your node directory.
+  (check ``git status`` on what will be committed before you use ``git commit -a``.)
 * *Git* trusts you know what you are doing. It will allow you to do stupid
   things, too.
 * Don't panic. Yes, *git* may have a comparably steep learning curve, but it
