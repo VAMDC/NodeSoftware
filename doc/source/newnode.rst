@@ -266,7 +266,7 @@ example on how this should work in that same file. It works like this:
 
 In a concrete example of an atomic transition database, it looks like this:
 
-.. literalinclude:: queryfunc.py
+.. literalinclude:: ../../nodes/ExampleNode/node/queryfunc.py
    :linenos:
 
 Explanations on what happens here:
