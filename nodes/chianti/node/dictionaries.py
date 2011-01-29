@@ -21,9 +21,9 @@ RETURNABLES = {\
 'AtomStateEnergyTheoreticalValue':'AtomState.atomstateenergytheoreticalvalue',
 'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
 'RadTransWavelengthExperimentalValue':'RadTran.radtranswavelengthexperimentalvalue',
-'RadTransWavelengthExperimentalUnits':u'\u00c5', # Angstrom symbol
+'RadTransWavelengthExperimentalUnits':u'A', # Angstrom symbol
 'RadTransWavelengthTheorecticalValue':'RadTran.radtranswavelengththeoreticalvalue',
-'RadTransWavelengthTheoreticalUnits':u'\u00c5', # Angstrom symbol
+'RadTransWavelengthTheoreticalUnits':u'A', # Angstrom symbol
 'RadTransProbabilityWeightedOscillatorStrengthValue':'RadTran.radtransprobabilityweightedoscillatorstrengthvalue',
 'RadTransProbabilityTransitionProbabilityAValue':'RadTran.radtransprobabilitytransitionprobabilityavalue',
 'RadTransProbabilityTransitionProbabilityAUnits':u'Hz'
