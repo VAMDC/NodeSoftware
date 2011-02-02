@@ -13,7 +13,7 @@ from vamdctap.sqlparse import *
 
 def getVALDsources(transs):
     sids=set()
-    for t in transs.values_list('wave_ref','loggf_ref','lande_ref','gammarad_ref','gammastark_ref','waals_ref'):
+    for t in transs.values_list('wave_ref_id','loggf_ref_id','lande_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref'):
         sids = sids.union(t)
     return Source.objects.filter(pk__in=sids)
 
