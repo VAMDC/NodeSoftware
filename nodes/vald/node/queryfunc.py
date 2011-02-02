@@ -17,6 +17,17 @@ def getVALDsources(transs):
         sids = sids.union(t)
     return Source.objects.filter(pk__in=sids)
 
+def getSpeciesWithStates(transs):
+    spids = set( transs.values_list('species_id',flat=True) )
+    species = Species.objects.filter(pk__in=spids)
+    for specie in species:
+        subtranss = transs.filter(species=specie)
+        up=subtranss.values_list('upstate_id',flat=True)
+        lo=subtranss.values_list('lostate_id',flat=True)
+        specie.States = State.objects.filter( pk__in = set(chain(up,lo)) )
+
+    return species
+
 def getVALDstates(transs):
     
     #solution 1
