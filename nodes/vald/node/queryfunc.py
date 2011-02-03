@@ -11,11 +11,15 @@ def LOG(s):
 from models import *
 from vamdctap.sqlparse import *
 
-def getVALDsources(transs):
-    sids=set()
+def getRefs(transs):
+    llids=set()
     for t in transs.values_list('wave_ref_id','loggf_ref_id','lande_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref'):
-        sids = sids.union(t)
-    return Source.objects.filter(pk__in=sids)
+        llids = llids.union(t)
+    lls=LineList.objects.filter(pk__in=llids)
+    rids=set()
+    for ll in lls:
+        rids=rids.union(ll.references.values_list('pk',flat=True))
+    return Reference.objects.filter(pk__in=rids)
 
 def getSpeciesWithStates(transs):
     spids = set( transs.values_list('species_id',flat=True) )
@@ -68,7 +72,7 @@ def setupResults(sql,limit=1000):
         percentage='%.1f'%(float(limit)/ntranss *100)
     else: percentage=None
 
-    sources = getVALDsources(transs)
+    sources = getRefs(transs)
     nsources = sources.count()
     states = getVALDstates(transs)
     nstates = states.count()

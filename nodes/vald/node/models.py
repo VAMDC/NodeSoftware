@@ -2,7 +2,7 @@ from django.db.models import *
 from vamdctap.bibtextools import *
 
 class Species(Model):
-    id = IntegerField(primary_key=True, db_index=True)
+    id = AutoField(primary_key=True, db_index=True)
     name = CharField(max_length=10, db_index=True)
     ion = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     mass = DecimalField(max_digits=8, decimal_places=5) 
@@ -18,7 +18,7 @@ class Species(Model):
         db_table = u'species'
 
 class Reference(Model):
-    dbref = CharField(max_length=64, primary_key=True, db_index=True)
+    id = CharField(max_length=64, primary_key=True, db_index=True)
     #bibref = CharField(max_length=25)
     #title = CharField(max_length=256, null=True)
     #author = CharField(max_length = 256, null=True)
@@ -36,12 +36,12 @@ class Reference(Model):
         return Entry2XML( getEntryFromString(self.bibtex) )
 
     class Meta:
-        db_table = u'references'
+        db_table = u'refs'
     def __unicode__(self):
-        return u'ID:%s %s'%(self.id,self.dbref)
+        return u'%s'%self.id
 
 class LineList(Model):
-    id = IntegerField(primary_key=True, db_index=True)
+    id = AutoField(primary_key=True, db_index=True)
     references = ManyToManyField(Reference)
     srcfile = CharField(max_length=128)
     srcfile_ref = CharField(max_length=128, null=True)
@@ -91,7 +91,7 @@ class State(Model):
         db_table = u'states'
 
 class Transition(Model):
-    id = IntegerField(primary_key=True)
+    id = AutoField(primary_key=True)
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True)
     
