@@ -125,11 +125,10 @@ mapping = [
              'cbyte':(get_term_val,9),
              'cnull':'X',},
             ]
-     }, # end of State-model creation - upper states
+     }, # end of upper states
     
-    # State model read from states_file - lower states
-    # (second section)
-    {'outfile':'states2.dat',
+    # States output file appended with lower states
+    {'outfile':'states.dat',
      'infiles':(vald_file, terms_file),
      'headlines':(2, 0), 
      'commentchar':('#','#'),
