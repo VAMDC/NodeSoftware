@@ -9,6 +9,13 @@ def getEntryFromString(s):
     key,entry = bib.entries.items()[0]
     return entry
 
+TYPE2CATEGORY=CaselessDict({\
+'article':'journal',
+'book':'book',
+'techreport':'report',
+'misc':'private communication',
+'inproceedings':'proceedings',
+})
 
 def Entry2XML(e):
     xml = u'<Source sourceID="B%s">\n<Authors>\n'%e.key
@@ -19,10 +26,11 @@ def Entry2XML(e):
         xml += '<Author><Name>%s</Name></Author>'%' '.join(name)
     xml += '\n</Authors>'
 
+    category = TYPE2CATEGORY.get(e.type)
+    
     f = CaselessDict(e.fields)
     url = f.get('bdsk-url-1')
     title = f.get('title')
-    category = 'journal' if f.get('journal') else 'unknown'
     sourcename = f.get('journal','unknown')
     doi = f.get('doi')
     year = f.get('year')

@@ -26,8 +26,8 @@ def get_bibtex_dbref(linedata):
 base = "/vald/"
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'VALD3.cfg'
-vald_file = base + 'vald3_500.dat'
-terms_file = base + 'terms_1000'
+vald_file = base + 'vald3.dat'
+terms_file = base + 'terms'
 publications_file = base + "VALD3_ref.bib"
 
 # The mapping itself
@@ -135,11 +135,10 @@ mapping = [
              'cbyte':(get_term_val,9),
              'cnull':'X',},
             ]
-     }, # end of State-model creation - upper states
+     }, # end of upper states
     
-    # State model read from states_file - lower states
-    # (second section)
-    {'outfile':'states2.dat',
+    # States output file appended with lower states
+    {'outfile':'states.dat',
      'infiles':(vald_file, terms_file),
      'headlines':(2, 0), 
      'commentchar':('#','#'),
@@ -211,6 +210,12 @@ mapping = [
             {'cname':'id',
              'cbyte':(constant, 'NULL'),
              'cnull':'NULL'},
+            {'cname':'upstate',
+             'cbyte':(merge_cols,
+                      (30,36), (170,172), (77,82), (172,218), (63,77))},
+            {'cname':'lostate',
+             'cbyte':(merge_cols,
+                      (30,36), (122,124), (58,63), (124,170), (44,58))},
             {'cname':'vacwave',
              'cbyte':(charrange, 0,15)},
             {'cname':'airwave',
@@ -240,14 +245,14 @@ mapping = [
              'cbyte':(get_alphawaals, 114,122),
              'cnull':'0.000',
              "debug":False},
-            {'cname':'srctag',
-             'cbyte':(charrange, 218,225),
-             'skiperror':True},             
             {'cname':'accur',
              'cbyte':(get_accur, (225,226), (226,236)),
              'debug':False},
             {'cname':'comment',
              'cbyte':(charrange, 236,252)},
+            {'cname':'srctag',
+             'cbyte':(charrange, 218,225),
+             'skiperror':True},             
             {'cname':'wave_ref',             
              'cbyte':(charrange, 252,256)},
             {'cname':'loggf_ref',
@@ -260,18 +265,6 @@ mapping = [
              'cbyte':(charrange, 276,280)},
             {'cname':'waals_ref',  
              'cbyte':(charrange, 280,284)},
-            {'cname':'upstateid',
-             'cbyte':(merge_cols,
-                      (30,36), (170,172), (77,82), (172,218),(63,77))},
-            {'cname':'lostateid',
-             'cbyte':(merge_cols,
-                      (30,36), (122,124), (58,63), (124,170), (44,58))},
-            {'cname':'upstate',
-             'cbyte':(merge_cols,
-                      (30,36), (170,172), (77,82), (172,218), (63,77))},
-            {'cname':'lostate',
-             'cbyte':(merge_cols,
-                      (30,36), (122,124), (58,63), (124,170), (44,58))},
             ],
     }, # end of transitions
 
@@ -288,8 +281,8 @@ mapping = [
             {'cname':'bibtex',
              'cbyte':(get_bibtex,)}, 
           ], 
-     }, # end of bibtex publication data
-        
+      }, # end of bibtex publication data
+
     # Populate Source model from vald_cfg file
     {'outfile':'linelists.dat',
      'infiles':vald_cfg_file,
