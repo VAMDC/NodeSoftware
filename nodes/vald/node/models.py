@@ -1,4 +1,5 @@
 from django.db.models import *
+from vamdctap.bibtextools import *
 
 class Species(Model):
     id = IntegerField(primary_key=True, db_index=True)
@@ -18,18 +19,21 @@ class Species(Model):
 
 class Reference(Model):
     dbref = CharField(max_length=64, primary_key=True, db_index=True)
-    bibref = CharField(max_length=25)
-    title = CharField(max_length=256, null=True)
-    author = CharField(max_length = 256, null=True)
-    category = CharField(max_length=128, null=True)
-    year = PositiveSmallIntegerField(null=True)
-    journal = CharField(max_length=256, null=True)
-    volume = CharField(max_length=64, null=True)
-    pages = CharField(max_length=64, null=True)
-    pagebegin = PositiveSmallIntegerField(null=True)
-    pageend = PositiveSmallIntegerField(null=True)
-    url = CharField(max_length=512, null=True)  
+    #bibref = CharField(max_length=25)
+    #title = CharField(max_length=256, null=True)
+    #author = CharField(max_length = 256, null=True)
+    #category = CharField(max_length=128, null=True)
+    #year = PositiveSmallIntegerField(null=True)
+    #journal = CharField(max_length=256, null=True)
+    #volume = CharField(max_length=64, null=True)
+    #pages = CharField(max_length=64, null=True)
+    #pagebegin = PositiveSmallIntegerField(null=True)
+    #pageend = PositiveSmallIntegerField(null=True)
+    #url = CharField(max_length=512, null=True)  
     bibtex = CharField(max_length=1024, null=True)
+
+    def XML(self):
+        return Entry2XML( getEntryFromString(self.bibtex) )
 
     class Meta:
         db_table = u'references'
