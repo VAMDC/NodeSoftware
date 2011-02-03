@@ -7,9 +7,8 @@ ascii-input files to the django database. It's generic and is
 controlled from a mapping file.
 
 """
-import sys, os, os.path
+import sys, os.path
 from time import time 
-import string
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
@@ -109,50 +108,109 @@ def get_value(linedata, column_dict):
 class MappingFile(object):
     """
     This class implements an object that represents
-    an open file from which one can read lines. The object
-    keeps track of its own line-step speed and will return lines
+    an open file from which one can read blocks. The object
+    keeps track of its own block-step speed and will return lines
     as defined by this speed. E.g. for a line-step speed of 0.5,
     it will return the same line twice in a row whereas for a
-    step speed of 2, will return every second line etc. 
+    step speed of 2, will return every second block etc. 
+
+    if endblock is \n (default), the block will infact represent a line.
+
     """
-    def __init__(self, filepath, headlines, commentchar, lineoffset, linestep, errline):
+    def block_generator(self, fileobj, startblock=None, endblock='\n'):
+        "generator, stepping through blocks"
+
+        if not startblock and endblock == '\n':
+            # fast line-generator
+            for line in self.file.xreadlines():
+                yield line
+            return
+
+        # we also accept multiple start/end conditions
+        if not is_iter(startblock):
+            startblock = [startblock]
+        if not is_iter(endblock):
+            endblock = [endblock]
+            
+        # block generator
+        block = ""
+        for line in self.file.xreadlines():
+            if startblock[0] != None:
+                if block:
+                    # we are already in a block, so ignore startblock
+                    pass
+                else:
+                    # find any matching startblock entries in the line, and index the matches
+                    smatches = [inum for inum, start in enumerate(startblock) if start in line]
+                    if smatches:
+                        # start a new block                    
+                        start = startblock[smatches[0]]
+                        scrap, block = line.split(start, 1)
+                        block = start + block
+                        continue                     
+                    else:
+                        # we are outside a block; ignore
+                        continue                                              
+
+            ematches = [inum for inum, end in enumerate(endblock) if end in line]                    
+            if ematches:
+                # ending the block
+                end = endblock[ematches[0]]
+                nline, buf = line.split(end, 1)
+                block += nline
+                yield block
+                if startblock[0] != None:
+                    if end in startblock:
+                        # we have to re-insert the startblock(=endblock) in this case
+                        block = end + buf 
+                    else:
+                        # we ignore data outside startblock...endblock
+                        block = ""
+                else:
+                    block = buf
+                buf = ""
+            else:
+                block += line
+            
+    def __init__(self, filepath, headblocks, commentchar,
+                 blockoffset, blockstep, errblock, startblock=None, endblock='\n'):
         "Initialize the file"
 
         self.commentchar = commentchar
         self.file = open(filepath, 'r')
-        self.lines = self.file.xreadlines() # a generator
-        for i in range(headlines + lineoffset):
-            self.lines.next()
+        self.blocks = self.block_generator(self.file, startblock, endblock) # a generator
+        for i in range(headblocks + blockoffset):
+            self.blocks.next()
         while True:
-            self.line = self.lines.next()
-            if not self.line.startswith(self.commentchar):
+            self.block = self.blocks.next()
+            if not self.block.startswith(self.commentchar):
                 break 
-        self.counter = -linestep
-        self.linestep = linestep
-        self.errline = str(errline)
+        self.counter = -blockstep
+        self.blockstep = blockstep
+        self.errblock = str(errblock)
         
-    def readline(self):
+    def readblock(self):
         """
-        Return a line from the file.
+        Return a block from the file.
 
         This method understand both slower
-        line stepping (0 < linestep < 1) and faster (> 1)
+        block stepping (0 < blockstep < 1) and faster (> 1)
         """
-        self.counter += self.linestep
+        self.counter += self.blockstep
         if self.counter == 0:          
-            # always return the first line
-            return self.line                
+            # always return the first block
+            return self.block                
         elif self.counter % 1 == 0:
-            # only step if counter equals an even line
-            for i in range(max(1, self.linestep)):                
+            # only step if counter equals an even block
+            for i in range(max(1, self.blockstep)):                
                 while True:
-                    self.line = self.lines.next()
-                    if not self.line.startswith(self.commentchar):
+                    self.block = self.blocks.next()
+                    if not self.block.startswith(self.commentchar):
                         break        
-        if self.line.startswith(self.errline):            
-            self.line = ""
-        #print self.line
-        return self.line
+        if self.block.startswith(self.errblock):            
+            self.block = ""
+        #print self.block
+        return self.block
     
 def make_outfile(file_dict, global_debug=False):
     """
@@ -191,6 +249,9 @@ def make_outfile(file_dict, global_debug=False):
     errlines = file_dict.get('errlines', ["Unknown" for i in range(nfiles)])
     if not is_iter(errlines):
         errlines = [errlines]
+    # treat start/endblock characters
+    startblock = file_dict.get("startblock", None)    
+    endblock = file_dict.get('endblock', '\n')
         
     # -----
         
@@ -203,7 +264,8 @@ def make_outfile(file_dict, global_debug=False):
     mapfiles = []
     for fnum, filepath in enumerate(filepaths):
         mapfiles.append(MappingFile(filepath, headlines[fnum], commentchars[fnum],
-                                    lineoffsets[fnum], linesteps[fnum], errlines[fnum]))    
+                                    lineoffsets[fnum], linesteps[fnum], errlines[fnum],
+                                    startblock=startblock, endblock=endblock))    
    
     total = 0
     errors = 0   
@@ -215,7 +277,7 @@ def make_outfile(file_dict, global_debug=False):
         try:
             for mapfile in mapfiles:
                 # this automatically syncs all files' lines
-                lines.append(mapfile.readline())
+                lines.append(mapfile.readblock())
         except StopIteration:
             # we are done.
             break 
@@ -238,10 +300,10 @@ def make_outfile(file_dict, global_debug=False):
                 print "DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat)
 
             data.append(dat or NULL)
-        outf.write(';'.join(data)+'\n')
+        outf.write(';'.join(data) +'\n')
     outf.close()
 
-    print 'Read %s. %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), total, errors)
+    print '  %s -> %s: %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), file_dict['outfile'], total, errors)
     
     global TOTAL_LINES, TOTAL_ERRS
     TOTAL_LINES += total

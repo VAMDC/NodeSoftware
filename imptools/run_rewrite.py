@@ -7,7 +7,11 @@ ascii-input files to the django database. It's generic and is
 controlled from a mapping file.
 """
 
+
 import os, os.path, sys, imp, optparse
+
+#sys.path.append(os.environ['VAMDCROOT'])
+
 sys.path.append(os.path.abspath(os.pardir))
 sys.path.append(os.path.abspath(os.curdir))
 sys.path.append(os.path.abspath(os.path.join(os.pardir,'nodes')))
@@ -29,7 +33,6 @@ def mod_import(mod_path):
     except ImportError:
         print "Could not find module '%s' (%s.py) at path '%s'" % (modname, modname, path)
         return None 
-    print result
     try:
         mod = imp.load_module(modname, *result)
     except ImportError,e:
@@ -61,6 +64,24 @@ def do_rewrite():
         print "ERROR: The mapping file must contain a variable called 'mapping'!"
         return
 
+    # check for old output files and warn if they were found
+    found_files = []
+    for map_dict in mapping:
+        outfile = map_dict.get("outfile", None)
+        try:
+            f = open(outfile, 'r')
+            found_files.append(outfile)
+            f.close()
+        except IOError:
+            pass
+    if found_files:
+        print "  Warning: output files already exists:"
+        print "  " + ", ".join(found_files)
+        print "  You should remove these before continuing (or they will be appended to)!"
+        inp = raw_input("Continue Y/[N]? > ")
+        if not inp.lower() == 'y':
+            sys.exit()
+    
     # run the full import        
     import rewrite
     rewrite.parse_mapping(mapping, debug=options.debug)

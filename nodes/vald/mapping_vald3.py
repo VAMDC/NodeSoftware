@@ -11,14 +11,24 @@ import os, sys
 
 from imptools.linefuncs import *
 
+# bibtex-reading helper functions
 
+def get_bibtex(linedata):
+    "return the raw data"
+    return linedata
+def get_bibtex_dbref(linedata):
+    "extract the dbref from the bibtex entry"
+    first_line = linedata.split()[0]
+    typ, dbref = first_line.split('{')
+    return dbref.strip(',').strip()
+        
 # Setting up filenames
 base = "/vald/"
 species_list_file = base + 'VALD_list_of_species'
-vald_cfg_file = base + 'VALD3_config_2010.cfg'
+vald_cfg_file = base + 'VALD3.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
-publications_file = base + "publications_preprocessed.dat"
+publications_file = base + "VALD3_ref.bib"
 
 # The mapping itself
 mapping = [
@@ -258,38 +268,21 @@ mapping = [
             ],
     }, # end of transitions
 
-    # Populate Publication model with pre-processed bibtex data file
+    # Populate Publication model with bibtex data file (block parsing)
     {'outfile':'publications.dat',    
      'infiles':publications_file,
      'headlines':0,        
-     'commentchar':'#',    
+     'commentchar':'%',
+     'startblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE'),
+     'endblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE'),
      'linemap':[           
             {'cname':'dbref',
-             'cbyte':(bySepNr, 0,'||')},
-            ## {'cname':'bibref',
-            ##  'cbyte':(bySepNr, 1,'||')},  
-            ## {'cname':'title',
-            ##  'cbyte':(bySepNr, 3,'||')},  
-            ## {'cname':'author',
-            ##  'cbyte':(bySepNr, 2,'||')},  
-            ## {'cname':'category',
-            ##  'cbyte':(bySepNr, 4,'||')},  
-            ## {'cname':'year',
-            ##  'cbyte':(bySepNr, 5,'||')},  
-            ## {'cname':'journal',
-            ##  'cbyte':(bySepNr, 6,'||')},  
-            ## {'cname':'volume',
-            ##  'cbyte':(bySepNr, 7,'||')},  
-            ## {'cname':'pages',
-            ##  'cbyte':(bySepNr, 8,'||')},  
-            ## {'cname':'url',
-            ##  'cbyte':(bySepNr, 9,'||')},            
+             'cbyte':(get_bibtex_dbref,)},
             {'cname':'bibtex',
-             'cbyte':(bySepNr, 10,'||')}, 
+             'cbyte':(get_bibtex,)}, 
           ], 
       }, # end of bibtex publication data
 
-    
     # Populate Source model from vald_cfg file
     {'outfile':'linelists.dat',
      'infiles':vald_cfg_file,

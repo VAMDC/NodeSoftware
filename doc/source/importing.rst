@@ -96,13 +96,13 @@ that match the data model.
 
 
 Starting the rewrite
----------------------
 
 Once you have defined the mapping file as described in the following 
 section, you give it as an argument to 
 the *imptools/run_rewrite.py* program::
 
     $ python run_rewrite.py mapping_mynode.py
+
   
 
 The mapping file
@@ -129,6 +129,11 @@ Let's start by defining your input files::
 
 
 
+
+
+
+
+
 The ``mapping`` list
 +++++++++++++++++++++
 
@@ -137,6 +142,8 @@ The ``mapping`` variable is a list of Python *dictionaries*. A python
 dictionary is written as ``{key:value, key2:value2, ... }``. One of
 these keys, *linemap*, is itself a list with further dictionaries. The
 structure looks like this::
+
+
 
 
 
@@ -152,6 +159,7 @@ structure looks like this::
       key : value, 
       linemap : [ ... ]}
     ] 
+
 
 
 The keys and values of each dictionary describes how to populate one output
@@ -344,6 +352,7 @@ functions directly in the mapping file.
 Here is an example of a line function that wants to create a unique id
 by parsing different parts of lines from different files::
 
+
  def get_id_from_line(linedata, sepnr, index1, index2):
      """
      extracts id from several lines. 
@@ -360,6 +369,7 @@ by parsing different parts of lines from different files::
          l3 = 'unknown'
      # create unique id
      return "%s-%s-%s" % (l1, l2, l3)
+
 
 Here we made use of the default line functions as building blocks to
 build a complex parsing using three different files. We also do some
