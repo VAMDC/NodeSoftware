@@ -19,7 +19,6 @@ vald_cfg_file = base + 'VALD3_config_2010.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
 publications_file = base + "publications_preprocessed.dat"
-pub2source_file = base + "publications_to_sources_map.dat"
 
 # The mapping itself
 mapping = [
@@ -266,9 +265,6 @@ mapping = [
             ],
     }, # end of transitions
 
-
-######### REFERENCES START HERE
-
     # Populate Publication model with pre-processed bibtex data file
     {'outfile':'publications.dat',    
      'infiles':publications_file,
@@ -277,36 +273,37 @@ mapping = [
      'linemap':[           
             {'cname':'dbref',
              'cbyte':(bySepNr, 0,'||')},
-            {'cname':'bibref',
-             'cbyte':(bySepNr, 1,'||')},  
-            {'cname':'author',
-             'cbyte':(bySepNr, 2,'||')},  
-            {'cname':'title',
-             'cbyte':(bySepNr, 3,'||')},  
-            {'cname':'category',
-             'cbyte':(bySepNr, 4,'||')},  
-            {'cname':'year',
-             'cbyte':(bySepNr, 5,'||')},  
-            {'cname':'journal',
-             'cbyte':(bySepNr, 6,'||')},  
-            {'cname':'volume',
-             'cbyte':(bySepNr, 7,'||')},  
-            {'cname':'pages',
-             'cbyte':(bySepNr, 8,'||')},  
-            {'cname':'url',
-             'cbyte':(bySepNr, 9,'||')},            
+            ## {'cname':'bibref',
+            ##  'cbyte':(bySepNr, 1,'||')},  
+            ## {'cname':'title',
+            ##  'cbyte':(bySepNr, 3,'||')},  
+            ## {'cname':'author',
+            ##  'cbyte':(bySepNr, 2,'||')},  
+            ## {'cname':'category',
+            ##  'cbyte':(bySepNr, 4,'||')},  
+            ## {'cname':'year',
+            ##  'cbyte':(bySepNr, 5,'||')},  
+            ## {'cname':'journal',
+            ##  'cbyte':(bySepNr, 6,'||')},  
+            ## {'cname':'volume',
+            ##  'cbyte':(bySepNr, 7,'||')},  
+            ## {'cname':'pages',
+            ##  'cbyte':(bySepNr, 8,'||')},  
+            ## {'cname':'url',
+            ##  'cbyte':(bySepNr, 9,'||')},            
             {'cname':'bibtex',
              'cbyte':(bySepNr, 10,'||')}, 
           ], 
-      }, # end of bibtex public5Bation data
+      }, # end of bibtex publication data
+
     
     # Populate Source model from vald_cfg file
-    {'outfile':'sources.dat',
+    {'outfile':'linelists.dat',
      'infiles':vald_cfg_file,
      'headlines':1,
      'commentchar':';',
      'linemap':[
-            {'cname':'pk',
+            {'cname':'id',
              'cbyte':(bySepNr, 1)},
             {'cname':'srcfile',
              'cbyte':(bySepNr, 0)},
@@ -340,25 +337,4 @@ mapping = [
              'cbyte':(bySepNr, 14)},
             ],
     }, # end of definition for vald_conf file
-
-    # Populate Source model with publications through pub2source file 
-    {'outfile':'sources_publ.dat',
-     'infiles':pub2source_file,
-     'headlines':3,
-     'commentchar':'#',
-     'updatematch': 'srcfile_ref',
-     'linemap':[
-            {'cname':'srcfile_ref',
-             'cbyte':(bySepNr, 1,'||'),
-             'debug':False},
-            {'cname':'publications',
-             'cbyte':(get_publications, ), # must return a list!
-#             'multireferences':(models.Publication, 'dbref'),
-             'debug':False}
-             ]
-    },
-
-
 ]
-
-mapping=mapping[0:4]

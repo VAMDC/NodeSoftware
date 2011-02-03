@@ -13,9 +13,20 @@ from vamdctap.sqlparse import *
 
 def getVALDsources(transs):
     sids=set()
-    for t in transs.values_list('wave_ref','loggf_ref','lande_ref','gammarad_ref','gammastark_ref','waals_ref'):
+    for t in transs.values_list('wave_ref_id','loggf_ref_id','lande_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref'):
         sids = sids.union(t)
     return Source.objects.filter(pk__in=sids)
+
+def getSpeciesWithStates(transs):
+    spids = set( transs.values_list('species_id',flat=True) )
+    species = Species.objects.filter(pk__in=spids)
+    for specie in species:
+        subtranss = transs.filter(species=specie)
+        up=subtranss.values_list('upstate_id',flat=True)
+        lo=subtranss.values_list('lostate_id',flat=True)
+        specie.States = State.objects.filter( pk__in = set(chain(up,lo)) )
+
+    return species
 
 def getVALDstates(transs):
     
