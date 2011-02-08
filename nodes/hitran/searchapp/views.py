@@ -42,4 +42,3 @@ def index(request):
 
     return render_to_response('index.html',
         {'molec_cb_html': molec_cb_html, })
-

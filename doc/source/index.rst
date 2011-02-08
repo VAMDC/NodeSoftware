@@ -12,11 +12,12 @@ Documentation for the VAMDC node software.
    importing
    contact
    addit
+   virtmach
    modules
 
 PDF
 ========
-A PDF-version of this page is available `here <http://vamdc.fysast.uu.se:8888/doc/nodesoftware.pdf>`_.
+A PDF-version of this page is available at http://vamdc.tmy.se/doc/nodesoftware.pdf.
 
 Index and search
 ==================

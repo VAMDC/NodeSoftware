@@ -10,6 +10,7 @@ Example of call from mapping dictionary:
   'cbyte' : (charrange, 56, 58)}
 
 """
+import string
 
 # is_iter checks if a variable is iterable (a list, tuple etc) or not.
 # Returns True/False.
@@ -24,6 +25,8 @@ def is_iter(iterable):
     return hasattr(iterable, '__iter__')
 
 # Line funcs
+def constant(linedata,value):
+    return value
 
 def charrange(linedata, start, end, filenum=0):
     """
@@ -61,7 +64,13 @@ def charrange2int(linedata, start, end, filenum=0):
         #print "ERROR: charrange2int: %s: %s" % (linedata, e)
         pass
         
-def bySepNr(linedata, number, sep=',', filenum=0):
+def bySepNr(linedata, number, sep=','):
+    try: return string.split(linedata,sep)[number]
+    except Exception, e:
+        pass
+        #print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
+
+def bySepNr2(linedata, number, sep=',', filenum=0):
     """
     Split a text line by sep argument and return
     the number:ed split section
@@ -101,3 +110,62 @@ def lineSplit(linedata, splitsep=',', filenum=0):
     except Exception, e:
         #print "ERROR: linesplit %s: %s" % (linedata, e)
         pass
+
+
+
+#
+# VALD-specific examples below
+#
+
+def get_srcfile_ref(linedata, sep1, sep2):
+    "extract srcfile reference"
+    l1 = bySepNr(linedata, sep1)
+    l2 = bySepNr(l1, sep2, '/')
+    return l2.strip("'").strip()
+
+def get_publications(linedata):
+    "extract publication data. This returns a list since it is for a multi-reference."
+    return [p.strip() for p in bySepNr(linedata, 4, '||').split(',')]
+
+def get_term_val(linedata, n):
+    "extract configurations from term file"
+    line=linedata[1] # we know we want the second file!
+    l = bySepNr(line, 2, ':')
+    try: return bySepNr(l, n, ',')
+    except: pass
+
+def get_gammawaals(linedata, sep1, sep2):
+    "extract gamma - van der waal value"
+    l1 = charrange(linedata, sep1, sep2)    
+    if float(l1) < 0:
+        return l1
+    else:
+        return '0.000'
+
+def get_alphawaals(linedata, sep1, sep2):
+    "extract alpha - van der waal value"
+    l1 = charrange(linedata, sep1, sep2)    
+    if float(l1) > 0:
+        return "%s.%s" % (0, bySepNr(linedata, 1, '.'))
+    else:
+        return '0.000'    
+
+def get_sigmawaals(linedata, sep1, sep2):
+    "extract sigma - van der waal value"
+    l1 = charrange(linedata, sep1, sep2)   
+    if float(l1) > 0:
+        return bySepNr(0, '.')
+    else:
+        return '0.000'
+
+def get_accur(linedata, range1, range2):
+    "extract accuracy"
+    return "%s,%s" % (charrange(linedata, *range1), charrange(linedata, *range2))
+
+def merge_cols(linedata, *ranges):
+    """
+    Merges data from several columns into one, separating them with '-'.
+     ranges are any number of tuples (indexstart, indexend) defining the columns.
+    """
+    return '-'.join([charrange(linedata, *ran) for ran in ranges])
+    

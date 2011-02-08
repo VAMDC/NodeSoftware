@@ -56,6 +56,11 @@ def XsamsSources(Sources):
     if not Sources: return
     yield '<Sources>'
     for Source in Sources:
+	if hasattr(Source,'XML'):
+            try:
+                yield Source.XML()
+                continue
+            except: pass
         G = lambda name: GetValue(name,Source=Source)
         yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
         authornames=G('SourceAuthorName')

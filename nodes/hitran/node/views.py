@@ -20,7 +20,6 @@ case_desc = QNdesc.objects.values('caseid', 'case_prefix', 'name')
 
 def index(request):
     c=RequestContext(request,{})
-
     return render_to_response('index.html', c)
 
 def search_lbl(request):
@@ -45,7 +44,7 @@ def search_lbl(request):
         # here's where the real work is done:
         start = time.time()
         req = make_request(numin, numax, Smin, selected_molecids,
-                           output_params = ['nu', 'nu_err', 'E"'],
+                           output_params = None,
                            output_formats = 'par',
                            compression = None)
         HITRAN.read_db_from_mysql(req,'christian','whatever')

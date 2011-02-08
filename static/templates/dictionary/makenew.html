@@ -1,0 +1,31 @@
+{% extends "indigo.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>Make new RETURNABLES and RESTRICTABLES</h1>
+
+<p>Below you can mark all the keywords that correspond to your data. When you press "submit", a file will be generated and downloaded to you that contains a first guess (you will have to edit it!) for <em>dictionaries.py</em> in your node.</p>
+
+<form action="." method="post">
+{% csrf_token %} 
+{{ formset.management_form }}
+<table>
+  <tr><th>Use?</th><th>Keyword</th><th>Description</th></tr>
+{% for form in formset.forms %}
+<tr><td>{{ form.include }}{{ form.id }}
+{{ form.name.as_hidden }}
+{{ form.sdescr.as_hidden }}
+{{ form.ldescr.as_hidden }}
+</td><td>{{ form.instance.name }}</td><td>{{ form.instance.ldescr }}</td></tr>
+{% endfor %}
+</table>
+<p/>
+<p><input type="submit" value="Submit and download file" /></p>
+<p/>
+<p/>
+
+</form>
+
+
+{% endblock %}
+

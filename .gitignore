@@ -16,5 +16,5 @@ dummy*
 *.swp
 .DS_Store
 doc/build/*
-settings.py
-
+*.json
+*.dat

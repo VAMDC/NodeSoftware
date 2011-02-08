@@ -287,4 +287,3 @@ def process_request(req):
 
     hitran_search = hitran.HITRAN(req)
     return hitran_search.read_db()
-
