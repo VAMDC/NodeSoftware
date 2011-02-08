@@ -4,7 +4,7 @@ from vamdctap.caselessdict import CaselessDict
 
 RETURNABLES=CaselessDict({\
 'SourceID':'Source.sourceid',
-'SourceAuthorName':'Source.author',
+'SourceAuthorName':'Source.authors',
 'SourceTitle':'Source.title',
 # NB my Refs model has pages, not page_begin and page_end:
 'SourcePageBegin':'Refs.pages',		
@@ -12,6 +12,8 @@ RETURNABLES=CaselessDict({\
 'SourceYear':'Source.year',
 'SourceName':'Source.journal',    # closest we can get to the journal name
 'SourceCategory':'Source.type',
+'SourcePageBegin': 'Source.page_start',
+'SourcePageEnd': 'Source.page_end',
 
 'MethodID': 'Method.id',
 'MethodCategory': 'Method.category',

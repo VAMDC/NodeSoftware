@@ -152,6 +152,22 @@ class Method:
         self.category = category
         self.description = description
 
+class Source:
+    def __init__(self, sourceid, type, author, title, journal, volume,
+                 pages, year, institution, note, doi):
+        self.sourceid = sourceid
+        self.type = type
+        self.authors = [name for name in author.split(' and ')]
+        self.title = title
+        self.journal = journal
+        self.volume = volume
+        if pages:
+            pages = pages.split('--')
+            self.page_start = pages[0]
+            if len(pages)>1:
+                self.page_end = pages[1]
+        self.year = year
+
 class Refs(models.Model):
     sourceid = models.CharField(max_length=192, primary_key=True,
                                 db_column='sourceID')

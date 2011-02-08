@@ -62,12 +62,14 @@ def XsamsSources(Sources):
             except:
                 pass
         G = lambda name: GetValue(name, Source=Source)
-        print "G('SourceID') =", G('SourceID')
-        print 'Source.sourceid =', Source.sourceid
         yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
         authornames=G('SourceAuthorName')
         # make it always into a list to be looped over, even if
         # only single entry
+        try:
+            authornames = eval(authornames)
+        except:
+            pass
         if not isiterable(authornames): authornames=[authornames]
         for author in authornames:
             yield '<Author><Name>%s</Name></Author>\n'%author

@@ -118,7 +118,15 @@ def getHITRANsources(transs):
         trans.a_ref = 'B_HITRAN2008'
         trans.s_ref = 'B_HITRAN2008'
         #sourceIDs = sourceIDs.union(s)
-    return Refs.objects.filter(pk__in=sourceIDs)
+
+    sources = []
+    for source in Refs.objects.filter(pk__in=sourceIDs):
+        sources.append(Source(source.sourceid, source.type, source.author,
+                    source.title, source.journal, source.volume,
+                    source.pages, source.year, source.institution,
+                    source.note, source.doi))
+
+    return sources
 
 def parseHITRANstates(states):
     sids = set([])
@@ -157,8 +165,6 @@ def setupResults(sql, LIMIT=10):
 
     getHITRANbroadening(transs)
     sources = getHITRANsources(transs)
-    for source in sources:
-        print source.sourceid
     states = getHITRANstates(transs)
     nstates = states.count()
     # extract the state quantum numbers in a form that generators.py can use:
