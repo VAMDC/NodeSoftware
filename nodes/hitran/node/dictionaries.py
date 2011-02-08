@@ -3,20 +3,26 @@
 from vamdctap.caselessdict import CaselessDict
 
 RETURNABLES=CaselessDict({\
-'SourceID':'Refs.sourceid',
-'SourceAuthorName':'Refs.author',
-'SourceTitle':'Refs.title',
+'SourceID':'Source.sourceid',
+'SourceAuthorName':'Source.author',
+'SourceTitle':'Source.title',
 # NB my Refs model has pages, not page_begin and page_end:
 'SourcePageBegin':'Refs.pages',		
-'SourceVolume':'Refs.volume',
-'SourceYear':'Refs.year',
-'SourceName':'Refs.journal',    # closest we can get to the journal name
+'SourceVolume':'Source.volume',
+'SourceYear':'Source.year',
+'SourceName':'Source.journal',    # closest we can get to the journal name
+'SourceCategory':'Source.type',
+
+'MethodID': 'Method.id',
+'MethodCategory': 'Method.category',
+'MethodDescription': 'Method.category',
 
 'RadTransComments':'',
+'RadTransMethodRef':'EXP',
 'RadTransFinalStateRef':'RadTran.finalstateref',
 'RadTransInitialStateRef':'RadTran.initialstateref',
 'RadTransWavenumberExperimentalValue':'RadTran.nu',
-'RadTransWavenumberExperimentalUnits':'cm-1',
+'RadTransWavenumberExperimentalUnits':'1/cm',
 'RadTransWavenumberExperimentalSourceRef':'RadTran.nu_ref',
 'RadTransWavenumberExperimentalAccuracy':'RadTran.nu_err',
 'RadTransProbabilityTransitionProbabilityAValue':'RadTran.a',
@@ -35,7 +41,7 @@ RETURNABLES=CaselessDict({\
 'MolecularStateStateID':'MolState.id',
 'MolecularStateMolecularSpeciesID':'MolState.inchikey',
 'MolecularStateEnergyValue':'MolState.energy',
-'MolecularStateEnergyUnit':'cm-1',
+'MolecularStateEnergyUnit':'1/cm',
 'MolecularStateEnergyOrigin':'Zero-point energy',
 'MolecularStateCharacTotalStatisticalWeight':'MolState.g',
 

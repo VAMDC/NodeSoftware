@@ -146,11 +146,11 @@ class States(models.Model):
         yield '        </MolecularStateCharacterisation>\n'
         yield '      </MolecularState>\n'
 
-# this class only exists so that generators.py can output quantum numbers
-# - a list of MolecularQuantumNumbers objects will be built from the
-# search on all_states.
-#class MolecularQuantumNumbers:
-   
+class Method:
+    def __init__(self, id, category, description):
+        self.id = id
+        self.category = category
+        self.description = description
 
 class Refs(models.Model):
     sourceid = models.CharField(max_length=192, primary_key=True,

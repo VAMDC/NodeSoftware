@@ -55,12 +55,15 @@ def XsamsSources(Sources):
     if not Sources: return
     yield '<Sources>'
     for Source in Sources:
-	if hasattr(Source,'XML'):
+        if hasattr(Source,'XML'):
             try:
                 yield Source.XML()
                 continue
-            except: pass
-        G = lambda name: GetValue(name,Source=Source)
+            except:
+                pass
+        G = lambda name: GetValue(name, Source=Source)
+        print "G('SourceID') =", G('SourceID')
+        print 'Source.sourceid =', Source.sourceid
         yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
         authornames=G('SourceAuthorName')
         # make it always into a list to be looped over, even if
@@ -250,7 +253,7 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
 
             if G("MolecularStateMolecularSpeciesID") != speciesid:
                 continue
-	        
+            
             yield """<MolecularState stateID="S%s">
 <Description>%s</Description>
 <MolecularStateCharacterisation>
@@ -480,17 +483,18 @@ def XsamsRadTrans(RadTrans):
 
         if G('RadTransEffLande'): yield """<EffLandeFactor><Value sourceRef="B%s">%s</Value></EffLandeFactor>"""%(G('RadTransEffLandeRef'),G('RadTransEffLande'))
 
-	yield '<Broadening>'
         # XXX xn:
         if G('RadTransMolecularBroadeningXML'):
             #yield G('RadTransMolecularBroadeningXML')
             yield RadTran.broadening_xml
+        else:
+            yield '<Broadening>'
 
-        if G('RadTransBroadRadGammaLog'): yield XsamsRadTranBroadening('log10 of the radiative damping constant in radians per second',G('RadTransBroadRadRef'),[G('RadTransBroadRadGammaLog')])
-        if G('RadTransBroadStarkGammaLog'): yield XsamsRadTranBroadening('log10 quadratic Stark damping constant computed for 10000 K per one charged particle',G('RadTransBroadStarkRef'),[G('RadTransBroadStarkGammaLog')])
-        if G('RadTransBroadWaalsGammaLog'): yield XsamsRadTranBroadening('log10 van der Waals damping constant for 10000 K and per one neutral particle',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsGammaLog')])
-        if G('RadTransBroadWaalsAlpha'): yield XsamsRadTranBroadening('Anstee-Barklem fit to the van der Waals damping constants alpha and sigma',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsAlpha'),G('RadTransBroadWaalsSigma')])
-	yield '</Broadening>'
+            if G('RadTransBroadRadGammaLog'): yield XsamsRadTranBroadening('log10 of the radiative damping constant in radians per second',G('RadTransBroadRadRef'),[G('RadTransBroadRadGammaLog')])
+            if G('RadTransBroadStarkGammaLog'): yield XsamsRadTranBroadening('log10 quadratic Stark damping constant computed for 10000 K per one charged particle',G('RadTransBroadStarkRef'),[G('RadTransBroadStarkGammaLog')])
+            if G('RadTransBroadWaalsGammaLog'): yield XsamsRadTranBroadening('log10 van der Waals damping constant for 10000 K and per one neutral particle',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsGammaLog')])
+            if G('RadTransBroadWaalsAlpha'): yield XsamsRadTranBroadening('Anstee-Barklem fit to the van der Waals damping constants alpha and sigma',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsAlpha'),G('RadTransBroadWaalsSigma')])
+            yield '</Broadening>'
         
         if G('RadTransInitialStateRef'): yield '<InitialStateRef>S%s</InitialStateRef>'%G('RadTransInitialStateRef')
         if G('RadTransFinalStateRef'): yield '<FinalStateRef>S%s</FinalStateRef>'%G('RadTransFinalStateRef')
@@ -553,7 +557,7 @@ def Xsams(Sources=None, AtomStates=None, MoleStates=None, CollTrans=None,
 
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:noNamespaceSchemaLocation="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-branch/xsams.xsd"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xmlns:ucl="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/ucl-branch" 
  xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/dcs"  
  xmlns:hunda="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hunda" 
