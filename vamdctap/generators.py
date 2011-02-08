@@ -553,7 +553,7 @@ def Xsams(Sources=None, AtomStates=None, MoleStates=None, CollTrans=None,
     """
 
     yield """<?xml version="1.0" encoding="UTF-8"?>
-<XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
+<XSAMSData xsi:noNamespaceSchemaLocation="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-branch/xsams.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xmlns:ucl="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/ucl-branch" 
  xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/dcs/0.2.1"  
