@@ -9,7 +9,6 @@ from django.conf import settings
 from django.utils.importlib import import_module
 DICTS=import_module(settings.NODEPKG+'.dictionaries')
 
-
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s.encode('utf-8')
 
@@ -556,17 +555,18 @@ def Xsams(Sources=None, AtomStates=None, MoleStates=None, CollTrans=None,
 <XSAMSData xsi:noNamespaceSchemaLocation="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-branch/xsams.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xmlns:ucl="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/ucl-branch" 
- xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/dcs/0.2.1"  
- xmlns:hunda="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/hunda/0.2.1" 
- xmlns:hundb="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/hundb/0.2.1"
- xmlns:ltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/ltcs/0.2.1"
- xmlns:nltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/nltcs/0.2.1"
- xmlns:stcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/stcs/0.2.1"
- xmlns:lpcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/lpcs/0.2.1"
- xmlns:asymcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/asymcs/0.2.1"
- xmlns:asymos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/asymos/0.2.1"
- xmlns:sphcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/sphcs/0.2.1"
- xmlns:sphos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/sphos/0.2.1"
+ xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/dcs"  
+ xmlns:hunda="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hunda" 
+ xmlns:hundb="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hundb"
+ xmlns:ltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltcs"
+ xmlns:nltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/nltcs"
+ xmlns:stcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/stcs"
+ xmlns:lpcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/lpcs"
+ xmlns:asymcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/asymcs"
+ xmlns:asymos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/asymos"
+ xmlns:sphcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphcs"
+ xmlns:sphos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphos"
+ xmlns:ltos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltos"
    >
 """
 
@@ -586,7 +586,7 @@ def Xsams(Sources=None, AtomStates=None, MoleStates=None, CollTrans=None,
 
     LOG('Writing Methods.')
     for Method in XsamsMethods(Methods): yield Method
-    
+
     LOG('Writing States.')
     yield '<States>\n'
     for AtomState in XsamsAtomStates(AtomStates): yield AtomState
