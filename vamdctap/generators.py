@@ -206,9 +206,6 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
     # nothing to see here if the data has no molecules
     if not Molecules: return
 
-    # nothing to see here if the data has no molecular states
-    if not MoleStates: return
-
     # if MoleQNs was passed as None or not passed at all,
     # it is effectively an empty list:
     if MoleQNs is None:

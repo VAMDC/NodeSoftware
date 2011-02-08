@@ -11,13 +11,7 @@
 from django.db import models
 
 import datetime, time
-#import HITRANdb
-#import HITRANrequest
-#from Output.OutputPAR import *
-#from Output.OutputTXT import *
-#from Output.OutputXML import *
 
-#HITRAN = HITRANdb.HITRANdb()
 def make_request(numin, numax, Smin, selected_molecids, output_params,
                     output_formats, compression=None):
     """
@@ -49,7 +43,7 @@ def make_request(numin, numax, Smin, selected_molecids, output_params,
     ts_int=1285072598
     # make the timestamp from the hex representation of ts_int, stripping
     # off the initial '0x' characters:
-    filestem = hex(ts_int)[2:]
+    filestem = 'searchapp/results/%s' % hex(ts_int)[2:]
 
     req.setup_output_objects(output_formats, filestem, compression,
                              output_params)
