@@ -41,7 +41,7 @@ def GetValue(name,**kwargs):
                          # correctly as the query-set attribute
     except Exception,e: 
 #        LOG('Exception in generators.py: GetValue()')
-#        LOG(e)
+#        LOG(str(e))
 #        LOG(name)
         value = name      # this catches the case where the dict-value
                         # is a string or mistyped.
@@ -57,10 +57,10 @@ def XsamsSources(Sources):
     yield '<Sources>'
     for Source in Sources:
 	if hasattr(Source,'XML'):
-            try:
+            #try:
                 yield Source.XML()
                 continue
-            except: pass
+            #except: pass
         G = lambda name: GetValue(name,Source=Source)
         yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
         authornames=G('SourceAuthorName')
@@ -128,6 +128,59 @@ def parityLabel(parity):
         return 'odd'
     else:
         return 'even'
+
+def XsamsAtoms(Atoms):
+    """
+    Generator (yield) for the main block of XSAMS for the atoms, with an inner loop for
+    the states. The QuerySet that comes in needs to have a nested QuerySet called States
+    attached to each entry in Atoms.
+
+    """
+
+    if not Atoms: return
+
+    yield '<Atoms>'
+
+    for Atom in Atoms:
+        G=lambda name: GetValue(name,Atom=Atom)
+        yield """<Atom>
+<ChemicalElement>
+<NuclearCharge>%s</NuclearCharge>
+<ElementSymbol>%s</ElementSymbol>
+</ChemicalElement>
+<Isotope>
+<IsotopeParameters>
+<MassNumber>%s</MassNumber>
+</IsotopeParameters>
+<IonState>
+<IonCharge>%s</IonCharge>""" % ( G('AtomNuclearCharge'),
+	G('AtomSymbol'), G('AtomMassNumber'), G('AtomIonCharge'))
+
+	for AtomState in Atom.States:
+            G=lambda name: GetValue(name, AtomState=AtomState)
+            yield """<AtomicState stateID="S%s"><Description>%s</Description>
+<AtomicNumericalData>
+<StateEnergy sourceRef="B%s"><Value units="%s">%s</Value></StateEnergy>
+<IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
+<LandeFactor sourceRef="B%s"><Value units="unitless">%s</Value></LandeFactor>
+</AtomicNumericalData>
+""" % ( G('AtomStateID'), G('AtomStateDescription'),
+        G('AtomStateEnergyRef'), G('AtomStateEnergyUnits'),
+        G('AtomStateEnergy'), G('AtomIonizationEnergy'),
+        G('AtomStateLandeFactorRef'), G('AtomStateLandeFactor'))
+
+            if (G('AtomStateParity') or G('AtomStateTotalAngMom')):
+                yield '<AtomicQuantumNumbers><Parity>%s</Parity>' \
+                  '<TotalAngularMomentum>%s</TotalAngularMomentum>' \
+                  '</AtomicQuantumNumbers>' % (G('AtomStateParity'),
+                                               G('AtomStateTotalAngMom'))
+
+            yield XsamsAtomTerm(AtomState,G)
+            yield """</AtomicState>
+</IonState>
+</Isotope>
+</Atom>"""
+    yield '</Atoms>'
 
 def XsamsAtomStates(AtomStates):
     """
@@ -543,7 +596,7 @@ def XsamsMethods(Methods):
     yield '</Methods>\n'
 
 
-def Xsams(Sources=None, AtomStates=None, MoleStates=None, CollTrans=None,
+def Xsams(Sources=None, Atoms=None, AtomStates=None, MoleStates=None, CollTrans=None,
           RadTrans=None, Methods=None, MoleQNs=None, Molecules=None,
           HeaderInfo=None):
     """
@@ -592,6 +645,7 @@ def Xsams(Sources=None, AtomStates=None, MoleStates=None, CollTrans=None,
     
     LOG('Writing States.')
     yield '<States>\n'
+    for Atom in XsamsAtoms(Atoms): yield Atom
     for AtomState in XsamsAtomStates(AtomStates): yield AtomState
     for MolState in XsamsMolStates(Molecules, MoleStates, MoleQNs):
         yield MolState
