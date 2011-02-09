@@ -33,7 +33,7 @@ class HITRAN:
         dbname = 'HITRAN'
         username = 'christian'
         conn = MySQLdb.connect(host="localhost", user=username,
-                db=dbname, read_default_file="~/.my.cnf")
+                db=dbname, read_default_file="/etc/my.cnf")
         cursor = conn.cursor()
 
         command = 'SELECT molecID, molec_name_html FROM molecules WHERE'\

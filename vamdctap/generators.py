@@ -9,7 +9,6 @@ from django.conf import settings
 from django.utils.importlib import import_module
 DICTS=import_module(settings.NODEPKG+'.dictionaries')
 
-
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s.encode('utf-8')
 
@@ -56,16 +55,22 @@ def XsamsSources(Sources):
     if not Sources: return
     yield '<Sources>'
     for Source in Sources:
-	if hasattr(Source,'XML'):
-            #try:
+        if hasattr(Source,'XML'):
+            try:
                 yield Source.XML()
                 continue
-            #except: pass
-        G = lambda name: GetValue(name,Source=Source)
+            except:
+                pass
+
+        G = lambda name: GetValue(name, Source=Source)
         yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
         authornames=G('SourceAuthorName')
         # make it always into a list to be looped over, even if
         # only single entry
+        try:
+            authornames = eval(authornames)
+        except:
+            pass
         if not isiterable(authornames): authornames=[authornames]
         for author in authornames:
             yield '<Author><Name>%s</Name></Author>\n'%author
@@ -264,9 +269,6 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
     # nothing to see here if the data has no molecules
     if not Molecules: return
 
-    # nothing to see here if the data has no molecular states
-    if not MoleStates: return
-
     # if MoleQNs was passed as None or not passed at all,
     # it is effectively an empty list:
     if MoleQNs is None:
@@ -307,7 +309,7 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
 
             if G("MolecularStateMolecularSpeciesID") != speciesid:
                 continue
-	        
+            
             yield """<MolecularState stateID="S%s">
 <Description>%s</Description>
 <MolecularStateCharacterisation>
@@ -537,17 +539,18 @@ def XsamsRadTrans(RadTrans):
 
         if G('RadTransEffLande'): yield """<EffLandeFactor><Value sourceRef="B%s">%s</Value></EffLandeFactor>"""%(G('RadTransEffLandeRef'),G('RadTransEffLande'))
 
-	yield '<Broadening>'
         # XXX xn:
         if G('RadTransMolecularBroadeningXML'):
             #yield G('RadTransMolecularBroadeningXML')
             yield RadTran.broadening_xml
+        else:
+            yield '<Broadening>'
 
-        if G('RadTransBroadRadGammaLog'): yield XsamsRadTranBroadening('log10 of the radiative damping constant in radians per second',G('RadTransBroadRadRef'),[G('RadTransBroadRadGammaLog')])
-        if G('RadTransBroadStarkGammaLog'): yield XsamsRadTranBroadening('log10 quadratic Stark damping constant computed for 10000 K per one charged particle',G('RadTransBroadStarkRef'),[G('RadTransBroadStarkGammaLog')])
-        if G('RadTransBroadWaalsGammaLog'): yield XsamsRadTranBroadening('log10 van der Waals damping constant for 10000 K and per one neutral particle',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsGammaLog')])
-        if G('RadTransBroadWaalsAlpha'): yield XsamsRadTranBroadening('Anstee-Barklem fit to the van der Waals damping constants alpha and sigma',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsAlpha'),G('RadTransBroadWaalsSigma')])
-	yield '</Broadening>'
+            if G('RadTransBroadRadGammaLog'): yield XsamsRadTranBroadening('log10 of the radiative damping constant in radians per second',G('RadTransBroadRadRef'),[G('RadTransBroadRadGammaLog')])
+            if G('RadTransBroadStarkGammaLog'): yield XsamsRadTranBroadening('log10 quadratic Stark damping constant computed for 10000 K per one charged particle',G('RadTransBroadStarkRef'),[G('RadTransBroadStarkGammaLog')])
+            if G('RadTransBroadWaalsGammaLog'): yield XsamsRadTranBroadening('log10 van der Waals damping constant for 10000 K and per one neutral particle',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsGammaLog')])
+            if G('RadTransBroadWaalsAlpha'): yield XsamsRadTranBroadening('Anstee-Barklem fit to the van der Waals damping constants alpha and sigma',G('RadTransBroadWaalsRef'),[G('RadTransBroadWaalsAlpha'),G('RadTransBroadWaalsSigma')])
+            yield '</Broadening>'
         
         if G('RadTransInitialStateRef'): yield '<InitialStateRef>S%s</InitialStateRef>'%G('RadTransInitialStateRef')
         if G('RadTransFinalStateRef'): yield '<FinalStateRef>S%s</FinalStateRef>'%G('RadTransFinalStateRef')
@@ -609,20 +612,21 @@ def Xsams(Sources=None, Atoms=None, AtomStates=None, MoleStates=None, CollTrans=
     """
 
     yield """<?xml version="1.0" encoding="UTF-8"?>
-<XSAMSData xsi:noNamespaceSchemaLocation="http://www-amdis.iaea.org/xsams/schema/xsams-0.1.xsd"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<XSAMSData xsi:noNamespaceSchemaLocation="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-branch/xsams.xsd"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xmlns:ucl="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/ucl-branch" 
- xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/dcs/0.2.1"  
- xmlns:hunda="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/hunda/0.2.1" 
- xmlns:hundb="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/hundb/0.2.1"
- xmlns:ltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/ltcs/0.2.1"
- xmlns:nltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/nltcs/0.2.1"
- xmlns:stcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/stcs/0.2.1"
- xmlns:lpcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/lpcs/0.2.1"
- xmlns:asymcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/asymcs/0.2.1"
- xmlns:asymos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/asymos/0.2.1"
- xmlns:sphcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/sphcs/0.2.1"
- xmlns:sphos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/sphos/0.2.1"
+ xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/dcs"  
+ xmlns:hunda="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hunda" 
+ xmlns:hundb="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hundb"
+ xmlns:ltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltcs"
+ xmlns:nltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/nltcs"
+ xmlns:stcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/stcs"
+ xmlns:lpcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/lpcs"
+ xmlns:asymcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/asymcs"
+ xmlns:asymos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/asymos"
+ xmlns:sphcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphcs"
+ xmlns:sphos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphos"
+ xmlns:ltos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltos"
    >
 """
 
@@ -642,7 +646,7 @@ def Xsams(Sources=None, Atoms=None, AtomStates=None, MoleStates=None, CollTrans=
 
     LOG('Writing Methods.')
     for Method in XsamsMethods(Methods): yield Method
-    
+
     LOG('Writing States.')
     yield '<States>\n'
     for Atom in XsamsAtoms(Atoms): yield Atom

@@ -5,7 +5,6 @@ from django.http import HttpResponse, QueryDict
 
 from models import *
 
-
 # work out which molecules are present in the database ...
 loaded_molecules = Trans.objects.values('molecid').distinct()
 # ... and get their names and html-names from the molecules table:
@@ -17,21 +16,11 @@ xsec_molecules = Molecules.objects.filter(molecid__in=Xsec.objects.values(
 
 # metadata concerning the quantum numbers in the case-by-case description,
 # retrieved from the QNdesc table and used by the parseHITRANstates method:
-case_desc = QNdesc.objects.values('caseid', 'case_prefix', 'name', 'col_index',
-                                  'col_name')
+case_desc = QNdesc.objects.values('caseid', 'case_prefix', 'name')
 
 def index(request):
     c=RequestContext(request,{})
     return render_to_response('index.html', c)
-
-#counter=0
-def poll(request):
-    #counter+=1
-    #return_text = '<p>%d -*-</p>' % counter
-    return_text = '<p>Woop!</p>'
-    #if counter>10:
-    #    return_text='END OF JOB'
-    return HttpResponse(return_text)
 
 def search_lbl(request):
     if request.POST:

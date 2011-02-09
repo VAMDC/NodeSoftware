@@ -11,13 +11,7 @@
 from django.db import models
 
 import datetime, time
-#import HITRANdb
-#import HITRANrequest
-#from Output.OutputPAR import *
-#from Output.OutputTXT import *
-#from Output.OutputXML import *
 
-#HITRAN = HITRANdb.HITRANdb()
 def make_request(numin, numax, Smin, selected_molecids, output_params,
                     output_formats, compression=None):
     """
@@ -49,7 +43,7 @@ def make_request(numin, numax, Smin, selected_molecids, output_params,
     ts_int=1285072598
     # make the timestamp from the hex representation of ts_int, stripping
     # off the initial '0x' characters:
-    filestem = hex(ts_int)[2:]
+    filestem = 'searchapp/results/%s' % hex(ts_int)[2:]
 
     req.setup_output_objects(output_formats, filestem, compression,
                              output_params)
@@ -152,11 +146,27 @@ class States(models.Model):
         yield '        </MolecularStateCharacterisation>\n'
         yield '      </MolecularState>\n'
 
-# this class only exists so that generators.py can output quantum numbers
-# - a list of MolecularQuantumNumbers objects will be built from the
-# search on all_states.
-#class MolecularQuantumNumbers:
-   
+class Method:
+    def __init__(self, id, category, description):
+        self.id = id
+        self.category = category
+        self.description = description
+
+class Source:
+    def __init__(self, sourceid, type, author, title, journal, volume,
+                 pages, year, institution, note, doi):
+        self.sourceid = sourceid
+        self.type = type
+        self.authors = [name for name in author.split(' and ')]
+        self.title = title
+        self.journal = journal
+        self.volume = volume
+        if pages:
+            pages = pages.split('--')
+            self.page_start = pages[0]
+            if len(pages)>1:
+                self.page_end = pages[1]
+        self.year = year
 
 class Refs(models.Model):
     sourceid = models.CharField(max_length=192, primary_key=True,
