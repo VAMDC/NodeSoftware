@@ -15,7 +15,8 @@ from imptools.linefuncs import *
 
 def get_bibtex(linedata):
     "return the raw data"
-    return linedata
+    return ' '.join(linedata.split())
+
 def get_bibtex_dbref(linedata):
     "extract the dbref from the bibtex entry"
     first_line = linedata.split()[0]
@@ -324,3 +325,5 @@ mapping = [
             ],
     }, # end of definition for vald_conf file
 ]
+
+#mapping = [mapping[-2]]
