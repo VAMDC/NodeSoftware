@@ -37,6 +37,7 @@ def Entry2XML(e):
     volume = f.get('volume')
     pages = f.get('pages')
     if pages: p1,p2 = pages.split('-')
+    else: p1,p2 = '',''
 
     xml += """<Title>%s</Title>
 <Category>%s</Category>
