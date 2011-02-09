@@ -3,10 +3,16 @@ from pybtex.database.input import bibtex
 from string import strip
 from caselessdict import CaselessDict
 
+DUMMY='@article{DUMMY, Author = {No Boby}, Title = {This is a dummy entry.}}'
+
 def getEntryFromString(s):
     parser = bibtex.Parser()
-    bib = parser.parse_stream(StringIO(s))
-    key,entry = bib.entries.items()[0]
+    try:
+	bib = parser.parse_stream(StringIO(s))
+	key,entry = bib.entries.items()[0]
+    except:
+	bib = parser.parse_stream(StringIO(DUMMY))
+	key,entry = bib.entries.items()[0]
     return entry
 
 TYPE2CATEGORY=CaselessDict({\
