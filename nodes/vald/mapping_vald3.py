@@ -28,7 +28,7 @@ species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'VALD3.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
-publications_file = base + "VALD3_ref.bib"
+ref_file = base + "VALD3_ref.bib"
 
 # The mapping itself
 mapping = [
@@ -268,9 +268,9 @@ mapping = [
             ],
     }, # end of transitions
 
-    # Populate Publication model with bibtex data file (block parsing)
-    {'outfile':'publications.dat',    
-     'infiles':publications_file,
+    # Populate References with bibtex data file (block parsing)
+    {'outfile':'references.dat',    
+     'infiles':ref_file,
      'headlines':0,        
      'commentchar':'%',
      'startblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE'),
@@ -281,7 +281,7 @@ mapping = [
             {'cname':'bibtex',
              'cbyte':(get_bibtex,)}, 
           ], 
-      }, # end of bibtex publication data
+      }, # end of bibtex 
 
     # Populate Source model from vald_cfg file
     {'outfile':'linelists.dat',

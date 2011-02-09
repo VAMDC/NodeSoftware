@@ -72,6 +72,11 @@ class State(Model):
     lande = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     coupling = CharField(max_length=2, null=True,blank=True)
     term = CharField(max_length=56, null=True,blank=True)
+
+    energy_ref = ForeignKey(LineList, related_name='isenergyref_state')
+    lande_ref = ForeignKey(LineList, related_name='islanderef_state')
+    level_ref = ForeignKey(LineList, related_name='islevelref_state')
+
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True,blank=True)
     l = DecimalField(max_digits=3, decimal_places=1,db_column=u'L', null=True,blank=True)
     s = DecimalField(max_digits=3, decimal_places=1,db_column=u'S', null=True,blank=True)
@@ -82,9 +87,6 @@ class State(Model):
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True,blank=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
 
-    energy_ref = ForeignKey(LineList, related_name='isenergyref_state')
-    lande_ref = ForeignKey(LineList, related_name='islanderef_state')
-    level_ref = ForeignKey(LineList, related_name='islevelref_state')
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
     class Meta:
