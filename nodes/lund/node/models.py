@@ -58,7 +58,7 @@ class State(Model):
     k = DecimalField(max_digits=3, decimal_places=1,db_column=u'K', null=True,blank=True)
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True,blank=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
-    f_hfs = DecimalField(max_digits=3, decimal_places=1,db_column=u'Fhfs', null=True,blank=True) #
+    f_hfs = DecimalField(max_digits=3, decimal_places=1,db_column=u'f_hfs', null=True,blank=True) #
 
     #hyperfine structure
     hfs_a = DecimalField(max_digits=16, decimal_places=5, db_column=u'hfs_a', null=True,blank=True)
