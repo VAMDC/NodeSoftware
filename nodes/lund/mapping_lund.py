@@ -27,7 +27,7 @@ def bySepNr(linedata, number):
     return string.split(linedata, ';')[number].strip()
         
 # Setting up filenames
-base = "/home/griatch/Devel/Work/VAMDC-trunk/nodes/lund/"
+base = "/home/griatch/Devel/Work/VAMDC-git/nodes/lund/"
 species_list_file = base + 'species.dat'
 publications_file = base + "references.dat"
 transitions_file = base + 'transitions.dat'
@@ -321,11 +321,11 @@ mapping = [
             {'cname':'species',
              'cbyte':(bySepNr, 0),
              'cnull':'\N'},
-            {'cname':'loggf_exp',
+            {'cname':'loggf',
              'cbyte':(bySepNr, 57),
              'cnull':'\N'},
-            {'cname':'loggf_calc',
-             'cbyte':(bySepNr, 58), ##
+            {'cname':'loggf_method',
+             'cbyte':(bySepNr, 58),
              'cnull':'\N'},
             {'cname':'landeff',
              'cbyte':(bySepNr, 59),
@@ -354,23 +354,20 @@ mapping = [
             {'cname':'wave_ref',             
              'cbyte':(bySepNr, 67),
              'cnull':'\N'}, 
-            {'cname':'loggf_exp_ref', 
+            {'cname':'loggf_ref', 
              'cbyte':(bySepNr, 68),
              'cnull':'\N'}, 
-            {'cname':'loggf_calc_ref',
+            {'cname':'lande_ref',
              'cbyte':(bySepNr, 69),
              'cnull':'\N'}, 
-            {'cname':'lande_ref',
+            {'cname':'gammarad_ref',
              'cbyte':(bySepNr, 70),
              'cnull':'\N'}, 
-            {'cname':'gammarad_ref',
+            {'cname':'gammastark_ref',
              'cbyte':(bySepNr, 71),
              'cnull':'\N'}, 
-            {'cname':'gammastark_ref',
-             'cbyte':(bySepNr, 72),
-             'cnull':'\N'}, 
             {'cname':'waals_ref',  
-             'cbyte':(bySepNr, 73),
+             'cbyte':(bySepNr, 72),
              'cnull':'\N'}, 
             ],
     }, # end of transitions file reading
