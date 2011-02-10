@@ -171,6 +171,10 @@ class MappingFile(object):
                 buf = ""
             else:
                 block += line
+        if block:
+            # if we still have data when the file ends (without having hit an endblock), 
+            # return this too.
+            yield block
             
     def __init__(self, filepath, headblocks, commentchar,
                  blockoffset, blockstep, errblock, startblock=None, endblock='\n'):
