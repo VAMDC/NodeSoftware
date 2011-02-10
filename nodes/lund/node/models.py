@@ -4,9 +4,10 @@ from vamdctap.bibtextools import *
 class ScientificNotationField(CharField):
     """
     This field preserves scientific notation for storing very big or small numbers.
-    """
+    """    
     def __init__(self, *args, **kwargs):
-        super(ScientificNotationField, self).__init__(max_length=25, *args, **kwargs)
+        kwargs['max_length'] = 25
+        super(ScientificNotationField, self).__init__(*args, **kwargs)
     def to_python(self, value):
         if value == None: 
             return None
@@ -42,7 +43,7 @@ class Reference(Model):
 
 class State(Model):
     id = CharField(max_length=255, primary_key=True, db_index=True)
-    species = ForeignKey(Species)  
+    species = ForeignKey(Species) 
 
     energy = DecimalField(max_digits=16, decimal_places=5,null=True,blank=True, db_index=True) 
     config = CharField(max_length=46, null=True, blank=True)
