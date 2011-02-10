@@ -1,12 +1,17 @@
 #replace with correct paths
 
-LOAD DATA local INFILE '<abspath>/species.out' IGNORE INTO TABLE species COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
-LOAD DATA local INFILE '<abspath>/references.out' IGNORE INTO TABLE refs COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
-LOAD DATA local INFILE '<abspath>/states.out' IGNORE INTO TABLE states COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
-LOAD DATA local INFILE '<abspath>/transitions.out' IGNORE INTO TABLE transitions COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+#LOAD DATA local INFILE '<abspath>/species.out' IGNORE INTO TABLE species COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+#LOAD DATA local INFILE '<abspath>/references.out' IGNORE INTO TABLE refs COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+#LOAD DATA local INFILE '<abspath>/states.out' IGNORE INTO TABLE states COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+#LOAD DATA local INFILE '<abspath>/transitions.out' IGNORE INTO TABLE transitions COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+
+# single state mapping
+#LOAD DATA local INFILE '<abspath>/singlestates.out' IGNORE INTO TABLE states COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+
 
 # Example
-#LOAD DATA local INFILE '/home/griatch/Devel/Work/VAMDC-git/nodes/lund/species.out' IGNORE INTO TABLE species COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
-#LOAD DATA local INFILE '/home/griatch/Devel/Work/VAMDC-git/nodes/lund/references.out' IGNORE INTO TABLE refs COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
-#LOAD DATA local INFILE '/home/griatch/Devel/Work/VAMDC-git/nodes/lund/states.out' IGNORE INTO TABLE states COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
-#LOAD DATA local INFILE '/home/griatch/Devel/Work/VAMDC-git/nodes/lund/transitions.out' IGNORE INTO TABLE transitions COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+LOAD DATA local INFILE '/home/griatch/Devel/Work/VAMDC-git/nodes/lund/species.out' IGNORE INTO TABLE species COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+LOAD DATA local INFILE '/home/griatch/Devel/Work/VAMDC-git/nodes/lund/references.out' IGNORE INTO TABLE refs COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+LOAD DATA local INFILE '/home/griatch/Devel/Work/VAMDC-git/nodes/lund/states.out' IGNORE INTO TABLE states COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+LOAD DATA local INFILE '/home/griatch/Devel/Work/VAMDC-git/nodes/lund/transitions.out' IGNORE INTO TABLE transitions COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
+LOAD DATA local INFILE '/home/griatch/Devel/Work/VAMDC-git/nodes/lund/singlestates.out' IGNORE INTO TABLE states COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"';
