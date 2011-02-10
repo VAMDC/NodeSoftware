@@ -65,7 +65,8 @@ def charrange2int(linedata, start, end, filenum=0):
         pass
         
 def bySepNr(linedata, number, sep=','):
-    try: return string.split(linedata,sep)[number]
+    try: 
+        return string.split(linedata,sep)[number].strip()
     except Exception, e:
         pass
         #print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
@@ -169,3 +170,11 @@ def merge_cols(linedata, *ranges):
     """
     return '-'.join([charrange(linedata, *ran) for ran in ranges])
     
+def merge_cols_by_sep(linedata, *sepNr):
+    """
+    Merges data from several columns (separated by ;) into one, separating them with '-'.
+    sepNr are the nth position of the file, separated by 'sep'.
+    Assumes a single line input.
+    """
+    sep = ';'
+    return '-'.join([bySepNr(linedata, nr, sep=sep).strip() for nr in sepNr])
