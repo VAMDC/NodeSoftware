@@ -2,7 +2,7 @@ from django.db.models import *
 from vamdctap.bibtextools import *
 
 class Species(Model):
-    id = IntegerField(primary_key=True, db_index=True)
+    id = AutoField(primary_key=True, db_index=True)
     name = CharField(max_length=10, db_index=True)
     ion = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     mass = DecimalField(max_digits=8, decimal_places=5) 
@@ -18,7 +18,7 @@ class Species(Model):
         db_table = u'species'
 
 class Reference(Model):
-    dbref = CharField(max_length=64, primary_key=True, db_index=True)
+    id = CharField(max_length=64, primary_key=True, db_index=True)
     #bibref = CharField(max_length=25)
     #title = CharField(max_length=256, null=True)
     #author = CharField(max_length = 256, null=True)
@@ -36,12 +36,12 @@ class Reference(Model):
         return Entry2XML( getEntryFromString(self.bibtex) )
 
     class Meta:
-        db_table = u'references'
+        db_table = u'refs'
     def __unicode__(self):
-        return u'ID:%s %s'%(self.id,self.dbref)
+        return u'%s'%self.id
 
 class LineList(Model):
-    id = IntegerField(primary_key=True, db_index=True)
+    id = AutoField(primary_key=True, db_index=True)
     references = ManyToManyField(Reference)
     srcfile = CharField(max_length=128)
     srcfile_ref = CharField(max_length=128, null=True)
@@ -72,6 +72,11 @@ class State(Model):
     lande = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     coupling = CharField(max_length=2, null=True,blank=True)
     term = CharField(max_length=56, null=True,blank=True)
+
+    energy_ref = ForeignKey(LineList, related_name='isenergyref_state')
+    lande_ref = ForeignKey(LineList, related_name='islanderef_state')
+    level_ref = ForeignKey(LineList, related_name='islevelref_state')
+
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True,blank=True)
     l = DecimalField(max_digits=3, decimal_places=1,db_column=u'L', null=True,blank=True)
     s = DecimalField(max_digits=3, decimal_places=1,db_column=u'S', null=True,blank=True)
@@ -82,16 +87,13 @@ class State(Model):
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True,blank=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
 
-    energy_ref = ForeignKey(LineList, related_name='isenergyref_state')
-    lande_ref = ForeignKey(LineList, related_name='islanderef_state')
-    level_ref = ForeignKey(LineList, related_name='islevelref_state')
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
     class Meta:
         db_table = u'states'
 
 class Transition(Model):
-    id = IntegerField(primary_key=True)
+    id = AutoField(primary_key=True)
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True)
     

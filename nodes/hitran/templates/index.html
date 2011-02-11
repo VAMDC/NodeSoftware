@@ -1,12 +1,59 @@
-{% extends "node/index.html" %}
-{% load i18n %}
-{% block title %}HITRAN node{% endblock %}
-{% block headline %}HITRAN Node{% endblock %}
-{% block content %}
-<h1>HITRAN node</h1>
-<div class="descr">Oct 20, 2010</div>
+<html>
+<head>
+<link href="/media/layout.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
 
-<p>put some info and query examples here...</p>
+<h2>HITRAN line-by-line search</h2>
 
-{% endblock %}
+<form id="SearchForm" method="POST">
 
+<div id="container">
+<!-- the lefthand panel is for the parameters to search on -->
+<div id="searchform_left_panel">
+<!-- the list of molecules -->
+{{ molec_cb_html|safe }}
+
+<table>
+<tr>
+<td><em>&nu;</em><sub>min</sub></td>
+<td><input type="text" name="numin"></td>
+<td>cm<sup>-1</sup></td>
+</tr>
+<tr>
+<td><em>&nu;</em><sub>max</sub></td>
+<td><input type="text" name="numax"></td>
+<td>cm<sup>-1</sup></td>
+</tr>
+<tr>
+<td><em>S</em><sub>min</sub></td>
+<td><input type="text" name="Smin"></td>
+<td>cm<sup>-1</sup>/molec.cm<sup>-2</sup></td>
+</tr>
+</table>
+
+</div> <!-- searchform_left_panel -->
+
+<!-- the righthand panel is for output formats and status updates -->
+<div id="searchform_right_panel">
+<!-- output formats -->
+<table>
+<!--<tr><td><input type="checkbox" name="output" value="par"/>&nbsp;Produce HITRAN-format .par file</td></tr> -->
+<tr><td><input type="checkbox" name="output" value="xml"/>&nbsp;XSAMS</td></tr><!-- 
+<tr><td><input type="checkbox" name="output" value="txt"/>&nbsp;Produce text table output&nbsp;<input type="button" name="select_output_fields" value="Select Output Fields"/></td></tr> -->
+</table>
+<div id="result" style="font-size: 100%; font-family: monospace; width: 90%; background: #fff; height: 200px; padding: 10px; margin: 20px 10px 0 10px; margin-left: auto; margin-right: auto; overflow: auto; border: 1px solid #000;">
+{{ search_summary }}
+</div>
+</div> <!-- searchform_right_panel -->
+
+<div style="clear: both; width: 200px; margin: auto;">
+<br/><br/>
+<!--<input type="submit" value="Submit Query" onclick='JavaScript:xmlhttpPost("search")'/>-->
+<input type="submit" value="Submit Query"/>
+</div>
+</div>
+
+</form>
+</body>
+</html>

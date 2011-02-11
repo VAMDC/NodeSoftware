@@ -4,11 +4,10 @@ from django.conf import settings
 #from django.contrib import admin
 #admin.autodiscover()
 
-urlpatterns = patterns(settings.NODENAME+'.hitran.node',
+urlpatterns = patterns(settings.NODENAME+'.node.views',
                 (r'^$', 'index'),
-                #(r'^tap/custom/sync/', 'custom_sync'),
                 (r'^tap/', include('vamdctap.urls')),
-)
+                )
 
 # Replace the base by your node name and add urls
 # if you have custom views.

@@ -23,5 +23,5 @@ class Transition(models.Model):
     id = models.IntegerField(primary_key=True)
     species = models.ForeignKey(Species)
     energy = models.DecimalField(max_digits=17, decimal_places=4)
-    upperstate = models.ForeignKey(State)
-    lowerstate = models.ForeignKey(State)
+    upperstate = models.ForeignKey(State,related_name='upper')
+    lowerstate = models.ForeignKey(State,related_name='lower')
