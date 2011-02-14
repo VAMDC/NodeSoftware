@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
-# Helper program that takes two vald wiki input files and creates two new files,
-# intended for direct reading into the database.
+# Helper program that creates a many2many mappings file 
+# based on the vald3 config file and the linelists wiki page.
 #
-# vald3.cfg + VALD3linelists -> linelist_file, many2many_mapping
+# VALD3.cfg + VALD3linelists -> many2many_mapping
 #
 
 import sys
@@ -60,32 +60,27 @@ def parse_config_file(filename):
     return dic
 
 
-def merge_files(infile1, infile2, outfile1, outfile2):
+def merge_files(infile1, infile2, outfile):
     """
     Main program
     """
 
-    f1 = open(outfile1, 'w')
-    f2 = open(outfile2, 'w')
+    fout = open(outfile, 'w')
 
     dic1 = parse_config_file(infile1)
     dic2 = parse_wiki_linelist_file(infile2)    
 
     # create new file on format ID;refs,refs,refs;filename;type;elements;...
-    lines1 = []
-    lines2 = []
+    lines = []
     for filekey1, tup1  in dic1.items():
         if not filekey1 in dic2:
             print "filename %s from file %s is not matched to any file in file %s." % (filekey1, infile1, infile2)
         else:
-            tup2 = dic2[filekey1]
-            lines1.append('"%s";"%s";"%s";"%s";"%s";"%s"\n' % (tup1[0], ','.join(tup2[2]), filekey1, tup2[1], tup2[0], ';'.join(('"%s"' % d for d in tup1[1:]))))            
+            tup2 = dic2[filekey1]            
             for ref in tup2[2]:                
-                lines2.append('\N;"%s";"%s"\n' % (tup1[0], ref))
-    f1.writelines(lines1)    
-    f1.close()
-    f2.writelines(lines2)
-    f2.close()
+                lines.append('\N;"%s";"%s"\n' % (tup1[0], ref))
+    fout.writelines(lines)    
+    fout.close()
     
 if __name__=='__main__':
 
@@ -94,23 +89,19 @@ if __name__=='__main__':
     argv = sys.argv
     if len(argv) < 3:
         print """
-Usage: preprefs <VALD_cfg> <VALD_wiki_linelist> [<output1>, <output2>]
+Usage: linelists2references.py <VALD3.cfg> <VALD3linelists.txt> [<output>]
 
- This creates two output files (defaulting to linelist.dat
- and linelists2references_manytomany.dat).
+ This creates an output files (default is linelists_references.dat).
 
- These two files should be read directly into the database tables
- for the Linelist model and to the many-to-many table relating Linelist
- with the Reference model, respectively.
+ This file should be read directly into the database
+ many-to-many table relating Linelist  with the Reference model.
+ (probably linelistreferences_columns)
 """
-
         sys.exit()
-    if len(argv) < 5:
-        output1 = "linelists.dat"
-        output2 = "linelists2references_manytomany.dat"
+    if len(argv) < 4:
+        output = "linelists_references.dat"
     else:
         output1 = argv[3]
-        output2 = argv[4]
 
-    merge_files(argv[1], argv[2], output1, output2)
-    print "... Output files %s and %s." % (output1, output2) 
+    merge_files(argv[1], argv[2], output)
+    print "... Created file %s." % (output) 
