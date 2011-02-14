@@ -274,8 +274,8 @@ mapping = [
      'infiles':ref_file,
      'headlines':0,        
      'commentchar':'%',
-     'startblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE'),
-     'endblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE'),
+     'startblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE','@phdthesis','@unpublished'),
+     'endblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE','@phdthesis','@unpublished'),
      'linemap':[           
             {'cname':'dbref',
              'cbyte':(get_bibtex_dbref,)},
