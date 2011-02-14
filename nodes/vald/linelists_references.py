@@ -70,15 +70,28 @@ def merge_files(infile1, infile2, outfile):
     dic1 = parse_config_file(infile1)
     dic2 = parse_wiki_linelist_file(infile2)    
 
+    warn1, warn2 = [], []
+    
     # create new file on format ID;refs,refs,refs;filename;type;elements;...
     lines = []
     for filekey1, tup1  in dic1.items():
-        if not filekey1 in dic2:
-            print "filename %s from file %s is not matched to any file in file %s." % (filekey1, infile1, infile2)
+        if not filekey1 in dic2:            
+            warn1.append(filekey1)            
         else:
             tup2 = dic2[filekey1]            
             for ref in tup2[2]:                
                 lines.append('\N;"%s";"%s"\n' % (tup1[0], ref))
+    for filekey2, tup2 in dic2.items():
+        # checking reverse relation too
+        if not filekey2 in dic1:            
+            warn2.append(filekey2)
+    if warn1:
+        print "\n- Filenames found in %s but not in %s: " % (infile1, infile2)
+        print "\n".join(warn1) 
+    if warn2:
+        print "\n- Filenames found in %s but not in %s: " % (infile2, infile1)
+        print "\n".join(warn2)
+           
     fout.writelines(lines)    
     fout.close()
     

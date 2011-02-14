@@ -147,7 +147,7 @@ def get_alphawaals(linedata, sep1, sep2):
     "extract alpha - van der waal value"
     l1 = charrange(linedata, sep1, sep2)    
     if float(l1) > 0:
-        return "%s.%s" % (0, bySepNr(linedata, 1, '.'))
+        return "%s.%s" % (0, bySepNr(l1, 1, '.'))
     else:
         return '0.000'    
 
@@ -155,7 +155,7 @@ def get_sigmawaals(linedata, sep1, sep2):
     "extract sigma - van der waal value"
     l1 = charrange(linedata, sep1, sep2)   
     if float(l1) > 0:
-        return bySepNr(0, '.')
+        return bySepNr(l1, 0, '.')
     else:
         return '0.000'
 
