@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
-# Helper program that takes two vald wiki input files and combines them into one file, suitable for
-# further mapping on the database table.
+# Helper program that takes two vald wiki input files and creates two new files,
+# intended for direct reading into the database.
 #
-# vald3.cfg + VALD3linelists -> ref_mapping
+# vald3.cfg + VALD3linelists -> linelist_file, many2many_mapping
 #
 
 import sys
@@ -79,9 +79,9 @@ def merge_files(infile1, infile2, outfile1, outfile2):
             print "filename %s from file %s is not matched to any file in file %s." % (filekey1, infile1, infile2)
         else:
             tup2 = dic2[filekey1]
-            lines1.append("%s;%s;%s;%s;%s;%s\n" % (tup1[0], ",".join(tup2[2]), filekey1, tup2[1], tup2[0], ";".join(tup1[1:])))            
+            lines1.append('"%s";"%s";"%s";"%s";"%s";"%s"\n' % (tup1[0], ','.join(tup2[2]), filekey1, tup2[1], tup2[0], ';'.join(('"%s"' % d for d in tup1[1:]))))            
             for ref in tup2[2]:                
-                lines2.append("\N;%s;%s\n" % (tup1[0], ref))
+                lines2.append('\N;"%s";"%s"\n' % (tup1[0], ref))
     f1.writelines(lines1)    
     f1.close()
     f2.writelines(lines2)
@@ -93,11 +93,21 @@ if __name__=='__main__':
     #pdb.set_trace()
     argv = sys.argv
     if len(argv) < 3:
-        print "Usage: preprefs <VALD_cfg> <VALD_wiki_linelist> [<output1>, <output2>]"
+        print """
+Usage: preprefs <VALD_cfg> <VALD_wiki_linelist> [<output1>, <output2>]
+
+ This creates two output files (defaulting to linelist.dat
+ and linelists2references_manytomany.dat).
+
+ These two files should be read directly into the database tables
+ for the Linelist model and to the many-to-many table relating Linelist
+ with the Reference model, respectively.
+"""
+
         sys.exit()
     if len(argv) < 5:
-        output1 = "linelist_merged.dat"
-        output2 = "manytomany_map.dat"
+        output1 = "linelists.dat"
+        output2 = "linelists2references_manytomany.dat"
     else:
         output1 = argv[3]
         output2 = argv[4]
