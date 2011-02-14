@@ -43,11 +43,7 @@ class Reference(Model):
 
 class State(Model):
     id = CharField(max_length=255, primary_key=True, db_index=True)
-<<<<<<< HEAD
     species = ForeignKey(Species) 
-=======
-    species = ForeignKey(Species)  
->>>>>>> d1295e2bc3575c88eb6d1a2e634f8beab9ca5a96
 
     energy = DecimalField(max_digits=16, decimal_places=5,null=True,blank=True, db_index=True) 
     config = CharField(max_length=46, null=True, blank=True)
