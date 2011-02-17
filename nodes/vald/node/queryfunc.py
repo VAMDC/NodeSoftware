@@ -2,6 +2,7 @@
 from django.db.models import Q
 from django.conf import settings
 from dictionaries import *
+from itertools import chain
 
 import sys
 def LOG(s):
@@ -10,12 +11,30 @@ def LOG(s):
 from models import *
 from vamdctap.sqlparse import *
 
-def getVALDsources(transs):
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.waals_ref])
-        sids=sids.union(s)
-    return Source.objects.filter(pk__in=sids)
+def getRefs(transs):
+    llids=set()
+    for t in transs.values_list('wave_ref_id','loggf_ref_id','lande_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref'):
+        llids = llids.union(t)
+    lls=LineList.objects.filter(pk__in=llids)
+    rids=set()
+    for ll in lls:
+        rids=rids.union(ll.references.values_list('pk',flat=True))
+    return Reference.objects.filter(pk__in=rids)
+
+def getSpeciesWithStates(transs):
+    spids = set( transs.values_list('species_id',flat=True) )
+    species = Species.objects.filter(pk__in=spids)
+    nspecies = species.count()
+    nstates = 0
+    for specie in species:
+        subtranss = transs.filter(species=specie)
+        up=subtranss.values_list('upstate_id',flat=True)
+        lo=subtranss.values_list('lostate_id',flat=True)
+        sids = set(chain(up,lo))
+        specie.States = State.objects.filter( pk__in = sids)
+        nstates += len(sids)
+
+    return species,nspecies,nstates
 
 def getVALDstates(transs):
     
@@ -30,12 +49,18 @@ def getVALDstates(transs):
     #return states.distinct()
 
     #solution 3, similar to sources
-    sids=set([])
-    for trans in transs:
-        s=set([trans.upstate.pk,trans.lostate.pk])
-        sids=sids.union(s)
-    return State.objects.filter(pk__in=sids)
+    #sids=set([])
+    #for trans in transs:
+    #    s=set([trans.upstate.pk,trans.lostate.pk])
+    #    sids=sids.union(s)
+    #return State.objects.filter(pk__in=sids)
    
+    # solution 4
+    up=transs.values_list('upstate_id',flat=True)
+    lo=transs.values_list('lostate_id',flat=True)
+    sids=set( chain(up,lo) )
+    return State.objects.filter(pk__in=sids)
+
 
 def setupResults(sql,limit=1000):
     LOG(sql)
@@ -47,22 +72,16 @@ def setupResults(sql,limit=1000):
     ntranss=transs.count()
 
     if limit < ntranss :
-        transs = transs[:limit]
+#        transs = transs[:limit]
         percentage='%.1f'%(float(limit)/ntranss *100)
     else: percentage=None
 
-    sources = getVALDsources(transs)
+    sources = getRefs(transs)
     nsources = sources.count()
-    states = getVALDstates(transs)
-    nstates = states.count()
-    nspecies = transs.values('species').distinct().count()
-
-    # in order to not forget it:
-    # write a small function that defines/fixes the
-    # string representation of the wavelengths which
-    # should have 8 significant dicits, i.e. variable
-    # number of decimals.
-    # maybe this can be achieved in the model itself.
+    #states = getVALDstates(transs)
+    #nstates = states.count()
+    #nspecies = transs.values('species').distinct().count()
+    species,nspecies,nstates = getSpeciesWithStates(transs)
 
     headerinfo=CaselessDict({\
             'Truncated':percentage,
@@ -74,7 +93,7 @@ def setupResults(sql,limit=1000):
             
 
     return {'RadTrans':transs,
-            'AtomStates':states,
+            'Atoms':species,
             'Sources':sources,
             'HeaderInfo':headerinfo
            }

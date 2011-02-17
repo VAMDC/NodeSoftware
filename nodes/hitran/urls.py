@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import *
+import settings
 
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
@@ -11,8 +12,10 @@ urlpatterns = patterns('',
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     (r'^tap/', include('vamdctap.urls')),
-    #(r'', include('hitran.node.urls')),
+    (r'^hitran/', 'searchapp.views.index'),
+    (r'^media/(?P<path>.*)$', 'django.views.static.serve',
+            {'document_root': settings.MEDIA_PATH}),
 
-)
+    )
 
 

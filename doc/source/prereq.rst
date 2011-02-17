@@ -1,6 +1,6 @@
 .. _prereq:
 
-Software prerequesits and installation
+Software prerequisits and installation
 =============================================
 
 Quick start
@@ -13,7 +13,7 @@ root-rights) to install all software that you need::
    $ apt-get update && apt-get install python python-django python-pyparsing python-mysqldb apache2 libapache2-mod-wsgi git-core ipython
 
 This will automagically install some more packages that the above ones 
-depend upon. Tere are most probably similar packages for other linux 
+depend upon. There are most probably similar packages for other linux 
 distributions than Debian. All software should be able to be installed 
 on Windows and OSX as well but it probably involves some more effort and 
 we unfortunately cannot give support for this.

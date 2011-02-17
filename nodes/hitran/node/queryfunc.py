@@ -23,9 +23,13 @@ case_prefixes[8] = 'asymcs'
 case_prefixes[9] = 'asymos'
 case_prefixes[10] = 'sphcs'
 case_prefixes[11] = 'sphos'
+case_prefixes[12] = 'ltos'
 
 def getHITRANbroadening(transs):
     for trans in transs:
+        # for vamdc-XSAMS, there's no broadening:
+        trans.broadening_xml = '<!-- Broadening --> '
+        continue
         prms = Prms.objects.filter(transid=trans.id)
         prm_dict = {}
         for prm in prms:
@@ -105,17 +109,28 @@ def getHITRANmolecules(transs):
     return species
 
 def getHITRANsources(transs):
-    sourceIDs = set([])
+    # for now, we set all the references to HITRAN2008
+    #sourceIDs = set([])
+    sourceIDs = ['B_HITRAN2008',]
     for trans in transs:
-        s = set([trans.nu_ref, trans.a_ref])
-        sourceIDs = sourceIDs.union(s)
-    return Refs.objects.filter(pk__in=sourceIDs)
+        #s = set([trans.nu_ref, trans.a_ref])
+        trans.nu_ref = 'B_HITRAN2008'
+        trans.a_ref = 'B_HITRAN2008'
+        trans.s_ref = 'B_HITRAN2008'
+        #sourceIDs = sourceIDs.union(s)
+
+    sources = []
+    for source in Refs.objects.filter(pk__in=sourceIDs):
+        sources.append(Source(source.sourceid, source.type, source.author,
+                    source.title, source.journal, source.volume,
+                    source.pages, source.year, source.institution,
+                    source.note, source.doi))
+
+    return sources
 
 def parseHITRANstates(states):
     sids = set([])
     for state in states:
-        #s = set([state.id])
-        #sids = sids.union(s)
         sids.add(state.id)
 
     qns = []
@@ -167,8 +182,12 @@ def setupResults(sql, LIMIT=10):
         'count-radiative': ntrans
     })
 
+    methods = [Method('MEXP', 'experiment', 'experiment'),
+               Method('MTHEORY', 'theory', 'theory')]
+
    # return the dictionary as described above
     return {'HeaderInfo': headerinfo,
+            'Methods': methods,
             'RadTrans': transs,
             'Sources': sources,
             'MoleStates': states,

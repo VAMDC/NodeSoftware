@@ -29,12 +29,16 @@ MANAGERS = ADMINS
 # Setting up the database type and information.
 # Simplest for testing is sqlite3.
 ###################################################
-DATABASE_ENGINE = 'sqlite3' # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sq$
-DATABASE_NAME = 'node.db'   # the path to the db file for sqlite3, the DB-name $
-DATABASE_USER = ''             # Not used with sqlite3.
-DATABASE_PASSWORD = ''         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used wi$
-DATABASE_PORT = ''             # Set to empty string for default. Not used with$
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'node.db',                      # Or path to database file if using sqlite3.
+        'USER': '',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
+        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+    }
+}
 
 ###################################################
 # Django components
@@ -111,4 +115,5 @@ TEMPLATE_LOADERS = (
 #    'django.template.loaders.app_directories.load_template_source',
 #     'django.template.loaders.eggs.load_template_source',
 )
+
 

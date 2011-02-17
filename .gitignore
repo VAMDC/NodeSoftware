@@ -14,7 +14,8 @@ dummy*
 .#*
 *_c.xml
 *.swp
+*.swo
 .DS_Store
 doc/build/*
-settings.py
-
+*.json
+*.dat

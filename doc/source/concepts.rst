@@ -63,10 +63,8 @@ within VAMDC for a certain bit of information. This is what we mean in
 the following when we talk about "global names" or "keywords".
 
 The full VAMDC dictionary is still being worked on and it currently 
-resides as a simple table `in the wiki 
-<http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/VamdcDictionary>`_. 
-A tool for selecting subsets and for easier updates of the dictionary is 
-a work in progress.
+resides at http://vamdc.tmy.se/dict/ where also some helper tools
+are provided.
 
 At the nodes, the dictionary is used in the following different ways. 
 Note that some keywords do not make sense being used in all three 
@@ -85,7 +83,7 @@ Each node keeps a list of global names that we call the *Returnables*.
 This list contains the names associated with the kinds of information 
 that a node has to offer. This is list is offered as XML at the 
 *tap/capabilities/* URL end point which allows user applications to 
-decide wether it is worth to query a certain node for a certain bit of 
+decide whether it is worth to query a certain node for a certain bit of 
 data, or not.
 
 The node software stores the Returnables not only as a list of global 
@@ -97,7 +95,7 @@ layout of the database.
 
 This "translation" is then used, among other things, by the code that 
 fills the data into a certain output format which in turn can become 
-node-independant. Thereby each Restrictable icorresponds to a certain 
+node-independant. Thereby each Returnable corresponds to a certain 
 place (a column in table format, or a certain XML tag) in the output 
 format.
 
@@ -105,7 +103,7 @@ format.
 Restrictables
 ~~~~~~~~~~~~~~~~~
 
-It is the list of global names that make sense to put contrains on at a 
+It is the list of global names that make sense to put constraints on at a 
 certain node and therefore tells which names from the dictionary can be 
 used in the WHERE-clause of a query to the node (see query language below).
 
@@ -164,7 +162,7 @@ like this::
 
 VAMDC nodes currently only use and support a subset of the TAP standard, 
 i.e. that parts that are needed within the VAMDC. Keep in mind that 
-users will not primarily query an indivudual node but use a higher level 
+users will not primarily query an individual node but use a higher level 
 tool like the VAMDC portal for querying many nodes at once. Data 
 providers that want to set up their own VAMDC node do not really need to 
 care about TAP either.
@@ -217,7 +215,7 @@ The portal
 ---------------
 
 The portal is the obvious example of a *user application* that makes use 
-VAMDC nodes. It is a web site that facilitates the submission of a query 
+of VAMDC nodes. It is a web site that facilitates the submission of a query 
 to many nodes at once by providing a web form out of which it assembles 
 the query string which it then sends to one or many nodes, gathers the 
 results from each of them and presents them to the user.

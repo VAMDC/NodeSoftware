@@ -100,12 +100,14 @@ and create a Python class for each table in the database and attributes
 for these that correspond to the table columns. An example may look like 
 this::
 
-    class Species(models.Model):
-        id = models.IntegerField(primary_key=True)
-        name = models.CharField(max_length=30)
-        ion = models.IntegerField()
-        mass = models.DecimalField(max_digits=7, decimal_places=2)
-        massno = models.IntegerField()
+    from django.db.models import *
+
+    class Species(Model):
+        id = IntegerField(primary_key=True)
+        name = CharField(max_length=30)
+        ion = IntegerField()
+        mass = DecimalField(max_digits=7, decimal_places=2)
+        massno = IntegerField()
         class Meta:
             db_table = u'species'
 
@@ -116,20 +118,20 @@ thereby telling the framework how the tables relate to each other. This
 is best illustrated in an example. Suppose you have a second model, in 
 addition to the one above, that was auto-detected as follows::
 
-    class States(models.Model):
-        id = models.IntegerField(primary_key=True)
-        species = models.IntegerField()
-        energy = models.DecimalField(max_digits=17, decimal_places=4)
+    class State(Model):
+        id = IntegerField(primary_key=True)
+        species = IntegerField()
+        energy = DecimalField(max_digits=17, decimal_places=4)
         ...
 
 Now suppose you know that the field called *species* is acutally a 
-reference to the species-table. You would then change the class *States* 
+reference to the species-table. You would then change the class *State* 
 as such::
 
-    class State(models.Model):
-        id = models.IntegerField(primary_key=True)
-        species = models.ForeignKey(Species)
-        energy = models.DecimalField(max_digits=17, decimal_places=4)
+    class State(Model):
+        id = IntegerField(primary_key=True)
+        species = ForeignKey(Species)
+        energy = DecimalField(max_digits=17, decimal_places=4)
         ...
 
 .. note:: 
@@ -198,6 +200,9 @@ in mind the following points:
   a transition database), you can add *db_index=True* to the field
   to speed up searches along this column (at the expense of some
   disk space and computation time at database creation).
+* If you do not define a table name for your model with the Meta class,
+  as in the first example above, the table in the database will be named
+  as the model, but lowercase and with a prefix *node_*.
 
 Once you have a first draft of your data model, you test it by running::
 
@@ -213,7 +218,7 @@ ignore the output and move straight on to creating the database::
 
 Now you have a fresh empty database. You can test it with the same 
 commands as mentioned at the end of Case 1 above, replacing "Species" 
-and "States" by you own model names.
+and "State" by you own model names.
 
 .. note::
     There is no harm in deleting the database and re-creating it
@@ -227,7 +232,7 @@ and "States" by you own model names.
     storage engine InnoDB over the standard MyISAM. You can set this in 
     your settings.py by adding *'OPTIONS': {"init_command": 
     "SET storage_engine=INNODB"}* to your database setup. We also
-    reccommend to use UTF8 as default in your MySQL configuration or
+    recommend to use UTF8 as default in your MySQL configuration or
     create your database with *CREATE DATABASE <dbname> CHARACTER SET utf8;*
 
 
@@ -261,7 +266,7 @@ example on how this should work in that same file. It works like this:
 
 In a concrete example of an atomic transition database, it looks like this:
 
-.. literalinclude:: queryfunc.py
+.. literalinclude:: ../../nodes/ExampleNode/node/queryfunc.py
    :linenos:
 
 Explanations on what happens here:
@@ -271,7 +276,8 @@ Explanations on what happens here:
   *queryfunc.py*
 * Line 7: This uses the helper function where2q() to 
   convert the information in *sql.where* to QueryObjects that match your 
-  model, using the RESTRICTABLES (see below).
+  model, using the RESTRICTABLES (see below). The result from where2q() is
+  a string that needs to be executed with eval().
 * In line 8 we simply pass these QueryObjects to the Transition model's 
   filter function. This returns a QuerySet, an unevaluated version of the 
   query.
@@ -281,14 +287,14 @@ Explanations on what happens here:
   the QuerySet if necessary. We also prepare a string with the percentage
   for the headers.
 * Line 16-20: We use the ForeignKeys from the Transition model to the 
-  States model that tell us which are the upper and lower states for a 
+  State model that tell us which are the upper and lower states for a 
   transition. We put their ids in to a set which throws out duplicates and 
   then use this set of state_ids to get the QuerySet for the states that 
   belong to the selected transitions.
 * Line 22-24: An alternative, more straight forward way to achieve the 
   same thing. This uses the ForeignKeys in the *inverse* direction, 
   connects the two queryObjects by an OR-relation, selects the states and 
-  then throuws away dumplicates. The first approach proves faster if the 
+  then throws away duplicates. The first approach proves faster if the 
   number of duplicates is large.
 * Lines 26-27: We run count() on the states to get their number for the 
   headers and do a quick selection and count on the species, again using a 
@@ -345,6 +351,9 @@ data model to the names from the dictionary, like this::
     'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
     }
     
+.. note::
+    There are tools for getting started with writing these and for
+    validiation once you are done at http://vamdc.tmy.se/dict/
 
 About the RESTRICTABLES
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -384,11 +393,12 @@ VAMDC dictionary. The values now are their corresponding places in the
 QuerySets that are constructed in setupResults() above. This means that 
 the XML generator will loop over the QuerySet, getting each element, and 
 try to evaluate the expression that you put in the RETURNABLES. 
+
 Continuing our example from above, assume the State model has a field 
 called *energy*, so each object in the QuerySet will have that value at 
 *AtomState.energy*. Note that the first part before the dot is not the 
-name of your model, but one of the names that you return from 
-setupResults() (see above).
+name of your model, but the *singular* of one of the names that you 
+return from setupResults() (see above).
 
 .. note::
     Again, at least the keys of the RETURNABLES should be filled (even 

@@ -1,0 +1,26 @@
+{% extends "indigo.html" %}
+{% load i18n %}
+{% block title %}VAMDC{% endblock %}
+
+{% block headline %}VAMDC Dictionary Change Log{% endblock %}
+
+{% block content %}
+<p>Note that the list below only contains the changes made through the <a href="/dict/admin/">admin interface</a>, not direct changes in the database.</p>
+
+<table>
+<tr><th>When?</th><th>Who?</th><th>What was changed?</th><th>How?</th></tr>
+{% for logentr in object_list %}
+
+<tr class="{% cycle 'row1' 'row2' %}">
+<td>{{ logentr.action_time }}</td>
+<td>{{ logentr.user.get_full_name }}</td>
+<td>{{ logentr.content_type.name }}: {{ logentr.object_repr }}</td>
+<td>
+{% if logentr.is_addition %}Addition {% endif %}
+{% if logentr.is_deletion %}Deletion {% endif %}
+{{ logentr.change_message }}</td>
+
+{% endfor %}
+</table>
+
+{% endblock %}

@@ -115,7 +115,7 @@ h1,h2,h3 {
 /* main left */
 .sidenav {
 	float: left;
-	width: 34%;
+	width: 14%;
 }
 .sidenav h1 {
 	border-bottom: 1px dashed #DDD;
@@ -149,7 +149,7 @@ h1,h2,h3 {
 .content {
 	float: left;
 	margin-right: 4%;
-	width: 59%;
+	width: 79%;
 }
 .content .descr {
 	color: #C60;
@@ -186,4 +186,19 @@ h1,h2,h3 {
 .footer a:hover {
 	color: #FFF;
 	text-decoration: underline;
+}
+
+table {
+border-collapse:collapse;
+}
+
+table, th, td {
+border: 1px solid #CCC;
+padding: 3px;
+}
+
+th { background-color: #DDE;
+}
+
+.row2 td { background-color: #EEE;
 }
