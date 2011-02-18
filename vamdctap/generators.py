@@ -157,17 +157,17 @@ def XsamsAtoms(Atoms):
 <IsotopeParameters>
 <MassNumber>%s</MassNumber>
 </IsotopeParameters>
-<IonState>
+<Ion speciesID="X%s">
 <IonCharge>%s</IonCharge>""" % ( G('AtomNuclearCharge'),
-	G('AtomSymbol'), G('AtomMassNumber'), G('AtomIonCharge'))
+	G('AtomSymbol'), G('AtomMassNumber'), G('AtomSpeciesID'), G('AtomIonCharge'))
 
 	for AtomState in Atom.States:
             G=lambda name: GetValue(name, AtomState=AtomState)
             yield """<AtomicState stateID="S%s"><Description>%s</Description>
 <AtomicNumericalData>
-<StateEnergy sourceRef="B%s"><Value units="%s">%s</Value></StateEnergy>
+<StateEnergy><SourceRef>B%s</SourceRef><Value units="%s">%s</Value></StateEnergy>
 <IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
-<LandeFactor sourceRef="B%s"><Value units="unitless">%s</Value></LandeFactor>
+<LandeFactor><SourceRef>B%s</SourceRef><Value units="unitless">%s</Value></LandeFactor>
 </AtomicNumericalData>
 """ % ( G('AtomStateID'), G('AtomStateDescription'),
         G('AtomStateEnergyRef'), G('AtomStateEnergyUnits'),
@@ -181,8 +181,8 @@ def XsamsAtoms(Atoms):
                                                G('AtomStateTotalAngMom'))
 
             yield XsamsAtomTerm(AtomState,G)
-            yield """</AtomicState>
-</IonState>
+            yield '</AtomicState>'
+        yield """</Ion>
 </Isotope>
 </Atom>"""
     yield '</Atoms>'
@@ -216,13 +216,13 @@ def XsamsAtomStates(AtomStates):
 <IsotopeParameters>
 <MassNumber>%s</MassNumber>
 </IsotopeParameters>
-<IonState>
+<Ion>
 <IonCharge>%s</IonCharge>
 <AtomicState stateID="S%s"><Description>%s</Description>
 <AtomicNumericalData>
-<StateEnergy sourceRef="B%s"><Value units="%s">%s</Value></StateEnergy>
+<StateEnergy><SourceRef>B%s</SourceRef><Value units="%s">%s</Value></StateEnergy>
 <IonizationEnergy><Value units="eV">%s</Value></IonizationEnergy>
-<LandeFactor sourceRef="B%s"><Value units="unitless">%s</Value></LandeFactor>
+<LandeFactor><SourceRef>B%s</SourceRef><Value units="unitless">%s</Value></LandeFactor>
 </AtomicNumericalData>
 """ % ( G('AtomNuclearCharge'), G('AtomSymbol'), G('AtomMassNumber'),
         G('AtomIonCharge'), G('AtomStateID'), G('AtomStateDescription'),
@@ -239,7 +239,7 @@ def XsamsAtomStates(AtomStates):
         # call the function that returns the term part
         yield XsamsAtomTerm(AtomState,G)
         yield """</AtomicState>
-</IonState>
+</Ion>
 </Isotope>
 </Atom>"""
         #end of loop
@@ -426,7 +426,7 @@ def XsamsRadTranBroadening(typedescr,ref,params):
     helper function for line broadening below
     """
 
-    result='<BroadeningProcess sourceRef="B%s"><BroadeningSpecies>'%ref
+    result='<BroadeningProcess><SourceRef>B%s</SourceRef><BroadeningSpecies>'%ref
     result+='<Comments>%s</Comments>'%typedescr
     result+='<LineshapeParameter>'
     for par in params:
@@ -441,16 +441,16 @@ def XsamsRadTrans(RadTrans):
     Generator for the XSAMS radiative transitions.
     """
 
-    # nothing to do, if data has no radiative transitions
-    if not RadTrans: return
-
     yield '<Radiative>'
     for RadTran in RadTrans:
         G=lambda name: GetValue(name,RadTran=RadTran)
-        yield """
-<RadiativeTransition methodRef="M%s">
+        yield '<RadiativeTransition'
+        mref=G('RadTransMethodRef')
+        LOG('mref: %s'%mref)
+	if mref: yield ' methodRef="M%s"'%mref
+        yield """>
 <Comments>%s</Comments>
-<EnergyWavelength>"""%(G('RadTransMethodRef'),G('RadTransComments'))
+<EnergyWavelength>"""%G('RadTransComments')
 
         # pre-fetch the values that decide which branch to enter
         WaveLenE=G('RadTransWavelengthExperimentalValue')
@@ -463,7 +463,7 @@ def XsamsRadTrans(RadTrans):
         FreqT=G('RadTransFrequencyTheoreticalValue')
         FreqR=G('RadTransFrequencyRitzValue')
 
-        if WaveLenE: yield """<Wavelength><Experimental sourceRef="B%s">
+        if WaveLenE: yield """<Wavelength><Experimental><SourceRef>B%s</SourceRef>
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
 </Experimental></Wavelength>"""%(G('RadTransWavelengthExperimentalSourceRef'),
                                  G('RadTransWavelengthExperimentalComments'),
@@ -471,7 +471,7 @@ def XsamsRadTrans(RadTrans):
                                  WaveLenE,
                                  G('RadTransWavelengthExperimentalAccuracy'))
 
-        if WaveLenT: yield """<Wavelength><Theoretical sourceRef="B%s">
+        if WaveLenT: yield """<Wavelength><Theoretical><SourceRef>B%s</SourceRef>
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
 </Theoretical></Wavelength>"""%(G('RadTransWavelengthTheoreticalSourceRef'),
                                 G('RadTransWavelengthTheoreticalComments'),
@@ -479,7 +479,7 @@ def XsamsRadTrans(RadTrans):
                                 WaveLenT,
                                 G('RadTransWavelengthTheoreticalAccuracy'))
 
-        if WaveLenR: yield """<Wavelength><Ritz sourceRef="B%s">
+        if WaveLenR: yield """<Wavelength><Ritz><SourceRef>B%s</SourceRef>
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
 </Ritz></Wavelength>"""%(G('RadTransWavelengthRitzSourceRef'),
                          G('RadTransWavelengthRitzComments'),
@@ -487,7 +487,7 @@ def XsamsRadTrans(RadTrans):
                          WaveLenR,
                          G('RadTransWavelengthRitzAccuracy'))
 
-        if WaveNumE: yield """<Wavenumber><Experimental sourceRef="B%s">
+        if WaveNumE: yield """<Wavenumber><Experimental><SourceRef>B%s</SourceRef>
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
 </Experimental></Wavenumber>"""%(G('RadTransWavenumberExperimentalSourceRef'),
                                  G('RadTransWavenumberExperimentalComments'),
@@ -495,7 +495,7 @@ def XsamsRadTrans(RadTrans):
                                  WaveNumE,
                                  G('RadTransWavenumberExperimentalAccuracy'))
 
-        if WaveNumT: yield """<Wavenumber><Theoretical sourceRef="B%s">
+        if WaveNumT: yield """<Wavenumber><Theoretical><SourceRef>B%s</SourceRef>
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
 </Theoretical></Wavenumber>"""%(G('RadTransWavenumberTheoreticalSourceRef'),
                                 G('RadTransWavenumberTheoreticalComments'),
@@ -503,7 +503,7 @@ def XsamsRadTrans(RadTrans):
                                 WaveNumT,
                                 G('RadTransWavenumberTheoreticalAccuracy'))
 
-        if WaveNumR: yield """<Wavenumber><Ritz sourceRef="B%s">
+        if WaveNumR: yield """<Wavenumber><Ritz><SourceRef>B%s</SourceRef>
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
 </Ritz></Wavenumber>"""%(G('RadTransWavenumberRitzSourceRef'),
                          G('RadTransWavenumberRitzComments'),
@@ -511,7 +511,7 @@ def XsamsRadTrans(RadTrans):
                          WaveNumR,
                          G('RadTransWavenumberRitzAccuracy'))
 
-        if FreqE: yield """<Frequency><Experimental sourceRef="B%s">
+        if FreqE: yield """<Frequency><Experimental><SourceRef>B%s</SourceRef>
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
 </Experimental></Frequency>"""%(G('RadTransFrequencyExperimentalSourceRef'),
                                  G('RadTransFrequencyExperimentalComments'),
@@ -519,7 +519,7 @@ def XsamsRadTrans(RadTrans):
                                  FreqE,
                                  G('RadTransFrequencyExperimentalAccuracy'))
 
-        if FreqT: yield """<Frequency><Theoretical sourceRef="B%s">
+        if FreqT: yield """<Frequency><Theoretical><SourceRef>B%s</SourceRef>
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
 </Theoretical></Frequency>"""%(G('RadTransFrequencyTheoreticalSourceRef'),
                                 G('RadTransFrequencyTheoreticalComments'),
@@ -527,7 +527,7 @@ def XsamsRadTrans(RadTrans):
                                 FreqT,
                                 G('RadTransFrequencyTheoreticalAccuracy'))
 
-        if FreqR: yield """<Frequency><Ritz sourceRef="B%s">
+        if FreqR: yield """<Frequency><Ritz><SourceRef>B%s</SourceRef>
 <Comments>%s</Comments><Value units="%s">%s</Value><Accuracy>%s</Accuracy>
 </Ritz></Frequency>"""%(G('RadTransFrequencyRitzSourceRef'),
                          G('RadTransFrequencyRitzComments'),
@@ -537,7 +537,7 @@ def XsamsRadTrans(RadTrans):
 
         yield '</EnergyWavelength>'
 
-        if G('RadTransEffLande'): yield """<EffLandeFactor><Value sourceRef="B%s">%s</Value></EffLandeFactor>"""%(G('RadTransEffLandeRef'),G('RadTransEffLande'))
+        if G('RadTransEffLande'): yield """<EffLandeFactor><Value><SourceRef>B%s</SourceRef>%s</Value></EffLandeFactor>"""%(G('RadTransEffLandeRef'),G('RadTransEffLande'))
 
         # XXX xn:
         if G('RadTransMolecularBroadeningXML'):
@@ -558,7 +558,7 @@ def XsamsRadTrans(RadTrans):
             yield '<Probability>\n'
 
         if G('RadTransProbabilityLog10WeightedOscillatorStrengthValue'):
-            yield """<Log10WeightedOscillatorStregnth sourceRef="B%s">\n 
+            yield """<Log10WeightedOscillatorStregnth><SourceRef>B%s</SourceRef>\n 
                    <Value units="unitless">%s</Value>\n 
                    <Accuracy>%s</Accuracy>\n 
                    </Log10WeightedOscillatorStregnth>\n """ \
@@ -567,7 +567,7 @@ def XsamsRadTrans(RadTrans):
                G('RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy'))
 
         if G('RadTransProbabilityTransitionProbabilityAValue'):
-            yield '<TransitionProbabilityA sourceRef="B%s">\n \
+            yield '<TransitionProbabilityA><SourceRef>B%s</SourceRef>\n \
                    <Value units="1/cm">%s</Value>\n \
                    <Accuracy>%s</Accuracy>\n \
                    </TransitionProbabilityA>\n ' \
@@ -648,12 +648,12 @@ def Xsams(Sources=None, Atoms=None, AtomStates=None, MoleStates=None, CollTrans=
     for Method in XsamsMethods(Methods): yield Method
 
     LOG('Writing States.')
-    yield '<States>\n'
+    yield '<Species>\n'
     for Atom in XsamsAtoms(Atoms): yield Atom
     for AtomState in XsamsAtomStates(AtomStates): yield AtomState
     for MolState in XsamsMolStates(Molecules, MoleStates, MoleQNs):
         yield MolState
-    yield '</States>\n'
+    yield '</Species>\n'
 
     LOG('Writing Processes.')
     yield '<Processes>\n'
