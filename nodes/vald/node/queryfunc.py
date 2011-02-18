@@ -3,6 +3,7 @@ from django.db.models import Q
 from django.conf import settings
 from dictionaries import *
 from itertools import chain
+from copy import deepcopy
 
 import sys
 def LOG(s):
@@ -36,51 +37,24 @@ def getSpeciesWithStates(transs):
 
     return species,nspecies,nstates
 
-def getVALDstates(transs):
-    
-    #solution 1
-    #q1,q2=Q(isupperstate_trans__in=transs),Q(islowerstate_trans__in=transs)
-    #return State.objects.filter(q1|q2).distinct()
-
-    # solution 2
-    #lostates=State.objects.filter(islowerstate_trans__in=transs)
-    #histates=State.objects.filter(isupperstate_trans__in=transs)
-    #states = lostates | histates
-    #return states.distinct()
-
-    #solution 3, similar to sources
-    #sids=set([])
-    #for trans in transs:
-    #    s=set([trans.upstate.pk,trans.lostate.pk])
-    #    sids=sids.union(s)
-    #return State.objects.filter(pk__in=sids)
-   
-    # solution 4
-    up=transs.values_list('upstate_id',flat=True)
-    lo=transs.values_list('lostate_id',flat=True)
-    sids=set( chain(up,lo) )
-    return State.objects.filter(pk__in=sids)
-
-
 def setupResults(sql,limit=1000):
     LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
     try: q=eval(q)
     except: return {}
     
-    transs = Transition.objects.select_related(depth=2).filter(q)
+    transs = Transition.objects.filter(q)
+#    transs = Transition.objects.select_related(depth=2).filter(q)
+    LOG('%s %s'%(len(list(transs)),transs.count()))
     ntranss=transs.count()
 
     if limit < ntranss :
-#        transs = transs[:limit]
+        #transs = transs[:limit]
         percentage='%.1f'%(float(limit)/ntranss *100)
     else: percentage=None
 
     sources = getRefs(transs)
     nsources = sources.count()
-    #states = getVALDstates(transs)
-    #nstates = states.count()
-    #nspecies = transs.values('species').distinct().count()
     species,nspecies,nstates = getSpeciesWithStates(transs)
 
     headerinfo=CaselessDict({\
@@ -91,7 +65,6 @@ def setupResults(sql,limit=1000):
             'count-radiative':ntranss
             })
             
-
     return {'RadTrans':transs,
             'Atoms':species,
             'Sources':sources,
