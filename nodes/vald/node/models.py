@@ -36,7 +36,7 @@ class Reference(Model):
         return Entry2XML( getEntryFromString(self.bibtex) )
 
     class Meta:
-        db_table = u'references'
+        db_table = u'refs'
     def __unicode__(self):
         return u'%s'%self.id
 
