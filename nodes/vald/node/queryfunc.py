@@ -37,7 +37,7 @@ def getSpeciesWithStates(transs):
 
     return species,nspecies,nstates
 
-def setupResults(sql,limit=1000):
+def setupResults(sql,limit=10000):
     LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
     try: q=eval(q)
