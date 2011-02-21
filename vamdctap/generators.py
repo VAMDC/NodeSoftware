@@ -69,7 +69,7 @@ def makeDataType(tagname,keyword,G):
     acc=G(keyword+'Accuracy')
     sources=G(keyword+'Ref')
     
-    s='<%s'%tagname
+    s='\n<%s'%tagname
     if method: s+=' methodRef="M%s"'%method
     s+='><Value units="%s">%s</Value>'%(unit or 'unitless',value)
     
@@ -78,8 +78,8 @@ def makeDataType(tagname,keyword,G):
     if sources:
         if isiterable(sources):
             for source in sources:
-                s+='<SourceRef>%s</SourceRef>'%source
-        else: s+='<SourceRef>%s</SourceRef>'%sources
+                s+='<SourceRef>S%s</SourceRef>'%source
+        else: s+='<SourceRef>S%s</SourceRef>'%sources
     
     return s
     
@@ -413,7 +413,7 @@ def XsamsRadTrans(RadTrans):
     yield '<Radiative>'
     for RadTran in RadTrans:
         G=lambda name: GetValue(name,RadTran=RadTran)
-        yield '<RadiativeTransition><EnergyWavelength>'
+        yield '\n<RadiativeTransition><EnergyWavelength>'
         yield makeDataType('Wavelength','RadTransWavelength',G)
         yield makeDataType('Wavenumber','RadTransWavenumber',G)
         yield makeDataType('Frequency','RadTransFrequency',G)
