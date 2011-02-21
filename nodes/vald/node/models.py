@@ -87,6 +87,10 @@ class State(Model):
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True,blank=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
 
+    def getRefs(self,which):
+        id=eval('self.'+which+'_ref_id')
+        return [r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %s)'%id)]
+
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
     class Meta:
@@ -117,6 +121,11 @@ class Transition(Model):
     gammarad_ref = ForeignKey(LineList, related_name='isgammaradref_trans')
     gammastark_ref = ForeignKey(LineList, related_name='isgammastarkref_trans')
     waals_ref = ForeignKey(LineList, related_name='iswaalsref_trans')
+    
+    def getRefs(self,which):
+        id=eval('self.'+which+'_ref_id')
+        return [r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %s)'%id)]
+
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.vacwave)
