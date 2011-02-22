@@ -5,12 +5,11 @@
 {% block headline %}VAMDC Dictionary{% endblock %}
 
 {% block content %}
-<p>Please read <a href="http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/VamdcDictionary">in the wiki</a> for a description of this table.</p>
+<p>The columns' meaning is described <a href="#descr">below</a></p>.
 
 <table>
-<tr><th>Keyword</th><th>Short Description</th><th>Long Description</th><th>DataType</th><th>Constraint</th><th>Unit</th><th>Usage</th><th>XSAMS Block</th></tr>
+<tr><th>Keyword</th><th>Short Description</th><th>Long Description</th><th>Type</th><th>Constraint</th><th>Unit</th><th>*</th><th>Usage</th><th>XSAMS Block</th></tr>
 {% for keyword in object_list %}
-
 <tr class="{% cycle 'row1' 'row2' %}">
 <td>{{ keyword.name }}</td>
 <td>{{ keyword.sdescr }}</td>
@@ -18,10 +17,24 @@
 <td>{% if keyword.type %}{{ keyword.get_type_display }}{% endif %}</td>
 <td>{% if keyword.constr %}{{ keyword.constr }}{% endif %}</td>
 <td>{% if keyword.unit %}{{ keyword.unit }}{% endif %}</td>
+<td>{% if keyword.datatype %}*{% endif %}</td>
 <td>{% for use in keyword.usage.iterator %}{{ use.name }}, {% endfor %}</td>
 <td>{% if keyword.block %}{{ keyword.get_block_display }}{% endif %}</td></tr>
-
 {% endfor %}
 </table>
 
+<p>
+<a name="descr">Description of the columns in the table above:</a>
+<ul>
+<li><strong>Keyword</strong>: The actual name of the dictionary entry. These are what is used in the query language and when you fill Restrictables and Returnables.</li>
+<li><strong>Short Description</strong>: </li>
+<li><strong>Long Description</strong>: </li>
+<li><strong>Type</strong>: </li>
+<li><strong>Constraint</strong>: </li>
+<li><strong>Unit</strong>: </li>
+<li><strong>*</strong>: </li>
+<li><strong>Usage</strong>: </li>
+<li><strong>XSAMS Block</strong>: </li>
+</ul>
+</p>
 {% endblock %}
