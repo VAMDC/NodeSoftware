@@ -9,6 +9,7 @@ Documentation for the VAMDC node software.
    concepts
    prereq
    newnode
+   deploy
    importing
    contact
    addit

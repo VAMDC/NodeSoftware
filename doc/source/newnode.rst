@@ -440,24 +440,3 @@ sure that the output in terms of volume and values matches your
 expectations.
 
 
-Deployment in Apache
---------------------------------
-
-How and on which server you set up your node to run permanently, is much 
-dependent on your technical resources and the solution we give here is 
-just one out of several possibilities. It involves the Apache webserver 
-and its mod_wsgi plugin to run Python code. You can find two example 
-files in your node directory:
-
-* *apache.conf*: This is an Apache config file that defines a virtual 
-  server, bound to a certain host name. You will have to edit several 
-  things in that file before it will work in Apache: the server name
-  and the path to the node software in a few places. On a Debian-like 
-  system you would then move this file to 
-  */etc/apache2/sites-available/vamdcnode* and run *a2ensite vamdcnode* to 
-  activate it.
-* *django.wsgi*: This is the file that the previous one points to in its 
-  WsgiScriptAlias. Edit the path and your node's name.
-
-Once you have set this up and re-started the Apache webserver, your node 
-should deliver data at the configured URL.
