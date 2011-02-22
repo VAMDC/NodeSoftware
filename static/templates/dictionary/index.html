@@ -5,7 +5,7 @@
 {% block headline %}VAMDC Dictionary{% endblock %}
 
 {% block content %}
-<p>The columns' meaning is described <a href="#descr">below</a></p>.
+<p>The columns' meaning is described <a href="#descr">below</a>.</p>
 
 <table>
 <tr><th>Keyword</th><th>Short Description</th><th>Long Description</th><th>Type</th><th>Constraint</th><th>Unit</th><th>*</th><th>Usage</th><th>XSAMS Block</th></tr>
@@ -23,18 +23,22 @@
 {% endfor %}
 </table>
 
+<p/>
+
 <p>
-<a name="descr">Description of the columns in the table above:</a>
+<a name="descr"></a>Description of the columns in the table above:
+</p>
+
 <ul>
 <li><strong>Keyword</strong>: The actual name of the dictionary entry. These are what is used in the query language and when you fill Restrictables and Returnables.</li>
-<li><strong>Short Description</strong>: </li>
-<li><strong>Long Description</strong>: </li>
-<li><strong>Type</strong>: </li>
-<li><strong>Constraint</strong>: </li>
-<li><strong>Unit</strong>: </li>
-<li><strong>*</strong>: </li>
-<li><strong>Usage</strong>: </li>
-<li><strong>XSAMS Block</strong>: </li>
+<li><strong>Short Description</strong>: Human-readable short text about the meaning. To be used e.g. as label text for a web-form</li>
+<li><strong>Long Description</strong>: Human-readable longer text, to be used eg. in a help-box.</li>
+<li><strong>Type</strong>: What type of data are associated with the keyword. choices are: string, float, integer, boolean.</li>
+<li><strong>Constraint</strong>: Possible contraints on the content, like ranges for a number, only certain strings (regular expression) etc.</li>
+<li><strong>Unit</strong>: The default unit, if any, for the keyword. This unit is the one used at query-time. You may however use another unit when returning data.</li>
+<li><strong>*</strong>: This column marks if a keyword corresponds to a "DataType" in the XSAMS schema. If SomeKeyword is marked here, it means that there are also the corresponding keywords SomeKeywordUnit, SomeKeywordRef, SomeKeywordComment, SomeKeywordMethod and SomeKeywordAccuracy. for sake of overview these are not listed for each keyword.</li>
+<li><strong>Usage</strong>: Tells whether a keyword can be used as Returnable, Restrictable and/or Requestable.</li>
+<li><strong>XSAMS Block</strong>: This tells in which part of the XSAMS schema a keyword ends up in when used as a Returnable.</li>
 </ul>
 </p>
 {% endblock %}
