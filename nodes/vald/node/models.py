@@ -33,7 +33,7 @@ class Reference(Model):
     bibtex = CharField(max_length=1024, null=True)
 
     def XML(self):
-        return Entry2XML( getEntryFromString(self.bibtex) )
+        return BibTeX2XML( self.bibtex )
 
     class Meta:
         db_table = u'refs'
