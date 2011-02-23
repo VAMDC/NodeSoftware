@@ -78,9 +78,9 @@ def makeDataType(tagname,keyword,G):
     if sources:
         if isiterable(sources):
             for source in sources:
-                s+='<SourceRef>S%s</SourceRef>'%source
-        else: s+='<SourceRef>S%s</SourceRef>'%sources
-    
+                s+='<SourceRef>B%s</SourceRef>'%source
+        else: s+='<SourceRef>B%s</SourceRef>'%sources
+    s+='</%s>'%tagname
     return s
     
 def XsamsSources(Sources):
@@ -200,7 +200,7 @@ def XsamsAtoms(Atoms):
             yield makeDataType('IonizationEnergy','AtomStateIonizationEnergy',G)
             yield makeDataType('StateEnergy','AtomStateEnergy',G)
             yield makeDataType('LandeFactor','AtomStateLandeFactor',G)
-            
+            yield '</AtomicNumericalData>'
             if (G('AtomStateParity') or G('AtomStateTotalAngMom')):
                 yield '<AtomicQuantumNumbers><Parity>%s</Parity>' \
                   '<TotalAngularMomentum>%s</TotalAngularMomentum>' \

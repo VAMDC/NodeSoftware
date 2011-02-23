@@ -56,8 +56,8 @@ def BibTeX2XML(bibtexstring):
 <PageEnd>%s</PageEnd>
 <UniformResourceIdentifier>%s</UniformResourceIdentifier>
 <DigitalObjectIdentifier>%s</DigitalObjectIdentifier>
-</Source>\n""" % (title,category,year,sourcename,volume,p1,p2,url,doi)
+""" % (title,category,year or 2222,sourcename,volume,p1,p2,url,doi)
 
-    xml += '<BibTeX>%s</BibTeX>'%quoteattr(bibtexstring)[1:-1]
+    xml += '<BibTeX>%s</BibTeX></Source>'%quoteattr(bibtexstring)[1:-1]
 
     return xml
