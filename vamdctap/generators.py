@@ -433,8 +433,8 @@ def XsamsRadTrans(RadTrans):
         if final: yield '<FinalStateRef>S%s</FinalStateRef>'%final
 
         yield '<Probability>'
-        yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
-        yield makeDataType('TransitionProbabilityA','RadTransProbabilityTransitionProbabilityA',G)
+        yield makeDataType('Log10WeightedOscillatorStrength','RadTransLogGF',G)
+        yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
         yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)        
         yield '</Probability></RadiativeTransition>'
         
