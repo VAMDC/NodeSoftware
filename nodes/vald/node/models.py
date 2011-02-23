@@ -71,7 +71,9 @@ def build_refcache():
     for ll in lls:
         refcache[ll]=[r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %d)'%ll)]
     return refcache
-refcache=build_refcache()
+
+try: refcache=build_refcache()
+except: refcache={}
 ####
 
 class State(Model):
