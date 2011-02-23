@@ -425,8 +425,6 @@ def XsamsRadTrans(RadTrans):
         
         yield '</EnergyWavelength>'
 
-        yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)
-
         # PROPERLY RE-IMPLEMENT BROADENING HERE.
 
         initial = G('RadTransInitialStateRef')
@@ -437,8 +435,7 @@ def XsamsRadTrans(RadTrans):
         yield '<Probability>'
         yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityTransitionProbabilityA',G)
-
-        
+        yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)        
         yield '</Probability></RadiativeTransition>'
         
     yield '</Radiative>'
