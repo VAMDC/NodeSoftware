@@ -77,7 +77,7 @@ except: refcache={}
 ####
 
 class State(Model):
-    id = CharField(max_length=255, primary_key=True, db_index=True)
+    id = IntegerField(primary_key=True, db_index=True)
     species = ForeignKey(Species)  
 
     energy = DecimalField(max_digits=15, decimal_places=4,null=True,blank=True, db_index=True) 
