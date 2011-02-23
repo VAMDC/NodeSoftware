@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Q
 from django.conf import settings
-from dictionaries import *
-from itertools import chain
-from copy import deepcopy
-
 import sys
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s
+
+from dictionaries import *
+from itertools import chain
+from copy import deepcopy
 
 from models import *
 from vamdctap.sqlparse import *
@@ -43,18 +43,17 @@ def setupResults(sql,limit=10000):
     try: q=eval(q)
     except: return {}
     
-    transs = Transition.objects.filter(q)
-#    transs = Transition.objects.select_related(depth=2).filter(q)
+    transs = Transition.objects.filter(q).order_by('vacwave')
     ntranss=transs.count()
-
+    if limit < ntranss :
+        percentage='%.1f'%(float(limit)/ntranss *100)
+	newmax=transs = transs[limit].vacwave
+        transs=Transition.objects.filter(q,Q(vacwave__lt=newmax))
+    else: percentage=None
+    ntranss=transs.count()
     sources = getRefs(transs)
     nsources = sources.count()
     species,nspecies,nstates = getSpeciesWithStates(transs)
-
-    if limit < ntranss :
-        transs = transs[:limit]
-        percentage='%.1f'%(float(limit)/ntranss *100)
-    else: percentage=None
 
     
     headerinfo=CaselessDict({\
