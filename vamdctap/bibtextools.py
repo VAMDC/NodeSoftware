@@ -2,6 +2,7 @@ from StringIO import StringIO
 from pybtex.database.input import bibtex
 from string import strip
 from caselessdict import CaselessDict
+from xml.sax.saxutils import quoteattr
 
 DUMMY='@article{DUMMY, Author = {No Boby}, Title = {This is a dummy entry.}}'
 
@@ -23,7 +24,8 @@ TYPE2CATEGORY=CaselessDict({\
 'inproceedings':'proceedings',
 })
 
-def Entry2XML(e):
+def BibTeX2XML(bibtexstring):
+    e = getEntryFromString(bibtexstring)
     xml = u'<Source sourceID="B%s">\n<Authors>\n'%e.key
     for a in e.persons['author']:
         name = a.first() + a.middle() + a.last() + a.lineage()
@@ -36,7 +38,7 @@ def Entry2XML(e):
     
     f = CaselessDict(e.fields)
     url = f.get('bdsk-url-1')
-    title = f.get('title')
+    title = f.get('title').strip().strip('{}')
     sourcename = f.get('journal','unknown')
     doi = f.get('doi')
     year = f.get('year')
@@ -54,7 +56,8 @@ def Entry2XML(e):
 <PageEnd>%s</PageEnd>
 <UniformResourceIdentifier>%s</UniformResourceIdentifier>
 <DigitalObjectIdentifier>%s</DigitalObjectIdentifier>
-</Source>\n""" % (title,category,year,sourcename,volume,p1,p2,url,doi)
+""" % (title,category,year or 2222,sourcename,volume,p1,p2,url,doi)
 
+    xml += '<BibTeX>%s</BibTeX></Source>'%quoteattr(bibtexstring)[1:-1]
 
     return xml

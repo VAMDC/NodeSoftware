@@ -38,12 +38,18 @@ def unmake_restrictable(modeladmin, request, queryset):
     for kw in queryset: kw.usage.remove(RESTRICTA)
 unmake_restrictable.short_description = "Unmark selected keywords Restrictable"
 
+def toggle_datatype(modeladmin, request, queryset):
+    for kw in queryset:
+        kw.datatype = not kw.datatype
+        kw.save()
+toggle_datatype.short_description = "Toggle DataType true/false for selected keywords"
+
 class KeyWordAdmin(admin.ModelAdmin):
-    list_display = ('name', 'sdescr')
+    list_display = ('name', 'sdescr','datatype','unit')
     search_fields = ('name', 'sdescr', 'ldescr', 'unit')
     actions_on_top = True
     actions_on_bottom = True
-    actions = [make_returnable,unmake_returnable,unmake_requestable,make_requestable, make_restrictable, unmake_restrictable]
+    actions = [toggle_datatype,make_returnable,unmake_returnable,unmake_requestable,make_requestable, make_restrictable, unmake_restrictable]
 
 class UsageAdmin(admin.ModelAdmin):
     list_display = ('name',keywords)

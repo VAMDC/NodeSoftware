@@ -33,7 +33,7 @@ class Reference(Model):
     bibtex = CharField(max_length=1024, null=True)
 
     def XML(self):
-        return Entry2XML( getEntryFromString(self.bibtex) )
+        return BibTeX2XML( self.bibtex )
 
     class Meta:
         db_table = u'refs'
@@ -63,6 +63,16 @@ class LineList(Model):
     class Meta:
         db_table = u'linelists'
 
+####
+# REFERENCE CACHE
+def build_refcache():
+    refcache={}
+    lls=LineList.objects.all().values_list('id',flat=True)
+    for ll in lls:
+        refcache[ll]=[r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %d)'%ll)]
+    return refcache
+refcache=build_refcache()
+####
 
 class State(Model):
     id = CharField(max_length=255, primary_key=True, db_index=True)
@@ -86,6 +96,10 @@ class State(Model):
     k = DecimalField(max_digits=3, decimal_places=1,db_column=u'K', null=True,blank=True)
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True,blank=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
+
+    def getRefs(self,which):
+        id=eval('self.'+which+'_ref_id')
+        return refcache[id]
 
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
@@ -117,6 +131,10 @@ class Transition(Model):
     gammarad_ref = ForeignKey(LineList, related_name='isgammaradref_trans')
     gammastark_ref = ForeignKey(LineList, related_name='isgammastarkref_trans')
     waals_ref = ForeignKey(LineList, related_name='iswaalsref_trans')
+    
+    def getRefs(self,which):
+        id=eval('self.'+which+'_ref_id')
+        return refcache[id]
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.vacwave)

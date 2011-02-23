@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Q
 from django.conf import settings
-from dictionaries import *
-from itertools import chain
-from copy import deepcopy
-
 import sys
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s
+
+from dictionaries import *
+from itertools import chain
+from copy import deepcopy
 
 from models import *
 from vamdctap.sqlparse import *
@@ -37,26 +37,25 @@ def getSpeciesWithStates(transs):
 
     return species,nspecies,nstates
 
-def setupResults(sql,limit=1000):
+def setupResults(sql,limit=10000):
     LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
     try: q=eval(q)
     except: return {}
     
-    transs = Transition.objects.filter(q)
-#    transs = Transition.objects.select_related(depth=2).filter(q)
-    LOG('%s %s'%(len(list(transs)),transs.count()))
+    transs = Transition.objects.filter(q).order_by('vacwave')
     ntranss=transs.count()
-
     if limit < ntranss :
-        #transs = transs[:limit]
         percentage='%.1f'%(float(limit)/ntranss *100)
+	newmax=transs = transs[limit].vacwave
+        transs=Transition.objects.filter(q,Q(vacwave__lt=newmax))
     else: percentage=None
-
+    ntranss=transs.count()
     sources = getRefs(transs)
     nsources = sources.count()
     species,nspecies,nstates = getSpeciesWithStates(transs)
 
+    
     headerinfo=CaselessDict({\
             'Truncated':percentage,
             'COUNT-SOURCES':nsources,
@@ -70,78 +69,3 @@ def setupResults(sql,limit=1000):
             'Sources':sources,
             'HeaderInfo':headerinfo
            }
-
-
-
-
-
-
-
-#############################################################     
-############### LEGACY code below ###########################
-#############################################################
-
-
-
-
-
-def getVALDstates2(transs):
-    sids=set([])
-    for trans in transs:
-        sids.add(trans.lostate)
-        sids.add(trans.upstate)
-        
-    states=[]
-    sids.remove(None)
-    for sid in sids:
-        states.append(State.objects.get(pk=sid))
-    return states
-
-def getVALDsources1(transs):
-    # this is REALLY slow
-    waverefs=Q(iswaveref_trans__in=transs)
-    landerefs=Q(islanderef_trans__in=transs)
-    loggfrefs=Q(isloggfref_trans__in=transs)
-    g1refs=Q(isgammaradref_trans__in=transs)
-    g2refs=Q(isgammastarkref_trans__in=transs)
-    g3refs=Q(isgammawaalsref_trans__in=transs)
-    refQ= waverefs | landerefs | loggfrefs | g1refs | g2refs | g3refs
-    sources=Source.objects.filter(refQ).distinct()
-    return sources
-
-def getVALDsources2(transs):
-    #resonably fast
-    waverefs=Q(iswaveref_trans__in=transs)
-    landerefs=Q(islanderef_trans__in=transs)
-    loggfrefs=Q(isloggfref_trans__in=transs)
-    g1refs=Q(isgammaradref_trans__in=transs)
-    g2refs=Q(isgammastarkref_trans__in=transs)
-    g3refs=Q(isgammawaalsref_trans__in=transs)
-    refQs=[waverefs, landerefs, loggfrefs, g1refs, g2refs, g3refs]
-    sources=set()
-    for q in refQs:
-        refs=Source.objects.filter(q).distinct()
-        for r in refs:
-            sources.add(r)
-    return sources
-
-def getVALDsources3(transs):
-    # slower than v2
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref,trans.loggf_ref,trans.lande_ref,trans.gammarad_ref,trans.gammastark_ref,trans.gammawaals_ref])
-        sids=sids.union(s)
-    return list(sids)
-
-def getVALDsources4(transs):
-    # as slow as v3
-    sids=set([])
-    for trans in transs:
-        s=set([trans.wave_ref.id,trans.loggf_ref.id,trans.lande_ref.id,trans.gammarad_ref.id,trans.gammastark_ref.id,trans.gammawaals_ref.id])
-        sids=sids.union(s)
-    sources=[]
-    for sid in sids:
-        sources.append(Source.objects.get(pk=sid))
-    return sources
-
-

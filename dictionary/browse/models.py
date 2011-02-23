@@ -9,7 +9,7 @@ class KeyWord(models.Model):
     name = models.CharField(max_length=256)
     sdescr = models.TextField('Short description')
     ldescr = models.TextField('Long description')
-    type = models.CharField('Data type',max_length=1, choices=( ('s','String'),
+    type = models.CharField('Type',max_length=1, choices=( ('s','String'),
                                                     ('i','Integer'),
                                                     ('f','Float'),
                                                     ('b','Boolean'),
@@ -19,19 +19,18 @@ class KeyWord(models.Model):
     unit = models.CharField('Unit',max_length=256,null=True,blank=True)
     usage = models.ManyToManyField(Usage,null=True,blank=True)
     block = models.CharField('XSAMS block',max_length=2, choices=( \
-                                                    ('so','Sources'),
+                                                    ('at','Atoms'),
                                                     ('as','Atomic States'),
+                                                    ('mo','Molecules'),
                                                     ('ms','Molecular States'),
                                                     ('mq','Molecular Quantum Numbers'),
                                                     ('ct','Collisional Transitions'),
                                                     ('rt','Radiative Transitions'),
                                                     ('me','Methods'),
-                                                    ('mo','Molecules'),
-                                                    ('at','Atoms'),
-                                                    ('sp','Species'),
+                                                    ('so','Sources'),
                                                   ),
                             null=True,blank=True)
-
+    datatype = models.BooleanField('DataType in XSAMS?',default=False)
 
     def __unicode__(self):
         return u'%s'%self.name
