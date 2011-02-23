@@ -63,6 +63,16 @@ class LineList(Model):
     class Meta:
         db_table = u'linelists'
 
+####
+# REFERENCE CACHE
+def build_refcache():
+    refcache={}
+    lls=LineList.objects.all().values_list('id',flat=True)
+    for ll in lls:
+        refcache[ll]=[r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %d)'%ll)]
+    return refcache
+refcache=build_refcache()
+####
 
 class State(Model):
     id = CharField(max_length=255, primary_key=True, db_index=True)
@@ -89,7 +99,7 @@ class State(Model):
 
     def getRefs(self,which):
         id=eval('self.'+which+'_ref_id')
-        return [r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %s)'%id)]
+        return refcache[id]
 
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
@@ -124,8 +134,7 @@ class Transition(Model):
     
     def getRefs(self,which):
         id=eval('self.'+which+'_ref_id')
-        return [r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %s)'%id)]
-
+        return refcache[id]
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.vacwave)
