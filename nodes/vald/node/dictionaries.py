@@ -57,7 +57,7 @@ RESTRICTABLES = CaselessDict({\
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'AtomStateEnergy':'upstate__energy',
-'RadTransWavelengthExperimental':'vacwave',
+'RadTransWavelength':'vacwave',
 'RadTransLogGF':'loggf',
 'AtomIonCharge':'species__ion',
 })

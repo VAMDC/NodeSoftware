@@ -177,7 +177,7 @@ def XsamsAtoms(Atoms):
 
     """
 
-    if not Atoms: return
+    if not isiterable(Atoms): return
 
     yield '<Atoms>'
 
@@ -414,6 +414,8 @@ def XsamsRadTrans(RadTrans):
     """
     Generator for the XSAMS radiative transitions.
     """
+
+    if not isiterable(RadTrans): return
 
     yield '<Radiative>'
     for RadTran in RadTrans:
