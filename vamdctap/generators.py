@@ -71,16 +71,19 @@ def makeDataType(tagname,keyword,G):
     
     s='\n<%s'%tagname
     if method: s+=' methodRef="M%s"'%method
-    s+='><Value units="%s">%s</Value>'%(unit or 'unitless',value)
+    s+='>'
     
-    if acc: s+='<Accuracy>%s</Accuracy>'%acc
     if comment: s+='<Comments>%s</Comments>'%quoteattr('%s'%comment)[1:-1]
     if sources:
         if isiterable(sources):
             for source in sources:
                 s+='<SourceRef>B%s</SourceRef>'%source
         else: s+='<SourceRef>B%s</SourceRef>'%sources
+
+    s+='<Value units="%s">%s</Value>'%(unit or 'unitless',value)
+    if acc: s+='<Accuracy>%s</Accuracy>'%acc
     s+='</%s>'%tagname
+
     return s
     
 def XsamsSources(Sources):
@@ -191,7 +194,8 @@ def XsamsAtoms(Atoms):
 </IsotopeParameters>
 <Ion speciesID="X%s">
 <IonCharge>%s</IonCharge>""" % ( G('AtomNuclearCharge'),
-	G('AtomSymbol'), G('AtomMassNumber'), G('AtomSpeciesID'), G('AtomIonCharge'))
+	G('AtomSymbol'), G('AtomMassNumber'), G('AtomSpeciesID'), 
+	G('AtomIonCharge'))
 
 	for AtomState in Atom.States:
             G=lambda name: GetValue(name, AtomState=AtomState)
@@ -209,6 +213,7 @@ def XsamsAtoms(Atoms):
 
             yield XsamsAtomTerm(AtomState,G)
             yield '</AtomicState>'
+        yield '<InChIKey>%s</InChIKey>'%G('AtomInchiKey')
         yield """</Ion>
 </Isotope>
 </Atom>"""
@@ -420,7 +425,7 @@ def XsamsRadTrans(RadTrans):
         
         yield '</EnergyWavelength>'
 
-        yield makeDataType('EffLandeFactor','RadTransEffLande',G)
+        yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)
 
         # PROPERLY RE-IMPLEMENT BROADENING HERE.
 

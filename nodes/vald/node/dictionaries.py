@@ -19,6 +19,7 @@ RETURNABLES = CaselessDict({\
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'Atom.name',
 'AtomSpeciesID':'Atom.id',
+'AtomInchiKey':'notyetindb',
 'AtomNuclearCharge':'Atom.atomic',
 'AtomIonCharge':'Atom.ion',
 'AtomMassNumber':'Atom.massno',
