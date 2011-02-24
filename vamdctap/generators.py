@@ -9,6 +9,9 @@ from django.conf import settings
 from django.utils.importlib import import_module
 DICTS=import_module(settings.NODEPKG+'.dictionaries')
 
+# This must always be 
+NODEID = DICTS.RETURNABLES['NodeID']
+
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s.encode('utf-8')
 
@@ -64,8 +67,8 @@ def makeSourceRefs(refs):
     if refs:
     if isiterable(refs):
         for ref in refs:
-            s+='<SourceRef>B%s</SourceRef>'%ref
-    else: s+='<SourceRef>B%s</SourceRef>'%refs
+            s+='<SourceRef>B%s-%s</SourceRef>'%(NodeID,ref)
+    else: s+='<SourceRef>B%s-%s</SourceRef>'%(NodeID,refs)
     return s
 
 def makeDataType(tagname,keyword,G):
@@ -85,7 +88,7 @@ def makeDataType(tagname,keyword,G):
     refs=G(keyword+'Ref')
     
     s='\n<%s'%tagname
-    if method: s+=' methodRef="M%s"'%method
+    if method: s+=' methodRef="M%s-%s"'%(NODEID,method)
     s+='>'
     
     if comment: s+='<Comments>%s</Comments>'%quoteattr('%s'%comment)[1:-1]
@@ -157,13 +160,13 @@ def XsamsEnvironments(Environments):
             yield '<Composition>'
             if isiterable(species):
                 for Species in species:
-                    yield '<Species name="%s" speciesRef="%s">'%(G('EnvironmentSpeciesName'),G('EnvironmentSpeciesRef'))
+                    yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
                     yield makeDataType('ParitalPressure','EnvironmentSpeciesParitalPressure')
                     yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
                     yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
                     </Species>
             else:
-                yield '<Species name="%s" speciesRef="%s">'%(G('EnvironmentSpeciesName'),G('EnvironmentSpeciesRef'))
+                yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
                 yield makeDataType('ParitalPressure','EnvironmentSpeciesParitalPressure')
                 yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
                 yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
