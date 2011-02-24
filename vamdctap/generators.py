@@ -15,6 +15,12 @@ def LOG(s):
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
+def countReturnables(s):
+    """
+    count how often a certain (sub)string is in the keys of the returnables
+    """
+    return len(filter(lambda key: 'atomstate' in key, DICTS.RETURNABLES.keys())
+
 def GetValue(name,**kwargs):
     """
     the function that gets a value out of the query set, using the global name
@@ -53,6 +59,15 @@ def GetValue(name,**kwargs):
     #return quoteattr('%s'%value)[1:-1] # re
     return value
 
+def makeSourceRefs(refs):
+    s=''
+    if refs:
+    if isiterable(refs):
+        for ref in refs:
+            s+='<SourceRef>B%s</SourceRef>'%ref
+    else: s+='<SourceRef>B%s</SourceRef>'%refs
+    return s
+
 def makeDataType(tagname,keyword,G):
     """
     This is for treating the case where a keyword corresponds to a
@@ -67,19 +82,14 @@ def makeDataType(tagname,keyword,G):
     method=G(keyword+'Method')
     comment=G(keyword+'Comment')
     acc=G(keyword+'Accuracy')
-    sources=G(keyword+'Ref')
+    refs=G(keyword+'Ref')
     
     s='\n<%s'%tagname
     if method: s+=' methodRef="M%s"'%method
     s+='>'
     
     if comment: s+='<Comments>%s</Comments>'%quoteattr('%s'%comment)[1:-1]
-    if sources:
-        if isiterable(sources):
-            for source in sources:
-                s+='<SourceRef>B%s</SourceRef>'%source
-        else: s+='<SourceRef>B%s</SourceRef>'%sources
-
+    s+=makeSourceRefs(refs)
     s+='<Value units="%s">%s</Value>'%(unit or 'unitless',value)
     if acc: s+='<Accuracy>%s</Accuracy>'%acc
     s+='</%s>'%tagname
@@ -124,7 +134,45 @@ def XsamsSources(Sources):
                    G('SourcePageBegin'), G('SourcePageEnd'), G('SourceURI') )
     yield '</Sources>\n'
 
-def XsamsAtomTerm(AtomState,G):
+def XsamsEnvironments(Environments):
+    if not isiterable(Environments): return
+    yield '<Environments>'
+    for Environment in Environments:
+        if hasattr(Environment,'XML'):
+            try:
+                yield Environment.XML()
+                continue
+            except:
+                pass
+
+        G = lambda name: GetValue(name, Environment=Environment)
+        yield '<Environment id="E%s">'%G('EnvironmentID')
+        yield makeSourceRefs(G('EnvironmentRef'))
+        yield '<Comments>%s</Comments>'G('EnvironmentComment')
+        yield makeDataType('Temperature','EnvironmentTemperature')
+        yield makeDataType('TotalPressure','EnvironmentTotalPressure')
+        yield makeDataType('TotalNumberDensity','EnvironmentTotalNumberDensity')
+        species=G('EnvironmentSpecies')
+        if species:
+            yield '<Composition>'
+            if isiterable(species):
+                for Species in species:
+                    yield '<Species name="%s" speciesRef="%s">'%(G('EnvironmentSpeciesName'),G('EnvironmentSpeciesRef'))
+                    yield makeDataType('ParitalPressure','EnvironmentSpeciesParitalPressure')
+                    yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
+                    yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
+                    </Species>
+            else:
+                yield '<Species name="%s" speciesRef="%s">'%(G('EnvironmentSpeciesName'),G('EnvironmentSpeciesRef'))
+                yield makeDataType('ParitalPressure','EnvironmentSpeciesParitalPressure')
+                yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
+                yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
+                </Species>
+            yield '</Composition>'
+        yield '</Environment>'
+    yield '</Environments>'
+
+def XsamsAtomTerm(G):
     """
     The part of XSAMS with the term designation and coupling for atoms.
     Note that this is not a generator but a plain function that returns
@@ -395,19 +443,17 @@ def XsamsMolecs(Molecules):
         yield '</Molecule>\n'
     yield '</Molecules>\n'
     
-def XsamsRadTranBroadening(typedescr,ref,params):
-    """
-    helper function for line broadening below
-    """
 
-    result='<BroadeningProcess><SourceRef>B%s</SourceRef><BroadeningSpecies>'%ref
-    result+='<Comments>%s</Comments>'%typedescr
+def XsamsRadTranBroadening(G):
+    """
+    helper function for line broadening, called from RadTrans
+    """
+    result='<Broadenings>'
+
+    result+='<Comments>%s</Comments>'
     result+='<LineshapeParameter>'
-    for par in params:
-        result+='<Value>%s</Value>'%par
-
     result+='</LineshapeParameter>'
-    result+='</BroadeningSpecies></BroadeningProcess>'
+    result+='</Broadenings>'
     return result
 
 def XsamsRadTrans(RadTrans):
