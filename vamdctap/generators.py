@@ -10,7 +10,10 @@ from django.utils.importlib import import_module
 DICTS=import_module(settings.NODEPKG+'.dictionaries')
 
 # This must always be 
-NODEID = DICTS.RETURNABLES['NodeID']
+try:
+    NODEID = DICTS.RETURNABLES['NodeID']
+except:
+    NODEID = 'PleaseFillTheNodeID'
 
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s.encode('utf-8')
@@ -22,7 +25,7 @@ def countReturnables(s):
     """
     count how often a certain (sub)string is in the keys of the returnables
     """
-    return len(filter(lambda key: 'atomstate' in key, DICTS.RETURNABLES.keys())
+    return len(filter(lambda key: 'atomstate' in key, DICTS.RETURNABLES.keys()))
 
 def GetValue(name,**kwargs):
     """
@@ -65,10 +68,10 @@ def GetValue(name,**kwargs):
 def makeSourceRefs(refs):
     s=''
     if refs:
-    if isiterable(refs):
-        for ref in refs:
-            s+='<SourceRef>B%s-%s</SourceRef>'%(NodeID,ref)
-    else: s+='<SourceRef>B%s-%s</SourceRef>'%(NodeID,refs)
+        if isiterable(refs):
+            for ref in refs:
+                s+='<SourceRef>B%s-%s</SourceRef>'%(NODEID,ref)
+        else: s+='<SourceRef>B%s-%s</SourceRef>'%(NODEID,refs)
     return s
 
 def makeDataType(tagname,keyword,G):
@@ -149,9 +152,9 @@ def XsamsEnvironments(Environments):
                 pass
 
         G = lambda name: GetValue(name, Environment=Environment)
-        yield '<Environment id="E%s">'%G('EnvironmentID')
+        yield '<Environment envID="E%s-%s">'%(NODEID,G('EnvironmentID'))
         yield makeSourceRefs(G('EnvironmentRef'))
-        yield '<Comments>%s</Comments>'G('EnvironmentComment')
+        yield '<Comments>%s</Comments>'%G('EnvironmentComment')
         yield makeDataType('Temperature','EnvironmentTemperature')
         yield makeDataType('TotalPressure','EnvironmentTotalPressure')
         yield makeDataType('TotalNumberDensity','EnvironmentTotalNumberDensity')
@@ -164,13 +167,13 @@ def XsamsEnvironments(Environments):
                     yield makeDataType('ParitalPressure','EnvironmentSpeciesParitalPressure')
                     yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
                     yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
-                    </Species>
+                    yield '</Species>'
             else:
                 yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
                 yield makeDataType('ParitalPressure','EnvironmentSpeciesParitalPressure')
                 yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
                 yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
-                </Species>
+                yield '</Species>'
             yield '</Composition>'
         yield '</Environment>'
     yield '</Environments>'
@@ -262,7 +265,7 @@ def XsamsAtoms(Atoms):
                   '</AtomicQuantumNumbers>' % (G('AtomStateParity'),
                                                G('AtomStateTotalAngMom'))
 
-            yield XsamsAtomTerm(AtomState,G)
+            yield XsamsAtomTerm(G)
             yield '</AtomicState>'
         yield '<InChIKey>%s</InChIKey>'%G('AtomInchiKey')
         yield """</Ion>
@@ -424,7 +427,7 @@ quoteattr(Molstate.title),
     return ret
 
 
-def XsamsMolecs(Molecules):
+def XsamsMolecules(Molecules):
     if not Molecules: return
     yield '<Molecules>\n'
     for Moldesc in Molecules:
@@ -476,7 +479,7 @@ def XsamsRadTrans(RadTrans):
         
         yield '</EnergyWavelength>'
 
-        # PROPERLY RE-IMPLEMENT BROADENING HERE.
+        yield XsamsRadTranBroadening(G)
 
         initial = G('RadTransInitialStateRef')
         if initial: yield '<InitialStateRef>S%s</InitialStateRef>'%initial
@@ -491,6 +494,8 @@ def XsamsRadTrans(RadTrans):
         
     yield '</Radiative>'
 
+def XsamsFunctions(Functions):
+    yield ''
 
 def XsamsMethods(Methods):
     """
@@ -508,16 +513,15 @@ def XsamsMethods(Methods):
     yield '</Methods>\n'
 
 
-def Xsams(Sources=None, Atoms=None, AtomStates=None, MoleStates=None, CollTrans=None,
-          RadTrans=None, Methods=None, MoleQNs=None, Molecules=None,
-          HeaderInfo=None):
+def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None, Environments=None,
+          Atoms=None, Molecules=None, CollTrans=None, RadTrans=None, 
+          ):
     """
-    The main generator function of XSAMS. This one calles all the
+    The main generator function of XSAMS. This one calls all the
     sub-generators above. It takes the query sets that the node's
     setupResult() has constructed as arguments with given names.
     This function is to be passed to the HTTP-respose object directly
     and not to be looped over beforehand.
-
     """
 
     yield """<?xml version="1.0" encoding="UTF-8"?>
@@ -537,17 +541,21 @@ def Xsams(Sources=None, Atoms=None, AtomStates=None, MoleStates=None, CollTrans=
 -->
 """ % HeaderInfo['Truncated']
 
-    LOG('Writing Sources.')
+    LOG('Working on Sources.')
     for Source in XsamsSources(Sources): yield Source
 
-    LOG('Writing Methods.')
+    LOG('Working on Methods, Functions, Environments.')
     for Method in XsamsMethods(Methods): yield Method
+    for Function in XsamsFunctions(Functions): yield Function
+    for Environment in XsamsEnvironments(Environments): yield Environment
 
     LOG('Writing States.')
     yield '<Species>\n'
     for Atom in XsamsAtoms(Atoms): yield Atom
-    for MolState in XsamsMolStates(Molecules, MoleStates, MoleQNs):
-        yield MolState
+    for Molecule in XsamsMolecules(Molecules): yield Molecule
+    # old way:
+    #for MolState in XsamsMolStates(Molecules, MoleStates, MoleQNs):
+    #    yield MolState
     yield '</Species>\n'
 
     LOG('Writing Processes.')
