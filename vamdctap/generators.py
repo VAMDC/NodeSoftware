@@ -448,19 +448,37 @@ def XsamsMolecules(Molecules):
         #    yield molst#yield XsamsMSBuild(Molstate)
         yield '</Molecule>\n'
     yield '</Molecules>\n'
-    
+
+
+###############
+# END SPECIES
+# BEGIN PROCESSES
+#################
+
+def makeBroadeningType(G,type='Natural'):
+    s = '<%sBroadening methodRef=>'%type
+    s +='<Comments>%s</Comments>'G('RadTransBroadening%sComment'%type)
+    s += makeSourceRef(G('RadTransBroadening%sRef'%type))
+    s += '</%sBroadening>'%type
+    return s
 
 def XsamsRadTranBroadening(G):
     """
     helper function for line broadening, called from RadTrans
     """
-    result='<Broadenings>'
-
-    result+='<Comments>%s</Comments>'
-    result+='<LineshapeParameter>'
-    result+='</LineshapeParameter>'
-    result+='</Broadenings>'
-    return result
+    s = '<Broadenings>'
+    s +='<Comments>%s</Comments>'G('RadTransBroadeningComment')
+    s += makeSourceRef(G('RadTransBroadeningRef'))
+    if countReturnables('RadTransBroadeningNatural'):
+        s += makeBroadeningType(G,type='Natural')
+    if countReturnables('RadTransBroadeningStark'):
+        s += makeBroadeningType(G,type='Stark')
+    if countReturnables('RadTransBroadeningVanDerWaals'):
+        s += makeBroadeningType(G,type='VanDerWaals')
+    if countReturnables('RadTransBroadeningIntrument'):
+        s += makeBroadeningType(G,type='Instrument')
+    s += '</Broadenings>'
+    return s
 
 def XsamsRadTrans(RadTrans):
     """
