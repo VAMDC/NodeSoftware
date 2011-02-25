@@ -12,43 +12,6 @@ from django.db import models
 
 import datetime, time
 
-def make_request(numin, numax, Smin, selected_molecids, output_params,
-                    output_formats, compression=None):
-    """
-    Make and return the HITRANrequest object for the required lines.
-    Arguments:
-    numin, numax: the wavenumber range for lines to return
-    Smin: the minimum HITRAN line strength minimum,
-    selected_molecids: a list identifying the species whose transitions
-        are to be returned
-    output_params: a list of strings identifying the parameters to output
-    output_formats: a list of strings identifying the output formats to
-        produce
-
-    """
-
-    # reset the linelist results list:
-    HITRAN.linelist=[]
-    # construct the HITRANrequest object:
-    req = HITRAN.request.HITRANrequest(HITRAN.meta)
-    req.numin = numin
-    req.numax = numax
-    req.Smin = Smin
-    req.molecIDs = [int(molecID) for molecID in selected_molecids]
-    req.get_states = True
-
-    # integer timestamp: the number of seconds since 00:00 1 January 1970
-    # using UTC:
-    #ts_int = int(time.mktime(datetime.datetime.utcnow().timetuple()))
-    ts_int=1285072598
-    # make the timestamp from the hex representation of ts_int, stripping
-    # off the initial '0x' characters:
-    filestem = 'searchapp/results/%s' % hex(ts_int)[2:]
-
-    req.setup_output_objects(output_formats, filestem, compression,
-                             output_params)
-    return req
-
 class Molecules(models.Model):
     molecid = models.IntegerField(primary_key=True, null=False,
                                   db_column='molecID')
@@ -65,17 +28,6 @@ class Molecules(models.Model):
                                       db_column='chemical_names')
     class Meta:
             db_table = u'molecules'
-
-    def xsams(self):
-        yield '    <Molecule>\n'
-        yield '      <MolecularChemicalSpecies>\n'
-        yield '        <OrdinaryStructuralFormula>%s' \
-                  '</OrdinaryStructuralFormula>\n' % self.molec_name
-        yield '        <StoichiometricFormula>%s' \
-                  '</StoichiometricFormula>\n' % self.molec_name
-        yield '        <ChemicalName>%s' \
-                  '</ChemicalName>\n' % self.chemical_names
-        yield '      </MolecularChemicalSpecies>\n'
 
 class Isotopologues(models.Model):
     inchikey = models.CharField(primary_key=True, max_length=81,
@@ -108,6 +60,7 @@ class Species:
         self.chemical_names = chemical_names
         self.ordinary_formula = ordinary_formula
         self.stoichiometric_formula = iso_name
+        self.States = None
 
    def __getitem__(self, name):
         return self.__dict__[name]
@@ -129,22 +82,6 @@ class States(models.Model):
     qns = models.CharField(max_length=1536, db_column='qns', blank=True)
     class Meta:
         db_table = u'states'
-
-    def xsams(self):
-        yield '      <MolecularState stateID="%s">\n' % self.stateid
-        yield '        <Description>A molecular state </Description>\n'
-        yield '        <MolecularStateCharacterisation>\n'
-        if self.energy:
-            yield '          <StateEnergy energyOrigin="electronic and ' \
-                  'vibrational ground state">\n'
-            yield '            <Value units="1/cm">%12.6f</Value>\n' \
-                        % self.energy
-            yield '          </StateEnergy>\n'
-        if self.g:
-            yield '          <TotalStatisticalWeight>%d' \
-                  '</TotalStatisticalWeight>\n' % self.g
-        yield '        </MolecularStateCharacterisation>\n'
-        yield '      </MolecularState>\n'
 
 class Method:
     def __init__(self, id, category, description):
@@ -184,7 +121,7 @@ class Refs(models.Model):
     class Meta:
         db_table = u'refs'
 
-    def xsams(self):
+    def XML(self):
         yield '<Source sourceID="%s">\n' % self.sourceid
         yield '  <Authors>\n'
         for author in self.author.split(' and '):
@@ -238,41 +175,17 @@ class Trans(models.Model):
     class Meta:
         db_table = u'trans'
 
-    def xsams(self):
-        yield '<RadiativeTransition methodRef="MEXP"' \
-                ' sourceRef="B_HITRAN2008">\n'
-        yield '  <EnergyWavelength>\n'
-        yield '    <Wavenumber>\n'
-        yield '      <Experimental sourceRef="%s">\n' % self.nu_ref
-        yield '        <Value units="1/cm">%12.6f</Value>\n' % self.nu
-        if self.nu_err:
-            yield '        <Accuracy>%10.3e</Accuracy>\n' % self.nu_err
-        yield '      </Experimental>\n'
-        yield '    </Wavenumber>\n'
-        yield '  </EnergyWavelength>\n'
-        yield '  <InitialStateRef>%s</InitialStateRef>\n' \
-                        % self.initialstateref
-        yield '  <FinalStateRef>%s</FinalStateRef>\n' % self.finalstateref
-        yield '  <Probability>\n'
-        yield '    <TransitionProbabilityA sourceRef="%s">\n' % self.a_ref
-        yield '      <Value units="1/s">%10.3e</Value>\n' % self.a
-        if self.a_err:
-            yield '      <Accuracy>%10.3e</Accuracy>\n' % self.a_err
-        yield '    </TransitionProbabilityA>\n'
-        yield '  </Probability>\n'
-        yield '</RadiativeTransition>\n'
-
 class Prms(models.Model):
     id = models.IntegerField(primary_key=True, null=False, db_column='id')
     molecid = models.IntegerField(db_column='molecID')
     isoid = models.IntegerField(db_column='isoID')
     inchikey = models.CharField(max_length=81, db_column='InChIKey')
-    #transid = models.CharField(max_length=192, db_column='transeID')
+    #transid = models.CharField(max_length=192, db_column='transID')
     transid = models.ForeignKey('Trans', db_column='transID')
     prm_name = models.CharField(max_length=192, db_column='prm_name')
     prm_val = models.FloatField(db_column='prm_val')
     prm_err = models.FloatField(db_column='prm_err')
-    prm_ref = models.CharField(max_length=90, db_column='prm_err')
+    prm_ref = models.CharField(max_length=90, db_column='prm_ref')
     class Meta:
             db_table = u'prms'
 

@@ -251,7 +251,7 @@ def XsamsAtoms(Atoms):
 	G('AtomSymbol'), G('AtomMassNumber'), G('AtomSpeciesID'), 
 	G('AtomIonCharge'))
 
-	for AtomState in Atom.States:
+        for AtomState in Atom.States:
             G=lambda name: GetValue(name, AtomState=AtomState)
             yield """<AtomicState stateID="S%s"><Description>%s</Description>
 <AtomicNumericalData>""" % ( G('AtomStateID'), G('AtomStateDescription') )
@@ -380,11 +380,11 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
         yield '</Molecule>'
     yield '</Molecules>'
 
-def XsamsMCSBuild(Moldesc):
+def XsamsMCSBuild(Molecule):
     """
     Generator for the MolecularChemicalSpecies
     """
-    G=lambda name: GetValue(name,Moldesc=Moldesc)
+    G=lambda name: GetValue(name, Molecule=Molecule)
     yield '<MolecularChemicalSpecies>\n'
     yield """
     <OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>
@@ -430,25 +430,17 @@ quoteattr(Molstate.title),
 def XsamsMolecules(Molecules):
     if not Molecules: return
     yield '<Molecules>\n'
-    for Moldesc in Molecules:
-        #G=lambda name: GetValue(name,Moldesc=Moldesc)
+    for Molecule in Molecules:
         yield '<Molecule>\n'
-        for MCS in XsamsMCSBuild(Moldesc):
+        # write the MolecularChemicalSpecies description:
+        for MCS in XsamsMCSBuild(Molecule):
             yield MCS
-            
-        #Build all levels for element:
-#        for syme in Moldesc.symmels.all():
-#            for et in syme.etables.all():
-#                yield XsamsMSBuild(et)
-        
-        
-        #for Molstate in G('MolecularStates'):
-        #for elev in Moldesc.symmel.all().levels.select_related.all():
-        #    yield XsamsMSBuild(elev)
-        #    yield molst#yield XsamsMSBuild(Molstate)
+        if Molecule.States:
+            for MolecularState in Molecule.States:
+                for MS in XsamsMSBuild(MolecularState):
+                    yield MS            
         yield '</Molecule>\n'
     yield '</Molecules>\n'
-
 
 ###############
 # END SPECIES
@@ -457,8 +449,8 @@ def XsamsMolecules(Molecules):
 
 def makeBroadeningType(G,type='Natural'):
     s = '<%sBroadening methodRef=>'%type
-    s +='<Comments>%s</Comments>'G('RadTransBroadening%sComment'%type)
-    s += makeSourceRef(G('RadTransBroadening%sRef'%type))
+    s +='<Comments>%s</Comments>' % G('RadTransBroadening%sComment'%type)
+    s += makeSourceRefs(G('RadTransBroadening%sRef'%type))
     s += '</%sBroadening>'%type
     return s
 
@@ -467,15 +459,15 @@ def XsamsRadTranBroadening(G):
     helper function for line broadening, called from RadTrans
     """
     s = '<Broadenings>'
-    s +='<Comments>%s</Comments>'G('RadTransBroadeningComment')
-    s += makeSourceRef(G('RadTransBroadeningRef'))
+    s +='<Comments>%s</Comments>' % G('RadTransBroadeningComment')
+    s += makeSourceRefs(G('RadTransBroadeningRef'))
     if countReturnables('RadTransBroadeningNatural'):
         s += makeBroadeningType(G,type='Natural')
     if countReturnables('RadTransBroadeningStark'):
         s += makeBroadeningType(G,type='Stark')
     if countReturnables('RadTransBroadeningVanDerWaals'):
         s += makeBroadeningType(G,type='VanDerWaals')
-    if countReturnables('RadTransBroadeningIntrument'):
+    if countReturnables('RadTransBroadeningInstrument'):
         s += makeBroadeningType(G,type='Instrument')
     s += '</Broadenings>'
     return s

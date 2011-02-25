@@ -10,7 +10,6 @@ import sys
 def LOG(s):
     print >> sys.stderr, s
 
-
 case_prefixes = {}
 case_prefixes[1] = 'dcs'
 case_prefixes[2] = 'hunda'
@@ -24,61 +23,192 @@ case_prefixes[9] = 'asymos'
 case_prefixes[10] = 'sphcs'
 case_prefixes[11] = 'sphos'
 case_prefixes[12] = 'ltos'
+case_prefixes[13] = 'lpos'
+case_prefixes[14] = 'nltos'
 
-def getHITRANbroadening(transs):
-    for trans in transs:
+def getHITRANbroadening(transs, XSAMSvariant):
+    if XSAMSvariant == 'vamdc':
         # for vamdc-XSAMS, there's no broadening:
-        trans.broadening_xml = '<!-- Broadening --> '
-        continue
-        prms = Prms.objects.filter(transid=trans.id)
-        prm_dict = {}
-        for prm in prms:
-            prm_dict[prm.prm_name] = prm
-        broadenings = []
-        if 'g_air' in prm_dict.keys() and 'n_air' in prm_dict.keys():
-            g_air_val = str(prm_dict['g_air'].prm_val)
-            g_air_err = str(prm_dict['g_air'].prm_err)
-            n_air_val = str(prm_dict['n_air'].prm_val)
-            n_air_err = str(prm_dict['n_air'].prm_err)
-            lineshape = '<ucl:Lineshape name="Lorentzian">\n'\
-                '<ucl:Comments>The temperature-dependent pressure broadening'\
-                ' Lorentzian lineshape</ucl:Comments>\n'\
-                '<ucl:LineshapeParameter name="gammaL" units="1/cm">\n'\
-                '<ucl:FitParameters functionRef="FgammaL">\n'\
-                '<ucl:FitArgument lowerLimit="240" upperLimit="350"'\
+        for trans in transs:
+            trans.broadening_xml = '<!-- Broadening --> '
+        return
+    if XSAMSvariant == 'ucl':
+        # for ucl-XSAMS, write the broadening XML:
+        for trans in transs:
+            prms = Prms.objects.filter(transid=trans.id)
+            prm_dict = {}
+            for prm in prms:
+                prm_dict[prm.prm_name] = prm
+            broadenings = []
+            if 'g_air' in prm_dict.keys() and 'n_air' in prm_dict.keys():
+                g_air_val = str(prm_dict['g_air'].prm_val)
+                g_air_err = str(prm_dict['g_air'].prm_err)
+                g_air_ref = str(prm_dict['g_air'].prm_ref)
+                n_air_val = str(prm_dict['n_air'].prm_val)
+                n_air_err = str(prm_dict['n_air'].prm_err)
+                n_air_ref = str(prm_dict['n_air'].prm_ref)
+                lineshape = '      <ucl:Lineshape name="Lorentzian">\n'\
+                '      <ucl:Comments>The temperature-dependent pressure'\
+                ' broadening Lorentzian lineshape</ucl:Comments>\n'\
+                '      <ucl:LineshapeParameter name="gammaL" units="1/cm">\n'\
+                '        <ucl:FitParameters functionRef="FgammaL">\n'\
+                '          <ucl:FitArgument lowerLimit="240" upperLimit="350"'\
                 ' units="K">T</ucl:FitArgument>\n'\
-                '<ucl:FitArgument lowerLimit="0." upperLimit="1.2"'\
+                '          <ucl:FitArgument lowerLimit="0." upperLimit="1.2"'\
                 ' units="atm">p</ucl:FitArgument>\n'\
-                '<ucl:FitParameter name="gammaL_ref" units="1/cm">\n'\
-                '<ucl:Value>%s</ucl:Value>\n'\
-                '<ucl:Accuracy>%s</ucl:Accuracy>\n'\
-                '</ucl:FitParameter>\n'\
-                '<ucl:FitParameter name="n" units="unitless">\n'\
-                '<ucl:Value>%s</ucl:Value>\n'\
-                '<ucl:Accuracy>%s</ucl:Accuracy>\n'\
-                '</ucl:FitParameter>\n</ucl:FitParameters>\n'\
-                '</ucl:LineshapeParameter>\n</ucl:Lineshape>\n' \
-                    % (g_air_val, g_air_err, n_air_val, n_air_err)
-            broadening = '<ucl:Broadening name="van-der-waals"'\
-                ' envRef="air-broadening-ref-env">\n'\
-                '%s'\
-                '</ucl:Broadening>\n' % lineshape
-            broadenings.append(broadening)
-        if 'g_self' in prm_dict.keys():
-            g_self_val = str(prm_dict['g_self'].prm_val)
-            g_self_err = str(prm_dict['g_self'].prm_err)
-            lineshape = '<ucl:Lorentzian>\n'\
-                '<ucl:gammaL units="1/cm">\n'\
-                '<ucl:Value>%s</ucl:Value>\n'\
-                '<ucl:Accuracy>%s</ucl:Accuracy>\n'\
-                '</ucl:gammaL>\n'\
-                '</ucl:Lorentzian>' % (g_self_val, g_self_err)
-            broadening = '<ucl:Broadening name="van-der-waals"'\
-                ' envRef="%s-broadening-ref-env">\n'\
-                '%s'\
-                '</ucl:Broadening>\n' % ('self', lineshape)
-            broadenings.append(broadening)
-        trans.broadening_xml = ''.join(broadenings)
+                '          <ucl:FitParameter name="gammaL_ref"'\
+                ' units="1/cm" sourceRef="%s">\n'\
+                '            <ucl:Value>%s</ucl:Value>\n'\
+                '            <ucl:Accuracy>%s</ucl:Accuracy>\n'\
+                '          </ucl:FitParameter>\n'\
+                '          <ucl:FitParameter name="n" units="unitless"'\
+                ' sourceRef="%s">\n'\
+                '            <ucl:Value>%s</ucl:Value>\n'\
+                '            <ucl:Accuracy>%s</ucl:Accuracy>\n'\
+                '          </ucl:FitParameter>\n'\
+                '        </ucl:FitParameters>\n'\
+                '      </ucl:LineshapeParameter>\n</ucl:Lineshape>\n' \
+                        % (g_air_ref, g_air_val, g_air_err, n_air_ref,
+                           n_air_val, n_air_err)
+                broadening = '    <ucl:Broadening name="van-der-waals"'\
+                    ' envRef="air-broadening-ref-env">\n'\
+                    '%s'\
+                    '    </ucl:Broadening>\n' % lineshape
+                broadenings.append(broadening)
+            if 'g_self' in prm_dict.keys():
+                g_self_val = str(prm_dict['g_self'].prm_val)
+                g_self_err = str(prm_dict['g_self'].prm_err)
+                g_self_ref = str(prm_dict['g_self'].prm_ref)
+                lineshape = '      <ucl:Lorentzian>\n'\
+                    '        <ucl:gammaL units="1/cm" sourceRef="%s">\n'\
+                    '          <ucl:Value>%s</ucl:Value>\n'\
+                    '          <ucl:Accuracy>%s</ucl:Accuracy>\n'\
+                    '        </ucl:gammaL>\n'\
+                    '      </ucl:Lorentzian>' % (g_self_ref, g_self_val,
+                                                 g_self_err)
+                broadening = '    <ucl:Broadening name="van-der-waals"'\
+                    ' envRef="%s-broadening-ref-env">\n'\
+                    '%s'\
+                    '    </ucl:Broadening>\n' % ('self', lineshape)
+                broadenings.append(broadening)
+            # treat shifting as a sort of broadening(!) for now
+            if 'delta_air' in prm_dict.keys():
+                delta_air_val = str(prm_dict['delta_air'].prm_val)
+                delta_air_err = str(prm_dict['delta_air'].prm_err)
+                delta_air_ref = str(prm_dict['delta_air'].prm_ref)
+                shifting = '    <ucl:Shifting'\
+                    ' envRef="air-broadening-ref-env">\n'\
+                    '      <ucl:ShiftingParameter name="delta" units="1/cm">'\
+                    '        <ucl:FitParameters functionRef="Fdelta">\n'\
+                    '          <ucl:FitArgument lowerLimit="0."'\
+                    ' upperLimit="1.2" units="atm">p</ucl:FitArgument>'\
+                    '          <ucl:FitParameter name="delta_ref"'\
+                    ' units="unitless" sourceRef="%s">'\
+                    '            <ucl:Value>%s</ucl:Value>\n'\
+                    '            <ucl:Accuracy>%s</ucl:Accuracy>\n'\
+                    '          </ucl:FitParameter>\n'\
+                    '        </ucl:FitParameters>\n'\
+                    '      </ucl:ShiftingParameter>\n'\
+                    '    </ucl:Shifting>\n' % (delta_air_ref, delta_air_val,
+                                               delta_air_err)
+
+                broadenings.append(shifting)
+            trans.broadening_xml = ''.join(broadenings)
+
+    if XSAMSvariant == 'working':
+        # for vamdc-working branch, write the broadening XML:
+        for trans in transs:
+            prms = Prms.objects.filter(transid=trans.id)
+            prm_dict = {}
+            for prm in prms:
+                prm_dict[prm.prm_name] = prm
+            broadenings = []
+            if 'g_air' in prm_dict.keys() and 'n_air' in prm_dict.keys():
+                g_air_val = str(prm_dict['g_air'].prm_val)
+                g_air_err = str(prm_dict['g_air'].prm_err)
+                g_air_ref = str(prm_dict['g_air'].prm_ref)
+                n_air_val = str(prm_dict['n_air'].prm_val)
+                n_air_err = str(prm_dict['n_air'].prm_err)
+                n_air_ref = str(prm_dict['n_air'].prm_ref)
+                lineshape = '      <Lineshape name="Lorentzian">\n'\
+                '      <Comments>The temperature-dependent pressure'\
+                ' broadening Lorentzian lineshape</Comments>\n'\
+                '      <LineshapeParameter name="gammaL">\n'\
+                '        <FitParameters functionRef="FgammaL">\n'\
+                '          <FitArgument units="K">\n'\
+                '            <Name>T</Name>\n'\
+                '            <LowerLimit units="K">240</LowerLimit>\n'\
+                '            <UpperLimit units="K">350</UpperLimit>\n'\
+                '          </FitArgument>\n'\
+                '          <FitArgument units="K">\n'\
+                '            <Name>p</Name>\n'\
+                '            <LowerLimit units="atm">0.</LowerLimit>\n'\
+                '            <UpperLimit units="atm">1.2</UpperLimit>\n'\
+                '          </FitArgument>\n'\
+                '          <FitParameter name="gammaL_ref">\n'\
+                '            <SourceRef>%s</SourceRef>\n'\
+                '            <Value units="1/cm">%s</Value>\n'\
+                '            <Accuracy>%s</Accuracy>\n'\
+                '          </FitParameter>\n'\
+                '          <FitParameter name="n">\n'\
+                '            <SourceRef>%s</SourceRef>\n'\
+                '            <Value units="unitless">%s</Value>\n'\
+                '            <Accuracy>%s</Accuracy>\n'\
+                '          </FitParameter>\n'\
+                '        </FitParameters>\n'\
+                '      </LineshapeParameter>\n</Lineshape>\n' \
+                        % (g_air_ref, g_air_val, g_air_err, n_air_ref,
+                           n_air_val, n_air_err)
+                broadening = '    <VanDerWaalsBroadening'\
+                    ' envRef="air-broadening-ref-env">\n'\
+                    '%s'\
+                    '    </VanDerWaalsBroadening>\n' % lineshape
+                broadenings.append(broadening)
+            if 'g_self' in prm_dict.keys():
+                g_self_val = str(prm_dict['g_self'].prm_val)
+                g_self_err = str(prm_dict['g_self'].prm_err)
+                g_self_ref = str(prm_dict['g_self'].prm_ref)
+                lineshape = '      <Lineshape name="Lorentzian">\n'\
+                    '        <LineshapeParameter name="gammaL">\n'\
+                    '          <SourceRef>%s</SourceRef>\n'\
+                    '          <Value units="1/cm">%s</Value>\n'\
+                    '          <Accuracy>%s</Accuracy>\n'\
+                    '        </LineshapeParameter>\n'\
+                    '      </Lineshape>' % (g_self_ref, g_self_val,
+                                                 g_self_err)
+                broadening = '    <VanDerWaalsBroadening'\
+                    ' envRef="%s-broadening-ref-env">\n'\
+                    '%s'\
+                    '    </VanDerWaalsBroadening>\n' % ('self', lineshape)
+                broadenings.append(broadening)
+            shiftings = []
+            if 'delta_air' in prm_dict.keys():
+                delta_air_val = str(prm_dict['delta_air'].prm_val)
+                delta_air_err = str(prm_dict['delta_air'].prm_err)
+                delta_air_ref = str(prm_dict['delta_air'].prm_ref)
+                shifting = '    <Shifting envRef="air-broadening-ref-env">\n'\
+                    '      <ShiftingParameter name="delta">'\
+                    '        <FitParameters functionRef="Fdelta">\n'\
+                    '          <FitArgument units="K">\n'\
+                    '            <Name>p</Name>\n'\
+                    '            <LowerLimit units="atm">0.</LowerLimit>\n'\
+                    '            <UpperLimit units="atm">1.2</UpperLimit>\n'\
+                    '          </FitArgument>\n'\
+                    '          <FitParameter name="delta_ref">'\
+                    '            <SourceRef>%s</SourceRef>\n'\
+                    '            <Value units="unitless">%s</Value>\n'\
+                    '            <Accuracy>%s</Accuracy>\n'\
+                    '          </FitParameter>\n'\
+                    '        </FitParameters>\n'\
+                    '      </ShiftingParameter>\n'\
+                    '    </Shifting>\n' % (delta_air_ref, delta_air_val,
+                                           delta_air_err)
+                shiftings.append(shifting)
+            
+            # treat shifting as a sort of broadening(!) for now
+            trans.broadening_xml = '   <Broadenings>\n%s    </Broadenings>\n'\
+                    '    <Shiftings>\n%s</Shiftings>' % (''.join(broadenings),
+                                                         ''.join(shiftings))
 
 def getHITRANstates(transs):
     stateIDs = set([])
@@ -86,12 +216,6 @@ def getHITRANstates(transs):
         stateIDs = stateIDs.union([trans.initialstateref,
                                    trans.finalstateref])
     return States.objects.filter(pk__in=stateIDs)
-
-#def getHITRANmolecules(transs):
-#    molecIDs = set([])
-#    for trans in transs:
-#        molecIDs = molecIDs.union([trans.molecid])
-#    return Molecules.objects.filter(pk__in=molecIDs)
 
 def getHITRANmolecules(transs):
     InChIKeys = set([])
@@ -146,7 +270,7 @@ def parseHITRANstates(states):
     #sys.exit(0)
     return qns
 
-def setupResults(sql, LIMIT=10):
+def setupResults(sql, LIMIT=10, XSAMSvariant='vamdc'):
     q = sqlparse.where2q(sql.where,RESTRICTABLES)
     try:
         q=eval(q)
@@ -157,13 +281,13 @@ def setupResults(sql, LIMIT=10):
 
     transs = Trans.objects.filter(q) 
     ntrans = transs.count()
-    if ntrans > LIMIT:
+    if LIMIT is not None and ntrans > LIMIT:
         transs = transs[:LIMIT]
         percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
     else:
         percentage = None
 
-    getHITRANbroadening(transs)
+    getHITRANbroadening(transs, XSAMSvariant)
     sources = getHITRANsources(transs)
     states = getHITRANstates(transs)
     nstates = states.count()
@@ -190,7 +314,5 @@ def setupResults(sql, LIMIT=10):
             'Methods': methods,
             'RadTrans': transs,
             'Sources': sources,
-            'MoleStates': states,
-            'MoleQNs': qns,
             'Molecules': species}
 
