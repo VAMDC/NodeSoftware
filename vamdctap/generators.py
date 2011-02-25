@@ -74,7 +74,7 @@ def makeSourceRefs(refs):
         else: s+='<SourceRef>B%s-%s</SourceRef>'%(NODEID,refs)
     return s
 
-def makeDataType(tagname,keyword,G):
+def makeDataType(tagname,keyword,G,name=None):
     """
     This is for treating the case where a keyword corresponds to a
     DataType in the schema which can have units, comment, sources etc.
@@ -89,11 +89,12 @@ def makeDataType(tagname,keyword,G):
     comment=G(keyword+'Comment')
     acc=G(keyword+'Accuracy')
     refs=G(keyword+'Ref')
-    
+
     s='\n<%s'%tagname
     if method: s+=' methodRef="M%s-%s"'%(NODEID,method)
+    if name: s+=' name="%s"'%name
     s+='>'
-    
+
     if comment: s+='<Comments>%s</Comments>'%quoteattr('%s'%comment)[1:-1]
     s+=makeSourceRefs(refs)
     s+='<Value units="%s">%s</Value>'%(unit or 'unitless',value)
@@ -101,7 +102,7 @@ def makeDataType(tagname,keyword,G):
     s+='</%s>'%tagname
 
     return s
-    
+
 def XsamsSources(Sources):
     if not Sources: return
     yield '<Sources>'
@@ -114,7 +115,7 @@ def XsamsSources(Sources):
                 pass
 
         G = lambda name: GetValue(name, Source=Source)
-        yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
+        yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID')
         authornames=G('SourceAuthorName')
         # make it always into a list to be looped over, even if
         # only single entry
@@ -193,7 +194,7 @@ def XsamsAtomTerm(G):
     s2=G('AtomStateS2')
     j1=G('AtomStateJ1')
     j2=G('AtomStateJ2')
-    
+
     result = '<AtomicComposition>\n<Comments>%s</Comments>\n' \
             % G('AtomStateCompositionComments')
     result += '<Component><Configuration><ConfigurationLabel>%s' \
@@ -201,15 +202,15 @@ def XsamsAtomTerm(G):
             %G('AtomStateConfigurationLabel')
     result += '<Term>'
 
-    if coupling == "LS" and l and s: 
+    if coupling == "LS" and l and s:
         result += '<LS><L><Value>%d</Value></L><S>%.1f</S></LS>' % (l, s)
-        
-    elif coupling == "JK" and s2 and k: 
+
+    elif coupling == "JK" and s2 and k:
         result += '<jK><j>%s</j><K> %s</K></jK>' % (s2, k)
-        
+
     elif coupling == "JJ" and j1 and j2:
         result += '<J1J2><j>%s</j><j>%s</j></J1J2>' % (j1, j2)
-        
+
     result += '</Term></Component></AtomicComposition>'
     return result
 
@@ -330,14 +331,14 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
         yield '</MolecularChemicalSpecies>\n'
 #        thisInchiKey = G("InchiKey")
         speciesid = G("MolecularSpeciesID")
-         
+
         for MolState in MoleStates:
             G = lambda name: GetValue(name, MolState=MolState)
 #            if G("InchiKey") != thisInchiKey:
 
             if G("MolecularStateMolecularSpeciesID") != speciesid:
                 continue
-            
+
             yield """<MolecularState stateID="S%s">
 <Description>%s</Description>
 <MolecularStateCharacterisation>
@@ -346,7 +347,7 @@ def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
 </StateEnergy>
 <TotalStatisticalWeight>%s</TotalStatisticalWeight>
 </MolecularStateCharacterisation>
-""" %           ( 
+""" %           (
                 G("MolecularStateStateID"),
                 G("MolecularStateDescription"),
                 G("MolecularStateEnergyOrigin"),
@@ -402,7 +403,7 @@ def XsamsMCSBuild(Moldesc):
     G("MolecularSpeciesMolecularWeightUnits"),
     G("MolecularSpeciesMolecularWeight"),
     G("MolecularSpeciesComment"))
-    
+
     yield '</MolecularChemicalSpecies>\n'
 
 
@@ -435,13 +436,11 @@ def XsamsMolecules(Molecules):
         yield '<Molecule>\n'
         for MCS in XsamsMCSBuild(Moldesc):
             yield MCS
-            
+
         #Build all levels for element:
 #        for syme in Moldesc.symmels.all():
 #            for et in syme.etables.all():
 #                yield XsamsMSBuild(et)
-        
-        
         #for Molstate in G('MolecularStates'):
         #for elev in Moldesc.symmel.all().levels.select_related.all():
         #    yield XsamsMSBuild(elev)
@@ -456,9 +455,17 @@ def XsamsMolecules(Molecules):
 #################
 
 def makeBroadeningType(G,type='Natural'):
-    s = '<%sBroadening methodRef=>'%type
-    s +='<Comments>%s</Comments>'G('RadTransBroadening%sComment'%type)
-    s += makeSourceRef(G('RadTransBroadening%sRef'%type))
+    s = '<%sBroadening methodRef="%s" envRef="%s">'%(type,
+                        G('RadTransBroadening%sMethod'%type),
+                        G('RadTransBroadening%sEnvironment'%type))
+    s +='<Comments>%s</Comments>'%G('RadTransBroadening%sComment'%type)
+    s += makeSourceRefs(G('RadTransBroadening%sRef'%type))
+    s += '<Lineshape name="%s">'%G('RadTransBroadening%sLineshapename')
+    params = G('RadTransBroadening%sLineshapeParameters')
+    if isiterable(params):
+        for param in params:
+            s += makeDataType('LineshapeParameter',G('RadTransBroadening%sLineshapeParameter'),name=G('RadTransBroadening%sLineshapeParameterName'))
+    s += '</Lineshape>'
     s += '</%sBroadening>'%type
     return s
 
@@ -467,8 +474,8 @@ def XsamsRadTranBroadening(G):
     helper function for line broadening, called from RadTrans
     """
     s = '<Broadenings>'
-    s +='<Comments>%s</Comments>'G('RadTransBroadeningComment')
-    s += makeSourceRef(G('RadTransBroadeningRef'))
+    s +='<Comments>%s</Comments>'%G('RadTransBroadeningComment')
+    s += makeSourceRefs(G('RadTransBroadeningRef'))
     if countReturnables('RadTransBroadeningNatural'):
         s += makeBroadeningType(G,type='Natural')
     if countReturnables('RadTransBroadeningStark'):
@@ -494,7 +501,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('Wavelength','RadTransWavelength',G)
         yield makeDataType('Wavenumber','RadTransWavenumber',G)
         yield makeDataType('Frequency','RadTransFrequency',G)
-        
+
         yield '</EnergyWavelength>'
 
         yield XsamsRadTranBroadening(G)
@@ -507,9 +514,9 @@ def XsamsRadTrans(RadTrans):
         yield '<Probability>'
         yield makeDataType('Log10WeightedOscillatorStrength','RadTransLogGF',G)
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
-        yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)        
+        yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)
         yield '</Probability></RadiativeTransition>'
-        
+
     yield '</Radiative>'
 
 def XsamsFunctions(Functions):
@@ -532,7 +539,7 @@ def XsamsMethods(Methods):
 
 
 def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None, Environments=None,
-          Atoms=None, Molecules=None, CollTrans=None, RadTrans=None, 
+          Atoms=None, Molecules=None, CollTrans=None, RadTrans=None,
           ):
     """
     The main generator function of XSAMS. This one calls all the
@@ -548,7 +555,7 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None, Environme
     xsi:schemaLocation="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working/xsams.xsd">
 """
 
-    if HeaderInfo: 
+    if HeaderInfo:
         if HeaderInfo.has_key('Truncated'):
             if HeaderInfo['Truncated'] != None: # note: allow 0 percent
                 yield """
@@ -608,7 +615,7 @@ def states2votable(states):
 
     for state in states:
         yield  '<TR><TD>not implemented</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>'%(state.energy,state.id,state.charid)
-        
+
     yield """</TABLEDATA></DATA></TABLE>"""
 
 def transitions2votable(transs,count):
@@ -632,7 +639,7 @@ def transitions2votable(transs,count):
 
     for trans in transs:
         yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.vacwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , trans.upstateid, trans.lostateid)
-        
+
     yield """</TABLEDATA></DATA></TABLE>"""
 
 
@@ -651,13 +658,12 @@ def votable(transitions,states,sources,totalcount=None):
 <?xml-stylesheet type="text/xml" href="http://vamdc.fysast.uu.se:8888/VOTable2XHTMLbasic.xsl"?>
 -->
 <VOTABLE version="1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xmlns="http://www.ivoa.net/xml/VOTable/v1.2" 
+ xmlns="http://www.ivoa.net/xml/VOTable/v1.2"
  xmlns:stc="http://www.ivoa.net/xml/STC/v1.30" >
   <RESOURCE name="queryresults">
     <DESCRIPTION>
     </DESCRIPTION>
     <LINK></LINK>
-    
 """
     for source in sources2votable(sources):
         yield source
@@ -694,7 +700,6 @@ def transitions2embedhtml(transs,count):
 
     for trans in transs:
         yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.species.atomic, trans.species.ion,trans.airwave, trans.loggf,) #trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , xmlEscape(trans.upstateid), xmlEscape(trans.lostateid))
-        
     yield '</TABLEDATA></DATA></TABLE>'
 
 def embedhtml(transitions,totalcount=None):
@@ -709,7 +714,6 @@ def embedhtml(transitions,totalcount=None):
     <DESCRIPTION>
     </DESCRIPTION>
     <LINK></LINK>
-    
 """
     for trans in transitions2embedhtml(transitions,totalcount):
         yield trans
@@ -717,8 +721,4 @@ def embedhtml(transitions,totalcount=None):
 </RESOURCE>
 </VOTABLE>
 """
-
-##############################
-### GENERATORS END HERE
-##############################
 
