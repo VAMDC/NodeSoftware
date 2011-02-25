@@ -386,23 +386,24 @@ def XsamsMCSBuild(Molecule):
     """
     G=lambda name: GetValue(name, Molecule=Molecule)
     yield '<MolecularChemicalSpecies>\n'
-    yield """
-    <OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>
-    <StoichiometricFormula>%s</StoichiometricFormula>
-    <ChemicalName>%s</ChemicalName>
-    <StableMolecularProperties>
-    <MolecularWeight>
-        <Value units="%s">%s</Value>
-    </MolecularWeight>
-    </StableMolecularProperties>
-    <Comment>%s</Comment>
-    """%(G("MolecularSpeciesOrdinaryStructuralFormula"),
-    G("MolecularSpeciesStoichiometrcFormula"),
-    G("MolecularSpeciesChemicalName"),
-    G("MolecularSpeciesMolecularWeightUnits"),
-    G("MolecularSpeciesMolecularWeight"),
-    G("MolecularSpeciesComment"))
-    
+    yield '<OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>'\
+            % G("MolecularSpeciesOrdinaryStructuralFormula")
+
+    yield '<StoichiometricFormula>%s</StoichiometricFormula>'\
+            % G("MolecularSpeciesStoichiometrcFormula")
+    if G("MolecularSpeciesChemicalName"):
+        yield '<ChemicalName>%s</ChemicalName>'\
+            % G("MolecularSpeciesChemicalName")
+    if G("MolecularSpeciesMolecularWeight"):
+        yield '<StableMolecularProperties>'
+        yield '<MolecularWeight>'
+        yield '  <Value units="%s">%s</Value>'\
+            % (G("MolecularSpeciesMolecularWeightUnits"),
+               G("MolecularSpeciesMolecularWeight"))
+        yield '</MolecularWeight>'
+        yield '</StableMolecularProperties>'
+    if G("MolecularSpeciesComment"):
+        yield '<Comments>%s</Comments>' % G("MolecularSpeciesComment")
     yield '</MolecularChemicalSpecies>\n'
 
 
@@ -431,7 +432,8 @@ def XsamsMolecules(Molecules):
     if not Molecules: return
     yield '<Molecules>\n'
     for Molecule in Molecules:
-        yield '<Molecule>\n'
+        G = lambda name: GetValue(name, Molecule=Molecule)
+        yield '<Molecule speciesID="%s">\n' % G("MolecularSpeciesID")
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS

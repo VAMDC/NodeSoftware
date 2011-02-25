@@ -39,6 +39,8 @@ RETURNABLES=CaselessDict({\
 'MolecularSpeciesOrdinaryStructuralFormula': 'Molecule.molec_name',
 'MolecularSpeciesStoichiometricFormula': 'Molecule.stoichiometric_formula',
 'MolecularSpeciesID': 'Molecule.inchikey',
+# use the Comment field to 
+'MolecularSpeciesComment': 'Molecule.iso_name',
 
 'MolecularStateStateID':'MolState.id',
 'MolecularStateMolecularSpeciesID':'MolState.inchikey',
