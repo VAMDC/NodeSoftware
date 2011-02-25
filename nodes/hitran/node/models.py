@@ -59,7 +59,7 @@ class Species:
         self.iso_name = iso_name
         self.chemical_names = chemical_names
         self.ordinary_formula = ordinary_formula
-        self.stoichiometric_formula = iso_name
+        self.stoichiometric_formula = stoichiometric_formula
         self.States = None
 
    def __getitem__(self, name):

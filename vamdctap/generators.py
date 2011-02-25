@@ -386,54 +386,49 @@ def XsamsMCSBuild(Molecule):
     """
     G=lambda name: GetValue(name, Molecule=Molecule)
     yield '<MolecularChemicalSpecies>\n'
-    yield '<OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>'\
+    yield '<OrdinaryStructuralFormula><Value>%s</Value>'\
+            '</OrdinaryStructuralFormula>\n'\
             % G("MolecularSpeciesOrdinaryStructuralFormula")
 
-    yield '<StoichiometricFormula>%s</StoichiometricFormula>'\
-            % G("MolecularSpeciesStoichiometrcFormula")
+    yield '<StoichiometricFormula>%s</StoichiometricFormula>\n'\
+            % G("MolecularSpeciesStoichiometricFormula")
     if G("MolecularSpeciesChemicalName"):
-        yield '<ChemicalName>%s</ChemicalName>'\
+        yield '<ChemicalName><Value>%s</Value></ChemicalName>\n'\
             % G("MolecularSpeciesChemicalName")
+    yield '<InChIKey>%s</InChIKey>\n' % G("MolecularSpeciesInChIKey")
     if G("MolecularSpeciesMolecularWeight"):
-        yield '<StableMolecularProperties>'
-        yield '<MolecularWeight>'
-        yield '  <Value units="%s">%s</Value>'\
+        yield '<StableMolecularProperties>\n'
+        yield '<MolecularWeight>\n'
+        yield '  <Value units="%s">%s</Value>\n'\
             % (G("MolecularSpeciesMolecularWeightUnits"),
                G("MolecularSpeciesMolecularWeight"))
-        yield '</MolecularWeight>'
-        yield '</StableMolecularProperties>'
+        yield '</MolecularWeight>\n'
+        yield '</StableMolecularProperties>\n'
     if G("MolecularSpeciesComment"):
-        yield '<Comments>%s</Comments>' % G("MolecularSpeciesComment")
+        yield '<Comment>%s</Comment>\n' % G("MolecularSpeciesComment")
     yield '</MolecularChemicalSpecies>\n'
 
-
-# THIS NEEDS WORK, CDMS-specific things ahead.
-def XsamsMSBuild(Molstate):
-    G=lambda name: GetValue(name,Molstate=Molstate)
-    ret="""<MolecularState stateID="S%">
-<Description>%s</Description>
-<MolecularStateCharacterisation>
-<StateEnergy energyOrigin="%s">
-<Value units="%s">%s</Value>
-</StateEnergy>
-<TotalStatisticalWeight>%s</TotalStatisticalWeight>
-</MolecularStateCharacterisation>"""%(
-"",
-quoteattr(Molstate.title),
-"calc",
-"1/cm",
-"0",
-"1")
-    ret+="</MolecularState>"
-    return ret
-
+def XsamsMSBuild(MolecularState):
+    G = lambda name: GetValue(name, MolecularState=MolecularState)
+    yield '<MolecularState stateID="S%s">\n' % G("MolecularStateStateID")
+    yield '  <Description/>\n'
+    yield '  <MolecularStateCharacterisation>\n'
+    yield '  <StateEnergy energyOrigin="%s">\n'\
+                % G("MolecularStateEnergyOrigin")
+    yield '    <Value units="%s">%s</Value>\n'\
+            % (G("MolecularStateEnergyUnit"), G("MolecularStateEnergyValue"))
+    yield '  </StateEnergy>\n'
+    yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
+                % G("MolecularStateCharacTotalStatisticalWeight")
+    yield '  </MolecularStateCharacterisation>\n'
+    yield '</MolecularState>\n'
 
 def XsamsMolecules(Molecules):
     if not Molecules: return
     yield '<Molecules>\n'
     for Molecule in Molecules:
         G = lambda name: GetValue(name, Molecule=Molecule)
-        yield '<Molecule speciesID="%s">\n' % G("MolecularSpeciesID")
+        yield '<Molecule speciesID="X%s">\n' % G("MolecularSpeciesID")
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS

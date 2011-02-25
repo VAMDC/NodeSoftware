@@ -5,6 +5,7 @@ from django.conf import settings
 from dictionaries import *
 from models import *
 from vamdctap import sqlparse
+from itertools import chain
 
 import sys
 def LOG(s):
@@ -221,15 +222,28 @@ def getHITRANmolecules(transs):
     InChIKeys = set([])
     for trans in transs:
         InChIKeys.add(trans.inchikey)
+    nstates = 0
     species = []
     for isotopologue in Isotopologues.objects.filter(pk__in=InChIKeys):
         molecules = Molecules.objects.filter(pk=isotopologue.molecid)
         molecule = molecules[0]
-        species.append(Species(isotopologue.molecid, isotopologue.isoid,
+        this_species = Species(isotopologue.molecid, isotopologue.isoid,
                 isotopologue.inchikey, molecule.molec_name,
                 isotopologue.iso_name, molecule.chemical_names,
                 molecule.stoichiometric_formula,
-                molecule.stoichiometric_formula))
+                molecule.stoichiometric_formula)
+        states = []
+        # all the transitions for this species:
+        sptranss = transs.filter(inchikey=isotopologue.inchikey)
+        # sids is all the stateIDs involved in these transitions:
+        stateps = sptranss.values_list('finalstateref', flat=True)
+        statepps = sptranss.values_list('initialstateref', flat=True)
+        sids = set(chain(stateps, statepps))
+        # attach the corresponding states to the molecule:
+        this_species.States = States.objects.filter( pk__in = sids)
+        nstates += len(sids)
+        # add this species object to the list:
+        species.append(this_species)
     return species
 
 def getHITRANsources(transs):
@@ -282,7 +296,11 @@ def setupResults(sql, LIMIT=10, XSAMSvariant='vamdc'):
     transs = Trans.objects.filter(q) 
     ntrans = transs.count()
     if LIMIT is not None and ntrans > LIMIT:
-        transs = transs[:LIMIT]
+        # we need to filter transs again later, so can't take a slice
+        #transs = transs[:LIMIT]
+        # so do this:
+        numax = transs[LIMIT].nu
+        transs = Trans.objects.filter(q, Q(nu__lte=numax))
         percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
     else:
         percentage = None

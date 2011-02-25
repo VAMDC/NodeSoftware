@@ -39,15 +39,16 @@ RETURNABLES=CaselessDict({\
 'MolecularSpeciesOrdinaryStructuralFormula': 'Molecule.molec_name',
 'MolecularSpeciesStoichiometricFormula': 'Molecule.stoichiometric_formula',
 'MolecularSpeciesID': 'Molecule.inchikey',
+'MolecularSpeciesInChIKey': 'Molecule.inchikey',
 # use the Comment field to 
 'MolecularSpeciesComment': 'Molecule.iso_name',
 
-'MolecularStateStateID':'MolState.id',
-'MolecularStateMolecularSpeciesID':'MolState.inchikey',
-'MolecularStateEnergyValue':'MolState.energy',
+'MolecularStateStateID':'MolecularState.id',
+'MolecularStateMolecularSpeciesID':'MolecularState.inchikey',
+'MolecularStateEnergyValue':'MolecularState.energy',
 'MolecularStateEnergyUnit':'1/cm',
 'MolecularStateEnergyOrigin':'Zero-point energy',
-'MolecularStateCharacTotalStatisticalWeight':'MolState.g',
+'MolecularStateCharacTotalStatisticalWeight':'MolecularState.g',
 
 'MolQnStateID': 'MolQN.stateid',
 'MolQnCase': 'MolQN.case',      # e.g. 'dcs', 'ltcs', ...
