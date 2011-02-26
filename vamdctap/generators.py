@@ -477,7 +477,7 @@ def XsamsRadTranBroadening(G):
         s += makeBroadeningType(G,type='VanDerWaals')
     if countReturnables('RadTransBroadeningInstrument'):
         s += makeBroadeningType(G,type='Instrument')
-    s += '</Broadenings>'
+    s += '</Broadenings>\n'
     return s
 
 def XsamsRadTranShifting(G):
@@ -490,30 +490,35 @@ def XsamsRadTrans(RadTrans):
 
     if not isiterable(RadTrans): return
 
-    yield '<Radiative>'
+    yield '<Radiative>\n'
     for RadTran in RadTrans:
         G=lambda name: GetValue(name,RadTran=RadTran)
-        yield '\n<RadiativeTransition><EnergyWavelength>'
+        yield '<RadiativeTransition>\n<EnergyWavelength>\n'
         yield makeDataType('Wavelength','RadTransWavelength',G)
         yield makeDataType('Wavenumber','RadTransWavenumber',G)
         yield makeDataType('Frequency','RadTransFrequency',G)
-
-        yield '</EnergyWavelength>'
-
-        yield XsamsRadTranBroadening(G)
+        
+        yield '</EnergyWavelength>\n'
 
         initial = G('RadTransInitialStateRef')
-        if initial: yield '<InitialStateRef>S%s</InitialStateRef>'%initial
+        if initial: yield '<InitialStateRef>S%s</InitialStateRef>\n' % initial
         final = G('RadTransFinalStateRef')
-        if final: yield '<FinalStateRef>S%s</FinalStateRef>'%final
+        if final: yield '<FinalStateRef>S%s</FinalStateRef>\n' % final
 
         yield '<Probability>'
         yield makeDataType('Log10WeightedOscillatorStrength','RadTransLogGF',G)
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
-        yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)
-        yield '</Probability></RadiativeTransition>'
+        yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)        
+        yield '</Probability>\n'
+        
+        if RadTran.broadening_xml:
+            yield RadTran.broadening_xml
+        else:
+            yield XsamsRadTranBroadening(G)
+            yield XsamsRadTranShifting(G)
+        yield '</RadiativeTransition>\n'
 
-    yield '</Radiative>'
+    yield '</Radiative>\n'
 
 def XsamsFunctions(Functions):
     yield ''

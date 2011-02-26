@@ -6,6 +6,7 @@ from dictionaries import *
 from models import *
 from vamdctap import sqlparse
 from itertools import chain
+from HITRANfuncsenvs import * 
 
 import sys
 def LOG(s):
@@ -161,7 +162,7 @@ def getHITRANbroadening(transs, XSAMSvariant):
                         % (g_air_ref, g_air_val, g_air_err, n_air_ref,
                            n_air_val, n_air_err)
                 broadening = '    <VanDerWaalsBroadening'\
-                    ' envRef="air-broadening-ref-env">\n'\
+                    ' envRef="Eair-broadening-ref-env">\n'\
                     '%s'\
                     '    </VanDerWaalsBroadening>\n' % lineshape
                 broadenings.append(broadening)
@@ -178,7 +179,7 @@ def getHITRANbroadening(transs, XSAMSvariant):
                     '      </Lineshape>' % (g_self_ref, g_self_val,
                                                  g_self_err)
                 broadening = '    <VanDerWaalsBroadening'\
-                    ' envRef="%s-broadening-ref-env">\n'\
+                    ' envRef="E%s-broadening-ref-env">\n'\
                     '%s'\
                     '    </VanDerWaalsBroadening>\n' % ('self', lineshape)
                 broadenings.append(broadening)
@@ -187,7 +188,7 @@ def getHITRANbroadening(transs, XSAMSvariant):
                 delta_air_val = str(prm_dict['delta_air'].prm_val)
                 delta_air_err = str(prm_dict['delta_air'].prm_err)
                 delta_air_ref = str(prm_dict['delta_air'].prm_ref)
-                shifting = '    <Shifting envRef="air-broadening-ref-env">\n'\
+                shifting = '    <Shifting envRef="Eair-broadening-ref-env">\n'\
                     '      <ShiftingParameter name="delta">'\
                     '        <FitParameters functionRef="Fdelta">\n'\
                     '          <FitArgument units="K">\n'\
@@ -232,6 +233,7 @@ def getHITRANmolecules(transs):
                 isotopologue.iso_name, molecule.chemical_names,
                 molecule.stoichiometric_formula,
                 molecule.stoichiometric_formula)
+        this_species.inchi = isotopologue.inchi
         states = []
         # all the transitions for this species:
         sptranss = transs.filter(inchikey=isotopologue.inchikey)
@@ -284,7 +286,7 @@ def parseHITRANstates(states):
     #sys.exit(0)
     return qns
 
-def setupResults(sql, LIMIT=10, XSAMSvariant='vamdc'):
+def setupResults(sql, LIMIT=10, XSAMSvariant='working'):
     q = sqlparse.where2q(sql.where,RESTRICTABLES)
     try:
         q=eval(q)
@@ -332,5 +334,7 @@ def setupResults(sql, LIMIT=10, XSAMSvariant='vamdc'):
             'Methods': methods,
             'RadTrans': transs,
             'Sources': sources,
-            'Molecules': species}
+            'Molecules': species,
+            'Environments': HITRANenvs,
+            'Functions': HITRANfuncs}
 
