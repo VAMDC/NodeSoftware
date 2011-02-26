@@ -502,8 +502,11 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)        
         yield '</Probability>\n'
         
-        yield XsamsRadTranBroadening(G)
-        yield XsamsRadTranShifting(G)
+        if RadTran.broadening_xml:
+            yield RadTran.broadening_xml
+        else:
+            yield XsamsRadTranBroadening(G)
+            yield XsamsRadTranShifting(G)
         yield '</RadiativeTransition>\n'
 
     yield '</Radiative>\n'
