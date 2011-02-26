@@ -232,6 +232,7 @@ def getHITRANmolecules(transs):
                 isotopologue.iso_name, molecule.chemical_names,
                 molecule.stoichiometric_formula,
                 molecule.stoichiometric_formula)
+        this_species.inchi = isotopologue.inchi
         states = []
         # all the transitions for this species:
         sptranss = transs.filter(inchikey=isotopologue.inchikey)

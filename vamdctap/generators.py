@@ -395,6 +395,8 @@ def XsamsMCSBuild(Molecule):
     if G("MolecularSpeciesChemicalName"):
         yield '<ChemicalName><Value>%s</Value></ChemicalName>\n'\
             % G("MolecularSpeciesChemicalName")
+    if G("MolecularSpeciesInChI"):
+        yield '<InChI>%s</InChI>' % G("MolecularSpeciesInChI")
     yield '<InChIKey>%s</InChIKey>\n' % G("MolecularSpeciesInChIKey")
     if G("MolecularSpeciesMolecularWeight"):
         yield '<StableMolecularProperties>\n'
@@ -445,18 +447,18 @@ def XsamsMolecules(Molecules):
 #################
 
 def makeBroadeningType(G,type='Natural'):
-    s = '<%sBroadening methodRef=>'%type
-    s +='<Comments>%s</Comments>' % G('RadTransBroadening%sComment'%type)
-    s += makeSourceRefs(G('RadTransBroadening%sRef'%type))
-    s += '</%sBroadening>'%type
+    s = '<%sBroadening methodRef=>\n' % type
+    s +='<Comments>%s</Comments>\n' % G('RadTransBroadening%sComment' % type)
+    s += makeSourceRefs(G('RadTransBroadening%sRef' % type))
+    s += '</%sBroadening>\n' % type
     return s
 
 def XsamsRadTranBroadening(G):
     """
     helper function for line broadening, called from RadTrans
     """
-    s = '<Broadenings>'
-    s +='<Comments>%s</Comments>' % G('RadTransBroadeningComment')
+    s = '<Broadenings>\n'
+    s +='<Comments>%s</Comments>\n' % G('RadTransBroadeningComment')
     s += makeSourceRefs(G('RadTransBroadeningRef'))
     if countReturnables('RadTransBroadeningNatural'):
         s += makeBroadeningType(G,type='Natural')
@@ -466,8 +468,11 @@ def XsamsRadTranBroadening(G):
         s += makeBroadeningType(G,type='VanDerWaals')
     if countReturnables('RadTransBroadeningInstrument'):
         s += makeBroadeningType(G,type='Instrument')
-    s += '</Broadenings>'
+    s += '</Broadenings>\n'
     return s
+
+def XsamsRadTranShifting(G):
+    return '<Shiftings/>'
 
 def XsamsRadTrans(RadTrans):
     """
@@ -479,19 +484,20 @@ def XsamsRadTrans(RadTrans):
     yield '<Radiative>'
     for RadTran in RadTrans:
         G=lambda name: GetValue(name,RadTran=RadTran)
-        yield '\n<RadiativeTransition><EnergyWavelength>'
+        yield '\n<RadiativeTransition>\n<EnergyWavelength>\n'
         yield makeDataType('Wavelength','RadTransWavelength',G)
         yield makeDataType('Wavenumber','RadTransWavenumber',G)
         yield makeDataType('Frequency','RadTransFrequency',G)
         
-        yield '</EnergyWavelength>'
+        yield '</EnergyWavelength>\n'
 
         yield XsamsRadTranBroadening(G)
+        yield XsamsRadTranShifting(G)
 
         initial = G('RadTransInitialStateRef')
-        if initial: yield '<InitialStateRef>S%s</InitialStateRef>'%initial
+        if initial: yield '<InitialStateRef>S%s</InitialStateRef>\n' % initial
         final = G('RadTransFinalStateRef')
-        if final: yield '<FinalStateRef>S%s</FinalStateRef>'%final
+        if final: yield '<FinalStateRef>S%s</FinalStateRef>\n' % final
 
         yield '<Probability>'
         yield makeDataType('Log10WeightedOscillatorStrength','RadTransLogGF',G)
@@ -499,7 +505,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)        
         yield '</Probability></RadiativeTransition>'
         
-    yield '</Radiative>'
+    yield '</Radiative>\n'
 
 def XsamsFunctions(Functions):
     yield ''
