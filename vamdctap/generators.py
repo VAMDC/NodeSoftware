@@ -481,18 +481,15 @@ def XsamsRadTrans(RadTrans):
 
     if not isiterable(RadTrans): return
 
-    yield '<Radiative>'
+    yield '<Radiative>\n'
     for RadTran in RadTrans:
         G=lambda name: GetValue(name,RadTran=RadTran)
-        yield '\n<RadiativeTransition>\n<EnergyWavelength>\n'
+        yield '<RadiativeTransition>\n<EnergyWavelength>\n'
         yield makeDataType('Wavelength','RadTransWavelength',G)
         yield makeDataType('Wavenumber','RadTransWavenumber',G)
         yield makeDataType('Frequency','RadTransFrequency',G)
         
         yield '</EnergyWavelength>\n'
-
-        yield XsamsRadTranBroadening(G)
-        yield XsamsRadTranShifting(G)
 
         initial = G('RadTransInitialStateRef')
         if initial: yield '<InitialStateRef>S%s</InitialStateRef>\n' % initial
@@ -503,8 +500,12 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('Log10WeightedOscillatorStrength','RadTransLogGF',G)
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
         yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)        
-        yield '</Probability></RadiativeTransition>'
+        yield '</Probability>\n'
         
+        yield XsamsRadTranBroadening(G)
+        yield XsamsRadTranShifting(G)
+        yield '</RadiativeTransition>\n'
+
     yield '</Radiative>\n'
 
 def XsamsFunctions(Functions):
