@@ -20,12 +20,14 @@ def LOG(s):
 
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
+escape = lambda s: quoteattr(s)[1:-1]
 
 def countReturnables(s):
     """
     count how often a certain (sub)string is in the keys of the returnables
     """
-    return len(filter(lambda key: 'atomstate' in key, DICTS.RETURNABLES.keys()))
+    return len(filter(lambda key: s.lower() in key, DICTS.RETURNABLES.keys()))
+
 
 def GetValue(name,**kwargs):
     """
@@ -273,112 +275,9 @@ def XsamsAtoms(Atoms):
 </Atom>"""
     yield '</Atoms>'
 
-
-def XsamsMolStates(Molecules, MoleStates, MoleQNs=None):
-    """
-    This function creates the molecular states part.
-    In its current form MoleStates contains all information
-    about the state including the species part. It does
-    not contain informations on the quantum numbers. These
-    are provided in the MoleQNs - List. Both are linked via
-    the StateId. In the first loop, the MoleQN-List copied into
-    a new list of lists using the StateID as keyword.
-    Maybe this part could be moved to the view.py in each node.
-    In this approach the molecular species information is part
-    of the MoleStates, which can be discussed, but probably 
-    this approach is faster in terms of performance and more
-    appropriate for the VO-Table output, because it reduces the
-    number of tables. Here, the MoleStates have to be sorted 
-    by Species. If we keep this approach the condition prooves
-    the identity of species should use the dictionary which
-    is currently under development
-    """
-
-    # nothing to see here if the data has no molecules
-    if not Molecules: return
-
-    # if MoleQNs was passed as None or not passed at all,
-    # it is effectively an empty list:
-    if MoleQNs is None:
-        MoleQNs = []
-
-    # rearrange QN-Lists into dictionary with stateID as key
-    QNList={}
-    for MolQN in MoleQNs:
-       G=lambda name: GetValue(name,MolQN=MolQN)
-       #print '+++G("MolQnStateID") =',G("MolQnStateID")
-       if QNList.has_key(G("MolQnStateID")):
-          QNList[G("MolQnStateID")].append(MolQN)
-          #print G("MolQnStateID")
-       else:
-          QNList[G("MolQnStateID")]=[MolQN]
-    #print 'MoleQNs is %d items long' % len(MoleQNs)
-    #print 'QNList is %d items long' % len(QNList)
-    #print QNList.keys()
-
-    yield '<Molecules>'
-    for Molecule in Molecules:
-        G=lambda name: GetValue(name, Molecule=Molecule)
-        yield '<Molecule>\n'
-        yield '<MolecularChemicalSpecies>\n'
-        yield '<OrdinaryStructuralFormula>%s</OrdinaryStructuralFormula>\n' \
-            % G("MolecularSpeciesOrdinaryStructuralFormula")
-        yield '<StoichiometricFormula>%s</StoichiometricFormula>\n' \
-            % G("MolecularSpeciesStoichiometricFormula")
-        yield '<ChemicalName>%s</ChemicalName>\n' \
-            % G("MolecularSpeciesChemicalName")
-        yield '</MolecularChemicalSpecies>\n'
-#        thisInchiKey = G("InchiKey")
-        speciesid = G("MolecularSpeciesID")
-         
-        for MolState in MoleStates:
-            G = lambda name: GetValue(name, MolState=MolState)
-#            if G("InchiKey") != thisInchiKey:
-
-            if G("MolecularStateMolecularSpeciesID") != speciesid:
-                continue
-            
-            yield """<MolecularState stateID="S%s">
-<Description>%s</Description>
-<MolecularStateCharacterisation>
-<StateEnergy energyOrigin="%s">
-<Value units="%s">%s</Value>
-</StateEnergy>
-<TotalStatisticalWeight>%s</TotalStatisticalWeight>
-</MolecularStateCharacterisation>
-""" %           ( 
-                G("MolecularStateStateID"),
-                G("MolecularStateDescription"),
-                G("MolecularStateEnergyOrigin"),
-                G("MolecularStateEnergyUnit"),
-                G("MolecularStateEnergyValue"),
-                G("MolecularStateCharacTotalStatisticalWeight")
-                )
-            if QNList.has_key(G("MolecularStateStateID")):
-#              G=lambda name: GetValue(name, MolQN=MolQN)
-
-              case=""
-              for MolQN in QNList[G("MolecularStateStateID")]:
-                G=lambda name: GetValue(name, MolQN=MolQN)
-                if G("MolQnCase")!=case :
-                   if case:
-                       yield '</%s:QNs>' % case
-                   yield '<%s:QNs> \n' % G("MolQnCase")
-                   case=G("MolQnCase")
-
-                yield """
-    <%s:%s """ % (G("MolQnCase"), G("MolQnLabel"))
-                if G("MolQnSpinRef"):
-                    yield """nuclearSpinRef="%s" """ % (G("MolQnSpinRef"))
-                if G("MolQnAttribute"):
-                    yield G("MolQnAttribute")
-                yield """>%s</%s:%s>""" \
-                    % (G("MolQnValue"),G("MolQnCase"),G("MolQnLabel") )
-
-              yield '</%s:QNs>' % case
-            yield '</MolecularState>'
-        yield '</Molecule>'
-    yield '</Molecules>'
+# ATOMS END
+#
+# MOLECULES START
 
 def XsamsMCSBuild(Molecule):
     """
@@ -423,7 +322,22 @@ def XsamsMSBuild(MolecularState):
     yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
                 % G("MolecularStateCharacTotalStatisticalWeight")
     yield '  </MolecularStateCharacterisation>\n'
+    if G("MolecularStateQuantumNumbers"):
+        for MSQNs in XsamsMSQNsBuild(G("MolecularStateQuantumNumbers")):
+            yield MSQNs
     yield '</MolecularState>\n'
+
+def XsamsMSQNsBuild(MolQNs):
+    G = lambda name: GetValue(name, MolQN=MolQN)
+    MolQN = MolQNs[0]; case = G('MolQnCase')
+    yield '<%s:QNs>\n' % case
+    for MolQN in MolQNs:
+        qn_attr = ''
+        if G('MolQnAttribute'):
+            qn_attr = ' %s' % G('MolQnAttribute')
+        yield '<%s:%s%s>%s</%s:%s>\n' % (G('MolQnCase'), G('MolQnLabel'),
+            qn_attr, G('MolQnValue'), G('MolQnCase'), G('MolQnLabel'))
+    yield '</%s:QNs>\n' % case
 
 def XsamsMolecules(Molecules):
     if not Molecules: return
@@ -446,11 +360,24 @@ def XsamsMolecules(Molecules):
 # BEGIN PROCESSES
 #################
 
-def makeBroadeningType(G,type='Natural'):
-    s = '<%sBroadening methodRef=>\n' % type
-    s +='<Comments>%s</Comments>\n' % G('RadTransBroadening%sComment' % type)
-    s += makeSourceRefs(G('RadTransBroadening%sRef' % type))
-    s += '</%sBroadening>\n' % type
+def makeBroadeningType(G,btype='Natural'):
+    env = G('RadTransBroadening%sEnvironment'%btype)
+    meth = G('RadTransBroadening%sMethod'%btype)
+    comm = G('RadTransBroadening%sComment'%btype)
+    s = '<%sBroadening'%btype
+    if meth: s += ' methodRef="%s"'%meth
+    if env: s += ' envRef="%s"'%env
+    s += '>'
+    if comm: s +='<Comments>%s</Comments>'%comm
+    s += makeSourceRefs(G('RadTransBroadening%sRef'%btype))
+
+    # in principle we should loop over lineshapes but
+    # lets not do so unless somebody actually has several lineshapes
+    # per broadening type
+    s += '<Lineshape name="%s">'%G('RadTransBroadening%sLineshapeName'%btype)
+    s += makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter'%btype,G)
+    s += '</Lineshape>'
+    s += '</%sBroadening>'%btype
     return s
 
 def XsamsRadTranBroadening(G):
@@ -544,7 +471,20 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None, Environme
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xmlns="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working/xsams.xsd">
+    xsi:schemaLocation="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working/xsams.xsd"
+ xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/dcs"  
+ xmlns:hunda="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hunda" 
+ xmlns:hundb="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hundb"
+ xmlns:ltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltcs"
+ xmlns:nltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/nltcs"
+ xmlns:stcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/stcs"
+ xmlns:lpcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/lpcs"
+ xmlns:asymcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/asymcs"
+ xmlns:asymos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/asymos"
+ xmlns:sphcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphcs"
+ xmlns:sphos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphos"
+ xmlns:ltos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltos"
+>
 """
 
     if HeaderInfo: 

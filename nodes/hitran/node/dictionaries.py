@@ -50,6 +50,7 @@ RETURNABLES=CaselessDict({\
 'MolecularStateEnergyUnit':'1/cm',
 'MolecularStateEnergyOrigin':'Zero-point energy',
 'MolecularStateCharacTotalStatisticalWeight':'MolecularState.g',
+'MolecularStateQuantumNumbers': 'MolecularState.parsed_qns',
 
 'MolQnStateID': 'MolQN.stateid',
 'MolQnCase': 'MolQN.case',      # e.g. 'dcs', 'ltcs', ...
