@@ -20,6 +20,7 @@ def LOG(s):
 
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
+escape = lambda s: quoteattr(s)[1:-1]
 
 def countReturnables(s):
     """
@@ -74,7 +75,7 @@ def makeSourceRefs(refs):
         else: s+='<SourceRef>B%s-%s</SourceRef>'%(NODEID,refs)
     return s
 
-def makeDataType(tagname,keyword,G,name=None):
+def makeDataType(tagname,keyword,G):
     """
     This is for treating the case where a keyword corresponds to a
     DataType in the schema which can have units, comment, sources etc.
@@ -92,7 +93,6 @@ def makeDataType(tagname,keyword,G,name=None):
 
     s='\n<%s'%tagname
     if method: s+=' methodRef="M%s-%s"'%(NODEID,method)
-    if name: s+=' name="%s"'%name
     s+='>'
 
     if comment: s+='<Comments>%s</Comments>'%quoteattr('%s'%comment)[1:-1]
@@ -100,6 +100,44 @@ def makeDataType(tagname,keyword,G,name=None):
     s+='<Value units="%s">%s</Value>'%(unit or 'unitless',value)
     if acc: s+='<Accuracy>%s</Accuracy>'%acc
     s+='</%s>'%tagname
+
+    return s
+
+def makeNamedDataType(tagname,keyword,G):
+    """
+    Similar to makeDataType above, but allows the result of G()
+    to be iterable and adds the name-attribute. If the 
+    corresponding refs etc are not iterable, they are replicated
+    for each tag.
+    """
+    value=G(keyword)
+    if not value: return ''
+
+    unit=G(keyword+'Unit')
+    method=G(keyword+'Method')
+    comment=G(keyword+'Comment')
+    acc=G(keyword+'Accuracy')
+    refs=G(keyword+'Ref')
+    name=G(keyword+'Name')
+
+# make everything iterable
+    value,unit,method,comment,acc,refs,name = [ [x] if not isiterable(x) else x  for x in [value,unit,method,comment,acc,refs,name]]
+
+# if some are shorter than the value list, replicate them
+    l = len(value)
+    value,unit,method,comment,acc,refs,name = [ x*l if len(x)<l else x for x in [value,unit,method,comment,acc,refs,name]]
+
+    s = ''
+    for i,val in enumerate(value):
+        s+='\n<%s'%tagname
+        if method[i]: s+=' methodRef="M%s-%s"'%(NODEID,method[i])
+        if name[i]: s+=' name="%s"'%name[i]
+        s+='>'
+        if comment[i]: s+='<Comments>%s</Comments>'%escape('%s'%comment[i])
+        s+=makeSourceRefs(refs[i])
+        s+='<Value units="%s">%s</Value>'%(unit[i] or 'unitless',value[i])
+        if acc[i]: s+='<Accuracy>%s</Accuracy>'%acc[i]
+        s+='</%s>'%tagname
 
     return s
 
@@ -346,23 +384,21 @@ def XsamsMolecules(Molecules):
 #################
 
 def makeBroadeningType(G,btype='Natural'):
-    s = '<%sBroadening methodRef="%s" envRef="%s">'%(btype,
-                        G('RadTransBroadening%sMethod'%btype),
-                        G('RadTransBroadening%sEnvironment'%btype))
-    s +='<Comments>%s</Comments>'%G('RadTransBroadening%sComment'%btype)
+    env = G('RadTransBroadening%sEnvironment'%btype)
+    meth = G('RadTransBroadening%sMethod'%btype)
+    comm = G('RadTransBroadening%sComment'%btype)
+    s = '<%sBroadening'%btype
+    if meth: s += ' methodRef="%s"'%meth
+    if env: s += ' envRef="%s"'%env
+    s += '>'
+    if comm: s +='<Comments>%s</Comments>'%comm
     s += makeSourceRefs(G('RadTransBroadening%sRef'%btype))
+
+    # in principle we should loop over lineshapes but
+    # lets not do so unless somebody actually has several lineshapes
+    # per broadening type
     s += '<Lineshape name="%s">'%G('RadTransBroadening%sLineshapeName'%btype)
-    BroadParams = G('RadTransBroadening%sLineshapeParameter'%btype)
-    BroadParamNames = G('RadTransBroadening%sLineshapeParameterName'%btype)
-    if not isiterable(BroadParams): BroadParams = [BroadParams]
-    if not isiterable(BroadParamNames): BroadParamNames = [BroadParamNames]
-    for i,BroadParam in enumerate(BroadParams):
-        print BroadParam,type(BroadParam)
-        s += makeDataType('LineshapeParameter',
-                BroadParam,G,
-                name=BroadParamNames[i],
-                isGd=True
-                )
+    s += makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter'%btype,G)
     s += '</Lineshape>'
     s += '</%sBroadening>'%btype
     return s
