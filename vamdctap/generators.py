@@ -116,7 +116,7 @@ def XsamsSources(Sources):
                 pass
 
         G = lambda name: GetValue(name, Source=Source)
-        yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID') 
+        yield '<Source sourceID="B%s-%s"><Authors>\n' % (NODEID, G('SourceID'))
         authornames=G('SourceAuthorName')
         # make it always into a list to be looped over, even if
         # only single entry
@@ -439,7 +439,16 @@ def XsamsRadTrans(RadTrans):
     yield '</Radiative>\n'
 
 def XsamsFunctions(Functions):
-    yield ''
+    if not isiterable(Functions): return
+    yield '<Functions>'
+    for Function in Functions:
+        if hasattr(Function,'XML'):
+            try:
+                yield Function.XML()
+                continue
+            except:
+                pass
+    yield '</Functions>'
 
 def XsamsMethods(Methods):
     """

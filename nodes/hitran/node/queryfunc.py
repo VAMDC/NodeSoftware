@@ -124,6 +124,8 @@ def getHITRANbroadening(transs, XSAMSvariant):
             prm_dict = {}
             for prm in prms:
                 prm_dict[prm.prm_name] = prm
+                # XXX for now, replace reference with the generic HITRAN08 ref
+                prm_dict[prm.prm_name].prm_ref = 'BHIT-B_HITRAN2008'
             broadenings = []
             if 'g_air' in prm_dict.keys() and 'n_air' in prm_dict.keys():
                 g_air_val = str(prm_dict['g_air'].prm_val)
