@@ -25,7 +25,7 @@ def countReturnables(s):
     """
     count how often a certain (sub)string is in the keys of the returnables
     """
-    return len(filter(lambda key: s in key, DICTS.RETURNABLES.keys()))
+    return len(filter(lambda key: s.lower() in key, DICTS.RETURNABLES.keys()))
 
 def GetValue(name,**kwargs):
     """
@@ -254,8 +254,9 @@ def XsamsAtoms(Atoms):
 
         for AtomState in Atom.States:
             G=lambda name: GetValue(name, AtomState=AtomState)
-            yield """<AtomicState stateID="S%s"><Description>%s</Description>
-<AtomicNumericalData>""" % ( G('AtomStateID'), G('AtomStateDescription') )
+            yield """<AtomicState stateID="S%s-%s">
+            <Description>%s</Description>
+            <AtomicNumericalData>""" % ( G('NodeID'), G('AtomStateID'), G('AtomStateDescription') )
             yield makeDataType('IonizationEnergy','AtomStateIonizationEnergy',G)
             yield makeDataType('StateEnergy','AtomStateEnergy',G)
             yield makeDataType('LandeFactor','AtomStateLandeFactor',G)
@@ -344,19 +345,26 @@ def XsamsMolecules(Molecules):
 # BEGIN PROCESSES
 #################
 
-def makeBroadeningType(G,type='Natural'):
-    s = '<%sBroadening methodRef="%s" envRef="%s">'%(type,
-                        G('RadTransBroadening%sMethod'%type),
-                        G('RadTransBroadening%sEnvironment'%type))
-    s +='<Comments>%s</Comments>'%G('RadTransBroadening%sComment'%type)
-    s += makeSourceRefs(G('RadTransBroadening%sRef'%type))
-    s += '<Lineshape name="%s">'%G('RadTransBroadening%sLineshapename')
-    params = G('RadTransBroadening%sLineshapeParameters')
-    if isiterable(params):
-        for param in params:
-            s += makeDataType('LineshapeParameter',G('RadTransBroadening%sLineshapeParameter'),name=G('RadTransBroadening%sLineshapeParameterName'))
+def makeBroadeningType(G,btype='Natural'):
+    s = '<%sBroadening methodRef="%s" envRef="%s">'%(btype,
+                        G('RadTransBroadening%sMethod'%btype),
+                        G('RadTransBroadening%sEnvironment'%btype))
+    s +='<Comments>%s</Comments>'%G('RadTransBroadening%sComment'%btype)
+    s += makeSourceRefs(G('RadTransBroadening%sRef'%btype))
+    s += '<Lineshape name="%s">'%G('RadTransBroadening%sLineshapeName'%btype)
+    BroadParams = G('RadTransBroadening%sLineshapeParameter'%btype)
+    BroadParamNames = G('RadTransBroadening%sLineshapeParameterName'%btype)
+    if not isiterable(BroadParams): BroadParams = [BroadParams]
+    if not isiterable(BroadParamNames): BroadParamNames = [BroadParamNames]
+    for i,BroadParam in enumerate(BroadParams):
+        print BroadParam,type(BroadParam)
+        s += makeDataType('LineshapeParameter',
+                BroadParam,G,
+                name=BroadParamNames[i],
+                isGd=True
+                )
     s += '</Lineshape>'
-    s += '</%sBroadening>'%type
+    s += '</%sBroadening>'%btype
     return s
 
 def XsamsRadTranBroadening(G):
@@ -367,13 +375,13 @@ def XsamsRadTranBroadening(G):
     s +='<Comments>%s</Comments>'%G('RadTransBroadeningComment')
     s += makeSourceRefs(G('RadTransBroadeningRef'))
     if countReturnables('RadTransBroadeningNatural'):
-        s += makeBroadeningType(G,type='Natural')
+        s += makeBroadeningType(G,btype='Natural')
     if countReturnables('RadTransBroadeningStark'):
-        s += makeBroadeningType(G,type='Stark')
+        s += makeBroadeningType(G,btype='Stark')
     if countReturnables('RadTransBroadeningVanDerWaals'):
-        s += makeBroadeningType(G,type='VanDerWaals')
+        s += makeBroadeningType(G,btype='VanDerWaals')
     if countReturnables('RadTransBroadeningInstrument'):
-        s += makeBroadeningType(G,type='Instrument')
+        s += makeBroadeningType(G,btype='Instrument')
     s += '</Broadenings>\n'
     return s
 
@@ -394,7 +402,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('Wavelength','RadTransWavelength',G)
         yield makeDataType('Wavenumber','RadTransWavenumber',G)
         yield makeDataType('Frequency','RadTransFrequency',G)
-        
+
         yield '</EnergyWavelength>\n'
 
         initial = G('RadTransInitialStateRef')
@@ -405,14 +413,14 @@ def XsamsRadTrans(RadTrans):
         yield '<Probability>'
         yield makeDataType('Log10WeightedOscillatorStrength','RadTransLogGF',G)
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
-        yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)        
+        yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)
         yield '</Probability>\n'
-        
-        if RadTran.broadening_xml:
-            yield RadTran.broadening_xml
+
+        if hasattr(RadTran,'XML_Broadening'):
+            yield RadTran.XML_Broadening()
         else:
             yield XsamsRadTranBroadening(G)
-            yield XsamsRadTranShifting(G)
+        yield XsamsRadTranShifting(G)
         yield '</RadiativeTransition>\n'
 
     yield '</Radiative>\n'
