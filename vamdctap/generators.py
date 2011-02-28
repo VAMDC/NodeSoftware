@@ -425,12 +425,12 @@ def XsamsRadTranBroadening(G):
     s = '<Broadenings>'
     s +='<Comments>%s</Comments>'%G('RadTransBroadeningComment')
     s += makeSourceRefs(G('RadTransBroadeningRef'))
-    if countReturnables('RadTransBroadeningNatural'):
-        s += makeBroadeningType(G,btype='Natural')
     if countReturnables('RadTransBroadeningStark'):
         s += makeBroadeningType(G,btype='Stark')
     if countReturnables('RadTransBroadeningVanDerWaals'):
         s += makeBroadeningType(G,btype='VanDerWaals')
+    if countReturnables('RadTransBroadeningNatural'):
+        s += makeBroadeningType(G,btype='Natural')
     if countReturnables('RadTransBroadeningInstrument'):
         s += makeBroadeningType(G,btype='Instrument')
     s += '</Broadenings>\n'
