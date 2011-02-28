@@ -71,11 +71,13 @@ def build_refcache():
     for ll in lls:
         refcache[ll]=[r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %d)'%ll)]
     return refcache
-refcache=build_refcache()
+
+try: refcache=build_refcache()
+except: refcache={}
 ####
 
 class State(Model):
-    id = CharField(max_length=255, primary_key=True, db_index=True)
+    id = IntegerField(primary_key=True, db_index=True)
     species = ForeignKey(Species)  
 
     energy = DecimalField(max_digits=15, decimal_places=4,null=True,blank=True, db_index=True) 

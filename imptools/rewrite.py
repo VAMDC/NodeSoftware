@@ -7,6 +7,7 @@ ascii-input files to the django database. It's generic and is
 controlled from a mapping file.
 
 """
+
 import sys, os.path
 from time import time 
 
@@ -106,7 +107,7 @@ def get_value(linedata, column_dict):
 
 
 class MappingFile(object):
-    """
+    r"""
     This class implements an object that represents
     an open file from which one can read blocks. The object
     keeps track of its own block-step speed and will return lines
@@ -114,9 +115,9 @@ class MappingFile(object):
     it will return the same line twice in a row whereas for a
     step speed of 2, will return every second block etc. 
 
-    if endblock is \n (default), the block will infact represent a line.
-
+    If endblock is \\n (default), the block will infact represent a line.
     """
+
     def block_generator(self, fileobj, startblock=None, endblock='\n'):
         "generator, stepping through blocks"
 
@@ -336,3 +337,4 @@ def parse_mapping(mapping, debug=False):
     print "Total number of errors/fails/skips: %s/%s (%g%%)" % (TOTAL_ERRS,
                                                                 TOTAL_LINES,
                                                                 100*float(TOTAL_ERRS)/TOTAL_LINES)
+

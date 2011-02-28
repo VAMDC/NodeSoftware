@@ -3,15 +3,16 @@
 from vamdctap.caselessdict import CaselessDict
 
 RETURNABLES=CaselessDict({\
-'SourceID':'Source.sourceid',
-'SourceAuthorName':'Source.authors',
-'SourceTitle':'Source.title',
+'NodeID': 'HIT',    # unique identifier for the HITRAN node
+'SourceID': 'Source.sourceid',
+'SourceAuthorName': 'Source.authors',
+'SourceTitle': 'Source.title',
 # NB my Refs model has pages, not page_begin and page_end:
-'SourcePageBegin':'Refs.pages',		
-'SourceVolume':'Source.volume',
-'SourceYear':'Source.year',
-'SourceName':'Source.journal',    # closest we can get to the journal name
-'SourceCategory':'Source.type',
+'SourcePageBegin': 'Refs.pages',		
+'SourceVolume': 'Source.volume',
+'SourceYear': 'Source.year',
+'SourceName': 'Source.journal',    # closest we can get to the journal name
+'SourceCategory': 'Source.type',
 'SourcePageBegin': 'Source.page_start',
 'SourcePageEnd': 'Source.page_end',
 
@@ -19,33 +20,38 @@ RETURNABLES=CaselessDict({\
 'MethodCategory': 'Method.category',
 'MethodDescription': 'Method.category',
 
-'RadTransComments':'',
-'RadTransMethodRef':'EXP',
-'RadTransFinalStateRef':'RadTran.finalstateref',
-'RadTransInitialStateRef':'RadTran.initialstateref',
-'RadTransWavenumberExperimentalValue':'RadTran.nu',
-'RadTransWavenumberExperimentalUnits':'1/cm',
-'RadTransWavenumberExperimentalSourceRef':'RadTran.nu_ref',
-'RadTransWavenumberExperimentalAccuracy':'RadTran.nu_err',
-'RadTransProbabilityTransitionProbabilityAValue':'RadTran.a',
-'RadTransProbabilityTransitionProbabilityASourceRef':'RadTran.a_ref',
-'RadTransProbabilityTransitionProbabilityAAccuracy':'RadTran.a_err',
-'RadTransProbabilityProbability:MultipoleValue':'RadTran.multipole',
+'RadTransComments': '',
+'RadTransMethodRef': 'EXP',
+'RadTransFinalStateRef': 'RadTran.finalstateref',
+'RadTransInitialStateRef': 'RadTran.initialstateref',
+'RadTransWavenumber': 'RadTran.nu',
+'RadTransWavenumberUnit': '1/cm',
+'RadTransWavenumberRef': 'RadTran.nu_ref',
+'RadTransWavenumberAccuracy': 'RadTran.nu_err',
+'RadTransProbabilityA': 'RadTran.a',
+'RadTransProbabilityAUnit': '1/s',
+'RadTransProbabilityARef': 'RadTran.a_ref',
+'RadTransProbabilityAAccuracy': 'RadTran.a_err',
+'RadTransProbabilityMultipoleValue': 'RadTran.multipole',
 # XXX test
-'RadTransMolecularBroadeningXML':'RadTran.broadening_xml',
+'RadTransMolecularBroadeningXML': 'RadTran.broadening_xml',
 
-'MolecularSpeciesChemicalName':'Molecule.chemical_names',
-'MolecularSpeciesOrdinaryStructuralFormula':'Molecule.molec_name',
-'MolecularSpeciesStoichiometricFormula': \
-        'Molecule.stoichiometric_formula',
+'MolecularSpeciesChemicalName': 'Molecule.chemical_names',
+'MolecularSpeciesOrdinaryStructuralFormula': 'Molecule.molec_name',
+'MolecularSpeciesStoichiometricFormula': 'Molecule.stoichiometric_formula',
 'MolecularSpeciesID': 'Molecule.inchikey',
+'MolecularSpeciesInChI': 'Molecule.inchi',
+'MolecularSpeciesInChIKey': 'Molecule.inchikey',
+# use the Comment field to 
+'MolecularSpeciesComment': 'Molecule.iso_name',
 
-'MolecularStateStateID':'MolState.id',
-'MolecularStateMolecularSpeciesID':'MolState.inchikey',
-'MolecularStateEnergyValue':'MolState.energy',
+'MolecularStateStateID':'MolecularState.id',
+'MolecularStateMolecularSpeciesID':'MolecularState.inchikey',
+'MolecularStateEnergyValue':'MolecularState.energy',
 'MolecularStateEnergyUnit':'1/cm',
 'MolecularStateEnergyOrigin':'Zero-point energy',
-'MolecularStateCharacTotalStatisticalWeight':'MolState.g',
+'MolecularStateCharacTotalStatisticalWeight':'MolecularState.g',
+'MolecularStateQuantumNumbers': 'MolecularState.parsed_qns',
 
 'MolQnStateID': 'MolQN.stateid',
 'MolQnCase': 'MolQN.case',      # e.g. 'dcs', 'ltcs', ...
