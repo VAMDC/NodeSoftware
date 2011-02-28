@@ -531,6 +531,8 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None, Environme
  xmlns:sphcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphcs"
  xmlns:sphos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphos"
  xmlns:ltos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltos"
+ xmlns:lpos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/lpos"
+ xmlns:nltos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/nltos"
 >
 """
 
