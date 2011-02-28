@@ -153,7 +153,7 @@ def XsamsSources(Sources):
                 pass
 
         G = lambda name: GetValue(name, Source=Source)
-        yield '<Source sourceID="B%s"><Authors>\n'%G('SourceID')
+        yield '<Source sourceID="B%s-%s"><Authors>\n' % (NODEID, G('SourceID'))
         authornames=G('SourceAuthorName')
         # make it always into a list to be looped over, even if
         # only single entry
@@ -314,7 +314,7 @@ def XsamsAtoms(Atoms):
     yield '</Atoms>'
 
 # ATOMS END
-# 
+#
 # MOLECULES START
 
 def XsamsMCSBuild(Molecule):
@@ -360,7 +360,22 @@ def XsamsMSBuild(MolecularState):
     yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
                 % G("MolecularStateCharacTotalStatisticalWeight")
     yield '  </MolecularStateCharacterisation>\n'
+    if G("MolecularStateQuantumNumbers"):
+        for MSQNs in XsamsMSQNsBuild(G("MolecularStateQuantumNumbers")):
+            yield MSQNs
     yield '</MolecularState>\n'
+
+def XsamsMSQNsBuild(MolQNs):
+    G = lambda name: GetValue(name, MolQN=MolQN)
+    MolQN = MolQNs[0]; case = G('MolQnCase')
+    yield '<%s:QNs>\n' % case
+    for MolQN in MolQNs:
+        qn_attr = ''
+        if G('MolQnAttribute'):
+            qn_attr = ' %s' % G('MolQnAttribute')
+        yield '<%s:%s%s>%s</%s:%s>\n' % (G('MolQnCase'), G('MolQnLabel'),
+            qn_attr, G('MolQnValue'), G('MolQnCase'), G('MolQnLabel'))
+    yield '</%s:QNs>\n' % case
 
 def XsamsMolecules(Molecules):
     if not Molecules: return
@@ -462,7 +477,16 @@ def XsamsRadTrans(RadTrans):
     yield '</Radiative>\n'
 
 def XsamsFunctions(Functions):
-    yield ''
+    if not isiterable(Functions): return
+    yield '<Functions>'
+    for Function in Functions:
+        if hasattr(Function,'XML'):
+            try:
+                yield Function.XML()
+                continue
+            except:
+                pass
+    yield '</Functions>'
 
 def XsamsMethods(Methods):
     """
@@ -494,7 +518,20 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None, Environme
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xmlns="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working/xsams.xsd">
+    xsi:schemaLocation="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working/xsams.xsd"
+ xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/dcs"  
+ xmlns:hunda="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hunda" 
+ xmlns:hundb="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hundb"
+ xmlns:ltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltcs"
+ xmlns:nltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/nltcs"
+ xmlns:stcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/stcs"
+ xmlns:lpcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/lpcs"
+ xmlns:asymcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/asymcs"
+ xmlns:asymos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/asymos"
+ xmlns:sphcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphcs"
+ xmlns:sphos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphos"
+ xmlns:ltos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltos"
+>
 """
 
     if HeaderInfo:

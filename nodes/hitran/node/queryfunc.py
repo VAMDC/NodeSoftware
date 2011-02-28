@@ -124,6 +124,8 @@ def getHITRANbroadening(transs, XSAMSvariant):
             prm_dict = {}
             for prm in prms:
                 prm_dict[prm.prm_name] = prm
+                # XXX for now, replace reference with the generic HITRAN08 ref
+                prm_dict[prm.prm_name].prm_ref = 'BHIT-B_HITRAN2008'
             broadenings = []
             if 'g_air' in prm_dict.keys() and 'n_air' in prm_dict.keys():
                 g_air_val = str(prm_dict['g_air'].prm_val)
@@ -212,12 +214,16 @@ def getHITRANbroadening(transs, XSAMSvariant):
                     '    <Shiftings>\n%s</Shiftings>' % (''.join(broadenings),
                                                          ''.join(shiftings))
 
-def getHITRANstates(transs):
-    stateIDs = set([])
-    for trans in transs:
-        stateIDs = stateIDs.union([trans.initialstateref,
-                                   trans.finalstateref])
-    return States.objects.filter(pk__in=stateIDs)
+def attach_state_qns(states):
+    for state in states:
+        state.parsed_qns = []
+        for qn in Qns.objects.filter(stateid=state.id):
+            if qn.qn_attr:
+                # put quotes around the value of the attribute
+                attr_name, attr_val = qn.qn_attr.split('=')
+                qn.qn_attr = '%s="%s"' % (attr_name, attr_val)
+            state.parsed_qns.append(MolQN(qn.stateid, case_prefixes[qn.caseid],
+                               qn.qn_name, qn.qn_val, qn.qn_attr, qn.xml))
 
 def getHITRANmolecules(transs):
     InChIKeys = set([])
@@ -243,10 +249,12 @@ def getHITRANmolecules(transs):
         sids = set(chain(stateps, statepps))
         # attach the corresponding states to the molecule:
         this_species.States = States.objects.filter( pk__in = sids)
+        attach_state_qns(this_species.States)
         nstates += len(sids)
         # add this species object to the list:
         species.append(this_species)
-    return species
+    nspecies = len(species)
+    return species, nspecies, nstates
 
 def getHITRANsources(transs):
     # for now, we set all the references to HITRAN2008
@@ -267,24 +275,6 @@ def getHITRANsources(transs):
                     source.note, source.doi))
 
     return sources
-
-def parseHITRANstates(states):
-    sids = set([])
-    for state in states:
-        sids.add(state.id)
-
-    qns = []
-    for qn in Qns.objects.filter(stateid__in=sids).order_by('id'):
-        if qn.qn_attr:
-            # put quotes around the value of the attribute
-            attr_name, attr_val = qn.qn_attr.split('=')
-            qn.qn_attr = '%s="%s"' % (attr_name, attr_val)
-        qns.append(MolQN(qn.stateid, case_prefixes[qn.caseid], qn.qn_name,
-                         qn.qn_val, qn.qn_attr, qn.xml))
-
-    LOG('%d state quantum numbers obtained' % len(qns))
-    #sys.exit(0)
-    return qns
 
 def setupResults(sql, LIMIT=10, XSAMSvariant='working'):
     q = sqlparse.where2q(sql.where,RESTRICTABLES)
@@ -309,12 +299,8 @@ def setupResults(sql, LIMIT=10, XSAMSvariant='working'):
 
     getHITRANbroadening(transs, XSAMSvariant)
     sources = getHITRANsources(transs)
-    states = getHITRANstates(transs)
-    nstates = states.count()
     # extract the state quantum numbers in a form that generators.py can use:
-    qns = parseHITRANstates(states)
-    species = getHITRANmolecules(transs)
-    nspecies = states.count()
+    species, nspecies, nstates = getHITRANmolecules(transs)
     LOG('%s transitions retrieved from HITRAN database' % ntrans)
     LOG('%s states retrieved from HITRAN database' % nstates)
     LOG('%s species retrieved from HITRAN database' % nspecies)
