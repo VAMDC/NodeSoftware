@@ -49,9 +49,9 @@ them match each other).
 Proxy Alternatives
 ~~~~~~~~~~~~~~~~~~
 What you choose as proxy for Gunicorn is somewhat arbitrary. Common
-alternatives are *lighttpd* or *Apache*. Especially if the server that is to
-run your node already has an Apache running for serving other websites, it
-makes sense to simply tell it how to proxy your Gunicorn server::
+alternatives to *nginx* are *lighttpd* or *Apache*. Especially if the server
+that is to run your node already has an Apache running for serving other
+websites, it makes sense to simply tell it how to proxy your Gunicorn server::
 
     ProxyPass /yournode http://localhost:8000
     ProxyPassReverse /yournode http://localhost:8000
@@ -60,9 +60,14 @@ makes sense to simply tell it how to proxy your Gunicorn server::
 Deployment in Apache
 --------------------------------
 
-As an alternative to deplyment with Gunicorn plus proxy, the Apache webserver can not only act as a proxy but also replace 
-Gunicorn by using its mod_wsgi plugin to run the Python code directly. 
-You can find two example files in your node directory about this:
+As an alternative to deplyment with Gunicorn plus proxy, the Apache webserver
+can not only act as a proxy but also replace Gunicorn by using its mod_wsgi
+plugin to run the Python code directly. The main disadvantage of this setup is
+that you cannot configure and restart the node independantly from Apache, so
+the likelyhood of interfering with any other sites that Apache serves is
+larger.
+
+There are two example files in your node directory for setting this up:
 
 * *apache.conf*: This is an Apache config file that defines a virtual 
   server, bound to a certain host name. You will have to edit several 
