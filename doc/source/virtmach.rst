@@ -106,3 +106,4 @@ Typical commands would be::
     mysql> CREATE DATABASE yourDBname CHARACTER SET utf8;
     mysql> GRANT ALL PRIVILEGES ON yourDBname.* TO YourUser@localhost IDENTIFIED BY "reeH5ohm";
     mysql> flush privileges;
+

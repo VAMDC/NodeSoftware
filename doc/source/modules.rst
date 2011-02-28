@@ -35,5 +35,4 @@ The import tool
    :maxdepth: 3
 
    imptools
-   run_import
    linefuncs
