@@ -352,13 +352,15 @@ def XsamsMSBuild(MolecularState):
     yield '<MolecularState stateID="S%s">\n' % G("MolecularStateStateID")
     yield '  <Description/>\n'
     yield '  <MolecularStateCharacterisation>\n'
-    yield '  <StateEnergy energyOrigin="%s">\n'\
-                % G("MolecularStateEnergyOrigin")
-    yield '    <Value units="%s">%s</Value>\n'\
+    if G("MolecularStateEnergyValue"):
+        yield '  <StateEnergy energyOrigin="%s">\n'\
+                    % G("MolecularStateEnergyOrigin")
+        yield '    <Value units="%s">%s</Value>\n'\
             % (G("MolecularStateEnergyUnit"), G("MolecularStateEnergyValue"))
-    yield '  </StateEnergy>\n'
-    yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
-                % G("MolecularStateCharacTotalStatisticalWeight")
+        yield '  </StateEnergy>\n'
+    if G("MolecularStateCharacTotalStatisticalWeight"):
+        yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
+                    % G("MolecularStateCharacTotalStatisticalWeight")
     yield '  </MolecularStateCharacterisation>\n'
     if G("MolecularStateQuantumNumbers"):
         for MSQNs in XsamsMSQNsBuild(G("MolecularStateQuantumNumbers")):
