@@ -45,7 +45,7 @@ def toggle_datatype(modeladmin, request, queryset):
 toggle_datatype.short_description = "Toggle DataType true/false for selected keywords"
 
 class KeyWordAdmin(admin.ModelAdmin):
-    list_display = ('name', 'sdescr','datatype','unit')
+    list_display = ('name', 'sdescr','datatype','unit','list_usages')
     search_fields = ('name', 'sdescr', 'ldescr', 'unit')
     actions_on_top = True
     actions_on_bottom = True
