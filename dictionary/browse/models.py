@@ -26,6 +26,7 @@ class KeyWord(models.Model):
                                                     ('mq','Molecular Quantum Numbers'),
                                                     ('ct','Collisional Transitions'),
                                                     ('rt','Radiative Transitions'),
+                                                    ('nr','Non-Radiative Transitions'),
                                                     ('me','Methods'),
                                                     ('fu','Functions'),
                                                     ('en','Environments'),
