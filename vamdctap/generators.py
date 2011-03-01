@@ -381,14 +381,14 @@ def XsamsMSBuild(MoleculeState):
 
 def XsamsMSQNsBuild(MolQNs):
     G = lambda name: GetValue(name, MolQN=MolQN)
-    MolQN = MolQNs[0]; case = G('MolQnCase')
+    MolQN = MolQNs[0]; case = G('MoleculeQnCase')
     yield '<%s:QNs>\n' % case
     for MolQN in MolQNs:
         qn_attr = ''
-        if G('MolQnAttribute'):
-            qn_attr = ' %s' % G('MolQnAttribute')
-        yield '<%s:%s%s>%s</%s:%s>\n' % (G('MolQnCase'), G('MolQnLabel'),
-            qn_attr, G('MolQnValue'), G('MolQnCase'), G('MolQnLabel'))
+        if G('MoleculeQnAttribute'):
+            qn_attr = ' %s' % G('MoleculeQnAttribute')
+        yield '<%s:%s%s>%s</%s:%s>\n' % (G('MoleculeQnCase'), G('MoleculeQnLabel'),
+            qn_attr, G('MoleculeQnValue'), G('MoleculeQnCase'), G('MoleculeQnLabel'))
     yield '</%s:QNs>\n' % case
 
 def XsamsMolecules(Molecules):
