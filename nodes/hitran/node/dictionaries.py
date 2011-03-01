@@ -36,22 +36,22 @@ RETURNABLES=CaselessDict({\
 # XXX test
 'RadTransMolecularBroadeningXML': 'RadTran.broadening_xml',
 
-'MolecularSpeciesChemicalName': 'Molecule.chemical_names',
-'MolecularSpeciesOrdinaryStructuralFormula': 'Molecule.molec_name',
-'MolecularSpeciesStoichiometricFormula': 'Molecule.stoichiometric_formula',
-'MolecularSpeciesID': 'Molecule.inchikey',
-'MolecularSpeciesInChI': 'Molecule.inchi',
-'MolecularSpeciesInChIKey': 'Molecule.inchikey',
+'MoleculeChemicalName': 'Molecule.chemical_names',
+'MoleculeOrdinaryStructuralFormula': 'Molecule.molec_name',
+'MoleculeStoichiometricFormula': 'Molecule.stoichiometric_formula',
+'MoleculeID': 'Molecule.inchikey',
+'MoleculeInChI': 'Molecule.inchi',
+'MoleculeInChIKey': 'Molecule.inchikey',
 # use the Comment field to 
-'MolecularSpeciesComment': 'Molecule.iso_name',
+'MoleculeComment': 'Molecule.iso_name',
 
-'MolecularStateStateID':'MolecularState.id',
-'MolecularStateMolecularSpeciesID':'MolecularState.inchikey',
-'MolecularStateEnergyValue':'MolecularState.energy',
-'MolecularStateEnergyUnit':'1/cm',
-'MolecularStateEnergyOrigin':'Zero-point energy',
-'MolecularStateCharacTotalStatisticalWeight':'MolecularState.g',
-'MolecularStateQuantumNumbers': 'MolecularState.parsed_qns',
+'MoleculeStateStateID':'MoleculeState.id',
+'MoleculeStateMolecularSpeciesID':'MoleculeState.inchikey',
+'MoleculeStateEnergyValue':'MoleculeState.energy',
+'MoleculeStateEnergyUnit':'1/cm',
+'MoleculeStateEnergyOrigin':'Zero-point energy',
+'MoleculeStateCharacTotalStatisticalWeight':'MoleculeState.g',
+'MoleculeStateQuantumNumbers': 'MoleculeState.parsed_qns',
 
 'MolQnStateID': 'MolQN.stateid',
 'MolQnCase': 'MolQN.case',      # e.g. 'dcs', 'ltcs', ...

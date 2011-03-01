@@ -366,15 +366,15 @@ def XsamsMSBuild(MoleculeState):
     yield '<MolecularState stateID="S%s">\n' % G("MoleculeStateStateID")
     yield '  <Description/>\n'
     yield '  <MolecularStateCharacterisation>\n'
-    if G("MolecularStateEnergyValue"):
+    if G("MoleculeStateEnergyValue"):
         yield '  <StateEnergy energyOrigin="%s">\n'\
-                    % G("MolecularStateEnergyOrigin")
+                    % G("MoleculeStateEnergyOrigin")
         yield '    <Value units="%s">%s</Value>\n'\
-            % (G("MolecularStateEnergyUnit"), G("MolecularStateEnergyValue"))
+            % (G("MoleculeStateEnergyUnit"), G("MoleculeStateEnergyValue"))
         yield '  </StateEnergy>\n'
-    if G("MolecularStateCharacTotalStatisticalWeight"):
+    if G("MoleculeStateCharacTotalStatisticalWeight"):
         yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
-                    % G("MolecularStateCharacTotalStatisticalWeight")
+                    % G("MoleculeStateCharacTotalStatisticalWeight")
     yield '  </MolecularStateCharacterisation>\n'
     if G("MoleculeStateQuantumNumbers"):
         for MSQNs in XsamsMSQNsBuild(G("MoleculeStateQuantumNumbers")):
@@ -487,7 +487,10 @@ def XsamsRadTrans(RadTrans):
             yield RadTran.XML_Broadening()
         else:
             yield XsamsRadTranBroadening(G)
-        yield XsamsRadTranShifting(G)
+        if hasattr(RadTran,'XML_Shifting'):
+            yield RadTran.XML_Shifting()
+        else:
+            yield XsamsRadTranShifting(G)
         yield '</RadiativeTransition>\n'
 
     yield '</Radiative>\n'
