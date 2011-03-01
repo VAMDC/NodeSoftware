@@ -67,5 +67,6 @@ def setupResults(sql,limit=10000):
     return {'RadTrans':transs,
             'Atoms':species,
             'Sources':sources,
-            'HeaderInfo':headerinfo
+            'HeaderInfo':headerinfo,
+            'Environments':Environments #this is set up statically in models.py
            }

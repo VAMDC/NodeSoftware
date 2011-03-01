@@ -26,11 +26,17 @@ class KeyWord(models.Model):
                                                     ('mq','Molecular Quantum Numbers'),
                                                     ('ct','Collisional Transitions'),
                                                     ('rt','Radiative Transitions'),
+                                                    ('nr','Non-Radiative Transitions'),
                                                     ('me','Methods'),
+                                                    ('fu','Functions'),
+                                                    ('en','Environments'),
                                                     ('so','Sources'),
                                                   ),
                             null=True,blank=True)
     datatype = models.BooleanField('DataType in XSAMS?',default=False)
+
+    def list_usages(self):
+        return ', '.join([u.name for u in self.usage.all()])
 
     def __unicode__(self):
         return u'%s'%self.name

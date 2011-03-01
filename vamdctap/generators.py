@@ -22,11 +22,25 @@ def LOG(s):
 isiterable = lambda obj: hasattr(obj, '__iter__')
 escape = lambda s: quoteattr(s)[1:-1]
 
-def countReturnables(s):
+def countReturnables(regexp):
     """
-    count how often a certain (sub)string is in the keys of the returnables
+    count how often a certain matches the keys of the returnables
     """
-    return len(filter(lambda key: s.lower() in key, DICTS.RETURNABLES.keys()))
+    r = re.compile(regexp,flags=re.IGNORECASE)
+    return len(filter(r.match, DICTS.RETURNABLES.keys()))
+
+# Define some globals that allow skipping parts
+# of the generator below.
+N_ENV_KWS = countReturnables('^Environment.*')
+N_METHOD_KWS = countReturnables('^Method.*')
+N_FUNCTION_KWS = countReturnables('^Function.*')
+N_MOLESTATE_KWS = countReturnables('^MoleculeState.*')
+N_MOLE_KWS = countReturnables('^Molecule.*') - N_MOLESTATE_KWS
+N_ATOMSTATE_KWS = countReturnables('^AtomState.*')
+N_ATOM_KWS = countReturnables('^Atom.*') - N_ATOMSTATE_KWS
+N_COLLTRAN_KWS = countReturnables('Collision.*')
+N_RADTRAN_KWS = countReturnables('^RadTran.*')
+N_BROAD_KWS = countReturnables('^.*Broadening.*')
 
 def GetValue(name,**kwargs):
     """
@@ -325,31 +339,31 @@ def XsamsMCSBuild(Molecule):
     yield '<MolecularChemicalSpecies>\n'
     yield '<OrdinaryStructuralFormula><Value>%s</Value>'\
             '</OrdinaryStructuralFormula>\n'\
-            % G("MolecularSpeciesOrdinaryStructuralFormula")
+            % G("MoleculeOrdinaryStructuralFormula")
 
     yield '<StoichiometricFormula>%s</StoichiometricFormula>\n'\
-            % G("MolecularSpeciesStoichiometricFormula")
-    if G("MolecularSpeciesChemicalName"):
+            % G("MoleculeStoichiometricFormula")
+    if G("MoleculeChemicalName"):
         yield '<ChemicalName><Value>%s</Value></ChemicalName>\n'\
-            % G("MolecularSpeciesChemicalName")
-    if G("MolecularSpeciesInChI"):
-        yield '<InChI>%s</InChI>' % G("MolecularSpeciesInChI")
-    yield '<InChIKey>%s</InChIKey>\n' % G("MolecularSpeciesInChIKey")
-    if G("MolecularSpeciesMolecularWeight"):
+            % G("MoleculeChemicalName")
+    if G("MoleculeInChI"):
+        yield '<InChI>%s</InChI>' % G("MoleculeInChI")
+    yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
+    if G("MoleculeMolecularWeight"):
         yield '<StableMolecularProperties>\n'
         yield '<MolecularWeight>\n'
         yield '  <Value units="%s">%s</Value>\n'\
-            % (G("MolecularSpeciesMolecularWeightUnits"),
-               G("MolecularSpeciesMolecularWeight"))
+            % (G("MoleculeMolecularWeightUnits"),
+               G("MoleculeMolecularWeight"))
         yield '</MolecularWeight>\n'
         yield '</StableMolecularProperties>\n'
-    if G("MolecularSpeciesComment"):
-        yield '<Comment>%s</Comment>\n' % G("MolecularSpeciesComment")
+    if G("MoleculeComment"):
+        yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
     yield '</MolecularChemicalSpecies>\n'
 
-def XsamsMSBuild(MolecularState):
-    G = lambda name: GetValue(name, MolecularState=MolecularState)
-    yield '<MolecularState stateID="S%s">\n' % G("MolecularStateStateID")
+def XsamsMSBuild(MoleculeState):
+    G = lambda name: GetValue(name, MoleculeState=MoleculeState)
+    yield '<MolecularState stateID="S%s">\n' % G("MoleculeStateStateID")
     yield '  <Description/>\n'
     yield '  <MolecularStateCharacterisation>\n'
     if G("MolecularStateEnergyValue"):
@@ -362,8 +376,8 @@ def XsamsMSBuild(MolecularState):
         yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
                     % G("MolecularStateCharacTotalStatisticalWeight")
     yield '  </MolecularStateCharacterisation>\n'
-    if G("MolecularStateQuantumNumbers"):
-        for MSQNs in XsamsMSQNsBuild(G("MolecularStateQuantumNumbers")):
+    if G("MoleculeStateQuantumNumbers"):
+        for MSQNs in XsamsMSQNsBuild(G("MoleculeStateQuantumNumbers")):
             yield MSQNs
     yield '</MolecularState>\n'
 
@@ -384,13 +398,13 @@ def XsamsMolecules(Molecules):
     yield '<Molecules>\n'
     for Molecule in Molecules:
         G = lambda name: GetValue(name, Molecule=Molecule)
-        yield '<Molecule speciesID="X%s">\n' % G("MolecularSpeciesID")
+        yield '<Molecule speciesID="X%s">\n' % G("MoleculeID")
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS
         if Molecule.States:
-            for MolecularState in Molecule.States:
-                for MS in XsamsMSBuild(MolecularState):
+            for MoleculeState in Molecule.States:
+                for MS in XsamsMSBuild(MoleculeState):
                     yield MS
         yield '</Molecule>\n'
     yield '</Molecules>\n'
@@ -455,7 +469,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('Wavelength','RadTransWavelength',G)
         yield makeDataType('Wavenumber','RadTransWavenumber',G)
         yield makeDataType('Frequency','RadTransFrequency',G)
-
+        yield makeDataType('Energy','RadTransEnergy',G)
         yield '</EnergyWavelength>\n'
 
         initial = G('RadTransInitialStateRef')
@@ -464,9 +478,11 @@ def XsamsRadTrans(RadTrans):
         if final: yield '<FinalStateRef>S%s</FinalStateRef>\n' % final
 
         yield '<Probability>'
-        yield makeDataType('Log10WeightedOscillatorStrength','RadTransLogGF',G)
+        yield
+        makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
-        yield makeDataType('EffectiveLandeFactor','RadTransEffLande',G)
+        yield
+        makeDataType('EffectiveLandeFactor','RadTransEffectiveLandeFactor',G)
         yield '</Probability>\n'
 
         if hasattr(RadTran,'XML_Broadening'):
