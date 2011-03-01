@@ -478,11 +478,9 @@ def XsamsRadTrans(RadTrans):
         if final: yield '<FinalStateRef>S%s</FinalStateRef>\n' % final
 
         yield '<Probability>'
-        yield
-        makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
+        yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
-        yield
-        makeDataType('EffectiveLandeFactor','RadTransEffectiveLandeFactor',G)
+        yield makeDataType('EffectiveLandeFactor','RadTransEffectiveLandeFactor',G)
         yield '</Probability>\n'
 
         if hasattr(RadTran,'XML_Broadening'):
