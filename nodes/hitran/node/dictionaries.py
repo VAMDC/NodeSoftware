@@ -53,12 +53,12 @@ RETURNABLES=CaselessDict({\
 'MoleculeStateCharacTotalStatisticalWeight':'MoleculeState.g',
 'MoleculeStateQuantumNumbers': 'MoleculeState.parsed_qns',
 
-'MolQnStateID': 'MolQN.stateid',
-'MolQnCase': 'MolQN.case',      # e.g. 'dcs', 'ltcs', ...
-'MolQnLabel': 'MolQN.label',    # e.g. 'J', 'asSym', ...
-'MolQnValue': 'MolQN.value',
-'MolQnAttribute': 'MolQN.qn_attr',
-'MolQnXML': 'MolQN.xml',
+'MoleculeQnStateID': 'MolQN.stateid',
+'MoleculeQnCase': 'MolQN.case',      # e.g. 'dcs', 'ltcs', ...
+'MoleculeQnLabel': 'MolQN.label',    # e.g. 'J', 'asSym', ...
+'MoleculeQnValue': 'MolQN.value',
+'MoleculeQnAttribute': 'MolQN.qn_attr',
+'MoleculeQnXML': 'MolQN.xml',
 'Inchikey':'inchikey'})
 
 RESTRICTABLES = CaselessDict({\

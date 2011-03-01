@@ -453,7 +453,7 @@ def XsamsRadTranBroadening(G):
     return s
 
 def XsamsRadTranShifting(G):
-    return '<Shiftings/>'
+    return ''
 
 def XsamsRadTrans(RadTrans):
     """
