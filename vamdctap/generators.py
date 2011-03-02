@@ -415,6 +415,9 @@ def XsamsMolecules(Molecules):
 #################
 
 def makeBroadeningType(G,btype='Natural'):
+    lsparams = makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter'%btype,G)
+    if not lsparams: return ''
+
     env = G('RadTransBroadening%sEnvironment'%btype)
     meth = G('RadTransBroadening%sMethod'%btype)
     comm = G('RadTransBroadening%sComment'%btype)
@@ -429,7 +432,7 @@ def makeBroadeningType(G,btype='Natural'):
     # lets not do so unless somebody actually has several lineshapes
     # per broadening type
     s += '<Lineshape name="%s">'%G('RadTransBroadening%sLineshapeName'%btype)
-    s += makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter'%btype,G)
+    s += lsparams
     s += '</Lineshape>'
     s += '</%sBroadening>'%btype
     return s
@@ -439,7 +442,8 @@ def XsamsRadTranBroadening(G):
     helper function for line broadening, called from RadTrans
     """
     s = '<Broadenings>'
-    s +='<Comments>%s</Comments>'%G('RadTransBroadeningComment')
+    comm = G('RadTransBroadeningComment')
+    if comm: s +='<Comments>%s</Comments>'%comm
     s += makeSourceRefs(G('RadTransBroadeningRef'))
     if countReturnables('RadTransBroadeningStark'):
         s += makeBroadeningType(G,btype='Stark')

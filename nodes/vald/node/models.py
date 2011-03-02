@@ -136,7 +136,8 @@ class Transition(Model):
 
     def getWaals(self):
         if self.gammawaals: return self.gammawaals
-        else: return [self.sigmawaals,self.alphawaals]
+        elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
+        else: return None
 
     def getRefs(self,which):
         id=eval('self.'+which+'_ref_id')
