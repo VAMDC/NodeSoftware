@@ -171,6 +171,10 @@ class Trans(models.Model):
     ierr = models.CharField(max_length=18, db_column='Ierr', blank=True)
 
     prms = []
+    broadening_xml = ''
+
+    def XML_Broadening(self):
+        return self.broadening_xml
 
     class Meta:
         db_table = u'trans'

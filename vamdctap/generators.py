@@ -366,13 +366,15 @@ def XsamsMSBuild(MoleculeState):
     yield '<MolecularState stateID="S%s">\n' % G("MoleculeStateStateID")
     yield '  <Description/>\n'
     yield '  <MolecularStateCharacterisation>\n'
-    yield '  <StateEnergy energyOrigin="%s">\n'\
-                % G("MoleculeStateEnergyOrigin")
-    yield '    <Value units="%s">%s</Value>\n'\
+    if G("MoleculeStateEnergyValue"):
+        yield '  <StateEnergy energyOrigin="%s">\n'\
+                    % G("MoleculeStateEnergyOrigin")
+        yield '    <Value units="%s">%s</Value>\n'\
             % (G("MoleculeStateEnergyUnit"), G("MoleculeStateEnergyValue"))
-    yield '  </StateEnergy>\n'
-    yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
-                % G("MoleculeStateCharacTotalStatisticalWeight")
+        yield '  </StateEnergy>\n'
+    if G("MoleculeStateCharacTotalStatisticalWeight"):
+        yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
+                    % G("MoleculeStateCharacTotalStatisticalWeight")
     yield '  </MolecularStateCharacterisation>\n'
     if G("MoleculeStateQuantumNumbers"):
         for MSQNs in XsamsMSQNsBuild(G("MoleculeStateQuantumNumbers")):
@@ -451,7 +453,7 @@ def XsamsRadTranBroadening(G):
     return s
 
 def XsamsRadTranShifting(G):
-    return '<Shiftings/>'
+    return ''
 
 def XsamsRadTrans(RadTrans):
     """
@@ -476,18 +478,19 @@ def XsamsRadTrans(RadTrans):
         if final: yield '<FinalStateRef>S%s</FinalStateRef>\n' % final
 
         yield '<Probability>'
-        yield
-        makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
+        yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
-        yield
-        makeDataType('EffectiveLandeFactor','RadTransEffectiveLandeFactor',G)
+        yield makeDataType('EffectiveLandeFactor','RadTransEffectiveLandeFactor',G)
         yield '</Probability>\n'
 
         if hasattr(RadTran,'XML_Broadening'):
             yield RadTran.XML_Broadening()
         else:
             yield XsamsRadTranBroadening(G)
-        yield XsamsRadTranShifting(G)
+        if hasattr(RadTran,'XML_Shifting'):
+            yield RadTran.XML_Shifting()
+        else:
+            yield XsamsRadTranShifting(G)
         yield '</RadiativeTransition>\n'
 
     yield '</Radiative>\n'
@@ -547,6 +550,8 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None, Environme
  xmlns:sphcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphcs"
  xmlns:sphos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphos"
  xmlns:ltos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltos"
+ xmlns:lpos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/lpos"
+ xmlns:nltos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/nltos"
 >
 """
 
