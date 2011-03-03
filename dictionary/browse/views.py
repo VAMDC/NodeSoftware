@@ -20,6 +20,26 @@ REGEX2=re.compile(r"""^(AtomState|Source|MoleState|CollTran|RadTran|Method|MoleQ
 
 from string import strip
 
+def browse_by_type(request):
+    atoms = KeyWord.objects.filter(block__in=('at','as'))
+    atoms.desc = 'Atoms and atomic states'
+    atoms.tag = 'at'
+    molecs = KeyWord.objects.filter(block__in=('mo','ms','mq'))
+    molecs.desc = 'Molecules, their states and quantum numbers'
+    molecs.tag = 'mo'
+    noxsams = KeyWord.objects.filter(block=None)
+    noxsams.desc = 'Keywords without a place in XSAMS'
+    noxsams.tag = 'nx'
+    procs = KeyWord.objects.filter(block__in=('rt','ct','nr'))
+    procs.desc = 'Processes'
+    procs.tag = 'pr'
+    oth = KeyWord.objects.filter(block__in=('en','fu','me','so'))
+    oth.desc = 'Environments, Functions, Methods and Sources'
+    oth.tag = 'oh'
+    blocs = [atoms, molecs, procs, oth, noxsams]
+    return render_to_response('dictionary/bytype.html',
+        RequestContext(request,{'blocs': blocs}))
+
 def check_keywords(data,usage):
     errors=[]
     for name in data.keys():
@@ -39,7 +59,7 @@ def check_returnvalues(data):
             errors.append('The value "%s" of %s does not start with one of the known prefixes. This is fine, if you intend to return it as a constant string.'%(data[name],name))
     if errors: return errors
     else: return None
-   
+
 def validate_dict(data):
     errors=[]
     if not REGEX1.match(data):
@@ -61,24 +81,22 @@ def validate_dict(data):
     elif name == 'RESTRICTABLES':
         err = check_keywords(value,RESTRICTA)
         if err: errors += err
-    
     if errors: raise ValidationError(errors)
-    
+
 class CheckForm(forms.Form):
     content=forms.CharField(label='Paste your dictionary',
-	widget=forms.widgets.Textarea(attrs={'cols':'70','rows':'20'}),
-	required=True,validators=[validate_dict])
+    widget=forms.widgets.Textarea(attrs={'cols':'70','rows':'20'}),
+    required=True,validators=[validate_dict])
 
 def check(request):
     if request.method == 'POST':
-        form = CheckForm(request.POST) 
+        form = CheckForm(request.POST)
         if form.is_valid():
             #print form.cleaned_data
             pass
 
     else:
         form=CheckForm()
-        
     return render_to_response('dictionary/check.html', RequestContext(request,{'form': form}))
 
 
@@ -92,7 +110,7 @@ blockmap = {'so':'Source.',
 'me':'Method.',
 'mo':'Molecule.',
 'at':'AtomState.',
-'sp':'Specie.'}
+}
 
 def makedicts(selected):
     content = 'RETURNABLES = {\ \n'
