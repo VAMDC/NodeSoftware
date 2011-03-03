@@ -217,7 +217,8 @@ def XsamsEnvironments(Environments):
             if isiterable(species):
                 for Species in species:
                     yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
-                    yield makeDataType('ParitalPressure','EnvironmentSpeciesParitalPressure')
+                    yield
+                    makeDataType('PartialPressure','EnvironmentSpeciesPartialPressure')
                     yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
                     yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
                     yield '</Species>'
@@ -361,26 +362,6 @@ def XsamsMCSBuild(Molecule):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
     yield '</MolecularChemicalSpecies>\n'
 
-def XsamsMSBuild(MoleculeState):
-    G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    yield '<MolecularState stateID="S%s">\n' % G("MoleculeStateStateID")
-    yield '  <Description/>\n'
-    yield '  <MolecularStateCharacterisation>\n'
-    if G("MoleculeStateEnergyValue"):
-        yield '  <StateEnergy energyOrigin="%s">\n'\
-                    % G("MoleculeStateEnergyOrigin")
-        yield '    <Value units="%s">%s</Value>\n'\
-            % (G("MoleculeStateEnergyUnit"), G("MoleculeStateEnergyValue"))
-        yield '  </StateEnergy>\n'
-    if G("MoleculeStateCharacTotalStatisticalWeight"):
-        yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
-                    % G("MoleculeStateCharacTotalStatisticalWeight")
-    yield '  </MolecularStateCharacterisation>\n'
-    if G("MoleculeStateQuantumNumbers"):
-        for MSQNs in XsamsMSQNsBuild(G("MoleculeStateQuantumNumbers")):
-            yield MSQNs
-    yield '</MolecularState>\n'
-
 def XsamsMSQNsBuild(MolQNs):
     G = lambda name: GetValue(name, MolQN=MolQN)
     MolQN = MolQNs[0]; case = G('MoleculeQnCase')
@@ -392,6 +373,21 @@ def XsamsMSQNsBuild(MolQNs):
         yield '<%s:%s%s>%s</%s:%s>\n' % (G('MoleculeQnCase'), G('MoleculeQnLabel'),
             qn_attr, G('MoleculeQnValue'), G('MoleculeQnCase'), G('MoleculeQnLabel'))
     yield '</%s:QNs>\n' % case
+
+def XsamsMSBuild(MoleculeState):
+    G = lambda name: GetValue(name, MoleculeState=MoleculeState)
+    yield '<MolecularState stateID="S%s">\n' % G("MoleculeStateID")
+    yield '  <Description/>\n'
+    yield '  <MolecularStateCharacterisation>\n'
+    yield makeDataType('StateEnergy','MolecularStateEnergy')
+    if G("MoleculeStateCharacTotalStatisticalWeight"):
+        yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
+                    % G("MoleculeStateCharacTotalStatisticalWeight")
+    yield '  </MolecularStateCharacterisation>\n'
+    if G("MoleculeStateQuantumNumbers"):
+        for MSQNs in XsamsMSQNsBuild(G("MoleculeStateQuantumNumbers")):
+            yield MSQNs
+    yield '</MolecularState>\n'
 
 def XsamsMolecules(Molecules):
     if not Molecules: return
