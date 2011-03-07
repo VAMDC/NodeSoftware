@@ -217,7 +217,8 @@ def getHITRANbroadening(transs, XSAMSvariant):
 def attach_state_qns(states):
     for state in states:
         state.parsed_qns = []
-        for qn in Qns.objects.filter(stateid=state.id):
+        qns = Qns.objects.filter(stateid=state.id)
+        for qn in qns.order_by('id'):
             if qn.qn_attr:
                 # put quotes around the value of the attribute
                 attr_name, attr_val = qn.qn_attr.split('=')
@@ -276,7 +277,7 @@ def getHITRANsources(transs):
 
     return sources
 
-def setupResults(sql, LIMIT=10, XSAMSvariant='working'):
+def setupResults(sql, LIMIT=None, XSAMSvariant='working'):
     q = sqlparse.where2q(sql.where,RESTRICTABLES)
     try:
         q=eval(q)

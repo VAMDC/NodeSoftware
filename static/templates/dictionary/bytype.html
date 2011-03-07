@@ -1,0 +1,60 @@
+{% extends "indigo.html" %}
+{% load i18n %}
+{% block title %}VAMDC{% endblock %}
+{% block addheader %}
+<script language="javascript">
+  function toggleDiv(divid){
+      if(document.getElementById(divid).style.display == 'none'){
+         document.getElementById(divid).style.display = 'block';
+  }else{
+         document.getElementById(divid).style.display = 'none'
+}}
+</script>
+{% endblock %}
+{% block headline %}VAMDC Dictionary by type{% endblock %}
+
+{% block content %}
+<p>The columns' meaning is described <a href="#descr">below</a>.</p>
+
+{% for bloc in blocs %}
+<h3>{{ bloc.desc }}</h3>
+<div id="block{{ bloc.tag}}" style="display:none">
+<p><a href="javascript:;" onmousedown="toggleDiv('block{{ bloc.tag }}');">Show/Hide</a></p>
+<table>
+<tr><th>Keyword</th><th>Short Description</th><th>Long Description</th><th>Type</th><th>Constraint</th><th>Unit</th><th>*</th><th>Usage</th></tr>
+{% for keyword in bloc %}
+<tr class="{% cycle 'row1' 'row2' %}">
+<td>{{ keyword.name }}</td>
+<td>{{ keyword.sdescr }}</td>
+<td>{{ keyword.ldescr }}</td>
+<td>{% if keyword.type %}{{ keyword.get_type_display }}{% endif %}</td>
+<td>{% if keyword.constr %}{{ keyword.constr }}{% endif %}</td>
+<td>{% if keyword.unit %}{{ keyword.unit }}{% endif %}</td>
+<td>{% if keyword.datatype %}*{% endif %}</td>
+<td>{% for use in keyword.usage.iterator %}{{ use.name }}, {% endfor %}</td>
+{% endfor %}
+</table>
+</div>
+<p><a href="javascript:;" onmousedown="toggleDiv('block{{ bloc.tag }}');">Show/Hide</a></p>
+{% endfor %}
+
+<br/>
+<br/>
+<br/>
+
+<p>
+<a name="descr"></a>Description of the columns in the table above:
+</p>
+
+<ul>
+<li><strong>Keyword</strong>: The actual name of the dictionary entry. These are what is used in the query language and when you fill Restrictables and Returnables.</li>
+<li><strong>Short Description</strong>: Human-readable short text about the meaning. To be used e.g. as label text for a web-form</li>
+<li><strong>Long Description</strong>: Human-readable longer text, to be used eg. in a help-box.</li>
+<li><strong>Type</strong>: What type of data are associated with the keyword. choices are: string, float, integer, boolean.</li>
+<li><strong>Constraint</strong>: Possible contraints on the content, like ranges for a number, only certain strings (regular expression) etc.</li>
+<li><strong>Unit</strong>: The default unit, if any, for the keyword. This unit is the one used at query-time. You may however use another unit when returning data.</li>
+<li><strong>*</strong>: This column marks if a keyword corresponds to a "DataType" in the XSAMS schema. If SomeKeyword is marked here, it means that there are also the corresponding keywords SomeKeywordUnit, SomeKeywordRef, SomeKeywordComment, SomeKeywordMethod and SomeKeywordAccuracy. for sake of overview these are not listed for each keyword.</li>
+<li><strong>Usage</strong>: Tells whether a keyword can be used as Returnable, Restrictable and/or Requestable.</li>
+</ul>
+</p>
+{% endblock %}

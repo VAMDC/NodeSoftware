@@ -5,10 +5,10 @@ class Species(Model):
     id = AutoField(primary_key=True, db_index=True)
     name = CharField(max_length=10, db_index=True)
     ion = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
-    mass = DecimalField(max_digits=8, decimal_places=5) 
+    mass = DecimalField(max_digits=8, decimal_places=5)
     massno = PositiveSmallIntegerField(null=True, blank=True)
-    ionen = DecimalField(max_digits=7, decimal_places=3) 
-    solariso = DecimalField(max_digits=5, decimal_places=4) 
+    ionen = DecimalField(max_digits=7, decimal_places=3)
+    solariso = DecimalField(max_digits=5, decimal_places=4)
     ncomp = PositiveSmallIntegerField(null=True, blank=True)
     atomic = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     isotope = PositiveSmallIntegerField(null=True, blank=True)
@@ -59,7 +59,7 @@ class LineList(Model):
     r9 = PositiveSmallIntegerField(null=True, blank=True)
     srcdescr = CharField(max_length=128, blank=True, null=True)
     def __unicode__(self):
-        return u'ID%s: %s'%(self.id,self.srcdescr)        
+        return u'ID%s: %s'%(self.id,self.srcdescr)
     class Meta:
         db_table = u'linelists'
 
@@ -78,7 +78,7 @@ except: refcache={}
 
 class State(Model):
     id = IntegerField(primary_key=True, db_index=True)
-    species = ForeignKey(Species)  
+    species = ForeignKey(Species)
 
     energy = DecimalField(max_digits=15, decimal_places=4,null=True,blank=True, db_index=True) 
     lande = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
@@ -112,17 +112,17 @@ class Transition(Model):
     id = AutoField(primary_key=True)
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True)
-    
-    vacwave = DecimalField(max_digits=20, decimal_places=8, db_index=True) 
-    airwave = DecimalField(max_digits=20, decimal_places=8, db_index=True) 
+
+    vacwave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
+    airwave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
     species = ForeignKey(Species,db_column='species')
     loggf = DecimalField(max_digits=8, decimal_places=3,null=True,blank=True)
     landeff = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     gammarad = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
-    gammastark = DecimalField(max_digits=7, decimal_places=3,null=True,blank=True)     
+    gammastark = DecimalField(max_digits=7, decimal_places=3,null=True,blank=True)
     gammawaals = DecimalField(max_digits=6, decimal_places=3,null=True,blank=True)
-    sigmawaals = IntegerField(null=True,blank=True)                               
-    alphawaals = DecimalField(max_digits=6, decimal_places=3,null=True,blank=True) 
+    sigmawaals = IntegerField(null=True,blank=True)
+    alphawaals = DecimalField(max_digits=6, decimal_places=3,null=True,blank=True)
     accur = CharField(max_length=11, blank=True,null=True)
     comment = CharField(max_length=128, null=True,blank=True)
 
@@ -133,7 +133,12 @@ class Transition(Model):
     gammarad_ref = ForeignKey(LineList, related_name='isgammaradref_trans')
     gammastark_ref = ForeignKey(LineList, related_name='isgammastarkref_trans')
     waals_ref = ForeignKey(LineList, related_name='iswaalsref_trans')
-    
+
+    def getWaals(self):
+        if self.gammawaals: return self.gammawaals
+        elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
+        else: return None
+
     def getRefs(self,which):
         id=eval('self.'+which+'_ref_id')
         return refcache[id]
@@ -143,7 +148,33 @@ class Transition(Model):
     class Meta:
         db_table = u'transitions'
 
+class EnvClass(object):
+    def __init__(self,xml):
+        self.xml = xml
+    def XML(self):
+        return self.xml
 
+EnvGeneral="""<Environment envID="%s">
+<Comments>%s</Comments>
+<Temperature><Value units="K">1.0E4</Value></Temperature>
+<TotalNumberDensity><Comments>The broadening parameters are given in
+Hz per number density (i.e. cm^3/s), so they can simply
+be scaled with the number density. Note also that
+actually log10(gamma) is given.</Comments>
+<Value units="1/cm3">1</Value>
+</TotalNumberDensity>
+</Environment>
+"""
+EnvStark=EnvGeneral%('Evald-stark',"""A given gamma can be scaled with
+gamma = gamma_given * (T / T_ref)^1/6 * number density of free electrons.""")
+EnvWaals=EnvGeneral%('Evald-waals',"""A given gamma can be scaled with gamma =
+gamma_given * (T / T_ref)^alpha * number density for any neutral perturber.
+If alpha is not given, it is 1/3""")
+EnvNatural="""<Environment envID="Evald-natural">
+<Comments>There are no parameters for natural/radiative broadening.</Comments>
+</Environment>
+"""
+Environments = [EnvClass(EnvStark), EnvClass(EnvWaals), EnvClass(EnvNatural)]
 
 ###############################
 ## Logging Queries
@@ -169,7 +200,6 @@ class LogManager(Manager):
                          request=request)
         pass
 
-    
 class Log(Model):
     """
     Stores data of a query
