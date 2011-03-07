@@ -22,7 +22,7 @@ def get_bibtex_dbref(linedata):
     first_line = linedata.split()[0]
     typ, dbref = first_line.split('{')
     return dbref.strip(',').strip()
-        
+    
 # Setting up filenames
 base = "/vald/"
 species_list_file = base + 'VALD_list_of_species'
@@ -43,6 +43,12 @@ mapping = [
              'cbyte':(charrange, 0,7)},
             {'cname':'name',
              'cbyte':(charrange, 9,19)},
+            {'cname':'inchi',
+             'cbyte':(constant, 'NULL'),
+             'cnull':'NULL'},
+            {'cname':'inchikey',
+             'cbyte':(constant, 'NULL'),
+             'cnull':'NULL'},
             {'cname':'ion',
              'cbyte':(charrange, 20,22)},
             {'cname':'mass',
@@ -52,18 +58,20 @@ mapping = [
             {'cname':'ionen',
              'cbyte':(charrange, 31,40)},
             {'cname':'solariso',
-             'cbyte':(charrange, 41,46)},
+             'cbyte':(charrange, 41,47)},
+            {'cname':'dissen',
+             'cbyte':(charrange, 48,57)},            
             {'cname':'ncomp',
              'cbyte':(charrange, 132,133)},
             {'cname':'atomic',
              'cbyte':(charrange, 134,136)},
             {'cname':'isotope',
              'cbyte':(charrange, 137,140)},
-           ],
+            # many2many field "species" handled by separate table
+            ],
      }, # end of definition for species file
-
-
-# State model read from states_file -upper states
+    
+    # State model read from states_file -upper states
     # (first section) 
     {'outfile':'states.dat',    
      'infiles': (vald_file, terms_file),
@@ -283,7 +291,7 @@ mapping = [
              'cbyte':(get_bibtex,)}, 
           ], 
       }, # end of bibtex 
-
+    
     # Populate Source model from vald_cfg file
     {'outfile':'linelists.dat',
      'infiles':vald_cfg_file,
@@ -324,6 +332,9 @@ mapping = [
              'cbyte':(bySepNr, 14)},
             ],
     }, # end of definition for vald_conf file
-]
+    
+    
+
+    ]
 
 #mapping = [mapping[-2]]

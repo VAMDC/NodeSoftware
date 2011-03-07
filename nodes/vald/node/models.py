@@ -4,14 +4,19 @@ from vamdctap.bibtextools import *
 class Species(Model):
     id = AutoField(primary_key=True, db_index=True)
     name = CharField(max_length=10, db_index=True)
+    inchi = CharField(max_length=16, db_index=True, null=True, blank=True)
+    inchikey = CharField(max_length=16, db_index=True, null=True, blank=True)
     ion = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     mass = DecimalField(max_digits=8, decimal_places=5)
     massno = PositiveSmallIntegerField(null=True, blank=True)
     ionen = DecimalField(max_digits=7, decimal_places=3)
     solariso = DecimalField(max_digits=5, decimal_places=4)
+    dissen = DecimalField(max_digits=8, decimal_places=4)
     ncomp = PositiveSmallIntegerField(null=True, blank=True)
     atomic = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     isotope = PositiveSmallIntegerField(null=True, blank=True)
+    species = ManyToManyField('self') # only used in case of molecules
+
     def __unicode__(self):
         return u'ID:%s %s'%(self.id,self.name)
     class Meta:
