@@ -5,6 +5,9 @@
 #
 # VALD3.cfg + VALD3linelists -> many2many_mapping
 #
+# If a bibtex file is given, a cross-reference match will be
+# performed between the three files as part of the file
+# creation and validation.
 
 import sys, pdb
 import itertools
@@ -136,16 +139,13 @@ if __name__=='__main__':
     argv = sys.argv
     if len(argv) < 3:
         print """
-Usage: linelists2references.py <VALD3.cfg> <VALD3linelists.txt> [VALD3_ref.bib]
+Usage: linelists_references.py <VALD3.cfg> <VALD3linelists.txt> [VALD3_ref.bib]
 
- This creates an output file "linelists_references.dat". If the bibtex file is also
-given, the three files are fully cross-referenced to make sure there is a complete
-set of references represented in all files. If there are discrepancies, these will
-be printed.
-
- The output file file should be read directly into the database
- many-to-many table relating Linelist  with the Reference model.
- (probably linelistreferences_columns)
+Creates an output file "linelists_references.dat" for direct
+reading into the database. If the bibtex file is also given, the three
+files are fully cross-referenced to make sure there is a complete set
+of references represented in all files. If there are discrepancies,
+these will be printed.
 """
         sys.exit()
     if len(argv) < 4:
