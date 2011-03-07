@@ -224,7 +224,7 @@ def XsamsEnvironments(Environments):
                     yield '</Species>'
             else:
                 yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
-                yield makeDataType('ParitalPressure','EnvironmentSpeciesParitalPressure')
+                yield makeDataType('PartialPressure','EnvironmentSpeciesPartialPressure')
                 yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
                 yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
                 yield '</Species>'
@@ -279,9 +279,9 @@ def parityLabel(parity):
 
 def XsamsAtoms(Atoms):
     """
-    Generator (yield) for the main block of XSAMS for the atoms, with an inner loop for
-    the states. The QuerySet that comes in needs to have a nested QuerySet called States
-    attached to each entry in Atoms.
+    Generator (yield) for the main block of XSAMS for the atoms, with an inner
+    loop for the states. The QuerySet that comes in needs to have a nested
+    QuerySet called States attached to each entry in Atoms.
 
     """
 
@@ -295,15 +295,17 @@ def XsamsAtoms(Atoms):
 <ChemicalElement>
 <NuclearCharge>%s</NuclearCharge>
 <ElementSymbol>%s</ElementSymbol>
-</ChemicalElement>
-<Isotope>
+</ChemicalElement>"""%(G('AtomNuclearCharge'),G('AtomSymbol'))
+
+        yield """<Isotope>
 <IsotopeParameters>
 <MassNumber>%s</MassNumber>
+%s
+<NuclearSpin>%s</NuclearSpin>
 </IsotopeParameters>
-<Ion speciesID="X%s">
-<IonCharge>%s</IonCharge>""" % ( G('AtomNuclearCharge'),
-	G('AtomSymbol'), G('AtomMassNumber'), G('AtomSpeciesID'), 
-	G('AtomIonCharge'))
+"""%(G('AtomMassNumber'), makeDataType('Mass','AtomMass'), G('AtomNuclearSpin'))
+
+        yield '<Ion speciesID="X%s"><IonCharge>%s</IonCharge>' % ( G('AtomSpeciesID'), G('AtomIonCharge'))
 
         for AtomState in Atom.States:
             G=lambda name: GetValue(name, AtomState=AtomState)
@@ -322,6 +324,7 @@ def XsamsAtoms(Atoms):
 
             yield XsamsAtomTerm(G)
             yield '</AtomicState>'
+        yield '<InChI>%s</InChI>'%G('AtomInchi')
         yield '<InChIKey>%s</InChIKey>'%G('AtomInchiKey')
         yield """</Ion>
 </Isotope>
@@ -350,14 +353,7 @@ def XsamsMCSBuild(Molecule):
     if G("MoleculeInChI"):
         yield '<InChI>%s</InChI>' % G("MoleculeInChI")
     yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
-    if G("MoleculeMolecularWeight"):
-        yield '<StableMolecularProperties>\n'
-        yield '<MolecularWeight>\n'
-        yield '  <Value units="%s">%s</Value>\n'\
-            % (G("MoleculeMolecularWeightUnits"),
-               G("MoleculeMolecularWeight"))
-        yield '</MolecularWeight>\n'
-        yield '</StableMolecularProperties>\n'
+    yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n'%makeDataType('MolecularWeight','MoleculeMolecularWeight',G)
     if G("MoleculeComment"):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
     yield '</MolecularChemicalSpecies>\n'
@@ -379,7 +375,7 @@ def XsamsMSBuild(MoleculeState):
     yield '<MolecularState stateID="S%s">\n' % G("MoleculeStateID")
     yield '  <Description/>\n'
     yield '  <MolecularStateCharacterisation>\n'
-    yield makeDataType('StateEnergy','MolecularStateEnergy')
+    yield makeDataType('StateEnergy','MoleculeStateEnergy')
     if G("MoleculeStateCharacTotalStatisticalWeight"):
         yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
                     % G("MoleculeStateCharacTotalStatisticalWeight")
