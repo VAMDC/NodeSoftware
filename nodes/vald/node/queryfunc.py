@@ -24,25 +24,27 @@ def getRefs(transs):
 
 def getSpeciesWithStates(transs):
     spids = set( transs.values_list('species_id',flat=True) )
-    species = Species.objects.filter(pk__in=spids)
-    nspecies = species.count()
+    atoms = Species.objects.filter(pk__in=spids,ncomp=1)
+    molecules = Species.objects.filter(pk__in=spids,ncomp__gt=1)
+    nspecies = atoms.count() + molecules.count()
     nstates = 0
-    for specie in species:
-        subtranss = transs.filter(species=specie)
-        up=subtranss.values_list('upstate_id',flat=True)
-        lo=subtranss.values_list('lostate_id',flat=True)
-        sids = set(chain(up,lo))
-        specie.States = State.objects.filter( pk__in = sids)
-        nstates += len(sids)
+    for species in [atoms,molecules]:
+        for specie in species:
+            subtranss = transs.filter(species=specie)
+            up=subtranss.values_list('upstate_id',flat=True)
+            lo=subtranss.values_list('lostate_id',flat=True)
+            sids = set(chain(up,lo))
+            specie.States = State.objects.filter( pk__in = sids)
+            nstates += len(sids)
 
-    return species,nspecies,nstates
+    return atoms,molecules,nspecies,nstates
 
 def setupResults(sql,limit=10000):
     LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
     try: q=eval(q)
     except: return {}
-    
+
     transs = Transition.objects.filter(q).order_by('vacwave')
     ntranss=transs.count()
     if limit < ntranss :
@@ -53,9 +55,9 @@ def setupResults(sql,limit=10000):
     ntranss=transs.count()
     sources = getRefs(transs)
     nsources = sources.count()
-    species,nspecies,nstates = getSpeciesWithStates(transs)
+    atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs)
 
-    
+
     headerinfo=CaselessDict({\
             'Truncated':percentage,
             'COUNT-SOURCES':nsources,
@@ -63,9 +65,10 @@ def setupResults(sql,limit=10000):
             'count-states':nstates,
             'count-radiative':ntranss
             })
-            
+
     return {'RadTrans':transs,
-            'Atoms':species,
+            'Atoms':atoms,
+            'Molecules':molecules,
             'Sources':sources,
             'HeaderInfo':headerinfo,
             'Environments':Environments #this is set up statically in models.py

@@ -38,7 +38,7 @@ class Reference(Model):
     #pagebegin = PositiveSmallIntegerField(null=True)
     #pageend = PositiveSmallIntegerField(null=True)
     #url = CharField(max_length=512, null=True)  
-    bibtex = CharField(max_length=1024, null=True)
+    bibtex = TextField(null=True)
 
     def XML(self):
         return BibTeX2XML( self.bibtex )
@@ -108,8 +108,11 @@ class State(Model):
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
 
     def getRefs(self,which):
-        id=eval('self.'+which+'_ref_id')
-        return refcache[id]
+        try:
+            id = eval('self.'+which+'_ref_id')
+            return refcache[id]
+        except:
+            return None
 
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
@@ -148,8 +151,11 @@ class Transition(Model):
         else: return None
 
     def getRefs(self,which):
-        id=eval('self.'+which+'_ref_id')
-        return refcache[id]
+        try:
+            id = eval('self.'+which+'_ref_id')
+            return refcache[id]
+        except:
+            return None
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.vacwave)
