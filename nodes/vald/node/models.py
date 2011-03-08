@@ -15,7 +15,10 @@ class Species(Model):
     ncomp = PositiveSmallIntegerField(null=True, blank=True)
     atomic = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     isotope = PositiveSmallIntegerField(null=True, blank=True)
-    species = ManyToManyField('self') # only used in case of molecules
+    components = ManyToManyField('self') # only used in case of molecules
+
+    def isMolecule(self):
+         return self.ncomp > 1
 
     def __unicode__(self):
         return u'ID:%s %s'%(self.id,self.name)
