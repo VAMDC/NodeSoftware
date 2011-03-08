@@ -16,9 +16,9 @@ def parse_species_file(filename):
 
     dic = {}
     string = ""
-    for line in f:        
+    for line in f:
         if line.strip().startswith('#') or line.strip().startswith('@'):
-            continue                
+            continue
         if int(line[20:22]) != 0:
             continue
         if int(line[132:133]) == 1:
@@ -36,8 +36,8 @@ def parse_species_file(filename):
             for cdbref in [cm for cm in set(cdbrefs) if cm]:
                 string += '\N;"%s";"%s"\n' % (dbref, cdbref)
     return string
-    
-                
+
+
 if __name__=='__main__':
 
     #pdb.set_trace()
@@ -47,14 +47,14 @@ if __name__=='__main__':
 Usage: species_species.py <VALD_list_of_species>
 
 Creates an output file "species_species.dat" for direct
-reading into the database table as a many2many field mapping. 
+reading into the database table as a many2many field mapping.
 """
         sys.exit()
-    infile = argv[1]        
-    output = "species_species.dat"
+    infile = argv[1]
+    output = "species_components.dat"
     string = parse_species_file(infile)
     # writing file 
     fout = open(output, 'w')
     fout.write(string)
     fout.close()
-    print "... Created file %s." % (output) 
+    print "... Created file %s." % (output)
