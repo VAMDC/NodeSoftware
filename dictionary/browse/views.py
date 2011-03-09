@@ -14,11 +14,11 @@ REQUESTA=Usage.objects.get(pk=3)
 RESTRICTA=Usage.objects.get(pk=1)
 
 import re
-REGEX1=re.compile(r"""^\s*(RETURNABLES|RESTRICTABLES)\s*=\s*\{\s*\\?\s*(['"]\w+['"]\s*:\s*['"][a-zA-Z0-9_\.]*['"]\s*,?\s*)*\s*\}\s*$""")
+REGEX1=re.compile(r"""^\s*(RETURNABLES|RESTRICTABLES)\s*=\s*\{\s*\\?\s*(['"]\w+['"]\s*:\s*[ru]?['"][\w\-\\_\.,/()\[\]'"=\ ]*['"]\s*,?\s*)*\s*\}\s*$""")
 
-REGEX2=re.compile(r"""^(AtomState|Source|MoleState|CollTran|RadTran|Method|MoleQNs)\.[a-zA-Z0-9_\.]*$""")
+REGEX2=re.compile(r"""^(Atom|AtomState|Source|Molecule|MoleculeState|CollTran|RadTran|Method|MoleQNs)\..*$""")
 
-from string import strip
+from string import strip,lower
 
 def browse_by_type(request):
     atoms = KeyWord.objects.filter(block__in=('at','as'))
@@ -40,52 +40,77 @@ def browse_by_type(request):
     return render_to_response('dictionary/bytype.html',
         RequestContext(request,{'blocs': blocs}))
 
-def check_keywords(data,usage):
-    errors=[]
-    for name in data.keys():
-        try: r = KeyWord.objects.get(name=name)
-        except KeyWord.DoesNotExist:
-            errors.append('Keyword %s does not exist in the dictionary.'%name)
-            continue
-        if not usage in r.usage.all():
-            errors.append('%s is not a %s according to the dictionary.'%(name,usage.name))
-    if errors: return errors
-    else: return None
+def bareKW(kw):
+    kw = kw.lower()
+    suffixes=['unit','ref','comment','accuracy','method']
+    for suff in suffixes:
+        if kw.endswith(suff):
+            return kw.rsplit(suff,1)[0]
 
-def check_returnvalues(data):
-    errors=[]
-    for name in data.keys():
-        if not REGEX2.match(data[name]):
-            errors.append('The value "%s" of %s does not start with one of the known prefixes. This is fine, if you intend to return it as a constant string.'%(data[name],name))
-    if errors: return errors
-    else: return None
+def check_keyword_exists(kw):
+    try: KeyWord.objects.get(name__iexact=kw)
+    except KeyWord.DoesNotExist:
+        barekw = bareKW(kw)
+        if not barekw:
+            return 'Keyword %s does not exist in the dictionary.'%kw
+
+        try: k = KeyWord.objects.get(name__iexact=barekw)
+        except KeyWord.DoesNotExist:
+            return 'Keyword %s does not exist in the dictionary. (It is used with one of the DataType suffixes)'%barekw
+        if not k.datatype:
+            return 'Your used keyword %s with a DataType suffix but it is not a DataType.'%barekw
+
+def check_keyword_usage(kw,usage):
+    try: kw = KeyWord.objects.get(name__iexact=kw)
+    except: return
+    if not usage in kw.usage.all():
+        return '%s is not a %s according to the dictionary.'%(kw,usage.name)
+
+def check_returnvalues(kw,value):
+    if not REGEX2.match(value):
+        return 'The value "%s" of %s does not start with one of the known prefixes. This is fine, if you intend to return this as a constant string.'%(value,kw)
+
+def check_unit(kw,keys):
+    try: k = KeyWord.objects.get(name__iexact=kw)
+    except: return
+    if k.datatype:
+        keys = map(lower,keys)
+        if not kw.lower() + 'unit' in keys:
+            return 'You use the DataType %s but not the corresponding keyword for its unit (%sUnit).'%(kw,kw)
 
 def validate_dict(data):
     errors=[]
     if not REGEX1.match(data):
-        errors.append('First syntax check did not pass. Please check.')
+        errors.append('First syntax check did not pass. (Comments with # are not allowed in this check.)')
 
     name,value = data.split('=')
     name=strip(name)
+    if name == 'RETURNABLES': usage = RETURNA
+    elif name == 'RESTRICTABLES': usage = RESTRICTA
+    else: errors.append('Neither RETURNABLES or RESTRICTABLES assignment found')
     value = ''.join(map(strip,map(strip,value.splitlines()),'\\'))
     try: value=eval(value)
     except:
         errors.append('Second check (evalution) did not pass. Please check that your input is correct Python code.')
         raise ValidationError(errors)
 
-    if name == 'RETURNABLES':
-        err = check_keywords(value,RETURNA)
-        if err: errors += err
-        err = check_returnvalues(value)
-        if err: errors += err
-    elif name == 'RESTRICTABLES':
-        err = check_keywords(value,RESTRICTA)
-        if err: errors += err
+    for kw in value.keys():
+        err = check_keyword_exists(kw)
+        if err:
+            errors.append(err)
+            continue
+        err = check_keyword_usage(kw,usage)
+        if err: errors.append(err)
+        if usage==RETURNA:
+            err = check_returnvalues(kw,value[kw])
+            if err: errors.append(err)
+            err = check_unit(kw,value.keys())
+            if err: errors.append(err)
     if errors: raise ValidationError(errors)
 
 class CheckForm(forms.Form):
     content=forms.CharField(label='Paste your dictionary',
-    widget=forms.widgets.Textarea(attrs={'cols':'70','rows':'20'}),
+    widget=forms.widgets.Textarea(attrs={'cols':'80','rows':'25'}),
     required=True,validators=[validate_dict])
 
 def check(request):
