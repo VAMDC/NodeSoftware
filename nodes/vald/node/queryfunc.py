@@ -12,6 +12,10 @@ from copy import deepcopy
 from models import *
 from vamdctap.sqlparse import *
 
+if hasattr(settings,'TRANSLIM'):
+    TRANSLIM = settings.TRANSLIM
+else: TRANSLIM = 5000
+
 def getRefs(transs):
     llids=set()
     for t in transs.values_list('wave_ref_id','loggf_ref_id','lande_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref'):
@@ -39,7 +43,7 @@ def getSpeciesWithStates(transs):
 
     return atoms,molecules,nspecies,nstates
 
-def setupResults(sql,limit=10000):
+def setupResults(sql):
     LOG(sql)
     q=where2q(sql.where,RESTRICTABLES)
     try: q=eval(q)
@@ -47,9 +51,9 @@ def setupResults(sql,limit=10000):
 
     transs = Transition.objects.filter(q).order_by('vacwave')
     ntranss=transs.count()
-    if limit < ntranss :
-        percentage='%.1f'%(float(limit)/ntranss *100)
-	newmax=transs = transs[limit].vacwave
+    if TRANSLIM < ntranss :
+        percentage='%.1f'%(float(TRANSLIM)/ntranss *100)
+	newmax=transs = transs[TRANSLIM].vacwave
         transs=Transition.objects.filter(q,Q(vacwave__lt=newmax))
     else: percentage=None
     ntranss=transs.count()
