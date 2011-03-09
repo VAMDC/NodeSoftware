@@ -4,6 +4,13 @@ from string import strip
 from caselessdict import CaselessDict
 from xml.sax.saxutils import quoteattr
 
+# get the NodeID to put it in the source key
+from django.conf import settings
+from django.utils.importlib import import_module
+DICTS=import_module(settings.NODEPKG+'.dictionaries')
+try: NODEID = DICTS.RETURNABLES['NodeID']
+except: NODEID = 'PleaseFillTheNodeID'
+
 DUMMY='@article{DUMMY, Author = {No Boby}, Title = {This is a dummy entry. If you see it in your XSAMS output it means that at there was a malformed BibTex entry.}, annote = {%s}}'
 
 def getEntryFromString(s):
@@ -26,7 +33,7 @@ TYPE2CATEGORY=CaselessDict({\
 
 def BibTeX2XML(bibtexstring):
     e = getEntryFromString(bibtexstring)
-    xml = u'<Source sourceID="B%s">\n<Authors>\n'%e.key
+    xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,e.key)
     for a in e.persons['author']:
         name = a.first() + a.middle() + a.last() + a.lineage()
         name = map(strip,name)

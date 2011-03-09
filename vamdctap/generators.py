@@ -495,11 +495,11 @@ def XsamsRadTrans(RadTrans):
         yield '</EnergyWavelength>'
 
         initial = G('RadTransInitialStateRef')
-        if initial: yield '<InitialStateRef>S%s</InitialStateRef>\n' % initial
+        if initial: yield '<InitialStateRef>S%s-%s</InitialStateRef>\n' % (NODEID, initial)
         final = G('RadTransFinalStateRef')
-        if final: yield '<FinalStateRef>S%s</FinalStateRef>\n' % final
+        if final: yield '<FinalStateRef>S%s-%s</FinalStateRef>\n' % (NODEID, final)
         species = G('RadTransSpeciesRef')
-        if species: yield '<SpeciesRef>S%s</SpeciesRef>\n' % species
+        if species: yield '<SpeciesRef>X%s-%s</SpeciesRef>\n' % (NODEID, species)
 
         yield '<Probability>'
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
