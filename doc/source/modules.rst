@@ -1,6 +1,6 @@
 .. _source:
 
-The source code repository and version control
+The Code
 ===============================================
 
 The node software resides at https://github.com/VAMDC/NodeSoftware
