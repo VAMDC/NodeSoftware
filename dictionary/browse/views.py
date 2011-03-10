@@ -128,7 +128,7 @@ def check(request):
 #########
 blockmap = {'so':'Source.',
 'as':'AtomState.',
-'ms':'MoleState.',
+'ms':'MoleculeState.',
 'mq':'MoleQNs.',
 'ct':'CollTran.',
 'rt':'RadTran.',
