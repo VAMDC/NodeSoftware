@@ -1,3 +1,5 @@
+.. _frontpage:
+
 ============================================
 Documentation for the VAMDC node software.
 ============================================
@@ -9,11 +11,11 @@ Documentation for the VAMDC node software.
    concepts
    prereq
    newnode
-   deploy
    importing
-   contact
-   addit
+   deploy
    virtmach
+   addit
+   contact
    modules
 
 PDF
@@ -33,7 +35,7 @@ A large part of the XML/XSAMS generator has been rewritten, both to comply with
 the new version of the schema (http://tmy.se/xsams) and in terms of its
 structure. In addition the keywords in the VAMDC dictionary have changed
 somewhat. This means that **you will probably need to update your query
-function and dictionaries when you update to the latest version.**
+function and dictionaries when you update the NodeSoftware.**
 
 :ref:`newnode` has been updated and extended accordingly.
 

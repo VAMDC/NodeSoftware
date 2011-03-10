@@ -12,7 +12,7 @@ RESTRICTABLES = {\
 
 
 
-# do not change the following tow lines
+# do not change the following lines
 from vamdctap.caselessdict import CaselessDict
 RESTRICTABLES = CaselessDict(RESTRICTABLES)
 RETURNABLES = CaselessDict(RETURNABLES)

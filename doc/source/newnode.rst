@@ -148,9 +148,10 @@ Let's add a third model::
 
     class Transition(Model):
         id = IntegerField(primary_key=True)
-        wavelength = FloatField()
+        species = ForeignKey(Species)
         upper_state = ForeignKey(State, related_name='transup')
         lower_state = ForeignKey(State, related_name='translo')
+        wavelength = FloatField()
 
 The important thing here is the `related_name`. Whenever you want to define
 more than one `ForeignKey` to the *same* model, you need to set this to an
@@ -351,47 +352,60 @@ Explanations on what happens here:
 * Lines 1-4: We import some helper functions from the sqlparser and the 
   dictionaries and models that reside in the same directory as 
   `queryfunc.py`
-* Line 7: This uses the helper function where2q() to 
+* Line 6: Set the limit of transitions for use below.
+* Line 7: Begin the function `setupResults`. Do not change this line.
+* Line 9: This uses the helper function where2q() to 
   convert the information in `sql.where` to QueryObjects that match your 
   model, using the RESTRICTABLES (see below). The result from where2q() is
   a string that needs to be executed with eval().
-* In line 8 we simply pass these QueryObjects to the Transition model's 
+* In line 10 we simply pass these QueryObjects to the Transition model's 
   filter function. This returns a QuerySet, an unevaluated version of the 
-  query.
-* Line 9: We use the count() method on the QuerySet to get the 
-  number of transitions.
-* Line 11-14: We check if the number is larger than our limit and shorten
-  the QuerySet if necessary. We also prepare a string with the percentage
+  query, which we assign to the variable `transs`. We also ordered it by
+  wavelength.
+* Line 11: We use the count() method on the QuerySet to get the 
+  number of transitions which we later pass into the header.
+* Line 13-17: We check if the number is larger than our limit and shorten
+  the QuerySet if necessary. This is done by getting the wavelength at the
+  limit and making a new QuerySet that has as an additional restriction
+  the new upper wavelength limit. We also prepare a string with the percentage
   for the headers.
-* Line 16-20: We use the ForeignKeys from the Transition model to the 
-  State model that tell us which are the upper and lower states for a 
-  transition. We put their ids in to a set which throws out duplicates and 
-  then use this set of state_ids to get the QuerySet for the states that 
-  belong to the selected transitions.
-* Line 22-24: An alternative, more straight forward way to achieve the 
-  same thing. This uses the ForeignKeys in the `inverse` direction, 
-  connects the two queryObjects by an OR-relation, selects the states and 
-  then throws away duplicates. The first approach proves faster if the 
-  number of duplicates is large.
-* Lines 26-27: We run count() on the states to get their number for the 
-  headers and do a quick selection and count on the species, again using a 
-  ForeignKey from the Transition model, this time to the Species.
-* Lines 29-34: Put the statistics into a key-value structure where the 
-  keys are the header names as definded by the VAMDC-TAP standard and the 
+* Lines 19-29: Here comes the tricky part. For the selected transitions, we
+  now need to create the corresponding atoms/species, since they go into
+  different parts of the generator, see the table above. Not only that, each
+  atom should have attached its list of states that are upper or lower states
+  for the selected transitions - there is an inner loop over `Atom.States` in
+  the generator, remember? In detail:
+
+  * Line 19: We pull a single column out of the Transitions model, the key that
+    links to the Species model. We put that into a `set()` to throw out
+    duplicates.
+  * Line 20: We use this set to query for all our Species.
+  * Line 21: We count them and save the result for later.
+  * Line 22: We make a new variable for the number of states which we will
+    increase in the coming loop.
+  * Line 23: Start a loop over our selected `species`.
+  * Line 24: Make a sub-selection on our previously selected transitions,
+    now only selecting the ones that belong to the current species.
+  * Lines 25-26: As for the species IDs before, we now pull the keys to the
+    upper and lower states out of our Transition model.
+  * Line 27: We concatenate the two lists of IDs and put them in a `set()` to
+    get rid of duplicates. `sids` is now a list of IDs of all the states
+    within the current species that are used in the selected transtions.
+  * Line 28: Use this list to make the query on the State model. And, 
+    **most importantly**, attach it to the current species object. This
+    way we have constructed the nested structure for the generator.
+  * Line 29: For the statistics, we now increase the state count with
+    the number for the current species.
+
+* Lines 31-36: Put the statistics into a key-value structure where the 
+  keys are the header names as definded by the VAMDC-TAP standard and the
   values are the strings/numbers that we calculated above.
-* Lines 37-40: Return the QuerySets and the headers, again as key-value 
-  pairs. The keys that you can use here correspond to the major parts of 
-  XSAMS and are named as:
-  * Sources
-  * AtomStates
-  * MoleStates
-  * CollTrans
-  * RadTrans
-  * Methods
-  * MoleQNs
-  * HeaderInfo
+* Lines 39-42: Return the QuerySets and the headers, again as key-value 
+  pairs. The keys are the names from the first column of the table above, so
+  that the generator recognizes them and loops over them at the right place.
 
 .. note::
+
     As you might have noticed, all restrictions are passed to the 
     Transitions model in the above example. This does not mean that we 
     cannot put constraints on e.g. the species here. We simply use the 
@@ -401,7 +415,16 @@ Explanations on what happens here:
     not be possible to pass all restrictions to a single model. Then you 
     need to write a more advanced query than the shortcuts in Lines 7-8.
 
+.. note::
+
+    We are well aware that adapting the above example to your data is
+    a non-trivial task unless you know Python and Django reasonably well.
+    For more examples, please look at the other nodes' `queryfunc.py` that
+    are included in the NodeSoftware. And, of course, we are willing to
+    assist you in this step, so feel free to contact us about this.
+
 More comprehensive information on how to run queries within Django can be found at http://docs.djangoproject.com/en/1.2/topics/db/queries/.
+
 
 The dictionaries
 ----------------------------------
@@ -416,16 +439,16 @@ data model to the names from the dictionary, like this::
 
     RESTRICTABLES = {\
     'AtomSymbol':'species__name',
-    'AtomStateEnergy':'upstate__energy',
     'AtomIonCharge':'species__ion',
-    'RadTransWavelengthExperimentalValue':'vacwave',
+    'RadTransWavelength':'wavelength',
     }
 
     RETURNABLES={\
-    'SourceID':'Source.id',
-    'SourceCategory':'journal', # using a constant string works
+    'NodeID':'YourNodeName', # constant strings work
+    'AtomIoncharge':'Atom.ion',
+    'AtomSymbol':'Atom.name',
     'AtomStateEnergy':'AtomState.energy', 
-    'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
+    'RadTransWavelength':'RadTran.wavelength',
     }
     
 .. note::
@@ -438,32 +461,33 @@ About the RESTRICTABLES
 As we have learned from writing the query function above, we can use the 
 RESTRICTABLES to match the VAMDC dictionary names to places in our data 
 model. The key in each key-value-pair is a name from the VAMDC 
-dictionary and the values are the members of the model class that you 
-want to query primarily.
+dictionary and the values are the field names of the model class that you 
+want to query primarily (Transition, in the example above, line 10).
 
-The example above fits the one from the section about the query function 
-above, so we know that the "main" model is the Transitions. Now if a 
-query like "AtomIonCharge > 1" comes along, this can be translated into 
-`Transition.objects.filter(species__ion__gt=1)` without further ado. 
-Note that we here used a ForeignKey to the Species model; the values in 
-the RESTRICTABLES need to be written from the perspective of the main 
-model.
+The RESTRICTABLES example give fits our query function from above, so we know
+that the "main" model is the Transitions. Now if a query like "AtomIonCharge >
+1" comes along, this can be translated into
+`Transition.objects.filter(species__ion__gt=1)` without further ado, which is
+exactly what `where2q()` does. Note that we here used a ForeignKey to the
+Species model; the values in the RESTRICTABLES need to be written from the
+perspective of the queried model.
 
 .. note::
-    Even if you chose to not use the RESTRICTABLES in your 
-    setupResults(), you are still encouraged to fill the keys (with the 
-    values being empty), because they are automatically provided to the 
-    VAMDC registry so that external services can figure out which names make 
-    sense to query at this node.
+
+    Even if you chose to not use the RESTRICTABLES in your setupResults() and
+    treat the incoming queries manually, you are still encouraged to fill the
+    keys (with the values being empty), because they are automatically provided
+    to the VAMDC registry so that external services can figure out which names
+    make sense to query at this node.
 
 
 About the RETURNABLES
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Equivalent to how the RESTRICTABLES take care of translating from global 
-names to your custom data model when the query comes in, the 
-RETURNABLES do the opposite on the way back, i.e. when the data reply 
-is sent.
+Equivalent to how the RESTRICTABLES take care of translating from global names
+to your custom data model when the query comes in, the RETURNABLES do the
+opposite on the way back, i.e. when the data reply is sent by the generator, as
+we have already seen above.
 
 Again the keys of the key-value-pairs are the global names from the 
 VAMDC dictionary. The values now are their corresponding places in the 
@@ -471,11 +495,24 @@ QuerySets that are constructed in setupResults() above. This means that
 the XML generator will loop over the QuerySet, getting each element, and 
 try to evaluate the expression that you put in the RETURNABLES. 
 
-Continuing our example from above, assume the State model has a field 
-called `energy`, so each object in the QuerySet will have that value at 
-`AtomState.energy`. Note that the first part before the dot is not the 
-name of your model, but the *singular* of one of the names that you 
-return from setupResults() (see above).
+Continuing our example from above, where the State model has a field called
+`energy`, so each object in the QuerySet will have that value accessible at
+`AtomState.energy`. Note that the first part before the dot is not the name of
+your model, but the *loop variable* inside the generator as it is listed in the
+second (or forth, in the case of an inner loop) column of the table above.
+
+There is only one keyword that you must fill, all the others depend on your
+data. The obligatory one is `NodeID` which you should set to a short string
+that is unique to your node. It will be used in the internal reference keys of
+an XSAMS document. By including the NodeID, we make these keys globally unique
+within VAMDC which will facilitate the merging of data that come from different
+nodes.
+
+It was mentioned before, but now is the time to point you once more to
+http://vamdc.tmy.se/dict/ where you first of all can browse all the available
+keywords. By selecting the ones that match your data, you can download a raw
+version of your `dictionaries.py` which you then fill in. The website also can
+perform some tests on your Returnables and Restrictables for finding errors.
 
 .. note::
     Again, at least the keys of the RETURNABLES should be filled (even 
@@ -516,4 +553,4 @@ here soon. In any case you should run test queries to your node and make
 sure that the output in terms of volume and values matches your 
 expectations.
 
-
+Once your node does what it should with the test server, you can start thinking about :ref:`deploying it <deploy>`.
