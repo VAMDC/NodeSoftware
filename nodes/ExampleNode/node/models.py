@@ -23,4 +23,4 @@ class Transition(models.Model):
     species = models.ForeignKey(Species)
     upper_state = models.ForeignKey(State, related_name='transup')
     lower_state = models.ForeignKey(State, related_name='translo')
-    wavelength = FloatField()
+    wavelength = models.FloatField()
