@@ -53,7 +53,7 @@ def setupResults(sql):
     ntranss=transs.count()
     if TRANSLIM < ntranss :
         percentage='%.1f'%(float(TRANSLIM)/ntranss *100)
-	newmax=transs = transs[TRANSLIM].vacwave
+        newmax=transs = transs[TRANSLIM].vacwave
         transs=Transition.objects.filter(q,Q(vacwave__lt=newmax))
     else: percentage=None
     ntranss=transs.count()
