@@ -144,17 +144,39 @@ as such::
     `models.py`. The class that is referred to needs to be defined before 
     the one that refers to it. In the example, `Species` must be above `State`.
 
+Let's add a third model::
+
+    class Transition(Model):
+        id = IntegerField(primary_key=True)
+        wavelength = FloatField()
+        upper_state = ForeignKey(State, related_name='transup')
+        lower_state = ForeignKey(State, related_name='translo')
+
+The important thing here is the `related_name`. Whenever you want to define
+more than one `ForeignKey` to the *same* model, you need to set this to an
+arbitrary name. This is because Django will automatically set up the reverse
+key for you and needs to give it a unique name. The reverse key in this example
+could be used to get all the Transitions that have a given State as upper or
+lower state. More on this at :ref:`relatedname`.
+
 Once you have finished your model, you should test it. Continuing the example
 above you could do something like::
 
     $ ./manage.py shell
     >>> from node.models import *
     >>> allspecies = Species.objects.all()
-    >>> allspecies.count()
-    XX # the number of species is returned
+    >>> allspecies.count() # the number of species is returned
     >>> somestates = State.objects.filter(species__name='He')
     >>> for state in somestates: print state.energy
+    >>> sometransitions = Transition.objects.filter(wavelength__lt=500)
+    >>> atransition = sometransitions[5]
+    >>> othertransitions = atransition.upper_state.transup.objects.all()
+    >>> othertransitions.count() # gives the number of transitions with the
+                                 # same upper state.
 
+Detailed information on how to use your models to run queries can be found in
+Django's own excellent documentation:
+http://docs.djangoproject.com/en/1.2/topics/db/queries/
 
 Case 2: Create a new database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -180,10 +202,10 @@ work on the query function (see below). In any case, do not so much
 think about how your data is structured now, but how you want it to be 
 structured in the database, when writing the models.
 
-Writing your data models is best learned from example. Have a look at 
-the example from Case 1 above and at file `$VAMDCROOT/nodes/vald/node/models.py` 
-inside the NodeSoftware to see how the model for VALD looks like. Keep 
-in mind the following points:
+Writing your data models is best learned from example. Have a look at the
+example from Case 1 above and at file `$VAMDCROOT/nodes/vald/node/models.py`
+inside the NodeSoftware to see how the model for VALD looks like. Keep in mind
+the following points:
 
 * As mentioned, a `class` in the model becomes a `table` in the 
   database and the fields/members of the class correspond to the
@@ -248,27 +270,75 @@ How you fill your database with information from ascii-files is
 explained in the next chapter: :ref:`importing`. You can do this now and 
 return here later, or continue with the steps below first.
 
+Using the XML generator
+-----------------------------------
+
+Before we go on to the remaining two ingredients, the *query function* and the
+*dictionaries*, we need to have an understanding on how they play together in
+the XML generator. As you remember from :ref:`xsamsconcepts`, the goal is to
+run queries on your models and pass on the output to the generator so that it can looped over them to fill the hierarchical XSAMS structure.
+
+In order to make this work, we need to name the variables that you pass into
+the generator (as explained below) and the loop variables that you use in the
+Returnables. For example, continuing on the model above: Assume you have made a
+selection of your Transition model; you pass this on under the name *RadTrans*;
+the generator loops over it, calling each Transition insite its loop *RadTran*
+(note the singular!). `RadTran` is now a single instance of your Transition
+model and has the wavelength as `RadTran.wavelength` since we called the field
+this way above. The entry in the RETURNABLES would therefore look like
+`'RadTranWavelenth':'RadTran.wavelength'` - where the first part is the keyword
+from the VAMDC dictionary (which the generator knows where in the schema it
+should end up) and the second part tells it how to get the value from the
+query results that it got from your query function.
+
+Do not fret if this sounded complicated, it will become clear in the examples
+below. Just read the previous paragraph again after that.
+
+Here is a table that lists the variables names that you can pass into the generator and the loop variables that you use in the Retrunables. The one is simply the plural of the other.
+
+===================== ============= ==================== ==============
+Passed into generator Loop variable Object looped over   Loop variable
+===================== ============= ==================== ==============
+Atoms                 Atom
+                                    Atom.States          AtomState
+Molecules             Molecule
+                                    Molecule.States      MoleculeState
+RadTrans              RadTran
+RadCross              RadCros
+CollTrans             CollTran
+NonRadTrans           NonRadTran
+Environments          Environment
+Particles             Particle
+Sources               Source
+Methods               Method
+Functions             Function
+===================== ============= ==================== ==============
+
+The third and fourth columns are for an inner loop. For each `Atom` out of
+`Atoms` the generator will make a nested loop over `Atom.States`, calling each
+of these `AtomState` in the inner loop.
 
 
 The query routine
 -----------------------------------
 
-Now that we have a working database and the data model in place, we need to
-tell the framework how to run a query. This is a single function called
-`setupResults()` that must be written in the file `node/queryfunc.py` in your
+Now that we have a working database and data model and know in principle how
+the generator works, we simply need to tell the framework how to run a query
+and pass the output to the generator. This is done in a single function called
+`setupResults()` which must be written in the file `node/queryfunc.py` in your
 node directory. It works like this:
 
 * `setupResults()` is called from elsewhere and you need not run it 
   yourself.
-* `setupResults()` gets an object as input, called `sql`.
-  This is a parsed version of the query that comes in. It holds the WHERE-part
-  as `sql.where` and so on.
+* `setupResults()` gets an object as input, called `sql`. This is a 
+  parsed version of the query that comes in. It holds the WHERE-part as
+  `sql.where` and so on.
 * We now need to run this query on the data model in order to get so
   called `QuerySets` which are basically unevaluated queries that are then
-  simply passed on to the XML generator that takes care of the rest.
+  passed on to the XML generator which takes care of the rest.
 * If you want to enforce limits on how much data can be returned in one query,
-* this can be done here as well.  You should also calculate some statistics on
-* how much information
+  this can be done here as well.
+* You should also calculate some statistics on how much information
   a query returns and return it as header information.
 
 In a concrete example of an atomic transition database, it looks like this:
