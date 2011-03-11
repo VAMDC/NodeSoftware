@@ -96,7 +96,7 @@ Deployed node
 In the VM, both *nginx* and *gunicorn* are installed, as described in
 :ref:`deploy`. There is a symbolic link ``NodeSoftware/nodes/RunningNode``
 which points to the ExampleNode. Once you made your copy of the ExampleNode
-(see :new:`newnode`), point ``RunningNode`` to your own instead since *nginx*
+(see :ref:`newnode`), point ``RunningNode`` to your own instead since *nginx*
 uses ``NodeSoftware/nodes/RunningNode/nginx.conf`` for its config. Don't forget to restart *nginx* with ``service nginx restart``.
 
 In your node directory, you can now run ``gunicorn_django -c gunicorn.conf`` to start the node workers and should have a running node. To access it from outside the VM, you must probably tweak the network setup between the VM and your host computer.

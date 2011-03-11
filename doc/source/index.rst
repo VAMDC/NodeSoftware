@@ -26,6 +26,7 @@ A PDF-version of this page is available at http://vamdc.tmy.se/doc/nodesoftware.
 Changelog
 =================
 
+
 March 10, 2011
 ------------------
 
@@ -38,6 +39,9 @@ somewhat. This means that **you will probably need to update your query
 function and dictionaries when you update the NodeSoftware.**
 
 :ref:`newnode` has been updated and extended accordingly.
+
+A new version of the :ref:`Virtual Machine <virtmach` has also been uploaded,
+containing the latest NodeSoftware and operating system.
 
 February 2011
 -----------------
