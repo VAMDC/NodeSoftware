@@ -46,6 +46,16 @@ Note that you probably want to edit the port, server name and the location
 at which to serve the node (change `/yournode/tap` at three places but make
 them match each other).
 
+If you installed *nginx* with the debian/ubuntu package, you can place symbolic
+links to the config file into `/etc/nginx/` like this to make it use the config
+above::
+
+    $ cd /etc/nginx/sites-available/
+    $ sudo ln -s $VAMDCROOT/nodes/YourNode/nginx.conf vamdcnode
+    $ cd ../sites-enabled/
+    $ sudo ln -s ../sites-available/vamdcnode
+    $ sudo /etc/init.d/nginx restart
+
 Proxy Alternatives
 ~~~~~~~~~~~~~~~~~~
 What you choose as proxy for Gunicorn is somewhat arbitrary. Common
