@@ -31,10 +31,10 @@ class Species(Model):
 
 class Reference(Model):
     id = CharField(max_length=64, primary_key=True, db_index=True)
-    bibtex = CharField(max_length=2048, null=True)
+    bibtex = TextField(null=True)
 
     def XML(self):
-        return Entry2XML( getEntryFromString(self.bibtex) )
+        return BibTeX2XML( self.bibtex )
 
     class Meta:
         db_table = u'refs'

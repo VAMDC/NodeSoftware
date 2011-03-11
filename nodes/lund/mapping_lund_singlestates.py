@@ -18,9 +18,9 @@ def bySepNr(linedata, number):
     return string.split(linedata, ';')[number].strip()
         
 # Setting up filenames
-base = "/home/griatch/Devel/Work/VAMDC-git/nodes/lund/"
+base = "/home/vamdc/NodeSoftware/nodes/lund/"
 states_file = base + 'singlestates.dat'
-states_out = base + 'singlestates.out'
+states_out = base + 'singlestates.in'
 
 # The mapping itself
 mapping = [
