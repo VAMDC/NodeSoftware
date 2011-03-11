@@ -483,7 +483,11 @@ def XsamsRadTrans(RadTrans):
 
     for RadTran in RadTrans:
         G=lambda name: GetValue(name,RadTran=RadTran)
-        yield '<RadiativeTransition><EnergyWavelength>'
+        yield '<RadiativeTransition>'
+        comm = G('RadTransComments')
+        if comm: yield '<Comments>%s</Comments>'%comm
+        yield makeSourceRefs(G('RadTransRefs'))
+        yield '<EnergyWavelength>'
         yield makeDataType('Wavelength','RadTransWavelength',G)
         yield makeDataType('Wavenumber','RadTransWavenumber',G)
         yield makeDataType('Frequency','RadTransFrequency',G)
@@ -491,13 +495,21 @@ def XsamsRadTrans(RadTrans):
         yield '</EnergyWavelength>'
 
         initial = G('RadTransInitialStateRef')
-        if initial: yield '<InitialStateRef>S%s</InitialStateRef>\n' % initial
+        if initial: yield '<InitialStateRef>S%s-%s</InitialStateRef>\n' % (NODEID, initial)
         final = G('RadTransFinalStateRef')
-        if final: yield '<FinalStateRef>S%s</FinalStateRef>\n' % final
+        if final: yield '<FinalStateRef>S%s-%s</FinalStateRef>\n' % (NODEID, final)
+        species = G('RadTransSpeciesRef')
+        if species: yield '<SpeciesRef>X%s-%s</SpeciesRef>\n' % (NODEID, species)
 
         yield '<Probability>'
-        yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
+        yield makeDataType('OscillatorStrength','RadTransProbabilityOscillatorStrength',G)
+        yield makeDataType('LineStrength','RadTransProbabilityLineStrength',G)
+        yield makeDataType('WeightedOscillatorStrength','RadTransProbabilityWeightedOscillatorStrength',G)
+        yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
+        yield makeDataType('IdealisedIntensity','RadTransProbabilityIdealisedIntensity',G)
+        multipole = G('RadTransProbabilityMultipole')
+        if multipole: yield '<Multipole>%s<Multipole>'%multipole
         yield makeDataType('EffectiveLandeFactor','RadTransEffectiveLandeFactor',G)
         yield '</Probability>\n'
 

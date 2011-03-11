@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from vamdctap.caselessdict import CaselessDict
-
-RETURNABLES = CaselessDict({\
+RETURNABLES = {\
 'NodeID':'vald',
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.author',
@@ -17,54 +15,72 @@ RETURNABLES = CaselessDict({\
 #'MethodID':'"MOBS"',
 #'MethodCategory':'"observed"',
 #'MethodDescription':'',
+############################################################
+'MoleculeStateID':'MoleculeState.id',
+'MoleculeChemicalName':'Molecule.name',
+'MoleculeSpeciesID':'Molecule.id',
+'MoleculeInchiKey':'Molecule.inchikey',
+'MoleculeInchi':'Molecule.inchi',
+'MoleculeStateEnergy':'MoleculeState.energy',
+'MoleculeStateEnergyRef':'MoleculeState.getRefs("energy")',
+'MoleculeStateEnergyUnit':'1/cm',
+#############################################################
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'Atom.name',
 'AtomSpeciesID':'Atom.id',
-'AtomInchiKey':'notyetindb',
+'AtomInchiKey':'Atom.inchikey',
+'AtomInchi':'Atom.inchi',
 'AtomNuclearCharge':'Atom.atomic',
 'AtomIonCharge':'Atom.ion',
 'AtomMassNumber':'Atom.massno',
-'AtomConfigurationLabel':'AtomState.charid',
-'AtomCompositionComponentTerm':'AtomState.term',
 'AtomStateLandeFactor':'AtomState.lande',
-'AtomStateLandeFactorRef':'AtomState.getRefs(\'lande\')',
+'AtomStateLandeFactorUnit':'unitless',
+'AtomStateLandeFactorRef':'AtomState.getRefs("lande")',
 'AtomStateEnergy':'AtomState.energy',
-'AtomStateEnergyRef':'AtomState.getRefs(\'energy\')',
+'AtomStateEnergyRef':'AtomState.getRefs("energy")',
 'AtomStateEnergyUnit':'1/cm',
-'AtomStateDescription':'',
+#############################################################
+'RadTransSpeciesRef':'RadTran.species_id',
 'RadTransComments':'Wavelength is for vacuum.',
 'RadTransWavelength':'RadTran.vacwave',
 'RadTransWavelengthUnit':u'A',
-'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.accur',
-'RadTransWavelengthSourceRef':'RadTran.getRefs(\'wave\')',
+'RadTransWavelengthRef':'RadTran.getRefs("wave")',
 'RadTransFinalStateRef':'RadTran.upstate_id',
 'RadTransInitialStateRef':'RadTran.lostate_id',
+'RadTransEffectiveLandeFactor':'RadTran.landeff',
+'RadTransEffectiveLandeFactorUnit':'unitless',
+'RadTransEffectiveLandeFactorRef':'RadTran.getRefs("lande")',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
-'RadTransProbabilityLog10WeightedOscillatorStrengthRef':'RadTran.getRefs(\'loggf\')',
+'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.accur',
+'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
+'RadTransProbabilityLog10WeightedOscillatorStrengthRef':'RadTran.getRefs("loggf")',
 'RadTransBroadeningNaturalLineshapeParameter':'RadTran.gammarad',
 'RadTransBroadeningNaturalLineshapeParameterName':'log(gamma)',
 'RadTransBroadeningNaturalLineshapeParameterUnit':'cm3/s',
-'RadTransBroadeningNaturalRef':'RadTran.getRefs(\'gammarad\')',
+'RadTransBroadeningNaturalRef':'RadTran.getRefs("gammarad")',
 'RadTransBroadeningNaturalLineshapeName':'lorentzian',
 'RadTransBroadeningStarkLineshapeParameter':'RadTran.gammastark',
 'RadTransBroadeningStarkLineshapeName':'lorentzian',
 'RadTransBroadeningStarkLineshapeParameterName':'log(gamma)',
 'RadTransBroadeningStarkLineshapeParameterUnit':'cm3/s',
-'RadTransBroadeningStarkRef':'RadTran.getRefs(\'gammastark\')',
+'RadTransBroadeningStarkRef':'RadTran.getRefs("gammastark")',
 'RadTransBroadeningVanDerWaalsLineshapeParameter':'RadTran.getWaals()',
-'RadTransBroadeningVanDerWaalsLineshapeParameterUnit':'[\'cm3/s\',\'unitless\']',
+'RadTransBroadeningVanDerWaalsLineshapeParameterUnit':'["cm3/s","unitless"]',
 'RadTransBroadeningVanDerWaalsLineshapeName':'lorentzian',
-'RadTransBroadeningVanDerWaalsLineshapeParameterName':'[\'log(gamma)\',\'alpha\']',
-'RadTransBroadeningVanDerWaalsRef':'RadTran.getRefs(\'waals\')',
-'RadTransEffLande':'RadTran.landeff',
-'RadTransEffLandeRef':'RadTran.getRefs(\'lande\')',
-})
+'RadTransBroadeningVanDerWaalsLineshapeParameterName':'["log(gamma)","alpha"]',
+'RadTransBroadeningVanDerWaalsRef':'RadTran.getRefs("waals")',
+}
 
-RESTRICTABLES = CaselessDict({\
+RESTRICTABLES = {\
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
+'AtomIonCharge':'species__ion',
 'AtomStateEnergy':'upstate__energy',
 'RadTransWavelength':'vacwave',
-'RadTransLogGF':'loggf',
-'AtomIonCharge':'species__ion',
-})
+'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
+}
+
+
+from vamdctap.caselessdict import CaselessDict
+RESTRICTABLES = CaselessDict(RESTRICTABLES)
+RETURNABLES = CaselessDict(RETURNABLES)
