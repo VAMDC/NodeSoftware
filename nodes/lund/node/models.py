@@ -80,6 +80,19 @@ class State(Model):
     energy_ref = ForeignKey(Reference, related_name='isenergyref_state', null=True)
     lande_ref = ForeignKey(Reference, related_name='islanderef_state', null=True)
     level_ref = ForeignKey(Reference, related_name='islevelref_state', null=True)
+
+    def get_best_tau(self):
+        if self.tau_exp:
+            return self.tau_exp
+        else:
+            return self.tau_calc
+    def get_tau_ref(self):
+        if self.tau_exp:
+            return "LifetimeEXP"
+        else:
+            return "LifetimeTHEO"
+        
+
     
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)

@@ -24,17 +24,24 @@ def getRefs(transs):
 
 def getSpeciesWithStates(transs):
     spids = set( transs.values_list('species_id',flat=True) )
-    species = Species.objects.filter(pk__in=spids)
-    nspecies = species.count()
+    atoms = Species.objects.filter(pk__in=spids)
+    nspecies = atoms.count()
     nstates = 0
-    for specie in species:
+    for specie in atoms:
         subtranss = transs.filter(species=specie)
         up=subtranss.values_list('upstate_id',flat=True)
         lo=subtranss.values_list('lostate_id',flat=True)
         sids = set(chain(up,lo))
-        specie.States = State.objects.filter( pk__in = sids )    
+        atoms.States = State.objects.filter( pk__in = sids )    
         nstates += len(sids)
-    return species, nspecies, nstates
+    return atoms, nspecies, nstates
+
+def getLifetimeMethods():    
+    class Method(object):
+        def __init__(self, mid, category):
+            self.id = mid
+            self.category = category
+    return (Method("tauEXP", "experiment"), Method("tauTHEO", "compilation")
 
 def setupResults(sql,limit=1000):
     LOG(sql)
@@ -54,6 +61,7 @@ def setupResults(sql,limit=1000):
     sources = getRefs(transs)
     nsources = sources.count()
     atoms,nspecies,nstates = getSpeciesWithStates(transs)
+    methods = getLifetimeMethods()
 
     headerinfo=CaselessDict({\
             'Truncated':percentage,
@@ -68,6 +76,7 @@ def setupResults(sql,limit=1000):
             'Atoms':atoms,
             'Sources':sources,
             'HeaderInfo':headerinfo
+            'Methods':methods
            }
 
 
