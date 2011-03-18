@@ -4,7 +4,8 @@
 
 RETURNABLES = {\
 'NodeID':'Lund',
-'SourceID':'Source.id',     
+
+'SourceID':'Source.id',
 'SourceAuthorName':'Source.author',
 'SourceCategory':'Source.category',
 'SourcePageBegin':'Source.pages',
@@ -13,11 +14,10 @@ RETURNABLES = {\
 'SourceTitle':'Source.title',
 'SourceURI':'Source.url',
 'SourceVolume':'Source.volume',
-'SourceYear':'Source.year',
-#'MethodID':'"MOBS"',
-#'MethodCategory':'"observed"',
-#'MethodDescription':'',
-####################################################
+'SourceYear':'Source.year',                                                              
+'MethodID':'Method.id',
+'MethodCategory':'Method.category',
+                           
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'Atom.name',
 'AtomSpeciesID':'Atom.id',
@@ -29,24 +29,28 @@ RETURNABLES = {\
 'AtomStateLandeFactorRef':'AtomState.lande_ref_id',
 'AtomStateEnergy':'AtomState.energy',
 'AtomStateEnergyRef':'AtomState.energy_ref_id',
-'AtomStateEnergyUnits':'1/cm',
+'AtomStateEnergyUnit':'1/cm',
 'AtomStateDescription':'',
 'AtomStateHyperfineConstantA': 'AtomState.hfs_a',
+'AtomStateHyperfineConstantAUnit':'unitless',
 'AtomStateHyperfineConstantB': 'AtomState.hfs_b',
-'AtomStateLifeTimeCalculated': 'AtomState.tau_calc',
-'AtomStateLifeTimeExperimental': 'AtomState.tau_exp',
-'AtomStateLifeTimeAccuracy': 'AtomState.tau_accur',
-###############################################################
+'AtomStateHyperfineConstantBUnit': 'unitless',
+'AtomStateLifeTime': 'AtomState.get_best_tau()',
+'AtomStateLifeTimeMethod': 'AtomState.get_tau_ref()',
+'AtomStateLifeTimeAccuracy': 'AtomState.tau_accur',                                     
+                                                                         
 'RadTransSpeciesRef':'RadTran.species_id',
 'RadTransComments':'Wavelength is for vacuum.',
 'RadTransWavelength':'RadTran.vacwave',
-'RadTransWavelengthUnits':u'A',
-'RadTransWavelengthExperimentalSourceRef':'RadTran.wave_ref_id',
+'RadTransWavelengthUnit':u'A',
+'RadTransWavelengthRef':'RadTran.wave_ref_id',
+'RadTransWavelengthMethodCategory':'experiment',
 'RadTransFinalStateRef':'RadTran.lostate.id',
 'RadTransInitialStateRef':'RadTran.upstate.id',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
-'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref_id', 
-'RadTransProbabilityLog10WeightedOscillatorStrengthMethodRef':'RadTran.loggf_method',
+'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
+'RadTransProbabilityLog10WeightedOscillatorStrengthRef':'RadTran.loggf_ref_id',
+'RadTransProbabilityLog10WeightedOscillatorStrengthMethod':'RadTran.loggf_method',
 'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.loggf_accur',
 
 'RadTransBroadeningNaturalLineshapeParameter':'RadTran.gammarad',
@@ -62,6 +66,7 @@ RETURNABLES = {\
 
 'RadTransBroadeningVanDerWaalsLineshapeParameter':'RadTran.gammawaals',
 'RadTransBroadeningVanDerWaalsLineshapeParameterUnit':'["cm3/s","unitless"]',
+
 'RadTransBroadeningVanDerWaalsLineshapeName':'lorentzian',
 'RadTransBroadeningVanDerWaalsLineshapeParameterName':'["log(gamma)","alpha"]',
 'RadTransBroadeningVanDerWaalsRef':'RadTran.waals_ref_id',
@@ -75,9 +80,9 @@ RESTRICTABLES = {\
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'AtomStateEnergy':'upstate__energy',
-'RadTransWavelengthExperimentalValue':'vacwave',
-'RadTransWavenumberExperimentalValue':'vavenum',
-'RadTransLogGF':'loggf',
+'RadTransWavelength':'vacwave',
+'RadTransWavenumber':'vavenum',
+'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 'AtomIonCharge':'species__ion',
 }
 

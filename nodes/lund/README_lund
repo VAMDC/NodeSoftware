@@ -15,7 +15,7 @@ To start the node, both gunicorn and nginx needs to be started.
 
 From nodes/lund, run
 
-gunicorn -c gunicorn.conf
+gunicorn_django -c gunicorn.conf
 
 followed by 
 
