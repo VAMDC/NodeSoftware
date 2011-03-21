@@ -83,9 +83,8 @@ RESTRICTABLES = {\
 'RadTransWavelength':'vacwave',
 'RadTransWavenumber':'vavenum',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
-'AtomIonCharge':'species__ion',
+'AtomIonCharge':'species__ion'
 }
-
 
 
 from vamdctap.caselessdict import CaselessDict
