@@ -41,7 +41,7 @@ def getLifetimeMethods():
         def __init__(self, mid, category):
             self.id = mid
             self.category = category
-    return (Method("tauEXP", "experiment"), Method("tauTHEO", "compilation")
+    return (Method("tauEXP", "experiment"), Method("tauTHEO", "compilation"))
 
 def setupResults(sql,limit=1000):
     LOG(sql)
@@ -75,7 +75,7 @@ def setupResults(sql,limit=1000):
     return {'RadTrans':transs,
             'Atoms':atoms,
             'Sources':sources,
-            'HeaderInfo':headerinfo
+            'HeaderInfo':headerinfo,
             'Methods':methods
            }
 

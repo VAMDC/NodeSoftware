@@ -88,12 +88,10 @@ class State(Model):
             return self.tau_calc
     def get_tau_ref(self):
         if self.tau_exp:
-            return "LifetimeEXP"
+            return "tauEXP"
         else:
-            return "LifetimeTHEO"
-        
-
-    
+            return "tauTHEO"
+            
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
     class Meta:
