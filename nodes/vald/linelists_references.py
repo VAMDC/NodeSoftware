@@ -5,9 +5,12 @@
 #
 # VALD3.cfg + VALD3linelists -> many2many_mapping
 #
+# If a bibtex file is given, a cross-reference match will be
+# performed between the three files as part of the file
+# creation and validation.
 
-import sys
-
+import sys, pdb
+import itertools
 
 # parse VALD3linlists
 
@@ -59,8 +62,29 @@ def parse_config_file(filename):
 
     return dic
 
+def parse_bibtex_file(filename):
+    """
+    Parses a bibtex file, extracting all dbrefs
+    """
+    f = open(filename, 'r')
+    #lines = " ".join([line.strip() for line in f.readlines() if line.strip and not line.strip().startswith('%')])
+    entries = [line for line in f.readlines() if line.strip().startswith('@')]
 
-def merge_files(infile1, infile2, outfile):
+    #pdb.set_trace()
+    
+    blist = []
+    for entry in entries:
+        dum, rest = entry.split('{', 1)
+        dbref = rest.strip().strip(',')
+        blist.append(dbref)
+    bset = set(blist)
+    if len(bset) != len(blist):
+        print " ==== Warning: Bibtex file %s contains non-unique dbrefs:" % filename
+        doublets = set([(entry, blist.count(entry)) for entry in blist if blist.count(entry) > 1])
+        print ", ".join(["%s (x%s)" % (entry[0], entry[1]) for entry in doublets])
+    return bset
+        
+def merge_files(infile1, infile2, bibtex_file=None, outfile=None):
     """
     Main program
     """
@@ -69,29 +93,42 @@ def merge_files(infile1, infile2, outfile):
 
     dic1 = parse_config_file(infile1)
     dic2 = parse_wiki_linelist_file(infile2)    
-
-    warn1, warn2 = [], []
-    
+    if bibtex_file:
+        # cross-correlation mode         
+        print "\n ==== Begin Cross-correlation mode ===="
+        blist = parse_bibtex_file(bibtex_file)
+        warn1, warn2, warn3, warn4  = [], [], [], []
+        wiki = set(itertools.chain.from_iterable([tup[2] for tup in dic2.values()]))        
+        #pdb.set_trace()        
+        for filekey1 in dic1:
+            if not filekey1 in dic2: warn1.append(filekey1) # config filename not in wiki page
+        for filekey2 in dic2:
+            if not filekey2 in dic1: warn2.append(filekey2) # wiki page filename not in config
+            for dbref in dic2[filekey2][2]:
+                if not dbref in blist: warn3.append(dbref) # wiki dbref not in bibtex file
+        for dbref in blist:            
+            if dbref not in wiki: warn4.append(dbref) # bibtex entry not in wiki page
+        if warn1:
+            print " ==== filenames in %s but not in %s:" % (infile1, infile2)
+            print ", ".join(warn1)
+        if warn2:
+            print " ==== filenames in %s but not in %s" % (infile2, infile1)
+            print ", ".join(warn2)
+        if warn3:
+            print " ==== dbrefs in %s but not in %s" % (infile2, bibtex_file)
+            print ", ".join(warn3)
+        if warn4:
+            print " ==== dbrefs entries in %s but not in %s:" % (bibtex_file, infile2)
+            print ", ".join(warn4)
+        print " ==== End Cross-correlation mode ====\n"    
+            
     # create new file on format ID;refs,refs,refs;filename;type;elements;...
     lines = []
     for filekey1, tup1  in dic1.items():
-        if not filekey1 in dic2:            
-            warn1.append(filekey1)            
-        else:
+        if filekey1 in dic2:            
             tup2 = dic2[filekey1]            
             for ref in tup2[2]:                
-                lines.append('\N;"%s";"%s"\n' % (tup1[0], ref))
-    for filekey2, tup2 in dic2.items():
-        # checking reverse relation too
-        if not filekey2 in dic1:            
-            warn2.append(filekey2)
-    if warn1:
-        print "\n- Filenames found in %s but not in %s: " % (infile1, infile2)
-        print "\n".join(warn1) 
-    if warn2:
-        print "\n- Filenames found in %s but not in %s: " % (infile2, infile1)
-        print "\n".join(warn2)
-           
+                lines.append('\N;"%s";"%s"\n' % (tup1[0], ref))           
     fout.writelines(lines)    
     fout.close()
     
@@ -102,19 +139,19 @@ if __name__=='__main__':
     argv = sys.argv
     if len(argv) < 3:
         print """
-Usage: linelists2references.py <VALD3.cfg> <VALD3linelists.txt> [<output>]
+Usage: linelists_references.py <VALD3.cfg> <VALD3linelists.txt> [VALD3_ref.bib]
 
- This creates an output files (default is linelists_references.dat).
-
- This file should be read directly into the database
- many-to-many table relating Linelist  with the Reference model.
- (probably linelistreferences_columns)
+Creates an output file "linelists_references.dat" for direct
+reading into the database. If the bibtex file is also given, the three
+files are fully cross-referenced to make sure there is a complete set
+of references represented in all files. If there are discrepancies,
+these will be printed.
 """
         sys.exit()
     if len(argv) < 4:
-        output = "linelists_references.dat"
+        bibtex_file = None
     else:
-        output1 = argv[3]
-
-    merge_files(argv[1], argv[2], output)
+        bibtex_file = argv[3]
+    output = "linelists_references.dat"        
+    merge_files(argv[1], argv[2], bibtex_file=bibtex_file, outfile=output)
     print "... Created file %s." % (output) 

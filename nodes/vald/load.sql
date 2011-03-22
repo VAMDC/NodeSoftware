@@ -1,4 +1,5 @@
 load data infile '/vald/species.dat' into table species columns terminated by ';' optionally enclosed by '"';
+load data infile '/vald/species_components.dat' into table species_components columns terminated by ';' optionally enclosed by '"';
 load data infile '/vald/references.dat' ignore into table refs columns terminated by ';' enclosed by '"' ;
 load data infile '/vald/linelists.dat' ignore into table linelists columns terminated by ';' optionally enclosed by '"';
 load data infile '/vald/linelists_references.dat' ignore into table linelists_references columns terminated by ';' optionally enclosed by '"';

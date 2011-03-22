@@ -4,14 +4,22 @@ from vamdctap.bibtextools import *
 class Species(Model):
     id = AutoField(primary_key=True, db_index=True)
     name = CharField(max_length=10, db_index=True)
+    inchi = CharField(max_length=16, db_index=True, null=True, blank=True)
+    inchikey = CharField(max_length=16, db_index=True, null=True, blank=True)
     ion = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     mass = DecimalField(max_digits=8, decimal_places=5)
     massno = PositiveSmallIntegerField(null=True, blank=True)
     ionen = DecimalField(max_digits=7, decimal_places=3)
     solariso = DecimalField(max_digits=5, decimal_places=4)
+    dissen = DecimalField(max_digits=8, decimal_places=4)
     ncomp = PositiveSmallIntegerField(null=True, blank=True)
     atomic = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     isotope = PositiveSmallIntegerField(null=True, blank=True)
+    components = ManyToManyField('self') # only used in case of molecules
+
+    def isMolecule(self):
+         return self.ncomp > 1
+
     def __unicode__(self):
         return u'ID:%s %s'%(self.id,self.name)
     class Meta:
@@ -30,7 +38,7 @@ class Reference(Model):
     #pagebegin = PositiveSmallIntegerField(null=True)
     #pageend = PositiveSmallIntegerField(null=True)
     #url = CharField(max_length=512, null=True)  
-    bibtex = CharField(max_length=1024, null=True)
+    bibtex = TextField(null=True)
 
     def XML(self):
         return BibTeX2XML( self.bibtex )
@@ -100,8 +108,11 @@ class State(Model):
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
 
     def getRefs(self,which):
-        id=eval('self.'+which+'_ref_id')
-        return refcache[id]
+        try:
+            id = eval('self.'+which+'_ref_id')
+            return refcache[id]
+        except:
+            return None
 
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
@@ -136,11 +147,15 @@ class Transition(Model):
 
     def getWaals(self):
         if self.gammawaals: return self.gammawaals
-        else: return [self.sigmawaals,self.alphawaals]
+        elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
+        else: return None
 
     def getRefs(self,which):
-        id=eval('self.'+which+'_ref_id')
-        return refcache[id]
+        try:
+            id = eval('self.'+which+'_ref_id')
+            return refcache[id]
+        except:
+            return None
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.vacwave)

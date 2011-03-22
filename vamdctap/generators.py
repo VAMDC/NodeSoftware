@@ -217,29 +217,27 @@ def XsamsEnvironments(Environments):
             if isiterable(species):
                 for Species in species:
                     yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
-                    yield makeDataType('ParitalPressure','EnvironmentSpeciesParitalPressure')
+                    yield
+                    makeDataType('PartialPressure','EnvironmentSpeciesPartialPressure')
                     yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
                     yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
                     yield '</Species>'
             else:
                 yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
-                yield makeDataType('ParitalPressure','EnvironmentSpeciesParitalPressure')
+                yield makeDataType('PartialPressure','EnvironmentSpeciesPartialPressure')
                 yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
                 yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
                 yield '</Species>'
             yield '</Composition>'
         yield '</Environment>'
-    yield '</Environments>'
+    yield '</Environments>\n'
 
 def XsamsAtomTerm(G):
     """
     The part of XSAMS with the term designation and coupling for atoms.
-    Note that this is not a generator but a plain function that returns
-    its result.
     """
-
-    #pre-fetch the values that will be tested for below
     coupling=G('AtomStateCoupling')
+    if not coupling: return ''
     l=G('AtomStateL')
     s=G('AtomStateS')
     k=G('AtomStateK')
@@ -247,13 +245,7 @@ def XsamsAtomTerm(G):
     j1=G('AtomStateJ1')
     j2=G('AtomStateJ2')
 
-    result = '<AtomicComposition>\n<Comments>%s</Comments>\n' \
-            % G('AtomStateCompositionComments')
-    result += '<Component><Configuration><ConfigurationLabel>%s' \
-              '</ConfigurationLabel></Configuration>\n' \
-            %G('AtomStateConfigurationLabel')
-    result += '<Term>'
-
+    result = '<Term>'
     if coupling == "LS" and l and s:
         result += '<LS><L><Value>%d</Value></L><S>%.1f</S></LS>' % (l, s)
 
@@ -263,7 +255,7 @@ def XsamsAtomTerm(G):
     elif coupling == "JJ" and j1 and j2:
         result += '<J1J2><j>%s</j><j>%s</j></J1J2>' % (j1, j2)
 
-    result += '</Term></Component></AtomicComposition>'
+    result += '</Term>'
     return result
 
 def parityLabel(parity):
@@ -271,6 +263,9 @@ def parityLabel(parity):
     XSAMS whats this as strings "odd" or "even", not numerical
 
     """
+    try: parity = float(parity)
+    except: return parity
+
     if parity % 2:
         return 'odd'
     else:
@@ -278,13 +273,14 @@ def parityLabel(parity):
 
 def XsamsAtoms(Atoms):
     """
-    Generator (yield) for the main block of XSAMS for the atoms, with an inner loop for
-    the states. The QuerySet that comes in needs to have a nested QuerySet called States
-    attached to each entry in Atoms.
+    Generator (yield) for the main block of XSAMS for the atoms, with an inner
+    loop for the states. The QuerySet that comes in needs to have a nested
+    QuerySet called States attached to each entry in Atoms.
 
     """
 
     if not isiterable(Atoms): return
+    if not Atoms.count(): return
 
     yield '<Atoms>'
 
@@ -294,33 +290,65 @@ def XsamsAtoms(Atoms):
 <ChemicalElement>
 <NuclearCharge>%s</NuclearCharge>
 <ElementSymbol>%s</ElementSymbol>
-</ChemicalElement>
-<Isotope>
-<IsotopeParameters>
-<MassNumber>%s</MassNumber>
-</IsotopeParameters>
-<Ion speciesID="X%s">
-<IonCharge>%s</IonCharge>""" % ( G('AtomNuclearCharge'),
-	G('AtomSymbol'), G('AtomMassNumber'), G('AtomSpeciesID'), 
-	G('AtomIonCharge'))
+</ChemicalElement>"""%(G('AtomNuclearCharge'),G('AtomSymbol'))
 
+        yield """<Isotope>
+<IsotopeParameters>
+<MassNumber>%s</MassNumber>%s"""%(G('AtomMassNumber'), makeDataType('Mass','AtomMass',G))
+        nucspin=G('AtomNuclearSpin')
+        if nucspin: yield '<NuclearSpin>%s</NuclearSpin>'%nucspin
+        yield '</IsotopeParameters>'
+
+        yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' % ( NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
+
+        if not hasattr(Atom,'States'): Atom.States = []
         for AtomState in Atom.States:
             G=lambda name: GetValue(name, AtomState=AtomState)
-            yield """<AtomicState stateID="S%s-%s">
-            <Description>%s</Description>
-            <AtomicNumericalData>""" % ( G('NodeID'), G('AtomStateID'), G('AtomStateDescription') )
-            yield makeDataType('IonizationEnergy','AtomStateIonizationEnergy',G)
+            yield """<AtomicState stateID="S%s-%s">"""%( G('NodeID'), G('AtomStateID') )
+            comm = G('AtomStateDescription')
+            if comm: yield '<Comments>%s</Comments>'%comm
+            yield makeSourceRefs(G('AtomStateRef'))
+            desc = G('AtomStateDescription')
+            if desc: yield '<Description>%s</Description>'%desc
+
+            yield '<AtomicNumericalData>'
             yield makeDataType('StateEnergy','AtomStateEnergy',G)
+            yield makeDataType('IonizationEnergy','AtomStateIonizationEnergy',G)
             yield makeDataType('LandeFactor','AtomStateLandeFactor',G)
-            yield '</AtomicNumericalData>'
-            if (G('AtomStateParity') or G('AtomStateTotalAngMom')):
-                yield '<AtomicQuantumNumbers><Parity>%s</Parity>' \
-                  '<TotalAngularMomentum>%s</TotalAngularMomentum>' \
-                  '</AtomicQuantumNumbers>' % (G('AtomStateParity'),
-                                               G('AtomStateTotalAngMom'))
+            yield makeDataType('QuantumDefect','AtomStateQuantumDefect',G)
+            yield makeDataType('TotalLifeTime','AtomStateLifeTime',G)
+            yield makeDataType('Polarizability','AtomStatePolarizability',G)
+            statweig = G('AtomStateStatisticalWeight')
+            if statweig: yield '<StatisticalWeight></StatisticalWeight>'%statweig
+            yield makeDataType('HyperfineConstantA','AtomStateHyperfineConstantA',G)
+            yield makeDataType('HyperfineConstantB','AtomStateHyperfineConstantB',G)
+            yield '</AtomicNumericalData><AtomicQuantumNumbers>'
+            p,j,k,hfm,mqn = G('AtomStateParity'), G('AtomStateTotalAngMom'),\
+                         G('AtomStateKappa'), G('AtomStateHyperfineMomentum'),\
+                         G('AtomStateMagneticQuantumNumber')
+            if p: yield '<Parity>%s</Parity>'%parityLabel(p)
+            if j: yield '<TotalAngularMomentum>%s</TotalAngularMomentum>'%j
+            if k: yield '<Kappa>%s</Kappa>'%k
+            if hfm: yield '<HyperfineMomentum>%s</HyperfineMomentum>'%hfm
+            if mqn: yield '<MagneticQuantumNumber>%s</MagneticQuantumNumber>'%mqn
+            yield '</AtomicQuantumNumbers>'
+
+            yield '<AtomicComposition>'
+            comm = G('AtomStateCompositionComments')
+            if comm: yield '<Comments>%s</Comments>\n'%comm
+            yield '<Component><Configuration>'
+            confl = G('AtomStateConfigurationLabel')
+            if confl: yield '<ConfigurationLabel>%s</ConfigurationLabel>'%confl
+# AtomicCore and Shells are missing here!
+            yield '</Configuration>\n'
 
             yield XsamsAtomTerm(G)
+
+            mixcoef = G('AtomStateMixingCoefficient')
+            if mixcoef: yield '<MixingCoefficient>%s</MixingCoefficient>'%mixcoef
+            yield '</Component></AtomicComposition>'
             yield '</AtomicState>'
+        yield '<InChI>%s</InChI>'%G('AtomInchi')
         yield '<InChIKey>%s</InChIKey>'%G('AtomInchiKey')
         yield """</Ion>
 </Isotope>
@@ -349,37 +377,10 @@ def XsamsMCSBuild(Molecule):
     if G("MoleculeInChI"):
         yield '<InChI>%s</InChI>' % G("MoleculeInChI")
     yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
-    if G("MoleculeMolecularWeight"):
-        yield '<StableMolecularProperties>\n'
-        yield '<MolecularWeight>\n'
-        yield '  <Value units="%s">%s</Value>\n'\
-            % (G("MoleculeMolecularWeightUnits"),
-               G("MoleculeMolecularWeight"))
-        yield '</MolecularWeight>\n'
-        yield '</StableMolecularProperties>\n'
+    yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n'%makeDataType('MolecularWeight','MoleculeMolecularWeight',G)
     if G("MoleculeComment"):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
     yield '</MolecularChemicalSpecies>\n'
-
-def XsamsMSBuild(MoleculeState):
-    G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    yield '<MolecularState stateID="S%s">\n' % G("MoleculeStateStateID")
-    yield '  <Description/>\n'
-    yield '  <MolecularStateCharacterisation>\n'
-    if G("MoleculeStateEnergyValue"):
-        yield '  <StateEnergy energyOrigin="%s">\n'\
-                    % G("MoleculeStateEnergyOrigin")
-        yield '    <Value units="%s">%s</Value>\n'\
-            % (G("MoleculeStateEnergyUnit"), G("MoleculeStateEnergyValue"))
-        yield '  </StateEnergy>\n'
-    if G("MoleculeStateCharacTotalStatisticalWeight"):
-        yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
-                    % G("MoleculeStateCharacTotalStatisticalWeight")
-    yield '  </MolecularStateCharacterisation>\n'
-    if G("MoleculeStateQuantumNumbers"):
-        for MSQNs in XsamsMSQNsBuild(G("MoleculeStateQuantumNumbers")):
-            yield MSQNs
-    yield '</MolecularState>\n'
 
 def XsamsMSQNsBuild(MolQNs):
     G = lambda name: GetValue(name, MolQN=MolQN)
@@ -392,6 +393,21 @@ def XsamsMSQNsBuild(MolQNs):
         yield '<%s:%s%s>%s</%s:%s>\n' % (G('MoleculeQnCase'), G('MoleculeQnLabel'),
             qn_attr, G('MoleculeQnValue'), G('MoleculeQnCase'), G('MoleculeQnLabel'))
     yield '</%s:QNs>\n' % case
+
+def XsamsMSBuild(MoleculeState):
+    G = lambda name: GetValue(name, MoleculeState=MoleculeState)
+    yield '<MolecularState stateID="S%s">\n' % G("MoleculeStateID")
+    yield '  <Description/>\n'
+    yield '  <MolecularStateCharacterisation>\n'
+    yield makeDataType('StateEnergy','MoleculeStateEnergy')
+    if G("MoleculeStateCharacTotalStatisticalWeight"):
+        yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
+                    % G("MoleculeStateCharacTotalStatisticalWeight")
+    yield '  </MolecularStateCharacterisation>\n'
+    if G("MoleculeStateQuantumNumbers"):
+        for MSQNs in XsamsMSQNsBuild(G("MoleculeStateQuantumNumbers")):
+            yield MSQNs
+    yield '</MolecularState>\n'
 
 def XsamsMolecules(Molecules):
     if not Molecules: return
@@ -415,6 +431,9 @@ def XsamsMolecules(Molecules):
 #################
 
 def makeBroadeningType(G,btype='Natural'):
+    lsparams = makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter'%btype,G)
+    if not lsparams: return ''
+
     env = G('RadTransBroadening%sEnvironment'%btype)
     meth = G('RadTransBroadening%sMethod'%btype)
     comm = G('RadTransBroadening%sComment'%btype)
@@ -429,7 +448,7 @@ def makeBroadeningType(G,btype='Natural'):
     # lets not do so unless somebody actually has several lineshapes
     # per broadening type
     s += '<Lineshape name="%s">'%G('RadTransBroadening%sLineshapeName'%btype)
-    s += makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter'%btype,G)
+    s += lsparams
     s += '</Lineshape>'
     s += '</%sBroadening>'%btype
     return s
@@ -439,7 +458,8 @@ def XsamsRadTranBroadening(G):
     helper function for line broadening, called from RadTrans
     """
     s = '<Broadenings>'
-    s +='<Comments>%s</Comments>'%G('RadTransBroadeningComment')
+    comm = G('RadTransBroadeningComment')
+    if comm: s +='<Comments>%s</Comments>'%comm
     s += makeSourceRefs(G('RadTransBroadeningRef'))
     if countReturnables('RadTransBroadeningStark'):
         s += makeBroadeningType(G,btype='Stark')
@@ -462,24 +482,35 @@ def XsamsRadTrans(RadTrans):
 
     if not isiterable(RadTrans): return
 
-    yield '<Radiative>\n'
     for RadTran in RadTrans:
         G=lambda name: GetValue(name,RadTran=RadTran)
-        yield '<RadiativeTransition>\n<EnergyWavelength>\n'
+        yield '<RadiativeTransition>'
+        comm = G('RadTransComments')
+        if comm: yield '<Comments>%s</Comments>'%comm
+        yield makeSourceRefs(G('RadTransRefs'))
+        yield '<EnergyWavelength>'
         yield makeDataType('Wavelength','RadTransWavelength',G)
         yield makeDataType('Wavenumber','RadTransWavenumber',G)
         yield makeDataType('Frequency','RadTransFrequency',G)
         yield makeDataType('Energy','RadTransEnergy',G)
-        yield '</EnergyWavelength>\n'
+        yield '</EnergyWavelength>'
 
         initial = G('RadTransInitialStateRef')
-        if initial: yield '<InitialStateRef>S%s</InitialStateRef>\n' % initial
+        if initial: yield '<InitialStateRef>S%s-%s</InitialStateRef>\n' % (NODEID, initial)
         final = G('RadTransFinalStateRef')
-        if final: yield '<FinalStateRef>S%s</FinalStateRef>\n' % final
+        if final: yield '<FinalStateRef>S%s-%s</FinalStateRef>\n' % (NODEID, final)
+        species = G('RadTransSpeciesRef')
+        if species: yield '<SpeciesRef>X%s-%s</SpeciesRef>\n' % (NODEID, species)
 
         yield '<Probability>'
-        yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
         yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
+        yield makeDataType('OscillatorStrength','RadTransProbabilityOscillatorStrength',G)
+        yield makeDataType('LineStrength','RadTransProbabilityLineStrength',G)
+        yield makeDataType('WeightedOscillatorStrength','RadTransProbabilityWeightedOscillatorStrength',G)
+        yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
+        yield makeDataType('IdealisedIntensity','RadTransProbabilityIdealisedIntensity',G)
+        multipole = G('RadTransProbabilityMultipole')
+        if multipole: yield '<Multipole>%s<Multipole>'%multipole
         yield makeDataType('EffectiveLandeFactor','RadTransEffectiveLandeFactor',G)
         yield '</Probability>\n'
 
@@ -493,7 +524,24 @@ def XsamsRadTrans(RadTrans):
             yield XsamsRadTranShifting(G)
         yield '</RadiativeTransition>\n'
 
-    yield '</Radiative>\n'
+
+def XsamsRadCross(RadCross):
+    """
+    for the Radiative/CrossSection part
+    """
+    yield ''
+
+def XsamsCollTrans(CollTrans):
+    """
+    collisional transitions
+    """
+    yield ''
+
+def XsamsNonRadTrans(NonRadTrans):
+    """
+    non-radiative transitions
+    """
+    yield ''
 
 def XsamsFunctions(Functions):
     if not isiterable(Functions): return
@@ -523,8 +571,9 @@ def XsamsMethods(Methods):
     yield '</Methods>\n'
 
 
-def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None, Environments=None,
-          Atoms=None, Molecules=None, CollTrans=None, RadTrans=None,
+def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
+    Environments=None, Atoms=None, Molecules=None, CollTrans=None,
+    RadTrans=None, RadCross=None, NonRadTrans=None
           ):
     """
     The main generator function of XSAMS. This one calls all the
@@ -585,11 +634,25 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None, Environme
 
     LOG('Writing Processes.')
     yield '<Processes>\n'
+    yield '<Radiative>\n'
     for RadTran in XsamsRadTrans(RadTrans): yield RadTran
-    #for CollTrans in XsamsCollTrans(CollTrans): yield CollTrans
+    for RadCros in XsamsRadCross(RadCross): yield RadCros
+    yield '</Radiative>\n'
+    for CollTran in XsamsCollTrans(CollTrans): yield CollTran
+    for NonRadTran in XsamsNonRadTrans(NonRadTrans): yield NonRadTran
     yield '</Processes>\n'
     yield '</XSAMSData>\n'
     LOG('Done with XSAMS')
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -9,6 +9,7 @@ urlpatterns = patterns('django.views.generic.list_detail',
     (r'^log/', 'object_list', {'queryset':LogEntry.objects.all(), 'template_name':'dictionary/log.html'} ),
 )
 urlpatterns += patterns('dictionary.browse.views',
+    (r'^bytype/', 'browse_by_type'),
     (r'^check/', 'check'),
     (r'^new/', 'makenew'),
 )

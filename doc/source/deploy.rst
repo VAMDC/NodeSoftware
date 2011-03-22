@@ -46,6 +46,16 @@ Note that you probably want to edit the port, server name and the location
 at which to serve the node (change `/yournode/tap` at three places but make
 them match each other).
 
+If you installed *nginx* with the debian/ubuntu package, you can place symbolic
+links to the config file into `/etc/nginx/` like this to make it use the config
+above::
+
+    $ cd /etc/nginx/sites-available/
+    $ sudo ln -s $VAMDCROOT/nodes/YourNode/nginx.conf vamdcnode
+    $ cd ../sites-enabled/
+    $ sudo ln -s ../sites-available/vamdcnode
+    $ sudo /etc/init.d/nginx restart
+
 Proxy Alternatives
 ~~~~~~~~~~~~~~~~~~
 What you choose as proxy for Gunicorn is somewhat arbitrary. Common
@@ -93,3 +103,23 @@ Searching the web for "django hosting" will point you in the right direction,
 as does this list
 https://convore.com/django-community/django-hosting-explosion/
 
+Logging
+------------------
+
+Finally, a few words on logging the access to your node. There are two basic
+ways:
+
+* let the webserver do it.
+* let the NodeSoftware do it.
+
+The webserver/proxy, be it nginx or apache, keeps a log on when, how and by
+whom your node is accessed. Since the query itself is in the accessed URL, it
+also ends up in these logs. There are many tools to analyze and visualize this
+kind of logs.
+
+However, this contains no information about what happened inside the
+NodeSoftware. If you want to keep tabs on how much data was returned from each
+query, how long it took to process and so on, you need to tell the NodeSoftware
+to save this information for you - either in a separate log file, or in a
+separate table in your database. The infrastructure for this is however not yet
+implemented in the NodeSoftware. Stay tuned.
