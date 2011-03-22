@@ -205,12 +205,13 @@ def XsamsEnvironments(Environments):
                 pass
 
         G = lambda name: GetValue(name, Environment=Environment)
-        yield '<Environment envID="E%s-%s">'%(NODEID,G('EnvironmentID'))
+        yield '<Environment envID="E%s-%s">' % (NODEID, G('EnvironmentID'))
         yield makeSourceRefs(G('EnvironmentRef'))
-        yield '<Comments>%s</Comments>'%G('EnvironmentComment')
-        yield makeDataType('Temperature','EnvironmentTemperature')
-        yield makeDataType('TotalPressure','EnvironmentTotalPressure')
-        yield makeDataType('TotalNumberDensity','EnvironmentTotalNumberDensity')
+        yield '<Comments>%s</Comments>' % G('EnvironmentComment')
+        yield makeDataType('Temperature', 'EnvironmentTemperature', G)
+        yield makeDataType('TotalPressure', 'EnvironmentTotalPressure', G)
+        yield makeDataType('TotalNumberDensity', 
+            'EnvironmentTotalNumberDensity', G)
         species=G('EnvironmentSpecies')
         if species:
             yield '<Composition>'
@@ -218,15 +219,21 @@ def XsamsEnvironments(Environments):
                 for Species in species:
                     yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
                     yield
-                    makeDataType('PartialPressure','EnvironmentSpeciesPartialPressure')
-                    yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
-                    yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
+                    makeDataType('PartialPressure', 
+                        'EnvironmentSpeciesPartialPressure', G)
+                    yield makeDataType('MoleFraction',
+                        'EnvironmentSpeciesMoleFraction', G)
+                    yield makeDataType('Concentration',
+                        'EnvironmentSpeciesConcentration', G)
                     yield '</Species>'
             else:
                 yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
-                yield makeDataType('PartialPressure','EnvironmentSpeciesPartialPressure')
-                yield makeDataType('MoleFraction','EnvironmentSpeciesMoleFraction')
-                yield makeDataType('Concentration','EnvironmentSpeciesConcentration')
+                yield makeDataType('PartialPressure',
+                    'EnvironmentSpeciesPartialPressure', G)
+                yield makeDataType('MoleFraction',
+                    'EnvironmentSpeciesMoleFraction', G)
+                yield makeDataType('Concentration',
+                    'EnvironmentSpeciesConcentration', G)
                 yield '</Species>'
             yield '</Composition>'
         yield '</Environment>'
@@ -396,10 +403,11 @@ def XsamsMSQNsBuild(MolQNs):
 
 def XsamsMSBuild(MoleculeState):
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    yield '<MolecularState stateID="S%s">\n' % G("MoleculeStateID")
+    yield '<MolecularState stateID="S%s-%s">\n' % (G('NodeID'),
+                                                   G("MoleculeStateID"))
     yield '  <Description/>\n'
     yield '  <MolecularStateCharacterisation>\n'
-    yield makeDataType('StateEnergy','MoleculeStateEnergy')
+    yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G)
     if G("MoleculeStateCharacTotalStatisticalWeight"):
         yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
                     % G("MoleculeStateCharacTotalStatisticalWeight")

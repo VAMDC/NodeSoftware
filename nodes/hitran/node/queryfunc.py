@@ -34,88 +34,11 @@ def getHITRANbroadening(transs, XSAMSvariant):
         for trans in transs:
             trans.broadening_xml = '<!-- Broadening --> '
         return
-    if XSAMSvariant == 'ucl':
-        # for ucl-XSAMS, write the broadening XML:
-        for trans in transs:
-            prms = Prms.objects.filter(transid=trans.id)
-            prm_dict = {}
-            for prm in prms:
-                prm_dict[prm.prm_name] = prm
-            broadenings = []
-            if 'g_air' in prm_dict.keys() and 'n_air' in prm_dict.keys():
-                g_air_val = str(prm_dict['g_air'].prm_val)
-                g_air_err = str(prm_dict['g_air'].prm_err)
-                g_air_ref = str(prm_dict['g_air'].prm_ref)
-                n_air_val = str(prm_dict['n_air'].prm_val)
-                n_air_err = str(prm_dict['n_air'].prm_err)
-                n_air_ref = str(prm_dict['n_air'].prm_ref)
-                lineshape = '      <ucl:Lineshape name="Lorentzian">\n'\
-                '      <ucl:Comments>The temperature-dependent pressure'\
-                ' broadening Lorentzian lineshape</ucl:Comments>\n'\
-                '      <ucl:LineshapeParameter name="gammaL" units="1/cm">\n'\
-                '        <ucl:FitParameters functionRef="FgammaL">\n'\
-                '          <ucl:FitArgument lowerLimit="240" upperLimit="350"'\
-                ' units="K">T</ucl:FitArgument>\n'\
-                '          <ucl:FitArgument lowerLimit="0." upperLimit="1.2"'\
-                ' units="atm">p</ucl:FitArgument>\n'\
-                '          <ucl:FitParameter name="gammaL_ref"'\
-                ' units="1/cm" sourceRef="%s">\n'\
-                '            <ucl:Value>%s</ucl:Value>\n'\
-                '            <ucl:Accuracy>%s</ucl:Accuracy>\n'\
-                '          </ucl:FitParameter>\n'\
-                '          <ucl:FitParameter name="n" units="unitless"'\
-                ' sourceRef="%s">\n'\
-                '            <ucl:Value>%s</ucl:Value>\n'\
-                '            <ucl:Accuracy>%s</ucl:Accuracy>\n'\
-                '          </ucl:FitParameter>\n'\
-                '        </ucl:FitParameters>\n'\
-                '      </ucl:LineshapeParameter>\n</ucl:Lineshape>\n' \
-                        % (g_air_ref, g_air_val, g_air_err, n_air_ref,
-                           n_air_val, n_air_err)
-                broadening = '    <ucl:Broadening name="van-der-waals"'\
-                    ' envRef="air-broadening-ref-env">\n'\
-                    '%s'\
-                    '    </ucl:Broadening>\n' % lineshape
-                broadenings.append(broadening)
-            if 'g_self' in prm_dict.keys():
-                g_self_val = str(prm_dict['g_self'].prm_val)
-                g_self_err = str(prm_dict['g_self'].prm_err)
-                g_self_ref = str(prm_dict['g_self'].prm_ref)
-                lineshape = '      <ucl:Lorentzian>\n'\
-                    '        <ucl:gammaL units="1/cm" sourceRef="%s">\n'\
-                    '          <ucl:Value>%s</ucl:Value>\n'\
-                    '          <ucl:Accuracy>%s</ucl:Accuracy>\n'\
-                    '        </ucl:gammaL>\n'\
-                    '      </ucl:Lorentzian>' % (g_self_ref, g_self_val,
-                                                 g_self_err)
-                broadening = '    <ucl:Broadening name="van-der-waals"'\
-                    ' envRef="%s-broadening-ref-env">\n'\
-                    '%s'\
-                    '    </ucl:Broadening>\n' % ('self', lineshape)
-                broadenings.append(broadening)
-            # treat shifting as a sort of broadening(!) for now
-            if 'delta_air' in prm_dict.keys():
-                delta_air_val = str(prm_dict['delta_air'].prm_val)
-                delta_air_err = str(prm_dict['delta_air'].prm_err)
-                delta_air_ref = str(prm_dict['delta_air'].prm_ref)
-                shifting = '    <ucl:Shifting'\
-                    ' envRef="air-broadening-ref-env">\n'\
-                    '      <ucl:ShiftingParameter name="delta" units="1/cm">'\
-                    '        <ucl:FitParameters functionRef="Fdelta">\n'\
-                    '          <ucl:FitArgument lowerLimit="0."'\
-                    ' upperLimit="1.2" units="atm">p</ucl:FitArgument>'\
-                    '          <ucl:FitParameter name="delta_ref"'\
-                    ' units="unitless" sourceRef="%s">'\
-                    '            <ucl:Value>%s</ucl:Value>\n'\
-                    '            <ucl:Accuracy>%s</ucl:Accuracy>\n'\
-                    '          </ucl:FitParameter>\n'\
-                    '        </ucl:FitParameters>\n'\
-                    '      </ucl:ShiftingParameter>\n'\
-                    '    </ucl:Shifting>\n' % (delta_air_ref, delta_air_val,
-                                               delta_air_err)
 
-                broadenings.append(shifting)
-            trans.broadening_xml = ''.join(broadenings)
+    if XSAMSvariant == 'ucl':
+        print 'the XSAMS variant ucl is no longer supported on this branch'\
+              ' of the node software'
+        return
 
     if XSAMSvariant == 'working':
         # for vamdc-working branch, write the broadening XML:
@@ -137,7 +60,8 @@ def getHITRANbroadening(transs, XSAMSvariant):
                 lineshape = '      <Lineshape name="Lorentzian">\n'\
                 '      <Comments>The temperature-dependent pressure'\
                 ' broadening Lorentzian lineshape</Comments>\n'\
-                '      <LineshapeParameter name="gammaL">\n'\
+                '      <LineshapeParameter>\n'\
+                '        <Name>gammaL</Name>\n'\
                 '        <FitParameters functionRef="FgammaL">\n'\
                 '          <FitArgument units="K">\n'\
                 '            <Name>T</Name>\n'\
@@ -149,12 +73,14 @@ def getHITRANbroadening(transs, XSAMSvariant):
                 '            <LowerLimit units="atm">0.</LowerLimit>\n'\
                 '            <UpperLimit units="atm">1.2</UpperLimit>\n'\
                 '          </FitArgument>\n'\
-                '          <FitParameter name="gammaL_ref">\n'\
+                '          <FitParameter>\n'\
+                '            <Name>gammaL_ref</Name>\n'\
                 '            <SourceRef>%s</SourceRef>\n'\
                 '            <Value units="1/cm">%s</Value>\n'\
                 '            <Accuracy>%s</Accuracy>\n'\
                 '          </FitParameter>\n'\
-                '          <FitParameter name="n">\n'\
+                '          <FitParameter>\n'\
+                '            <Name>n</Name>\n'\
                 '            <SourceRef>%s</SourceRef>\n'\
                 '            <Value units="unitless">%s</Value>\n'\
                 '            <Accuracy>%s</Accuracy>\n'\
@@ -173,7 +99,8 @@ def getHITRANbroadening(transs, XSAMSvariant):
                 g_self_err = str(prm_dict['g_self'].prm_err)
                 g_self_ref = str(prm_dict['g_self'].prm_ref)
                 lineshape = '      <Lineshape name="Lorentzian">\n'\
-                    '        <LineshapeParameter name="gammaL">\n'\
+                    '        <LineshapeParameter>\n'\
+                    '        <Name>gammaL</Name>\n'\
                     '          <SourceRef>%s</SourceRef>\n'\
                     '          <Value units="1/cm">%s</Value>\n'\
                     '          <Accuracy>%s</Accuracy>\n'\
@@ -191,14 +118,16 @@ def getHITRANbroadening(transs, XSAMSvariant):
                 delta_air_err = str(prm_dict['delta_air'].prm_err)
                 delta_air_ref = str(prm_dict['delta_air'].prm_ref)
                 shifting = '    <Shifting envRef="Eair-broadening-ref-env">\n'\
-                    '      <ShiftingParameter name="delta">'\
+                    '      <ShiftingParameter>\n'\
+                    '        <Name>delta</Name>\n'\
                     '        <FitParameters functionRef="Fdelta">\n'\
                     '          <FitArgument units="K">\n'\
                     '            <Name>p</Name>\n'\
                     '            <LowerLimit units="atm">0.</LowerLimit>\n'\
                     '            <UpperLimit units="atm">1.2</UpperLimit>\n'\
                     '          </FitArgument>\n'\
-                    '          <FitParameter name="delta_ref">'\
+                    '          <FitParameter>'\
+                    '            <Name>delta_ref</Name>\n'\
                     '            <SourceRef>%s</SourceRef>\n'\
                     '            <Value units="unitless">%s</Value>\n'\
                     '            <Accuracy>%s</Accuracy>\n'\
