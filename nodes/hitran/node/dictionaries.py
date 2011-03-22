@@ -45,7 +45,7 @@ RETURNABLES=CaselessDict({\
 # use the Comment field to 
 'MoleculeComment': 'Molecule.iso_name',
 
-'MoleculeStateStateID':'MoleculeState.id',
+'MoleculeStateID':'MoleculeState.id',
 'MoleculeStateMolecularSpeciesID':'MoleculeState.inchikey',
 'MoleculeStateEnergyValue':'MoleculeState.energy',
 'MoleculeStateEnergyUnit':'1/cm',
