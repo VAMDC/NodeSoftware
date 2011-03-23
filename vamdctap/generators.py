@@ -307,7 +307,6 @@ def XsamsAtoms(Atoms):
         yield '</IsotopeParameters>'
 
         yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' % ( NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
-
         if not hasattr(Atom,'States'): Atom.States = []
         for AtomState in Atom.States:
             G=lambda name: GetValue(name, AtomState=AtomState)
