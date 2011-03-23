@@ -32,7 +32,7 @@ def getSpeciesWithStates(transs):
         up=subtranss.values_list('upstate_id',flat=True)
         lo=subtranss.values_list('lostate_id',flat=True)
         sids = set(chain(up,lo))
-        atoms.States = State.objects.filter( pk__in = sids )    
+        specie.States = State.objects.filter( pk__in = sids )    
         nstates += len(sids)
     return atoms, nspecies, nstates
 
@@ -41,7 +41,7 @@ def getLifetimeMethods():
         def __init__(self, mid, category):
             self.id = mid
             self.category = category
-    return (Method("tauEXP", "experiment"), Method("tauTHEO", "compilation"))
+    return (Method("MtauEXP", "experiment"), Method("MtauTHEO", "compilation"))
 
 def setupResults(sql,limit=1000):
     LOG(sql)
@@ -62,7 +62,8 @@ def setupResults(sql,limit=1000):
     nsources = sources.count()
     atoms,nspecies,nstates = getSpeciesWithStates(transs)
     methods = getLifetimeMethods()
-
+    #print "atoms:", atoms
+    #print "state_filter:", atoms.States.filter(pk="4101-LS-4-1G-14790.790")
     headerinfo=CaselessDict({\
             'Truncated':percentage,
             'COUNT-SOURCES':nsources,

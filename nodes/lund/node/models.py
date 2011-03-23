@@ -91,12 +91,12 @@ class State(Model):
             return self.tau_calc
     def get_tau_ref(self):
         if self.tau_exp:
-            return "tauEXP"
+            return "MtauEXP"
         else:
-            return "tauTHEO"
+            return "MtauTHEO"
             
     def __unicode__(self):
-        return u'ID:%s Eng:%s'%(self.id,self.energy)
+        return u'ID:%s En:%s'%(self.id,self.energy)
     class Meta:
         db_table = u'states'
 
