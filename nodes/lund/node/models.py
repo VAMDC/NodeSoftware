@@ -34,7 +34,10 @@ class Reference(Model):
     bibtex = TextField(null=True)
 
     def XML(self):
-        return BibTeX2XML( self.bibtex )
+        try:
+            return BibTeX2XML( self.bibtex )
+        except Exception, e:
+            raise
 
     class Meta:
         db_table = u'refs'
