@@ -563,11 +563,11 @@ def XsamsMethods(Methods):
     yield '<Methods>\n'
     for Method in Methods:
         G=lambda name: GetValue(name,Method=Method)
-        yield """<Method methodID="%s">
+        yield """<Method methodID="M%s-%s">
 <Category>%s</Category>
 <Description>%s</Description>
 </Method>
-"""%(G('MethodID'),G('MethodCategory'),G('MethodDescription'))
+"""%(NODEID, G('MethodID'),G('MethodCategory'),G('MethodDescription'))
     yield '</Methods>\n'
 
 
