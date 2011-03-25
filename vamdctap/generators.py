@@ -9,7 +9,7 @@ from django.conf import settings
 from django.utils.importlib import import_module
 DICTS=import_module(settings.NODEPKG+'.dictionaries')
 
-# This must always be 
+# This must always be set.
 try:
     NODEID = DICTS.RETURNABLES['NodeID']
 except:
@@ -145,8 +145,8 @@ def makeNamedDataType(tagname,keyword,G):
     for i,val in enumerate(value):
         s+='\n<%s'%tagname
         if method[i]: s+=' methodRef="M%s-%s"'%(NODEID,method[i])
-        if name[i]: s+=' name="%s"'%name[i]
         s+='>'
+        if name[i]: s+='<Name>%s</Name>'%name[i]
         if comment[i]: s+='<Comments>%s</Comments>'%escape('%s'%comment[i])
         s+=makeSourceRefs(refs[i])
         s+='<Value units="%s">%s</Value>'%(unit[i] or 'unitless',value[i])
