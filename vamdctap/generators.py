@@ -425,10 +425,12 @@ def XsamsMolecules(Molecules):
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS
-        if Molecule.States:
-            for MoleculeState in Molecule.States:
-                for MS in XsamsMSBuild(MoleculeState):
-                    yield MS
+
+        if not hasattr(Molecule,'States'): Molecule.States = []
+        for MoleculeState in Molecule.States:
+            for MS in XsamsMSBuild(MoleculeState):
+                yield MS
+
         yield '</Molecule>\n'
     yield '</Molecules>\n'
 
