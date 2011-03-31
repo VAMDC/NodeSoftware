@@ -7,7 +7,8 @@
 <meta name="keywords" content="keywords"/> 
 <meta name="author" content="author"/> 
 <link rel="stylesheet" type="text/css" href="/indigo.css" media="screen"/>
-<title>{% block title %}VAMDC Testsite{% endblock %}</title>
+<title>{% block title %}VAMDC Tool Collection{% endblock %}</title>
+{% block addheader %}{% endblock %}
 </head>
 
 <body>
@@ -54,7 +55,8 @@
 			</ul>
 			<h1>Dictionary</h1>
 			<ul>
-				<li><a href="/dict/">Browse</a></li>
+				<li><a href="/dict/">Browse (alphabetical)</a></li>
+				<li><a href="/dict/bytype/">Browse (by type)</a></li>
                 <li><a href="/dict/new/">Create dictionaries</a></li>
                 <li><a href="/dict/check/">Check dictionaries</a></li>
     			<li><a href="/dict/admin/">Edit main dictionary</a></li>
@@ -65,6 +67,14 @@
 			<ul>
 				<li><a href="/portal/">Home</a></li>
 				<li><a href="/portal/query/">Make a query</a></li>
+			</ul>
+			<h1>Xsams Schema Doc</h1>
+			<ul>
+				<li><div style="color: #777;
+display: block;
+font-size: 0.9em;
+padding: 3px 6px 3px 8px;
+text-decoration: none;">Automatically generated documentation for the current VAMDC working schema. This page is very long and has many images (>50MB)</div><a href="/xsams/xsams.html">Go anyway!</a></li>
 			</ul>
 			<h1>Links</h1>
 			<ul>

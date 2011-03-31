@@ -196,7 +196,9 @@ points, but he will be very happy if you try to follow them.
 
 
 
-Set the related name of a field
+.. _relatedname:
+
+Setting the related name of a field
 -----------------------------------
 
 When you have a ForeignKey called key1 in a ModelB which points ModelA, 
@@ -225,7 +227,22 @@ ForeignKeys to something like *'transitions_with_this_upstate'* and
 *s* the transitions that have *s* as upper state can be retrieved by 
 *s.transitions_with_this_upstate*.
 
+Using a custom model method for filling a Returnable
+-----------------------------------------------------
 
+tbw
+
+Inserting custom XML into the generator
+------------------------------------------
+
+There can arise situations where it might be easier for a node to create a
+piece of XML itself than filling the Returnable and letting the generator
+handle this. This is allowed and the generator checks every time it loops over
+an object, if the loop variable, e.g. `AtomState`  has an attribute called
+`XML`. If so, it returns `AtomState.XML()` instead of trying to extract the
+values from the Retunable for the current block of XSAMS. Note the *execution*
+of `.XML()` which means that this needs to be coded as a function/method in
+your model, not as an attribute.
 
 Adding more views or apps to your node
 ------------------------------------------

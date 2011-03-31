@@ -9,6 +9,8 @@ urlpatterns = patterns('vamdctap.views',
                        (r'^tables/', 'tables'),
                        (r'^Tables.xsd', 'tablesXsd'),
                        (r'^Capabilities.xsd', 'capabilitiesXsd'),
+                       (r'^Capabilities.xsl', 'capabilitiesXsl'),
+                       (r'^Availability.xsl', 'availabilityXsl'),
                        #(r'^/', ''),
                        #(r'^/', ''),
                        )

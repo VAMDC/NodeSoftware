@@ -18,14 +18,14 @@ distributions than Debian. All software should be able to be installed
 on Windows and OSX as well but it probably involves some more effort and 
 we unfortunately cannot give support for this.
 
-In any case, you can ask us for a virtual machine appliance with 
-Debian/Linux and all required software installed into it. You can then
-run this virtual machine on a host computer, using either VirtualBox
-or VMware which are available for free on most operating systems.
+We also provide a virtual machine appliance with Debian/Linux and all required
+software installed into it. You can then run this virtual machine on a host
+computer, using VirtualBox which is available for free on most operating
+systems. See :ref:`virtmach` for more detail on this.
 
-If the command above worked, you might want to skip to :ref:`testprereq` 
-below. Otherwise continue reading for a list of the individual software 
-dependencies..
+If the command above worked or you run the virtual maching, you might want to
+skip to :ref:`testprereq`. Otherwise continue reading for a list of the
+individual software dependencies..
 
 Python plus some modules
 --------------------------------
@@ -62,9 +62,10 @@ Again, it is best installed via your distribution's package manager.
 Django
 ----------------
 
-Django is the Python-based web-framework that we use to run the services 
-(see :ref:`intro` and http://djangoproject.com). We use Django 1.2.X 
-where X is the latest bug-fix version number.
+Django is the Python-based web-framework that we use to run the services (see
+:ref:`intro` and http://djangoproject.com). We currently use Django 1.2.X
+(where X is the latest bug-fix version number) but newer versions will be
+supported as they are released.
 
 The packaged version of your OS might be outdated. In this case follow the 
 installation instructions on the Django website.
@@ -95,14 +96,10 @@ not written to, during standard operation.
 Webserver
 ---------------
 
-We support the Apache webserver (http://apache.org) with the WSGI module 
-(http://code.google.com/p/modwsgi/) as default webserver to deploy a 
-node with Django.
+The node software needs to run within a webserver. The two setups
+that we successfully tested are *Gunicorn* (together with *nginx*) and the Apache webserver (with its WSGI module). 
 
-Django is known to also run in newer webservers like cherokee, nginx or 
-lighttpd which are more light-weight and maybe faster. We did in any 
-case not find the web server to be a bottleneck for the performance.
-
+This is covered in more detail in :ref:`deploy`.
 
 Git version control
 --------------------

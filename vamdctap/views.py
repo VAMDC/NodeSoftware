@@ -144,13 +144,21 @@ def availability(request):
     c=RequestContext(request,{})
     return render_to_response('node/availability.xml', c, mimetype='text/xml')
 
+def availabilityXsl(request):
+    c = RequestContext(request, {})
+    return render_to_response('node/Availability.xsl', c, mimetype='text/xsl')
+
 def tablesXsd(request):
     c = RequestContext(request,{})
-    return render_to_response('node/Tables.xsd', c)
+    return render_to_response('static/xsd/Tables.xsd', c)
 
 def capabilitiesXsd(request):
     c = RequestContext(request, {})
     return render_to_response('node/Capabilities.xsd', c)
+
+def capabilitiesXsl(request):
+    c = RequestContext(request, {})
+    return render_to_response('node/Capabilities.xsl', c)
 
 def index(request):
     c=RequestContext(request,{})

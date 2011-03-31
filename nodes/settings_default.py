@@ -45,7 +45,7 @@ DATABASES = {
 ###################################################
 #Copy this field to settings and append the path to
 # the node that you want to run.
-INSTALLED_APPS = (
+INSTALLED_APPS = [
 #    'django.contrib.contenttypes',
 #    'django.contrib.sessions',
 #    'django.contrib.sites',
@@ -53,7 +53,7 @@ INSTALLED_APPS = (
 #    'django.contrib.admindocs',
     'vamdctap',
     NODEPKG
-)
+]
 # Setup of Django middleware components (shouldn't have to change this))
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
