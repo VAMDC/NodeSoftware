@@ -344,7 +344,7 @@ node directory. It works like this:
 
 In a concrete example of an atomic transition database, it looks like this:
 
-.. literalinclude:: ../../nodes/ExampleNode/node/queryfunc.py
+.. literalinclude:: queryfunc.py
    :linenos:
 
 Explanations on what happens here:
@@ -417,11 +417,12 @@ Explanations on what happens here:
 
 .. note::
 
-    We are well aware that adapting the above example to your data is
-    a non-trivial task unless you know Python and Django reasonably well.
-    For more examples, please look at the other nodes' `queryfunc.py` that
-    are included in the NodeSoftware. And, of course, we are willing to
-    assist you in this step, so feel free to contact us about this.
+    We are well aware that adapting the above example to your data is a
+    non-trivial task unless you know Python and Django reasonably well.  There
+    is a more complete example in `ExampleNode/node/queryfunc.py` and you can
+    also have a look at the other nodes' `queryfunc.py` which are included in
+    the NodeSoftware. And, of course, we are willing to assist you in this
+    step, so feel free to contact us about this.
 
 More comprehensive information on how to run queries within Django can be found at http://docs.djangoproject.com/en/1.2/topics/db/queries/.
 
