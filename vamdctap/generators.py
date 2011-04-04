@@ -519,7 +519,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
         yield makeDataType('IdealisedIntensity','RadTransProbabilityIdealisedIntensity',G)
         multipole = G('RadTransProbabilityMultipole')
-        if multipole: yield '<Multipole>%s<Multipole>'%multipole
+        if multipole: yield '<Multipole>%s</Multipole>'%multipole
         yield makeDataType('EffectiveLandeFactor','RadTransEffectiveLandeFactor',G)
         yield '</Probability>\n'
 
