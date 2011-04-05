@@ -56,6 +56,18 @@ class Molecules( Model):
      statesspecies = ForeignKey(StatesMolecules, related_name='molecules',
                             db_column='I_ID')
 
+
+class Methods (Model):
+    id = IntegerField(primary_key=True, db_column='ME_ID')
+    ref = CharField(max_length=10, db_column='ME_Ref')
+    functionref = IntegerField(db_column='ME_FunctionRef')
+    category = CharField(max_length=30, db_column='ME_Category')
+    description = CharField(max_length=500, db_column='ME_Description')
+    class Meta:
+        db_table = u'Methods'
+    
+
+
 class RadiativeTransitions(Model):
 
     resource =  CharField(max_length=12, db_column='Resource') # Field name made lowercase.
@@ -88,6 +100,7 @@ class RadiativeTransitions(Model):
     finalstateref   =  ForeignKey(StatesMolecules, related_name='isfinalstate',
                                 db_column='FinalStateRef', null=False)
 
+    freqmethodref  = ForeignKey(Methods, db_column='FrequencyMethodRef')
 
     caseqn =  IntegerField(null=True, db_column='CaseQN', blank=True) # Field name made lowercase.
     qn_up_1 =  IntegerField(null=True, db_column='QN_Up_1', blank=True) # Field name made lowercase.
@@ -136,19 +149,30 @@ class MolecularQuantumNumbers( Model):
     statesmolecules =  ForeignKey(StatesMolecules, related_name='quantumnumbers', 
                             db_column='StateID')
 
+class BondArray( Model):
+    id = IntegerField(primary_key=True, db_column='BA_ID')
+    inchikey = CharField(max_length=100, db_column='BA_InchiKey')
+    atom1 = CharField(max_length=10, db_column='BA_AtomId1')
+    atom2 = CharField(max_length=10, db_column='BA_AtomId2')
+    order = CharField(max_length=10, db_column='BA_Order')
+    eId   = ForeignKey(Molecules, db_column='BA_E_ID')
 
-
-class SourcesIDRefs( Model):
-    rlId  =  IntegerField(primary_key=True, db_column='RL_ID')
-    rId   =  IntegerField(null=True, db_column='RL_R_ID')
-    eId   =  IntegerField(null=True, db_column='RL_E_ID')
-    datId =  IntegerField(null=True, db_column='RL_DAT_ID', blank=True)
-    fId   =  IntegerField(null=True, db_column='RL_F_ID', blank=True)
     class Meta:
-        db_table = u'ReferenceList'
+        db_table = u'BondArray'
+        
+class AtomArray( Model):
+    id =  IntegerField(primary_key=True, db_column='AA_ID')
+    inchikey = CharField(max_length=100, db_column='AA_InchiKey')
+    atomid = CharField(max_length=10, db_column='AA_AtomId')
+    elementtype = CharField(max_length=5, db_column='AA_ElementType')
+    isotopenumber = IntegerField( db_column='AA_IsotopeNumber')
+    formalcharge = CharField(max_length=5, db_column='AA_FormalCharge')
+    eId = ForeignKey(Molecules, db_column='AA_E_ID')    
+    
+    class Meta:
+        db_table = u'AtomArray'
 
-    stateReferenceId =  ForeignKey(StatesMolecules, related_name='isStateRefId',
-                                db_column='eId', null=False)
+
 
 class Sources( Model):
     rId       =  IntegerField(primary_key=True, db_column='R_ID')
@@ -170,5 +194,52 @@ class Sources( Model):
     class Meta:
         db_table = u'ReferenceBib'
 
-    referenceId =  ForeignKey(SourcesIDRefs, related_name='isRefId',
-                                db_column='rId', null=False)
+    def getAuthorList(self):
+       try:
+          return [name.replace("{","").replace("}","") for name in self.authors.split("},{")]
+       except:
+          return none
+
+#    referenceId =  ForeignKey(SourcesIDRefs, related_name='isRefId',
+#                                db_column='rId', null=False)
+
+        
+class SourcesIDRefs( Model):
+    rlId  =  IntegerField(primary_key=True, db_column='RL_ID')
+    rId   =  IntegerField(null=True, db_column='RL_R_ID')
+    eId   =  IntegerField(null=True, db_column='RL_E_ID')
+    datId =  IntegerField(null=True, db_column='RL_DAT_ID', blank=True)
+    fId   =  IntegerField(null=True, db_column='RL_F_ID', blank=True)
+    class Meta:
+        db_table = u'ReferenceList'
+
+    referenceid = ForeignKey(Sources, db_column='RL_R_ID')
+#    stateReferenceId =  ForeignKey(StatesMolecules, related_name='isStateRefId',
+#                                db_column='RL_E_ID', null=False)
+
+
+
+class Partitionfunctions( Model):
+    id  =  IntegerField(primary_key=True, db_column='PF_ID')
+    mid =  IntegerField(db_column='PF_M_ID')
+    eid =  ForeignKey(Molecules, db_column='PF_E_ID')
+    temperature = FloatField(db_column='PF_Temperature')
+    partitionfunc = FloatField(db_column='PF_Partitionfunction')
+    comment = CharField(max_length=150, db_column='PF_Comment')
+    
+    class Meta:
+        db_table = u'Partitionfunctions' 
+                     
+                                    
+
+
+class Method:
+    def __init__(self, id, speciesid, category, description, sourcesref):
+
+        self.id = id
+        self.speciesid = speciesid
+        self.category = category
+        self.description = description
+        self.sourcesref = sourcesref
+        
+                                

@@ -89,6 +89,31 @@ def makeSourceRefs(refs):
         else: s+='<SourceRef>B%s-%s</SourceRef>'%(NODEID,refs)
     return s
 
+def makePartitionfunc(keyword,G):
+    """
+    This is for creating the partionfunction - element.
+    """
+    value=G(keyword)
+    if not value: return ''
+    
+    temperature=G(keyword+'T')
+    partitionfunc = G(keyword)
+    
+    s='<PartitionFunction>\n'
+    s+='  <T units="K">\n'
+    s+='     <Datalist>\n'
+    for temp in temperature: s+=' %s' % temp   
+    s+='\n     </Datalist>\n'
+    s+='  </T>\n'
+    s+='  <Q>\n'
+    s+='     <Datalist>\n'
+    for q in partitionfunc: s+=' %s' % q
+    s+='\n     </Datalist>\n'
+    s+='  </Q>\n'
+    s+='</PartitionFunction>\n'
+
+    return s
+
 def makeDataType(tagname,keyword,G):
     """
     This is for treating the case where a keyword corresponds to a
@@ -383,6 +408,9 @@ def XsamsMCSBuild(Molecule):
     if G("MoleculeInChI"):
         yield '<InChI>%s</InChI>' % G("MoleculeInChI")
     yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
+
+    yield makePartitionfunc("MoleculePartitionFunction",G)
+
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n'%makeDataType('MolecularWeight','MoleculeMolecularWeight',G)
     if G("MoleculeComment"):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
@@ -575,8 +603,23 @@ def XsamsMethods(Methods):
         yield """<Method methodID="M%s-%s">
 <Category>%s</Category>
 <Description>%s</Description>
-</Method>
 """%(NODEID, G('MethodID'),G('MethodCategory'),G('MethodDescription'))
+
+
+        methodsourcerefs=G('MethodSourceRef')
+        # make it always into a list to be looped over, even if
+        # only single entry
+        try:
+           methodsourcerefs = eval(methodsourcerefs)
+        except:
+           pass
+        if not isiterable(methodsourcerefs): methodsourcerefs=[methodsourcerefs]
+        for sourceref in methodsourcerefs:
+            yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
+
+        yield '</Method>'
+
+
     yield '</Methods>\n'
 
 

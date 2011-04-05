@@ -41,6 +41,19 @@ def attach_state_qns(states):
 #                qn.attribute += ' spinRef="%s"' % qn.spinref
             state.parsed_qns.append(MolecularQuantumNumbers(qn.stateid, qn.case, qn.label, qn.value, qn.attribute)) #, qn.xml))
 
+def attach_partionfunc(molecules):
+    for molecule in molecules:
+        molecule.partionfuncT = []
+        molecule.partionfuncQ = []
+        
+        pfs = Partitionfunctions.objects.filter(eid = molecule.speciesid)
+        
+        temp=pfs.values_list('temperature',flat=True)
+        pf = pfs.values_list('partitionfunc',flat=True)
+                   
+        molecule.partitionfuncT=temp
+        molecule.partitionfuncQ=pf
+         
 
 def getSpeciesWithStates(transs):
     spids = set( transs.values_list('speciesid',flat=True) )
@@ -66,6 +79,35 @@ def getSpeciesWithStates(transs):
 #    return atoms,molecules,nspecies,nstates
     return molecules,nspecies,nstates
 
+def getFreqMethodRefs(transs):
+    ids=set([])
+    for trans in transs:
+      ids=ids.union(set([trans.freqmethodref_id]))
+    q=Q(id__in=ids)
+    return Methods.objects.filter(q)
+
+def getSources(transs):
+    ids=set([])
+    meth=[]
+    for trans in transs:
+      ids=ids.union(set([trans.speciesid]))
+    q=Q(eId__in=ids)
+
+    slist = SourcesIDRefs.objects.filter(q).distinct()  
+    for src in slist.values_list('eId',flat=True):
+        mesrc=SourcesIDRefs.objects.filter(Q(eId=src)).values_list('rId',flat=True)
+        LOG(mesrc)
+        this_method = Method(src,src,'derived','derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data',mesrc)
+#        meth=meth.append(Method(5,src,'derived','derived',mesrc))
+        LOG(this_method.sourcesref)
+        meth.append(this_method)
+        LOG(meth)
+
+        
+    sourceids = slist.values_list('rId',flat=True)
+
+    return Sources.objects.filter(pk__in = sourceids), meth
+    
 
 def getCDMSstates2(transs):
     stateids=set([])
@@ -105,11 +147,15 @@ def setupResults(sql):
     ntranss=transs.count()
     LOG(ntranss)
 #    sources = getRefs(transs)
+    sources, methods = getSources(transs)
 #    nsources = sources.count()
 #    atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs)
     molecules,nspecies,nstates = getSpeciesWithStates(transs)
+    
+    attach_partionfunc(molecules)
+    
     LOG(ntranss)
-
+    LOG(methods)
     headerinfo=CaselessDict({\
             'Truncated':percentage,
  #           'COUNT-SOURCES':nsources,
@@ -118,10 +164,16 @@ def setupResults(sql):
             'count-radiative':ntranss
             })
 
+#    methods = [Method('MOBS', 'observed', 'observed'),
+#                   Method('MDER', 'derived', 'derived')]
+                   
+#    methods = getFreqMethodRefs(transs)
+
     return {'RadTrans':transs,
   #          'Atoms':atoms,
             'Molecules':molecules,
-  #          'Sources':sources,
+            'Sources':sources,
+            'Methods':methods,
             'HeaderInfo':headerinfo,
   #          'Environments':Environments #this is set up statically in models.py
            }

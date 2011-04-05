@@ -36,13 +36,19 @@ RETURNABLES = {
 #'AtomStateTotalAngMom':'AtomState.',
 #'AtomSymbol':'AtomState.',
 
-#'MethodComment':'Method.',
-#'MethodRef':'Method.',
+'MethodComment':'Method.description',
+'MethodCategory':'Method.category', # <- NEW
+'MethodDescription':'Method.description', # <- NEW
+'MethodRef':'Method.ref',
+'MethodID':'Method.id', # <- NEW
+'MethodSourceRef':'Method.sourcesref', # <- NEW
 
 'MoleculeChemicalName':'Molecule.trivialname',
 'MoleculeID':'Molecule.speciesid',
 'MoleculeInchi':'Molecule.inchi',
 'MoleculeInchiKey':'Molecule.inchikey',
+'MoleculePartitionFunctionT':'Molecule.partitionfuncT',
+'MoleculePartitionFunction':'Molecule.partitionfuncQ',
 #'MoleculeMolecularWeight':'Molecule.',
 #'MoleculeNormalModeHarmonicFrequency':'Molecule.',
 #'MoleculeNormalModeIntensity':'Molecule.',
@@ -104,6 +110,9 @@ RETURNABLES = {
 'RadTransInitialStateRef':'RadTran.initialstateref_id',
 'RadTransFrequency':'RadTran.frequencyvalue',
 'RadTransFrequencyUnit':'RadTran.frequencyunit',
+#'RadTransFrequencyRef':'RadTran.freqmethodref_id',
+#'RadTransFrequencyMethod':'RadTran.freqmethodref_id',
+'RadTransFrequencyMethod':'RadTran.speciesid',
 'RadTransProbabilityA':'RadTran.einsteinA',
 'RadTransProbabilityAUnit':'1/cm', # <-New
 #'RadTransProbabilityIdealisedIntensity':'RadTran.',
@@ -117,16 +126,16 @@ RETURNABLES = {
 #'RadTransWavelength':'RadTran.',
 #'RadTransWavenumber':'RadTran.',
 
-#'SourceAuthorName':'Source.',
-#'SourceCategory':'Source.',
-#'SourceID':'Source.',
-#'SourceName':'Source.',
-#'SourcePageBegin':'Source.',
-#'SourcePageEnd':'Source.',
-#'SourceTitle':'Source.',
+'SourceAuthorName':'Source.getAuthorList()',
+'SourceCategory':'Source.category',
+'SourceID':'Source.rId',
+'SourceName':'Source.name',
+'SourcePageBegin':'Source.pageBegin',
+'SourcePageEnd':'Source.pageEnd',
+#'SourceTitle':'Source.title',
 #'SourceURI':'Source.',
-#'SourceVolume':'Source.',
-#'SourceYear':'Source.',
+'SourceVolume':'Source.vol',
+'SourceYear':'Source.year',
 }
 
 
@@ -163,7 +172,7 @@ RESTRICTABLES = {
 #'MoleculeStateCharacNuclearSpinSymmetry':'',
 #'MoleculeStateEnergy':'',
 #'MoleculeStateID':'',
-#'MoleculeStoichiometricFormula':'',
+'MoleculeStoichiometricFormula':'species__stoichiometricformula',
 #'NonRadTranEnergy':'',
 #'NonRadTranProbability':'',
 #'NonRadTranWidth':'',
