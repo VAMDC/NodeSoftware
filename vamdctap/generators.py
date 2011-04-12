@@ -133,8 +133,8 @@ def makeDataType(tagname,keyword,G,extraAttr=None,extraElem=None):
     s='\n<%s'%tagname
     if method: s+=' methodRef="M%s-%s"'%(NODEID,method)
     if extraAttr:
-        for key,value in extraAttr.items():
-            s+=' %s="%s"'%(key,G(value))
+        for k,v in extraAttr.items():
+            s+=' %s="%s"'%(k,G(v))
     s+='>'
 
     if comment: s+='<Comments>%s</Comments>'%quoteattr('%s'%comment)[1:-1]
@@ -144,8 +144,8 @@ def makeDataType(tagname,keyword,G,extraAttr=None,extraElem=None):
     s+='</%s>'%tagname
 
     if extraElem:
-        for key,value in extraElem.items():
-            s+='<%s>%s</%s>'%(key,G(value),key)
+        for k,v in extraElem.items():
+            s+='<%s>%s</%s>'%(k,G(v),k)
 
     return s
 
