@@ -89,7 +89,32 @@ def makeSourceRefs(refs):
         else: s+='<SourceRef>B%s-%s</SourceRef>'%(NODEID,refs)
     return s
 
-def makeDataType(tagname,keyword,G):
+def makePartitionfunc(keyword,G):
+    """
+    This is for creating the partionfunction - element.
+    """
+    value=G(keyword)
+    if not value: return ''
+    
+    temperature=G(keyword+'T')
+    partitionfunc = G(keyword)
+    
+    s='<PartitionFunction>\n'
+    s+='  <T units="K">\n'
+    s+='     <Datalist>\n'
+    for temp in temperature: s+=' %s' % temp   
+    s+='\n     </Datalist>\n'
+    s+='  </T>\n'
+    s+='  <Q>\n'
+    s+='     <Datalist>\n'
+    for q in partitionfunc: s+=' %s' % q
+    s+='\n     </Datalist>\n'
+    s+='  </Q>\n'
+    s+='</PartitionFunction>\n'
+
+    return s
+
+def makeDataType(tagname,keyword,G,extraAttr=None,extraElem=None):
     """
     This is for treating the case where a keyword corresponds to a
     DataType in the schema which can have units, comment, sources etc.
@@ -107,6 +132,9 @@ def makeDataType(tagname,keyword,G):
 
     s='\n<%s'%tagname
     if method: s+=' methodRef="M%s-%s"'%(NODEID,method)
+    if extraAttr:
+        for k,v in extraAttr.items():
+            s+=' %s="%s"'%(k,G(v))
     s+='>'
 
     if comment: s+='<Comments>%s</Comments>'%quoteattr('%s'%comment)[1:-1]
@@ -114,6 +142,10 @@ def makeDataType(tagname,keyword,G):
     s+='<Value units="%s">%s</Value>'%(unit or 'unitless',value)
     if acc: s+='<Accuracy>%s</Accuracy>'%acc
     s+='</%s>'%tagname
+
+    if extraElem:
+        for k,v in extraElem.items():
+            s+='<%s>%s</%s>'%(k,G(v),k)
 
     return s
 
@@ -383,6 +415,9 @@ def XsamsMCSBuild(Molecule):
     if G("MoleculeInChI"):
         yield '<InChI>%s</InChI>' % G("MoleculeInChI")
     yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
+
+    yield makePartitionfunc("MoleculePartitionFunction",G)
+
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n'%makeDataType('MolecularWeight','MoleculeMolecularWeight',G)
     if G("MoleculeComment"):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
@@ -406,7 +441,8 @@ def XsamsMSBuild(MoleculeState):
                                                    G("MoleculeStateID"))
     yield '  <Description/>\n'
     yield '  <MolecularStateCharacterisation>\n'
-    yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G)
+    yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G,
+                extraAttr={'energyOrigin':'MoleculeStateEnergyOrigin'})
     if G("MoleculeStateCharacTotalStatisticalWeight"):
         yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
                     % G("MoleculeStateCharacTotalStatisticalWeight")
@@ -425,10 +461,12 @@ def XsamsMolecules(Molecules):
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS
-        if Molecule.States:
-            for MoleculeState in Molecule.States:
-                for MS in XsamsMSBuild(MoleculeState):
-                    yield MS
+
+        if not hasattr(Molecule,'States'): Molecule.States = []
+        for MoleculeState in Molecule.States:
+            for MS in XsamsMSBuild(MoleculeState):
+                yield MS
+
         yield '</Molecule>\n'
     yield '</Molecules>\n'
 
@@ -517,7 +555,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
         yield makeDataType('IdealisedIntensity','RadTransProbabilityIdealisedIntensity',G)
         multipole = G('RadTransProbabilityMultipole')
-        if multipole: yield '<Multipole>%s<Multipole>'%multipole
+        if multipole: yield '<Multipole>%s</Multipole>'%multipole
         yield makeDataType('EffectiveLandeFactor','RadTransEffectiveLandeFactor',G)
         yield '</Probability>\n'
 
@@ -573,8 +611,23 @@ def XsamsMethods(Methods):
         yield """<Method methodID="M%s-%s">
 <Category>%s</Category>
 <Description>%s</Description>
-</Method>
 """%(NODEID, G('MethodID'),G('MethodCategory'),G('MethodDescription'))
+
+
+        methodsourcerefs=G('MethodSourceRef')
+        # make it always into a list to be looped over, even if
+        # only single entry
+        try:
+           methodsourcerefs = eval(methodsourcerefs)
+        except:
+           pass
+        if not isiterable(methodsourcerefs): methodsourcerefs=[methodsourcerefs]
+        for sourceref in methodsourcerefs:
+            yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
+
+        yield '</Method>'
+
+
     yield '</Methods>\n'
 
 
