@@ -16,11 +16,11 @@ DUMMY='@article{DUMMY, Author = {No Boby}, Title = {This is a dummy entry. If yo
 def getEntryFromString(s):
     parser = bibtex.Parser()
     try:
-        bib = parser.parse_stream(StringIO(s))
-        key,entry = bib.entries.items()[0]
+        parser.parse_stream(StringIO(s))
+        key,entry = parser.data.entries.items()[0]
     except:
         bib = parser.parse_stream(StringIO(DUMMY))
-        key,entry = bib.entries.items()[0]
+        key,entry = parser.data.entries.items()[0]
     return entry
 
 TYPE2CATEGORY=CaselessDict({\
@@ -51,8 +51,13 @@ def BibTeX2XML(bibtexstring):
     year = f.get('year')
     volume = f.get('volume')
     pages = f.get('pages')
-    if pages: p1,p2 = pages.split('-')
-    else: p1,p2 = '',''
+    if pages:
+        if '-' in pages:
+            p1,p2 = pages.split('-')
+        else:
+            p1, p2 = pages, ''
+    else: 
+        p1,p2 = '',''
 
     xml += """<Title>%s</Title>
 <Category>%s</Category>

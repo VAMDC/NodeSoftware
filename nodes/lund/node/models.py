@@ -31,10 +31,13 @@ class Species(Model):
 
 class Reference(Model):
     id = CharField(max_length=64, primary_key=True, db_index=True)
-    bibtex = CharField(max_length=2048, null=True)
+    bibtex = TextField(null=True)
 
     def XML(self):
-        return Entry2XML( getEntryFromString(self.bibtex) )
+        try:
+            return BibTeX2XML( self.bibtex )
+        except Exception, e:
+            raise
 
     class Meta:
         db_table = u'refs'
@@ -80,9 +83,20 @@ class State(Model):
     energy_ref = ForeignKey(Reference, related_name='isenergyref_state', null=True)
     lande_ref = ForeignKey(Reference, related_name='islanderef_state', null=True)
     level_ref = ForeignKey(Reference, related_name='islevelref_state', null=True)
-    
+
+    def get_best_tau(self):
+        if self.tau_exp:
+            return self.tau_exp
+        else:
+            return self.tau_calc
+    def get_tau_ref(self):
+        if self.tau_exp:
+            return "MtauEXP"
+        else:
+            return "MtauTHEO"
+            
     def __unicode__(self):
-        return u'ID:%s Eng:%s'%(self.id,self.energy)
+        return u'ID:%s En:%s'%(self.id,self.energy)
     class Meta:
         db_table = u'states'
 

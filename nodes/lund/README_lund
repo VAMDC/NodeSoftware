@@ -1,0 +1,55 @@
+
+README 2011-03-11- Samuel Regandell
+
+The Lund VAMDC node is running on the gunicorn webserver, 
+load-balanced and fed to the net through a nginx proxy server on ports 8080 and 8888. 
+
+http://pc228.astro.lu.se:8080/node/lund/tap
+
+mysql user name is lund, database name is lund. 
+
+Starting the node
+-----------------
+
+To start the node, both gunicorn and nginx needs to be started. 
+
+From nodes/lund, run
+
+gunicorn_django -c gunicorn.conf
+
+followed by 
+
+sudo /etc/init.d nginx start
+
+- Updating the node software
+----------------------------
+
+git commit -a
+<write commit message>
+
+git pull upstream master
+
+
+- Adding new data
+-----------------
+
+Add new updated refereces.dat, transitions.dat species.dat to /nodes/lund/
+
+From /nodes/lund, erase the old database (this is easiest as long as data files are consistent): 
+./manage.py reset node 
+
+erase eventual old *.in files in nodes/lund
+
+cd ../../imptools (you have to be in this dir to run the next command)
+
+./run_rewrite ../../mapping_lund.py (or mapping_lund_singlestates.py)
+
+cd ../nodes/lund 
+
+mysql -D lund -u lund -p < load.sql
+
+Restart the server: 
+
+killall gunicorn 
+
+gunicorn -c gunicorn.conf

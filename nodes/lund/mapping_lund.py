@@ -27,14 +27,14 @@ def bySepNr(linedata, number):
     return string.split(linedata, ';')[number].strip()
         
 # Setting up filenames
-base = "/home/griatch/Devel/Work/VAMDC-git/nodes/lund/"
+base = "/home/vamdc/NodeSoftware/nodes/lund/"
 species_list_file = base + 'species.dat'
 publications_file = base + "references.dat"
 transitions_file = base + 'transitions.dat'
-species_out = base + 'species.out'
-publications_out = base + 'references.out'
-states_out = base + 'states.out'
-transitions_out = base + 'transitions.out'
+species_out = base + 'species.in'
+publications_out = base + 'references.in'
+states_out = base + 'states.in'
+transitions_out = base + 'transitions.in'
 
 # The mapping itself
 mapping = [
