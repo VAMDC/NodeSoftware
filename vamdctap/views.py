@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 
-# Get the node-specific pacakge!
+# Get the node-specific package!
 from django.conf import settings
 from django.utils.importlib import import_module
 QUERYFUNC=import_module(settings.NODEPKG+'.queryfunc')
