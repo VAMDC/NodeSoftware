@@ -15,13 +15,17 @@ try:
 except ImportError:
     import unittest
 from django.test.client import Client
-
+from django.utils.importlib import import_module
+from vamdctap import generators, views 
+# node-specific 
+from django.conf import settings 
+DICTS = import_module(settings.NODEPKG + ".dictionaries")
 
 #
-# Setting up the testing client
+# Testing parents 
 #
+
 TCLIENT = Client()
-
 class TapSyncTest(TestCase):
     """
     This class tests the return data from a VAMDC /tap/sync/ request using
@@ -30,34 +34,54 @@ class TapSyncTest(TestCase):
     """
     def setUp(self):
         "Creates the base config for the test class."
-        self.url_prefix = "/tap/sync/"
-    
-    
+        self.url_prefix = "/tap/sync/"    
     def call(self, requeststring, tag=None, desired=""):
         """
         Attempts a fake "call" from the test client to the handler. If
-        gigen, the result is checked against desired,
+        given, the result is checked against the 'desired' argument,
         otherwise it just checked so that the return is not empty.
 
         requeststring - a string coming in through the GET statement. The full URL
                         should not be given, only the active part after /tap/sync/.
+        tag           - specific return <tag> to extract from the result 
+        desired       - a string to compare with the result (or with the extracted tag if
+                        tag is given)
         """        
         requeststring = self.url_prefix + requeststring.strip()        
         request = TCLIENT.get(requeststring)        
         if desired:
             result = request.content
             if tag:
-                # obtain only the wanted tag to check
+                #TODO: obtain only the wanted tag to check
                 pass            
             self.assertEqual(result, desired)        
-        
+        else:
+            self.assertNotEqual(result, desired)
+
 #
-# TAPservice test suite 
+# TAPservice views test suite 
 #
 
-class EmptyTest(TapSyncTest):
-    def test_call(self):
-        self.call("") # test an empty call. This should fail gracefully.
+# deactivated until error system stabilizes
+#class EmptyTest(TapSyncTest):
+#    def test_call(self):
+#        self.call("") # test an empty call. This should fail gracefully.
+
+
+#
+# Generator tests
+#
+
+class TestGetValue(TestCase):
+    "Test generator.GetValue"
+    dic = DICTS.RETURNABLES
+    def test_fail(self):
+        # insert a flawed entry. This should return an empty string
+        self.assertEqual(generators.GetValue("9sdf8?sdklns"), "")
+        self.assertEqual(generators.GetValue(None), "")
+        self.assertEqual(generators.GetValue(""), "")
+        
+
 
 #
 # Bibtex perser test suite
@@ -76,4 +100,4 @@ class TestBibTex(TestCase):
 
 
 if __name__ == "__main__":    
-    print "You must run this module from a node with 'manage.py test'."
+    print "You should usually run this module from ExampleNode node with 'manage.py test'."

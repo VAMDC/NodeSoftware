@@ -7,7 +7,7 @@ from xml.sax.saxutils import quoteattr
 # Get the node-specific parts
 from django.conf import settings
 from django.utils.importlib import import_module
-DICTS=import_module(settings.NODEPKG+'.dictionaries')
+DICTS = import_module(settings.NODEPKG + '.dictionaries')
 
 # This must always be set.
 try:
@@ -26,7 +26,7 @@ def countReturnables(regexp):
     """
     count how often a certain matches the keys of the returnables
     """
-    r = re.compile(regexp,flags=re.IGNORECASE)
+    r = re.compile(regexp, flags=re.IGNORECASE)
     return len(filter(r.match, DICTS.RETURNABLES.keys()))
 
 # Define some globals that allow skipping parts
@@ -42,38 +42,39 @@ N_COLLTRAN_KWS = countReturnables('Collision.*')
 N_RADTRAN_KWS = countReturnables('^RadTran.*')
 N_BROAD_KWS = countReturnables('^.*Broadening.*')
 
-def GetValue(name,**kwargs):
+def GetValue(name, **kwargs):
     """
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
     try:
-        name=DICTS.RETURNABLES[name]
-    except:
-        return ''     # The value is not in the dictionary for the node.
-                      # This is fine.
-                      # Note that this is also used by if-clauses below
-                      # since the empty string evaluates as False.
+        name = DICTS.RETURNABLES[name]
+    except Exception:
+        # The value is not in the dictionary for the node.  This is
+        # fine.  Note that this is also used by if-clauses below since
+        # the empty string evaluates as False.
+        return '' 
 
     if not name:
-        return '' # if the key was in the dict, but the value empty or None
+        # the key was in the dict, but the value was empty or None.
+        return '' 
 
     for key in kwargs:
         # assign the dict-value to a local variable named as the dict-key
-        exec('%s=kwargs["%s"]'%(key,key))
+        exec('%s=kwargs["%s"]' % (key, key))
 
     try:
         value = eval(name) # this works, if the dict-value is named
-                         # correctly as the query-set attribute
-    except Exception,e: 
+                           # correctly as the query-set attribute
+    except Exception, e: 
 #        LOG('Exception in generators.py: GetValue()')
 #        LOG(str(e))
 #        LOG(name)
-        value = name      # this catches the case where the dict-value
-                        # is a string or mistyped.
-
-    if value==None:
-        return ''       # if the database returned NULL
+        # this catches the case where the dict-value is a string or mistyped.
+        value = name      
+    if value == None:
+        # the database returned NULL
+        return '' 
 
     # turn it into a string, quote it, but skip the quotation marks
     # edit - no, we need to have the object itself sometimes to loop over
@@ -81,117 +82,137 @@ def GetValue(name,**kwargs):
     return value
 
 def makeSourceRefs(refs):
-    s=''
+    """
+    Create a SourceRef tag entry
+    """
+    s = ''
     if refs:
         if isiterable(refs):
             for ref in refs:
-                s+='<SourceRef>B%s-%s</SourceRef>'%(NODEID,ref)
-        else: s+='<SourceRef>B%s-%s</SourceRef>'%(NODEID,refs)
+                s += '<SourceRef>B%s-%s</SourceRef>' % (NODEID, ref)
+        else: s += '<SourceRef>B%s-%s</SourceRef>' % (NODEID, refs)
     return s
 
-def makePartitionfunc(keyword,G):
+def makePartitionfunc(keyword, G):
     """
-    This is for creating the partionfunction - element.
+    Create the Partionfunction tag element.
     """
-    value=G(keyword)
-    if not value: return ''
+    value = G(keyword)
+    if not value: 
+        return ''
     
-    temperature=G(keyword+'T')
+    temperature = G(keyword + 'T')
     partitionfunc = G(keyword)
     
-    s='<PartitionFunction>\n'
-    s+='  <T units="K">\n'
-    s+='     <Datalist>\n'
-    for temp in temperature: s+=' %s' % temp   
-    s+='\n     </Datalist>\n'
-    s+='  </T>\n'
-    s+='  <Q>\n'
-    s+='     <Datalist>\n'
-    for q in partitionfunc: s+=' %s' % q
-    s+='\n     </Datalist>\n'
-    s+='  </Q>\n'
-    s+='</PartitionFunction>\n'
+    string = '<PartitionFunction>\n'
+    string += '  <T units="K">\n'
+    string += '     <Datalist>\n'
+    for temp in temperature: 
+        string += ' %s' % temp   
+    string += '\n     </Datalist>\n'
+    string += '  </T>\n'
+    string += '  <Q>\n'
+    string += '     <Datalist>\n'
+    for q in partitionfunc: 
+        string += ' %s' % q
+    string += '\n     </Datalist>\n'
+    string += '  </Q>\n'
+    string += '</PartitionFunction>\n'
 
-    return s
+    return string
 
-def makeDataType(tagname,keyword,G,extraAttr=None,extraElem=None):
+def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
     """
     This is for treating the case where a keyword corresponds to a
     DataType in the schema which can have units, comment, sources etc.
     The dictionary-suffixes are appended and the values retrieved. If the
     sources is iterable, it is looped over.
     """
-    value=G(keyword)
-    if not value: return ''
+    value = G(keyword)
+    if not value: 
+        return ''
 
-    unit=G(keyword+'Unit')
-    method=G(keyword+'Method')
-    comment=G(keyword+'Comment')
-    acc=G(keyword+'Accuracy')
-    refs=G(keyword+'Ref')
+    unit = G(keyword + 'Unit')
+    method = G(keyword + 'Method')
+    comment = G(keyword + 'Comment')
+    acc = G(keyword + 'Accuracy')
+    refs = G(keyword + 'Ref')
 
-    s='\n<%s'%tagname
-    if method: s+=' methodRef="M%s-%s"'%(NODEID,method)
+    string = '\n<%s' % tagname
+    if method: 
+        string += ' methodRef="M%s-%s"' % (NODEID, method)
     if extraAttr:
-        for k,v in extraAttr.items():
-            s+=' %s="%s"'%(k,G(v))
-    s+='>'
+        for k, v in extraAttr.items():
+            string += ' %s="%s"'% (k, G(v))
+    string += '>'
 
-    if comment: s+='<Comments>%s</Comments>'%quoteattr('%s'%comment)[1:-1]
-    s+=makeSourceRefs(refs)
-    s+='<Value units="%s">%s</Value>'%(unit or 'unitless',value)
-    if acc: s+='<Accuracy>%s</Accuracy>'%acc
-    s+='</%s>'%tagname
+    if comment: 
+        string += '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1]
+    string += makeSourceRefs(refs)
+    string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
+    if acc: 
+        string += '<Accuracy>%s</Accuracy>' % acc
+    string += '</%s>' % tagname
 
     if extraElem:
-        for k,v in extraElem.items():
-            s+='<%s>%s</%s>'%(k,G(v),k)
+        for k, v in extraElem. items():
+            string += '<%s>%s</%s>' % (k, G(v), k)
 
-    return s
+    return string
 
-def makeNamedDataType(tagname,keyword,G):
+def makeNamedDataType(tagname, keyword, G):
     """
     Similar to makeDataType above, but allows the result of G()
     to be iterable and adds the name-attribute. If the 
     corresponding refs etc are not iterable, they are replicated
     for each tag.
     """
-    value=G(keyword)
-    if not value: return ''
+    value = G(keyword)
+    if not value: 
+        return ''
 
-    unit=G(keyword+'Unit')
-    method=G(keyword+'Method')
-    comment=G(keyword+'Comment')
-    acc=G(keyword+'Accuracy')
-    refs=G(keyword+'Ref')
-    name=G(keyword+'Name')
+    unit = G(keyword + 'Unit')
+    method = G(keyword + 'Method')
+    comment = G(keyword + 'Comment')
+    acc = G(keyword + 'Accuracy')
+    refs = G(keyword + 'Ref')
+    name = G(keyword + 'Name')
 
 # make everything iterable
-    value,unit,method,comment,acc,refs,name = [ [x] if not isiterable(x) else x  for x in [value,unit,method,comment,acc,refs,name]]
+    value, unit, method, comment, acc, refs, name = [[x] if not isiterable(x) else x  for x in [value, unit, method, comment, acc, refs, name]]
 
 # if some are shorter than the value list, replicate them
     l = len(value)
-    value,unit,method,comment,acc,refs,name = [ x*l if len(x)<l else x for x in [value,unit,method,comment,acc,refs,name]]
+    value, unit, method, comment, acc, refs, name = [ x*l if len(x)<l else x for x in [value, unit, method, comment, acc, refs, name]]
 
-    s = ''
-    for i,val in enumerate(value):
-        s+='\n<%s'%tagname
-        if method[i]: s+=' methodRef="M%s-%s"'%(NODEID,method[i])
-        s+='>'
-        if name[i]: s+='<Name>%s</Name>'%name[i]
-        if comment[i]: s+='<Comments>%s</Comments>'%escape('%s'%comment[i])
-        s+=makeSourceRefs(refs[i])
-        s+='<Value units="%s">%s</Value>'%(unit[i] or 'unitless',value[i])
-        if acc[i]: s+='<Accuracy>%s</Accuracy>'%acc[i]
-        s+='</%s>'%tagname
+    string = ''
+    for i, val in enumerate(value):
+        string += '\n<%s' % tagname
+        if method[i]: 
+            string += ' methodRef="M%s-%s"' % (NODEID, method[i])
+        string += '>'
+        if name[i]: 
+            string += '<Name>%s</Name>' % name[i]
+        if comment[i]: 
+            string += '<Comments>%s</Comments>' % escape('%s' % comment[i])
+        string += makeSourceRefs(refs[i])
+        string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', value[i])
+        if acc[i]: 
+            string += '<Accuracy>%s</Accuracy>' % acc[i]
+        string += '</%s>' % tagname
 
-    return s
+    return string
 
 def XsamsSources(Sources):
-    if not Sources: return
+    """
+    Create the Source tag structure (a bibtex entry)
+    """
+
+    if not Sources: 
+        return
     yield '<Sources>'
     for Source in Sources:
-        if hasattr(Source,'XML'):
+        if hasattr(Source, 'XML'):
             try:
                 yield Source.XML()
                 continue
@@ -200,16 +221,17 @@ def XsamsSources(Sources):
 
         G = lambda name: GetValue(name, Source=Source)
         yield '<Source sourceID="B%s-%s"><Authors>\n' % (NODEID, G('SourceID'))
-        authornames=G('SourceAuthorName')
+        authornames = G('SourceAuthorName')
         # make it always into a list to be looped over, even if
-        # only single entry
+        # only a single entry
         try:
             authornames = eval(authornames)
         except:
             pass
-        if not isiterable(authornames): authornames=[authornames]
+        if not isiterable(authornames): 
+            authornames = [authornames]
         for author in authornames:
-            yield '<Author><Name>%s</Name></Author>\n'%author
+            yield '<Author><Name>%s</Name></Author>\n' % author
 
         yield """</Authors>
 <Title>%s</Title>
@@ -226,14 +248,15 @@ def XsamsSources(Sources):
     yield '</Sources>\n'
 
 def XsamsEnvironments(Environments):
-    if not isiterable(Environments): return
+    if not isiterable(Environments): 
+        return
     yield '<Environments>'
     for Environment in Environments:
         if hasattr(Environment,'XML'):
             try:
                 yield Environment.XML()
                 continue
-            except:
+            except Exception:
                 pass
 
         G = lambda name: GetValue(name, Environment=Environment)
@@ -242,30 +265,23 @@ def XsamsEnvironments(Environments):
         yield '<Comments>%s</Comments>' % G('EnvironmentComment')
         yield makeDataType('Temperature', 'EnvironmentTemperature', G)
         yield makeDataType('TotalPressure', 'EnvironmentTotalPressure', G)
-        yield makeDataType('TotalNumberDensity', 
-            'EnvironmentTotalNumberDensity', G)
-        species=G('EnvironmentSpecies')
+        yield makeDataType('TotalNumberDensity', 'EnvironmentTotalNumberDensity', G)
+        species = G('EnvironmentSpecies')
         if species:
             yield '<Composition>'
             if isiterable(species):
                 for Species in species:
-                    yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
+                    yield '<Species name="%s" speciesRef="X%s-%s">' % (G('EnvironmentSpeciesName'), NODEID, G('EnvironmentSpeciesRef'))
                     yield
-                    makeDataType('PartialPressure', 
-                        'EnvironmentSpeciesPartialPressure', G)
-                    yield makeDataType('MoleFraction',
-                        'EnvironmentSpeciesMoleFraction', G)
-                    yield makeDataType('Concentration',
-                        'EnvironmentSpeciesConcentration', G)
+                    makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', G)
+                    yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', G)
+                    yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', G)
                     yield '</Species>'
             else:
-                yield '<Species name="%s" speciesRef="X%s-%s">'%(G('EnvironmentSpeciesName'),NODEID,G('EnvironmentSpeciesRef'))
-                yield makeDataType('PartialPressure',
-                    'EnvironmentSpeciesPartialPressure', G)
-                yield makeDataType('MoleFraction',
-                    'EnvironmentSpeciesMoleFraction', G)
-                yield makeDataType('Concentration',
-                    'EnvironmentSpeciesConcentration', G)
+                yield '<Species name="%s" speciesRef="X%s-%s">' % (G('EnvironmentSpeciesName'), NODEID, G('EnvironmentSpeciesRef'))
+                yield makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', G)
+                yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', G)
+                yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', G)
                 yield '</Species>'
             yield '</Composition>'
         yield '</Environment>'
@@ -273,16 +289,17 @@ def XsamsEnvironments(Environments):
 
 def XsamsAtomTerm(G):
     """
-    The part of XSAMS with the term designation and coupling for atoms.
+    The part of XSAMS describing the term designation and coupling for atoms.
     """
-    coupling=G('AtomStateCoupling')
-    if not coupling: return ''
-    l=G('AtomStateL')
-    s=G('AtomStateS')
-    k=G('AtomStateK')
-    s2=G('AtomStateS2')
-    j1=G('AtomStateJ1')
-    j2=G('AtomStateJ2')
+    coupling = G('AtomStateCoupling')
+    if not coupling: 
+        return ''
+    l = G('AtomStateL')
+    s = G('AtomStateS')
+    k = G('AtomStateK')
+    s2 = G('AtomStateS2')
+    j1 = G('AtomStateJ1')
+    j2 = G('AtomStateJ2')
 
     result = '<Term>'
     if coupling == "LS" and l and s:
@@ -302,8 +319,10 @@ def parityLabel(parity):
     XSAMS whats this as strings "odd" or "even", not numerical
 
     """
-    try: parity = float(parity)
-    except: return parity
+    try: 
+        parity = float(parity)
+    except Exception: 
+        return parity
 
     if parity % 2:
         return 'odd'
@@ -318,76 +337,91 @@ def XsamsAtoms(Atoms):
 
     """
 
-    if not isiterable(Atoms): return
-    if not Atoms.count(): return
+    if not isiterable(Atoms): 
+        return
+    if not Atoms.count(): 
+        return
 
     yield '<Atoms>'
 
     for Atom in Atoms:
-        G=lambda name: GetValue(name,Atom=Atom)
+        G = lambda name: GetValue(name, Atom=Atom)
         yield """<Atom>
 <ChemicalElement>
 <NuclearCharge>%s</NuclearCharge>
 <ElementSymbol>%s</ElementSymbol>
-</ChemicalElement>"""%(G('AtomNuclearCharge'),G('AtomSymbol'))
+</ChemicalElement>""" % (G('AtomNuclearCharge'), G('AtomSymbol'))
 
         yield """<Isotope>
 <IsotopeParameters>
-<MassNumber>%s</MassNumber>%s"""%(G('AtomMassNumber'), makeDataType('Mass','AtomMass',G))
-        nucspin=G('AtomNuclearSpin')
-        if nucspin: yield '<NuclearSpin>%s</NuclearSpin>'%nucspin
+<MassNumber>%s</MassNumber>%s""" % (G('AtomMassNumber'), makeDataType('Mass', 'AtomMass', G))
+        nucspin = G('AtomNuclearSpin')
+        if nucspin: 
+            yield '<NuclearSpin>%s</NuclearSpin>' % nucspin
         yield '</IsotopeParameters>'
 
-        yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' % ( NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
-        if not hasattr(Atom,'States'): Atom.States = []
+        yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' % (NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
+        if not hasattr(Atom,'States'): 
+            Atom.States = []
         for AtomState in Atom.States:
-            G=lambda name: GetValue(name, AtomState=AtomState)
-            yield """<AtomicState stateID="S%s-%s">"""%( G('NodeID'), G('AtomStateID') )
+            G = lambda name: GetValue(name, AtomState=AtomState)
+            yield """<AtomicState stateID="S%s-%s">""" % (G('NodeID'), G('AtomStateID'))
             comm = G('AtomStateDescription')
-            if comm: yield '<Comments>%s</Comments>'%comm
+            if comm: 
+                yield '<Comments>%s</Comments>' % comm
             yield makeSourceRefs(G('AtomStateRef'))
             desc = G('AtomStateDescription')
-            if desc: yield '<Description>%s</Description>'%desc
+            if desc: 
+                yield '<Description>%s</Description>' % desc
 
             yield '<AtomicNumericalData>'
-            yield makeDataType('StateEnergy','AtomStateEnergy',G)
-            yield makeDataType('IonizationEnergy','AtomStateIonizationEnergy',G)
-            yield makeDataType('LandeFactor','AtomStateLandeFactor',G)
-            yield makeDataType('QuantumDefect','AtomStateQuantumDefect',G)
-            yield makeDataType('TotalLifeTime','AtomStateLifeTime',G)
-            yield makeDataType('Polarizability','AtomStatePolarizability',G)
+            yield makeDataType('StateEnergy', 'AtomStateEnergy', G)
+            yield makeDataType('IonizationEnergy', 'AtomStateIonizationEnergy', G)
+            yield makeDataType('LandeFactor', 'AtomStateLandeFactor', G)
+            yield makeDataType('QuantumDefect', 'AtomStateQuantumDefect', G)
+            yield makeDataType('TotalLifeTime', 'AtomStateLifeTime', G)
+            yield makeDataType('Polarizability', 'AtomStatePolarizability', G)
             statweig = G('AtomStateStatisticalWeight')
-            if statweig: yield '<StatisticalWeight></StatisticalWeight>'%statweig
-            yield makeDataType('HyperfineConstantA','AtomStateHyperfineConstantA',G)
-            yield makeDataType('HyperfineConstantB','AtomStateHyperfineConstantB',G)
+            if statweig: 
+                yield '<StatisticalWeight></StatisticalWeight>' % statweig
+            yield makeDataType('HyperfineConstantA', 'AtomStateHyperfineConstantA', G)
+            yield makeDataType('HyperfineConstantB', 'AtomStateHyperfineConstantB', G)
             yield '</AtomicNumericalData><AtomicQuantumNumbers>'
-            p,j,k,hfm,mqn = G('AtomStateParity'), G('AtomStateTotalAngMom'),\
-                         G('AtomStateKappa'), G('AtomStateHyperfineMomentum'),\
-                         G('AtomStateMagneticQuantumNumber')
-            if p: yield '<Parity>%s</Parity>'%parityLabel(p)
-            if j: yield '<TotalAngularMomentum>%s</TotalAngularMomentum>'%j
-            if k: yield '<Kappa>%s</Kappa>'%k
-            if hfm: yield '<HyperfineMomentum>%s</HyperfineMomentum>'%hfm
-            if mqn: yield '<MagneticQuantumNumber>%s</MagneticQuantumNumber>'%mqn
+            p, j, k, hfm, mqn = G('AtomStateParity'), G('AtomStateTotalAngMom'), \
+                                G('AtomStateKappa'), G('AtomStateHyperfineMomentum'), \
+                                G('AtomStateMagneticQuantumNumber')
+            if p: 
+                yield '<Parity>%s</Parity>' % parityLabel(p)
+            if j: 
+                yield '<TotalAngularMomentum>%s</TotalAngularMomentum>' % j
+            if k: 
+                yield '<Kappa>%s</Kappa>' % k
+            if hfm: 
+                yield '<HyperfineMomentum>%s</HyperfineMomentum>' % hfm
+            if mqn: 
+                yield '<MagneticQuantumNumber>%s</MagneticQuantumNumber>' % mqn
             yield '</AtomicQuantumNumbers>'
 
             yield '<AtomicComposition>'
             comm = G('AtomStateCompositionComments')
-            if comm: yield '<Comments>%s</Comments>\n'%comm
+            if comm: 
+                yield '<Comments>%s</Comments>\n' % comm
             yield '<Component><Configuration>'
             confl = G('AtomStateConfigurationLabel')
-            if confl: yield '<ConfigurationLabel>%s</ConfigurationLabel>'%confl
-# AtomicCore and Shells are missing here!
+            if confl: 
+                yield '<ConfigurationLabel>%s</ConfigurationLabel>' % confl
+            # AtomicCore and Shells are missing here!
             yield '</Configuration>\n'
 
             yield XsamsAtomTerm(G)
 
             mixcoef = G('AtomStateMixingCoefficient')
-            if mixcoef: yield '<MixingCoefficient>%s</MixingCoefficient>'%mixcoef
+            if mixcoef: 
+                yield '<MixingCoefficient>%s</MixingCoefficient>' % mixcoef
             yield '</Component></AtomicComposition>'
             yield '</AtomicState>'
-        yield '<InChI>%s</InChI>'%G('AtomInchi')
-        yield '<InChIKey>%s</InChIKey>'%G('AtomInchiKey')
+        yield '<InChI>%s</InChI>' % G('AtomInchi')
+        yield '<InChIKey>%s</InChIKey>' % G('AtomInchiKey')
         yield """</Ion>
 </Isotope>
 </Atom>"""
@@ -401,7 +435,7 @@ def XsamsMCSBuild(Molecule):
     """
     Generator for the MolecularChemicalSpecies
     """
-    G=lambda name: GetValue(name, Molecule=Molecule)
+    G = lambda name: GetValue(name, Molecule=Molecule)
     yield '<MolecularChemicalSpecies>\n'
     yield '<OrdinaryStructuralFormula><Value>%s</Value>'\
             '</OrdinaryStructuralFormula>\n'\
@@ -416,14 +450,17 @@ def XsamsMCSBuild(Molecule):
         yield '<InChI>%s</InChI>' % G("MoleculeInChI")
     yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
 
-    yield makePartitionfunc("MoleculePartitionFunction",G)
+    yield makePartitionfunc("MoleculePartitionFunction", G)
 
-    yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n'%makeDataType('MolecularWeight','MoleculeMolecularWeight',G)
+    yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
     if G("MoleculeComment"):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
     yield '</MolecularChemicalSpecies>\n'
 
 def XsamsMSQNsBuild(MolQNs):
+    """
+    Generator for MoleculeQnAttribute tag
+    """
     G = lambda name: GetValue(name, MolQN=MolQN)
     MolQN = MolQNs[0]; case = G('MoleculeQnCase')
     yield '<%s:QNs>\n' % case
@@ -436,6 +473,9 @@ def XsamsMSQNsBuild(MolQNs):
     yield '</%s:QNs>\n' % case
 
 def XsamsMSBuild(MoleculeState):
+    """
+    Generator for MolecularState tag
+    """
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
     yield '<MolecularState stateID="S%s-%s">\n' % (G('NodeID'),
                                                    G("MoleculeStateID"))
@@ -453,20 +493,24 @@ def XsamsMSBuild(MoleculeState):
     yield '</MolecularState>\n'
 
 def XsamsMolecules(Molecules):
+    """
+    Generator for Molecules tag 
+    """
     if not Molecules: return
     yield '<Molecules>\n'
     for Molecule in Molecules:
         G = lambda name: GetValue(name, Molecule=Molecule)
         yield '<Molecule speciesID="X%s">\n' % G("MoleculeID")
+
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS
 
-        if not hasattr(Molecule,'States'): Molecule.States = []
+        if not hasattr(Molecule,'States'): 
+            Molecule.States = []
         for MoleculeState in Molecule.States:
             for MS in XsamsMSBuild(MoleculeState):
                 yield MS
-
         yield '</Molecule>\n'
     yield '</Molecules>\n'
 
@@ -475,27 +519,35 @@ def XsamsMolecules(Molecules):
 # BEGIN PROCESSES
 #################
 
-def makeBroadeningType(G,btype='Natural'):
-    lsparams = makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter'%btype,G)
-    if not lsparams: return ''
+def makeBroadeningType(G, btype='Natural'):
+    """
+    Create the Broadening tag
+    """
 
-    env = G('RadTransBroadening%sEnvironment'%btype)
-    meth = G('RadTransBroadening%sMethod'%btype)
-    comm = G('RadTransBroadening%sComment'%btype)
-    s = '<%sBroadening'%btype
-    if meth: s += ' methodRef="%s"'%meth
-    if env: s += ' envRef="%s"'%env
+    lsparams = makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter' % btype, G)
+    if not lsparams: 
+        return ''
+
+    env = G('RadTransBroadening%sEnvironment' % btype)
+    meth = G('RadTransBroadening%sMethod' % btype)
+    comm = G('RadTransBroadening%sComment' % btype)
+    s = '<%sBroadening' % btype
+    if meth: 
+        s += ' methodRef="%s"' % meth
+    if env: 
+        s += ' envRef="%s"' % env
     s += '>'
-    if comm: s +='<Comments>%s</Comments>'%comm
-    s += makeSourceRefs(G('RadTransBroadening%sRef'%btype))
+    if comm: 
+        s +='<Comments>%s</Comments>' % comm
+    s += makeSourceRefs(G('RadTransBroadening%sRef' % btype))
 
     # in principle we should loop over lineshapes but
     # lets not do so unless somebody actually has several lineshapes
     # per broadening type
-    s += '<Lineshape name="%s">'%G('RadTransBroadening%sLineshapeName'%btype)
+    s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % btype)
     s += lsparams
     s += '</Lineshape>'
-    s += '</%sBroadening>'%btype
+    s += '</%sBroadening>' % btype
     return s
 
 def XsamsRadTranBroadening(G):
@@ -504,20 +556,23 @@ def XsamsRadTranBroadening(G):
     """
     s = '<Broadenings>'
     comm = G('RadTransBroadeningComment')
-    if comm: s +='<Comments>%s</Comments>'%comm
+    if comm: s +='<Comments>%s</Comments>' % comm
     s += makeSourceRefs(G('RadTransBroadeningRef'))
     if countReturnables('RadTransBroadeningStark'):
-        s += makeBroadeningType(G,btype='Stark')
+        s += makeBroadeningType(G, btype='Stark')
     if countReturnables('RadTransBroadeningVanDerWaals'):
-        s += makeBroadeningType(G,btype='VanDerWaals')
+        s += makeBroadeningType(G, btype='VanDerWaals')
     if countReturnables('RadTransBroadeningNatural'):
-        s += makeBroadeningType(G,btype='Natural')
+        s += makeBroadeningType(G, btype='Natural')
     if countReturnables('RadTransBroadeningInstrument'):
-        s += makeBroadeningType(G,btype='Instrument')
+        s += makeBroadeningType(G, btype='Instrument')
     s += '</Broadenings>\n'
     return s
 
 def XsamsRadTranShifting(G):
+    """
+    Not implemented
+    """
     return ''
 
 def XsamsRadTrans(RadTrans):
@@ -525,45 +580,51 @@ def XsamsRadTrans(RadTrans):
     Generator for the XSAMS radiative transitions.
     """
 
-    if not isiterable(RadTrans): return
+    if not isiterable(RadTrans): 
+        return
 
     for RadTran in RadTrans:
-        G=lambda name: GetValue(name,RadTran=RadTran)
+        G = lambda name: GetValue(name, RadTran=RadTran)
         yield '<RadiativeTransition>'
         comm = G('RadTransComments')
-        if comm: yield '<Comments>%s</Comments>'%comm
+        if comm: 
+            yield '<Comments>%s</Comments>' % comm
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
-        yield makeDataType('Wavelength','RadTransWavelength',G)
-        yield makeDataType('Wavenumber','RadTransWavenumber',G)
-        yield makeDataType('Frequency','RadTransFrequency',G)
-        yield makeDataType('Energy','RadTransEnergy',G)
+        yield makeDataType('Wavelength', 'RadTransWavelength', G)
+        yield makeDataType('Wavenumber', 'RadTransWavenumber', G)
+        yield makeDataType('Frequency', 'RadTransFrequency', G)
+        yield makeDataType('Energy', 'RadTransEnergy', G)
         yield '</EnergyWavelength>'
 
         initial = G('RadTransInitialStateRef')
-        if initial: yield '<InitialStateRef>S%s-%s</InitialStateRef>\n' % (NODEID, initial)
+        if initial: 
+            yield '<InitialStateRef>S%s-%s</InitialStateRef>\n' % (NODEID, initial)
         final = G('RadTransFinalStateRef')
-        if final: yield '<FinalStateRef>S%s-%s</FinalStateRef>\n' % (NODEID, final)
+        if final: 
+            yield '<FinalStateRef>S%s-%s</FinalStateRef>\n' % (NODEID, final)
         species = G('RadTransSpeciesRef')
-        if species: yield '<SpeciesRef>X%s-%s</SpeciesRef>\n' % (NODEID, species)
+        if species: 
+            yield '<SpeciesRef>X%s-%s</SpeciesRef>\n' % (NODEID, species)
 
         yield '<Probability>'
-        yield makeDataType('TransitionProbabilityA','RadTransProbabilityA',G)
-        yield makeDataType('OscillatorStrength','RadTransProbabilityOscillatorStrength',G)
-        yield makeDataType('LineStrength','RadTransProbabilityLineStrength',G)
-        yield makeDataType('WeightedOscillatorStrength','RadTransProbabilityWeightedOscillatorStrength',G)
-        yield makeDataType('Log10WeightedOscillatorStrength','RadTransProbabilityLog10WeightedOscillatorStrength',G)
-        yield makeDataType('IdealisedIntensity','RadTransProbabilityIdealisedIntensity',G)
+        yield makeDataType('TransitionProbabilityA', 'RadTransProbabilityA', G)
+        yield makeDataType('OscillatorStrength', 'RadTransProbabilityOscillatorStrength', G)
+        yield makeDataType('LineStrength', 'RadTransProbabilityLineStrength', G)
+        yield makeDataType('WeightedOscillatorStrength', 'RadTransProbabilityWeightedOscillatorStrength', G)
+        yield makeDataType('Log10WeightedOscillatorStrength', 'RadTransProbabilityLog10WeightedOscillatorStrength', G)
+        yield makeDataType('IdealisedIntensity', 'RadTransProbabilityIdealisedIntensity', G)
         multipole = G('RadTransProbabilityMultipole')
-        if multipole: yield '<Multipole>%s</Multipole>'%multipole
-        yield makeDataType('EffectiveLandeFactor','RadTransEffectiveLandeFactor',G)
+        if multipole: 
+            yield '<Multipole>%s</Multipole>' % multipole
+        yield makeDataType('EffectiveLandeFactor', 'RadTransEffectiveLandeFactor', G)
         yield '</Probability>\n'
 
-        if hasattr(RadTran,'XML_Broadening'):
+        if hasattr(RadTran, 'XML_Broadening'):
             yield RadTran.XML_Broadening()
         else:
             yield XsamsRadTranBroadening(G)
-        if hasattr(RadTran,'XML_Shifting'):
+        if hasattr(RadTran, 'XML_Shifting'):
             yield RadTran.XML_Shifting()
         else:
             yield XsamsRadTranShifting(G)
@@ -589,7 +650,11 @@ def XsamsNonRadTrans(NonRadTrans):
     yield ''
 
 def XsamsFunctions(Functions):
-    if not isiterable(Functions): return
+    """
+    Generator for the Functions tag
+    """
+    if not isiterable(Functions): 
+        return
     yield '<Functions>'
     for Function in Functions:
         if hasattr(Function,'XML'):
@@ -604,37 +669,34 @@ def XsamsMethods(Methods):
     """
     Generator for the methods block of XSAMS
     """
-    if not Methods: return
+    if not Methods: 
+        return
     yield '<Methods>\n'
     for Method in Methods:
-        G=lambda name: GetValue(name,Method=Method)
+        G = lambda name: GetValue(name, Method=Method)
         yield """<Method methodID="M%s-%s">
 <Category>%s</Category>
 <Description>%s</Description>
-"""%(NODEID, G('MethodID'),G('MethodCategory'),G('MethodDescription'))
+""" % (NODEID, G('MethodID'), G('MethodCategory'), G('MethodDescription'))
 
-
-        methodsourcerefs=G('MethodSourceRef')
+        methodsourcerefs = G('MethodSourceRef')
         # make it always into a list to be looped over, even if
         # only single entry
         try:
-           methodsourcerefs = eval(methodsourcerefs)
+            methodsourcerefs = eval(methodsourcerefs)
         except:
-           pass
-        if not isiterable(methodsourcerefs): methodsourcerefs=[methodsourcerefs]
+            pass
+        if not isiterable(methodsourcerefs): 
+            methodsourcerefs = [methodsourcerefs]
         for sourceref in methodsourcerefs:
             yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
-
         yield '</Method>'
-
-
     yield '</Methods>\n'
 
 
 def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     Environments=None, Atoms=None, Molecules=None, CollTrans=None,
-    RadTrans=None, RadCross=None, NonRadTrans=None
-          ):
+    RadTrans=None, RadCross=None, NonRadTrans=None):
     """
     The main generator function of XSAMS. This one calls all the
     sub-generators above. It takes the query sets that the node's
@@ -676,17 +738,23 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
 """ % HeaderInfo['Truncated']
 
     LOG('Working on Sources.')
-    for Source in XsamsSources(Sources): yield Source
+    for Source in XsamsSources(Sources): 
+        yield Source
 
     LOG('Working on Methods, Functions, Environments.')
-    for Method in XsamsMethods(Methods): yield Method
-    for Function in XsamsFunctions(Functions): yield Function
-    for Environment in XsamsEnvironments(Environments): yield Environment
+    for Method in XsamsMethods(Methods): 
+        yield Method
+    for Function in XsamsFunctions(Functions): 
+        yield Function
+    for Environment in XsamsEnvironments(Environments): 
+        yield Environment
 
     LOG('Writing States.')
     yield '<Species>\n'
-    for Atom in XsamsAtoms(Atoms): yield Atom
-    for Molecule in XsamsMolecules(Molecules): yield Molecule
+    for Atom in XsamsAtoms(Atoms): 
+        yield Atom
+    for Molecule in XsamsMolecules(Molecules): 
+        yield Molecule
     # old way:
     #for MolState in XsamsMolStates(Molecules, MoleStates, MoleQNs):
     #    yield MolState
@@ -695,38 +763,36 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     LOG('Writing Processes.')
     yield '<Processes>\n'
     yield '<Radiative>\n'
-    for RadTran in XsamsRadTrans(RadTrans): yield RadTran
-    for RadCros in XsamsRadCross(RadCross): yield RadCros
+    for RadTran in XsamsRadTrans(RadTrans): 
+        yield RadTran
+    for RadCros in XsamsRadCross(RadCross): 
+        yield RadCros
     yield '</Radiative>\n'
-    for CollTran in XsamsCollTrans(CollTrans): yield CollTran
-    for NonRadTran in XsamsNonRadTrans(NonRadTrans): yield NonRadTran
+    for CollTran in XsamsCollTrans(CollTrans): 
+        yield CollTran
+    for NonRadTran in XsamsNonRadTrans(NonRadTrans): 
+        yield NonRadTran
     yield '</Processes>\n'
     yield '</XSAMSData>\n'
     LOG('Done with XSAMS')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##########################################################
-######## VO TABLE GENERATORS ####################
+#
+################# Virtual Observatory TABLE GENERATORS ####################
+#
+# Obs - not updated to latest versions
 
 def sources2votable(sources):
+    """
+    Sources to VO
+    """
     for source in sources:
         yield ''
 
 def states2votable(states):
+    """
+    States to VO 
+    """
     yield """<TABLE name="states" ID="states">
       <DESCRIPTION>The States that are involved in transitions</DESCRIPTION>
       <FIELD name="species name" ID="specname" datatype="char" arraysize="*"/>
@@ -737,12 +803,14 @@ def states2votable(states):
         <TABLEDATA>"""
 
     for state in states:
-        yield  '<TR><TD>not implemented</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>'%(state.energy,state.id,state.charid)
-
+        yield  '<TR><TD>not implemented</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>' % (state.energy, state.id, state.charid)
     yield """</TABLEDATA></DATA></TABLE>"""
 
-def transitions2votable(transs,count):
-    if type(transs)==type([]):
+def transitions2votable(transs, count):
+    """
+    Transition to VO 
+    """
+    if type(transs) == type([]):
         n = len(transs)
     else:
         transs.count()
@@ -758,11 +826,11 @@ def transitions2votable(transs,count):
       <FIELD name="upper state id" ID="upstateid" datatype="char" arraysize="*"/>
       <FIELD name="lower state id" ID="lostateid" datatype="char" arraysize="*"/>
       <DATA>
-        <TABLEDATA>"""%(count or n,n)
-
+        <TABLEDATA>""" % (count or n, n)
     for trans in transs:
-        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.airwave, trans.vacwave, trans.loggf, trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , trans.upstateid, trans.lostateid)
-
+        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n' % (trans.airwave, trans.vacwave, trans.loggf, 
+                                                                                                                                   trans.landeff , trans.gammarad ,trans.gammastark , 
+                                                                                                                                   trans.gammawaals , trans.upstateid, trans.lostateid)
     yield """</TABLEDATA></DATA></TABLE>"""
 
 
@@ -775,7 +843,11 @@ def transitions2votable(transs,count):
 #        return None
 
 
-def votable(transitions,states,sources,totalcount=None):
+def votable(transitions, states, sources, totalcount=None):
+    """
+    VO base definition
+    """
+
     yield """<?xml version="1.0"?>
 <!--
 <?xml-stylesheet type="text/xml" href="http://vamdc.fysast.uu.se:8888/VOTable2XHTMLbasic.xsl"?>
@@ -798,10 +870,15 @@ def votable(transitions,states,sources,totalcount=None):
 </RESOURCE>
 </VOTABLE>
 """
+
 #######################
 
 def transitions2embedhtml(transs,count):
-    if type(transs)==type([]):
+    """
+    Converting Transition to html
+    """
+
+    if type(transs) == type([]):
         n = len(transs)
     else:
         transs.count()
@@ -819,13 +896,19 @@ def transitions2embedhtml(transs,count):
   -->    <FIELD name="upper state id" ID="upstateid" datatype="char" arraysize="*"/>
       <FIELD name="lower state id" ID="lostateid" datatype="char" arraysize="*"/>
       <DATA>
-        <TABLEDATA>"""%(count or n,n)
+        <TABLEDATA>"""%(count or n, n)
 
     for trans in transs:
-        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n'%(trans.species.atomic, trans.species.ion,trans.airwave, trans.loggf,) #trans.landeff , trans.gammarad ,trans.gammastark , trans.gammawaals , xmlEscape(trans.upstateid), xmlEscape(trans.lostateid))
+        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n' % (trans.species.atomic, trans.species.ion,
+                                                                                                  trans.airwave, trans.loggf,) #trans.landeff , trans.gammarad ,
+                                                                                                  #trans.gammastark , trans.gammawaals , xmlEscape(trans.upstateid), xmlEscape(trans.lostateid))
     yield '</TABLEDATA></DATA></TABLE>'
 
 def embedhtml(transitions,totalcount=None):
+    """
+    Embed html 
+    """
+
     yield """<?xml version="1.0"?>
 <!--
 <?xml-stylesheet type="text/xml" href="http://vamdc.fysast.uu.se:8888/VOTable2XHTMLbasic.xsl"?>
@@ -838,7 +921,7 @@ def embedhtml(transitions,totalcount=None):
     </DESCRIPTION>
     <LINK></LINK>
 """
-    for trans in transitions2embedhtml(transitions,totalcount):
+    for trans in transitions2embedhtml(transitions, totalcount):
         yield trans
     yield """
 </RESOURCE>
