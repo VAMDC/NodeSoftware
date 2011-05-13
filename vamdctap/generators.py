@@ -114,7 +114,7 @@ def makePartitionfunc(keyword,G):
 
     return s
 
-def makeDataType(tagname,keyword,G):
+def makeDataType(tagname,keyword,G,extraAttr=None,extraElem=None):
     """
     This is for treating the case where a keyword corresponds to a
     DataType in the schema which can have units, comment, sources etc.
@@ -132,6 +132,9 @@ def makeDataType(tagname,keyword,G):
 
     s='\n<%s'%tagname
     if method: s+=' methodRef="M%s-%s"'%(NODEID,method)
+    if extraAttr:
+        for k,v in extraAttr.items():
+            s+=' %s="%s"'%(k,G(v))
     s+='>'
 
     if comment: s+='<Comments>%s</Comments>'%quoteattr('%s'%comment)[1:-1]
@@ -139,6 +142,10 @@ def makeDataType(tagname,keyword,G):
     s+='<Value units="%s">%s</Value>'%(unit or 'unitless',value)
     if acc: s+='<Accuracy>%s</Accuracy>'%acc
     s+='</%s>'%tagname
+
+    if extraElem:
+        for k,v in extraElem.items():
+            s+='<%s>%s</%s>'%(k,G(v),k)
 
     return s
 
@@ -434,7 +441,8 @@ def XsamsMSBuild(MoleculeState):
                                                    G("MoleculeStateID"))
     yield '  <Description/>\n'
     yield '  <MolecularStateCharacterisation>\n'
-    yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G)
+    yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G,
+                extraAttr={'energyOrigin':'MoleculeStateEnergyOrigin'})
     if G("MoleculeStateCharacTotalStatisticalWeight"):
         yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
                     % G("MoleculeStateCharacTotalStatisticalWeight")

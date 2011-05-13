@@ -175,6 +175,6 @@ def merge_cols_by_sep(linedata, *sepNr):
     Merges data from several columns (separated by ;) into one, separating them with '-'.
     sepNr are the nth position of the file, separated by 'sep'.
     Assumes a single line input.
-    """
+    """    
     sep = ';'
     return '-'.join([bySepNr(linedata, nr, sep=sep).strip() for nr in sepNr])
