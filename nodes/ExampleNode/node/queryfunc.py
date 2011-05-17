@@ -168,4 +168,5 @@ def setupResults(sql, limit=1000):
             'Sources':sources,
             'HeaderInfo':headerinfo,
             'Methods':methods
+            #'Functions':functions
            }
