@@ -64,6 +64,7 @@ def GetValue(name, **kwargs):
         exec('%s=kwargs["%s"]' % (key, key))
 
     try:
+        # here, the RHS of the RETURNABLES dict is executed.
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
     except Exception, e: 
@@ -649,13 +650,40 @@ def XsamsNonRadTrans(NonRadTrans):
     """
     yield ''
 
+
+def makeFunctionArgument(fargobj, tagname="Y"):
+    """
+    fargobj - an object representing 
+    an argument for the function. The object should 
+    have properties named for the elements needed
+    in the tag, such as Name, Units etc. 
+    """
+    if not fargobj:
+        # create a dummy object             
+        class Dum(object):
+            pass
+        fargobj = Dum()
+    name = fargobj.__dict__.get("Name", "")
+    units = fargobj.__dict__.get("Units", "")
+    value = fargobj.__dict__.get("Value", "")
+    description = fargobj.__dict__.get("Description", "")
+    lower_limit = fargobj.__dict__.get("LowerLimit", "")
+    upper_limit = fargobj.__dict__.get("UpperLimit", "")
+    return """<%s name=%s, units=%s>
+%s
+<Description>%s</Description>
+<LowerLimit>%s</LowerLimit>
+<UpperLimit>%s</UpperLimit>
+</%s> 
+""" % (tagname, name, units, value, description, lower_limit, upper_limit, tagname)
+
 def XsamsFunctions(Functions):
     """
     Generator for the Functions tag
     """
     if not isiterable(Functions): 
         return
-    yield '<Functions>'
+    yield '<Functions>\n'
     for Function in Functions:
         if hasattr(Function,'XML'):
             try:
@@ -663,6 +691,60 @@ def XsamsFunctions(Functions):
                 continue
             except:
                 pass
+        G = lambda name: GetValue(name, Function=Function)
+        yield """<Function functionID="F%s-%s>
+<Name>%s</Name>
+""" % (NODEID, G("FunctionID"), G("FunctionName"))
+        functionsourcerefs = G('FunctionSourceRef')
+        # make it always into a list to be looped over, even if
+        # only single entry
+        try:
+            functionsourcerefs = eval(functionsourcerefs)
+        except:
+            pass
+        if not isiterable(functionsourcerefs): 
+            functionsourcerefs = [functionsourcerefs]
+        for sourceref in functionsourcerefs:
+            yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
+
+        yield "<Name>%s</Name>\n"
+        yield "<Expression computerLanguage=%s>%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
+
+        # Y argument of the expression 
+        yarg = G("FunctionY")
+        yield makeFunctionArgument(yarg, tagname="Y")
+
+    # function arguments depend on an object FunctionArguments being stored
+    # with the right properties (Description, LowerLimit etc) 
+    # on itself.
+    functionarguments = G("FunctionArguments")
+    if not isiterable(functionarguments):
+        functionarguments = [functionarguments]
+    yield "<Arguments>\n"
+    for farg in functionarguments: 
+        yield makeFunctionArgument(farg, tagname="Argument")
+    yield "</Arguments>\n"
+    
+    # function parameters depend 
+    functionparameters = G("FunctionParameters")
+    if not isiterable(functionparameters):
+        functionparameters = [functionparameters]
+    yield "<Parameters>\n"
+    for fpar in functionparameters:
+        name = fpar.__dict__.get("Name", "")
+        units = fpar.__dict__.get("Units", "")
+        value = fpar.__dict__.get("Value", "")
+        description = fpar.__dict__.get("Description", "")
+        yield """<Parameter name=%s, units=%s>
+%s
+<Description>%s</Description> 
+</Parameter>
+""" % (name, units, value, description)
+    yield "</Parameters>"
+    yield """<ReferenceFrame>%s</ReferenceFrame>
+<Description>%s</Description>
+<SourceCodeURL>%s</SourceCodeURL>
+""" % (G("FunctionReferenceFrame"), G("FunctionDescription"), G("FunctionSourceCodeURL"))        
     yield '</Functions>'
 
 def XsamsMethods(Methods):
