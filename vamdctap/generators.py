@@ -659,10 +659,7 @@ def makeFunctionArgument(fargobj, tagname="Y"):
     in the tag, such as Name, Units etc. 
     """
     if not fargobj:
-        # create a dummy object             
-        class Dum(object):
-            pass
-        fargobj = Dum()
+        return ""
     name = fargobj.__dict__.get("Name", "")
     units = fargobj.__dict__.get("Units", "")
     value = fargobj.__dict__.get("Value", "")
@@ -707,41 +704,47 @@ def XsamsFunctions(Functions):
         for sourceref in functionsourcerefs:
             yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
 
-        yield "<Name>%s</Name>\n"
+        yield "<Name>%s</Name>\n" % G("FunctionName")
         yield "<Expression computerLanguage=%s>%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
 
-        # Y argument of the expression 
-        yarg = G("FunctionY")
-        yield makeFunctionArgument(yarg, tagname="Y")
+        yield "<Y name=%s, units=%s>" % (G("FunctionYName"), G("FunctionYUnits"))
+        desc = G("FunctionYDescription")
+        if desc:
+            yield "<Description>%s</Description>" % desc
+        lowlim = G("FunctionYLowerLimit")
+        if lowlim: 
+            yield "<LowerLimit>%s</LowerLimit>" % lowlim
+        hilim = G("FunctionYUpperLimit")
+        if hilim:
+            yield "<UpperLimit>%s</UpperLimit>"
+        yield "</Y>"
 
-    # function arguments depend on an object FunctionArguments being stored
-    # with the right properties (Description, LowerLimit etc) 
-    # on itself.
-    functionarguments = G("FunctionArguments")
-    if not isiterable(functionarguments):
-        functionarguments = [functionarguments]
-    yield "<Arguments>\n"
-    for farg in functionarguments: 
-        yield makeFunctionArgument(farg, tagname="Argument")
-    yield "</Arguments>\n"
-    
-    # function parameters depend 
-    functionparameters = G("FunctionParameters")
-    if not isiterable(functionparameters):
-        functionparameters = [functionparameters]
-    yield "<Parameters>\n"
-    for fpar in functionparameters:
-        name = fpar.__dict__.get("Name", "")
-        units = fpar.__dict__.get("Units", "")
-        value = fpar.__dict__.get("Value", "")
-        description = fpar.__dict__.get("Description", "")
-        yield """<Parameter name=%s, units=%s>
-%s
-<Description>%s</Description> 
-</Parameter>
-""" % (name, units, value, description)
-    yield "</Parameters>"
-    yield """<ReferenceFrame>%s</ReferenceFrame>
+        yield "<Arguments>\n"
+        for FunctionArgument in Function.Arguments:
+            GA = lambda name: GetValue(name, FunctionArgument=FunctionArgument)
+            yield "<Argument name=%s, units=%s>" % (GA("FunctionArgumentName"), GA("FunctionArgumentUnits"))
+            desc = GA("FunctionArgumentDescription")
+            if desc: 
+                yield "<Description>%s</Description>" % desc
+            lowlim = G("FunctionYLowerLimit")
+            if lowlim: 
+                yield "<LowerLimit>%s</LowerLimit>" % lowlim
+            hilim = G("FunctionYUpperLimit")
+            if hilim:
+                yield "<UpperLimit>%s</UpperLimit>"
+            yield "</Argument>\n"
+        yield "</Arguments>"
+
+        yield "<Parameters>\n"
+        for FunctionParameter in Function.Parameter:
+            GP = lambda name: GetValue(name, FunctionParameter=FunctionParameter)
+            yield "<Parameter name=%s, units=%s>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
+            desc = GP("FunctionParameterDescription")
+            if desc:
+                yield "<Description>%s</Description>" % desc
+            yield "</Parameter>\n"
+        yield "</Parameters>"
+        yield """<ReferenceFrame>%s</ReferenceFrame>
 <Description>%s</Description>
 <SourceCodeURL>%s</SourceCodeURL>
 """ % (G("FunctionReferenceFrame"), G("FunctionDescription"), G("FunctionSourceCodeURL"))        

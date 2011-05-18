@@ -83,6 +83,29 @@ RETURNABLES = {\
 'RadTransEffectiveLandeFactor':'RadTran.landeff',
 'RadTransEffectiveLandeFactorUnit':'unitless',
 'RadTransEffectiveLandeFactorRef':'RadTran.lande_ref_id',
+
+'FunctionID':'Function.id',
+'FunctionName':'Function.name',
+'FunctionSourceRef': "",
+'FunctionComputerLanguage': "",
+'FunctionExpression':"Function.expression",
+'FunctionYName':"Function.y",
+'FunctionYUnits':"unitless",
+'FunctionYDescription':"",
+'FunctionYLowerLimit':"0.0",
+'FunctionYUpperLimit':"1.0",
+'FunctionArgumentName':'FunctionArgument.name',
+'FunctionArgumentUnits': "unitless",
+'FunctionArgumentDescription': "",
+'FunctionArgumentLowerLimit':"FunctionArgument.lower_limit",
+'FunctionArgumentUpperLimit':"FunctionArgument.upper_limit",
+'FunctionParameterName':"FunctionParameter.name",
+'FunctionParameterUnits':"unitless",
+'FunctionParameterDescription':"",
+'FunctionReferenceFrame':"",
+'FunctionDescription':"",
+'FunctionSourceCodeURL': ""
+
 }
 
 # The restrictable dictionary defines limitations to the search. 
