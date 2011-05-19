@@ -673,17 +673,110 @@ def XsamsRadTrans(RadTrans):
             yield XsamsRadTranShifting(G)
         yield '</RadiativeTransition>\n'
 
+def makeDataSeriesType(tagname, keyword, G):
+    """
+    Creates the dataseries type
+    """
+    dic = {}
+    xpara = G("%sParameter" % keyword)
+    if xpara:
+        dic["parameter"] = xpara
+    xunits = G("%sUnits" % keyword)
+    if xunits:
+        dic["units"] = xunits
+    xid = G("CrossSetion%sID" % keyword)
+    if xid:
+        dic["id"] = xid        
+    yield makePrimaryType("%s" % tagname, "%s" % keyword, G, extraAttr=dic)
+
+    dlist = G("%sDataList" % keyword)
+    if dlist:
+        yield "<DataList n='%s' units='%s'>%s</DataList>" % (G("%sDataListN" % keyword), G("%sDataListUnits" % keyword), dlist)
+    csec = G("%sLinearSequenceA0" % keyword) and G("%sLinearSequenceA1" % keyword)
+    if csec:
+        dic = {"a0":G("%sLinearSequenceA0" % keyword), "a1":G("%sLinearSequenceA1" % keyword)}
+        nx = G("%sLinearSequenceN" % keyword)
+        if nx:
+            dic["n"] = nx
+            xunits = G("%sLinearSequenceUnits" % keyword)
+            if xunits:
+                dic["units"] = xunits
+        yield makePrimaryType("LinearSequence", "%sLinearSequence" % keyword, G, extraAttr=dic)        
+        yield("</LinearSequence>")
+    dfile = G("%sDataFile" % keyword)
+    if dfile:
+        yield "<DataFile>%s</DataFile>" % dfile
+    elist = G("%sErrorList" % % keyword)            
+    if elist:
+        yield "<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), G("%sErrorList" % keyword))
+    err = G("%sError" % keyword)
+    if err:
+        yield "<Error>%s</Error>" % err        
+
+    yield "</%s>" % tagname
+
 
 def XsamsRadCross(RadCross):
     """
     for the Radiative/CrossSection part
     """
-    yield ''
+    
+    if not isiterable(RadCross):
+        return
+    yield "<Collisions>"
+    for RadCros in RadCross:
+        if hasattr(RadCros, 'XML'):
+            try:
+                yield RadCros.XML()
+                continue
+            except:
+                pass
+        # create header
+
+        G = lambda name: GetValue(name, RadCros=RadCros)
+        dic = {}
+        envRef = G("CrossSectionEnvironmentRef")
+        if envRef:
+            dic["envRef"] = "E%s" % envRef
+        ID = G("RadCrosID")
+        if ID:
+            dic["id": ID]
+        yield makePrimaryType("CrossSection", G, "CrossSection", extraAttr=dic)
+        yield "<Description>%s</Description>" % G("CrossSectionDescription")
+
+        yield makeDataSeriesType("X", "CrossSectionX", G)
+        yield makeDataSeriesType("Y", "CrossSectionY", G)
+
+        species = GR("CrossSectionSpeciesRef")
+        state = GR("CrossSectionStateRef")
+        if species or state: 
+            yield "<Species>"
+            if species:
+                yield "<SpeciesRef>X%s</SpeciesRef>" % species
+            if state:
+                yield "<StateRef>S%s</StateRef>" % state            
+            yield "</Species>"
+
+        for CrossSectionBandAssignment in CrossSection.BandAssignments:
+            GC = lambda name: GetValue(name, CrossSectionBandAssignment=CrossSectionBandAssignment)
+            yield makePrimaryType("BandAssignment", "CrossSectionBandAssignment", GC, extraAttr={"name":"CrossSectionBandAssignmentName"})
+            
+            yield makeDataType("BandCentre", "CrossSectionBandAssigmentBandCentre", GC)
+            yield makeDataType("BandWidth", "CrossSectionBandAssignmentBandWidth", GC)
+
+
+            for CrossSectionBandAssignmentMode in CrossSeftionBandAssignment.Modes:
+                GCM = lambda name: GetValue(name, CrossSectionBandAssigmentMode=CrossSectionBandAssignmentMode)
+                yield makePrimaryType("BandAssignment", "CrossSectionBandAssignment", GC, extraAttr={"name":"CrossSectionBandAssignmentName"})
+
+
+                #TODO
+
+            yield "</BandAssignment>"
+
+        yield "</CrossSection>"
 
         
-
-
-
 
 def XsamsCollTrans(CollTrans):
     """
@@ -798,7 +891,7 @@ def XsamsCollTrans(CollTrans):
                     yield "<FitParameters>"
                 for CollTranDataSetFitDataArgument in CollTranDataSetFitData.Arguments:                    
                     GDFA = lambda name: GetValue(name, CollTranDataSetFitDataArgument=CollTranDataSetFitDataArgument)
-                    yield "<FitArgument name=%s units=%s>" % (GDFA("CollisionalTransitionDataSetFitDataArgumentName"), GDFA("CollisionalTransitionDataSetFitDataArgumentUnits"))
+                    yield "<FitArgument name='%s' units='%s'>" % (GDFA("CollisionalTransitionDataSetFitDataArgumentName"), GDFA("CollisionalTransitionDataSetFitDataArgumentUnits"))
                     desc = GDFA("CollisionalTransitionDataSetFitDataArgumentDescription")
                     if desc:
                         yield "<Description>%s</Description>" % desc
@@ -839,21 +932,21 @@ def XsamsCollTrans(CollTrans):
                     GDTX = lambda name: GetValue(name, CollTranDataSetTabulatedDataX=CollTranDataSetTabulatedDataX)                
                     Nx = GDTX("CollisionalTransitionDataSetTabulatedDataXDataListN")           # number of X points (should be identical for all elements in this element)
                     xunits = GDTX("CollisionalTransitionDataSetTabulatedDataXDataListUnits")   
-                    yield "<X units=%s parameter=%s" % (Nx, xunits)
-                    yield "<DataList n=%s units=%s>%s</DataList>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataList"))
-                    yield "<Error> n=%s units=%s>%s</Error>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataListError"))
-                    yield "<NegativeError> n=%s units=%s>%s</NegativeError>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataListNegativeError"))
-                    yield "<PositiveError> n=%s units=%s>%s</PositiveError>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataListPositiveError"))
+                    yield "<X units='%s' parameter='%s'" % (Nx, xunits)
+                    yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataList"))
+                    yield "<Error> n='%s' units='%s'>%s</Error>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataListError"))
+                    yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataListNegativeError"))
+                    yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataListPositiveError"))
                     yield "<DataDescription>%s</DataDescription>" % GDTX("CollisionalTransitionDataSetTabulatedDataXDataListDescription")
                     yield "</X>"                    
                 # handle Y component of XY
                 Ny = GDT("CollisionalTransitionDataSetTabulatedDataYDataListN")           # number of Y points (should be identical for all elements in this element)
                 yunits = GDT("CollisionalTransitionDataSetTabulatedDataYDataListUnits")   
-                yield "<Y units=%s parameter=%s" % (Ny, yunits)
-                yield "<DataList n=%s units=%s>%s</DataList>" % (Ny, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataList"))
-                yield "<Error> n=%s units=%s>%s</Error>" % (Ny, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataListError"))
-                yield "<NegativeError> n=%s units=%s>%s</NegativeError>" % (Ny, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataListNegativeError"))
-                yield "<PositiveError> n=%s units=%s>%s</PositiveError>" % (Nx, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataListPositiveError"))
+                yield "<Y units='%s' parameter='%s'" % (Ny, yunits)
+                yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataList"))
+                yield "<Error> n='%s' units='%s'>%s</Error>" % (Ny, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataListError"))
+                yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataListNegativeError"))
+                yield "<PositiveError> n='%s' units=%s>'%s'</PositiveError>" % (Nx, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataListPositiveError"))
                 yield "<DataDescription>%s</DataDescription>" % GDT("CollisionalTransitionDataSetTabulatedDataYDataListDescription")
                 yield "</Y>"
                
@@ -902,7 +995,7 @@ def XsamsFunctions(Functions):
 
         yield "<Name>%s</Name>" % G("FunctionName")
         yield "<Expression computerLanguage=%s>%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
-        yield "<Y name=%s, units=%s>" % (G("FunctionYName"), G("FunctionYUnits"))
+        yield "<Y name='%s', units='%s'>" % (G("FunctionYName"), G("FunctionYUnits"))
         desc = G("FunctionYDescription")
         if desc:
             yield "<Description>%s</Description>" % desc
@@ -917,7 +1010,7 @@ def XsamsFunctions(Functions):
         yield "<Arguments>\n"
         for FunctionArgument in Function.Arguments:
             GA = lambda name: GetValue(name, FunctionArgument=FunctionArgument)
-            yield "<Argument name=%s, units=%s>" % (GA("FunctionArgumentName"), GA("FunctionArgumentUnits"))
+            yield "<Argument name='%s', units='%s'>" % (GA("FunctionArgumentName"), GA("FunctionArgumentUnits"))
             desc = GA("FunctionArgumentDescription")
             if desc: 
                 yield "<Description>%s</Description>" % desc
@@ -933,7 +1026,7 @@ def XsamsFunctions(Functions):
         yield "<Parameters>\n"
         for FunctionParameter in Function.Parameter:
             GP = lambda name: GetValue(name, FunctionParameter=FunctionParameter)
-            yield "<Parameter name=%s, units=%s>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
+            yield "<Parameter name='%s', units='%s'>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
             desc = GP("FunctionParameterDescription")
             if desc:
                 yield "<Description>%s</Description>" % desc
