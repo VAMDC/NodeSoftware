@@ -19,3 +19,4 @@ dummy*
 doc*/build/*
 *.json
 *.dat
+*.log
