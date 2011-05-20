@@ -42,6 +42,16 @@ N_COLLTRAN_KWS = countReturnables('Collision.*')
 N_RADTRAN_KWS = countReturnables('^RadTran.*')
 N_BROAD_KWS = countReturnables('^.*Broadening.*')
 
+def makeiter(obj):
+    """
+    Make an object iterable, no matter what
+    """
+    if not obj:
+        return []
+    if not isiterable(obj):
+        return [obj]
+    return obj 
+
 def GetValue(name, **kwargs):
     """
     the function that gets a value out of the query set, using the global name
@@ -67,7 +77,7 @@ def GetValue(name, **kwargs):
         # here, the RHS of the RETURNABLES dict is executed.
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
-    except Exception, e: 
+    except Exception: 
 #        LOG('Exception in generators.py: GetValue()')
 #        LOG(str(e))
 #        LOG(name)
@@ -206,6 +216,59 @@ def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
             string += '<%s>%s</%s>' % (k, G(v), k)
 
     return string
+
+def makeArgumentType(tagname, keyword, G):
+    """
+    Build ArgumentType
+    """
+    string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword)) 
+    string += "<Description>%s</Description>" % G("%sDescription" % keyword)
+    string += "<LowerLimit>%s</LowerLimit>" % G("%sLowerLimit" % keyword)
+    string += "<UpperLimit>%s</UpperLimit>" % G("%sUpperLimit" % keyword)    
+    string += "</%s>" % tagname
+    return string 
+
+def makeDataFuncType(tagname, keyword, G):
+    """
+    Build the DataFuncType.
+    """
+    string = makePrimaryType(tagname, keyword, G, extraAttr={"name":G("%sName" % keyword)})
+
+    val = G("%sValueUnits" % keyword)
+    par = G("%sParameters" % keyword)
+    
+    if val:
+        string += "<Value units=%s>%s</Value>" % (G("%sValueUnits" % keyword), G("%sValue" % keyword))
+        string += makePrimaryType("Accuracy", "%sAccuracy" % keyword, G, extraAttr={"calibration":G("%sAccuracyCalibration" % keyword), "quality":G("%sAccuracyQuality" % keyword)})
+        systerr = G("%sAccuracySystematic" % keyword)
+        if systerr:
+            string += "<Systematic confidence=%s relative=%s>%s</Systematic>" % (G("%sAccuracySystematicConfidence" % keyword), G("%sAccuracySystematicRelative" % keyword), systerr)
+        staterr = G("%sAccuracyStatistical" % keyword)   
+        if staterr:
+            string += "<Statistical confidence=%s relative=%s>%s</Statistical>" % (G("%sAccuracyStatisticalConfidence" % keyword), G("%sAccuracyStatisticalRelative" % keyword), staterr)
+        stathigh = G("%sAccuracyStatHigh" % keyword)
+        statlow = G("%sAccuracyStatLow" % keyword)
+        if stathigh and statlow:
+            string += "<StatHigh confidence=%s relative=%s>%s</StatHigh>" % (G("%sAccuracyStatHighConfidence" % keyword), G("%sAccuracyStatHighRelative" % keyword), systerr)    
+            string += "<StatLow confidence=%s relative=%s>%s</StatLow>" % (G("%sAccuracyStatLowConfidence" % keyword), G("%sAccuracyStatLowRelative" % keyword), systerr)
+        string += "</Accuracy>"
+        string += "</Value>"
+    if par:     
+        for FitParameter in makeiter(par):
+            GP = eval("lambda name: GetValue(name, %sFitParameter=%sFitParameter)" % (keyword, keyword))
+            string += "<FitParameters functionRef=F%s>" % GP("%sFitParametersFunctionRef")
+        
+            fitargs = eval("%s.FitArguments" % keyword)
+            for FitArgument in makeiter(fitargs):
+                GPA = eval("lambda name: GetValue(name, %sFitParameterArgument=%sFitParameterArgument)" % (keyword, keyword))
+                string += makeArgumentType("FitArgument", "%sFitArgument" % keyword, GPA)    
+            fitpars = eval("%s.FitParameter" % keyword)
+            for FitParameter in makeiter(fitpars):
+                GPP = eval("lambda name: GetValue(name, %sFitParameterParameter=%sFitParameterParameter)" % (keyword, keyword))
+                string += makeNamedDataType("FitParameter", "%sFitParameter" % keyword, GPP)            
+            string += "</FitParameters>"    
+    string += "</%s>" % tagname
+    return string 
 
 def makeNamedDataType(tagname, keyword, G):
     """
@@ -640,7 +703,19 @@ def XsamsRadTranShifting(G):
     """
     Not implemented
     """
-    return ''
+    dic = {}
+    nam = G("RadiativeTransitionShiftingName")
+    eref = G("RadiativeTransitionShiftingEnvRef")
+    if nam: 
+        dic["name"] = nam
+    if eref:
+        dic["envRef"] = "E%s"  % eref
+    yield makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
+    shiftpar = G("RadiativeTransitionShiftingShiftingParameter")
+    for ShiftingParameter in makeiter(shiftpar):
+        GS = lambda name: GetValue(name, ShiftingParameter=ShiftingParameter)
+        yield makeDataFuncType("ShiftingParameter", "RadiativeTransitionShiftingShiftingParameter", GS)        
+    yield "</Shifting>"
 
 def XsamsRadTrans(RadTrans):
     """
