@@ -250,6 +250,19 @@ def makeNamedDataType(tagname, keyword, G):
 
     return string
 
+def checkXML(obj):
+    """
+    If the queryset has an XML method, use that and
+    skip the hard-coded implementation.
+    """
+    if hasattr(obj,'XML'):
+        try:
+            return True, obj.XML()
+        except Exception:
+            pass
+    return False, None 
+
+
 def XsamsSources(Sources):
     """
     Create the Source tag structure (a bibtex entry)
@@ -259,13 +272,10 @@ def XsamsSources(Sources):
         return
     yield '<Sources>'
     for Source in Sources:
-        if hasattr(Source, 'XML'):
-            try:
-                yield Source.XML()
-                continue
-            except:
-                pass
-
+        cont, ret = checkXML(Source)
+        if cont:
+            yield ret
+            continue 
         G = lambda name: GetValue(name, Source=Source)
         yield '<Source sourceID="B%s-%s"><Authors>\n' % (NODEID, G('SourceID'))
         authornames = G('SourceAuthorName')
@@ -299,12 +309,10 @@ def XsamsEnvironments(Environments):
         return
     yield '<Environments>'
     for Environment in Environments:
-        if hasattr(Environment,'XML'):
-            try:
-                yield Environment.XML()
-                continue
-            except Exception:
-                pass
+        cont, ret = checkXML(Environment)
+        if cont:
+            yield ret
+            continue 
 
         G = lambda name: GetValue(name, Environment=Environment)
         yield '<Environment envID="E%s-%s">' % (NODEID, G('EnvironmentID'))
@@ -392,6 +400,11 @@ def XsamsAtoms(Atoms):
     yield '<Atoms>'
 
     for Atom in Atoms:
+        cont, ret = checkXML(Atom)
+        if cont:
+            yield ret
+            continue 
+
         G = lambda name: GetValue(name, Atom=Atom)
         yield """<Atom>
 <ChemicalElement>
@@ -411,6 +424,10 @@ def XsamsAtoms(Atoms):
         if not hasattr(Atom,'States'): 
             Atom.States = []
         for AtomState in Atom.States:
+            cont, ret = checkXML(AtomState)
+            if cont:
+                yield ret
+                continue 
             G = lambda name: GetValue(name, AtomState=AtomState)
             yield """<AtomicState stateID="S%s-%s">""" % (G('NodeID'), G('AtomStateID'))
             comm = G('AtomStateDescription')
@@ -546,6 +563,10 @@ def XsamsMolecules(Molecules):
     if not Molecules: return
     yield '<Molecules>\n'
     for Molecule in Molecules:
+        cont, ret = checkXML(Molecule)
+        if cont:
+            yield ret
+            continue 
         G = lambda name: GetValue(name, Molecule=Molecule)
         yield '<Molecule speciesID="X%s">\n' % G("MoleculeID")
 
@@ -631,6 +652,11 @@ def XsamsRadTrans(RadTrans):
         return
 
     for RadTran in RadTrans:
+        cont, ret = checkXML(RadTran)
+        if cont:
+            yield ret
+            continue 
+
         G = lambda name: GetValue(name, RadTran=RadTran)
         yield '<RadiativeTransition>'
         comm = G('RadTransComments')
@@ -745,12 +771,11 @@ def XsamsRadCross(RadCross):
 
     yield "<Collisions>"
     for RadCros in RadCross:
-        if hasattr(RadCros, 'XML'):
-            try:
-                yield RadCros.XML()
-                continue
-            except:
-                pass
+        cont, ret = checkXML(RadCros)
+        if cont:
+            yield ret
+            continue 
+
         # create header
 
         G = lambda name: GetValue(name, RadCros=RadCros)
@@ -778,6 +803,12 @@ def XsamsRadCross(RadCross):
             yield "</Species>"
 
         for RadCrosBandAssignment in RadCros.BandAssignments:
+
+            cont, ret = checkXML(RadCrosBandAssignment)
+            if cont:
+                yield ret
+                continue 
+
             GC = lambda name: GetValue(name, RadCrosBandAssignment=RadCrosBandAssignment)
             yield makePrimaryType("BandAssignment", "CrossSectionBandAssignment", GC, extraAttr={"name":"CrossSectionBandAssignmentName"})
             
@@ -785,9 +816,21 @@ def XsamsRadCross(RadCross):
             yield makeDataType("BandWidth", "CrossSectionBandAssignmentBandWidth", GC)
 
             for RadCrosBandAssignmentMode in RadCrosBandAssignment.Modes:
+
+                cont, ret = checkXML(RadCrosBandAssignmentMode)
+                if cont:
+                    yield ret
+                    continue 
+
                 GCM = lambda name: GetValue(name, RadCrosBandAssigmentMode=RadCrosBandAssignmentMode)
                 yield makePrimaryType("Modes", "CrossSectionBandAssignmentModes", GCM, extraAttr={"name":"CrossSectionBandAssignmentModesName"})
                 for RadCrosBandAssignmentModeDeltaV in RadCrosBandAssignmentMode.DeltaVs:
+
+                    cont, ret = checkXML(RadCrosBandAssignmentModeDeltaV)
+                    if cont:
+                        yield ret
+                        continue 
+
                     GCMV = lambda name: GetValue(name, RadCrosBandAssignmentModeDeltaV=RadCrosBandAssignmentModeDeltaV)
                     string = "DeltaV", 
                     mid = GCMV("CrossSectionBandAssignmentModesDeltaVModeID")
@@ -835,12 +878,12 @@ def XsamsCollTrans(CollTrans):
         return
     yield "<Collisions>"
     for CollTran in CollTrans:
-        if hasattr(CollTran, 'XML'):
-            try:
-                yield CollTran.XML()
-                continue
-            except:
-                pass
+
+        cont, ret = checkXML(CollTran)
+        if cont:
+            yield ret
+            continue 
+
         # create header
         G = lambda name: GetValue(name, CollTran=CollTran)
         yield makePrimaryType("CollisionalTransition", "CollisionalTransition")
@@ -858,6 +901,12 @@ def XsamsCollTrans(CollTrans):
         yield "</ProcessClass>"
 
         for CollTranReactant in CollTran.Reactants:
+
+            cont, ret = checkXML(CollTranReactant)
+            if cont:
+                yield ret
+                continue 
+
             GR = lambda name: GetValue(name, CollTranReactant=CollTranReactant)
             yield "<Reactant>"
             species = GR("CollisionalTransitionSpeciesRef")
@@ -869,6 +918,12 @@ def XsamsCollTrans(CollTrans):
             yield "</Reactant>"
 
         for CollTranIntermediateState in CollTran.IntermediateStates:
+
+            cont, ret = checkXML(CollTranIntermediateState)
+            if cont:
+                yield ret
+                continue 
+
             GI = lambda name: GetValue(name, CollTranIntermediateState=CollTranIntermediateState)
             yield "<IntermediateState>"
             if species:
@@ -880,6 +935,12 @@ def XsamsCollTrans(CollTrans):
             yield "</IntermediateState>"
 
         for CollTranProduct in CollTran.Products:
+
+            cont, ret = checkXML(CollTranProduct)
+            if cont:
+                yield ret
+                continue 
+
             GP = lambda name: GetValue(name, CollTranProduct=CollTranProduct)
             yield "<Product>"
             if species:
@@ -894,6 +955,12 @@ def XsamsCollTrans(CollTrans):
 
         yield "<DataSets>"
         for CollTranDataSet in CollTran.DataSets:
+
+            cont, ret = checkXML(CollTranDataSet)
+            if cont:
+                yield ret
+                continue 
+
             GD = lambda name: GetValue(name, CollTranDataSet=CollTranDataSet)
 
             yield makePrimaryType("DataSet", "CollisionalTransitionDataSet", GD, extraArgs={"dataDescription":GD("CollisionalTransitionDataSetDataDescription")})
@@ -901,6 +968,12 @@ def XsamsCollTrans(CollTrans):
             # Fit data
             
             for CollTranDataSetFitData in CollTranDataSet.FitData:
+
+                cont, ret = checkXML(CollTranDataSetFitData)
+                if cont:
+                    yield ret
+                    continue 
+
                 GDF = lambda name: GetValue(name, CollTranDataSetFitData=CollTranDataSetFitData)                
 
                 yield makePrimaryType("FitData", "CollisionalTransitionDataSetFitData", GDF)                
@@ -911,6 +984,12 @@ def XsamsCollTrans(CollTrans):
                 else:
                     yield "<FitParameters>"
                 for CollTranDataSetFitDataArgument in CollTranDataSetFitData.Arguments:                    
+
+                    cont, ret = checkXML(CollTranDataSetFitDataArgument)
+                    if cont:
+                        yield ret
+                        continue 
+
                     GDFA = lambda name: GetValue(name, CollTranDataSetFitDataArgument=CollTranDataSetFitDataArgument)
                     yield "<FitArgument name='%s' units='%s'>" % (GDFA("CollisionalTransitionDataSetFitDataArgumentName"), GDFA("CollisionalTransitionDataSetFitDataArgumentUnits"))
                     desc = GDFA("CollisionalTransitionDataSetFitDataArgumentDescription")
@@ -924,6 +1003,12 @@ def XsamsCollTrans(CollTrans):
                         yield "<UpperLimit>%s</UpperLimit>"
                     yield "</FitArgument>"
                 for CollTranDataSetFitDataParameter in CollTranDataSetFitData.Parameters:
+                    
+                    cont, ret = checkXML(CollTranDataSetFitDataParameter)
+                    if cont:
+                        yield ret
+                        continue 
+
                     GDFP = lambda name: GetValue(name, CollTranDataSetFitDataParameter=CollTranDataSetFitDataParameter)
                     yield makeNamedDataType("FitParameter", "CollisionalTransitionDataSetFitDataParameter", GDFP)                                    
                 yield "</FitParameters>"
@@ -942,6 +1027,12 @@ def XsamsCollTrans(CollTrans):
             # Tabulated data
 
             for CollTranDataSetTabulatedData in CollTranDataSet.TabulatedData:
+
+                cont, ret = checkXML(CollTranDataSetTabulatedData)
+                if cont:
+                    yield ret
+                    continue 
+
                 GDT = lambda name: GetValue(name, CollTranDataSetTabulatedData=CollTranDataSetTabulatedData)
 
                 yield makePrimaryType("TabulatedData", "CollisionalTransitionDataSetTabulatedData")
@@ -950,6 +1041,13 @@ def XsamsCollTrans(CollTrans):
 
                 # handle X components of XY
                 for CollTranDataSetTabulatedDataX in CollTranDataSetTabulatedData.X:
+
+                    cont, ret = checkXML(CollTranDataSetTabulatedDataX)
+                    if cont:
+                        yield ret
+                        continue 
+
+
                     GDTX = lambda name: GetValue(name, CollTranDataSetTabulatedDataX=CollTranDataSetTabulatedDataX)                
                     Nx = GDTX("CollisionalTransitionDataSetTabulatedDataXDataListN")           # number of X points (should be identical for all elements in this element)
                     xunits = GDTX("CollisionalTransitionDataSetTabulatedDataXDataListUnits")   
@@ -1031,12 +1129,12 @@ def XsamsFunctions(Functions):
         return
     yield '<Functions>\n'
     for Function in Functions:
-        if hasattr(Function,'XML'):
-            try:
-                yield Function.XML()
-                continue
-            except:
-                pass
+
+        cont, ret = checkXML(Function)
+        if cont:
+            yield ret
+            continue 
+
         G = lambda name: GetValue(name, Function=Function)
         yield makePrimaryType("Function", "Function", extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
@@ -1056,6 +1154,12 @@ def XsamsFunctions(Functions):
 
         yield "<Arguments>\n"
         for FunctionArgument in Function.Arguments:
+
+            cont, ret = checkXML(FunctionArgument)
+            if cont:
+                yield ret
+                continue 
+
             GA = lambda name: GetValue(name, FunctionArgument=FunctionArgument)
             yield "<Argument name='%s', units='%s'>" % (GA("FunctionArgumentName"), GA("FunctionArgumentUnits"))
             desc = GA("FunctionArgumentDescription")
@@ -1072,6 +1176,12 @@ def XsamsFunctions(Functions):
 
         yield "<Parameters>\n"
         for FunctionParameter in Function.Parameter:
+
+            cont, ret = checkXML(FunctionParameter)
+            if cont:
+                yield ret
+                continue 
+
             GP = lambda name: GetValue(name, FunctionParameter=FunctionParameter)
             yield "<Parameter name='%s', units='%s'>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
             desc = GP("FunctionParameterDescription")
@@ -1094,6 +1204,12 @@ def XsamsMethods(Methods):
         return
     yield '<Methods>\n'
     for Method in Methods:
+
+        cont, ret = checkXML(Method)
+        if cont:
+            yield ret
+            continue 
+
         G = lambda name: GetValue(name, Method=Method)
         yield """<Method methodID="M%s-%s">
 <Category>%s</Category>
