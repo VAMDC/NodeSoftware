@@ -262,7 +262,6 @@ def checkXML(obj):
             pass
     return False, None 
 
-
 def XsamsSources(Sources):
     """
     Create the Source tag structure (a bibtex entry)
@@ -1092,7 +1091,37 @@ def XsamsNonRadTrans(NonRadTrans):
     """
     non-radiative transitions
     """
-    yield ''
+    if not isiterable(NonRadTrans):
+        return 
+
+    yield "<NonRadiative>"
+    for NonRadTran in NonRadTrans:
+        
+        cont, ret = checkXML(NonRadTran)
+        if cont:
+            yield ret
+            continue 
+
+        G = lambda name: GetValue(name, NonRadTran=NonRadTran)        
+        yield makePrimaryType("NonRadiativeTransition", "NonRadiativeTransition", G)
+        
+        yield "<InitialStateRef>S%s</InitialStateRef>" % G("NonRadiativeTransitionInitialStateRef")
+        fstate = G("NonRadiativeTransitionFinalStateRef")
+        if fstate:
+            yield "<FinalStateRef>S%s</FinalStateRef>" % fstate
+        fspec = G("NonRadiativeTransitionSpeciesRef")
+        if fspec:
+            yield "<SpeciesRef>X%s</SpeciesRef>" % fspec
+        yield makeDataType("Probability", "NonRadiativeTransitionProbability", G)
+        yield makeDataType("NonRadiativeWidth", "NonRadiativeTransitionNonWidth", G)
+        yield makeDataType("TransitionEnergy", "NonRadiativeTransitionEnergy", G)
+        typ = G("NonRadiativeTransitionType")
+        if typ:
+            yield "<Type>%s</Type>" % typ
+            
+        yield "</NonRadiativeTransition>"
+
+    yield "</NonRadiative>"
 
 
 def makeFunctionArgument(fargobj, tagname="Y"):
