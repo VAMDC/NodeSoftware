@@ -16,6 +16,6 @@ dummy*
 *.swp
 *.swo
 .DS_Store
-doc/build/*
+doc*/build/*
 *.json
 *.dat
