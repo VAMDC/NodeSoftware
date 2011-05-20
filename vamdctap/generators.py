@@ -153,45 +153,19 @@ def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
     The dictionary-suffixes are appended and the values retrieved. If the
     sources is iterable, it is looped over.
 
-    This extends the PrimaryType with some often-seen arguments. 
+    #This extends the PrimaryType with some often-seen arguments. 
 
     """
 
-    string = makePrimaryType(tagname, keyword, G, extraAttr=extraAttr)
+    #string = makePrimaryType(tagname, keyword, G, extraAttr=extraAttr)
 
-    unit = G(keyword + 'Unit')    
-    acc = G(keyword + 'Accuracy')
+    # value = G(keyword)
+    # if not value: 
+    #     return ''
 
-    value = G(keyword)
-    if not value: 
-        return ''
-
-    string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
-    if acc: 
-        string += '<Accuracy>%s</Accuracy>' % acc
-    string += '</%s>' % tagname
-
-    if extraElem:
-        for k, v in extraElem. items():
-            string += '<%s>%s</%s>' % (k, G(v), k)
-    
-    # unit = G(keyword + 'Unit')
-    # method = G(keyword + 'Method')
-    # comment = G(keyword + 'Comment')
+    # unit = G(keyword + 'Unit')    
     # acc = G(keyword + 'Accuracy')
-    # refs = G(keyword + 'Ref')
 
-    # string = '\n<%s' % tagname
-    # if method: 
-    #     string += ' methodRef="M%s-%s"' % (NODEID, method)
-    # if extraAttr:
-    #     for k, v in extraAttr.items():
-    #         string += ' %s="%s"'% (k, G(v))
-    # string += '>'
-
-    # if comment: 
-    #     string += '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1]
-    # string += makeSourceRefs(refs)
     # string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
     # if acc: 
     #     string += '<Accuracy>%s</Accuracy>' % acc
@@ -200,6 +174,36 @@ def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
     # if extraElem:
     #     for k, v in extraElem. items():
     #         string += '<%s>%s</%s>' % (k, G(v), k)
+
+    value = G(keyword)
+    if not value: 
+        return ''
+    
+    unit = G(keyword + 'Unit')
+    method = G(keyword + 'Method')
+    comment = G(keyword + 'Comment')
+    acc = G(keyword + 'Accuracy')
+    refs = G(keyword + 'Ref')
+
+    string = '\n<%s' % tagname
+    if method: 
+        string += ' methodRef="M%s-%s"' % (NODEID, method)
+    if extraAttr:
+        for k, v in extraAttr.items():
+            string += ' %s="%s"'% (k, G(v))
+    string += '>'
+
+    if comment: 
+        string += '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1]
+    string += makeSourceRefs(refs)
+    string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
+    if acc: 
+        string += '<Accuracy>%s</Accuracy>' % acc
+    string += '</%s>' % tagname
+
+    if extraElem:
+        for k, v in extraElem. items():
+            string += '<%s>%s</%s>' % (k, G(v), k)
 
     return string
 
@@ -698,15 +702,15 @@ def makeDataSeriesType(tagname, keyword, G):
         nx = G("%sLinearSequenceN" % keyword)
         if nx:
             dic["n"] = nx
-            xunits = G("%sLinearSequenceUnits" % keyword)
-            if xunits:
-                dic["units"] = xunits
+        xunits = G("%sLinearSequenceUnits" % keyword)
+        if xunits:
+            dic["units"] = xunits
         yield makePrimaryType("LinearSequence", "%sLinearSequence" % keyword, G, extraAttr=dic)        
         yield("</LinearSequence>")
     dfile = G("%sDataFile" % keyword)
     if dfile:
         yield "<DataFile>%s</DataFile>" % dfile
-    elist = G("%sErrorList" % % keyword)            
+    elist = G("%sErrorList" % keyword)            
     if elist:
         yield "<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), G("%sErrorList" % keyword))
     err = G("%sError" % keyword)
@@ -719,10 +723,26 @@ def makeDataSeriesType(tagname, keyword, G):
 def XsamsRadCross(RadCross):
     """
     for the Radiative/CrossSection part
+
+    querysets and nested querysets:
+
+    RadCros
+      RadCros.BandAssignments
+        BandAssignment.Modes
+          Mode.DeltaVs
+
+    loop varaibles:
+      
+    RadCros
+      RadCrosBandAssignment
+        RadCrosBandAssigmentMode
+          RadCrosBandAssignmentModeDeltaV
+    
     """
     
     if not isiterable(RadCross):
         return
+
     yield "<Collisions>"
     for RadCros in RadCross:
         if hasattr(RadCros, 'XML'):
@@ -747,8 +767,8 @@ def XsamsRadCross(RadCross):
         yield makeDataSeriesType("X", "CrossSectionX", G)
         yield makeDataSeriesType("Y", "CrossSectionY", G)
 
-        species = GR("CrossSectionSpeciesRef")
-        state = GR("CrossSectionStateRef")
+        species = G("CrossSectionSpeciesRef")
+        state = G("CrossSectionStateRef")
         if species or state: 
             yield "<Species>"
             if species:
@@ -757,26 +777,27 @@ def XsamsRadCross(RadCross):
                 yield "<StateRef>S%s</StateRef>" % state            
             yield "</Species>"
 
-        for CrossSectionBandAssignment in CrossSection.BandAssignments:
-            GC = lambda name: GetValue(name, CrossSectionBandAssignment=CrossSectionBandAssignment)
+        for RadCrosBandAssignment in RadCros.BandAssignments:
+            GC = lambda name: GetValue(name, RadCrosBandAssignment=RadCrosBandAssignment)
             yield makePrimaryType("BandAssignment", "CrossSectionBandAssignment", GC, extraAttr={"name":"CrossSectionBandAssignmentName"})
             
             yield makeDataType("BandCentre", "CrossSectionBandAssigmentBandCentre", GC)
             yield makeDataType("BandWidth", "CrossSectionBandAssignmentBandWidth", GC)
 
-
-            for CrossSectionBandAssignmentMode in CrossSeftionBandAssignment.Modes:
-                GCM = lambda name: GetValue(name, CrossSectionBandAssigmentMode=CrossSectionBandAssignmentMode)
-                yield makePrimaryType("BandAssignment", "CrossSectionBandAssignment", GC, extraAttr={"name":"CrossSectionBandAssignmentName"})
-
-
-                #TODO
-
+            for RadCrosBandAssignmentMode in RadCrosBandAssignment.Modes:
+                GCM = lambda name: GetValue(name, RadCrosBandAssigmentMode=RadCrosBandAssignmentMode)
+                yield makePrimaryType("Modes", "CrossSectionBandAssignmentModes", GCM, extraAttr={"name":"CrossSectionBandAssignmentModesName"})
+                for RadCrosBandAssignmentModeDeltaV in RadCrosBandAssignmentMode.DeltaVs:
+                    GCMV = lambda name: GetValue(name, RadCrosBandAssignmentModeDeltaV=RadCrosBandAssignmentModeDeltaV)
+                    string = "DeltaV", 
+                    mid = GCMV("CrossSectionBandAssignmentModesDeltaVModeID")
+                    if mid:
+                        string += " modeID=V%s" % mid
+                    yield "<%s>%s</DeltaV>" % (string, GCMV("CrossSectionBandAssignmentModelsDeltaV"))                    
+                yield "</Modes>"
             yield "</BandAssignment>"
-
         yield "</CrossSection>"
 
-        
 
 def XsamsCollTrans(CollTrans):
     """
@@ -975,6 +996,33 @@ def XsamsNonRadTrans(NonRadTrans):
     """
     yield ''
 
+
+def makeFunctionArgument(fargobj, tagname="Y"):
+    """
+    fargobj - an object representing 
+    an argument for the function. The object should 
+    have properties named for the elements needed
+    in the tag, such as Name, Units etc. 
+    """
+    if not fargobj:
+        # create a dummy object             
+        class Dum(object):
+            pass
+        fargobj = Dum()
+    name = fargobj.__dict__.get("Name", "")
+    units = fargobj.__dict__.get("Units", "")
+    value = fargobj.__dict__.get("Value", "")
+    description = fargobj.__dict__.get("Description", "")
+    lower_limit = fargobj.__dict__.get("LowerLimit", "")
+    upper_limit = fargobj.__dict__.get("UpperLimit", "")
+    return """<%s name=%s, units=%s>
+%s
+<Description>%s</Description>
+<LowerLimit>%s</LowerLimit>
+<UpperLimit>%s</UpperLimit>
+</%s> 
+""" % (tagname, name, units, value, description, lower_limit, upper_limit, tagname)
+
 def XsamsFunctions(Functions):
     """
     Generator for the Functions tag
@@ -989,7 +1037,6 @@ def XsamsFunctions(Functions):
                 continue
             except:
                 pass
-            
         G = lambda name: GetValue(name, Function=Function)
         yield makePrimaryType("Function", "Function", extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
