@@ -80,9 +80,37 @@ def getSpeciesWithStates(transs):
         # This is important and a requirement looked for by the node 
         # software (all RETURNABLES AtomState* will try to loop over this
         # nested queryset). 
-        specie.States = models.State.objects.filter( pk__in = sids )    
-        nstates += specie.States.count()
+        spec.States = models.State.objects.filter( pk__in = sids )    
+        nstates += spec.States.count()
     return species, nspecies, nstates
+
+def getFunctions(transs):
+    """
+    Obtain function expressions for correcting/adjusting certain transitions
+    In this example, such expressions are stored on the form e.g.  y = a * x + b * z
+    where we have max 3 arguments and 3 parameters
+    We assume all arguments (x,y,z ...) and all parameters (a,b,c) are unitless. 
+    """
+    import re # regular expressions 
+    funcs = transs.values_list("function", flat=True)
+    for func in funcs: 
+        func = re.sub(r"\s", "", func) # remove all whitespace in the expresion
+        fy, rest = func.split('=', 1)
+        fargs = re.findall(r"a|b|c", func)
+        fpars = re.findall(r"x|y|z", func)
+        func.id = func
+        func.name = "Correction"
+        func.expression = func
+        func.y = fy
+        func.yunit = "unitless"
+        for arg in fargs: 
+            func.Arguments.name = arg
+            func.Arguments.lower_limit = 0.0
+            func.Arguments.upper_limit = 1.0
+        for par in fpars:
+            func.Parameters.name = par
+    return funcs
+
 
 def getLifetimeMethods():    
     """

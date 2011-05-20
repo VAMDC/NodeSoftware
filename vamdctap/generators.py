@@ -42,6 +42,16 @@ N_COLLTRAN_KWS = countReturnables('Collision.*')
 N_RADTRAN_KWS = countReturnables('^RadTran.*')
 N_BROAD_KWS = countReturnables('^.*Broadening.*')
 
+def makeiter(obj):
+    """
+    Make an object iterable, no matter what
+    """
+    if not obj:
+        return []
+    if not isiterable(obj):
+        return [obj]
+    return obj 
+
 def GetValue(name, **kwargs):
     """
     the function that gets a value out of the query set, using the global name
@@ -67,7 +77,7 @@ def GetValue(name, **kwargs):
         # here, the RHS of the RETURNABLES dict is executed.
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
-    except Exception, e: 
+    except Exception: 
 #        LOG('Exception in generators.py: GetValue()')
 #        LOG(str(e))
 #        LOG(name)
@@ -122,17 +132,63 @@ def makePartitionfunc(keyword, G):
 
     return string
 
+def makePrimaryType(tagname, keyword, G, extraAttr=None):
+    """
+    Build the Primary-type base tags. Note that this method does NOT
+    close the tag, </tagname> must be added manually by the calling function.
+
+    extraAttr is a dictionary of attributes-value pairs to add to the tag.
+    """
+    method = G("%sMethod" % keyword)
+    comment = G("%sComment" % keyword)
+    refs = G(keyword + 'Ref')
+
+    string = "\n<%s" % tagname
+    if method: 
+        string += ' methodRef="M%s-%s"' % (NODEID, method)
+    if extraAttr:
+        for k, v in extraAttr.items():
+            string += ' %s="%s"'% (k, G(v))
+    string += '>'
+    if comment:
+        string += '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1]    
+    string += makeSourceRefs(refs)    
+
+    return string 
+
 def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
     """
     This is for treating the case where a keyword corresponds to a
     DataType in the schema which can have units, comment, sources etc.
     The dictionary-suffixes are appended and the values retrieved. If the
     sources is iterable, it is looped over.
+
+    #This extends the PrimaryType with some often-seen arguments. 
+
     """
+
+    #string = makePrimaryType(tagname, keyword, G, extraAttr=extraAttr)
+
+    # value = G(keyword)
+    # if not value: 
+    #     return ''
+
+    # unit = G(keyword + 'Unit')    
+    # acc = G(keyword + 'Accuracy')
+
+    # string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
+    # if acc: 
+    #     string += '<Accuracy>%s</Accuracy>' % acc
+    # string += '</%s>' % tagname
+
+    # if extraElem:
+    #     for k, v in extraElem. items():
+    #         string += '<%s>%s</%s>' % (k, G(v), k)
+
     value = G(keyword)
     if not value: 
         return ''
-
+    
     unit = G(keyword + 'Unit')
     method = G(keyword + 'Method')
     comment = G(keyword + 'Comment')
@@ -160,6 +216,59 @@ def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
             string += '<%s>%s</%s>' % (k, G(v), k)
 
     return string
+
+def makeArgumentType(tagname, keyword, G):
+    """
+    Build ArgumentType
+    """
+    string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword)) 
+    string += "<Description>%s</Description>" % G("%sDescription" % keyword)
+    string += "<LowerLimit>%s</LowerLimit>" % G("%sLowerLimit" % keyword)
+    string += "<UpperLimit>%s</UpperLimit>" % G("%sUpperLimit" % keyword)    
+    string += "</%s>" % tagname
+    return string 
+
+def makeDataFuncType(tagname, keyword, G):
+    """
+    Build the DataFuncType.
+    """
+    string = makePrimaryType(tagname, keyword, G, extraAttr={"name":G("%sName" % keyword)})
+
+    val = G("%sValueUnits" % keyword)
+    par = G("%sParameters" % keyword)
+    
+    if val:
+        string += "<Value units=%s>%s</Value>" % (G("%sValueUnits" % keyword), G("%sValue" % keyword))
+        string += makePrimaryType("Accuracy", "%sAccuracy" % keyword, G, extraAttr={"calibration":G("%sAccuracyCalibration" % keyword), "quality":G("%sAccuracyQuality" % keyword)})
+        systerr = G("%sAccuracySystematic" % keyword)
+        if systerr:
+            string += "<Systematic confidence=%s relative=%s>%s</Systematic>" % (G("%sAccuracySystematicConfidence" % keyword), G("%sAccuracySystematicRelative" % keyword), systerr)
+        staterr = G("%sAccuracyStatistical" % keyword)   
+        if staterr:
+            string += "<Statistical confidence=%s relative=%s>%s</Statistical>" % (G("%sAccuracyStatisticalConfidence" % keyword), G("%sAccuracyStatisticalRelative" % keyword), staterr)
+        stathigh = G("%sAccuracyStatHigh" % keyword)
+        statlow = G("%sAccuracyStatLow" % keyword)
+        if stathigh and statlow:
+            string += "<StatHigh confidence=%s relative=%s>%s</StatHigh>" % (G("%sAccuracyStatHighConfidence" % keyword), G("%sAccuracyStatHighRelative" % keyword), systerr)    
+            string += "<StatLow confidence=%s relative=%s>%s</StatLow>" % (G("%sAccuracyStatLowConfidence" % keyword), G("%sAccuracyStatLowRelative" % keyword), systerr)
+        string += "</Accuracy>"
+        string += "</Value>"
+    if par:     
+        for FitParameter in makeiter(par):
+            GP = eval("lambda name: GetValue(name, %sFitParameter=%sFitParameter)" % (keyword, keyword))
+            string += "<FitParameters functionRef=F%s>" % GP("%sFitParametersFunctionRef")
+        
+            fitargs = eval("%s.FitArguments" % keyword)
+            for FitArgument in makeiter(fitargs):
+                GPA = eval("lambda name: GetValue(name, %sFitParameterArgument=%sFitParameterArgument)" % (keyword, keyword))
+                string += makeArgumentType("FitArgument", "%sFitArgument" % keyword, GPA)    
+            fitpars = eval("%s.FitParameter" % keyword)
+            for FitParameter in makeiter(fitpars):
+                GPP = eval("lambda name: GetValue(name, %sFitParameterParameter=%sFitParameterParameter)" % (keyword, keyword))
+                string += makeNamedDataType("FitParameter", "%sFitParameter" % keyword, GPP)            
+            string += "</FitParameters>"    
+    string += "</%s>" % tagname
+    return string 
 
 def makeNamedDataType(tagname, keyword, G):
     """
@@ -204,6 +313,18 @@ def makeNamedDataType(tagname, keyword, G):
 
     return string
 
+def checkXML(obj):
+    """
+    If the queryset has an XML method, use that and
+    skip the hard-coded implementation.
+    """
+    if hasattr(obj,'XML'):
+        try:
+            return True, obj.XML()
+        except Exception:
+            pass
+    return False, None 
+
 def XsamsSources(Sources):
     """
     Create the Source tag structure (a bibtex entry)
@@ -213,13 +334,10 @@ def XsamsSources(Sources):
         return
     yield '<Sources>'
     for Source in Sources:
-        if hasattr(Source, 'XML'):
-            try:
-                yield Source.XML()
-                continue
-            except:
-                pass
-
+        cont, ret = checkXML(Source)
+        if cont:
+            yield ret
+            continue 
         G = lambda name: GetValue(name, Source=Source)
         yield '<Source sourceID="B%s-%s"><Authors>\n' % (NODEID, G('SourceID'))
         authornames = G('SourceAuthorName')
@@ -253,12 +371,10 @@ def XsamsEnvironments(Environments):
         return
     yield '<Environments>'
     for Environment in Environments:
-        if hasattr(Environment,'XML'):
-            try:
-                yield Environment.XML()
-                continue
-            except Exception:
-                pass
+        cont, ret = checkXML(Environment)
+        if cont:
+            yield ret
+            continue 
 
         G = lambda name: GetValue(name, Environment=Environment)
         yield '<Environment envID="E%s-%s">' % (NODEID, G('EnvironmentID'))
@@ -346,6 +462,11 @@ def XsamsAtoms(Atoms):
     yield '<Atoms>'
 
     for Atom in Atoms:
+        cont, ret = checkXML(Atom)
+        if cont:
+            yield ret
+            continue 
+
         G = lambda name: GetValue(name, Atom=Atom)
         yield """<Atom>
 <ChemicalElement>
@@ -365,6 +486,10 @@ def XsamsAtoms(Atoms):
         if not hasattr(Atom,'States'): 
             Atom.States = []
         for AtomState in Atom.States:
+            cont, ret = checkXML(AtomState)
+            if cont:
+                yield ret
+                continue 
             G = lambda name: GetValue(name, AtomState=AtomState)
             yield """<AtomicState stateID="S%s-%s">""" % (G('NodeID'), G('AtomStateID'))
             comm = G('AtomStateDescription')
@@ -500,6 +625,10 @@ def XsamsMolecules(Molecules):
     if not Molecules: return
     yield '<Molecules>\n'
     for Molecule in Molecules:
+        cont, ret = checkXML(Molecule)
+        if cont:
+            yield ret
+            continue 
         G = lambda name: GetValue(name, Molecule=Molecule)
         yield '<Molecule speciesID="X%s">\n' % G("MoleculeID")
 
@@ -574,7 +703,19 @@ def XsamsRadTranShifting(G):
     """
     Not implemented
     """
-    return ''
+    dic = {}
+    nam = G("RadiativeTransitionShiftingName")
+    eref = G("RadiativeTransitionShiftingEnvRef")
+    if nam: 
+        dic["name"] = nam
+    if eref:
+        dic["envRef"] = "E%s"  % eref
+    yield makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
+    shiftpar = G("RadiativeTransitionShiftingShiftingParameter")
+    for ShiftingParameter in makeiter(shiftpar):
+        GS = lambda name: GetValue(name, ShiftingParameter=ShiftingParameter)
+        yield makeDataFuncType("ShiftingParameter", "RadiativeTransitionShiftingShiftingParameter", GS)        
+    yield "</Shifting>"
 
 def XsamsRadTrans(RadTrans):
     """
@@ -585,6 +726,11 @@ def XsamsRadTrans(RadTrans):
         return
 
     for RadTran in RadTrans:
+        cont, ret = checkXML(RadTran)
+        if cont:
+            yield ret
+            continue 
+
         G = lambda name: GetValue(name, RadTran=RadTran)
         yield '<RadiativeTransition>'
         comm = G('RadTransComments')
@@ -631,24 +777,426 @@ def XsamsRadTrans(RadTrans):
             yield XsamsRadTranShifting(G)
         yield '</RadiativeTransition>\n'
 
+def makeDataSeriesType(tagname, keyword, G):
+    """
+    Creates the dataseries type
+    """
+    dic = {}
+    xpara = G("%sParameter" % keyword)
+    if xpara:
+        dic["parameter"] = xpara
+    xunits = G("%sUnits" % keyword)
+    if xunits:
+        dic["units"] = xunits
+    xid = G("CrossSetion%sID" % keyword)
+    if xid:
+        dic["id"] = xid        
+    yield makePrimaryType("%s" % tagname, "%s" % keyword, G, extraAttr=dic)
+
+    dlist = G("%sDataList" % keyword)
+    if dlist:
+        yield "<DataList n='%s' units='%s'>%s</DataList>" % (G("%sDataListN" % keyword), G("%sDataListUnits" % keyword), dlist)
+    csec = G("%sLinearSequenceA0" % keyword) and G("%sLinearSequenceA1" % keyword)
+    if csec:
+        dic = {"a0":G("%sLinearSequenceA0" % keyword), "a1":G("%sLinearSequenceA1" % keyword)}
+        nx = G("%sLinearSequenceN" % keyword)
+        if nx:
+            dic["n"] = nx
+        xunits = G("%sLinearSequenceUnits" % keyword)
+        if xunits:
+            dic["units"] = xunits
+        yield makePrimaryType("LinearSequence", "%sLinearSequence" % keyword, G, extraAttr=dic)        
+        yield("</LinearSequence>")
+    dfile = G("%sDataFile" % keyword)
+    if dfile:
+        yield "<DataFile>%s</DataFile>" % dfile
+    elist = G("%sErrorList" % keyword)            
+    if elist:
+        yield "<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), G("%sErrorList" % keyword))
+    err = G("%sError" % keyword)
+    if err:
+        yield "<Error>%s</Error>" % err        
+
+    yield "</%s>" % tagname
+
 
 def XsamsRadCross(RadCross):
     """
     for the Radiative/CrossSection part
+
+    querysets and nested querysets:
+
+    RadCros
+      RadCros.BandAssignments
+        BandAssignment.Modes
+          Mode.DeltaVs
+
+    loop varaibles:
+      
+    RadCros
+      RadCrosBandAssignment
+        RadCrosBandAssigmentMode
+          RadCrosBandAssignmentModeDeltaV
+    
     """
-    yield ''
+    
+    if not isiterable(RadCross):
+        return
+
+    yield "<Collisions>"
+    for RadCros in RadCross:
+        cont, ret = checkXML(RadCros)
+        if cont:
+            yield ret
+            continue 
+
+        # create header
+
+        G = lambda name: GetValue(name, RadCros=RadCros)
+        dic = {}
+        envRef = G("CrossSectionEnvironmentRef")
+        if envRef:
+            dic["envRef"] = "E%s" % envRef
+        ID = G("RadCrosID")
+        if ID:
+            dic["id": ID]
+        yield makePrimaryType("CrossSection", G, "CrossSection", extraAttr=dic)
+        yield "<Description>%s</Description>" % G("CrossSectionDescription")
+
+        yield makeDataSeriesType("X", "CrossSectionX", G)
+        yield makeDataSeriesType("Y", "CrossSectionY", G)
+
+        species = G("CrossSectionSpeciesRef")
+        state = G("CrossSectionStateRef")
+        if species or state: 
+            yield "<Species>"
+            if species:
+                yield "<SpeciesRef>X%s</SpeciesRef>" % species
+            if state:
+                yield "<StateRef>S%s</StateRef>" % state            
+            yield "</Species>"
+
+        for RadCrosBandAssignment in RadCros.BandAssignments:
+
+            cont, ret = checkXML(RadCrosBandAssignment)
+            if cont:
+                yield ret
+                continue 
+
+            GC = lambda name: GetValue(name, RadCrosBandAssignment=RadCrosBandAssignment)
+            yield makePrimaryType("BandAssignment", "CrossSectionBandAssignment", GC, extraAttr={"name":"CrossSectionBandAssignmentName"})
+            
+            yield makeDataType("BandCentre", "CrossSectionBandAssigmentBandCentre", GC)
+            yield makeDataType("BandWidth", "CrossSectionBandAssignmentBandWidth", GC)
+
+            for RadCrosBandAssignmentMode in RadCrosBandAssignment.Modes:
+
+                cont, ret = checkXML(RadCrosBandAssignmentMode)
+                if cont:
+                    yield ret
+                    continue 
+
+                GCM = lambda name: GetValue(name, RadCrosBandAssigmentMode=RadCrosBandAssignmentMode)
+                yield makePrimaryType("Modes", "CrossSectionBandAssignmentModes", GCM, extraAttr={"name":"CrossSectionBandAssignmentModesName"})
+                for RadCrosBandAssignmentModeDeltaV in RadCrosBandAssignmentMode.DeltaVs:
+
+                    cont, ret = checkXML(RadCrosBandAssignmentModeDeltaV)
+                    if cont:
+                        yield ret
+                        continue 
+
+                    GCMV = lambda name: GetValue(name, RadCrosBandAssignmentModeDeltaV=RadCrosBandAssignmentModeDeltaV)
+                    string = "DeltaV", 
+                    mid = GCMV("CrossSectionBandAssignmentModesDeltaVModeID")
+                    if mid:
+                        string += " modeID=V%s" % mid
+                    yield "<%s>%s</DeltaV>" % (string, GCMV("CrossSectionBandAssignmentModelsDeltaV"))                    
+                yield "</Modes>"
+            yield "</BandAssignment>"
+        yield "</CrossSection>"
+
 
 def XsamsCollTrans(CollTrans):
     """
-    collisional transitions
+    Collisional transitions. 
+    
+    QuerySets and nested querysets: 
+
+    CollTran 
+      CollTran.Reactants
+      CollTran.IntermediateStates
+      CollTran.Products
+      CollTran.DataSets
+        DataSet.FitData
+          FitData.Arguments
+          FitData.Parameters
+        DataSet.TabulatedData
+          TabulatedData.X
+
+     Matching loop variables to use:
+
+     CollTran
+       CollTranReactant
+       CollTranIntermediateState
+       CollTranProduct
+       CollTranDataSet
+         CollTranDataSetFitData
+           CollTranDataSetFitDataArgument
+           CollTranDataSetFitDataParameter
+         CollTranDataetTabulatedData
+           CollTranDataetTabulatedDataX
+
     """
-    yield ''
+
+    if not isiterable(CollTrans):
+        return
+    yield "<Collisions>"
+    for CollTran in CollTrans:
+
+        cont, ret = checkXML(CollTran)
+        if cont:
+            yield ret
+            continue 
+
+        # create header
+        G = lambda name: GetValue(name, CollTran=CollTran)
+        yield makePrimaryType("CollisionalTransition", "CollisionalTransition")
+
+        yield "<ProcessClass>"
+        udef = G("CollisionalTransitionUserDefinition")
+        code = G("CollisionalTransitionCode")
+        iaea = G("CollisionalTransitionIAEACode")
+        if udef:
+            yield "<UserDefinition>%s</UserDefinition>" % udef
+        if code:
+            yield "<Code>%s</Code>" % code
+        if iaea:
+            yield "<IAEACode>%s</IAEACode>" % iaea
+        yield "</ProcessClass>"
+
+        for CollTranReactant in CollTran.Reactants:
+
+            cont, ret = checkXML(CollTranReactant)
+            if cont:
+                yield ret
+                continue 
+
+            GR = lambda name: GetValue(name, CollTranReactant=CollTranReactant)
+            yield "<Reactant>"
+            species = GR("CollisionalTransitionSpeciesRef")
+            if species:
+                yield "<SpeciesRef>X%s</SpeciesRef>" % species
+            state = GR("CollisionalTransitionStateRef")
+            if state:
+                yield "<StateRef>S%s</StateRef>" % state            
+            yield "</Reactant>"
+
+        for CollTranIntermediateState in CollTran.IntermediateStates:
+
+            cont, ret = checkXML(CollTranIntermediateState)
+            if cont:
+                yield ret
+                continue 
+
+            GI = lambda name: GetValue(name, CollTranIntermediateState=CollTranIntermediateState)
+            yield "<IntermediateState>"
+            if species:
+                yield "<SpeciesRef>X%s</SpeciesRef>" % species
+            state = GI("CollisionalTransitionIntermediateStateRef")            
+            if state: 
+                yield "<StateRef>S%s</StateRef>" % state
+            species = GI("CollisionalTransitionIntermediateSpeciesRef")
+            yield "</IntermediateState>"
+
+        for CollTranProduct in CollTran.Products:
+
+            cont, ret = checkXML(CollTranProduct)
+            if cont:
+                yield ret
+                continue 
+
+            GP = lambda name: GetValue(name, CollTranProduct=CollTranProduct)
+            yield "<Product>"
+            if species:
+                yield "<SpeciesRef>X%s</SpeciesRef>" % species        
+            state = GP("CollisionalTransitionProductStateRef")
+            if state: 
+                yield "<StateRef>S%s</StateRef>" % state
+            species = GP("CollisionalTransitionProductSpeciesRef")     
+            yield "</Product>"
+
+        yield makeDataType("Threshold", "CollisionalTransitionThreshold", G)
+
+        yield "<DataSets>"
+        for CollTranDataSet in CollTran.DataSets:
+
+            cont, ret = checkXML(CollTranDataSet)
+            if cont:
+                yield ret
+                continue 
+
+            GD = lambda name: GetValue(name, CollTranDataSet=CollTranDataSet)
+
+            yield makePrimaryType("DataSet", "CollisionalTransitionDataSet", GD, extraArgs={"dataDescription":GD("CollisionalTransitionDataSetDataDescription")})
+
+            # Fit data
+            
+            for CollTranDataSetFitData in CollTranDataSet.FitData:
+
+                cont, ret = checkXML(CollTranDataSetFitData)
+                if cont:
+                    yield ret
+                    continue 
+
+                GDF = lambda name: GetValue(name, CollTranDataSetFitData=CollTranDataSetFitData)                
+
+                yield makePrimaryType("FitData", "CollisionalTransitionDataSetFitData", GDF)                
+
+                fref = GDF("CollisionalTransitionDataSetFitDataFunctionRef")
+                if fref:
+                    yield "<FitParameters functionRef=F%s>" % fref
+                else:
+                    yield "<FitParameters>"
+                for CollTranDataSetFitDataArgument in CollTranDataSetFitData.Arguments:                    
+
+                    cont, ret = checkXML(CollTranDataSetFitDataArgument)
+                    if cont:
+                        yield ret
+                        continue 
+
+                    GDFA = lambda name: GetValue(name, CollTranDataSetFitDataArgument=CollTranDataSetFitDataArgument)
+                    yield "<FitArgument name='%s' units='%s'>" % (GDFA("CollisionalTransitionDataSetFitDataArgumentName"), GDFA("CollisionalTransitionDataSetFitDataArgumentUnits"))
+                    desc = GDFA("CollisionalTransitionDataSetFitDataArgumentDescription")
+                    if desc:
+                        yield "<Description>%s</Description>" % desc
+                    lowlim = GDFA("CollisionalTransitionDataSetFitDataArgumentLowerLimit")
+                    if lowlim: 
+                        yield "<LowerLimit>%s</LowerLimit>" % lowlim
+                    hilim = GDFA("CollisionalTransitionDataSetFitDataArgumentUpperLimit")
+                    if hilim:
+                        yield "<UpperLimit>%s</UpperLimit>"
+                    yield "</FitArgument>"
+                for CollTranDataSetFitDataParameter in CollTranDataSetFitData.Parameters:
+                    
+                    cont, ret = checkXML(CollTranDataSetFitDataParameter)
+                    if cont:
+                        yield ret
+                        continue 
+
+                    GDFP = lambda name: GetValue(name, CollTranDataSetFitDataParameter=CollTranDataSetFitDataParameter)
+                    yield makeNamedDataType("FitParameter", "CollisionalTransitionDataSetFitDataParameter", GDFP)                                    
+                yield "</FitParameters>"
+                
+                accur = GDF("CollisionalTransitionDataSetFitDataAccuracy")
+                if accur:
+                    yield "<Accuracy>%s</Accuracy>" % accur
+                physun = GDF("CollisionalTransitionDataSetFitDataPhysicalUncertainty")
+                if physun:
+                    yield "<PhysicalUncertainty>%s</PhysicalUncertainty>" % physun
+                pdate = GDF("CollisionalTransitionDataSetFitDataProductionDate")
+                if pdate:
+                    yield "<ProductionDate>%s</ProductionDate>" % pdate
+                yield "</FitData>"
+
+            # Tabulated data
+
+            for CollTranDataSetTabulatedData in CollTranDataSet.TabulatedData:
+
+                cont, ret = checkXML(CollTranDataSetTabulatedData)
+                if cont:
+                    yield ret
+                    continue 
+
+                GDT = lambda name: GetValue(name, CollTranDataSetTabulatedData=CollTranDataSetTabulatedData)
+
+                yield makePrimaryType("TabulatedData", "CollisionalTransitionDataSetTabulatedData")
+                
+                yield "<DataXY>"
+
+                # handle X components of XY
+                for CollTranDataSetTabulatedDataX in CollTranDataSetTabulatedData.X:
+
+                    cont, ret = checkXML(CollTranDataSetTabulatedDataX)
+                    if cont:
+                        yield ret
+                        continue 
+
+
+                    GDTX = lambda name: GetValue(name, CollTranDataSetTabulatedDataX=CollTranDataSetTabulatedDataX)                
+                    Nx = GDTX("CollisionalTransitionDataSetTabulatedDataXDataListN")           # number of X points (should be identical for all elements in this element)
+                    xunits = GDTX("CollisionalTransitionDataSetTabulatedDataXDataListUnits")   
+                    yield "<X units='%s' parameter='%s'" % (Nx, xunits)
+                    yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataList"))
+                    yield "<Error> n='%s' units='%s'>%s</Error>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataListError"))
+                    yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataListNegativeError"))
+                    yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, GDTX("CollisionalTransitionDataSetTabulatedDataXDataListPositiveError"))
+                    yield "<DataDescription>%s</DataDescription>" % GDTX("CollisionalTransitionDataSetTabulatedDataXDataListDescription")
+                    yield "</X>"                    
+                # handle Y component of XY
+                Ny = GDT("CollisionalTransitionDataSetTabulatedDataYDataListN")           # number of Y points (should be identical for all elements in this element)
+                yunits = GDT("CollisionalTransitionDataSetTabulatedDataYDataListUnits")   
+                yield "<Y units='%s' parameter='%s'" % (Ny, yunits)
+                yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataList"))
+                yield "<Error> n='%s' units='%s'>%s</Error>" % (Ny, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataListError"))
+                yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataListNegativeError"))
+                yield "<PositiveError> n='%s' units=%s>'%s'</PositiveError>" % (Nx, yunits, GDT("CollisionalTransitionDataSetTabulatedDataYDataListPositiveError"))
+                yield "<DataDescription>%s</DataDescription>" % GDT("CollisionalTransitionDataSetTabulatedDataYDataListDescription")
+                yield "</Y>"
+               
+                yield "</DataXY>"
+
+                tabref = GDT("CollisionalTransitionDataSetTabulatedDataReferenceFrame")
+                if tabref: 
+                    yield "<ReferenceFrame>%s</ReferenceFrame>" % tabref
+                physun = GDT("CollisionalTransitionDataSetTabulatedDataPhysicalUncertainty")
+                if physun:
+                    yield "<PhysicalUncertainty>%s</PhysicalUncertainty>" % physun
+                pdate = GDT("CollisionalTransitionDataSetTabulatedDataProductionDate")
+                if pdate:
+                    yield "<ProductionDate>%s</ProductionDate>" % pdate
+
+                yield "</TabulatedData>"            
+            
+            yield "</DataSet>"
+        yield "</DataSets>"
+        yield "</CollisionalTransition>"
+    yield '</Collisions>'
 
 def XsamsNonRadTrans(NonRadTrans):
     """
     non-radiative transitions
     """
-    yield ''
+    if not isiterable(NonRadTrans):
+        return 
+
+    yield "<NonRadiative>"
+    for NonRadTran in NonRadTrans:
+        
+        cont, ret = checkXML(NonRadTran)
+        if cont:
+            yield ret
+            continue 
+
+        G = lambda name: GetValue(name, NonRadTran=NonRadTran)        
+        yield makePrimaryType("NonRadiativeTransition", "NonRadiativeTransition", G)
+        
+        yield "<InitialStateRef>S%s</InitialStateRef>" % G("NonRadiativeTransitionInitialStateRef")
+        fstate = G("NonRadiativeTransitionFinalStateRef")
+        if fstate:
+            yield "<FinalStateRef>S%s</FinalStateRef>" % fstate
+        fspec = G("NonRadiativeTransitionSpeciesRef")
+        if fspec:
+            yield "<SpeciesRef>X%s</SpeciesRef>" % fspec
+        yield makeDataType("Probability", "NonRadiativeTransitionProbability", G)
+        yield makeDataType("NonRadiativeWidth", "NonRadiativeTransitionNonWidth", G)
+        yield makeDataType("TransitionEnergy", "NonRadiativeTransitionEnergy", G)
+        typ = G("NonRadiativeTransitionType")
+        if typ:
+            yield "<Type>%s</Type>" % typ
+            
+        yield "</NonRadiativeTransition>"
+
+    yield "</NonRadiative>"
 
 
 def makeFunctionArgument(fargobj, tagname="Y"):
@@ -685,63 +1233,68 @@ def XsamsFunctions(Functions):
         return
     yield '<Functions>\n'
     for Function in Functions:
-        if hasattr(Function,'XML'):
-            try:
-                yield Function.XML()
-                continue
-            except:
-                pass
+
+        cont, ret = checkXML(Function)
+        if cont:
+            yield ret
+            continue 
+
         G = lambda name: GetValue(name, Function=Function)
-        yield """<Function functionID="F%s-%s>
-<Name>%s</Name>
-""" % (NODEID, G("FunctionID"), G("FunctionName"))
-        functionsourcerefs = G('FunctionSourceRef')
-        # make it always into a list to be looped over, even if
-        # only single entry
-        try:
-            functionsourcerefs = eval(functionsourcerefs)
-        except:
-            pass
-        if not isiterable(functionsourcerefs): 
-            functionsourcerefs = [functionsourcerefs]
-        for sourceref in functionsourcerefs:
-            yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
+        yield makePrimaryType("Function", "Function", extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
-        yield "<Name>%s</Name>\n"
+        yield "<Name>%s</Name>" % G("FunctionName")
         yield "<Expression computerLanguage=%s>%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
+        yield "<Y name='%s', units='%s'>" % (G("FunctionYName"), G("FunctionYUnits"))
+        desc = G("FunctionYDescription")
+        if desc:
+            yield "<Description>%s</Description>" % desc
+        lowlim = G("FunctionYLowerLimit")
+        if lowlim: 
+            yield "<LowerLimit>%s</LowerLimit>" % lowlim
+        hilim = G("FunctionYUpperLimit")
+        if hilim:
+            yield "<UpperLimit>%s</UpperLimit>"
+        yield "</Y>"
 
-        # Y argument of the expression 
-        yarg = G("FunctionY")
-        yield makeFunctionArgument(yarg, tagname="Y")
+        yield "<Arguments>\n"
+        for FunctionArgument in Function.Arguments:
 
-    # function arguments depend on an object FunctionArguments being stored
-    # with the right properties (Description, LowerLimit etc) 
-    # on itself.
-    functionarguments = G("FunctionArguments")
-    if not isiterable(functionarguments):
-        functionarguments = [functionarguments]
-    yield "<Arguments>\n"
-    for farg in functionarguments: 
-        yield makeFunctionArgument(farg, tagname="Argument")
-    yield "</Arguments>\n"
-    
-    # function parameters depend 
-    functionparameters = G("FunctionParameters")
-    if not isiterable(functionparameters):
-        functionparameters = [functionparameters]
-    yield "<Parameters>\n"
-    for fpar in functionparameters:
-        name = fpar.__dict__.get("Name", "")
-        units = fpar.__dict__.get("Units", "")
-        value = fpar.__dict__.get("Value", "")
-        description = fpar.__dict__.get("Description", "")
-        yield """<Parameter name=%s, units=%s>
-%s
-<Description>%s</Description> 
-</Parameter>
-""" % (name, units, value, description)
-    yield "</Parameters>"
-    yield """<ReferenceFrame>%s</ReferenceFrame>
+            cont, ret = checkXML(FunctionArgument)
+            if cont:
+                yield ret
+                continue 
+
+            GA = lambda name: GetValue(name, FunctionArgument=FunctionArgument)
+            yield "<Argument name='%s', units='%s'>" % (GA("FunctionArgumentName"), GA("FunctionArgumentUnits"))
+            desc = GA("FunctionArgumentDescription")
+            if desc: 
+                yield "<Description>%s</Description>" % desc
+            lowlim = G("FunctionYLowerLimit")
+            if lowlim: 
+                yield "<LowerLimit>%s</LowerLimit>" % lowlim
+            hilim = G("FunctionYUpperLimit")
+            if hilim:
+                yield "<UpperLimit>%s</UpperLimit>"
+            yield "</Argument>\n"
+        yield "</Arguments>"
+
+        yield "<Parameters>\n"
+        for FunctionParameter in Function.Parameter:
+
+            cont, ret = checkXML(FunctionParameter)
+            if cont:
+                yield ret
+                continue 
+
+            GP = lambda name: GetValue(name, FunctionParameter=FunctionParameter)
+            yield "<Parameter name='%s', units='%s'>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
+            desc = GP("FunctionParameterDescription")
+            if desc:
+                yield "<Description>%s</Description>" % desc
+            yield "</Parameter>\n"
+        yield "</Parameters>"
+
+        yield """<ReferenceFrame>%s</ReferenceFrame>
 <Description>%s</Description>
 <SourceCodeURL>%s</SourceCodeURL>
 """ % (G("FunctionReferenceFrame"), G("FunctionDescription"), G("FunctionSourceCodeURL"))        
@@ -755,6 +1308,12 @@ def XsamsMethods(Methods):
         return
     yield '<Methods>\n'
     for Method in Methods:
+
+        cont, ret = checkXML(Method)
+        if cont:
+            yield ret
+            continue 
+
         G = lambda name: GetValue(name, Method=Method)
         yield """<Method methodID="M%s-%s">
 <Category>%s</Category>
