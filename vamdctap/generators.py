@@ -44,7 +44,7 @@ N_BROAD_KWS = countReturnables('^.*Broadening.*')
 
 def makeiter(obj):
     """
-    Make an object iterable, no matter what
+    Return an iterable, no matter what
     """
     if not obj:
         return []
@@ -407,6 +407,9 @@ def XsamsEnvironments(Environments):
 def XsamsAtomTerm(G):
     """
     The part of XSAMS describing the term designation and coupling for atoms.
+
+    SR - This is not really strictly correct according to schema - LS/JK/JJ are not
+         exclusive to each other in the xsams schema.
     """
     coupling = G('AtomStateCoupling')
     if not coupling: 
@@ -445,6 +448,150 @@ def parityLabel(parity):
         return 'odd'
     else:
         return 'even'
+
+def makeTermType(tag, keyword, G):
+    """
+    Construct the Term xsams structure.
+
+    This version is more generic than XsamsTerm function
+    and don't enforce LS/JK/LK to be exclusive to one another (as 
+    dictated by current version of xsams schema)
+    """
+    string = "<%s>" % tag
+    
+    l = G("%sLSLValue" % keyword)
+    s = G("%sS" % keyword)
+    if l and s:
+        string += "<LS>"
+        string += "<L><Value>%s</Value><Symbol>%s</Symbol></L>" % (l, G("%sLSLSymbol" % keyword))        
+        string += "<S>%s</S>" % s
+        string += "<Multiplicity>%s</Multiplicity>" % G("%sLSMultiplicity" % keyword)
+        string += "<Seniority>%s</Seniority>" % G("%sLSSenionrity" % keyword)
+        string += "</LS>"
+        
+    jj = makeiter(G("%sJJ" % keyword))
+    if jj:
+        string += "<jj>"        
+        for j in jj:
+            string += "<j>%s</j>" % j
+        string += "</jj>"
+    j1j2 = makeiter(G("%sJ1J2" % keyword))
+    if j1j2:
+        string += "<j1j2>"
+        for j in j1j2:
+            string += "<j>%s</j>" % j
+        string += "</j1j2>"
+    K = G("%sK" % keyword)
+    if K:
+        string += "<jK>"
+        j = G("%sJKJ" % keyword)
+        if j:
+            string += "<j>%s</j>" % j
+        S2 = G("sJKS" % keyword)
+        if S2:
+            string += "<S2>%s</S2>" % S2
+        string += "<K>%s</K>" % K
+        string += "</jK>"
+    l = G("%sLKLValue" % keyword)
+    k = G("%sLKKValue" % keyword)
+    if l and k:
+        string += "<LK>"
+        string += "<L><Value>%s</Value><Symbol>%s</Symbol></L>" % (l, G("%sLKLSymbol" % keyword))        
+        string += "<K>%s</K>" % k
+        string += "<S2>%s</S2>" % G("%sLKS2" % keyword)
+        string += "</LK>"
+    tlabel = G("%sTermLabel" % keyword)
+    if tlabel:
+        string += "<TermLabel>%s</TermLabel>" % tlabel
+    string += "</%s>" % tag
+    return string     
+
+def makeShellType(tag, keyword, G):
+    """
+    Creates the Atom shell type.
+    """
+    sid = G("%sShellID" % keyword)
+    string = "<%s" % tag
+    if sid:
+        string += " shellid=%s" % sid
+    string += ">"
+    string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % G("%sShellPrincipalQuantumNumber" % keyword)
+    
+    string += "<OrbitalAngularMomentum>"
+    string += "<Value>%s</Value>" % G("%sShellOrbitalAngularMomentumValue" % keyword)
+    symb = G("%sShellOrbitalAngularMomentumSymbol" % keyword)
+    if symb:
+        string += "<Symbol>%s</Symbol>" % symb
+    string += "</OrbitalAngularMomentum>"
+    string += "<NumberOfElectrons>%s</NumberOfElectrons>" % G("%sShellNumberOfElectrons" % keyword)            
+    string += "<Parity>%s</Parity>" % G("%sShellParity" % keyword)
+    string += "<Kappa>%s</Kappa>" % G("%sShellKappa" % keyword)
+    string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % G("%sShellTotalAngularMomentum" % keyword)
+    string += makeTermType("ShellTerm", "%sShellTerm" % keyword, G)
+    string += "</%s>" % keyword
+    return string 
+
+
+def makeAtomComponent(Atom, G):
+    """
+    This constructs the Atomic Component structure.
+    
+    Atom - the current Atom queryset
+    G - the shortcut to the GetValue function
+    """
+
+    string = "<Component>"
+
+    if hasattr(Atom, "SuperShells"):
+        for AtomStateComponentSuperShell in makeiter(Atom.SuperShells):
+            GA = lambda name: GetValue(name, AtomStateComponentSuperShell=AtomStateComponentSuperShell)
+            string += "<SuperShell>"
+            string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % GA("AtomStateComponentSuperShellPrincipalQuantumNumber")
+            string += "<NumberOfElectrons>%s</NumberOfElectrons>" % GA("AtomStateComponentSuperShellNumberOfElectrons")
+            string += "</SuperShell>"
+
+    string += "<Configuration>"
+    string += "<AtomicCore>"
+    ecore = G("AtomStateComponentConfigurationAtomicCoreElementCore")
+    if ecore:
+        string += "<ElementCore>%s</ElementCore>" % ecore
+    conf = G("AtomStateComponentConfigurationAtomicCoreConfiguration")
+    if conf:
+        # TODO: The format of the Configuration tab is not yet 
+        # finalized in XSAMS! 
+        string += "<Configuration>%s</Configuration>" % conf
+    string += makeTermType("Term", "AtomStateComponentConfigurationAtomicCoreTerm", G)
+    tangmom = G("AtomStateComponentConfigurationAtomicCoreTotalAngularMomentum")
+    if tangmom:
+        string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % tangmom    
+    string += "</AtomicCore>"
+
+    if hasattr(Atom, "Shells"):
+        for AtomShell in makeiter(Atom.Shells):
+            GS = lambda name: GetValue(name, AtomShell=AtomShell)    
+            string += makeShellType("Shell", "AtomStateComponentConfigurationShell", GS)
+            
+    if hasattr(Atom, "ShellPair"):
+        for AtomShellPair in makeiter(Atom.ShellPairs):
+            GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
+            string += "<ShellPair shellPairID=%s>" % GS("AtomStateComponentConfigurationShellPairID")
+            string += makeShellType("Shell1", "AtomStateComponentConfigurationShellPairShell1", GS)
+            string += makeShellType("Shell2", "AtomStateComponentConfigurationShellPairShell2", GS)
+            string += makeTermType("ShellPairTerm", "AtomStateComponentConfigurationShellPairTerm", GS)
+            string += "</ShellPair>"
+    clabel = G("AtomStateComponentConfigurationLabel") 
+    if clabel:
+        string += "<ConfigurationLabel>%s</ConfigurationLabel>" % clabel
+    string += "</Configuration>"
+
+    string += makeTermType("Term", "AtomStateComponentTerm", G)    
+    string += "<MixingCoefficient mixingclass=%s>%s</MixingCoefficient>" % (G("AtomStateComponentMixingCoefficientMixingClass"), G("AtomStateComponentMixingCoefficient"))
+    coms = G("AtomStateComponentComments")
+    if coms:
+        string += "<Comments>%s</Comments>" % coms
+
+    string += "</Component>"
+    return string 
 
 def XsamsAtoms(Atoms):
     """
@@ -529,22 +676,15 @@ def XsamsAtoms(Atoms):
             yield '</AtomicQuantumNumbers>'
 
             yield '<AtomicComposition>'
-            comm = G('AtomStateCompositionComments')
-            if comm: 
-                yield '<Comments>%s</Comments>\n' % comm
-            yield '<Component><Configuration>'
-            confl = G('AtomStateConfigurationLabel')
-            if confl: 
-                yield '<ConfigurationLabel>%s</ConfigurationLabel>' % confl
-            # AtomicCore and Shells are missing here!
-            yield '</Configuration>\n'
 
-            yield XsamsAtomTerm(G)
+            yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
+            
+            for AtomicComponent in makeiter(Atom.Component):
+                GA = lambda name: GetValue(name, AtomicComponent=AtomicComponent)
+                yield makeAtomComponent(GA)
 
-            mixcoef = G('AtomStateMixingCoefficient')
-            if mixcoef: 
-                yield '<MixingCoefficient>%s</MixingCoefficient>' % mixcoef
-            yield '</Component></AtomicComposition>'
+            yield '</AtomicComposition>'
+
             yield '</AtomicState>'
         yield '<InChI>%s</InChI>' % G('AtomInchi')
         yield '<InChIKey>%s</InChIKey>' % G('AtomInchiKey')
