@@ -15,8 +15,8 @@ try:
 except:
     NODEID = 'PleaseFillTheNodeID'
 
-def LOG(s):
-    if settings.DEBUG: print >> sys.stderr, s.encode('utf-8')
+import logging
+log = logging.getLogger('vamdc.tap.generator')
 
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
@@ -78,9 +78,9 @@ def GetValue(name, **kwargs):
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
     except Exception: 
-#        LOG('Exception in generators.py: GetValue()')
-#        LOG(str(e))
-#        LOG(name)
+#        log.debug('Exception in generators.py: GetValue()')
+#        log.debug(str(e))
+#        log.debug(name)
         # this catches the case where the dict-value is a string or mistyped.
         value = name      
     if value == None:
@@ -1487,24 +1487,9 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     """
 
     yield """<?xml version="1.0" encoding="UTF-8"?>
-<XSAMSData xmlns="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working http://xsams.svn.sourceforge.net/viewvc/xsams/branches/vamdc-working/xsams.xsd"
- xmlns:dcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/dcs"  
- xmlns:hunda="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hunda" 
- xmlns:hundb="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/hundb"
- xmlns:ltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltcs"
- xmlns:nltcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/nltcs"
- xmlns:stcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/stcs"
- xmlns:lpcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/lpcs"
- xmlns:asymcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/asymcs"
- xmlns:asymos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/asymos"
- xmlns:sphcs="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphcs"
- xmlns:sphos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/sphos"
- xmlns:ltos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/ltos"
- xmlns:lpos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/lpos"
- xmlns:nltos="http://www.ucl.ac.uk/~ucapch0/XSAMS/cases/0.2.1/nltos"
->
+<XSAMSData xmlns="http://vamdc.org/xml/xsams/0.2"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
 """
 
     if HeaderInfo:
@@ -1518,11 +1503,11 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
 -->
 """ % HeaderInfo['Truncated']
 
-    LOG('Working on Sources.')
+    log.debug('Working on Sources.')
     for Source in XsamsSources(Sources): 
         yield Source
 
-    LOG('Working on Methods, Functions, Environments.')
+    log.debug('Working on Methods, Functions, Environments.')
     for Method in XsamsMethods(Methods): 
         yield Method
     for Function in XsamsFunctions(Functions): 
@@ -1530,7 +1515,7 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     for Environment in XsamsEnvironments(Environments): 
         yield Environment
 
-    LOG('Writing States.')
+    log.debug('Writing States.')
     yield '<Species>\n'
     for Atom in XsamsAtoms(Atoms): 
         yield Atom
@@ -1541,7 +1526,7 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     #    yield MolState
     yield '</Species>\n'
 
-    LOG('Writing Processes.')
+    log.debug('Writing Processes.')
     yield '<Processes>\n'
     yield '<Radiative>\n'
     for RadTran in XsamsRadTrans(RadTrans): 
@@ -1555,7 +1540,7 @@ def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
         yield NonRadTran
     yield '</Processes>\n'
     yield '</XSAMSData>\n'
-    LOG('Done with XSAMS')
+    log.debug('Done with XSAMS')
 
 
 #
