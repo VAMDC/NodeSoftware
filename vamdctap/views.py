@@ -99,6 +99,7 @@ def addHeaders(headers,response):
     return response
 
 def sync(request):
+    log.info('Request from %s: %s'%(request.META['REMOTE_ADDR'],request.REQUEST))
     tap=TAPQUERY(request.REQUEST)
     if not tap.isvalid:
         emsg = 'TAP-Request invalid: %s'%tap.errormsg
