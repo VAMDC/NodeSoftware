@@ -26,6 +26,27 @@ A PDF-version of this page is available at http://vamdc.tmy.se/doc/nodesoftware.
 Changelog
 =================
 
+May 23, 2011
+------------------
+
+These are the most important changes for the `11.5` release of the NodeSoftware:
+
+**Update to Django 1.3**. You probably need to upgrade your installation of Django. Read how to at
+
+**Logging**
+
+**Email**
+
+**Example query**
+
+**Volume estimate**
+
+**Other Header changes**
+
+**Dictionary changes**
+
+**Error handling in urls.py**
+
 
 March 10, 2011
 ------------------
