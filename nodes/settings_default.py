@@ -122,6 +122,8 @@ TEMPLATE_LOADERS = (
 #########################
 #  LOGGING
 ########################
+import tempfile
+TMPDIR = tempfile.gettempdir()
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -150,7 +152,7 @@ LOGGING = {
         'logfile':{
                 'level': 'INFO',
                 'class': 'logging.FileHandler',
-                'filename': 'node.log',
+                'filename': TMPDIR+'/node.log',
         }
     },
     'loggers': {
