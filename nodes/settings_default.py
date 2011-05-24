@@ -167,23 +167,19 @@ LOGGING = {
             'propagate': False,
         },
         'vamdc': {
-            'handlers': ['console', 'mail_admins'],
+            'handlers': ['console','logfile','mail_admins'],
             'level': 'DEBUG',
         },
         'vamdc.tap': {
-            'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
         },
         'vamdc.tap.sql': {
-            'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
         },
         'vamdc.node': {
-            'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
         },
         'vamdc.node.queryfu': {
-            'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
         },
     }
