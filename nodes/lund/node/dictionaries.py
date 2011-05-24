@@ -1,69 +1,92 @@
 # -*- coding: utf-8 -*-
 
-from vamdctap.caselessdict import CaselessDict
+# Lund dictionary
 
-RETURNABLES = CaselessDict({\
-'SourceID':'Source.id',     
-#'SourceAuthorName':'Source.author',
-#'SourceCategory':'Source.category',
-#'SourcePageBegin':'Source.pages',
-#'SourcePageEnd':'Source.pages',
-#'SourceName':'Source.journal',
-#'SourceTitle':'Source.title',
-#'SourceURI':'Source.url',
-#'SourceVolume':'Source.volume',
-#'SourceYear':'Source.year',
-'MethodID':'"MOBS"',
-'MethodCategory':'"observed"',
-'MethodDescription':'',
+RETURNABLES = {\
+'NodeID':'Lund',
+
+'SourceID':'Source.id',
+'SourceAuthorName':'Source.author',
+'SourceCategory':'Source.category',
+'SourcePageBegin':'Source.pages',
+'SourcePageEnd':'Source.pages',
+'SourceName':'Source.journal',
+'SourceTitle':'Source.title',
+'SourceURI':'Source.url',
+'SourceVolume':'Source.volume',
+'SourceYear':'Source.year',                                                              
+'MethodID':'Method.id',
+'MethodCategory':'Method.category',
+                           
 'AtomStateID':'AtomState.id',
-'AtomSymbol':'AtomState.species.name',
-'AtomNuclearCharge':'AtomState.species.atomic',
-'AtomConfigurationLabel':'AtomState.charid',
-'AtomCompositionComponentTerm':'AtomState.term',
-'AtomIonizationEnergy':'AtomState.species.ionen',
+'AtomSymbol':'Atom.name',
+'AtomSpeciesID':'Atom.id',
+'AtomNuclearCharge':'Atom.atomic',
+'AtomIonCharge':'Atom.ion',
+'AtomMassNumber':'Atom.massno',
 'AtomStateLandeFactor':'AtomState.lande',
-'AtomStateLandeFactorRef':'AtomState.lande_ref',
+'AtomStateLandeFactorUnit':'unitless',
+'AtomStateLandeFactorRef':'AtomState.lande_ref_id',
 'AtomStateEnergy':'AtomState.energy',
-'AtomStateEnergyRef':'AtomState.energy_ref',
-'AtomStateEnergyUnits':'1/cm',
+'AtomStateEnergyRef':'AtomState.energy_ref_id',
+'AtomStateEnergyUnit':'1/cm',
 'AtomStateDescription':'',
-'AtomStateHyperfineStructureA': 'AtomStates.hfs_a',
-'AtomStateHyperfineStructureB': 'AtomStates.hfs_b',
-'AtomStateLifeTimeCalculated': 'AtomStates.tau_calc',
-'AtomStateLifeTimeExperimental': 'AtomStates.tau_exp',
-'AtomStateLifeTimeAccuracy': 'AtomStates.tau_accur',
-'AtomIonCharge':'AtomState.species.ion',
-'AtomMassNumber':'AtomState.species.massno',
+'AtomStateHyperfineConstantA': 'AtomState.hfs_a',
+'AtomStateHyperfineConstantAUnit':'unitless',
+'AtomStateHyperfineConstantB': 'AtomState.hfs_b',
+'AtomStateHyperfineConstantBUnit': 'unitless',
+'AtomStateLifeTime': 'AtomState.get_best_tau()',
+'AtomStateLifeTimeMethod': 'AtomState.get_tau_ref()',
+'AtomStateLifeTimeAccuracy': 'AtomState.tau_accur',                                     
+                                                                         
+'RadTransSpeciesRef':'RadTran.species_id',
 'RadTransComments':'Wavelength is for vacuum.',
-'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
-'RadTransWavelengthExperimentalUnits':u'\xc5',
-'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.loggf_accur',
-'RadTransWavelengthExperimentalSourceRef':'RadTran.wave_ref',
+'RadTransWavelength':'RadTran.vacwave',
+'RadTransWavelengthUnit':u'A',
+'RadTransWavelengthRef':'RadTran.wave_ref_id',
+'RadTransWavelengthMethodCategory':'experiment',
 'RadTransFinalStateRef':'RadTran.lostate.id',
 'RadTransInitialStateRef':'RadTran.upstate.id',
-'RadTransMethodRef':'OBS',
-'RadTransProbabilityLog10WeightedOscillatorStrengthSourceRef':'RadTran.loggf_ref', 
-'RadTransProbabilityLog10WeightedOscillatorStrengthMethodRef':'RadTran.loggf_method',
-'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'RadTran.loggf',
-'RadTransBroadRadGammaLog':'RadTran.gammarad',
-'RadTransBroadRadRef':'RadTran.gammarad_ref',
-'RadTransBroadStarkGammaLog':'RadTran.gammastark',
-'RadTransBroadStarkRef':'RadTran.gammastark_ref',
-'RadTransBroadWaalsGammaLog':'RadTran.gammawaals',
-'RadTransBroadWaalsAlpha':'RadTran.alphawaals',
-'RadTransBroadWaalsSigma':'RadTran.sigmawaals',
-'RadTransBroadWaalsRef':'RadTran.waals_ref',
-'RadTransEffLande':'RadTran.landeff',
-'RadTransEffLandeRef':'RadTran.lande_ref',
-})
+'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
+'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
+'RadTransProbabilityLog10WeightedOscillatorStrengthRef':'RadTran.loggf_ref_id',
+'RadTransProbabilityLog10WeightedOscillatorStrengthMethod':'RadTran.loggf_method',
+'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.loggf_accur',
 
-RESTRICTABLES = CaselessDict({\
+'RadTransBroadeningNaturalLineshapeParameter':'RadTran.gammarad',
+'RadTransBroadeningNaturalLineshapeParameterName':'log(gamma)',
+'RadTransBroadeningNaturalLineshapeParameterUnit':'cm3/s',
+'RadTransBroadeningNaturalRef':'RadTran.gammarad_ref_id',
+
+'RadTransBroadeningStarkLineshapeParameter':'RadTran.gammastark',
+'RadTransBroadeningStarkLineshapeName':'lorentzian',
+'RadTransBroadeningStarkLineshapeParameterName':'log(gamma)',
+'RadTransBroadeningStarkLineshapeParameterUnit':'cm3/s',
+'RadTransBroadeningStarkRef':'RadTran.gammastark_ref_id',
+
+'RadTransBroadeningVanDerWaalsLineshapeParameter':'RadTran.gammawaals',
+'RadTransBroadeningVanDerWaalsLineshapeParameterUnit':'["cm3/s","unitless"]',
+
+'RadTransBroadeningVanDerWaalsLineshapeName':'lorentzian',
+'RadTransBroadeningVanDerWaalsLineshapeParameterName':'["log(gamma)","alpha"]',
+'RadTransBroadeningVanDerWaalsRef':'RadTran.waals_ref_id',
+
+'RadTransEffectiveLandeFactor':'RadTran.landeff',
+'RadTransEffectiveLandeFactorUnit':'unitless',
+'RadTransEffectiveLandeFactorRef':'RadTran.lande_ref_id',
+}
+
+RESTRICTABLES = {\
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'AtomStateEnergy':'upstate__energy',
-'RadTransWavelengthExperimentalValue':'vacwave',
-'RadTransWavenumberExperimentalValue':'vavenum',
-'RadTransLogGF':'loggf',
-'AtomIonCharge':'species__ion',
-})
+'RadTransWavelength':'vacwave',
+'RadTransWavenumber':'vavenum',
+'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
+'AtomIonCharge':'species__ion'
+}
+
+
+from vamdctap.caselessdict import CaselessDict
+RESTRICTABLES = CaselessDict(RESTRICTABLES)
+RETURNABLES = CaselessDict(RETURNABLES)
