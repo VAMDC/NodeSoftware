@@ -678,10 +678,10 @@ def XsamsAtoms(Atoms):
             yield '<AtomicComposition>'
 
             yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
-            
-            for AtomicComponent in makeiter(Atom.Component):
-                GA = lambda name: GetValue(name, AtomicComponent=AtomicComponent)
-                yield makeAtomComponent(GA)
+            if hasattr(Atom,'Component'):
+                for AtomicComponent in makeiter(Atom.Component):
+                    GA = lambda name: GetValue(name, AtomicComponent=AtomicComponent)
+                    yield makeAtomComponent(GA)
 
             yield '</AtomicComposition>'
 
