@@ -54,9 +54,13 @@ def makeiter(obj):
 
 def makeloop(G, *args):
     """
-    Creates a nested list of lists. All arguments will be 
-    called by G and are expected to return iterables of equal lengths.
-    The generator yields the current element of each list in order.
+    Creates a nested list of lists. All arguments should be valid dictionary
+    keywords and will be fed to G. They are expected to return iterables of equal lengths.
+    The generator yields the current element of each list in order, so one can do e.g.
+      for val in makeloop(G, 'AtomStateName', 'AtomStateUnit', ...):
+
+    
+
     """
     lis = []
     if not args:
@@ -67,13 +71,10 @@ def makeloop(G, *args):
         Nlis = lis[0].count()
     except TypeError:
         Nlis = len(lis[0])
-    try:
-        for i in range(Nlis):
-            pass
-    except:
-        pass
-        
-
+    for i in range(Nlis):
+        # this might raise an exception if elements don't have the same
+        # length. This is fine since it means invalid input data. 
+        yield [part[i] for part in lis]
 
 def GetValue(name, **kwargs):
     """
