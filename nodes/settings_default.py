@@ -122,6 +122,8 @@ TEMPLATE_LOADERS = (
 #########################
 #  LOGGING
 ########################
+import tempfile
+TMPDIR = tempfile.gettempdir()
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -130,7 +132,7 @@ LOGGING = {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
         'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': '%(asctime)s %(levelname)s %(message)s'
         },
     },
     'handlers': {
@@ -139,18 +141,18 @@ LOGGING = {
             'class':'django.utils.log.NullHandler',
         },
         'console':{
-            'level':'DEBUG',
+            'level':'WARNING',
             'class':'logging.StreamHandler',
-            'formatter': 'simple'
         },
         'mail_admins': {
-            'level': 'CRITICAL',
+            'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
         },
         'logfile':{
-                'level': 'INFO',
+                'level': 'DEBUG',
                 'class': 'logging.FileHandler',
-                'filename': 'node.log',
+                'filename': TMPDIR+'/node.log',
+                'formatter': 'simple'
         }
     },
     'loggers': {
@@ -165,23 +167,19 @@ LOGGING = {
             'propagate': False,
         },
         'vamdc': {
-            'handlers': ['console', 'mail_admins'],
+            'handlers': ['console','logfile','mail_admins'],
             'level': 'DEBUG',
         },
         'vamdc.tap': {
-            'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
         },
         'vamdc.tap.sql': {
-            'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
         },
         'vamdc.node': {
-            'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
         },
         'vamdc.node.queryfu': {
-            'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
         },
     }
