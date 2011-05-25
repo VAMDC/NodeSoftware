@@ -147,6 +147,7 @@ LOGGING = {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
         },
         'logfile':{
                 'level': 'DEBUG',
@@ -174,6 +175,9 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'vamdc.tap.sql': {
+            'level': 'DEBUG',
+        },
+        'vamdc.tap.generator': {
             'level': 'DEBUG',
         },
         'vamdc.node': {

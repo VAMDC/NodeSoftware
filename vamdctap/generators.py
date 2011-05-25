@@ -1521,40 +1521,67 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
 """ % HeaderInfo['Truncated']
 
     log.debug('Working on Sources.')
-    for Source in XsamsSources(Sources): 
-        yield Source
+    try:
+        for Source in XsamsSources(Sources): 
+            yield Source
+    except: log.critical('Generator error in Sources!')
 
     log.debug('Working on Methods, Functions, Environments.')
-    for Method in XsamsMethods(Methods): 
-        yield Method
-    for Function in XsamsFunctions(Functions): 
-        yield Function
-    for Environment in XsamsEnvironments(Environments): 
-        yield Environment
+    try:
+        for Method in XsamsMethods(Methods): 
+            yield Method
+    except: log.critical('Generator error in Methods!')
 
-    log.debug('Writing States.')
+    try:
+        for Function in XsamsFunctions(Functions): 
+            yield Function
+    except: log.critical('Generator error in Functions!')
+
+    try:
+        for Environment in XsamsEnvironments(Environments): 
+            yield Environment
+    except: log.critical('Generator error in Environments!')
+
     yield '<Species>\n'
-    for Atom in XsamsAtoms(Atoms): 
-        yield Atom
-    for Molecule in XsamsMolecules(Molecules): 
-        yield Molecule
-    # old way:
-    #for MolState in XsamsMolStates(Molecules, MoleStates, MoleQNs):
-    #    yield MolState
+    log.debug('Working on Atoms.')
+    try:
+        for Atom in XsamsAtoms(Atoms): 
+            yield Atom
+    except: log.critical('Generator error in Atoms!')
+
+    log.debug('Working on Molecules.')
+    try:
+        for Molecule in XsamsMolecules(Molecules): 
+            yield Molecule
+    except: log.critical('Generator error in Molecules!')
+
     yield '</Species>\n'
 
     log.debug('Writing Processes.')
     yield '<Processes>\n'
     yield '<Radiative>\n'
-    for RadTran in XsamsRadTrans(RadTrans): 
-        yield RadTran
-    for RadCros in XsamsRadCross(RadCross): 
-        yield RadCros
+    try:
+        for RadTran in XsamsRadTrans(RadTrans):
+            yield RadTran
+    except: log.critical('Generator error in RadTran!')
+
+    try:
+        for RadCros in XsamsRadCross(RadCross):
+            yield RadCros
+    except: log.critical('Generator error in RadCross!')
+
     yield '</Radiative>\n'
-    for CollTran in XsamsCollTrans(CollTrans): 
-        yield CollTran
-    for NonRadTran in XsamsNonRadTrans(NonRadTrans): 
-        yield NonRadTran
+
+    try:
+        for CollTran in XsamsCollTrans(CollTrans):
+            yield CollTran
+    except: log.critical('Generator error in CollTran!')
+
+    try:
+        for NonRadTran in XsamsNonRadTrans(NonRadTrans):
+            yield NonRadTran
+    except: log.critical('Generator error in NonRadTran!')
+
     yield '</Processes>\n'
     yield '</XSAMSData>\n'
     log.debug('Done with XSAMS')
