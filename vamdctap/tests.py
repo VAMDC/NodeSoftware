@@ -69,7 +69,7 @@ class TapSyncTest(TestCase):
 
 
 #
-# Generator tests
+# Full Generator tests
 #
 
 class TestGetValue(TestCase):
@@ -81,6 +81,20 @@ class TestGetValue(TestCase):
         self.assertEqual(generators.GetValue(None), "")
         self.assertEqual(generators.GetValue(""), "")
         
+
+#
+# Individual generator function tests
+#  
+
+class Qset(list):
+    """
+    A fake Query set-like object to send to generator functions.
+    """
+    pass
+
+
+
+
 
 
 #

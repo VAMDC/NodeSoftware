@@ -52,6 +52,29 @@ def makeiter(obj):
         return [obj]
     return obj 
 
+def makeloop(G, *args):
+    """
+    Creates a nested list of lists. All arguments will be 
+    called by G and are expected to return iterables of equal lengths.
+    The generator yields the current element of each list in order.
+    """
+    lis = []
+    if not args:
+        return []
+    for arg in args:
+        lis.append(makeiter(G(arg)))        
+    try:
+        Nlis = lis[0].count()
+    except TypeError:
+        Nlis = len(lis[0])
+    try:
+        for i in range(Nlis):
+            pass
+    except:
+        pass
+        
+
+
 def GetValue(name, **kwargs):
     """
     the function that gets a value out of the query set, using the global name
@@ -384,19 +407,14 @@ def XsamsEnvironments(Environments):
         yield makeDataType('TotalPressure', 'EnvironmentTotalPressure', G)
         yield makeDataType('TotalNumberDensity', 'EnvironmentTotalNumberDensity', G)
         species = G('EnvironmentSpecies')
+
         if species:
             yield '<Composition>'
-            if isiterable(species):
-                for Species in species:
-                    yield '<Species name="%s" speciesRef="X%s-%s">' % (G('EnvironmentSpeciesName'), NODEID, G('EnvironmentSpeciesRef'))
-                    yield
-                    makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', G)
-                    yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', G)
-                    yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', G)
-                    yield '</Species>'
-            else:
+            for Species in makeiter(species):
+                #GS = lambda name: GetValue(name, Species=Species)
                 yield '<Species name="%s" speciesRef="X%s-%s">' % (G('EnvironmentSpeciesName'), NODEID, G('EnvironmentSpeciesRef'))
-                yield makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', G)
+                yield
+                makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', G)
                 yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', G)
                 yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', G)
                 yield '</Species>'
@@ -805,7 +823,7 @@ def makeBroadeningType(G, btype='Natural'):
     if meth: 
         s += ' methodRef="%s"' % meth
     if env: 
-        s += ' envRef="%s"' % env
+        s += ' envRef="E%s"' % env
     s += '>'
     if comm: 
         s +='<Comments>%s</Comments>' % comm
@@ -1260,7 +1278,6 @@ def XsamsCollTrans(CollTrans):
                     if cont:
                         yield ret
                         continue 
-
 
                     GDTX = lambda name: GetValue(name, CollTranDataSetTabulatedDataX=CollTranDataSetTabulatedDataX)                
                     Nx = GDTX("CollisionalTransitionDataSetTabulatedDataXDataListN")           # number of X points (should be identical for all elements in this element)
