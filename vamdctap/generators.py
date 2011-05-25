@@ -693,15 +693,13 @@ def XsamsAtoms(Atoms):
                 yield '<MagneticQuantumNumber>%s</MagneticQuantumNumber>' % mqn
             yield '</AtomicQuantumNumbers>'
 
-            yield '<AtomicComposition>'
-
-            yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
             if hasattr(Atom,'Component'):
+                yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
                 for AtomicComponent in makeiter(Atom.Component):
                     GA = lambda name: GetValue(name, AtomicComponent=AtomicComponent)
                     yield makeAtomComponent(GA)
 
-            yield '</AtomicComposition>'
+                yield '</AtomicComposition>'
 
             yield '</AtomicState>'
         yield '<InChI>%s</InChI>' % G('AtomInchi')
