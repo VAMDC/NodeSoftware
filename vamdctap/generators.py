@@ -842,7 +842,7 @@ def XsamsRadTranBroadening(G):
     """
     helper function for line broadening, called from RadTrans
     """
-    s = '<Broadenings>'
+    s = '<Broadening>'
     comm = G('RadTransBroadeningComment')
     if comm: s +='<Comments>%s</Comments>' % comm
     s += makeSourceRefs(G('RadTransBroadeningRef'))
@@ -854,7 +854,7 @@ def XsamsRadTranBroadening(G):
         s += makeBroadeningType(G, btype='Natural')
     if countReturnables('RadTransBroadeningInstrument'):
         s += makeBroadeningType(G, btype='Instrument')
-    s += '</Broadenings>\n'
+    s += '</Broadening>\n'
     return s
 
 def XsamsRadTranShifting(G):
@@ -868,12 +868,12 @@ def XsamsRadTranShifting(G):
         dic["name"] = nam
     if eref:
         dic["envRef"] = "E%s"  % eref
-    yield makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
+    s = makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
     shiftpar = G("RadiativeTransitionShiftingShiftingParameter")
     for ShiftingParameter in makeiter(shiftpar):
         GS = lambda name: GetValue(name, ShiftingParameter=ShiftingParameter)
-        yield makeDataFuncType("ShiftingParameter", "RadiativeTransitionShiftingShiftingParameter", GS)        
-    yield "</Shifting>"
+        s += makeDataFuncType("ShiftingParameter", "RadiativeTransitionShiftingShiftingParameter", GS)
+    s += "</Shifting>"
 
 def XsamsRadTrans(RadTrans):
     """
@@ -1491,6 +1491,9 @@ def XsamsMethods(Methods):
         yield '</Method>'
     yield '</Methods>\n'
 
+def generatorError(where):
+    log.critical('Generator error in%s!'%where)
+    return where
 
 def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     Environments=None, Atoms=None, Molecules=None, CollTrans=None,
@@ -1520,40 +1523,42 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
 -->
 """ % HeaderInfo['Truncated']
 
+    errs=''
+
     log.debug('Working on Sources.')
     try:
         for Source in XsamsSources(Sources): 
             yield Source
-    except: log.critical('Generator error in Sources!')
+    except: errs+=generatorError(' Sources')
 
     log.debug('Working on Methods, Functions, Environments.')
     try:
-        for Method in XsamsMethods(Methods): 
+        for Method in XsamsMethods(Methods):
             yield Method
-    except: log.critical('Generator error in Methods!')
+    except: errs+=generatorError(' Methods')
 
     try:
-        for Function in XsamsFunctions(Functions): 
+        for Function in XsamsFunctions(Functions):
             yield Function
-    except: log.critical('Generator error in Functions!')
+    except: errs+=generatorError(' Functions')
 
     try:
-        for Environment in XsamsEnvironments(Environments): 
+        for Environment in XsamsEnvironments(Environments):
             yield Environment
-    except: log.critical('Generator error in Environments!')
+    except: errs+=generatorError(' Environments')
 
     yield '<Species>\n'
     log.debug('Working on Atoms.')
     try:
-        for Atom in XsamsAtoms(Atoms): 
+        for Atom in XsamsAtoms(Atoms):
             yield Atom
-    except: log.critical('Generator error in Atoms!')
+    except: errs+=generatorError(' Atoms')
 
     log.debug('Working on Molecules.')
     try:
-        for Molecule in XsamsMolecules(Molecules): 
+        for Molecule in XsamsMolecules(Molecules):
             yield Molecule
-    except: log.critical('Generator error in Molecules!')
+    except: errs+=generatorError(' Molecules')
 
     yield '</Species>\n'
 
@@ -1563,26 +1568,32 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
     try:
         for RadTran in XsamsRadTrans(RadTrans):
             yield RadTran
-    except: log.critical('Generator error in RadTran!')
+    except: errs+=generatorError(' RadTran')
 
     try:
         for RadCros in XsamsRadCross(RadCross):
             yield RadCros
-    except: log.critical('Generator error in RadCross!')
+    except: errs+=generatorError(' RadCross')
 
     yield '</Radiative>\n'
 
     try:
         for CollTran in XsamsCollTrans(CollTrans):
             yield CollTran
-    except: log.critical('Generator error in CollTran!')
+    except: errs+=generatorError(' CollTran')
 
     try:
+        sgsg
         for NonRadTran in XsamsNonRadTrans(NonRadTrans):
             yield NonRadTran
-    except: log.critical('Generator error in NonRadTran!')
+    except: errs+=generatorError(' NonRadTran')
 
     yield '</Processes>\n'
+    if errs: yield """<!--
+           ATTENTION: There was an error in making the XML output and at least one item in the following parts was skipped: %s
+-->
+                 """ % errs
+
     yield '</XSAMSData>\n'
     log.debug('Done with XSAMS')
 
