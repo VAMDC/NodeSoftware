@@ -879,7 +879,6 @@ def XsamsRadTrans(RadTrans):
     """
     Generator for the XSAMS radiative transitions.
     """
-
     if not isiterable(RadTrans): 
         return
 
@@ -1492,7 +1491,7 @@ def XsamsMethods(Methods):
     yield '</Methods>\n'
 
 def generatorError(where):
-    log.critical('Generator error in%s!'%where)
+    log.critical('Generator error in%s!'%where,exc_info=sys.exc_info())
     return where
 
 def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
@@ -1568,7 +1567,9 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
     try:
         for RadTran in XsamsRadTrans(RadTrans):
             yield RadTran
-    except: errs+=generatorError(' RadTran')
+    except: 
+        errs+=generatorError(' RadTran')
+
 
     try:
         for RadCros in XsamsRadCross(RadCross):
@@ -1583,7 +1584,6 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
     except: errs+=generatorError(' CollTran')
 
     try:
-        sgsg
         for NonRadTran in XsamsNonRadTrans(NonRadTrans):
             yield NonRadTran
     except: errs+=generatorError(' NonRadTran')
