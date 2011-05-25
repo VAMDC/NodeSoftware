@@ -742,6 +742,10 @@ def XsamsMCSBuild(Molecule):
 def XsamsMSQNsBuild(MolQNs):
     """
     Generator for MoleculeQnAttribute tag
+
+    THIS NEEDS REWRITING TO NEW CASES
+    see cases/import.xsd for a list of namespaces
+    they can also be given in-line like in tests/valid/cbc_casensinplace.xml
     """
     G = lambda name: GetValue(name, MolQN=MolQN)
     MolQN = MolQNs[0]; case = G('MoleculeQnCase')
@@ -805,19 +809,19 @@ def XsamsMolecules(Molecules):
 # BEGIN PROCESSES
 #################
 
-def makeBroadeningType(G, btype='Natural'):
+def makeBroadeningType(G, name='Natural'):
     """
     Create the Broadening tag
     """
 
-    lsparams = makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter' % btype, G)
+    lsparams = makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter' % name, G)
     if not lsparams: 
         return ''
 
-    env = G('RadTransBroadening%sEnvironment' % btype)
-    meth = G('RadTransBroadening%sMethod' % btype)
-    comm = G('RadTransBroadening%sComment' % btype)
-    s = '<%sBroadening' % btype
+    env = G('RadTransBroadening%sEnvironment' % name)
+    meth = G('RadTransBroadening%sMethod' % name)
+    comm = G('RadTransBroadening%sComment' % name)
+    s = '<Broadening name="%s"' % name.lower()
     if meth: 
         s += ' methodRef="%s"' % meth
     if env: 
@@ -825,40 +829,39 @@ def makeBroadeningType(G, btype='Natural'):
     s += '>'
     if comm: 
         s +='<Comments>%s</Comments>' % comm
-    s += makeSourceRefs(G('RadTransBroadening%sRef' % btype))
+    s += makeSourceRefs(G('RadTransBroadening%sRef' % name))
 
     # in principle we should loop over lineshapes but
     # lets not do so unless somebody actually has several lineshapes
     # per broadening type
-    s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % btype)
+    s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
     s += lsparams
     s += '</Lineshape>'
-    s += '</%sBroadening>' % btype
+    s += '</Broadening>'
     return s
 
 def XsamsRadTranBroadening(G):
     """
     helper function for line broadening, called from RadTrans
+
+    allwoed names are: pressure, instrument, doppler, natural
     """
-    s = '<Broadening>'
-    comm = G('RadTransBroadeningComment')
-    if comm: s +='<Comments>%s</Comments>' % comm
-    s += makeSourceRefs(G('RadTransBroadeningRef'))
-    if countReturnables('RadTransBroadeningStark'):
-        s += makeBroadeningType(G, btype='Stark')
-    if countReturnables('RadTransBroadeningVanDerWaals'):
-        s += makeBroadeningType(G, btype='VanDerWaals')
+    s=''
     if countReturnables('RadTransBroadeningNatural'):
-        s += makeBroadeningType(G, btype='Natural')
+        s += makeBroadeningType(G, name='Natural')
     if countReturnables('RadTransBroadeningInstrument'):
-        s += makeBroadeningType(G, btype='Instrument')
-    s += '</Broadening>\n'
+        s += makeBroadeningType(G, name='Instrument')
+    if countReturnables('RadTransBroadeningDoppler'):
+        s += makeBroadeningType(G, name='Doppler')
+    if countReturnables('RadTransBroadeningPressure'):
+        s += makeBroadeningType(G, name='Pressure')
     return s
 
 def XsamsRadTranShifting(G):
     """
     Not implemented
     """
+    s=''
     dic = {}
     nam = G("RadiativeTransitionShiftingName")
     eref = G("RadiativeTransitionShiftingEnvRef")
@@ -866,12 +869,12 @@ def XsamsRadTranShifting(G):
         dic["name"] = nam
     if eref:
         dic["envRef"] = "E%s"  % eref
-    s = makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
+    s += makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
     shiftpar = G("RadiativeTransitionShiftingShiftingParameter")
     for ShiftingParameter in makeiter(shiftpar):
         GS = lambda name: GetValue(name, ShiftingParameter=ShiftingParameter)
         s += makeDataFuncType("ShiftingParameter", "RadiativeTransitionShiftingShiftingParameter", GS)
-    s += "</Shifting>"
+    if s: s += "</Shifting>"
 
 def XsamsRadTrans(RadTrans):
     """
