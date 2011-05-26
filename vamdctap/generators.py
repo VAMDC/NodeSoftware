@@ -986,7 +986,7 @@ def XsamsRadCross(RadCross):
 
         G = lambda name: GetValue(name, RadCros=RadCros)
         dic = {}
-        envRef = G("CrossSectionEnvironmentRef")
+        envRef = G("CrossSectionEnvironment")
         if envRef:
             dic["envRef"] = "E%s-%s" % (NODEID, envRef)
         ID = G("RadCrosID")
@@ -998,8 +998,8 @@ def XsamsRadCross(RadCross):
         yield makeDataSeriesType("X", "CrossSectionX", G)
         yield makeDataSeriesType("Y", "CrossSectionY", G)
 
-        species = G("CrossSectionSpeciesRef")
-        state = G("CrossSectionStateRef")
+        species = G("CrossSectionSpecies")
+        state = G("CrossSectionState")
         if species or state: 
             yield "<Species>"
             if species:
