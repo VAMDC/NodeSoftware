@@ -13,7 +13,7 @@ def setupSQLparser():
     or_ = Keyword("or", caseless=True)
     in_ = Keyword("in", caseless=True)
     E = CaselessLiteral("E")
-    binop = oneOf("= != < > >= <= eq ne lt le gt ge like", caseless=True)
+    binop = oneOf("= != < > >= <= like", caseless=True)
     arithSign = Word("+-",exact=1)
     realNum = Combine( Optional(arithSign) + ( Word( nums ) + "." + Optional( Word(nums) )  |
                                            ( "." + Word(nums) ) ) + 
@@ -28,11 +28,11 @@ def setupSQLparser():
         ( columnName + in_ + "(" + selectStmt + ")" ) |
         ( "(" + whereExpression + ")" )
         )
-    whereExpression << whereCondition + ZeroOrMore( ( and_ | or_ ) + whereExpression ) 
-    
-    selectStmt      << ( selectToken + 
-                         Optional(CaselessLiteral('count')).setResultsName("count")  + 
-                         Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") + 
+    whereExpression << whereCondition + ZeroOrMore( ( and_ | or_ ) + whereExpression )
+
+    selectStmt      << ( selectToken +
+                         Optional(CaselessLiteral('count')).setResultsName("count")  +
+                         Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") +
                          ( oneOf('* ALL', caseless=True) | columnNameList ).setResultsName( "columns" ) + 
                          Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) )
 

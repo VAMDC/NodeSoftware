@@ -2,8 +2,9 @@
 from django.db.models import Q
 from django.conf import settings
 import sys
-def LOG(s):
-    if settings.DEBUG: print >> sys.stderr, s
+
+import logging
+log=logging.getLogger('vamdc.node.queryfu')
 
 from dictionaries import *
 from itertools import chain
@@ -44,8 +45,9 @@ def getSpeciesWithStates(transs):
     return atoms,molecules,nspecies,nstates
 
 def setupResults(sql):
-    LOG(sql)
+    log.debug('sql.where: %s'%sql.where)
     q=where2q(sql.where,RESTRICTABLES)
+    log.debug('q to be evaluated: %s'%q)
     try: q=eval(q)
     except: return {}
 
@@ -58,17 +60,20 @@ def setupResults(sql):
     else: percentage=None
     ntranss=transs.count()
     sources = getRefs(transs)
-    nsources = sources.count()
     atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs)
 
+    if ntranss:
+        size_estimate='%.2f'%(ntranss * 0.00113)
+    else: size_estimate='0.00'
 
-    headerinfo=CaselessDict({\
-            'Truncated':percentage,
-            'COUNT-SOURCES':nsources,
-            'COUNT-species':nspecies,
-            'count-states':nstates,
-            'count-radiative':ntranss
-            })
+    headerinfo={\
+            'TRUNCATED':percentage,
+            'COUNT-ATOMS':atoms.count(),
+            'COUNT-MOLECULES':molecules.count(),
+            'COUNT-STATES':nstates,
+            'CoUNT-RADIATIVE':ntranss,
+            'APPROX-SIZE':size_estimate,
+            }
 
     return {'RadTrans':transs,
             'Atoms':atoms,
