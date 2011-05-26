@@ -107,6 +107,10 @@ class State(Model):
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True,blank=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
 
+    def j1j2(self):
+        if self.j1 and self.j2:
+            return (self.j1,self.j2)
+
     def getRefs(self,which):
         try:
             id = eval('self.'+which+'_ref_id')

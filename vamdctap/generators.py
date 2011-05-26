@@ -451,13 +451,18 @@ def makeTermType(tag, keyword, G):
     string = "<%s>" % tag
 
     l = G("%sLSL" % keyword)
+    lsym = G("%sLSLSymbol" % keyword)
     s = G("%sS" % keyword)
+    mult = G("%sLSMultiplicity" % keyword)
+    senior = G("%sLSSeniority" % keyword)
+
     if l and s:
         string += "<LS>"
-        string += "<L><Value>%s</Value><Symbol>%s</Symbol></L>" % (l, G("%sLSLSymbol" % keyword))
-        string += "<S>%s</S>" % s
-        string += "<Multiplicity>%s</Multiplicity>" % G("%sLSMultiplicity" % keyword)
-        string += "<Seniority>%s</Seniority>" % G("%sLSSeniority" % keyword)
+        string += "<L><Value>%s</Value>"% l
+        if lsym: string += "<Symbol>%s</Symbol>" % lsym
+        string += "</L><S>%s</S>" % s
+        if mult: string += "<Multiplicity>%s</Multiplicity>" % mult
+        if senior: string += "<Seniority>%s</Seniority>" % senior
         string += "</LS>"
 
     jj = makeiter(G("%sJJ" % keyword))
@@ -576,7 +581,9 @@ def makeAtomComponent(Atom, G):
     string += "</Configuration>"
 
     string += makeTermType("Term", "AtomStateTerm", G)
-    string += "<MixingCoefficient mixingclass=%s>%s</MixingCoefficient>" % (G("AtomStateMixingCoeffClass"), G("AtomStateMixingCoeff"))
+    mixCoe = G("AtomStateMixingCoeff")
+    if mixCoe:
+        string += '<MixingCoefficient mixingclass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
     coms = G("AtomStateComponentComments")
     if coms:
         string += "<Comments>%s</Comments>" % coms
@@ -666,11 +673,9 @@ def XsamsAtoms(Atoms):
                 yield '<MagneticQuantumNumber>%s</MagneticQuantumNumber>' % mqn
             yield '</AtomicQuantumNumbers>'
 
-            if hasattr(Atom,'Component'):
-                yield makePrimaryType("AtomicStateComposition", "AtomStateComposition", G)
-                yield makeAtomComponent(G)
-
-                yield '</AtomicComposition>'
+            yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
+            yield makeAtomComponent(Atom, G)
+            yield '</AtomicComposition>'
 
             yield '</AtomicState>'
         G = lambda name: GetValue(name, Atom=Atom) # reset G() to Atoms, not AtomStates

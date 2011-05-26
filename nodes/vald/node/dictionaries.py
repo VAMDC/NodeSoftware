@@ -40,6 +40,13 @@ RETURNABLES = {\
 'AtomStateEnergyRef':'AtomState.getRefs("energy")',
 'AtomStateEnergyUnit':'1/cm',
 'AtomStateTotalAngMom':'AtomState.j',
+'AtomStateParity':'AtomState.p',
+'AtomStateTermLSL':'AtomState.l',
+'AtomStateTermS':'AtomState.s',
+'AtomStateTermJ1J2':'AtomState.j1j2()',
+'AtomStateTermJKJ':'AtomState.jc',
+'AtomStateTermJKS':'AtomState.s2',
+'AtomStateTermK':'AtomState.k',
 #############################################################
 'RadTransSpeciesRef':'RadTran.species_id',
 'RadTransComments':'Wavelength is for vacuum.',
