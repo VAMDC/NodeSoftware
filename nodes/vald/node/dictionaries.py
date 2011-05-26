@@ -64,6 +64,8 @@ RETURNABLES = {\
 'RadTransBroadeningPressureLineshapeParameterName':'log(gamma)',
 'RadTransBroadeningPressureLineshapeParameterUnit':'cm3/s',
 'RadTransBroadeningPressureRef':'RadTran.getRefs("gammastark")',
+'RadTransBroadeningPressureEnvironment':'stark',
+'RadTransBroadeningPressureComment':'Stark Broadening',
 #'RadTransBroadeningPressureLineshapeParameter':'RadTran.getWaals()',
 #'RadTransBroadeningPressureLineshapeParameterUnit':'["cm3/s","unitless"]',
 #'RadTransBroadeningPressureLineshapeName':'lorentzian',
