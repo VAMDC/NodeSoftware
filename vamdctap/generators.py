@@ -1093,8 +1093,7 @@ def XsamsCollTrans(CollTrans):
         DataSet.FitData
           FitData.Arguments
           FitData.Parameters
-        DataSet.TabulatedData
-          TabulatedData.X
+        DataSet.TabulatedData        
 
      Matching loop variables to use:
 
@@ -1103,11 +1102,10 @@ def XsamsCollTrans(CollTrans):
        CollTranIntermediateState
        CollTranProduct
        CollTranDataSet
-         CollTranDataSetFitData
-           CollTranDataSetFitDataArgument
-           CollTranDataSetFitDataParameter
-         CollTranDataetTabulatedData
-           CollTranDataetTabulatedDataX
+         CollTranFitData
+           CollTranFitDataArgument
+           CollTranFitDataParameter
+         CollTranTabulatedData
 
     """
 
