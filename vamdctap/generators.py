@@ -826,7 +826,7 @@ def makeBroadeningType(G, name='Natural'):
     if meth: 
         s += ' methodRef="%s"' % meth
     if env: 
-        s += ' envRef="E%s"' % env
+        s += ' envRef="E%s-%s"' % (NODEID,env)
     s += '>'
     if comm: 
         s +='<Comments>%s</Comments>' % comm
@@ -870,7 +870,7 @@ def XsamsRadTranShifting(G):
     else: # we have nothing!
         return ''
     if eref:
-        dic["envRef"] = "E%s"  % eref
+        dic["envRef"] = "E%s-%s"  % (NODEID,eref)
     s = makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
     shiftpar = G("RadiativeTransitionShiftingShiftingParameter")
     for ShiftingParameter in makeiter(shiftpar):
@@ -1017,7 +1017,7 @@ def XsamsRadCross(RadCross):
         dic = {}
         envRef = G("CrossSectionEnvironmentRef")
         if envRef:
-            dic["envRef"] = "E%s" % envRef
+            dic["envRef"] = "E%s-%s" % (NODEID, envRef)
         ID = G("RadCrosID")
         if ID:
             dic["id": ID]
