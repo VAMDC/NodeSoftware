@@ -375,11 +375,9 @@ def XsamsEnvironments(Environments):
         yield makeDataType('Temperature', 'EnvironmentTemperature', G)
         yield makeDataType('TotalPressure', 'EnvironmentTotalPressure', G)
         yield makeDataType('TotalNumberDensity', 'EnvironmentTotalNumberDensity', G)
-        species = G('EnvironmentSpecies')
-
-        if species:
+        if hasattr(Environment, "Species"):            
             yield '<Composition>'            
-            for EnvSpecies in makeiter(species):
+            for EnvSpecies in makeiter(Environment.Species):
                 GS = lambda name: GetValue(name, EnvSpecies=EnvSpecies)
                 yield '<Species name="%s" speciesRef="X%s-%s">' % (G('EnvironmentSpeciesName'), NODEID, GS('EnvironmentSpeciesRef'))
                 yield makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', GS)
@@ -504,8 +502,8 @@ def makeAtomComponent(Atom, G):
     string = "<Component>"
 
     if hasattr(Atom, "SuperShells"):
-        for AtomStateComponentSuperShell in makeiter(Atom.SuperShells):
-            GA = lambda name: GetValue(name, AtomStateComponentSuperShell=AtomStateComponentSuperShell)
+        for SuperShell in makeiter(Atom.SuperShells):
+            GA = lambda name: GetValue(name, SuperShell=SuperShell)
             string += "<SuperShell>"
             string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % GA("AtomStateSuperShellPrincipalQN")
             string += "<NumberOfElectrons>%s</NumberOfElectrons>" % GA("AtomStateSuperShellNumberOfElectrons")
@@ -840,8 +838,8 @@ def XsamsRadTranShifting(RadTran, G):
                 string += "</Value>"
 
             if hasattr(ShiftingParam, "Fit"):        
-                for ShiftingParamFit in makeiter(ShiftingParam.Fits):
-                    GSF = lambda name: GetValue(name, ShiftingParamFit=ShiftingParamFit)
+                for Fit in makeiter(ShiftingParam.Fits):
+                    GSF = lambda name: GetValue(name, Fit=Fit)
                     string += "<FitParameters functionRef=F%s>" % GSF("RadTransShiftingParamFitFunction")
 
                     # hard-code to avoid yet anoter named loop variable 
@@ -853,9 +851,9 @@ def XsamsRadTranShifting(RadTran, G):
                         string += "</FitArgument>" 
                         return string 
 
-                    if hasattr(ShiftingParamFit, "Parameters"):
-                        for ShiftingParamFitParameter in makeiter(ShiftingParamFit.Parameters):
-                            GSFP = lambda name: GetValue(name, ShiftingParamFitParameter=ShiftingParamFitParameter)
+                    if hasattr(Fit, "Parameters"):
+                        for Parameter in makeiter(Fit.Parameters):
+                            GSFP = lambda name: GetValue(name, Parameter=Parameter)
                             string += makeNamedDataType("FitParameter", "RadTransShiftingParamFitParameter", GSFP)
                     string += "</FitParameters>"    
            
@@ -1031,14 +1029,14 @@ def XsamsRadCross(RadCross):
         yield makeDataType("BandWidth", "CrossSectionBandWidth", G)
 
         if hasattr(RadCros, "Modes"):
-            for RadCrosBandMode in RadCros.BandModes:
+            for BandMode in RadCros.BandModes:
 
-                cont, ret = checkXML(RadCrosBandMode)
+                cont, ret = checkXML(BandMode)
                 if cont:
                     yield ret
                     continue 
 
-                GM = lambda name: GetValue(name, RadCrosBandMode=RadCrosBandMode)
+                GM = lambda name: GetValue(name, BandMode=BandMode)
                 yield makePrimaryType("Modes", "CrossSectionBandMode", GM, extraAttr={"name":"CrossSectionBandModeName"})
 
                 for deltav, modeid in makeloop("CrossSectionBandMode", GM, "DeltaV", "DeltaVModeID"):              
@@ -1106,15 +1104,15 @@ def XsamsCollTrans(CollTrans):
         if iaea:
             yield "<IAEACode>%s</IAEACode>" % iaea
         yield "</ProcessClass>"
+ 
+        for Reactant in CollTran.Reactants:
 
-        for CollTranReactant in CollTran.Reactants:
-
-            cont, ret = checkXML(CollTranReactant)
+            cont, ret = checkXML(Reactant)
             if cont:
                 yield ret
                 continue 
 
-            GR = lambda name: GetValue(name, CollTranReactant=CollTranReactant)
+            GR = lambda name: GetValue(name, Reactant=Reactant)
             yield "<Reactant>"
             species = GR("CollisionSpecies")
             if species:
@@ -1125,14 +1123,14 @@ def XsamsCollTrans(CollTrans):
             yield "</Reactant>"
 
         if hasattr(CollTran, "IntermediateStates"):
-            for CollTranIntermediateState in CollTran.IntermediateStates:
+            for IntermdiateState in CollTran.IntermediateStates:
 
-                cont, ret = checkXML(CollTranIntermediateState)
+                cont, ret = checkXML(IntermdiateState)
                 if cont:
                     yield ret
                     continue 
 
-                GI = lambda name: GetValue(name, CollTranIntermediateState=CollTranIntermediateState)
+                GI = lambda name: GetValue(name, IntermdiateState=IntermdiateState)
                 yield "<IntermediateState>"
                 species = GI("CollisionIntermediateSpecies")
                 if species:
@@ -1143,14 +1141,14 @@ def XsamsCollTrans(CollTrans):
                 yield "</IntermediateState>"
 
         if hasattr(CollTran, "Products"):
-            for CollTranProduct in CollTran.Products:
+            for Product in CollTran.Products:
 
-                cont, ret = checkXML(CollTranProduct)
+                cont, ret = checkXML(Product)
                 if cont:
                     yield ret
                     continue 
 
-                GP = lambda name: GetValue(name, CollTranProduct=CollTranProduct)
+                GP = lambda name: GetValue(name, Product=Product)
                 yield "<Product>"
                 species = GP("CollisionProductSpecies")
                 if species:
@@ -1166,28 +1164,28 @@ def XsamsCollTrans(CollTrans):
         
         yield "<DataSets>"        
         if hasattr(CollTran, "DataSets"):
-            for CollTranDataSet in CollTran.DataSets:
+            for DataSet in CollTran.DataSets:
 
-                cont, ret = checkXML(CollTranDataSet)
+                cont, ret = checkXML(DataSet)
                 if cont:
                     yield ret
                     continue 
 
-                GD = lambda name: GetValue(name, CollTranDataSet=CollTranDataSet)
+                GD = lambda name: GetValue(name, DataSet=DataSet)
 
                 yield makePrimaryType("DataSet", "CollisionDataSet", GD, extraArgs={"dataDescription":GD("CollisionDataSetDescription")})
                 
                 # Fit data
 
-                if hasattr(CollTranDataSet, "FitData"):
-                    for CollTranDataSetFitData in CollTranDataSet.FitData:
+                if hasattr(DataSet, "FitData"):
+                    for FitData in DataSet.FitData:
 
-                            cont, ret = checkXML(CollTranDataSetFitData)
+                            cont, ret = checkXML(FitData)
                             if cont:
                                 yield ret
                                 continue 
 
-                            GDF = lambda name: GetValue(name, CollTranDataSetFitData=CollTranDataSetFitData)                
+                            GDF = lambda name: GetValue(name, FitData=FitData)                
 
                             yield makePrimaryType("FitData", "CollisionFitData", GDF)                
 
@@ -1197,15 +1195,15 @@ def XsamsCollTrans(CollTrans):
                             else:
                                 yield "<FitParameters>"
 
-                            if hasattr(CollTranDataSetFitData, "Arguments"):
-                                for CollTranDataSetFitDataArgument in CollTranDataSetFitData.Arguments:                    
+                            if hasattr(FitData, "Arguments"):
+                                for Argument in FitData.Arguments:                    
 
-                                    cont, ret = checkXML(CollTranDataSetFitDataArgument)
+                                    cont, ret = checkXML(Argument)
                                     if cont:
                                         yield ret
                                         continue 
 
-                                    GDFA = lambda name: GetValue(name, CollTranDataSetFitDataArgument=CollTranDataSetFitDataArgument)
+                                    GDFA = lambda name: GetValue(name, Argument=Argument)
                                     yield "<FitArgument name='%s' units='%s'>" % (GDFA("CollisionFitDataArgumentName"), GDFA("CollisionFitDataArgumentUnits"))
                                     desc = GDFA("CollisionFitDataArgumentDescription")
                                     if desc:
@@ -1217,15 +1215,15 @@ def XsamsCollTrans(CollTrans):
                                     if hilim:
                                         yield "<UpperLimit>%s</UpperLimit>"
                                     yield "</FitArgument>"
-                            if hasattr(CollTranDataSetFitDataArgument, "Parameter"):
-                                for CollTranDataSetFitDataParameter in CollTranDataSetFitData.Parameters:
+                            if hasattr(FitData, "Parameters"):
+                                for Parameter in FitData.Parameters:
 
-                                    cont, ret = checkXML(CollTranDataSetFitDataParameter)
+                                    cont, ret = checkXML(Parameter)
                                     if cont:
                                         yield ret
                                         continue 
 
-                                    GDFP = lambda name: GetValue(name, CollTranDataSetFitDataParameter=CollTranDataSetFitDataParameter)
+                                    GDFP = lambda name: GetValue(name, Parameter=Parameter)
                                     yield makeNamedDataType("FitParameter", "CollisionFitDataParameter", GDFP)                                    
                                 yield "</FitParameters>"
 
@@ -1242,15 +1240,15 @@ def XsamsCollTrans(CollTrans):
 
                 # Tabulated data
 
-                if hasattr(CollTranDataSet, "TabulatedData"):
-                    for CollTranDataSetTabulatedData in CollTranDataSet.TabulatedData:
+                if hasattr(DataSet, "TabData"):
+                    for TabData in DataSet.TabData:
                     
-                        cont, ret = checkXML(CollTranDataSetTabulatedData)
+                        cont, ret = checkXML(TabData)
                         if cont:
                             yield ret
                             continue 
 
-                        GDT = lambda name: GetValue(name, CollTranDataSetTabulatedData=CollTranDataSetTabulatedData)
+                        GDT = lambda name: GetValue(name, TabData=TabData)
 
                         yield makePrimaryType("TabulatedData", "CollisionTabulatedData")
 
@@ -1378,21 +1376,22 @@ def XsamsFunctions(Functions):
             yield makeArgumentType("Argument", "FunctionArgument", GA)
         yield "</Arguments>"
 
-        yield "<Parameters>\n"
-        for FunctionParameter in Function.Parameter:
+        if hasattr(Function, "Parameters"):
+            yield "<Parameters>"
+            for Parameter in makeiter(Function.Parameters):
 
-            cont, ret = checkXML(FunctionParameter)
-            if cont:
-                yield ret
-                continue 
+                cont, ret = checkXML(Parameter)
+                if cont:
+                    yield ret
+                    continue 
 
-            GP = lambda name: GetValue(name, FunctionParameter=FunctionParameter)
-            yield "<Parameter name='%s', units='%s'>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
-            desc = GP("FunctionParameterDescription")
-            if desc:
-                yield "<Description>%s</Description>" % desc
-            yield "</Parameter>\n"
-        yield "</Parameters>"
+                GP = lambda name: GetValue(name, Parameter=Parameter)
+                yield "<Parameter name='%s', units='%s'>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
+                desc = GP("FunctionParameterDescription")
+                if desc:
+                    yield "<Description>%s</Description>" % desc
+                yield "</Parameter>\n"
+            yield "</Parameters>"
 
         yield """<ReferenceFrame>%s</ReferenceFrame>
 <Description>%s</Description>
