@@ -457,7 +457,7 @@ def makeTermType(tag, keyword, G):
         string += "<L><Value>%s</Value><Symbol>%s</Symbol></L>" % (l, G("%sLSLSymbol" % keyword))
         string += "<S>%s</S>" % s
         string += "<Multiplicity>%s</Multiplicity>" % G("%sLSMultiplicity" % keyword)
-        string += "<Seniority>%s</Seniority>" % G("%sLSSenionrity" % keyword)
+        string += "<Seniority>%s</Seniority>" % G("%sLSSeniority" % keyword)
         string += "</LS>"
 
     jj = makeiter(G("%sJJ" % keyword))
@@ -568,15 +568,15 @@ def makeAtomComponent(Atom, G):
             string += "<ShellPair shellPairID=%s>" % GS("AtomStateShellPairID")
             string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
             string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
-            string += makeTermType("ShellPairTerm", "AtomStatePairTerm", GS)
+            string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
             string += "</ShellPair>"
     clabel = G("AtomStateConfigurationLabel") 
     if clabel:
         string += "<ConfigurationLabel>%s</ConfigurationLabel>" % clabel
     string += "</Configuration>"
 
-    string += makeTermType("Term", "AtomStateComponentTerm", G)
-    string += "<MixingCoefficient mixingclass=%s>%s</MixingCoefficient>" % (G("AtomStateMixingCoeffClass"), G("AtomStateComponentMixingCoeff"))
+    string += makeTermType("Term", "AtomStateTerm", G)
+    string += "<MixingCoefficient mixingclass=%s>%s</MixingCoefficient>" % (G("AtomStateMixingCoeffClass"), G("AtomStateMixingCoeff"))
     coms = G("AtomStateComponentComments")
     if coms:
         string += "<Comments>%s</Comments>" % coms
