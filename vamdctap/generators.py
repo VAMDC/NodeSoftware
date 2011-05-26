@@ -705,6 +705,7 @@ def XsamsAtoms(Atoms):
                 yield '</AtomicComposition>'
 
             yield '</AtomicState>'
+        G = lambda name: GetValue(name, Atom=Atom) # reset G() to Atoms, not AtomStates
         yield '<InChI>%s</InChI>' % G('AtomInchi')
         yield '<InChIKey>%s</InChIKey>' % G('AtomInchiKey')
         yield """</Ion>
