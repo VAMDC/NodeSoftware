@@ -33,7 +33,7 @@ The main directory of your node
 
 Let's give the directory which holds your copy of the NodeSoftware a name and
 call it `$VAMDCROOT`. (It is called `NodeSoftware` by default and exists
-whereever you ran the `git clone` command, unless you moved it elsewhere and/or
+whereever you downloaded and extracted it, unless you moved it elsewhere and/or
 renamed it, which is no problem to do) a name and call it `$VAMDCROOT`. Let's
 also assume the name of the dataset is `YourDBname`.
 
@@ -42,8 +42,7 @@ node, you only need to care about the one called `nodes/` which contains
 the files for several nodes already, plus the example node. The first 
 thing to do, is to make a copy of the ExampleNode::
 
-    $ git clone git://github.com/VAMDC/NodeSoftware.git
-    $ export VAMDCROOT=`pwd`/NodeSoftware/
+    $ export VAMDCROOT=/your/path/to/NodeSoftware/
     $ # (the last line is for Bash-like shells, for C-Shell use `setenv` instead of `export`
     $ cd $VAMDCROOT/nodes/
     $ cp -a ExampleNode YourDBname
@@ -62,12 +61,14 @@ The first thing to do inside your node directory is to run::
 
     $ ./manage.py
 
-This will generate a new file `settings.py` for you. This file is where 
-you override the default settings which reside in `settings_default.py` (which you should not edit!). 
-There are two configuration items that you need to fill
+This will generate a new file ``settings.py`` for you. This file is where 
+you override the default settings which reside in ``settings_default.py`` (which you should not edit!). 
+There are only a few configuration items that you need to fill
 
 * The information on how to connect to your database.
 * A name and email address for the node administrator(s).
+* An example query that makes sense with your data.
+* Optionally you can set the location of the log-file and override other options by copying from ``settings_default.py``.
 
 The structure for filling in this information is already inside the newly
 created file. You can leave the default values for now, if you do not yet know
@@ -76,9 +77,9 @@ what to fill in.
 There are only three more files that you will need to care about in the
 following:
 
-* `node/models.py` is where you put the data model,
-* `node/dictionaries.py` is where you put the dictionaries and
-* `node/queryfunc.py` is where you write the query function,
+* ``node/models.py`` is where you put the data model,
+* ``node/dictionaries.py`` is where you put the dictionaries and
+* ``node/queryfunc.py`` is where you write the query function,
 
 all of which will be explained in detail in the following.
 
@@ -102,7 +103,7 @@ running::
 
     $ ./manage.py inspectdb > node/models.py
 
-This will look into the database that you told Django about in `settings.py`
+This will look into the database that you told Django about in ``settings.py``
 above and create a Python class for each table in the database and attributes
 for these that correspond to the table columns. An example may look like this::
 
@@ -141,7 +142,7 @@ as such::
 
 .. note:: 
     You will probably have to re-order the classes inside the file 
-    `models.py`. The class that is referred to needs to be defined before 
+    ``models.py``. The class that is referred to needs to be defined before 
     the one that refers to it. In the example, `Species` must be above `State`.
 
 Let's add a third model::
@@ -177,7 +178,7 @@ above you could do something like::
 
 Detailed information on how to use your models to run queries can be found in
 Django's own excellent documentation:
-http://docs.djangoproject.com/en/1.2/topics/db/queries/
+http://docs.djangoproject.com/en/1.3/topics/db/queries/
 
 Case 2: Create a new database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -185,7 +186,7 @@ Case 2: Create a new database
 In this case we assume that the data are in ascii tables of arbitrary 
 layout. The steps now are as follows:
 
-#. Write the data model in your `node/models.py`.
+#. Write the data model in your ``node/models.py``.
 #. Create an empty database with corresponding user and password
 #. Tell the node software where to find this database.
 #. Let the node software create the tables
@@ -204,7 +205,7 @@ think about how your data is structured now, but how you want it to be
 structured in the database, when writing the models.
 
 Writing your data models is best learned from example. Have a look at the
-example from Case 1 above and at file `$VAMDCROOT/nodes/vald/node/models.py`
+example from Case 1 above and at file ``$VAMDCROOT/nodes/vald/node/models.py``
 inside the NodeSoftware to see how the model for VALD looks like. Keep in mind
 the following points:
 
@@ -221,7 +222,7 @@ the following points:
   also be used in later ascii-representations of data.
 * Use `ForeignKey()` to another class's primary key to connect your tables.
 * The full list of possible fields can be found at
-  http://docs.djangoproject.com/en/1.2/ref/models/fields/.
+  http://docs.djangoproject.com/en/1.3/ref/models/fields/.
 * If you know that a field will be empty sometimes, add `null=True`
   to the field definition inside the brackets ().
 * For fields that are frequent selection criteria (like wavelength for
@@ -239,7 +240,7 @@ your node directory)::
 
 This will (if you have no error in the models) print the SQL statements that
 Django will use to create the database, using the connection information in
-`settings.py`. If you do not know SQL, you can ignore the output and move
+``settings.py``. If you do not know SQL, you can ignore the output and move
 straight on to creating the database::
 
     $ ./manage.py syncdb
@@ -253,9 +254,9 @@ own model names.
     There is no harm in deleting the database and re-creating it after
     improving your models. After all, the database is still empty at this stage
     and `syncdb` will always create it for you from the models, even if you
-    change your database engine in `settings.py`. The command for re-creating
-    the tables in the database (deleting all data!) is `./manage.py reset
-    node`.
+    change your database engine in ``settings.py``. The command for re-creating
+    the tables in the database (deleting all data!) is ``./manage.py reset
+    node``.
 
 .. note::
 
@@ -326,7 +327,7 @@ The query routine
 Now that we have a working database and data model and know in principle how
 the generator works, we simply need to tell the framework how to run a query
 and pass the output to the generator. This is done in a single function called
-`setupResults()` which must be written in the file `node/queryfunc.py` in your
+`setupResults()` which must be written in the file ``node/queryfunc.py`` in your
 node directory. It works like this:
 
 * `setupResults()` is called from elsewhere and you need not run it 
@@ -351,7 +352,7 @@ Explanations on what happens here:
 
 * Lines 1-4: We import some helper functions from the sqlparser and the 
   dictionaries and models that reside in the same directory as 
-  `queryfunc.py`
+  ``queryfunc.py``
 * Line 6: Set the limit of transitions for use below.
 * Line 7: Begin the function `setupResults`. Do not change this line.
 * Line 9: This uses the helper function where2q() to 
@@ -400,7 +401,7 @@ Explanations on what happens here:
 * Lines 31-36: Put the statistics into a key-value structure where the 
   keys are the header names as definded by the VAMDC-TAP standard and the
   values are the strings/numbers that we calculated above.
-* Lines 39-42: Return the QuerySets and the headers, again as key-value 
+* Lines 39-41: Return the QuerySets and the headers, again as key-value 
   pairs. The keys are the names from the first column of the table above, so
   that the generator recognizes them and loops over them at the right place.
 
@@ -419,12 +420,12 @@ Explanations on what happens here:
 
     We are well aware that adapting the above example to your data is a
     non-trivial task unless you know Python and Django reasonably well.  There
-    is a more complete example in `ExampleNode/node/queryfunc.py` and you can
-    also have a look at the other nodes' `queryfunc.py` which are included in
+    is a more complete example in ``ExampleNode/node/queryfunc.py`` and you can
+    also have a look at the other nodes' ``queryfunc.py`` which are included in
     the NodeSoftware. And, of course, we are willing to assist you in this
     step, so feel free to contact us about this.
 
-More comprehensive information on how to run queries within Django can be found at http://docs.djangoproject.com/en/1.2/topics/db/queries/.
+More comprehensive information on how to run queries within Django can be found at http://docs.djangoproject.com/en/1.3/topics/db/queries/.
 
 
 The dictionaries
@@ -434,7 +435,7 @@ As the last important step before the new node works, we need to define
 how the data relates to the VAMDC *dictionary*. If you have not done so 
 yet, please read :ref:`conceptdict` before continuing.
 
-What needs to be put into the file `node/dictionaries.py` is the 
+What needs to be put into the file ``node/dictionaries.py`` is the 
 definition of two variables that map the individual fields of the 
 data model to the names from the dictionary, like this::
 
@@ -512,7 +513,7 @@ nodes.
 It was mentioned before, but now is the time to point you once more to
 http://vamdc.tmy.se/dict/ where you first of all can browse all the available
 keywords. By selecting the ones that match your data, you can download a raw
-version of your `dictionaries.py` which you then fill in. The website also can
+version of your ``dictionaries.py`` which you then fill in. The website also can
 perform some tests on your Returnables and Restrictables for finding errors.
 
 .. note::
