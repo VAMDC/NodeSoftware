@@ -29,11 +29,11 @@ def setupResults(sql):
         nstates += len(sids)
 
     headerinfo={'TRUNCATED':percentage,
-                'COUNT-SPECIES':nspecies,
+                'COUNT-ATOMS':nspecies,
                 'COUNT-STATES':nstates,
                 'COUNT-RADIATIVE':ntranss
+                'APPROX-SIZE':ntranss*0.001
                }
-
 
     return {'RadTrans':transs,
             'Atoms':species,

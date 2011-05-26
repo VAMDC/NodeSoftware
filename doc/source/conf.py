@@ -177,9 +177,21 @@ latex_documents = [
    u'VAMDC WP7', 'manual'),
 ]
 
+f = open('_templates/documentTemplate.tex', 'r+')
+
+PREAMBLE = f.read()
+
+latex_elements = {
+        'papersize': 'a4paper',
+        'classoptions': ',oneside',
+        'babel': '\\usepackage[english]{babel}',
+        'preamble': PREAMBLE
+}
+
+
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-#latex_logo = None
+latex_logo = 'logos.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
