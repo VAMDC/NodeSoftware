@@ -296,25 +296,45 @@ query results that it got from your query function.
 Do not fret if this sounded complicated, it will become clear in the examples
 below. Just read the previous paragraph again after that.
 
-Here is a table that lists the variables names that you can pass into the generator and the loop variables that you use in the Retrunables. The one is simply the plural of the other.
+Here is a table that lists the variables names that you can pass into the generator and the loop variables that you use in the Returnables. The one is simply the plural of the other.
 
-===================== ============= ==================== ==============
-Passed into generator Loop variable Object looped over   Loop variable
-===================== ============= ==================== ==============
+===================== ============= ======================================= =================
+Passed into generator Loop variable Object looped over                      Loop variable
+===================== ============= ======================================= =================
 Atoms                 Atom
-                                    Atom.States          AtomState
+                                    Atom.States                             AtomState
+                                    Atom.SuperShells                        AtomSuperShell
+                                    Atom.Shells                             AtomShell 
+                                    Atom.ShellPairs                         AtomShellPair
 Molecules             Molecule
-                                    Molecule.States      MoleculeState
+                                    Molecule.States                         MoleculeState
 RadTrans              RadTran
+                                    RadTran.ShiftingParams                  ShiftingParam
+                                    RadTran.ShiftingParams.Fits             Fit
+                                    RadTran.ShiftingParams.Fits.Parameters  Parameter
 RadCross              RadCros
+                                    RadCros.BandModes                       BandMode
 CollTrans             CollTran
+                                    CollTran.Reactants                      Reactant
+                                    CollTran.IntermediateStates             IntermediateState
+                                    CollTran.Products                       Product
+                                    CollTran.DataSet                        DataSet
+                                    CollTran.DataSet.FitData                FitData
+                                    CollTran.DataSet.FitData.Arguments      Argument
+                                    CollTran.DataSet.FitData.Parameters     Parameter                                    
+                                    CollTran.DataSet.TabData                TabData
+
+
 NonRadTrans           NonRadTran
-Environments          Environment
+Environments          Environment   
+                                    Environment.Species                     EnvSpecies
 Particles             Particle
 Sources               Source
 Methods               Method
 Functions             Function
-===================== ============= ==================== ==============
+                                    Function.Parameters                     Parameter
+===================== ============= ======================================= =================
+
 
 The third and fourth columns are for an inner loop. For each `Atom` out of
 `Atoms` the generator will make a nested loop over `Atom.States`, calling each
