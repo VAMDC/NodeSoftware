@@ -1306,19 +1306,19 @@ def XsamsNonRadTrans(NonRadTrans):
             continue 
 
         G = lambda name: GetValue(name, NonRadTran=NonRadTran)        
-        yield makePrimaryType("NonRadiativeTransition", "NonRadiativeTransition", G)
+        yield makePrimaryType("NonRadiativeTransition", "NonRadTran", G)
         
-        yield "<InitialStateRef>S%s</InitialStateRef>" % G("NonRadiativeTransitionInitialStateRef")
-        fstate = G("NonRadiativeTransitionFinalStateRef")
+        yield "<InitialStateRef>S%s</InitialStateRef>" % G("NonRadTranInitialState")
+        fstate = G("NonRadTranFinalState")
         if fstate:
             yield "<FinalStateRef>S%s</FinalStateRef>" % fstate
-        fspec = G("NonRadiativeTransitionSpeciesRef")
+        fspec = G("NonRadTranSpecies")
         if fspec:
             yield "<SpeciesRef>X%s</SpeciesRef>" % fspec
-        yield makeDataType("Probability", "NonRadiativeTransitionProbability", G)
-        yield makeDataType("NonRadiativeWidth", "NonRadiativeTransitionNonWidth", G)
-        yield makeDataType("TransitionEnergy", "NonRadiativeTransitionEnergy", G)
-        typ = G("NonRadiativeTransitionType")
+        yield makeDataType("Probability", "NonRadTranProbability", G)
+        yield makeDataType("NonRadiativeWidth", "NonRadTranWidth", G)
+        yield makeDataType("TransitionEnergy", "NonRadTranEnergy", G)
+        typ = G("NonRadTranType")
         if typ:
             yield "<Type>%s</Type>" % typ
             
