@@ -925,31 +925,31 @@ def makeDataSeriesType(tagname, keyword, G):
     xunits = G("%sUnits" % keyword)
     if xunits:
         dic["units"] = xunits
-    xid = G("CrossSetion%sID" % keyword)
+    xid = G("%sID" % keyword)
     if xid:
-        dic["id"] = xid        
+        dic["id"] = "%s-%s" % (NODEID, xid)        
     yield makePrimaryType("%s" % tagname, "%s" % keyword, G, extraAttr=dic)
 
-    dlist = G("%sDataList" % keyword)
+    dlist = makeiter(G("%s" % keyword))
     if dlist:
-        yield "<DataList n='%s' units='%s'>%s</DataList>" % (G("%sDataListN" % keyword), G("%sDataListUnits" % keyword), dlist)
-    csec = G("%sLinearSequenceA0" % keyword) and G("%sLinearSequenceA1" % keyword)
+        yield "<DataList n='%s' units='%s'>%s</DataList>" % (G("%sN" % keyword), G("%sUnits" % keyword), " ".join(dlist))
+    csec = G("%sLinearA0" % keyword) and G("%sLinearA1" % keyword)
     if csec:
-        dic = {"a0":G("%sLinearSequenceA0" % keyword), "a1":G("%sLinearSequenceA1" % keyword)}
-        nx = G("%sLinearSequenceN" % keyword)
+        dic = {"a0":G("%sLinearA0" % keyword), "a1":G("%sLinearA1" % keyword)}
+        nx = G("%sLinearN" % keyword)
         if nx:
             dic["n"] = nx
-        xunits = G("%sLinearSequenceUnits" % keyword)
+        xunits = G("%sLinearUnits" % keyword)
         if xunits:
             dic["units"] = xunits
-        yield makePrimaryType("LinearSequence", "%sLinearSequence" % keyword, G, extraAttr=dic)        
+        yield makePrimaryType("LinearSequence", "%sLinear" % keyword, G, extraAttr=dic)        
         yield("</LinearSequence>")
     dfile = G("%sDataFile" % keyword)
     if dfile:
         yield "<DataFile>%s</DataFile>" % dfile
-    elist = G("%sErrorList" % keyword)            
+    elist = makeiter(G("%sErrorList" % keyword))
     if elist:
-        yield "<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), G("%sErrorList" % keyword))
+        yield "<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), " ".join(elist))
     err = G("%sError" % keyword)
     if err:
         yield "<Error>%s</Error>" % err        
@@ -994,9 +994,9 @@ def XsamsRadCross(RadCross):
         envRef = G("CrossSectionEnvironment")
         if envRef:
             dic["envRef"] = "E%s-%s" % (NODEID, envRef)
-        ID = G("RadCrosID")
+        ID = G("CrossSectionID")
         if ID:
-            dic["id": ID]
+            dic["id": "%s-%s" % (NODEID, ID)]
         yield makePrimaryType("CrossSection", G, "CrossSection", extraAttr=dic)
         yield "<Description>%s</Description>" % G("CrossSectionDescription")
 
@@ -1012,42 +1012,31 @@ def XsamsRadCross(RadCross):
             if state:
                 yield "<StateRef>S%s</StateRef>" % state            
             yield "</Species>"
+        
+        # Note - XSAMS dictates a list of BandAssignments here; but this is probably unlikely to
+        # be used; so for simplicity we only assume one band assignment here. 
+
+        yield makePrimaryType("BandAssignment", "CrossSectionBand", G, extraAttr={"name":"CrossSectionBandName"})
             
-        for RadCrosBand in makeiter(RadCros.BandAssignments):
+        yield makeDataType("BandCentre", "CrossSectionBandCentre", G)
+        yield makeDataType("BandWidth", "CrossSectionBandWidth", G)
 
-            cont, ret = checkXML(RadCrosBand)
-            if cont:
-                yield ret
-                continue 
+        if hasattr(RadCros, "Modes"):
+            for RadCrosBandMode in RadCros.BandModes:
 
-            GC = lambda name: GetValue(name, RadCrosBand=RadCrosBand)
-            yield makePrimaryType("BandAssignment", "CrossSectionBandAssignment", GC, extraAttr={"name":"CrossSectionBandAssignmentName"})
-            
-            yield makeDataType("BandCentre", "CrossSectionBandAssigmentBandCentre", GC)
-            yield makeDataType("BandWidth", "CrossSectionBandAssignmentBandWidth", GC)
-
-            for RadCrosBandAssignmentMode in RadCrosBand.Modes:
-
-                cont, ret = checkXML(RadCrosBandAssignmentMode)
+                cont, ret = checkXML(RadCrosBandMode)
                 if cont:
                     yield ret
                     continue 
 
-                GCM = lambda name: GetValue(name, RadCrosBandAssigmentMode=RadCrosBandAssignmentMode)
-                yield makePrimaryType("Modes", "CrossSectionBandAssignmentModes", GCM, extraAttr={"name":"CrossSectionBandAssignmentModesName"})
-                for RadCrosBandAssignmentModeDeltaV in RadCrosBandAssignmentMode.DeltaVs:
+                GM = lambda name: GetValue(name, RadCrosBandMode=RadCrosBandMode)
+                yield makePrimaryType("Modes", "CrossSectionBandMode", GM, extraAttr={"name":"CrossSectionBandModeName"})
 
-                    cont, ret = checkXML(RadCrosBandAssignmentModeDeltaV)
-                    if cont:
-                        yield ret
-                        continue 
-
-                    GCMV = lambda name: GetValue(name, RadCrosBandAssignmentModeDeltaV=RadCrosBandAssignmentModeDeltaV)
-                    string = "DeltaV", 
-                    mid = GCMV("CrossSectionBandAssignmentModesDeltaVModeID")
-                    if mid:
-                        string += " modeID=V%s" % mid
-                    yield "<%s>%s</DeltaV>" % (string, GCMV("CrossSectionBandAssignmentModelsDeltaV"))                    
+                for deltav, modeid in makeloop("CrossSectionBandMode", GM, "DeltaV", "DeltaVModeID"):              
+                    if modeid:
+                        yield "<DeltaV modeID=V%s-%s>%s</DeltaV>" % (deltav, NODEID, modeid)
+                    else:
+                        yield "<DeltaV>%s</DeltaV>" % deltav                    
                 yield "</Modes>"
             yield "</BandAssignment>"
         yield "</CrossSection>"
