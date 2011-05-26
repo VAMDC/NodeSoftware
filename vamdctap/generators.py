@@ -53,18 +53,18 @@ def makeiter(obj):
     return obj 
 
 def makeloop(G, *args):
-    """
+    """    
     Creates a nested list of lists. All arguments should be valid dictionary
     keywords and will be fed to G. They are expected to return iterables of equal lengths.
-    The generator yields the current element of each list in order, so one can do e.g.
-      for val in makeloop(G, 'AtomStateName', 'AtomStateUnit', ...):
+    The generator yields a list of current element of each argument-list in order, so one can do e.g.
 
-    
-
+       for name, unit in makeloop(G, 'AtomStateName', 'AtomStateUnit'):
+          ...
     """
-    lis = []
     if not args:
-        return []
+        yield []
+    Nargs = len(args)
+    lis = []
     for arg in args:
         lis.append(makeiter(G(arg)))        
     try:
@@ -72,9 +72,15 @@ def makeloop(G, *args):
     except TypeError:
         Nlis = len(lis[0])
     for i in range(Nlis):
-        # this might raise an exception if elements don't have the same
-        # length. This is fine since it means invalid input data. 
-        yield [part[i] for part in lis]
+        tlist = []
+        for k in range(Nargs):
+            try:
+                tlist.append(lis[k][i])
+            except Exception:
+                tlist.append("")            
+        yield tlist
+    
+    #yield [[part[i] for part in lis] for i in range(Nlis)]
 
 def GetValue(name, **kwargs):
     """
@@ -277,12 +283,11 @@ def makeDataFuncType(tagname, keyword, G):
             string += "<StatLow confidence=%s relative=%s>%s</StatLow>" % (G("%sAccuracyStatLowConfidence" % keyword), G("%sAccuracyStatLowRelative" % keyword), systerr)
         string += "</Accuracy>"
         string += "</Value>"
-    if par:     
+    if par: 
         for FitParameter in makeiter(par):
             GP = eval("lambda name: GetValue(name, %sFitParameter=%sFitParameter)" % (keyword, keyword))
-            string += "<FitParameters functionRef=F%s>" % GP("%sFitParametersFunctionRef")
-        
-            fitargs = eval("%s.FitArguments" % keyword)
+            string += "<FitParameters functionRef=F%s>" % GP("%sFitParametersFunctionRef" % keyword)
+            fitargs = eval("%s.FitParametersArguments" % keyword)
             for FitArgument in makeiter(fitargs):
                 GPA = eval("lambda name: GetValue(name, %sFitParameterArgument=%sFitParameterArgument)" % (keyword, keyword))
                 string += makeArgumentType("FitArgument", "%sFitArgument" % keyword, GPA)    
@@ -410,14 +415,13 @@ def XsamsEnvironments(Environments):
         species = G('EnvironmentSpecies')
 
         if species:
-            yield '<Composition>'
-            for Species in makeiter(species):
-                #GS = lambda name: GetValue(name, Species=Species)
-                yield '<Species name="%s" speciesRef="X%s-%s">' % (G('EnvironmentSpeciesName'), NODEID, G('EnvironmentSpeciesRef'))
-                yield
-                makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', G)
-                yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', G)
-                yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', G)
+            yield '<Composition>'            
+            for EnvSpecies in makeiter(species):
+                GS = lambda name: GetValue(name, EnvSpecies=EnvSpecies)
+                yield '<Species name="%s" speciesRef="X%s-%s">' % (G('EnvironmentSpeciesName'), NODEID, GS('EnvironmentSpeciesRef'))
+                yield makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', GS)
+                yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', GS)
+                yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', GS)
                 yield '</Species>'
             yield '</Composition>'
         yield '</Environment>'
@@ -694,8 +698,6 @@ def XsamsAtoms(Atoms):
                 yield '<MagneticQuantumNumber>%s</MagneticQuantumNumber>' % mqn
             yield '</AtomicQuantumNumbers>'
 
-            yield '<AtomicComposition>'
-
             yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
             if hasattr(Atom,'Component'):
                 for AtomicComponent in makeiter(Atom.Component):
@@ -843,7 +845,7 @@ def XsamsRadTranBroadening(G):
     """
     helper function for line broadening, called from RadTrans
     """
-    s = '<Broadenings>'
+    s = '<Broadening>'
     comm = G('RadTransBroadeningComment')
     if comm: s +='<Comments>%s</Comments>' % comm
     s += makeSourceRefs(G('RadTransBroadeningRef'))
@@ -855,32 +857,32 @@ def XsamsRadTranBroadening(G):
         s += makeBroadeningType(G, btype='Natural')
     if countReturnables('RadTransBroadeningInstrument'):
         s += makeBroadeningType(G, btype='Instrument')
-    s += '</Broadenings>\n'
+    s += '</Broadening>\n'
     return s
 
 def XsamsRadTranShifting(G):
     """
-    Not implemented
+    Shifting type
     """
     dic = {}
     nam = G("RadiativeTransitionShiftingName")
     eref = G("RadiativeTransitionShiftingEnvRef")
-    if nam: 
+    if nam:
         dic["name"] = nam
     if eref:
-        dic["envRef"] = "E%s"  % eref
-    yield makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
+        dic["envRef"] = "E%s"  % eref    
+    s = makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
     shiftpar = G("RadiativeTransitionShiftingShiftingParameter")
     for ShiftingParameter in makeiter(shiftpar):
         GS = lambda name: GetValue(name, ShiftingParameter=ShiftingParameter)
-        yield makeDataFuncType("ShiftingParameter", "RadiativeTransitionShiftingShiftingParameter", GS)        
-    yield "</Shifting>"
+        s += makeDataFuncType("ShiftingParameter", "RadiativeTransitionShiftingShiftingParameter", GS)
+    s += "</Shifting>"
+    return s
 
 def XsamsRadTrans(RadTrans):
     """
     Generator for the XSAMS radiative transitions.
     """
-
     if not isiterable(RadTrans): 
         return
 
@@ -1034,21 +1036,21 @@ def XsamsRadCross(RadCross):
             if state:
                 yield "<StateRef>S%s</StateRef>" % state            
             yield "</Species>"
+            
+        for RadCrosBand in makeiter(RadCros.BandAssignments):
 
-        for RadCrosBandAssignment in RadCros.BandAssignments:
-
-            cont, ret = checkXML(RadCrosBandAssignment)
+            cont, ret = checkXML(RadCrosBand)
             if cont:
                 yield ret
                 continue 
 
-            GC = lambda name: GetValue(name, RadCrosBandAssignment=RadCrosBandAssignment)
+            GC = lambda name: GetValue(name, RadCrosBand=RadCrosBand)
             yield makePrimaryType("BandAssignment", "CrossSectionBandAssignment", GC, extraAttr={"name":"CrossSectionBandAssignmentName"})
             
             yield makeDataType("BandCentre", "CrossSectionBandAssigmentBandCentre", GC)
             yield makeDataType("BandWidth", "CrossSectionBandAssignmentBandWidth", GC)
 
-            for RadCrosBandAssignmentMode in RadCrosBandAssignment.Modes:
+            for RadCrosBandAssignmentMode in RadCrosBand.Modes:
 
                 cont, ret = checkXML(RadCrosBandAssignmentMode)
                 if cont:
@@ -1492,6 +1494,9 @@ def XsamsMethods(Methods):
         yield '</Method>'
     yield '</Methods>\n'
 
+def generatorError(where):
+    log.critical('Generator error in%s!' % where, exc_info=sys.exc_info())
+    return where
 
 def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     Environments=None, Atoms=None, Molecules=None, CollTrans=None,
@@ -1521,42 +1526,78 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
 -->
 """ % HeaderInfo['Truncated']
 
+    errs=''
+
     log.debug('Working on Sources.')
-    for Source in XsamsSources(Sources): 
-        yield Source
+    try:
+        for Source in XsamsSources(Sources): 
+            yield Source
+    except: errs+=generatorError(' Sources')
 
     log.debug('Working on Methods, Functions, Environments.')
-    for Method in XsamsMethods(Methods): 
-        yield Method
-    for Function in XsamsFunctions(Functions): 
-        yield Function
-    for Environment in XsamsEnvironments(Environments): 
-        yield Environment
+    try:
+        for Method in XsamsMethods(Methods):
+            yield Method
+    except: errs+=generatorError(' Methods')
 
-    log.debug('Writing States.')
+    try:
+        for Function in XsamsFunctions(Functions):
+            yield Function
+    except: errs+=generatorError(' Functions')
+
+    try:
+        for Environment in XsamsEnvironments(Environments):
+            yield Environment
+    except: errs+=generatorError(' Environments')
+
     yield '<Species>\n'
-    for Atom in XsamsAtoms(Atoms): 
-        yield Atom
-    for Molecule in XsamsMolecules(Molecules): 
-        yield Molecule
-    # old way:
-    #for MolState in XsamsMolStates(Molecules, MoleStates, MoleQNs):
-    #    yield MolState
+    log.debug('Working on Atoms.')
+    try:
+        for Atom in XsamsAtoms(Atoms):
+            yield Atom
+    except: errs+=generatorError(' Atoms')
+
+    log.debug('Working on Molecules.')
+    try:
+        for Molecule in XsamsMolecules(Molecules):
+            yield Molecule
+    except: errs+=generatorError(' Molecules')
+
     yield '</Species>\n'
 
     log.debug('Writing Processes.')
     yield '<Processes>\n'
     yield '<Radiative>\n'
-    for RadTran in XsamsRadTrans(RadTrans): 
-        yield RadTran
-    for RadCros in XsamsRadCross(RadCross): 
-        yield RadCros
+    try:
+        for RadTran in XsamsRadTrans(RadTrans):
+            yield RadTran
+    except: 
+        errs+=generatorError(' RadTran')
+
+
+    try:
+        for RadCros in XsamsRadCross(RadCross):
+            yield RadCros
+    except: errs+=generatorError(' RadCross')
+
     yield '</Radiative>\n'
-    for CollTran in XsamsCollTrans(CollTrans): 
-        yield CollTran
-    for NonRadTran in XsamsNonRadTrans(NonRadTrans): 
-        yield NonRadTran
+
+    try:
+        for CollTran in XsamsCollTrans(CollTrans):
+            yield CollTran
+    except: errs+=generatorError(' CollTran')
+
+    try:
+        for NonRadTran in XsamsNonRadTrans(NonRadTrans):
+            yield NonRadTran
+    except: errs+=generatorError(' NonRadTran')
+
     yield '</Processes>\n'
+    if errs: yield """<!--
+           ATTENTION: There was an error in making the XML output and at least one item in the following parts was skipped: %s
+-->
+                 """ % errs
+
     yield '</XSAMSData>\n'
     log.debug('Done with XSAMS')
 
