@@ -74,7 +74,7 @@ def makeloop(G, *args):
     for i in range(Nlis):
         # this might raise an exception if elements don't have the same
         # length. This is fine since it means invalid input data. 
-        yield [part[i] for part in lis]
+        return [part[i] for part in lis]
 
 def GetValue(name, **kwargs):
     """
@@ -322,11 +322,11 @@ def makeNamedDataType(tagname, keyword, G):
     string = ''
     for i, val in enumerate(value):
         string += '\n<%s' % tagname
+        if name[i]: 
+            string += ' name="%s"' % name[i]
         if method[i]: 
             string += ' methodRef="M%s-%s"' % (NODEID, method[i])
         string += '>'
-        if name[i]: 
-            string += '<Name>%s</Name>' % name[i]
         if comment[i]: 
             string += '<Comments>%s</Comments>' % escape('%s' % comment[i])
         string += makeSourceRefs(refs[i])
@@ -862,20 +862,22 @@ def XsamsRadTranShifting(G):
     """
     Not implemented
     """
-    s=''
     dic = {}
     nam = G("RadiativeTransitionShiftingName")
     eref = G("RadiativeTransitionShiftingEnvRef")
     if nam: 
         dic["name"] = nam
+    else: # we have nothing!
+        return ''
     if eref:
         dic["envRef"] = "E%s"  % eref
-    s += makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
+    s = makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
     shiftpar = G("RadiativeTransitionShiftingShiftingParameter")
     for ShiftingParameter in makeiter(shiftpar):
         GS = lambda name: GetValue(name, ShiftingParameter=ShiftingParameter)
         s += makeDataFuncType("ShiftingParameter", "RadiativeTransitionShiftingShiftingParameter", GS)
-    if s: s += "</Shifting>"
+    s += "</Shifting>"
+    return s
 
 def XsamsRadTrans(RadTrans):
     """
