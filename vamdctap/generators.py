@@ -248,54 +248,19 @@ def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
 def makeArgumentType(tagname, keyword, G):
     """
     Build ArgumentType
+
     """
-    string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword)) 
+    string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword))
     string += "<Description>%s</Description>" % G("%sDescription" % keyword)
     string += "<LowerLimit>%s</LowerLimit>" % G("%sLowerLimit" % keyword)
-    string += "<UpperLimit>%s</UpperLimit>" % G("%sUpperLimit" % keyword)    
-    string += "</%s>" % tagname
+    string += "<UpperLimit>%s</UpperLimit>" % G("%sUpperLimit" % keyword)
+    string += "</%s>" % tagname    
     return string 
 
-def makeDataFuncType(tagname, keyword, G):
+def makeDataFuncType(tagname, keyword, Parameter, G):
     """
     Build the DataFuncType.
     """
-    string = makePrimaryType(tagname, keyword, G, extraAttr={"name":G("%sName" % keyword)})
-
-    val = G("%sValueUnits" % keyword)
-    par = G("%sParameters" % keyword)
-    
-    if val:
-        string += "<Value units=%s>%s</Value>" % (G("%sValueUnits" % keyword), G("%sValue" % keyword))
-        string += makePrimaryType("Accuracy", "%sAccuracy" % keyword, G, extraAttr={"calibration":G("%sAccuracyCalibration" % keyword), "quality":G("%sAccuracyQuality" % keyword)})
-        systerr = G("%sAccuracySystematic" % keyword)
-        if systerr:
-            string += "<Systematic confidence=%s relative=%s>%s</Systematic>" % (G("%sAccuracySystematicConfidence" % keyword), G("%sAccuracySystematicRelative" % keyword), systerr)
-        staterr = G("%sAccuracyStatistical" % keyword)   
-        if staterr:
-            string += "<Statistical confidence=%s relative=%s>%s</Statistical>" % (G("%sAccuracyStatisticalConfidence" % keyword), G("%sAccuracyStatisticalRelative" % keyword), staterr)
-        stathigh = G("%sAccuracyStatHigh" % keyword)
-        statlow = G("%sAccuracyStatLow" % keyword)
-        if stathigh and statlow:
-            string += "<StatHigh confidence=%s relative=%s>%s</StatHigh>" % (G("%sAccuracyStatHighConfidence" % keyword), G("%sAccuracyStatHighRelative" % keyword), systerr)    
-            string += "<StatLow confidence=%s relative=%s>%s</StatLow>" % (G("%sAccuracyStatLowConfidence" % keyword), G("%sAccuracyStatLowRelative" % keyword), systerr)
-        string += "</Accuracy>"
-        string += "</Value>"
-    if par: 
-        for FitParameter in makeiter(par):
-            GP = eval("lambda name: GetValue(name, %sFitParameter=%sFitParameter)" % (keyword, keyword))
-            string += "<FitParameters functionRef=F%s>" % GP("%sFitParametersFunctionRef" % keyword)
-            fitargs = eval("%s.FitParametersArguments" % keyword)
-            for FitArgument in makeiter(fitargs):
-                GPA = eval("lambda name: GetValue(name, %sFitParameterArgument=%sFitParameterArgument)" % (keyword, keyword))
-                string += makeArgumentType("FitArgument", "%sFitArgument" % keyword, GPA)    
-            fitpars = eval("%s.FitParameter" % keyword)
-            for FitParameter in makeiter(fitpars):
-                GPP = eval("lambda name: GetValue(name, %sFitParameterParameter=%sFitParameterParameter)" % (keyword, keyword))
-                string += makeNamedDataType("FitParameter", "%sFitParameter" % keyword, GPP)            
-            string += "</FitParameters>"    
-    string += "</%s>" % tagname
-    return string 
 
 def makeNamedDataType(tagname, keyword, G):
     """
@@ -834,26 +799,70 @@ def XsamsRadTranBroadening(G):
         s += makeBroadeningType(G, name='Pressure')
     return s
 
-def XsamsRadTranShifting(G):
+def XsamsRadTranShifting(RadTran, G):
     """
     Shifting type
     """
     dic = {}
-    nam = G("RadiativeTransitionShiftingName")
-    eref = G("RadiativeTransitionShiftingEnvRef")
+    nam = G("RadtransShiftingType")
+    eref = G("RadtransShiftingEnv")
     if nam:
         dic["name"] = nam
-    else: # we have nothing!
+    else:
         return ''
     if eref:
-        dic["envRef"] = "E%s-%s"  % (NODEID,eref)
-    s = makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
-    shiftpar = G("RadiativeTransitionShiftingShiftingParameter")
-    for ShiftingParameter in makeiter(shiftpar):
-        GS = lambda name: GetValue(name, ShiftingParameter=ShiftingParameter)
-        s += makeDataFuncType("ShiftingParameter", "RadiativeTransitionShiftingShiftingParameter", GS)
-    s += "</Shifting>"
-    return s
+        dic["envRef"] = "E%s-%s"  % (NODEID, eref)
+    string = makePrimaryType("Shifting", "RadtransShifting", G, extraAttr=dic)
+
+    if hasattr(RadTran, "ShiftingParams"):
+        for ShiftingParam in RadTran.ShiftingParams:
+            GS = lambda name: GetValue(name, ShiftingParam=ShiftingParam)
+
+            string = makePrimaryType("ShiftingParameter", "RadTransShiftingParam", GS, extraAttr={"name":GS("RadTransShiftingParamName")})
+
+            val = GS("RadTransShiftingParamValueUnits")
+
+            if val:
+                string += "<Value units=%s>%s</Value>" % (GS("RadTransShiftingParamValueUnits"), GS("RadTransShiftingParamValue" ))
+                string += makePrimaryType("Accuracy", "RadTransShiftingParamAcc" , GS, extraAttr={"calibration":GS("RadTransShiftingParamAccCalib" ), "quality":GS("RadTransShiftingParamAccQuality")})
+                systerr = GS("RadTransShiftingParamAccSystematic")
+                if systerr:
+                    string += "<Systematic confidence=%s relative=%s>%s</Systematic>" % (GS("RadTransShiftingParamAccSystematicConfidence"), GS("RadTransShiftingParamAccSystematicRelative"), systerr)
+                staterr = GS("RadTransShiftingParamAccStatistical")   
+                if staterr:
+                    string += "<Statistical confidence=%s relative=%s>%s</Statistical>" % (GS("RadTransShiftingParamAccStatisticalConfidence"), GS("RadTransShiftingParamAccStatisticalRelative"), staterr)
+                stathigh = GS("RadTransShiftingParamAccStatHigh")
+                statlow = GS("RadTransShiftingParamAccStatLow")
+                if stathigh and statlow:
+                    string += "<StatHigh confidence=%s relative=%s>%s</StatHigh>" % (GS("RadTransShiftingParamAccStatHighConfidence"), GS("RadTransShiftingParamAccStatHighRelative"), systerr)    
+                    string += "<StatLow confidence=%s relative=%s>%s</StatLow>" % (GS("RadTransShiftingParamAccStatLowConfidence"), GS("RadTransShiftingParamAccStatLowRelative"), systerr)
+                string += "</Accuracy>"
+                string += "</Value>"
+
+            if hasattr(ShiftingParam, "Fit"):        
+                for ShiftingParamFit in makeiter(ShiftingParam.Fits):
+                    GSF = lambda name: GetValue(name, ShiftingParamFit=ShiftingParamFit)
+                    string += "<FitParameters functionRef=F%s>" % GSF("RadTransShiftingParamFitFunction")
+
+                    # hard-code to avoid yet anoter named loop variable 
+                    for name, units, desc, llim, ulim in makeloop("RadTransShiftingParamFitArgument", GSF, "Name", "Units", "Description", "LowerLimit", "UpperLimit"):
+                        string += "<FitArgument name='%s' units='%s'>" % (name, units)
+                        string += "<Description>%s</Description>" % desc
+                        string += "<LowerLimit>%s</LowerLimit>" % llim
+                        string += "<UpperLimit>%s</UpperLimit>" % ulim
+                        string += "</FitArgument>" 
+                        return string 
+
+                    if hasattr(ShiftingParamFit, "Parameters"):
+                        for ShiftingParamFitParameter in makeiter(ShiftingParamFit.Parameters):
+                            GSFP = lambda name: GetValue(name, ShiftingParamFitParameter=ShiftingParamFitParameter)
+                            string += makeNamedDataType("FitParameter", "RadTransShiftingParamFitParameter", GSFP)
+                    string += "</FitParameters>"    
+           
+            string += "</ShiftingParameter>"
+
+    string += "</Shifting>"
+    return string
 
 def XsamsRadTrans(RadTrans):
     """
@@ -911,7 +920,7 @@ def XsamsRadTrans(RadTrans):
         if hasattr(RadTran, 'XML_Shifting'):
             yield RadTran.XML_Shifting()
         else:
-            yield XsamsRadTranShifting(G)
+            yield XsamsRadTranShifting(RadTran, G)
         yield '</RadiativeTransition>\n'
 
 def makeDataSeriesType(tagname, keyword, G):
