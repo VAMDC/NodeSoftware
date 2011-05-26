@@ -1163,13 +1163,12 @@ def XsamsCollTrans(CollTrans):
 
                 GI = lambda name: GetValue(name, CollTranIntermediateState=CollTranIntermediateState)
                 yield "<IntermediateState>"
-                species = GI("CollisionInterdiateSpecies")
+                species = GI("CollisionIntermediateSpecies")
                 if species:
                     yield "<SpeciesRef>X%s</SpeciesRef>" % species
                 state = GI("CollisionIntermediateState")            
                 if state: 
                     yield "<StateRef>S%s</StateRef>" % state
-                species = GI("CollisionIntermediateSpeciesRef")
                 yield "</IntermediateState>"
 
         if hasattr(CollTran, "Products"):
@@ -1182,7 +1181,7 @@ def XsamsCollTrans(CollTrans):
 
                 GP = lambda name: GetValue(name, CollTranProduct=CollTranProduct)
                 yield "<Product>"
-                species = GI("CollisionProductSpecies")
+                species = GP("CollisionProductSpecies")
                 if species:
                     yield "<SpeciesRef>X%s</SpeciesRef>" % species        
                 state = GP("CollisionProductState")
@@ -1206,7 +1205,7 @@ def XsamsCollTrans(CollTrans):
                 GD = lambda name: GetValue(name, CollTranDataSet=CollTranDataSet)
 
                 yield makePrimaryType("DataSet", "CollisionDataSet", GD, extraArgs={"dataDescription":GD("CollisionDataSetDescription")})
-
+                
                 # Fit data
 
                 if hasattr(CollTranDataSet, "FitData"):
@@ -1287,28 +1286,28 @@ def XsamsCollTrans(CollTrans):
                         yield "<DataXY>"
 
                         # handle X components of XY
-                        for Nx, xunits, xparameter, x, xerr, xerrneg, xerrpos, xdesc in makeloop("CollisionTabulatedDataX", G, "N", "Units",
-                                                                                                 "Parameter", "", "NegativeError", "PositiveError",
-                                                                                                 "Description"):
-                            yield "<X units='%s' parameter='%s'" % (Nx, xunits)
-                            yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, x)
-                            yield "<Error> n='%s' units='%s'>%s</Error>" % (Nx, xunits, xerr)
-                            yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, xerrneg)
-                            yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, xerrpos)
-                            yield "<DataDescription>%s</DataDescription>" % xdesc
-                            yield "</X>"                    
+                        Nx = G("CollisionTabulatedDataXN")
+                        xunits = G("CollisionTabulatedDataXUnits")
+                                                
+                        yield "<X units='%s' parameter='%s'" % (Nx, xunits)                    
+                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataX"))))
+                        yield "<Error> n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataYError"))))
+                        yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXNegativeError"))))
+                        yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXPositiveError"))))
+                        yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataXDescription")
+                        yield "</X>"                    
 
                         # handle Y components of XY
-                        for Ny, yunits, yparameter, y, yerr, yerrneg, yerrpos, ydesc in makeloop("CollisionTabulatedDataY", G, "N", "Units",
-                                                                                                 "Parameter", "", "NegativeError", "PositiveError",
-                                                                                                 "Description"):
-                            yield "<Y units='%s' parameter='%s'" % (Ny, yunits)
-                            yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, y)
-                            yield "<Error> n='%s' units='%s'>%s</Error>" % (Ny, yunits, yerr)
-                            yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, yerrneg)
-                            yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, yerrpos)
-                            yield "<DataDescription>%s</DataDescription>" % ydesc
-                            yield "</Y>"                    
+                        Ny = G("CollisionTabulatedDataYN")
+                        yunits = G("CollisionTabulatedDataYUnits")
+
+                        yield "<Y units='%s' parameter='%s'" % (Ny, yunits)                    
+                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataY"))))
+                        yield "<Error> n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYError"))))
+                        yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYNegativeError"))))
+                        yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYPositiveError"))))
+                        yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataYDescription")
+                        yield "</Y>"                    
 
                         yield "</DataXY>"
 
