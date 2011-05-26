@@ -58,17 +58,18 @@ def setupResults(sql):
     else: percentage=None
     ntranss=transs.count()
     sources = getRefs(transs)
-    nsources = sources.count()
     atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs)
 
+    size_estimate='%.2f'% ntranss * 0.00113
 
-    headerinfo=CaselessDict({\
-            'Truncated':percentage,
-            'COUNT-SOURCES':nsources,
-            'COUNT-species':nspecies,
-            'count-states':nstates,
-            'count-radiative':ntranss
-            })
+    headerinfo={\
+            'TRUNCATED':percentage,
+            'COUNT-ATOMS':atoms.count(),
+            'COUNT-MOLECULES':molecules.count(),
+            'COUNT-STATES':nstates,
+            'CoUNT-RADIATIVE':ntranss,
+            'APPROX-SIZE':size_estimate,
+            }
 
     return {'RadTrans':transs,
             'Atoms':atoms,

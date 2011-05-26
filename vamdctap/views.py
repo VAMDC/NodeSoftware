@@ -86,12 +86,16 @@ def getBaseURL(request):
 
 def addHeaders(headers,response):
     HEADS=['COUNT-SOURCES',
-           'COUNT-SPECIES',
+           'COUNT-ATOMS',
+           'COUNT-MOLECULES',
            'COUNT-STATES',
            'COUNT-COLLISIONS',
            'COUNT-RADIATIVE',
            'COUNT-NONRADIATIVE',
-           'TRUNCATED']
+           'TRUNCATED',
+           'APPROX-SIZE']
+
+    headers = CaselessDict(headers)
 
     for h in HEADS:
         if headers.has_key(h):
