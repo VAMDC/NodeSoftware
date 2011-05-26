@@ -71,17 +71,15 @@ def makeloop(keyword, G, *args):
         Nlis = lis[0].count()
     except TypeError:
         Nlis = len(lis[0])
+    olist = [[] for i in range(Nargs)]
     for i in range(Nlis):
-        tlist = []
         for k in range(Nargs):
             try:
-                tlist.append(lis[k][i])
+                olist[k].append(lis[k][i])
             except Exception:
-                tlist.append("")            
-        return tlist
+                olist[k].append("")
+    return olist
     
-    #return [[part[i] for part in lis] for i in range(Nlis)]
-
 def GetValue(name, **kwargs):
     """
     the function that gets a value out of the query set, using the global name
@@ -327,11 +325,11 @@ def makeNamedDataType(tagname, keyword, G):
     string = ''
     for i, val in enumerate(value):
         string += '\n<%s' % tagname
+        if name[i]: 
+            string += ' name="%s"' % name[i]
         if method[i]: 
             string += ' methodRef="M%s-%s"' % (NODEID, method[i])
         string += '>'
-        if name[i]: 
-            string += '<Name>%s</Name>' % name[i]
         if comment[i]: 
             string += '<Comments>%s</Comments>' % escape('%s' % comment[i])
         string += makeSourceRefs(refs[i])
@@ -830,7 +828,7 @@ def makeBroadeningType(G, name='Natural'):
     if meth: 
         s += ' methodRef="%s"' % meth
     if env: 
-        s += ' envRef="E%s"' % env
+        s += ' envRef="E%s-%s"' % (NODEID,env)
     s += '>'
     if comm: 
         s +='<Comments>%s</Comments>' % comm
@@ -866,15 +864,16 @@ def XsamsRadTranShifting(G):
     """
     Shifting type
     """
-    s=''
     dic = {}
     nam = G("RadiativeTransitionShiftingName")
     eref = G("RadiativeTransitionShiftingEnvRef")
     if nam:
         dic["name"] = nam
+    else: # we have nothing!
+        return ''
     if eref:
-        dic["envRef"] = "E%s"  % eref
-    s += makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
+        dic["envRef"] = "E%s-%s"  % (NODEID,eref)
+    s = makePrimaryType("Shifting", "RadiativeTransitionShifting", G, extraAttr=dic)
     shiftpar = G("RadiativeTransitionShiftingShiftingParameter")
     for ShiftingParameter in makeiter(shiftpar):
         GS = lambda name: GetValue(name, ShiftingParameter=ShiftingParameter)
@@ -1020,7 +1019,7 @@ def XsamsRadCross(RadCross):
         dic = {}
         envRef = G("CrossSectionEnvironmentRef")
         if envRef:
-            dic["envRef"] = "E%s" % envRef
+            dic["envRef"] = "E%s-%s" % (NODEID, envRef)
         ID = G("RadCrosID")
         if ID:
             dic["id": ID]
