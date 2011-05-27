@@ -301,45 +301,57 @@ Here is a table that lists the variables names that you can pass into the genera
 ===================== ============= ======================================= =================
 Passed into generator Loop variable Object looped over                      Loop variable
 ===================== ============= ======================================= =================
-Atoms                 Atom
-                                    Atom.States                             AtomState
-                                    Atom.SuperShells                        AtomSuperShell
-                                    Atom.Shells                             AtomShell 
-                                    Atom.ShellPairs                         AtomShellPair
-Molecules             Molecule
-                                    Molecule.States                         MoleculeState
+Atoms                 Atom          
+..                                  Atom.States                             AtomState
+..                                  Atom.SuperShells                        AtomSuperShell
+..                                  Atom.Shells                             AtomShell 
+..                                  Atom.ShellPairs                         AtomShellPair
+Molecules             Molecule      
+..                                  Molecule.States                         MoleculeState
 RadTrans              RadTran
-                                    RadTran.ShiftingParams                  ShiftingParam
-                                    RadTran.ShiftingParams.Fits             Fit
-                                    RadTran.ShiftingParams.Fits.Parameters  Parameter
-RadCross              RadCros
-                                    RadCros.BandModes                       BandMode
-CollTrans             CollTran
-                                    CollTran.Reactants                      Reactant
-                                    CollTran.IntermediateStates             IntermediateState
-                                    CollTran.Products                       Product
-                                    CollTran.DataSet                        DataSet
-                                    CollTran.DataSet.FitData                FitData
-                                    CollTran.DataSet.FitData.Arguments      Argument
-                                    CollTran.DataSet.FitData.Parameters     Parameter                                    
-                                    CollTran.DataSet.TabData                TabData
-
-
+..                                  RadTran.ShiftingParams                  ShiftingParam
+..                                  RadTran.ShiftingParams.Fits             Fit
+..                                  RadTran.ShiftingParams.Fits.Parameters  Parameter
+RadCross              RadCros       
+..                                  RadCros.BandModes                       BandMode                                    
+CollTrans             CollTran      
+..                                  CollTran.Reactants                      Reactant                              
+..                                  CollTran.IntermediateStates             IntermediateState
+..                                  CollTran.Products                       Product
+..                                  CollTran.DataSet                        DataSet
+..                                  CollTran.DataSet.FitData                FitData
+..                                  CollTran.DataSet.FitData.Arguments      Argument
+..                                  CollTran.DataSet.FitData.Parameters     Parameter                                    
+..                                  CollTran.DataSet.TabData                TabData
 NonRadTrans           NonRadTran
 Environments          Environment   
-                                    Environment.Species                     EnvSpecies
+..                                  Environment.Species                     EnvSpecies
 Particles             Particle
 Sources               Source
 Methods               Method
-Functions             Function
-                                    Function.Parameters                     Parameter
+Functions             Function      
+..                                  Function.Parameters                     Parameter                              
 ===================== ============= ======================================= =================
 
 
-The third and fourth columns are for an inner loop. For each `Atom` out of
-`Atoms` the generator will make a nested loop over `Atom.States`, calling each
-of these `AtomState` in the inner loop.
+The third and fourth columns are for an inner loop. So for example the
+generator loops over all `Atoms`, calling each atom insteance
+`Atom`. To extract all states being a part of this particualar Atom,
+the generator will assume that there is an iterable `States` defined
+on each `Atom` over which it will iterate. So it will loop over `Atom.States`, calling each
+of state `AtomState` in the inner loop, like this::
 
+     for Atom in Atoms: 
+
+         [...]
+
+         for AtomState in Atom.States: 
+
+              [...]
+
+
+It is up to you to make sure the `Atom.States` is defined if you want
+to output state information. This is covered in the next section. 
 
 The query routine
 -----------------------------------
@@ -472,8 +484,13 @@ data model to the names from the dictionary, like this::
     'AtomStateEnergy':'AtomState.energy', 
     'RadTransWavelength':'RadTran.wavelength',
     }
+
     
 .. note::
+    Note for example the use of the names `Atom` and `AtomState` on the right-hand side of the
+    dictionary definition. These are examples of the "loop variables" mentioned
+    in the table above and act as shortcuts to the nested data you are storing.
+
     There are tools for getting started with writing these and for
     validiation once you are done at http://vamdc.tmy.se/dict/
 
