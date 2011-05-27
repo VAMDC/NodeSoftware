@@ -62,7 +62,7 @@ RETURNABLES=CaselessDict({\
 'Inchikey':'inchikey'})
 
 RESTRICTABLES = CaselessDict({\
-'Inchikey':'inchikey',
-'RadTransWavenumberExperimentalValue':'nu',
-'RadTransProbabilityTransitionProbabilityAValue':'a',
+'MoleculeInchikey':'inchikey',
+'RadTransWavenumber':'nu',
+'RadTransProbabilityA':'a',
 })

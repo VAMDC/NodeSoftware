@@ -89,10 +89,10 @@ def getHITRANbroadening(transs, XSAMSvariant):
                 '      </LineshapeParameter>\n</Lineshape>\n' \
                         % (g_air_ref, g_air_val, g_air_err, n_air_ref,
                            n_air_val, n_air_err)
-                broadening = '    <VanDerWaalsBroadening'\
+                broadening = '    <PressureBroadening'\
                     ' envRef="Eair-broadening-ref-env">\n'\
                     '%s'\
-                    '    </VanDerWaalsBroadening>\n' % lineshape
+                    '    </PressureBroadening>\n' % lineshape
                 broadenings.append(broadening)
             if 'g_self' in prm_dict.keys():
                 g_self_val = str(prm_dict['g_self'].prm_val)
@@ -107,10 +107,10 @@ def getHITRANbroadening(transs, XSAMSvariant):
                     '        </LineshapeParameter>\n'\
                     '      </Lineshape>' % (g_self_ref, g_self_val,
                                                  g_self_err)
-                broadening = '    <VanDerWaalsBroadening'\
+                broadening = '    <PressureBroadening'\
                     ' envRef="E%s-broadening-ref-env">\n'\
                     '%s'\
-                    '    </VanDerWaalsBroadening>\n' % ('self', lineshape)
+                    '    </PressureBroadening>\n' % ('self', lineshape)
                 broadenings.append(broadening)
             shiftings = []
             if 'delta_air' in prm_dict.keys():
