@@ -1,0 +1,13 @@
+{% extends "!layout.html" %}
+
+{% block header %}
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+		<img src="{{ pathto("_static/VAMDC_logo.png", 1) }}"/>
+</div>
+
+{% endblock %} 
+
+{% block rootrellink %}
+        <li><a href="http://www.vamdc.org">VAMDC home</a>|&nbsp;</li>
+        <li><a href="{{ pathto('index') }}">NodeSoftware documentation </a> &raquo;</li>
+{% endblock %}

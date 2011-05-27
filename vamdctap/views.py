@@ -4,7 +4,7 @@ from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse
 from django.db.models import Q
 
-from datetime import date
+from datetime import datetime
 from string import lower
 from cStringIO import StringIO
 import os, math, sys
@@ -12,7 +12,8 @@ from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
 import logging
-LOG=logging.getLogger('vamdc.tap')
+log=logging.getLogger('vamdc.tap')
+log.debug('test log start')
 
 # Get the node-specific package!
 from django.conf import settings
@@ -25,39 +26,57 @@ from generators import *
 from sqlparse import SQL
 from caselessdict import CaselessDict
 
+# This turns a 404 "not found" error into a TAP error-document
+def tapNotFoundError(request):
+    text = 'Resource not found: %s'%request.path;
+    document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    return HttpResponse(document, status=404, mimetype='text/xml');
+
+# This turns a 500 "internal server error" into a TAP error-document
+def tapServerError(request=None, status=500, errmsg=''):
+    text = 'Error in TAP service: %s'%errmsg
+    document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    return HttpResponse(document, status=status, mimetype='text/xml');
+
+
 class TAPQUERY(object):
     """
     This class holds the query, does some validation
     and triggers the SQL parser.
     """
     def __init__(self,data):
+        self.isvalid = True
+        self.errormsg = ''
         try:
-            data=CaselessDict(dict(data))
-            self.lang=lower(data['LANG'])
-            self.query=data['QUERY']
-            self.format=lower(data['FORMAT'])
-            self.isvalid=True
+            self.data=CaselessDict(dict(data))
         except Exception,e:
-            self.isvalid=False
-            LOG.error(str(e))
+            self.isvalid = False
+            self.errormsg = 'Could not read argument dict: %s'%e
+            log.error(self.errormsg)
 
         if self.isvalid: self.validate()
-        if self.isvalid: self.assignQID()
-	#if self.isvalid: self.makeQtup()
-        if self.isvalid: self.parseSQL()
 
     def validate(self):
-        """
-        overwrite this method for
-        custom checks, depending on data set
-        """
+        try: self.lang = lower(self.data['LANG'])
+        except: self.errormsg = 'Cannot find LANG in request.\n'
+        else:
+            if self.lang != 'vss1':
+                self.errormsg += 'Currently, only LANG=VSS1 is supported.\n'
 
-    def parseSQL(self):
-        self.parsedSQL=SQL.parseString(self.query)
+        try: self.query = self.data['QUERY']
+        except: self.errormsg += 'Cannot find QUERY in request.\n'
 
-    def assignQID(self):
-        """ make a query-id """
-        self.queryid='%s-%s'%(date.today().isoformat(),randStr(8))
+        try: self.format=lower(self.data['FORMAT'])
+        except: self.errormsg += 'Cannot find FROMAT in request.\n'
+        else:
+            if self.format != 'xsams':
+                self.errormsg += 'Currently, only FORMAT=XSAMS is supported.\n'
+
+
+        try: self.parsedSQL=SQL.parseString(self.query)
+        except: self.errormsg += 'Could not parse the SQL query string.\n'
+
+        if self.errormsg: self.isvalid=False
 
     def __str__(self):
         return '%s'%self.query
@@ -67,12 +86,16 @@ def getBaseURL(request):
 
 def addHeaders(headers,response):
     HEADS=['COUNT-SOURCES',
-           'COUNT-SPECIES',
+           'COUNT-ATOMS',
+           'COUNT-MOLECULES',
            'COUNT-STATES',
            'COUNT-COLLISIONS',
            'COUNT-RADIATIVE',
            'COUNT-NONRADIATIVE',
-           'TRUNCATED']
+           'TRUNCATED',
+           'APPROX-SIZE']
+
+    headers = CaselessDict(headers)
 
     for h in HEADS:
         if headers.has_key(h):
@@ -80,20 +103,22 @@ def addHeaders(headers,response):
     return response
 
 def sync(request):
+    log.info('Request from %s: %s'%(request.META['REMOTE_ADDR'],request.REQUEST))
     tap=TAPQUERY(request.REQUEST)
     if not tap.isvalid:
-        # return http error
-        LOG.warning('not valid tap!')
+        emsg = 'TAP-Request invalid: %s'%tap.errormsg
+        log.error(emsg)
+        return tapServerError(status=400,errmsg=emsg)
 
-#    if tap.format == 'xsams':  # for now always assume we want XSAMS    
     results=QUERYFUNC.setupResults(tap.parsedSQL)
     generator=Xsams(**results)
     response=HttpResponse(generator,mimetype='text/xml')
-    #response['Content-Disposition'] = 'attachment; filename=%s.%s'%(tap.queryid,tap.format)
+    response['Content-Disposition'] = 'attachment; filename=request-%s.%s'%(datetime.now().isoformat(),tap.format)
 
     if results.has_key('HeaderInfo'):
         response=addHeaders(results['HeaderInfo'],response)
-
+    else:
+        log.warn('Query function did not return information for HTTP-headers.')
 
 #    elif tap.format == 'votable': 
 #        transs,states,sources=QUERYFUNC.setupResults(tap)
@@ -153,14 +178,3 @@ def index(request):
     c=RequestContext(request,{})
     return render_to_response('node/index.html', c)
 
-# This turns a 404 "not found" error into a TAP error-document
-def tapNotFoundError(request):
-    text = 'Resource not found: %s'%request.path();
-    document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
-    return HttpResponse(document, status=404, mimetype='text/xml');
-
-# This turns a 500 "internal server error" into a TAP error-document
-def tapServerError(request):
-    text = 'Unknown error inside TAP service';
-    document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
-    return HttpResponse(document, status=500, mimetype='text/xml');

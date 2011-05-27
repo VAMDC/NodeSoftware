@@ -132,7 +132,7 @@ LOGGING = {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
         'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': '%(asctime)s %(levelname)s %(message)s'
         },
     },
     'handlers': {
@@ -141,18 +141,19 @@ LOGGING = {
             'class':'django.utils.log.NullHandler',
         },
         'console':{
-            'level':'DEBUG',
+            'level':'WARNING',
             'class':'logging.StreamHandler',
-            'formatter': 'simple'
         },
         'mail_admins': {
-            'level': 'CRITICAL',
+            'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
         },
         'logfile':{
-                'level': 'INFO',
+                'level': 'DEBUG',
                 'class': 'logging.FileHandler',
                 'filename': TMPDIR+'/node.log',
+                'formatter': 'simple'
         }
     },
     'loggers': {
@@ -174,6 +175,9 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'vamdc.tap.sql': {
+            'level': 'DEBUG',
+        },
+        'vamdc.tap.generator': {
             'level': 'DEBUG',
         },
         'vamdc.node': {

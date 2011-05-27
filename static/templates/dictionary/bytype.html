@@ -53,7 +53,31 @@
 <li><strong>Type</strong>: What type of data are associated with the keyword. choices are: string, float, integer, boolean.</li>
 <li><strong>Constraint</strong>: Possible contraints on the content, like ranges for a number, only certain strings (regular expression) etc.</li>
 <li><strong>Unit</strong>: The default unit, if any, for the keyword. This unit is the one used at query-time. You may however use another unit when returning data.</li>
-<li><strong>*</strong>: This column marks if a keyword corresponds to a "DataType" in the XSAMS schema. If SomeKeyword is marked here, it means that there are also the corresponding keywords SomeKeywordUnit, SomeKeywordRef, SomeKeywordComment, SomeKeywordMethod and SomeKeywordAccuracy. for sake of overview these are not listed for each keyword.</li>
+
+<li><strong>*</strong>: This column marks if a keyword corresponds to a
+"DataType" in the XSAMS schema. If SomeKeyword is marked here, it means that
+there are also the corresponding keywords 
+<ul>
+<li>SomeKeywordUnit</li>
+<li>SomeKeywordRef</li>
+<li>SomeKeywordComment</li>
+<li>SomeKeywordMethod</li>
+<li>SomeKeywordAccuracyCalibration</li>
+<li>SomeKeywordAccuracyQuality</li>
+<li>SomeKeywordAccuracySystematic</li>
+<li>SomeKeywordAccuracySystematicConfidence</li>
+<li>SomeKeywordAccuracySystematicRelative</li>
+<li>SomeKeywordAccuracyStatistical</li>
+<li>SomeKeywordAccuracyStatisticalConfidence</li>
+<li>SomeKeywordAccuracyStatisticalRelative</li>
+<li>SomeKeywordAccuracyStatLow</li>
+<li>SomeKeywordAccuracyStatLowConfidence</li>
+<li>SomeKeywordAccuracyStatLowRelative</li>
+<li>SomeKeywordAccuracyStatHigh</li>
+<li>SomeKeywordAccuracyStatHighConfidence</li>
+<li>SomeKeywordAccuracyStatHighRelative</li>
+</ul> which for the sake of overview are not listed above for each keyword. Please refer to the schema documentation on detail how these are to be filled.</li>
+
 <li><strong>Usage</strong>: Tells whether a keyword can be used as Returnable, Restrictable and/or Requestable.</li>
 </ul>
 </p>
