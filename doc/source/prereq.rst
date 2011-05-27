@@ -171,6 +171,13 @@ there into the new version.
 If you instead use our version control system, please see :ref:`gitcollab` on
 how to get the latest.
 
+.. note::
+
+After upgrading the NodeSoftware, you should check that your node is
+still running properly. We cannot (yet) guarantee that you
+need not update your node-specific code to fit the latest version. Larger
+changes will be mentioned in the :ref:`changes`.
+
 Django
 ----------
 

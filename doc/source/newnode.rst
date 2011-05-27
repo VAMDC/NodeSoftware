@@ -340,6 +340,7 @@ The third and fourth columns are for an inner loop. For each `Atom` out of
 `Atoms` the generator will make a nested loop over `Atom.States`, calling each
 of these `AtomState` in the inner loop.
 
+.. _queryfu:
 
 The query routine
 -----------------------------------
