@@ -353,6 +353,8 @@ of state `AtomState` in the inner loop, like this::
 It is up to you to make sure the `Atom.States` is defined if you want
 to output state information. This is covered in the next section. 
 
+.. _queryfu:
+
 The query routine
 -----------------------------------
 

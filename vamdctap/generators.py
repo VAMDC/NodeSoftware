@@ -1051,32 +1051,28 @@ def XsamsRadCross(RadCross):
 
 def XsamsCollTrans(CollTrans):
     """
-    Collisional transitions. 
-    
-    QuerySets and nested querysets: 
+    Collisional transitions.
+    QuerySets and nested querysets:
+    # CollTran
+    #  CollTran.Reactants
+    #  CollTran.IntermediateStates
+    #  CollTran.Products
+    #  CollTran.DataSets
+    #    DataSet.FitData
+    #      FitData.Arguments
+    #      FitData.Parameters
+    #    DataSet.TabulatedData
 
-    CollTran 
-      CollTran.Reactants
-      CollTran.IntermediateStates
-      CollTran.Products
-      CollTran.DataSets
-        DataSet.FitData
-          FitData.Arguments
-          FitData.Parameters
-        DataSet.TabulatedData        
-
-     Matching loop variables to use:
-
-     CollTran
-       CollTranReactant
-       CollTranIntermediateState
-       CollTranProduct
-       CollTranDataSet
-         CollTranFitData
-           CollTranFitDataArgument
-           CollTranFitDataParameter
-         CollTranTabulatedData
-
+    Matching loop variables to use:
+    # CollTran
+    #  CollTranReactant
+    #  CollTranIntermediateState
+    #  CollTranProduct
+    #  CollTranDataSet
+    #    CollTranFitData
+    #      CollTranFitDataArgument
+    #      CollTranFitDataParameter
+    #    CollTranTabulatedData
     """
 
     if not isiterable(CollTrans):
