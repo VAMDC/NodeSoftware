@@ -88,4 +88,5 @@ To be addressed in the 11.8 release
 * The "Cases" for molecular quantum numbers are not yet implemented in the XSAMS-generator (but can be included with the hook for custom XML).
 * Tools for treating certain Restrictables as special cases for a flexible.
 * Atom Component's Configurations are not yet fully defined in the XSAMS schema.
-* 
+
+A full list of outstanding issues is available at the development repository at https://github.com/VAMDC/NodeSoftware/issues

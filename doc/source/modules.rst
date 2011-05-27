@@ -3,18 +3,20 @@
 The Code
 ================
 
-The node software resides at https://github.com/VAMDC/NodeSoftware
+You can download the NodeSoftware at these locations:
 
-For upgrades, please see :ref:`upgrading`.
+* Release 11.5: http://www.vamdc.eu/downloads/NodeSoftware-v11.5.tar.gz
+* Release branch: https://github.com/VAMDC/NodeSoftware/tarball/release
+* Latest development branch: https://github.com/VAMDC/NodeSoftware/tarball/master
 
-You can download a zip or tar.gz archive from this website or - 
-preferrably - use the version control software *git* to check out your own 
-copy. The latter takes a few more minutes to set up but has the benefit 
-of facilitating collaboration. After all, you might makes changes or 
-extend the code for your needs and we would like to include your 
-improvements into the main repository.
+Please see :ref:`upgrading`.
 
-Read more about this at :ref:`gitcollab`.
+The development repository resides at https://github.com/VAMDC/NodeSoftware and
+you are welcome to use the version control software *git* to check out your own
+copy. This takes a few more minutes to set up but has the benefit of
+facilitating collaboration. After all, you might makes changes or extend the
+code for your needs and we would like to include your improvements into the
+main repository. Read more about this at :ref:`gitcollab`.
 
 Source code documentation
 -------------------------------
