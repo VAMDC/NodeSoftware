@@ -65,7 +65,7 @@ March 10, 2011
 The chapter :ref:`concepts` now has more detail on the XSAMS schema.
 
 A large part of the XML/XSAMS generator has been rewritten, both to comply with
-the new version of the schema (http://tmy.se/xsams) and in terms of its
+the new version of the schema and in terms of its
 structure. In addition the keywords in the VAMDC dictionary have changed
 somewhat. This means that **you will probably need to update your query
 function and dictionaries when you update the NodeSoftware.**

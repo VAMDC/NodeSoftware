@@ -15,8 +15,7 @@ VAMDC nodes
 
 A "node" within VAMDC is a data service that offers its data using the 
 standards and protocols defined by the VAMDC. They are RESTful HTTP 
-services, the specification of which can be found `here 
-<http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/TapXsamsSpecification>`_.
+services, the specification of which can be found in the documentation for the VAMDC standards: http://vamdc.org/documents/standards/ 
 
 The scope of this document is to serve as documentation for the 
 reference implementation of such a service. The goal of this 
@@ -57,11 +56,4 @@ operation look schematically like this:
 .. image:: nodelayout.png
    :width: 700 px
    :alt: Structural layout of a VAMDC node
-
-
-
-Until this document is completed be sure to also have a look at 
-the following page: http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/NodeSoftware
-
-
 
