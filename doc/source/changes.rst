@@ -86,5 +86,6 @@ Known limitations
 To be addressed in the 11.8 release
 
 * The "Cases" for molecular quantum numbers are not yet implemented in the XSAMS-generator (but can be included with the hook for custom XML).
-* Tools for treating certain Restrictables as special cases for a flexible
+* Tools for treating certain Restrictables as special cases for a flexible.
+* Atom Component's Configurations are not yet fully defined in the XSAMS schema.
 * 
