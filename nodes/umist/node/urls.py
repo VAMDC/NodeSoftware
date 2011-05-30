@@ -1,5 +1,10 @@
-from django.conf.urls.defaults import *
+# Optional:
+# Use this file to connect views from views.py in the same
+# directory to their URLs.
 
-urlpatterns = patterns('DjUMIST.umist.views',
-                       (r'^$', 'index'),
-                       )
+#from django.conf.urls.defaults import *
+#from django.conf import settings
+
+#urlpatterns = patterns(settings.NODENAME+'.node.views',
+#                       (r'^$', 'index'),
+#                       )
