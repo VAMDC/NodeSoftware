@@ -167,14 +167,21 @@ class Trans(models.Model):
     elower = models.FloatField(null=True, db_column='Elower', blank=True)
     gp = models.IntegerField(null=True, db_column='gp', blank=True)
     gpp = models.IntegerField(null=True, db_column='gpp', blank=True)
-    datestamp = models.DateField(null=True, db_column='datestamp', blank=True)
+    fromdate = models.DateField(null=True, db_column='fromdate', blank=True)
+    todate = models.DateField(null=True, db_column='todate', blank=True)
     ierr = models.CharField(max_length=18, db_column='Ierr', blank=True)
+    hitranline = models.CharField(max_length=160, db_column='HITRANline',
+                                  blank=True)
 
     prms = []
     broadening_xml = ''
 
     def XML_Broadening(self):
         return self.broadening_xml
+
+    def XML_Shifting(self):
+        # shifting XML is appended to broadening_xml, so we don't need this
+        return ''
 
     class Meta:
         db_table = u'trans'
