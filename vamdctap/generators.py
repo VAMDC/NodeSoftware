@@ -236,7 +236,8 @@ def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
     string += makeSourceRefs(refs)
     string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
     if acc: 
-        string += '<Accuracy>%s</Accuracy>' % acc
+        #string += '<Accuracy>%s</Accuracy>' % acc
+        string += '<Accuracy><Statistical>%s</Statistical></Accuracy>' % acc
     string += '</%s>' % tagname
 
     if extraElem:
@@ -689,6 +690,11 @@ def XsamsMSQNsBuild(MolQNs):
     """
     G = lambda name: GetValue(name, MolQN=MolQN)
     MolQN = MolQNs[0]; case = G('MoleculeQnCase')
+    caseNS = 'http://vamdc.org/xml/xsams/0.2/cases/%s' % case
+    caseNSloc = '../../cases/%s.xsd' % case
+    yield '<Case xsi:type="%s:Case" caseID="%s"'\
+          ' xmlns:%s="%s" xsi:schemaLocation="%s %s">'\
+        % (case, case, case, caseNS, caseNS, caseNSloc)
     yield '<%s:QNs>\n' % case
     for MolQN in MolQNs:
         qn_attr = ''
@@ -697,6 +703,7 @@ def XsamsMSQNsBuild(MolQNs):
         yield '<%s:%s%s>%s</%s:%s>\n' % (G('MoleculeQnCase'), G('MoleculeQnLabel'),
             qn_attr, G('MoleculeQnValue'), G('MoleculeQnCase'), G('MoleculeQnLabel'))
     yield '</%s:QNs>\n' % case
+    yield '</Case>'
 
 def XsamsMSBuild(MoleculeState):
     """
@@ -1051,32 +1058,28 @@ def XsamsRadCross(RadCross):
 
 def XsamsCollTrans(CollTrans):
     """
-    Collisional transitions. 
-    
-    QuerySets and nested querysets: 
+    Collisional transitions.
+    QuerySets and nested querysets:
+    # CollTran
+    #  CollTran.Reactants
+    #  CollTran.IntermediateStates
+    #  CollTran.Products
+    #  CollTran.DataSets
+    #    DataSet.FitData
+    #      FitData.Arguments
+    #      FitData.Parameters
+    #    DataSet.TabulatedData
 
-    CollTran 
-      CollTran.Reactants
-      CollTran.IntermediateStates
-      CollTran.Products
-      CollTran.DataSets
-        DataSet.FitData
-          FitData.Arguments
-          FitData.Parameters
-        DataSet.TabulatedData        
-
-     Matching loop variables to use:
-
-     CollTran
-       CollTranReactant
-       CollTranIntermediateState
-       CollTranProduct
-       CollTranDataSet
-         CollTranFitData
-           CollTranFitDataArgument
-           CollTranFitDataParameter
-         CollTranTabulatedData
-
+    Matching loop variables to use:
+    # CollTran
+    #  CollTranReactant
+    #  CollTranIntermediateState
+    #  CollTranProduct
+    #  CollTranDataSet
+    #    CollTranFitData
+    #      CollTranFitDataArgument
+    #      CollTranFitDataParameter
+    #    CollTranTabulatedData
     """
 
     if not isiterable(CollTrans):
@@ -1414,10 +1417,7 @@ def XsamsMethods(Methods):
             continue 
 
         G = lambda name: GetValue(name, Method=Method)
-        yield """<Method methodID="M%s-%s">
-<Category>%s</Category>
-<Description>%s</Description>
-""" % (NODEID, G('MethodID'), G('MethodCategory'), G('MethodDescription'))
+        yield """<Method methodID="M%s-%s">\n""" % (NODEID, G('MethodID'))
 
         methodsourcerefs = G('MethodSourceRef')
         # make it always into a list to be looped over, even if
@@ -1430,6 +1430,10 @@ def XsamsMethods(Methods):
             methodsourcerefs = [methodsourcerefs]
         for sourceref in methodsourcerefs:
             yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
+
+        yield """<Category>%s</Category>\n<Description>%s</Description>"""\
+             % (G('MethodCategory'), G('MethodDescription'))
+
         yield '</Method>'
     yield '</Methods>\n'
 
