@@ -1,3 +1,6 @@
+# 2011-05-30 KWS Created modifed schema for UMIST database
+
+# UMIST Modified Database Tables for compatibility with VAMDC and XSAMS
 
 class NewReaction(models.Model):
     reaction_id = models.IntegerField(primary_key=True)
@@ -15,28 +18,28 @@ class NewReaction(models.Model):
     user_id = models.IntegerField(null=True, blank=True)
     udfa2005 = models.IntegerField(null=True, blank=True)
     rt_id = models.IntegerField(null=True, blank=True)
-    r1_species = models.IntegerField(null=True, blank=True)
-    r2_species = models.IntegerField(null=True, blank=True)
-    r3_species = models.IntegerField(null=True, blank=True)
-    p1_species = models.IntegerField(null=True, blank=True)
-    p2_species = models.IntegerField(null=True, blank=True)
-    p3_species = models.IntegerField(null=True, blank=True)
-    p4_species = models.IntegerField(null=True, blank=True)
+    r1_species = models.ForeignKey(NewSpecies, to_field='species_id', db_column='r1_species')
+    r2_species = models.ForeignKey(NewSpecies, to_field='species_id', db_column='r2_species')
+    r3_species = models.ForeignKey(NewSpecies, to_field='species_id', db_column='r3_species')
+    p1_species = models.ForeignKey(NewSpecies, to_field='species_id', db_column='p1_species')
+    p2_species = models.ForeignKey(NewSpecies, to_field='species_id', db_column='p2_species')
+    p3_species = models.ForeignKey(NewSpecies, to_field='species_id', db_column='p3_species')
+    p4_species = models.ForeignKey(NewSpecies, to_field='species_id', db_column='p4_species')
     class Meta:
         db_table = u'new_reaction'
 
 class NewRxnData(models.Model):
     rd_id = models.IntegerField()
     network_id = models.IntegerField(null=True, blank=True)
-    reaction_id = models.IntegerField(null=True, blank=True)
-    rt_id = models.IntegerField(null=True, blank=True)
+    reaction_id = models.ForeignKey(NewReaction, to_field='reaction_id', db_column='reaction_id')
+    rt_id = models.ForeignKey(NewReacTypes, to_field='rt_id', db_column='rt_id')
     alpha = models.FloatField(null=True, blank=True)
     beta = models.FloatField(null=True, blank=True)
     gamma = models.FloatField(null=True, blank=True)
     tmin = models.FloatField(null=True, blank=True)
     tmax = models.FloatField(null=True, blank=True)
     acc = models.CharField(max_length=3, blank=True)
-    ref = models.CharField(max_length=12, blank=True)
+    ref = models.ForeignKey(NewSource, to_field='abbr', db_column='ref')
     clem = models.CharField(max_length=3, blank=True)
     dipole = models.IntegerField(null=True, blank=True)
     r10kr = models.FloatField(null=True, blank=True)
@@ -70,9 +73,9 @@ class NewSpecies(models.Model):
     orig_ip = models.CharField(max_length=48, blank=True)
     cometary = models.IntegerField()
     inchikey = models.CharField(max_length=90, blank=True)
-    inchi = models.CharField(max_length=65535, blank=True)
+    inchi = models.TextField(blank=True)
     vamdc_inchikey = models.CharField(max_length=90, blank=True)
-    vamdc_inchi = models.CharField(max_length=65535, blank=True)
+    vamdc_inchi = models.TextField(blank=True)
     class Meta:
         db_table = u'new_species'
 
