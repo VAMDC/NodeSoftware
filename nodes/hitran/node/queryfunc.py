@@ -52,12 +52,10 @@ def getHITRANbroadening(transs, XSAMSvariant):
             broadenings = []
             if 'g_air' in prm_dict.keys() and 'n_air' in prm_dict.keys():
                 g_air_val = str(prm_dict['g_air'].prm_val)
-                g_air_err = str(prm_dict['g_air'].prm_err)
                 g_air_ref = str(prm_dict['g_air'].prm_ref)
                 n_air_val = str(prm_dict['n_air'].prm_val)
-                n_air_err = str(prm_dict['n_air'].prm_err)
                 n_air_ref = str(prm_dict['n_air'].prm_ref)
-                lineshape = '      <Lineshape name="Lorentzian">\n'\
+                lineshape_xml = ['      <Lineshape name="Lorentzian">\n'\
        '      <Comments>The temperature-dependent pressure'\
        ' broadening Lorentzian lineshape</Comments>\n'\
        '      <LineshapeParameter name="gammaL">\n'\
@@ -73,43 +71,54 @@ def getHITRANbroadening(transs, XSAMSvariant):
        '          <FitParameter name="gammaL_ref">\n'\
        '            <SourceRef>%s</SourceRef>\n'\
        '            <Value units="1/cm">%s</Value>\n'\
-       '            <Accuracy><Statistical>%s</Statistical></Accuracy>\n'\
-       '          </FitParameter>\n'\
+                        % (g_air_ref, g_air_val),]
+                g_air_err = prm_dict['g_air'].prm_err
+                if g_air_err:
+                    g_air_err = str(g_air_err)
+                    lineshape_xml.append('            <Accuracy><Statistical>'\
+                          '%s</Statistical></Accuracy>\n' % g_air_err)
+                lineshape_xml.append('          </FitParameter>\n'\
        '          <FitParameter name="n">\n'\
        '            <SourceRef>%s</SourceRef>\n'\
        '            <Value units="unitless">%s</Value>\n'\
-       '            <Accuracy><Statistical>%s</Statistical></Accuracy>\n'\
-       '          </FitParameter>\n'\
+                        % (n_air_ref, n_air_val))
+                n_air_err = prm_dict['n_air'].prm_err
+                if n_air_err:
+                    n_air_err = str(n_air_err)
+                    lineshape_xml.append('            <Accuracy><Statistical>'\
+                          '%s</Statistical></Accuracy>\n' % n_air_err)
+                lineshape_xml.append('          </FitParameter>\n'\
        '        </FitParameters>\n'\
-       '      </LineshapeParameter>\n</Lineshape>\n' \
-                        % (g_air_ref, g_air_val, g_air_err, n_air_ref,
-                           n_air_val, n_air_err)
+       '      </LineshapeParameter>\n</Lineshape>\n')
                 broadening = '    <Broadening'\
                     ' envRef="Eair-broadening-ref-env" name="pressure">\n'\
-                    '%s    </Broadening>\n' % lineshape
+                    '%s    </Broadening>\n' % ''.join(lineshape_xml)
                 broadenings.append(broadening)
             if 'g_self' in prm_dict.keys():
                 g_self_val = str(prm_dict['g_self'].prm_val)
-                g_self_err = str(prm_dict['g_self'].prm_err)
                 g_self_ref = str(prm_dict['g_self'].prm_ref)
-                lineshape = '      <Lineshape name="Lorentzian">\n'\
+                lineshape_xml = ['      <Lineshape name="Lorentzian">\n'\
            '        <LineshapeParameter name="gammaL">\n'\
            '          <SourceRef>%s</SourceRef>\n'\
            '          <Value units="1/cm">%s</Value>\n'\
-           '          <Accuracy><Statistical>%s</Statistical></Accuracy>\n'\
-           '        </LineshapeParameter>\n'\
-           '      </Lineshape>' % (g_self_ref, g_self_val,
-                                                 g_self_err)
+                          % (g_self_ref, g_self_val),]
+                g_self_err = prm_dict['g_self'].prm_err
+                if g_self_err:
+                    g_self_err = str(g_self_err)
+                    lineshape_xml.append('          <Accuracy><Statistical>'\
+                          '%s</Statistical></Accuracy>\n' % g_self_err)
+                lineshape_xml.append('        </LineshapeParameter>\n'\
+           '      </Lineshape>\n')
                 broadening = '    <Broadening'\
                     ' envRef="Eself-broadening-ref-env" name="pressure">\n'\
-                    '%s    </Broadening>\n' % lineshape
+                    '%s    </Broadening>\n' % ''.join(lineshape_xml)
                 broadenings.append(broadening)
             shiftings = []
             if 'delta_air' in prm_dict.keys():
                 delta_air_val = str(prm_dict['delta_air'].prm_val)
-                delta_air_err = str(prm_dict['delta_air'].prm_err)
                 delta_air_ref = str(prm_dict['delta_air'].prm_ref)
-                shifting = '    <Shifting envRef="Eair-broadening-ref-env">\n'\
+                shifting_xml = ['    <Shifting envRef='\
+           '"Eair-broadening-ref-env">\n'\
            '      <ShiftingParameter name="delta">\n'\
            '        <FitParameters functionRef="Fdelta">\n'\
            '          <FitArgument name="p" units="K">\n'\
@@ -119,13 +128,17 @@ def getHITRANbroadening(transs, XSAMSvariant):
            '          <FitParameter name="delta_ref">'\
            '            <SourceRef>%s</SourceRef>\n'\
            '            <Value units="unitless">%s</Value>\n'\
-           '            <Accuracy><Statistical>%s</Statistical></Accuracy>\n'\
-           '          </FitParameter>\n'\
+                            % (delta_air_ref, delta_air_val),]
+                delta_air_err = prm_dict['delta_air'].prm_err
+                if delta_air_err:
+                    delta_air_err = str(delta_air_err)
+                    shifting_xml.append('            <Accuracy><Statistical>'\
+                        '%s</Statistical></Accuracy>\n' % delta_air_err)
+                shifting_xml.append('          </FitParameter>\n'\
            '        </FitParameters>\n'\
            '      </ShiftingParameter>\n'\
-           '    </Shifting>\n' % (delta_air_ref, delta_air_val,
-                                           delta_air_err)
-                shiftings.append(shifting)
+           '    </Shifting>\n')
+                shiftings.append(''.join(shifting_xml))
             
             # treat shifting as a sort of broadening(!) for now
             trans.broadening_xml = '    %s\n'\
@@ -192,7 +205,6 @@ def getHITRANsources(transs):
                     source.title, source.journal, source.volume,
                     source.pages, source.year, source.institution,
                     source.note, source.doi))
-
     return sources
 
 def setupResults(sql, LIMIT=None, XSAMSvariant='working'):
