@@ -58,59 +58,51 @@ def getHITRANbroadening(transs, XSAMSvariant):
                 n_air_err = str(prm_dict['n_air'].prm_err)
                 n_air_ref = str(prm_dict['n_air'].prm_ref)
                 lineshape = '      <Lineshape name="Lorentzian">\n'\
-                '      <Comments>The temperature-dependent pressure'\
-                ' broadening Lorentzian lineshape</Comments>\n'\
-                '      <LineshapeParameter>\n'\
-                '        <Name>gammaL</Name>\n'\
-                '        <FitParameters functionRef="FgammaL">\n'\
-                '          <FitArgument units="K">\n'\
-                '            <Name>T</Name>\n'\
-                '            <LowerLimit units="K">240</LowerLimit>\n'\
-                '            <UpperLimit units="K">350</UpperLimit>\n'\
-                '          </FitArgument>\n'\
-                '          <FitArgument units="K">\n'\
-                '            <Name>p</Name>\n'\
-                '            <LowerLimit units="atm">0.</LowerLimit>\n'\
-                '            <UpperLimit units="atm">1.2</UpperLimit>\n'\
-                '          </FitArgument>\n'\
-                '          <FitParameter>\n'\
-                '            <Name>gammaL_ref</Name>\n'\
-                '            <SourceRef>%s</SourceRef>\n'\
-                '            <Value units="1/cm">%s</Value>\n'\
-                '            <Accuracy>%s</Accuracy>\n'\
-                '          </FitParameter>\n'\
-                '          <FitParameter>\n'\
-                '            <Name>n</Name>\n'\
-                '            <SourceRef>%s</SourceRef>\n'\
-                '            <Value units="unitless">%s</Value>\n'\
-                '            <Accuracy>%s</Accuracy>\n'\
-                '          </FitParameter>\n'\
-                '        </FitParameters>\n'\
-                '      </LineshapeParameter>\n</Lineshape>\n' \
+       '      <Comments>The temperature-dependent pressure'\
+       ' broadening Lorentzian lineshape</Comments>\n'\
+       '      <LineshapeParameter name="gammaL">\n'\
+       '        <FitParameters functionRef="FgammaL">\n'\
+       '          <FitArgument name="T" units="K">\n'\
+       '            <LowerLimit>240</LowerLimit>\n'\
+       '            <UpperLimit>350</UpperLimit>\n'\
+       '          </FitArgument>\n'\
+       '          <FitArgument name="p" units="K">\n'\
+       '            <LowerLimit>0.</LowerLimit>\n'\
+       '            <UpperLimit>1.2</UpperLimit>\n'\
+       '          </FitArgument>\n'\
+       '          <FitParameter name="gammaL_ref">\n'\
+       '            <SourceRef>%s</SourceRef>\n'\
+       '            <Value units="1/cm">%s</Value>\n'\
+       '            <Accuracy><Statistical>%s</Statistical></Accuracy>\n'\
+       '          </FitParameter>\n'\
+       '          <FitParameter name="n">\n'\
+       '            <SourceRef>%s</SourceRef>\n'\
+       '            <Value units="unitless">%s</Value>\n'\
+       '            <Accuracy><Statistical>%s</Statistical></Accuracy>\n'\
+       '          </FitParameter>\n'\
+       '        </FitParameters>\n'\
+       '      </LineshapeParameter>\n</Lineshape>\n' \
                         % (g_air_ref, g_air_val, g_air_err, n_air_ref,
                            n_air_val, n_air_err)
-                broadening = '    <VanDerWaalsBroadening'\
-                    ' envRef="Eair-broadening-ref-env">\n'\
-                    '%s'\
-                    '    </VanDerWaalsBroadening>\n' % lineshape
+                broadening = '    <Broadening'\
+                    ' envRef="Eair-broadening-ref-env" name="pressure">\n'\
+                    '%s    </Broadening>\n' % lineshape
                 broadenings.append(broadening)
             if 'g_self' in prm_dict.keys():
                 g_self_val = str(prm_dict['g_self'].prm_val)
                 g_self_err = str(prm_dict['g_self'].prm_err)
                 g_self_ref = str(prm_dict['g_self'].prm_ref)
                 lineshape = '      <Lineshape name="Lorentzian">\n'\
-                    '        <LineshapeParameter>\n'\
-                    '        <Name>gammaL</Name>\n'\
-                    '          <SourceRef>%s</SourceRef>\n'\
-                    '          <Value units="1/cm">%s</Value>\n'\
-                    '          <Accuracy>%s</Accuracy>\n'\
-                    '        </LineshapeParameter>\n'\
-                    '      </Lineshape>' % (g_self_ref, g_self_val,
+           '        <LineshapeParameter name="gammaL">\n'\
+           '          <SourceRef>%s</SourceRef>\n'\
+           '          <Value units="1/cm">%s</Value>\n'\
+           '          <Accuracy><Statistical>%s</Statistical></Accuracy>\n'\
+           '        </LineshapeParameter>\n'\
+           '      </Lineshape>' % (g_self_ref, g_self_val,
                                                  g_self_err)
-                broadening = '    <VanDerWaalsBroadening'\
-                    ' envRef="E%s-broadening-ref-env">\n'\
-                    '%s'\
-                    '    </VanDerWaalsBroadening>\n' % ('self', lineshape)
+                broadening = '    <Broadening'\
+                    ' envRef="Eself-broadening-ref-env" name="pressure">\n'\
+                    '%s    </Broadening>\n' % lineshape
                 broadenings.append(broadening)
             shiftings = []
             if 'delta_air' in prm_dict.keys():
@@ -118,30 +110,27 @@ def getHITRANbroadening(transs, XSAMSvariant):
                 delta_air_err = str(prm_dict['delta_air'].prm_err)
                 delta_air_ref = str(prm_dict['delta_air'].prm_ref)
                 shifting = '    <Shifting envRef="Eair-broadening-ref-env">\n'\
-                    '      <ShiftingParameter>\n'\
-                    '        <Name>delta</Name>\n'\
-                    '        <FitParameters functionRef="Fdelta">\n'\
-                    '          <FitArgument units="K">\n'\
-                    '            <Name>p</Name>\n'\
-                    '            <LowerLimit units="atm">0.</LowerLimit>\n'\
-                    '            <UpperLimit units="atm">1.2</UpperLimit>\n'\
-                    '          </FitArgument>\n'\
-                    '          <FitParameter>'\
-                    '            <Name>delta_ref</Name>\n'\
-                    '            <SourceRef>%s</SourceRef>\n'\
-                    '            <Value units="unitless">%s</Value>\n'\
-                    '            <Accuracy>%s</Accuracy>\n'\
-                    '          </FitParameter>\n'\
-                    '        </FitParameters>\n'\
-                    '      </ShiftingParameter>\n'\
-                    '    </Shifting>\n' % (delta_air_ref, delta_air_val,
+           '      <ShiftingParameter name="delta">\n'\
+           '        <FitParameters functionRef="Fdelta">\n'\
+           '          <FitArgument name="p" units="K">\n'\
+           '            <LowerLimit>0.</LowerLimit>\n'\
+           '            <UpperLimit>1.2</UpperLimit>\n'\
+           '          </FitArgument>\n'\
+           '          <FitParameter name="delta_ref">'\
+           '            <SourceRef>%s</SourceRef>\n'\
+           '            <Value units="unitless">%s</Value>\n'\
+           '            <Accuracy><Statistical>%s</Statistical></Accuracy>\n'\
+           '          </FitParameter>\n'\
+           '        </FitParameters>\n'\
+           '      </ShiftingParameter>\n'\
+           '    </Shifting>\n' % (delta_air_ref, delta_air_val,
                                            delta_air_err)
                 shiftings.append(shifting)
             
             # treat shifting as a sort of broadening(!) for now
-            trans.broadening_xml = '   <Broadenings>\n%s    </Broadenings>\n'\
-                    '    <Shiftings>\n%s</Shiftings>' % (''.join(broadenings),
-                                                         ''.join(shiftings))
+            trans.broadening_xml = '    %s\n'\
+                    '    %s' % (''.join(broadenings),
+                                ''.join(shiftings))
 
 def attach_state_qns(states):
     for state in states:

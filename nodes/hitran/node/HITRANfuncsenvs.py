@@ -11,29 +11,24 @@ chunk("""<Function functionID="FgammaL">
             <Expression computerLanguage="Fortran">
                 gammaL_ref * p * (296./T)**n
             </Expression>
-            <Y units="1/cm">
-                <Name>gammaL</Name>
+            <Y name="gammaL" units="1/cm">
             </Y>
             <Arguments>
-                <Argument units="K">
-                    <Name>T</Name>
+                <Argument name="T" units="K">
                     <Description>The absolute temperature, in K</Description>
                 </Argument>
-                <Argument units="atm">
-                    <Name>p</Name>
+                <Argument name="p" units="atm">
                     <Description>The partial pressure of the broadening species,
                                  in atm</Description>
                 </Argument>
             </Arguments>
             <Parameters>
-                <Parameter units="1/cm">
-                    <Name>gammaL_ref</Name>
+                <Parameter name="gammaL_ref" units="1/cm">
                     <Description>The Lorentzian HWHM of the line, broadened at
                         Tref = 296 K and broadening species partial pressure
                         pref = 1atm</Description>
                 </Parameter>
-                <Parameter units="unitless">
-                    <Name>n</Name>
+                <Parameter name="n" units="unitless">
                     <Description>
                         The temperature exponent of the gammaL function
                     </Description>
@@ -46,19 +41,16 @@ chunk("""<Function functionID="Fdelta">
             <Expression computerLanguage="Fortran">
                 delta_ref * p
             </Expression>
-            <Y units="1/cm">
-                <Name>delta</Name>
+            <Y name="delta" units="1/cm">
             </Y>
             <Arguments>
-                <Argument units="atm">
-                    <Name>p</Name>
+                <Argument name="p" units="atm">
                     <Description>The pressure of the shifting environment,
                                  in atm</Description>
                 </Argument>
             </Arguments>
             <Parameters>
-                <Parameter units="1/cm">
-                    <Name>delta_ref</Name>
+                <Parameter name="delta_ref" units="1/cm">
                     <Description>The pressure-shift of the absorption line at
                         pref = 1 atm</Description>
                 </Parameter>
