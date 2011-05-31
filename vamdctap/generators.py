@@ -1118,10 +1118,10 @@ def XsamsCollTrans(CollTrans):
 
                 GR = lambda name: GetValue(name, Reactant=Reactant)
                 yield "<Reactant>"
-                species = GR("CollisionSpecies")
+                species = GR("CollisionReactantSpecies")
                 if species:
                     yield "<SpeciesRef>X%s</SpeciesRef>" % species
-                state = GR("CollisionState")
+                state = GR("CollisionReactantState")
                 if state:
                     yield "<StateRef>S%s</StateRef>" % state            
                 yield "</Reactant>"
