@@ -29,7 +29,8 @@ RETURNABLES = {\
 #'SourceVolume':'Source.volume',
 #'SourceYear':'Source.year',
 
-'CollisionThreshold':'CollTrans.tmin'
+'CollisionThreshold':'CollTran.tmin',
+'CollisionThresholdUnit':'K',
 }
 
 # The restrictable dictionary defines limitations to the search. 

@@ -1011,7 +1011,7 @@ def XsamsRadCross(RadCross):
         ID = G("CrossSectionID")
         if ID:
             dic["id": "%s-%s" % (NODEID, ID)]
-        yield makePrimaryType("CrossSection", G, "CrossSection", extraAttr=dic)
+        yield makePrimaryType("CrossSection", "CrossSection", G, extraAttr=dic)
         yield "<Description>%s</Description>" % G("CrossSectionDescription")
 
         yield makeDataSeriesType("X", "CrossSectionX", G)
@@ -1094,7 +1094,7 @@ def XsamsCollTrans(CollTrans):
 
         # create header
         G = lambda name: GetValue(name, CollTran=CollTran)
-        yield makePrimaryType("Collision", "Collision")
+        yield makePrimaryType("Collision", "Collision", G)
 
         yield "<ProcessClass>"
         udef = G("CollisionUserDefinition")
@@ -1253,7 +1253,7 @@ def XsamsCollTrans(CollTrans):
 
                         GDT = lambda name: GetValue(name, TabData=TabData)
 
-                        yield makePrimaryType("TabulatedData", "CollisionTabulatedData")
+                        yield makePrimaryType("TabulatedData", "CollisionTabulatedData", GDT)
 
                         yield "<DataXY>"
 
@@ -1351,7 +1351,7 @@ def XsamsFunctions(Functions):
             continue 
 
         G = lambda name: GetValue(name, Function=Function)
-        yield makePrimaryType("Function", "Function", extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
+        yield makePrimaryType("Function", "Function", G, extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
         yield "<Name>%s</Name>" % G("FunctionName")
         yield "<Expression computerLanguage=%s>%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
