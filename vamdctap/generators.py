@@ -548,7 +548,7 @@ def makeAtomComponent(Atom, G):
     mixCoe = G("AtomStateMixingCoeff")
     if mixCoe:
         string += '<MixingCoefficient mixingclass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
-    coms = G("AtomStateComponentComments")
+    coms = G("AtomStateComponentComment")
     if coms:
         string += "<Comments>%s</Comments>" % coms
 
@@ -884,7 +884,7 @@ def XsamsRadTrans(RadTrans):
 
         G = lambda name: GetValue(name, RadTran=RadTran)
         yield '<RadiativeTransition>'
-        comm = G('RadTransComments')
+        comm = G('RadTransComment')
         if comm: 
             yield '<Comments>%s</Comments>' % comm
         yield makeSourceRefs(G('RadTransRefs'))
