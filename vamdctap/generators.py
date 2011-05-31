@@ -548,7 +548,7 @@ def makeAtomComponent(Atom, G):
     mixCoe = G("AtomStateMixingCoeff")
     if mixCoe:
         string += '<MixingCoefficient mixingclass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
-    coms = G("AtomStateComponentComments")
+    coms = G("AtomStateComponentComment")
     if coms:
         string += "<Comments>%s</Comments>" % coms
 
@@ -737,7 +737,7 @@ def XsamsMolecules(Molecules):
             yield ret
             continue 
         G = lambda name: GetValue(name, Molecule=Molecule)
-        yield '<Molecule speciesID="X%s">\n' % G("MoleculeID")
+        yield '<Molecule speciesID="X%s-%s">\n' % (NODEID,G("MoleculeSpeciesID"))
 
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
@@ -884,7 +884,7 @@ def XsamsRadTrans(RadTrans):
 
         G = lambda name: GetValue(name, RadTran=RadTran)
         yield '<RadiativeTransition>'
-        comm = G('RadTransComments')
+        comm = G('RadTransComment')
         if comm: 
             yield '<Comments>%s</Comments>' % comm
         yield makeSourceRefs(G('RadTransRefs'))
@@ -1120,10 +1120,10 @@ def XsamsCollTrans(CollTrans):
                 yield "<Reactant>"
                 species = GR("CollisionReactantSpecies")
                 if species:
-                    yield "<SpeciesRef>X%s</SpeciesRef>" % species
+                    yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
                 state = GR("CollisionReactantState")
                 if state:
-                    yield "<StateRef>S%s</StateRef>" % state            
+                    yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)
                 yield "</Reactant>"
 
         if hasattr(CollTran, "IntermediateStates"):
@@ -1138,10 +1138,10 @@ def XsamsCollTrans(CollTrans):
                 yield "<IntermediateState>"
                 species = GI("CollisionIntermediateSpecies")
                 if species:
-                    yield "<SpeciesRef>X%s</SpeciesRef>" % species
-                state = GI("CollisionIntermediateState")            
+                    yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
+                state = GI("CollisionIntermediateState")
                 if state: 
-                    yield "<StateRef>S%s</StateRef>" % state
+                    yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)
                 yield "</IntermediateState>"
 
         if hasattr(CollTran, "Products"):
