@@ -4,9 +4,6 @@
 # for converting incoming queries to a database query understood by
 # this particular node's database schema.
 # 
-# This module must contain a function setupResults, taking a sql object
-# as its only argument. 
-#
 
 # library imports 
 
@@ -18,40 +15,17 @@ from vamdctap.sqlparse import where2q
 import dictionaries
 import models # this imports models.py from the same directory as this file
 
-def LOG(s):
-    "Simple logger function"
-    if settings.DEBUG: print >> sys.stderr, s
+import logging
+log = logging.getLogger('vamdc.node.queryfu')
 
 #------------------------------------------------------------
 # Helper functions (called from setupResults)
 #------------------------------------------------------------
 
-def getRefs(transs):
-    """
-    From the transition-matches, use ForeignKeys to extract all relevant references
-    """
-    # extract a unique set of reference keys from the given ForeignKey
-    # fields on the Transition model (e.g. Transition.loggf_ref). 
-    # Note: Using *_id on the ForeignKey (e.g. loggf_ref_id)
-    # will extract the identifier rather than go to the referenced
-    # object (it's the same as loggf_ref.id, but more efficient).  In
-    # our example, refset will hold strings "REF1" or "REF2" after
-    # this.
-    refset = []
-    for t in transs.values_list('wave_ref_id', 'loggf_ref_id', 'lande_ref_id', 
-                                'gammarad_ref_id', 'gammastark_ref_id', 'waals_ref_id'):
-        refset.append(t)
-    refset = set(refset) # a set always holds only unique keys 
-    
-    # Use the found reference keys to extract the correct references from the References table.
-    refmatches = models.Reference.objects.filter(pk__in=refset) # only match primary keys in refset    
-    return refmatches
-
 def getSpeciesWithStates(transs):
     """
     Use the Transition matches to obtain the related Species (only atoms in this example)
     and the states related to each transition. 
-    
     We also return some statistics of the result 
     """
 
@@ -112,42 +86,17 @@ def getFunctions(transs):
     return funcs
 
 
-def getLifetimeMethods():    
-    """
-    In the example we are storing both experimental and theoretical
-    data for some quantities, such as in the case of experimental or
-    theoretical state lifetimes. A selector method on the model
-    selects between these two, but need to then be able to tell us
-    which was chosen. To differentiate between the two types, we
-    create a "Method" class that we can reference from the model (and
-    which will go into the XSAMS return). This is a simple python
-    object with properties 'id' and 'category'.
-     'id' - any string you want, but has to start with M.
-     'category' - this is a valid Method.category as defined 
-                  in the xsams definition online                
-    """
-    class Method(object):
-        # simple dummy object to define a Method 
-        def __init__(self, mid, category):
-            self.id = mid
-            self.category = category
-
-    # we will only be needing two methods
-    m1 = Method("MtauEXP", "experiment")
-    m2 = Method("MtauTHEO", "compilation")
-    return m1, m2
-
 
 #------------------------------------------------------------
 # Main function 
 #------------------------------------------------------------
 
-def setupResults(sql, limit=1000):
+def setupResults(sql):
     """
     This function is always called by the software.
     """
     # log the incoming query
-    LOG(sql)
+    log('sql input: %s'%sql)
 
     # convert the incoming sql to a correct django query syntax object 
     # based on the RESTRICTABLES dictionary in dictionaries.py
@@ -162,39 +111,39 @@ def setupResults(sql, limit=1000):
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
-    transs = models.Transition.objects.select_related(depth=2).filter(q)
+
+    # UMIST database code
+
+    react_ds = models.RxnData.objects.filter(q)
 
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
-    ntranss=transs.count()    
-    if limit < ntranss :
-        transs = transs[:limit]
-        percentage='%.1f' % (float(limit) / ntranss * 100)
-    else: 
-        percentage=None
+    nreacts=reacts.count()
 
-    # Through the transition-matches, use our helper functions to extract 
-    # all the relevant database data for our query. 
-    sources = getRefs(transs)
+    sources = Source.objects.filter(pk__in=set(react_ds.values_list('ref_id', flat=True))) 
     nsources = sources.count()
-    species, nspecies, nstates = getSpeciesWithStates(transs)
-    methods = getLifetimeMethods()
+
+    reacts = Reaction.objects.filter(pk__in=set(react_ds.values_list('reaction_id', flat=True)))
+    species = Species.objects.filter(pk__in=reacts.values_list('species'))
+    atoms = species.filter(type=1)
+    molecules = species.filter(type=2)
+    particle = species.filter(type=3)
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
     headerinfo=CaselessDict({\
-            'Truncated':percentage,
-            'COUNT-SOURCES':nsources,
-            'COUNT-species':nspecies,
-            'count-states':nstates,
-            'count-radiative':ntranss
+            'COUNT-ATOMS':nsources,
+            'COUNT-MOLECULES':nspecies,
+            'COUNT-COLLISIONS':nreact,
             })
-            
     # Return the data. The keynames are standardized. 
-    return {'RadTrans':transs,
-            'Atoms':species,
+    return {\
+            'CollTrans':react_ds,
+            'Atoms':atoms,
+            'Molecules':molecules,
+            'Particles':particles,
             'Sources':sources,
             'HeaderInfo':headerinfo,
-            'Methods':methods
+            #'Methods':methods
             #'Functions':functions
            }

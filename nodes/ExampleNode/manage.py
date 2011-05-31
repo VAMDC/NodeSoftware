@@ -15,7 +15,7 @@ import traceback
 # Tack on the vamdc root directory to the python path.
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-_CREATED_SETTINGS = False    
+_CREATED_SETTINGS = False
 
 if not os.path.exists('settings.py'):
     # If settings.py doesn't already exist, create it
@@ -38,6 +38,8 @@ if not os.path.exists('settings.py'):
 from settings_default import *
 
 # Comment out the following line once your node goes live.
+# As long as this is set to True there will be additional
+# logging output and performance will be slower.
 DEBUG=True
 
 ###################################################
@@ -56,14 +58,31 @@ DATABASES = {
     }
 }
 
-#########################################
+###############################################
 # Admin information
-#########################################
+# You NEED to set a valid email-adress here
+# since critical errors will be emailed there.
+###############################################
 ADMINS = (\
             ('Admin 1 Name', 'name1@mail.net'),
             ('Admin 2 Name', 'name2@mail.net'),
         )
 
+###############################################
+# Logging
+# You can uncomment the following line and set
+# the filename. Unless you do so, the log-file
+# is called 'node.log' and resides in your
+# systems TMP-directory
+###############################################
+# LOGGING['handlers']['logfile']['filename'] = '/some/path/mylog.log'
+
+###############################################
+# Example query
+# Please comment out the followind and adapt it
+# to a meaingful query for your node.
+###############################################
+# EXAMPLE_QUERY = 'SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4005'
 """
     settings_file.write(string)
     settings_file.close()

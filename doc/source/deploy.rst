@@ -103,6 +103,8 @@ Searching the web for "django hosting" will point you in the right direction,
 as does this list
 https://convore.com/django-community/django-hosting-explosion/
 
+.. _logging:
+
 Logging
 ------------------
 
@@ -115,11 +117,37 @@ ways:
 The webserver/proxy, be it nginx or apache, keeps a log on when, how and by
 whom your node is accessed. Since the query itself is in the accessed URL, it
 also ends up in these logs. There are many tools to analyze and visualize this
-kind of logs.
+kind of logs. In the case of Apache/WSGI-deployment, errors in the NodeSoftware show up the webservers error-log since it is the former that executes the latter. With gunicorn, the webserver knows nothing about the NodeSoftware's errors since it only acts as a proxy. Gunicorn keeps its own logs.
 
-However, this contains no information about what happened inside the
-NodeSoftware. If you want to keep tabs on how much data was returned from each
-query, how long it took to process and so on, you need to tell the NodeSoftware
-to save this information for you - either in a separate log file, or in a
-separate table in your database. The infrastructure for this is however not yet
-implemented in the NodeSoftware. Stay tuned.
+However, the webserver logs usually contain no information about what happened
+inside the NodeSoftware. If you want to keep tabs on how much data was returned
+from each query, how long it took to process and so on, you need to tell the
+NodeSoftware to save this information for you - this is where the `logging`-facility comes into play.
+
+Nodes will primarily use this in their ``queryfunc.py`` where you initialize it like this::
+    
+    import logging
+    >>> log = logging.getLogger('vamdc.node.queryfu')
+
+Then any of the following can be used to log messages of different levels::
+
+    >>> log.debug('some text with a variable: %s'%variable)
+    >>> log.info('bla')
+    >>> log.warning('bla')
+    >>> log.error('bla')
+    >>> log.critical('bla')
+
+Where these messages end up is configured in ``settings_default.py`` and you can as usual override the default in the node's own ``settings.py``. For example, you set the location and name of the log-file like this::
+
+    LOGGING['handlers']['logfile']['filename'] = '/path/to/yourlog.log'
+
+.. note::
+
+    Critical errors (using `log.critical()`) are sent to the configured
+    admin email address. You need to supply a valid address and make
+    sure your server can send emails.
+
+In the future, messages issued with `log.debug()` will not be logged, when the
+global flag `DEBUG=False`.
+
+For more information see https://docs.djangoproject.com/en/1.3/topics/logging/

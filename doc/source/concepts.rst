@@ -168,9 +168,7 @@ providers that want to set up their own VAMDC node do not really need to
 care about TAP either.
 
 The more detailed specification of the VAMDC variant of a TAP service 
-can be found at the `wiki-page TapXsamsSpecification 
-<http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/TapXsamsSpecification>`_.
-
+can be found in the standards documentation at http://vamdc.org/documents/standards/.
 
 
 The query language

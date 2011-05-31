@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+
 print "CREATE TABLE states (\n";
 print "         id INTEGER, \n";
 print "		ChiantiIonType CHAR(1), \n";
@@ -15,7 +17,7 @@ print "		PRIMARY KEY (id) \n";
 print ");\n";
 
 
-open STATES, "/home/guy/NodeSoftware/nodes/chianti/raw-data/chianti_data_v6_e.txt" or die;
+open STATES, "/home/guy/chianti/raw-data/chianti_data_v6_e.txt" or die;
 
 # Throw away the first line, which is a comment.
 $discard = <STATES>;
@@ -31,7 +33,7 @@ while(<STATES>) {
 	print 'INSERT INTO states VALUES(';
 	print $index, ', '; # Primary key
 	print '"', shift @fields, '", '; # ChiantiIonType
-	print '"', shift @fields, '", '; # AtomSymbol
+	print '"', firstWord(shift @fields), '", '; # AtomSymbol
 	print shift @fields, ', '; # AtomNuclearCharge
 	print shift @fields, ', '; # AtomIonCharge
 	print shift @fields, ', '; # ChiantiAtomStateIndex
@@ -60,7 +62,7 @@ print "		RadTransProbabilityTransitionProbabilityAValue DOUBLE, \n";
 print "         PRIMARY KEY (id) \n";
 print ");\n";
 
-open TRANSITIONS, "/home/guy/NodeSoftware/nodes/chianti/raw-data/chianti_data_v6_l-1.txt" or die;
+open TRANSITIONS, "/home/guy/chianti/raw-data/chianti_data_v6_l-1.txt" or die;
 
 # Throw away the first line, which is a comment.
 $discard = <TRANSITIONS>;
@@ -76,7 +78,7 @@ while(<TRANSITIONS>) {
 	print 'INSERT INTO transitions VALUES(';
         print $index, ', '; # index - the primary key
 	print '"', shift @fields, '", '; # ChiantiRadTransType
-	print '"', shift @fields, '", '; # AtomSymbol
+	print '"', firstWord(shift @fields), '", '; # AtomSymbol
 	shift @fields; # AtomNuclearCharge - unwanted
 	shift @fields; # AtomIonCharge - unwanted
 	print shift @fields, ', '; # ChiantiRadTransFinalStateIndex
@@ -86,4 +88,12 @@ while(<TRANSITIONS>) {
 	print shift @fields, ', '; # RadTransProbabilityWeightedOscillatorStrengthValue
 	print shift @fields; # RadTransProbabilityTransitionProbabilityAValue
         print ");\n";
+}
+
+# Returns the first word of a given sentence in which words are 
+# separated by one or more characters of white space.
+sub firstWord {
+	my $sentence = shift;
+	my @words = split /\s+/, $sentence;
+        return shift @words;
 }

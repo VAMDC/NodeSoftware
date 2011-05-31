@@ -14,3 +14,6 @@ urlpatterns = patterns('',
     (r'', include('vald.node.urls')),
 
 )
+
+handler500 = 'vamdctap.views.tapServerError'
+handler404 = 'vamdctap.views.tapNotFoundError'
