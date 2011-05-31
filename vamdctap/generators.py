@@ -1108,22 +1108,23 @@ def XsamsCollTrans(CollTrans):
             yield "<IAEACode>%s</IAEACode>" % iaea
         yield "</ProcessClass>"
  
-        for Reactant in CollTran.Reactants:
+        if hasattr(CollTran, "Reactants"):
+            for Reactant in CollTran.Reactants:
 
-            cont, ret = checkXML(Reactant)
-            if cont:
-                yield ret
-                continue 
+                cont, ret = checkXML(Reactant)
+                if cont:
+                    yield ret
+                    continue 
 
-            GR = lambda name: GetValue(name, Reactant=Reactant)
-            yield "<Reactant>"
-            species = GR("CollisionSpecies")
-            if species:
-                yield "<SpeciesRef>X%s</SpeciesRef>" % species
-            state = GR("CollisionState")
-            if state:
-                yield "<StateRef>S%s</StateRef>" % state            
-            yield "</Reactant>"
+                GR = lambda name: GetValue(name, Reactant=Reactant)
+                yield "<Reactant>"
+                species = GR("CollisionSpecies")
+                if species:
+                    yield "<SpeciesRef>X%s</SpeciesRef>" % species
+                state = GR("CollisionState")
+                if state:
+                    yield "<StateRef>S%s</StateRef>" % state            
+                yield "</Reactant>"
 
         if hasattr(CollTran, "IntermediateStates"):
             for IntermdiateState in CollTran.IntermediateStates:
