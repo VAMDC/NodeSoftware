@@ -13,7 +13,7 @@ from django.conf import settings
 from vamdctap.sqlparse import where2q
 
 import dictionaries
-import models # this imports models.py from the same directory as this file
+from models import *
 
 import logging
 log = logging.getLogger('vamdc.node.queryfu')
@@ -41,7 +41,7 @@ def setupResults(sql):
 
     # UMIST database code
 
-    react_ds = models.RxnData.objects.all()[:10]
+    react_ds = RxnData.objects.all()[:10]
     #react_ds = models.RxnData.objects.filter(q)
 
     # count the number of matches, make a simple trunkation if there are
@@ -51,26 +51,31 @@ def setupResults(sql):
 
     sources = Source.objects.filter(pk__in=set(react_ds.values_list('ref_id', flat=True))) 
     nsources = sources.count()
+    log.debug('done with sources: %s'%nsources)
 
     reacts = Reaction.objects.filter(pk__in=set(react_ds.values_list('reaction_id', flat=True)))
+    log.debug('done with Reactions')
     species = Species.objects.filter(pk__in=reacts.values_list('species'))
+    log.debug('done with species')
     atoms = species.filter(type=1)
     molecules = species.filter(type=2)
-    particle = species.filter(type=3)
+    particles = species.filter(type=3)
 
+    log.debug('done setting up the QuerySets')
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
-    headerinfo=CaselessDict({\
+    headerinfo={\
             'COUNT-ATOMS':atoms.count(),
             'COUNT-MOLECULES':molecules.count(),
-            'COUNT-COLLISIONS':nreact,
-            })
+            'COUNT-COLLISIONS':nreacts,
+            }
+
     # Return the data. The keynames are standardized. 
     return {\
             'CollTrans':react_ds,
             'Atoms':atoms,
             'Molecules':molecules,
-            'Particles':particles,
+            #'Particles':particles,
             'Sources':sources,
             'HeaderInfo':headerinfo,
             #'Methods':methods
