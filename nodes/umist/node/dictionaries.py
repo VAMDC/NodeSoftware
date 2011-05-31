@@ -33,6 +33,7 @@ RETURNABLES = {\
 'CollisionThresholdUnit':'K',
 'CollisionThresholdComment':'Minimum temperature',
 'CollisionProductSpecies':'Product.id',
+'CollisionReactantSpecies':'Reactant.id',
 
 'AtomInchi':'Atom.vamdc_inchi',
 'AtomInchiKey':'Atom.vamdc_inchikey',
