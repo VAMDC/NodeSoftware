@@ -51,7 +51,7 @@ INSTALLED_APPS = [
 #    'django.contrib.sites',
 #    'django.contrib.admin',
 #    'django.contrib.admindocs',
-    'django.contrib.staticfiles',
+#    'django.contrib.staticfiles',
     'vamdctap',
     NODEPKG
 ]
