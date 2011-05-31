@@ -548,7 +548,7 @@ def makeAtomComponent(Atom, G):
     mixCoe = G("AtomStateMixingCoeff")
     if mixCoe:
         string += '<MixingCoefficient mixingclass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
-    coms = G("AtomStateComponentComments")
+    coms = G("AtomStateComponentComment")
     if coms:
         string += "<Comments>%s</Comments>" % coms
 
@@ -737,7 +737,7 @@ def XsamsMolecules(Molecules):
             yield ret
             continue 
         G = lambda name: GetValue(name, Molecule=Molecule)
-        yield '<Molecule speciesID="X%s">\n' % G("MoleculeID")
+        yield '<Molecule speciesID="X%s-%s">\n' % (NODEID,G("MoleculeSpeciesID"))
 
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
@@ -884,7 +884,7 @@ def XsamsRadTrans(RadTrans):
 
         G = lambda name: GetValue(name, RadTran=RadTran)
         yield '<RadiativeTransition>'
-        comm = G('RadTransComments')
+        comm = G('RadTransComment')
         if comm: 
             yield '<Comments>%s</Comments>' % comm
         yield makeSourceRefs(G('RadTransRefs'))
@@ -1011,7 +1011,7 @@ def XsamsRadCross(RadCross):
         ID = G("CrossSectionID")
         if ID:
             dic["id": "%s-%s" % (NODEID, ID)]
-        yield makePrimaryType("CrossSection", G, "CrossSection", extraAttr=dic)
+        yield makePrimaryType("CrossSection", "CrossSection", G, extraAttr=dic)
         yield "<Description>%s</Description>" % G("CrossSectionDescription")
 
         yield makeDataSeriesType("X", "CrossSectionX", G)
@@ -1094,7 +1094,7 @@ def XsamsCollTrans(CollTrans):
 
         # create header
         G = lambda name: GetValue(name, CollTran=CollTran)
-        yield makePrimaryType("Collision", "Collision")
+        yield makePrimaryType("Collision", "Collision", G)
 
         yield "<ProcessClass>"
         udef = G("CollisionUserDefinition")
@@ -1108,22 +1108,23 @@ def XsamsCollTrans(CollTrans):
             yield "<IAEACode>%s</IAEACode>" % iaea
         yield "</ProcessClass>"
  
-        for Reactant in CollTran.Reactants:
+        if hasattr(CollTran, "Reactants"):
+            for Reactant in CollTran.Reactants:
 
-            cont, ret = checkXML(Reactant)
-            if cont:
-                yield ret
-                continue 
+                cont, ret = checkXML(Reactant)
+                if cont:
+                    yield ret
+                    continue 
 
-            GR = lambda name: GetValue(name, Reactant=Reactant)
-            yield "<Reactant>"
-            species = GR("CollisionSpecies")
-            if species:
-                yield "<SpeciesRef>X%s</SpeciesRef>" % species
-            state = GR("CollisionState")
-            if state:
-                yield "<StateRef>S%s</StateRef>" % state            
-            yield "</Reactant>"
+                GR = lambda name: GetValue(name, Reactant=Reactant)
+                yield "<Reactant>"
+                species = GR("CollisionReactantSpecies")
+                if species:
+                    yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
+                state = GR("CollisionReactantState")
+                if state:
+                    yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)
+                yield "</Reactant>"
 
         if hasattr(CollTran, "IntermediateStates"):
             for IntermdiateState in CollTran.IntermediateStates:
@@ -1137,10 +1138,10 @@ def XsamsCollTrans(CollTrans):
                 yield "<IntermediateState>"
                 species = GI("CollisionIntermediateSpecies")
                 if species:
-                    yield "<SpeciesRef>X%s</SpeciesRef>" % species
-                state = GI("CollisionIntermediateState")            
+                    yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
+                state = GI("CollisionIntermediateState")
                 if state: 
-                    yield "<StateRef>S%s</StateRef>" % state
+                    yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)
                 yield "</IntermediateState>"
 
         if hasattr(CollTran, "Products"):
@@ -1253,7 +1254,7 @@ def XsamsCollTrans(CollTrans):
 
                         GDT = lambda name: GetValue(name, TabData=TabData)
 
-                        yield makePrimaryType("TabulatedData", "CollisionTabulatedData")
+                        yield makePrimaryType("TabulatedData", "CollisionTabulatedData", GDT)
 
                         yield "<DataXY>"
 
@@ -1351,7 +1352,7 @@ def XsamsFunctions(Functions):
             continue 
 
         G = lambda name: GetValue(name, Function=Function)
-        yield makePrimaryType("Function", "Function", extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
+        yield makePrimaryType("Function", "Function", G, extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
         yield "<Name>%s</Name>" % G("FunctionName")
         yield "<Expression computerLanguage=%s>%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
