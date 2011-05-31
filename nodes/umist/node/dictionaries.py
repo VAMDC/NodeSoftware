@@ -18,42 +18,18 @@ ExampleNode dictionary definitions.
 RETURNABLES = {\
 'NodeID':'umist',
 
-'SourceID':'Source.id',
-'SourceAuthorName':'Source.author',
-'SourceCategory':'Source.category',
-'SourcePageBegin':'Source.pages',
-'SourcePageEnd':'Source.pages',
-'SourceName':'Source.journal',
+'SourceID':'Source.abbr',
+#'SourceAuthorName':'Source.author',
+#'SourceCategory':'Source.category',
+#'SourcePageBegin':'Source.pages',
+#'SourcePageEnd':'Source.pages',
+#'SourceName':'Source.journal',
 'SourceTitle':'Source.title',
 'SourceURI':'Source.url',
-'SourceVolume':'Source.volume',
-'SourceYear':'Source.year',                                                              
+#'SourceVolume':'Source.volume',
+#'SourceYear':'Source.year',
 
-'MethodID':'Method.id',
-'MethodCategory':'Method.category',
-                           
-'FunctionID':'Function.id',
-'FunctionName':'Function.name',
-'FunctionSourceRef': "",
-'FunctionComputerLanguage': "",
-'FunctionExpression':"Function.expression",
-'FunctionYName':"Function.y",
-'FunctionYUnits':"unitless",
-'FunctionYDescription':"",
-'FunctionYLowerLimit':"0.0",
-'FunctionYUpperLimit':"1.0",
-'FunctionArgumentName':'FunctionArgument.name',
-'FunctionArgumentUnits': "unitless",
-'FunctionArgumentDescription': "",
-'FunctionArgumentLowerLimit':"FunctionArgument.lower_limit",
-'FunctionArgumentUpperLimit':"FunctionArgument.upper_limit",
-'FunctionParameterName':"FunctionParameter.name",
-'FunctionParameterUnits':"unitless",
-'FunctionParameterDescription':"",
-'FunctionReferenceFrame':"",
-'FunctionDescription':"",
-'FunctionSourceCodeURL': ""
-
+'CollisionThreshold':'CollTrans.tmin'
 }
 
 # The restrictable dictionary defines limitations to the search. 
@@ -62,14 +38,9 @@ RETURNABLES = {\
 # for the Species.atomic field  would be written as species__atomic.
 
 RESTRICTABLES = {\
-'MoleculeInchiKey':'species__vamdc_inchikey',
-'MoleculeInchi':'species__vamdc_inchi',
-'AtomNuclearCharge':'species__atomic',
-'AtomStateEnergy':'upstate__energy',
-'RadTransWavelength':'vacwave',
-'RadTransWavenumber':'vavenum',
-'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
-'AtomIonCharge':'species__ion'
+'MoleculeInchiKey':'reaction__species__vamdc_inchikey',
+'MoleculeInchi':'reaction__species__vamdc_inchi',
+'MoleculeChemicalName':'reaction__species__names',
 }
 
 from vamdctap.caselessdict import CaselessDict
