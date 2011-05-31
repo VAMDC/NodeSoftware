@@ -31,6 +31,14 @@ RETURNABLES = {\
 
 'CollisionThreshold':'CollTran.tmin',
 'CollisionThresholdUnit':'K',
+'CollisionThresholdComment':'Minimum temperature',
+'CollisionProductSpecies':'Product.id',
+
+'AtomInchi':'Atom.vamdc_inchi',
+'AtomInchiKey':'Atom.vamdc_inchikey',
+
+'MoleculeInchi':'Molecule.vamdc_inchi',
+'MoleculeInchiKey':'Molecule.vamdc_inchikey',
 }
 
 # The restrictable dictionary defines limitations to the search. 
