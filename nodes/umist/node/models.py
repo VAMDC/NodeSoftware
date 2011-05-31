@@ -21,6 +21,7 @@ class Species(models.Model):
     inchi = models.TextField(blank=True)
     vamdc_inchikey = models.CharField(max_length=90, blank=True)
     vamdc_inchi = models.TextField(blank=True)
+    type = models.IntegerField(db_column='species_type')
     class Meta:
         db_table = u'new_species'
 
@@ -55,13 +56,13 @@ class Reaction(models.Model):
     user_id = models.IntegerField(null=True, blank=True)
     udfa2005 = models.IntegerField(null=True, blank=True)
     rt_id = models.IntegerField(null=True, blank=True)
-    r1_species = models.ForeignKey(Species, to_field='species_id', db_column='r1_species', related_name='rxns_r1')
-    r2_species = models.ForeignKey(Species, to_field='species_id', db_column='r2_species', related_name='rxns_r2')
-    r3_species = models.ForeignKey(Species, to_field='species_id', db_column='r3_species', related_name='rxns_r3')
-    p1_species = models.ForeignKey(Species, to_field='species_id', db_column='p1_species', related_name='rxns_p1')
-    p2_species = models.ForeignKey(Species, to_field='species_id', db_column='p2_species', related_name='rxns_p2')
-    p3_species = models.ForeignKey(Species, to_field='species_id', db_column='p3_species', related_name='rxns_p3')
-    p4_species = models.ForeignKey(Species, to_field='species_id', db_column='p4_species', related_name='rxns_p4')
+    r1_species = models.ForeignKey(Species, db_column='r1_species', related_name='rxns_r1')
+    r2_species = models.ForeignKey(Species, db_column='r2_species', related_name='rxns_r2')
+    r3_species = models.ForeignKey(Species, db_column='r3_species', related_name='rxns_r3')
+    p1_species = models.ForeignKey(Species, db_column='p1_species', related_name='rxns_p1')
+    p2_species = models.ForeignKey(Species, db_column='p2_species', related_name='rxns_p2')
+    p3_species = models.ForeignKey(Species, db_column='p3_species', related_name='rxns_p3')
+    p4_species = models.ForeignKey(Species, db_column='p4_species', related_name='rxns_p4')
 
     # need to create these views for use in the ManyToMany relations in order to abstract the p1,p2...
     #create or replace view reaction_products (reaction_id, species_id) as select distinct r.reaction_id,s.species_id from new_reaction r, new_species s where r.p1_species = s.species_id OR r.p2_species = s.species_id OR r.p3_species = s.species_id OR r.p4_species = s.species_id;
@@ -76,15 +77,15 @@ class Reaction(models.Model):
 class RxnData(models.Model):
     id = models.IntegerField(db_column='rd_id', primary_key=True)
     network_id = models.IntegerField(null=True, blank=True)
-    reaction = models.ForeignKey(Reaction, to_field='reaction_id', db_column='reaction_id')
-    rt = models.ForeignKey(ReacTypes, to_field='rt_id', db_column='rt_id')
+    reaction = models.ForeignKey(Reaction, db_column='reaction_id')
+    rt = models.ForeignKey(ReacTypes, db_column='rt_id')
     alpha = models.FloatField(null=True, blank=True)
     beta = models.FloatField(null=True, blank=True)
     gamma = models.FloatField(null=True, blank=True)
     tmin = models.FloatField(null=True, blank=True)
     tmax = models.FloatField(null=True, blank=True)
     acc = models.CharField(max_length=3, blank=True)
-    ref = models.ForeignKey(Source, to_field='abbr', db_column='ref')
+    ref = models.ForeignKey(Source, db_column='ref')
     clem = models.CharField(max_length=3, blank=True)
     dipole = models.IntegerField(null=True, blank=True)
     r10kr = models.FloatField(null=True, blank=True)
