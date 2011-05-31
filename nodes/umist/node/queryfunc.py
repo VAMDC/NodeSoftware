@@ -162,6 +162,24 @@ def setupResults(sql, limit=1000):
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
+
+    # UMIST database code
+
+    reacts = models.NewRxnData.objects.select_related(depth=2).filter(q)
+
+    # count the number of matches, make a simple trunkation if there are
+    # too many (record the coverage in the returned header)
+    nreacts=reacts.count()
+    if limit < nreacts :
+        reacts = reacts[:limit]
+        percentage='%.1f' % (float(limit) / nreacts * 100)
+    else:
+        percentage=None
+
+
+
+
+
     transs = models.Transition.objects.select_related(depth=2).filter(q)
 
     # count the number of matches, make a simple trunkation if there are
