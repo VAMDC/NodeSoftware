@@ -41,7 +41,7 @@ def setupResults(sql):
 
     # UMIST database code
 
-    react_ds = RxnData.objects.all()[:10]
+    react_ds = RxnData.objects.filter(pk__in=(2,4,3862,3863,7975,7976))
     #react_ds = models.RxnData.objects.filter(q)
 
     # count the number of matches, make a simple trunkation if there are
@@ -51,15 +51,16 @@ def setupResults(sql):
 
     sources = Source.objects.filter(pk__in=set(react_ds.values_list('ref_id', flat=True))) 
     nsources = sources.count()
-    log.debug('done with sources: %s'%nsources)
 
     reacts = Reaction.objects.filter(pk__in=set(react_ds.values_list('reaction_id', flat=True)))
-    log.debug('done with Reactions')
     species = Species.objects.filter(pk__in=reacts.values_list('species'))
-    log.debug('done with species')
     atoms = species.filter(type=1)
     molecules = species.filter(type=2)
     particles = species.filter(type=3)
+
+    for rea in react_ds:
+        rea.Reactants = rea.reaction.reactants.all()
+        rea.Products = rea.reaction.products.all()
 
     log.debug('done setting up the QuerySets')
     # Create the header with some useful info. The key names here are
