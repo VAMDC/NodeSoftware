@@ -1421,21 +1421,22 @@ def XsamsMethods(Methods):
         yield """<Method methodID="M%s-%s">\n""" % (NODEID, G('MethodID'))
 
         methodsourcerefs = G('MethodSourceRef')
-        # make it always into a list to be looped over, even if
-        # only single entry
-        try:
-            methodsourcerefs = eval(methodsourcerefs)
-        except:
-            pass
-        if not isiterable(methodsourcerefs): 
-            methodsourcerefs = [methodsourcerefs]
-        for sourceref in methodsourcerefs:
-            yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
+        if methodsourcerefs != '':
+            # make it always into a list to be looped over, even if
+            # only single entry
+            try:
+                methodsourcerefs = eval(methodsourcerefs)
+            except:
+                pass
+            if not isiterable(methodsourcerefs): 
+                methodsourcerefs = [methodsourcerefs]
+            for sourceref in methodsourcerefs:
+                yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
 
-        yield """<Category>%s</Category>\n<Description>%s</Description>"""\
+        yield """<Category>%s</Category>\n<Description>%s</Description>\n"""\
              % (G('MethodCategory'), G('MethodDescription'))
 
-        yield '</Method>'
+        yield '</Method>\n'
     yield '</Methods>\n'
 
 def generatorError(where):
