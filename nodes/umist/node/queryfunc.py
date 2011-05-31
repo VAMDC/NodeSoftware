@@ -8,7 +8,7 @@
 # library imports 
 
 import sys
-from itertools import chain
+from django.db.models import Q
 from django.conf import settings
 from vamdctap.sqlparse import where2q
 
@@ -28,21 +28,14 @@ def setupResults(sql):
     # convert the incoming sql to a correct django query syntax object 
     # based on the RESTRICTABLES dictionary in dictionaries.py
     # (where2q is a helper function to do this for us).
-    #q = where2q(sql.where, dictionaries.RESTRICTABLES)
-    #try: 
-    #    q = eval(q) # test queryset syntax validity
-    #except: 
-    #    return {}
+    q = where2q(sql.where, dictionaries.RESTRICTABLES)
+    try: 
+        q = eval(q) # test queryset syntax validity
+    except: 
+        return {}
 
-    # We build a queryset of database matches on the Transision model
-    # since through this model (in our example) we are be able to
-    # reach all other models. Note that a queryset is actually not yet
-    # hitting the database, making it very efficient.
-
-    # UMIST database code
-
-    react_ds = RxnData.objects.filter(pk__in=(2,4,3862,3863,7975,7976))
-    #react_ds = models.RxnData.objects.filter(q)
+    #react_ds = RxnData.objects.filter(pk__in=(2,4,3862,3863,7975,7976))
+    react_ds = RxnData.objects.filter(q)
 
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
