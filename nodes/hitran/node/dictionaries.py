@@ -42,6 +42,7 @@ RETURNABLES=CaselessDict({\
 'MoleculeID': 'Molecule.inchikey',
 'MoleculeInChI': 'Molecule.inchi',
 'MoleculeInChIKey': 'Molecule.inchikey',
+'MoleculeSpeciesID': 'Molecule.inchikey',
 # use the Comment field to 
 'MoleculeComment': 'Molecule.iso_name',
 

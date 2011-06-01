@@ -218,6 +218,7 @@ def setupResults(sql, LIMIT=None, XSAMSvariant='working'):
 
     transs = Trans.objects.filter(q) 
     ntrans = transs.count()
+    print 'BEFORE: ntrans =',ntrans
     if LIMIT is not None and ntrans > LIMIT:
         # we need to filter transs again later, so can't take a slice
         #transs = transs[:LIMIT]
@@ -235,6 +236,10 @@ def setupResults(sql, LIMIT=None, XSAMSvariant='working'):
     LOG('%s transitions retrieved from HITRAN database' % ntrans)
     LOG('%s states retrieved from HITRAN database' % nstates)
     LOG('%s species retrieved from HITRAN database' % nspecies)
+
+    print 'nspecies =',nspecies
+    print 'nstates =',nstates
+    print 'ntrans =',ntrans
 
     headerinfo = CaselessDict({
         'Truncated': '%s %%' % percentage,
