@@ -140,10 +140,8 @@ def getHITRANbroadening(transs, XSAMSvariant):
            '    </Shifting>\n')
                 shiftings.append(''.join(shifting_xml))
             
-            # treat shifting as a sort of broadening(!) for now
-            trans.broadening_xml = '    %s\n'\
-                    '    %s' % (''.join(broadenings),
-                                ''.join(shiftings))
+            trans.broadening_xml = '    %s\n' % ''.join(broadenings)
+            trans.shifting_xml = '    %s\n' % ''.join(shiftings)
 
 def attach_state_qns(states):
     for state in states:
@@ -218,7 +216,6 @@ def setupResults(sql, LIMIT=None, XSAMSvariant='working'):
 
     transs = Trans.objects.filter(q) 
     ntrans = transs.count()
-    print 'BEFORE: ntrans =',ntrans
     if LIMIT is not None and ntrans > LIMIT:
         # we need to filter transs again later, so can't take a slice
         #transs = transs[:LIMIT]
@@ -244,6 +241,7 @@ def setupResults(sql, LIMIT=None, XSAMSvariant='working'):
     headerinfo = CaselessDict({
         'Truncated': '%s %%' % percentage,
         'count-species': nspecies,
+        'count-molecules': nspecies,
         'count-states': nstates,
         'count-radiative': ntrans
     })
