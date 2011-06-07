@@ -79,16 +79,19 @@ ADMINS = (\
 
 ###############################################
 # Example query
-# Please comment out the followind and adapt it
-# to a meaingful query for your node.
+# Please comment out the following and adapt it
+# to at least one meaingful query for your node.
 ###############################################
-# EXAMPLE_QUERY = 'SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4005'
+# EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
+#                    'SELECT ALL WHERE ... something else',
+#                   ]
+
 """
     settings_file.write(string)
     settings_file.close()
-    
+
 # Settings file created or already existed. Test it.
-    
+
 try:
     import settings
 except Exception:
