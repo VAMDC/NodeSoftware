@@ -175,13 +175,13 @@ class Trans(models.Model):
 
     prms = []
     broadening_xml = ''
+    shifting_xml = ''
 
     def XML_Broadening(self):
         return self.broadening_xml
 
     def XML_Shifting(self):
-        # shifting XML is appended to broadening_xml, so we don't need this
-        return ''
+        return self.shifting_xml
 
     class Meta:
         db_table = u'trans'
