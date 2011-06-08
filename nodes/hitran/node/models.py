@@ -12,6 +12,22 @@ from django.db import models
 
 import datetime, time
 
+case_prefixes = {}
+case_prefixes[1] = 'dcs'
+case_prefixes[2] = 'hunda'
+case_prefixes[3] = 'hundb'
+case_prefixes[4] = 'ltcs'
+case_prefixes[5] = 'nltcs'
+case_prefixes[6] = 'stcs'
+case_prefixes[7] = 'lpcs'
+case_prefixes[8] = 'asymcs'
+case_prefixes[9] = 'asymos'
+case_prefixes[10] = 'sphcs'
+case_prefixes[11] = 'sphos'
+case_prefixes[12] = 'ltos'
+case_prefixes[13] = 'lpos'
+case_prefixes[14] = 'nltos'
+
 class Molecules(models.Model):
     molecid = models.IntegerField(primary_key=True, null=False,
                                   db_column='molecID')
@@ -82,6 +98,32 @@ class States(models.Model):
     qns = models.CharField(max_length=1536, db_column='qns', blank=True)
     class Meta:
         db_table = u'states'
+
+    def qns_xml(self):
+        """Yield the XML for the state quantum numbers"""
+        qns = Qns.objects.filter(stateid=self.id).order_by('id')
+        if qns:
+            caseID = qns[0].caseid
+            try:
+                case = case_prefixes[caseID]
+            except KeyError:
+                # unrecognised caseID
+                return 'unrecognised case'
+        caseNS = 'http://vamdc.org/xml/xsams/0.2/cases/%s' % case
+        caseNSloc = '../../cases/%s.xsd' % case
+        xml = []
+        xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
+                   ' xmlns:%s="%s" xsi:schemaLocation="%s %s">'\
+                  % (case, case, case, caseNS, caseNS, caseNSloc))
+        xml.append('<%s:QNs>\n' % case)
+        xml.append('\n'.join([qn.xml for qn in qns]))
+        xml.append('</%s:QNs>\n' % case)
+        xml.append('</Case>\n')
+        return ''.join(xml)
+        #yield ''.join(xml)
+    # associate qns_xml with the XML attribute of the States class
+    # so that generators.py checkXML() works:
+    XML = qns_xml
 
 class Method:
     def __init__(self, id, category, description):
@@ -174,14 +216,109 @@ class Trans(models.Model):
                                   blank=True)
 
     prms = []
-    broadening_xml = ''
-    shifting_xml = ''
 
     def XML_Broadening(self):
-        return self.broadening_xml
+        prms = Prms.objects.filter(transid=self.id)
+        prm_dict = {}
+        for prm in prms:
+            prm_dict[prm.prm_name] = prm
+            # XXX for now, replace reference with the generic HITRAN08 ref
+            prm_dict[prm.prm_name].prm_ref = 'BHIT-B_HITRAN2008'
+        broadenings = []
+        if 'g_air' in prm_dict.keys() and 'n_air' in prm_dict.keys():
+            g_air_val = str(prm_dict['g_air'].prm_val)
+            g_air_ref = str(prm_dict['g_air'].prm_ref)
+            n_air_val = str(prm_dict['n_air'].prm_val)
+            n_air_ref = str(prm_dict['n_air'].prm_ref)
+            lineshape_xml = ['      <Lineshape name="Lorentzian">\n'\
+   '      <Comments>The temperature-dependent pressure'\
+   ' broadening Lorentzian lineshape</Comments>\n'\
+   '      <LineshapeParameter name="gammaL">\n'\
+   '        <FitParameters functionRef="FgammaL">\n'\
+   '          <FitArgument name="T" units="K">\n'\
+   '            <LowerLimit>240</LowerLimit>\n'\
+   '            <UpperLimit>350</UpperLimit>\n'\
+   '          </FitArgument>\n'\
+   '          <FitArgument name="p" units="K">\n'\
+   '            <LowerLimit>0.</LowerLimit>\n'\
+   '            <UpperLimit>1.2</UpperLimit>\n'\
+   '          </FitArgument>\n'\
+   '          <FitParameter name="gammaL_ref">\n'\
+   '            <SourceRef>%s</SourceRef>\n'\
+   '            <Value units="1/cm">%s</Value>\n'\
+                    % (g_air_ref, g_air_val),]
+            g_air_err = prm_dict['g_air'].prm_err
+            if g_air_err:
+                g_air_err = str(g_air_err)
+                lineshape_xml.append('            <Accuracy><Statistical>'\
+                      '%s</Statistical></Accuracy>\n' % g_air_err)
+            lineshape_xml.append('          </FitParameter>\n'\
+   '          <FitParameter name="n">\n'\
+   '            <SourceRef>%s</SourceRef>\n'\
+   '            <Value units="unitless">%s</Value>\n'\
+                    % (n_air_ref, n_air_val))
+            n_air_err = prm_dict['n_air'].prm_err
+            if n_air_err:
+                n_air_err = str(n_air_err)
+                lineshape_xml.append('            <Accuracy><Statistical>'\
+                      '%s</Statistical></Accuracy>\n' % n_air_err)
+            lineshape_xml.append('          </FitParameter>\n'\
+   '        </FitParameters>\n'\
+   '      </LineshapeParameter>\n</Lineshape>\n')
+            broadening = '    <Broadening'\
+                ' envRef="Eair-broadening-ref-env" name="pressure">\n'\
+                '%s    </Broadening>\n' % ''.join(lineshape_xml)
+            broadenings.append(broadening)
+        if 'g_self' in prm_dict.keys():
+            g_self_val = str(prm_dict['g_self'].prm_val)
+            g_self_ref = str(prm_dict['g_self'].prm_ref)
+            lineshape_xml = ['      <Lineshape name="Lorentzian">\n'\
+       '        <LineshapeParameter name="gammaL">\n'\
+       '          <SourceRef>%s</SourceRef>\n'\
+       '          <Value units="1/cm">%s</Value>\n'\
+                      % (g_self_ref, g_self_val),]
+            g_self_err = prm_dict['g_self'].prm_err
+            if g_self_err:
+                g_self_err = str(g_self_err)
+                lineshape_xml.append('          <Accuracy><Statistical>'\
+                      '%s</Statistical></Accuracy>\n' % g_self_err)
+            lineshape_xml.append('        </LineshapeParameter>\n'\
+       '      </Lineshape>\n')
+            broadening = '    <Broadening'\
+                ' envRef="Eself-broadening-ref-env" name="pressure">\n'\
+                '%s    </Broadening>\n' % ''.join(lineshape_xml)
+            broadenings.append(broadening)
+        # XXX for now, do shiftings at the same time as broadenings
+        shiftings = []
+        if 'delta_air' in prm_dict.keys():
+            delta_air_val = str(prm_dict['delta_air'].prm_val)
+            delta_air_ref = str(prm_dict['delta_air'].prm_ref)
+            shifting_xml = ['    <Shifting envRef='\
+       '"Eair-broadening-ref-env">\n'\
+       '      <ShiftingParameter name="delta">\n'\
+       '        <FitParameters functionRef="Fdelta">\n'\
+       '          <FitArgument name="p" units="K">\n'\
+       '            <LowerLimit>0.</LowerLimit>\n'\
+       '            <UpperLimit>1.2</UpperLimit>\n'\
+       '          </FitArgument>\n'\
+       '          <FitParameter name="delta_ref">'\
+       '            <SourceRef>%s</SourceRef>\n'\
+       '            <Value units="unitless">%s</Value>\n'\
+                        % (delta_air_ref, delta_air_val),]
+            delta_air_err = prm_dict['delta_air'].prm_err
+            if delta_air_err:
+                delta_air_err = str(delta_air_err)
+                shifting_xml.append('            <Accuracy><Statistical>'\
+                    '%s</Statistical></Accuracy>\n' % delta_air_err)
+            shifting_xml.append('          </FitParameter>\n'\
+       '        </FitParameters>\n'\
+       '      </ShiftingParameter>\n'\
+       '    </Shifting>\n')
+            shiftings.append(''.join(shifting_xml))
+        return '    %s\n    %s\n' % (''.join(broadenings), ''.join(shiftings))
 
     def XML_Shifting(self):
-        return self.shifting_xml
+        return ''
 
     class Meta:
         db_table = u'trans'
