@@ -18,8 +18,9 @@ log.debug('test log start')
 # Get the node-specific package!
 from django.conf import settings
 from django.utils.importlib import import_module
-QUERYFUNC=import_module(settings.NODEPKG+'.queryfunc')
-DICTS=import_module(settings.NODEPKG+'.dictionaries')
+QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
+DICTS = import_module(settings.NODEPKG+'.dictionaries')
+NODEID = DICTS.RETURNABLES['NodeID']
 
 # import helper modules that reside in the same directory
 from generators import *
@@ -113,7 +114,7 @@ def sync(request):
     results=QUERYFUNC.setupResults(tap.parsedSQL)
     generator=Xsams(**results)
     response=HttpResponse(generator,mimetype='text/xml')
-    response['Content-Disposition'] = 'attachment; filename=request-%s.%s'%(datetime.now().isoformat(),tap.format)
+    response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
 
     if results.has_key('HeaderInfo'):
         response=addHeaders(results['HeaderInfo'],response)
