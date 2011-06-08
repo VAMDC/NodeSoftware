@@ -148,7 +148,7 @@ def capabilities(request):
                                  "RESTRICTABLES" : cleandict(DICTS.RESTRICTABLES),
                                  "RETURNABLES" : cleandict(DICTS.RETURNABLES),
                                  "STANDARDS-VERSION" : settings.VAMDC_STDS_VERSION,
-                                 "SOFTWARE-VERSION" : settings.SOFTWARE_VERSION,
+                                 "SOFTWARE-VERSION" : settings.NODESOFTWARE_VERSION,
                                  "EXAMPLE-QUERIES" : settings.EXAMPLE_QUERIES,
                                  })
     return render_to_response('node/capabilities.xml', c, mimetype='text/xml')
