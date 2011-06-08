@@ -13,12 +13,10 @@
             <accessURL use='base'>{{accessURL}}</accessURL>
         </interface>
         <versionOfStandards>{{STANDARDS-VERSION}}</versionOfStandards>
-        <versionOfSoftware>{{SOFTWARE-VERSION}}</versionOfSoftware>
-        {% if EXAMPLE-QUERIES %}{% for query in EXAMPLE-QUERIES%}<sampleQuery>{{query}}</sampleQuery>
-{% if RETURNABLES %}{% for returnable in RETURNABLES %}<returnable>{{ returnable }}</returnable>
-{% endfor %}{% endif %}
-{% if RESTRICTABLES %}{% for restrictable in RESTRICTABLES %}<restrictable>{{ restrictable }}</restrictable>
-{% endfor %}{% endif %}
+        <versionOfSoftware>{{NODESOFTWARE-VERSION}}</versionOfSoftware>
+        {% if EXAMPLE-QUERIES %}{% for query in EXAMPLE-QUERIES %}<sampleQuery>{{query}}</sampleQuery>{% endfor %}{% endif %}
+        {% if RETURNABLES %}{% for returnable in RETURNABLES %}<returnable>{{ returnable }}</returnable>{% endfor %}{% endif %}
+        {% if RESTRICTABLES %}{% for restrictable in RESTRICTABLES %}<restrictable>{{ restrictable }}</restrictable>{% endfor %}{% endif %}
     </capability>
     <capability standardID='ivo://ivoa.net/std/TAP'>
         <interface xsi:type='vs:ParamHTTP'>
