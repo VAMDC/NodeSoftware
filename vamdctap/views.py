@@ -147,9 +147,9 @@ def capabilities(request):
     c = RequestContext(request, {"accessURL" : getBaseURL(request),
                                  "RESTRICTABLES" : cleandict(DICTS.RESTRICTABLES),
                                  "RETURNABLES" : cleandict(DICTS.RETURNABLES),
-                                 "STANDARDS-VERSION" : settings.VAMDC_STDS_VERSION,
-                                 "SOFTWARE-VERSION" : settings.NODESOFTWARE_VERSION,
-                                 "EXAMPLE-QUERIES" : settings.EXAMPLE_QUERIES,
+                                 "STANDARDS_VERSION" : settings.VAMDC_STDS_VERSION,
+                                 "SOFTWARE_VERSION" : settings.NODESOFTWARE_VERSION,
+                                 "EXAMPLE_QUERIES" : settings.EXAMPLE_QUERIES,
                                  })
     return render_to_response('node/capabilities.xml', c, mimetype='text/xml')
 
@@ -171,11 +171,11 @@ def tablesXsd(request):
 
 def capabilitiesXsd(request):
     c = RequestContext(request, {})
-    return render_to_response('node/Capabilities.xsd', c, mimeType='text/xsl')
+    return render_to_response('node/Capabilities.xsd', c)
 
 def capabilitiesXsl(request):
     c = RequestContext(request, {})
-    return render_to_response('node/Capabilities.xsl', c)
+    return render_to_response('node/Capabilities.xsl', c, mimeType='text/xsl')
 
 def index(request):
     c=RequestContext(request,{})
