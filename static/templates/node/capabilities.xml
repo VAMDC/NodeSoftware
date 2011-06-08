@@ -13,7 +13,7 @@
             <accessURL use='base'>{{accessURL}}</accessURL>
         </interface>
         <versionOfStandards>{{STANDARDS-VERSION}}</versionOfStandards>
-        <versionOfSoftware>{{NODESOFTWARE-VERSION}}</versionOfSoftware>
+        <versionOfSoftware>{{SOFTWARE-VERSION}}</versionOfSoftware>
         {% if EXAMPLE-QUERIES %}{% for query in EXAMPLE-QUERIES %}<sampleQuery>{{query}}</sampleQuery>{% endfor %}{% endif %}
         {% if RETURNABLES %}{% for returnable in RETURNABLES %}<returnable>{{ returnable }}</returnable>{% endfor %}{% endif %}
         {% if RESTRICTABLES %}{% for restrictable in RESTRICTABLES %}<restrictable>{{ restrictable }}</restrictable>{% endfor %}{% endif %}
