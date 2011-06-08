@@ -175,7 +175,7 @@ def capabilitiesXsd(request):
 
 def capabilitiesXsl(request):
     c = RequestContext(request, {})
-    return render_to_response('node/Capabilities.xsl', c, mimeType='text/xsl')
+    return render_to_response('node/Capabilities.xsl', c, mimetype='text/xsl')
 
 def index(request):
     c=RequestContext(request,{})
