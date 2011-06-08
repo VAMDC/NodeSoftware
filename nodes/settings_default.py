@@ -7,6 +7,12 @@
 import sys, os
 
 ###################################################
+# Software and standards version
+###################################################
+VAMDC_STDS_VERSION = '11.5'
+NODESOFTWARE_VERSION = '11.5r1-beta'
+
+###################################################
 # Basic node setup 
 ###################################################
 # root path of the VAMDC install on your system (should be automatically set)
@@ -23,6 +29,11 @@ ROOT_URLCONF = NODENAME+'.urls'
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
 ADMINS = (('yourname', 'name@mail.net'),) 
 MANAGERS = ADMINS
+
+EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
+                   'SELECT ALL WHERE ... something else',
+                   ]
+
 
 ###################################################
 # Database connection
