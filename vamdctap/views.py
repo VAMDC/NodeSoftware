@@ -171,7 +171,7 @@ def tablesXsd(request):
 
 def capabilitiesXsd(request):
     c = RequestContext(request, {})
-    return render_to_response('node/Capabilities.xsd', c)
+    return render_to_response('node/Capabilities.xsd', c, mimeType='text/xsl')
 
 def capabilitiesXsl(request):
     c = RequestContext(request, {})
