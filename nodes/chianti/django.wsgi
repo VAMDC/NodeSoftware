@@ -1,8 +1,8 @@
 import os
 import sys
-sys.path.append('/VAMDC/NodeSoftware')
+sys.path.append('/vamdc/NodeSoftware')
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.YourNode.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.chianti.settings'
 
 
 import django.core.handlers.wsgi

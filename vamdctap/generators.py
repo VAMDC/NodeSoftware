@@ -680,30 +680,110 @@ def XsamsMCSBuild(Molecule):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
     yield '</MolecularChemicalSpecies>\n'
 
-def XsamsMSQNsBuild(MolQNs):
+def makeCaseQNs(G):
     """
-    Generator for MoleculeQnAttribute tag
+    return the Case and the QNs
+    """
+    case = G('MoleculeQnCase')
+    if not case: return ''
 
-    THIS NEEDS REWRITING TO NEW CASES
-    see cases/import.xsd for a list of namespaces
-    they can also be given in-line like in tests/valid/cbc_casensinplace.xml
-    """
-    G = lambda name: GetValue(name, MolQN=MolQN)
-    MolQN = MolQNs[0]; case = G('MoleculeQnCase')
-    caseNS = 'http://vamdc.org/xml/xsams/0.2/cases/%s' % case
-    caseNSloc = '../../cases/%s.xsd' % case
-    yield '<Case xsi:type="%s:Case" caseID="%s"'\
-          ' xmlns:%s="%s" xsi:schemaLocation="%s %s">'\
-        % (case, case, case, caseNS, caseNS, caseNSloc)
-    yield '<%s:QNs>\n' % case
-    for MolQN in MolQNs:
-        qn_attr = ''
-        if G('MoleculeQnAttribute'):
-            qn_attr = ' %s' % G('MoleculeQnAttribute')
-        yield '<%s:%s%s>%s</%s:%s>\n' % (G('MoleculeQnCase'), G('MoleculeQnLabel'),
-            qn_attr, G('MoleculeQnValue'), G('MoleculeQnCase'), G('MoleculeQnLabel'))
-    yield '</%s:QNs>\n' % case
-    yield '</Case>'
+    ElecStateLabel = G("MoleculeQNElecStateLabel")
+    elecInv = G("MoleculeQNelecInv")
+    elecRefl = G("MoleculeQNelecRefl")
+    vi = G("MoleculeQNvi")
+    viMode = G("MoleculeQNviMode")
+    vibInv = G("MoleculeQNvibInv")
+    vibSym = G("MoleculeQNvibSym")
+    vibSymGroup = G("MoleculeQNvibSymGroup")
+    J = G("MoleculeQNJ")
+    Ka = G("MoleculeQNKa")
+    Kc = G("MoleculeQNKc")
+    rotSym = G("MoleculeQNrotSym")
+    rotSymGroup = G("MoleculeQNrotSymGroup")
+    I = G("MoleculeQNI")
+    InuclSpin = G("MoleculeQNInuclSpin")
+    Fj = G("MoleculeQNFj")
+    Fjj = G("MoleculeQNFjj")
+    FjnuclSpin = G("MoleculeQNFjnuclSpin")
+    F = G("MoleculeQNF")
+    FnuclSpin = G("MoleculeQNFnuclSpin")
+    r = G("MoleculeQNr")
+    rName = G("MoleculeQNrName")
+    parity = G("MoleculeQNparity")
+    S = G("MoleculeQNS")
+    N = G("MoleculeQNN")
+    v = G("MoleculeQNv")
+    F1 = G("MoleculeQNF1")
+    F1nuclSpin = G("MoleculeQNF1nuclSpin")
+    asSym = G("MoleculeQNasSym")
+    Lambda = G("MoleculeQNLambda")
+    Sigma = G("MoleculeQNSigma")
+    Omega = G("MoleculeQNOmega")
+    kronigParity = G("MoleculeQNkronigParity")
+    SpinComponentLabel = G("MoleculeQNSpinComponentLabel")
+    li = G("MoleculeQNli")
+    liMode = G("MoleculeQNliMode")
+    l = G("MoleculeQNl")
+    vibRefl = G("MoleculeQNvibRefl")
+    v1 = G("MoleculeQNv1")
+    v2 = G("MoleculeQNv2")
+    v3 = G("MoleculeQNv3")
+    l2 = G("MoleculeQNl2")
+    F2 = G("MoleculeQNF2")
+    F2nuclSpin = G("MoleculeQNF2nuclSpin")
+    K = G("MoleculeQNK")
+
+    result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/0.2/cases/%s">'
+    result += '<case:QNs>'
+    if ElecStateLabel: result += '<ElecStateLabel>%s</ElecStateLabel>'%ElecStateLabel
+    if elecInv: result += '<elecInv>%s</elecInv>'%elecInv
+    if elecRefl: result += '<elecRefl>%s</elecRefl>'%elecRefl
+    if Lambda: result += '<Lambda>%s</Lambda>'%Lambda
+    if Sigma: result += '<Sigma>%s</Sigma>'%Sigma
+    if Omega: result += '<Omega>%s</Omega>'%Omega
+    if S: result += '<S>%s</S>'%S
+    if v: result += '<v>%s</v>'%v
+    if v1: result += '<v1>%s</v1>'%v1
+    if v2: result += '<v2>%s</v2>'%v2
+    if l2: result += '<l2>%s</l2>'%l2
+    if v3: result += '<v3>%s</v3>'%v3
+    if vi:
+        for val,i in enumerate(makeiter(vi)):
+            result += '<vi mode="%s">%s</vi>'%(makeiter(viMode)[i],val)
+    if li:
+        for val,i in enumerate(makeiter(li)):
+            result += '<vi mode="%s">%s</vi>'%(makeiter(liMode)[i],val)
+    if l: result += '<l>%s</l>'%l
+    if vibInv: result += '<vibInv>%s</vibInv>'%vibInv
+    if vibRefl: result += '<vibRefl>%s</vibRefl>'%vibRefl
+    if vibSym:
+        if vibSymGroup: result += '<vibSym group="%s">%s</vibSym>'%(vibSymGroup,vibSym)
+        else: result += '<vibSym>%s</vibSym>'%vibSym
+    if J: result += '<J>%s</J>'%J
+    if K: result += '<K>%s</K>'%K
+    if Ka: result += '<Ka>%s</Ka>'%Ka
+    if Kc: result += '<Kc>%s</Kc>'%Kc
+    if rotSym:
+        if rotSymGroup:  result += '<rotSym group="%s">%s</rotSym>'%(rotSymGroup,rotSym)
+        else: result += '<rotSym>%s</rotSym>'%rotSym
+    if I: result += '<I nuclearSpinRef="%s">%s</I>'%(InuclSpin,I)
+    if Fj:
+        for val,i in enumerate(makeiter(Fj)):
+            result += '<Fj j="%s" nuclearSpinRef="%s">%s</Fj>'%(makeiter(Fjj)[i],makeiter(FjnuclSpin)[i],val)
+    if N: result += '<N>%s</N>'%N
+    if SpinComponentLabel: result += '<SpinComponentLabel>%s</SpinComponentLabel>'%SpinComponentLabel
+    if F1: result += '<F1 nuclearSpinRef="%s">%s</F1>'%(F1nuclSpin,F1)
+    if F2: result += '<F2 nuclearSpinRef="%s">%s</F2>'%(F2nuclSpin,F2)
+    if F: result += '<F nuclearSpinRef="%s">%s</F>'%(FnuclSpin,F)
+    if r:
+        for val,i in enumerate(makeiter(r)):
+            result += '<r name="%s">%s</r>'%(makeiter(rName)[i],val)
+    if parity: result += '<parity>%s</parity>'%parity
+    if kronigParity: result += '<kronigParity>%s</kronigParity>'%kronigParity
+    if asSym: result += '<asSym>%s</asSym>'%asSym
+
+    result += '</case:QNs>'
+    return result+'</Case>'
 
 def XsamsMSBuild(MoleculeState):
     """
@@ -725,8 +805,7 @@ def XsamsMSBuild(MoleculeState):
     if cont:
         yield ret
     else:
-        for MSQNs in XsamsMSQNsBuild(G("MoleculeStateQuantumNumbers")):
-            yield MSQNs
+        yield makeCaseQNs(G)
     yield '</MolecularState>\n'
 
 def XsamsMolecules(Molecules):
@@ -774,9 +853,9 @@ def makeBroadeningType(G, name='Natural'):
     comm = G('RadTransBroadening%sComment' % name)
     s = '<Broadening name="%s"' % name.lower()
     if meth: 
-        s += ' methodRef="%s"' % meth
+        s += ' methodRef="M%s-%s"' % (NODEID, meth)
     if env: 
-        s += ' envRef="E%s-%s"' % (NODEID,env)
+        s += ' envRef="E%s-%s"' % (NODEID, env)
     s += '>'
     if comm: 
         s +='<Comments>%s</Comments>' % comm
@@ -851,7 +930,7 @@ def XsamsRadTranShifting(RadTran, G):
             if hasattr(ShiftingParam, "Fit"):        
                 for Fit in makeiter(ShiftingParam.Fits):
                     GSF = lambda name: GetValue(name, Fit=Fit)
-                    string += "<FitParameters functionRef=F%s>" % GSF("RadTransShiftingParamFitFunction")
+                    string += "<FitParameters functionRef=F%s-%s>" % (NODEID, GSF("RadTransShiftingParamFitFunction"))
 
                     # hard-code to avoid yet anoter named loop variable 
                     for name, units, desc, llim, ulim in makeloop("RadTransShiftingParamFitArgument", GSF, "Name", "Units", "Description", "LowerLimit", "UpperLimit"):
@@ -1026,9 +1105,9 @@ def XsamsRadCross(RadCross):
         if species or state: 
             yield "<Species>"
             if species:
-                yield "<SpeciesRef>X%s</SpeciesRef>" % species
+                yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
             if state:
-                yield "<StateRef>S%s</StateRef>" % state            
+                yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)            
             yield "</Species>"
         
         # Note - XSAMS dictates a list of BandAssignments here; but this is probably unlikely to
@@ -1098,7 +1177,7 @@ def XsamsCollTrans(CollTrans):
 
         # create header
         G = lambda name: GetValue(name, CollTran=CollTran)
-        yield makePrimaryType("Collision", "Collision", G)
+        yield makePrimaryType("CollisionalTransition", "Collision", G)
 
         yield "<ProcessClass>"
         udef = G("CollisionUserDefinition")
@@ -1160,10 +1239,10 @@ def XsamsCollTrans(CollTrans):
                 yield "<Product>"
                 species = GP("CollisionProductSpecies")
                 if species:
-                    yield "<SpeciesRef>X%s</SpeciesRef>" % species        
+                    yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
                 state = GP("CollisionProductState")
                 if state: 
-                    yield "<StateRef>S%s</StateRef>" % state
+                    yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)
                 species = GP("CollisionProductSpecies")     
                 yield "</Product>"
         
@@ -1199,7 +1278,7 @@ def XsamsCollTrans(CollTrans):
 
                             fref = GDF("CollisionFitDataFunction")
                             if fref:
-                                yield "<FitParameters functionRef=F%s>" % fref
+                                yield "<FitParameters functionRef=F%s-%s>" % (NODEID, fref)
                             else:
                                 yield "<FitParameters>"
 
@@ -1323,13 +1402,13 @@ def XsamsNonRadTrans(NonRadTrans):
         G = lambda name: GetValue(name, NonRadTran=NonRadTran)        
         yield makePrimaryType("NonRadiativeTransition", "NonRadTran", G)
         
-        yield "<InitialStateRef>S%s</InitialStateRef>" % G("NonRadTranInitialState")
+        yield "<InitialStateRef>S%s-%s</InitialStateRef>" % (NODEID, G("NonRadTranInitialState"))
         fstate = G("NonRadTranFinalState")
         if fstate:
-            yield "<FinalStateRef>S%s</FinalStateRef>" % fstate
+            yield "<FinalStateRef>S%s-%s</FinalStateRef>" % (NODEID, fstate)
         fspec = G("NonRadTranSpecies")
         if fspec:
-            yield "<SpeciesRef>X%s</SpeciesRef>" % fspec
+            yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, fspec)
         yield makeDataType("Probability", "NonRadTranProbability", G)
         yield makeDataType("NonRadiativeWidth", "NonRadTranWidth", G)
         yield makeDataType("TransitionEnergy", "NonRadTranEnergy", G)

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from vamdctap.caselessdict import CaselessDict
 
 RESTRICTABLES = {\
 'AtomSymbol':'atomsymbol',
@@ -11,6 +10,7 @@ RESTRICTABLES = {\
 }
 
 RETURNABLES = {\
+'NodeID':'chianti',
 'AtomSymbol':'AtomState.atomsymbol',
 'AtomNuclearCharge':'AtomState.atomnuclearcharge',
 'AtomIonCharge':'AtomState.atomioncharge',
@@ -29,3 +29,6 @@ RETURNABLES = {\
 'RadTransProbabilityTransitionProbabilityAUnits':u'Hz'
 }
 
+from vamdctap.caselessdict import CaselessDict
+RESTRICTABLES = CaselessDict(RESTRICTABLES)
+RETURNABLES = CaselessDict(RETURNABLES)
