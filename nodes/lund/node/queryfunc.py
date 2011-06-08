@@ -64,14 +64,13 @@ def setupResults(sql,limit=1000):
     methods = getLifetimeMethods()
     #print "atoms:", atoms
     #print "state_filter:", atoms.States.filter(pk="4101-LS-4-1G-14790.790")
-    headerinfo=CaselessDict({\
+    headerinfo={\
             'Truncated':percentage,
             'COUNT-SOURCES':nsources,
             'COUNT-species':nspecies,
             'count-states':nstates,
             'count-radiative':ntranss
-            })
-            
+            }
 
     return {'RadTrans':transs,
             'Atoms':atoms,

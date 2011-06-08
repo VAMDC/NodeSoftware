@@ -8,10 +8,12 @@ from xml.sax.saxutils import quoteattr
 from django.conf import settings
 from django.utils.importlib import import_module
 DICTS = import_module(settings.NODEPKG + '.dictionaries')
+from caselessdict import CaselessDict
+RETURNABLES = CaselessDict(DICTS.RETURNABLES)
 
 # This must always be set.
 try:
-    NODEID = DICTS.RETURNABLES['NodeID']
+    NODEID = RETURNABLES['NodeID']
 except:
     NODEID = 'PleaseFillTheNodeID'
 
@@ -27,7 +29,7 @@ def countReturnables(regexp):
     count how often a certain matches the keys of the returnables
     """
     r = re.compile(regexp, flags=re.IGNORECASE)
-    return len(filter(r.match, DICTS.RETURNABLES.keys()))
+    return len(filter(r.match, RETURNABLES.keys()))
 
 # Define some globals that allow skipping parts
 # of the generator below.
@@ -50,10 +52,10 @@ def makeiter(obj):
         return []
     if not isiterable(obj):
         return [obj]
-    return obj 
+    return obj
 
 def makeloop(keyword, G, *args):
-    """    
+    """
     Creates a nested list of lists. All arguments should be valid dictionary
     keywords and will be fed to G. They are expected to return iterables of equal lengths.
     The generator yields a list of current element of each argument-list in order, so one can do e.g.
@@ -66,7 +68,7 @@ def makeloop(keyword, G, *args):
     Nargs = len(args)
     lis = []
     for arg in args:
-        lis.append(makeiter(G("%s%s" % (keyword, arg))))        
+        lis.append(makeiter(G("%s%s" % (keyword, arg))))
     try:
         Nlis = lis[0].count()
     except TypeError:
@@ -79,23 +81,23 @@ def makeloop(keyword, G, *args):
             except Exception:
                 olist[k].append("")
     return olist
-    
+
 def GetValue(name, **kwargs):
     """
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
     try:
-        name = DICTS.RETURNABLES[name]
+        name = RETURNABLES[name]
     except Exception:
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
-        return '' 
+        return ''
 
     if not name:
         # the key was in the dict, but the value was empty or None.
-        return '' 
+        return ''
 
     for key in kwargs:
         # assign the dict-value to a local variable named as the dict-key
@@ -105,15 +107,18 @@ def GetValue(name, **kwargs):
         # here, the RHS of the RETURNABLES dict is executed.
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
-    except Exception: 
+    except Exception:
+         # this catches the case where the dict-value is a string or mistyped.
 #        log.debug('Exception in generators.py: GetValue()')
 #        log.debug(str(e))
 #        log.debug(name)
-        # this catches the case where the dict-value is a string or mistyped.
-        value = name      
+        value = name
     if value == None:
         # the database returned NULL
-        return '' 
+        return ''
+    elif value == 0:
+        if isinstance(value, float): return '0.0'
+        else: return '0'
 
     # turn it into a string, quote it, but skip the quotation marks
     # edit - no, we need to have the object itself sometimes to loop over
@@ -814,7 +819,7 @@ def XsamsMolecules(Molecules):
     """
     if not Molecules: return
     yield '<Molecules>\n'
-    for Molecule in Molecules:
+    for Molecule in makeiter(Molecules):
         cont, ret = checkXML(Molecule)
         if cont:
             yield ret
@@ -826,13 +831,75 @@ def XsamsMolecules(Molecules):
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS
 
-        if not hasattr(Molecule,'States'): 
+        if not hasattr(Molecule,'States'):
             Molecule.States = []
         for MoleculeState in Molecule.States:
             for MS in XsamsMSBuild(MoleculeState):
                 yield MS
         yield '</Molecule>\n'
     yield '</Molecules>\n'
+
+
+def XsamsSolids(Solids):
+    """
+    Generator for Solids tag
+    """
+    if not Solids:
+        return
+    yield "<Solids>"
+    for Solid in makeiter(Solids):
+        cont, ret = checkXML(Solid)
+        if cont:
+            yield ret
+            continue
+        G = lambda name: GetValue(name, Solid=Solid)
+        makePrimaryType("Solid", "Solid", G, extraAttr={"stateID":"S%s-%s" % (NODEID, G("SolidStateID"))})
+        if hasattr(Solid, "Layers"):
+            for Layer in makeiter(Solid.Layers):
+                GL = lambda name: GetValue(name, Layer=Layer)
+                yield "<Layer>"
+                yield "<MaterialName>%s</MaterialName>" % GL("SolidLayerName")
+                if hasattr(Solid, "Components"):
+                    makePrimaryType("MaterialComposition", "SolidLayerComponent")
+                    for Component in makeiter(Layer.Components):
+                        GLC = lambda name: GetValue(name, Component=Component)
+                        yield "<ChemicalElement>"
+                        yield "<NuclearCharge>%s</NuclearCharge>" % GLC("SolidLayerComponentNuclearCharge")
+                        yield "<ElementSymbol>%s</ElementSymbol>" % GLC("SolidLayerComponentElementSymbol")
+                        yield "</ChemicalElement>"
+                        yield "<StochiometricValue>%s</StochiometricValue>" % GLC("SolidLayerComponentStochiometricValue")
+                        yield "<Percentage>%s</Percentage>" % GLC("SolidLayerComponentPercentage")
+                    yield "</MaterialComposition>"
+                makeDataType("MaterialThickness", "SolidLayerThickness", GL)
+                yield "<MaterialTopology>%s</MaterialThickness>" % GL("SolidLayerTopology")
+                makeDataType("MaterialTemperature", "SolidLayerTemperature", GL)
+                yield "<Comments>%s</Comments>" % GL("SolidLayerComment")
+                yield "</Layer>"
+        yield "</Solid>"
+    yield "</Solids>"
+
+def XsamsParticles(Particles):
+    """
+    Generator for Particles tag.
+    """
+    if not Particles:
+        return
+    yield "<Particles>"
+    for Particle in makeiter(Particles):
+        cont, ret = checkXML(Particle)
+        if cont:
+            yield ret
+            continue
+        G = lambda name: GetValue(name, Particle=Particle)
+        makePrimaryType("Particle", "Particle", G, extraAttr={"stateID":G("ParticleStateID"), "name":G("ParticleName")})
+        yield "<ParticleProperties>"
+        yield "<ParticleCharge>%s</ParticleCharge>" % G("ParticleCharge")
+        makeDataType("ParticleMass", "ParticleMass", G)
+        yield "<ParticleSpin>%s</ParticleSpin>" % G("ParticleSpin")
+        yield "<ParticlePolarization>%s</ParticlePolarization>" % G("ParticlePolarization")
+        yield "</ParticleProperties>"
+        yield "</Particle>"
+    yield "</Particles>"
 
 ###############
 # END SPECIES
@@ -874,11 +941,17 @@ def XsamsRadTranBroadening(G):
     """
     helper function for line broadening, called from RadTrans
 
-    allwoed names are: pressure, instrument, doppler, natural
+    allowed names are: pressure, instrument, doppler, natural
     """
     s=''
     if countReturnables('RadTransBroadeningNatural'):
-        s += makeBroadeningType(G, name='Natural')
+        # attempt at making a loop to support multiple natural broadening effects
+        if hasattr(G('RadTransBroadeningNatural'), "Broadenings"):
+            for Broadening in  makeiter(G('RadTransBroadeningNatural').Broadenings):
+                GB = lambda name: GetValue(name, Broadening=Broadening)
+                s += makeBroadeningType(GB, name='Natural')  
+        else:
+            s += makeBroadeningType(G, name='Natural')
     if countReturnables('RadTransBroadeningInstrument'):
         s += makeBroadeningType(G, name='Instrument')
     if countReturnables('RadTransBroadeningDoppler'):
@@ -1527,8 +1600,8 @@ def generatorError(where):
     return where
 
 def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
-    Environments=None, Atoms=None, Molecules=None, CollTrans=None,
-    RadTrans=None, RadCross=None, NonRadTrans=None):
+          Environments=None, Atoms=None, Molecules=None, Solids=None, Particles=None, 
+          CollTrans=None, RadTrans=None, RadCross=None, NonRadTrans=None):
     """
     The main generator function of XSAMS. This one calls all the
     sub-generators above. It takes the query sets that the node's
@@ -1590,6 +1663,18 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
         for Molecule in XsamsMolecules(Molecules):
             yield Molecule
     except: errs+=generatorError(' Molecules')
+
+    log.debug('Working on Solids.')
+    try:
+        for Solid in XsamsSolids(Solids):
+            yield Solid
+    except: errs += generatorError(' Solids')
+
+    log.debug('Working on Particles.')
+    try:
+        for Particle in XsamsParticles(Particles):
+            yield Particle
+    except: errs += generatorError(' Particles')
 
     yield '</Species>\n'
 

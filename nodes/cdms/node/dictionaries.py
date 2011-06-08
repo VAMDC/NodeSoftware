@@ -193,10 +193,3 @@ RESTRICTABLES = {
 #'SourceCategory':'',
 #'SourceYear':'',
 }
-
-
-
-# Do not edit or remove these three lines
-from vamdctap.caselessdict import CaselessDict
-RETURNABLES = CaselessDict(RETURNABLES)
-RESTRICTABLES = CaselessDict(RESTRICTABLES)
