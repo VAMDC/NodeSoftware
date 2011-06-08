@@ -14,7 +14,9 @@ dummy*
 .#*
 *_c.xml
 *.swp
+*.swo
 .DS_Store
-doc/build/*
+doc*/build/*
 *.json
 *.dat
+*.log

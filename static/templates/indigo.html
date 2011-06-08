@@ -7,7 +7,8 @@
 <meta name="keywords" content="keywords"/> 
 <meta name="author" content="author"/> 
 <link rel="stylesheet" type="text/css" href="/indigo.css" media="screen"/>
-<title>{% block title %}VAMDC Testsite{% endblock %}</title>
+<title>{% block title %}VAMDC Tool Collection{% endblock %}</title>
+{% block addheader %}{% endblock %}
 </head>
 
 <body>
@@ -50,11 +51,13 @@
 			<h1>Documentation</h1>
 			<ul>
 				<li><a href="/doc/">NodeSoftware</a></li>
+				<li><a href="http://vamdc-standards.readthedocs.org/">Standards</a></li>
 				
 			</ul>
 			<h1>Dictionary</h1>
 			<ul>
-				<li><a href="/dict/">Browse</a></li>
+				<li><a href="/dict/">Browse (alphabetical)</a></li>
+				<li><a href="/dict/bytype/">Browse (by type)</a></li>
                 <li><a href="/dict/new/">Create dictionaries</a></li>
                 <li><a href="/dict/check/">Check dictionaries</a></li>
     			<li><a href="/dict/admin/">Edit main dictionary</a></li>

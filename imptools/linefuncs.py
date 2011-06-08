@@ -65,7 +65,8 @@ def charrange2int(linedata, start, end, filenum=0):
         pass
         
 def bySepNr(linedata, number, sep=','):
-    try: return string.split(linedata,sep)[number]
+    try: 
+        return string.split(linedata,sep)[number].strip()
     except Exception, e:
         pass
         #print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
@@ -146,7 +147,7 @@ def get_alphawaals(linedata, sep1, sep2):
     "extract alpha - van der waal value"
     l1 = charrange(linedata, sep1, sep2)    
     if float(l1) > 0:
-        return "%s.%s" % (0, bySepNr(linedata, 1, '.'))
+        return "%s.%s" % (0, bySepNr(l1, 1, '.'))
     else:
         return '0.000'    
 
@@ -154,7 +155,7 @@ def get_sigmawaals(linedata, sep1, sep2):
     "extract sigma - van der waal value"
     l1 = charrange(linedata, sep1, sep2)   
     if float(l1) > 0:
-        return bySepNr(0, '.')
+        return bySepNr(l1, 0, '.')
     else:
         return '0.000'
 
@@ -169,3 +170,11 @@ def merge_cols(linedata, *ranges):
     """
     return '-'.join([charrange(linedata, *ran) for ran in ranges])
     
+def merge_cols_by_sep(linedata, *sepNr):
+    """
+    Merges data from several columns (separated by ;) into one, separating them with '-'.
+    sepNr are the nth position of the file, separated by 'sep'.
+    Assumes a single line input.
+    """    
+    sep = ';'
+    return '-'.join([bySepNr(linedata, nr, sep=sep).strip() for nr in sepNr])

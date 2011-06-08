@@ -168,9 +168,7 @@ providers that want to set up their own VAMDC node do not really need to
 care about TAP either.
 
 The more detailed specification of the VAMDC variant of a TAP service 
-can be found at the `wiki-page TapXsamsSpecification 
-<http://voparis-twiki.obspm.fr/twiki/bin/view/VAMDC/TapXsamsSpecification>`_.
-
+can be found in the standards documentation at http://vamdc.org/documents/standards/.
 
 
 The query language
@@ -189,6 +187,7 @@ should not be necessary to know for setting up a new VAMDC node.
 Defining the Restrictables and Returnables is enough for allowing the 
 node software to take care of the rest.
 
+.. _xsamsconcepts:
 
 The XSAMS schema
 -------------------
@@ -199,23 +198,43 @@ VAMDC nodes send their data replies.
 
 Link to the `VAMDC-XSAMS project on Sourceforge <http://sourceforge.net/projects/xsams/>`_.
 
+The NodeSoftware provides an implementation of the XSAMS schema and data providers need not know it in detail to set up a VAMDC node. However, basic knowledge of its structure is needed to be able to write the few bits of code as explained in the next chapter.
+
+XSAMS is a hierarchical structure which simplified looks like this:
+
+.. image:: xsamsbasic.png
+   :width: 500 px
+   :alt: Basic structure of XSAMS
+
+Inside each box resides all the data that corresponds to it. The *atom* box holds the name, atomic number, masses, iosotopes, ionization and so on. The *atomic state* box holds the state energy, quantum numbers and so on.
+
+The different parts are interlinked, for example each atomic state has an ID
+and the transitions can refer to them as their initial and final state. Sources
+(i.e. publications) can be referenced, again by their ID, for each bit of
+information provided.
 
 The generic XSAMS generator
 ------------------------------
 
-The node software comes with an implementation of the XSAMS that can be 
-used by all nodes, aka the XSAMS *generator*. This frees data providers 
-from the need to know about XML, the schema and so on. In order for this 
-to work, all the data providers need to do is fill the Returnables as 
-described above. The generator then knows how to put the data into the 
-schema.
+The node software comes with an implementation of the XSAMS that can (but need
+not necessesarily) be used by all nodes, aka the XSAMS *generator*. This frees
+data providers from the need to know about XML and the details of the schema.
+In order for this to work, data providers need fill the *Returnables* as
+described above and in the next chaper. The generator then knows how to put the
+data into the schema.
 
+In principle, XSAMS allows many more nested loops than are shown in the diagram
+above. But since each node needs to build from its database the structure that
+matches the hierarchy, we have made some deliberate simplifications. For
+example we treat each ion and isotope or an atom as a different atom/species.
+This means that skip the complexity of having five or more nested loops at the
+expense of replicating some information.
 
 The portal
 ---------------
 
-The portal is the obvious example of a *user application* that makes use 
-of VAMDC nodes. It is a web site that facilitates the submission of a query 
-to many nodes at once by providing a web form out of which it assembles 
-the query string which it then sends to one or many nodes, gathers the 
-results from each of them and presents them to the user.
+The portal is the obvious example of a *user application* that makes use of
+VAMDC nodes. It is a web site that facilitates the submission of a query to
+many nodes at once by providing a web form out of which it assembles the query
+string which it then sends to one or many nodes, gathers the results from each
+of them and presents them to the user.

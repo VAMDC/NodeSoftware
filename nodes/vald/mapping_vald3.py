@@ -11,15 +11,25 @@ import os, sys
 
 from imptools.linefuncs import *
 
+# bibtex-reading helper functions
 
+def get_bibtex(linedata):
+    "return the raw data"
+    return ' '.join(linedata.split())
+
+def get_bibtex_dbref(linedata):
+    "extract the dbref from the bibtex entry"
+    first_line = linedata.split()[0]
+    typ, dbref = first_line.split('{')
+    return dbref.strip(',').strip()
+    
 # Setting up filenames
 base = "/vald/"
 species_list_file = base + 'VALD_list_of_species'
-vald_cfg_file = base + 'VALD3_config_2010.cfg'
+vald_cfg_file = base + 'VALD3.cfg'
 vald_file = base + 'vald3.dat'
 terms_file = base + 'terms'
-publications_file = base + "publications_preprocessed.dat"
-pub2source_file = base + "publications_to_sources_map.dat"
+ref_file = base + "VALD3_ref.bib"
 
 # The mapping itself
 mapping = [
@@ -33,6 +43,12 @@ mapping = [
              'cbyte':(charrange, 0,7)},
             {'cname':'name',
              'cbyte':(charrange, 9,19)},
+            {'cname':'inchi',
+             'cbyte':(constant, 'NULL'),
+             'cnull':'NULL'},
+            {'cname':'inchikey',
+             'cbyte':(constant, 'NULL'),
+             'cnull':'NULL'},
             {'cname':'ion',
              'cbyte':(charrange, 20,22)},
             {'cname':'mass',
@@ -42,18 +58,20 @@ mapping = [
             {'cname':'ionen',
              'cbyte':(charrange, 31,40)},
             {'cname':'solariso',
-             'cbyte':(charrange, 41,46)},
+             'cbyte':(charrange, 41,47)},
+            {'cname':'dissen',
+             'cbyte':(charrange, 48,57)},            
             {'cname':'ncomp',
              'cbyte':(charrange, 132,133)},
             {'cname':'atomic',
              'cbyte':(charrange, 134,136)},
             {'cname':'isotope',
              'cbyte':(charrange, 137,140)},
-           ],
+            # many2many field "species" handled by separate table
+            ],
      }, # end of definition for species file
-
-
-# State model read from states_file -upper states
+    
+    # State model read from states_file -upper states
     # (first section) 
     {'outfile':'states.dat',    
      'infiles': (vald_file, terms_file),
@@ -126,11 +144,10 @@ mapping = [
              'cbyte':(get_term_val,9),
              'cnull':'X',},
             ]
-     }, # end of State-model creation - upper states
+     }, # end of upper states
     
-    # State model read from states_file - lower states
-    # (second section)
-    {'outfile':'states2.dat',
+    # States output file appended with lower states
+    {'outfile':'states.dat',
      'infiles':(vald_file, terms_file),
      'headlines':(2, 0), 
      'commentchar':('#','#'),
@@ -202,6 +219,12 @@ mapping = [
             {'cname':'id',
              'cbyte':(constant, 'NULL'),
              'cnull':'NULL'},
+            {'cname':'upstate',
+             'cbyte':(merge_cols,
+                      (30,36), (170,172), (77,82), (172,218), (63,77))},
+            {'cname':'lostate',
+             'cbyte':(merge_cols,
+                      (30,36), (122,124), (58,63), (124,170), (44,58))},
             {'cname':'vacwave',
              'cbyte':(charrange, 0,15)},
             {'cname':'airwave',
@@ -231,14 +254,14 @@ mapping = [
              'cbyte':(get_alphawaals, 114,122),
              'cnull':'0.000',
              "debug":False},
-            {'cname':'srctag',
-             'cbyte':(charrange, 218,225),
-             'skiperror':True},             
             {'cname':'accur',
              'cbyte':(get_accur, (225,226), (226,236)),
              'debug':False},
             {'cname':'comment',
              'cbyte':(charrange, 236,252)},
+            {'cname':'srctag',
+             'cbyte':(charrange, 218,225),
+             'skiperror':True},             
             {'cname':'wave_ref',             
              'cbyte':(charrange, 252,256)},
             {'cname':'loggf_ref',
@@ -251,62 +274,31 @@ mapping = [
              'cbyte':(charrange, 276,280)},
             {'cname':'waals_ref',  
              'cbyte':(charrange, 280,284)},
-            {'cname':'upstateid',
-             'cbyte':(merge_cols,
-                      (30,36), (170,172), (77,82), (172,218),(63,77))},
-            {'cname':'lostateid',
-             'cbyte':(merge_cols,
-                      (30,36), (122,124), (58,63), (124,170), (44,58))},
-            {'cname':'upstate',
-             'cbyte':(merge_cols,
-                      (30,36), (170,172), (77,82), (172,218), (63,77))},
-            {'cname':'lostate',
-             'cbyte':(merge_cols,
-                      (30,36), (122,124), (58,63), (124,170), (44,58))},
             ],
     }, # end of transitions
 
-
-######### REFERENCES START HERE
-
-    # Populate Publication model with pre-processed bibtex data file
-    {'outfile':'publications.dat',    
-     'infiles':publications_file,
+    # Populate References with bibtex data file (block parsing)
+    {'outfile':'references.dat',    
+     'infiles':ref_file,
      'headlines':0,        
-     'commentchar':'#',    
+     'commentchar':'%',
+     'startblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE','@phdthesis','@unpublished'),
+     'endblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE','@phdthesis','@unpublished'),
      'linemap':[           
             {'cname':'dbref',
-             'cbyte':(bySepNr, 0,'||')},
-            {'cname':'bibref',
-             'cbyte':(bySepNr, 1,'||')},  
-            {'cname':'author',
-             'cbyte':(bySepNr, 2,'||')},  
-            {'cname':'title',
-             'cbyte':(bySepNr, 3,'||')},  
-            {'cname':'category',
-             'cbyte':(bySepNr, 4,'||')},  
-            {'cname':'year',
-             'cbyte':(bySepNr, 5,'||')},  
-            {'cname':'journal',
-             'cbyte':(bySepNr, 6,'||')},  
-            {'cname':'volume',
-             'cbyte':(bySepNr, 7,'||')},  
-            {'cname':'pages',
-             'cbyte':(bySepNr, 8,'||')},  
-            {'cname':'url',
-             'cbyte':(bySepNr, 9,'||')},            
+             'cbyte':(get_bibtex_dbref,)},
             {'cname':'bibtex',
-             'cbyte':(bySepNr, 10,'||')}, 
+             'cbyte':(get_bibtex,)}, 
           ], 
-      }, # end of bibtex public5Bation data
+      }, # end of bibtex 
     
     # Populate Source model from vald_cfg file
-    {'outfile':'sources.dat',
+    {'outfile':'linelists.dat',
      'infiles':vald_cfg_file,
      'headlines':1,
      'commentchar':';',
      'linemap':[
-            {'cname':'pk',
+            {'cname':'id',
              'cbyte':(bySepNr, 1)},
             {'cname':'srcfile',
              'cbyte':(bySepNr, 0)},
@@ -340,25 +332,9 @@ mapping = [
              'cbyte':(bySepNr, 14)},
             ],
     }, # end of definition for vald_conf file
+    
+    
 
-    # Populate Source model with publications through pub2source file 
-    {'outfile':'sources_publ.dat',
-     'infiles':pub2source_file,
-     'headlines':3,
-     'commentchar':'#',
-     'updatematch': 'srcfile_ref',
-     'linemap':[
-            {'cname':'srcfile_ref',
-             'cbyte':(bySepNr, 1,'||'),
-             'debug':False},
-            {'cname':'publications',
-             'cbyte':(get_publications, ), # must return a list!
-#             'multireferences':(models.Publication, 'dbref'),
-             'debug':False}
-             ]
-    },
+    ]
 
-
-]
-
-mapping=mapping[0:4]
+#mapping = [mapping[-2]]

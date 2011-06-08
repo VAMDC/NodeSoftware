@@ -1,3 +1,5 @@
+.. _frontpage:
+
 ============================================
 Documentation for the VAMDC node software.
 ============================================
@@ -6,18 +8,24 @@ Documentation for the VAMDC node software.
    :maxdepth: 1
 
    intro
+   changes
    concepts
    prereq
    newnode
    importing
-   contact
-   addit
+   deploy
    virtmach
+   addit
+   contact
    modules
 
 PDF
 ========
-A PDF-version of this page is available at http://vamdc.tmy.se/doc/nodesoftware.pdf.
+
+PDF-versions of this document are available at:
+
+* http://www.vamdc.org/documents/NodeSoftwareDoc_v11.5.pdf (release version)
+* http://vamdc.tmy.se/doc/nodesoftware.pdf (latest development version)
 
 Index and search
 ==================

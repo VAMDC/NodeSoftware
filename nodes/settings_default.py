@@ -7,6 +7,12 @@
 import sys, os
 
 ###################################################
+# Software and standards version
+###################################################
+VAMDC_STDS_VERSION = '11.5'
+NODESOFTWARE_VERSION = '11.5r1-beta'
+
+###################################################
 # Basic node setup 
 ###################################################
 # root path of the VAMDC install on your system (should be automatically set)
@@ -23,6 +29,11 @@ ROOT_URLCONF = NODENAME+'.urls'
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
 ADMINS = (('yourname', 'name@mail.net'),) 
 MANAGERS = ADMINS
+
+EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
+                   'SELECT ALL WHERE ... something else',
+                   ]
+
 
 ###################################################
 # Database connection
@@ -45,15 +56,16 @@ DATABASES = {
 ###################################################
 #Copy this field to settings and append the path to
 # the node that you want to run.
-INSTALLED_APPS = (
+INSTALLED_APPS = [
 #    'django.contrib.contenttypes',
 #    'django.contrib.sessions',
 #    'django.contrib.sites',
 #    'django.contrib.admin',
 #    'django.contrib.admindocs',
+#    'django.contrib.staticfiles',
     'vamdctap',
     NODEPKG
-)
+]
 # Setup of Django middleware components (shouldn't have to change this))
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -87,6 +99,7 @@ USE_I18N = False
 ###################################################
 # Web features
 ###################################################
+#STATIC_URL = '/static/'
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 #MEDIA_ROOT = os.path.join(BASE_PATH, 'static')
@@ -116,3 +129,73 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.load_template_source',
 )
 
+
+#########################
+#  LOGGING
+########################
+import tempfile
+TMPDIR = tempfile.gettempdir()
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(asctime)s %(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level':'WARNING',
+            'class':'logging.StreamHandler',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        },
+        'logfile':{
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': TMPDIR+'/node.log',
+                'formatter': 'simple'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers':['null'],
+            'propagate': True,
+            'level':'INFO',
+        },
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'vamdc': {
+            'handlers': ['console','logfile','mail_admins'],
+            'level': 'DEBUG',
+        },
+        'vamdc.tap': {
+            'level': 'DEBUG',
+        },
+        'vamdc.tap.sql': {
+            'level': 'DEBUG',
+        },
+        'vamdc.tap.generator': {
+            'level': 'DEBUG',
+        },
+        'vamdc.node': {
+            'level': 'DEBUG',
+        },
+        'vamdc.node.queryfu': {
+            'level': 'DEBUG',
+        },
+    }
+}

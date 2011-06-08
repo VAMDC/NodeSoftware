@@ -5,7 +5,7 @@
 <h1>Check your dictionaries</h1>
 
 <p>Paste your dictionary into the field 
-below, including the variable assignment. Examples below.</p>
+below, including the variable assignment. Examples and more information below.</p>
 
 <form action="." method="post">
 {% csrf_token %}
@@ -26,7 +26,8 @@ below, including the variable assignment. Examples below.</p>
 <code>
 RETURNABLES = {'AtomSymbol':'AtomState.species.name',
 'AtomIonCharge':'AtomState.species.ion',
-'RadTransWavelengthExperimentalValue':'RadTran.vacwave',
+'RadTransWavelength':'RadTran.vacwave',
+'RadTransWavelengthUnit':'cm',
 }
 </code>
 </p>
@@ -34,9 +35,22 @@ RETURNABLES = {'AtomSymbol':'AtomState.species.name',
 <p>
 <code>
 RESTRICTABLES = {'AtomSymbol':'species__name',
-'RadTransProbabilityLog10WeightedOscillatorStrengthValue':'loggf',
+'AtomNuclearCharge':'species__atomic',
+'RadTransWavelength':'vacwave'
 }
 </code>
+</p>
+
+<p>This tool warns you of
+<ul>
+<li>syntax errors</li>
+<li>keywords you use which are not in the dictionary</li>
+<li>keywords that cannot be used as Returnable or Restrictable as you do</li>
+<li>values (right-hand-side) which probably will not be replaced by something from your database but treated as constant strings instead.</li>
+<li>forgetting the Unit-keyword when you fill a DataType.</li>
+</ul>
+</p>
+<p>This tool <strong>does not</strong> check whether the values you put into the right-hand-side match your data model or not.
 </p>
 {% endblock %}
 

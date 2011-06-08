@@ -13,7 +13,7 @@ def setupSQLparser():
     or_ = Keyword("or", caseless=True)
     in_ = Keyword("in", caseless=True)
     E = CaselessLiteral("E")
-    binop = oneOf("= != < > >= <= eq ne lt le gt ge like", caseless=True)
+    binop = oneOf("= != < > >= <= like", caseless=True)
     arithSign = Word("+-",exact=1)
     realNum = Combine( Optional(arithSign) + ( Word( nums ) + "." + Optional( Word(nums) )  |
                                            ( "." + Word(nums) ) ) + 
@@ -28,16 +28,14 @@ def setupSQLparser():
         ( columnName + in_ + "(" + selectStmt + ")" ) |
         ( "(" + whereExpression + ")" )
         )
-    whereExpression << whereCondition + ZeroOrMore( ( and_ | or_ ) + whereExpression ) 
-    
-    selectStmt      << ( selectToken + 
-                         Optional(CaselessLiteral('count')).setResultsName("count")  + 
-                         Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") + 
+    whereExpression << whereCondition + ZeroOrMore( ( and_ | or_ ) + whereExpression )
+
+    selectStmt      << ( selectToken +
+                         Optional(CaselessLiteral('count')).setResultsName("count")  +
+                         Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") +
                          ( oneOf('* ALL', caseless=True) | columnNameList ).setResultsName( "columns" ) + 
                          Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) )
 
-    
-    
     # define Oracle comment format, and ignore them
     oracleSqlComment = "--" + restOfLine
     selectStmt.ignore( oracleSqlComment )
@@ -59,14 +57,12 @@ OPTRANS= { # transfer SQL operators to django-style
     'like': '__contains',
 }
 
-import sys
-def LOG(s):
-    print >> sys.stderr, s
-
+import logging
+log = logging.getLogger('vamdc.tap.sql')
 
 def singleWhere(w,RESTRICTABLES):
-    if not RESTRICTABLES.has_key(w[0]): LOG('cant find name %s'%w[0]); return ''
-    if not OPTRANS.has_key(w[1]): LOG('cant find operator %s'%w[1]); return ''
+    if not RESTRICTABLES.has_key(w[0]): log.warning('cant find name %s'%w[0]); return ''
+    if not OPTRANS.has_key(w[1]): log.warning('cant find operator %s'%w[1]); return ''
     value=w[2].strip('\'"')
     qstring = 'Q(%s="%s")'%(RESTRICTABLES[w[0]] + OPTRANS[w[1]],value)
     return qstring
@@ -74,7 +70,7 @@ def singleWhere(w,RESTRICTABLES):
 def where2q(ws,RESTRICTABLES):
     q=''
     for w in ws:
-#        LOG(w)
+        log.debug('w: %s'%w)
         if w=='and': q+=' & '
         elif w=='or': q+=' | '
         elif w[0]=='(' and w[-1]==')': 
@@ -82,7 +78,6 @@ def where2q(ws,RESTRICTABLES):
             q+=where2q(w[1:-1],RESTRICTABLES)
             q+=' ) '
         elif len(w)==3: q+=singleWhere(w,RESTRICTABLES)
-        
 
-    LOG(q)
+    log.debug('q: %s'%q)
     return q
