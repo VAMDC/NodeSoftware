@@ -12,6 +12,9 @@
         <interface xsi:type='vs:ParamHTTP'>
             <accessURL use='base'>{{accessURL}}</accessURL>
         </interface>
+        <versionOfStandards>{{STANDARDS-VERSION}}</versionOfStandards>
+        <versionOfSoftware>{{SOFTWARE-VERSION}}</versionOfSoftware>
+        {% if EXAMPLE-QUERIES %}{% for query in EXAMPLE-QUERIES%}<sampleQuery>{{query}}</sampleQuery>
 {% if RETURNABLES %}{% for returnable in RETURNABLES %}<returnable>{{ returnable }}</returnable>
 {% endfor %}{% endif %}
 {% if RESTRICTABLES %}{% for restrictable in RESTRICTABLES %}<restrictable>{{ restrictable }}</restrictable>
