@@ -720,7 +720,11 @@ def XsamsMSBuild(MoleculeState):
         yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
                     % G("MoleculeStateCharacTotalStatisticalWeight")
     yield '  </MolecularStateCharacterisation>\n'
-    if G("MoleculeStateQuantumNumbers"):
+
+    cont, ret = checkXML(G("MoleculeStateQuantumNumbers"))
+    if cont:
+        yield ret
+    else:
         for MSQNs in XsamsMSQNsBuild(G("MoleculeStateQuantumNumbers")):
             yield MSQNs
     yield '</MolecularState>\n'
