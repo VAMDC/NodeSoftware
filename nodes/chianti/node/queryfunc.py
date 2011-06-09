@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import dictionaries
+import settings
 from models import States, Transitions
 from django.utils.importlib import import_module
 from vamdctap.sqlparse import *
