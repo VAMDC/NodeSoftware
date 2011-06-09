@@ -31,6 +31,8 @@ class KeyWord(models.Model):
                                                     ('fu','Functions'),
                                                     ('en','Environments'),
                                                     ('so','Sources'),
+                                                    ('sd','Solids'),
+                                                    ('pa','Particles'),
                                                   ),
                             null=True,blank=True)
     datatype = models.BooleanField('DataType in XSAMS?',default=False)
