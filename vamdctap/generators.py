@@ -115,7 +115,7 @@ def GetValue(name, **kwargs):
         # the database returned NULL
         return ''
     elif value == 0:
-        if isinstance(value, real): return '0.0'
+        if isinstance(value, float): return '0.0'
         else: return '0'
 
     # turn it into a string, quote it, but skip the quotation marks
@@ -939,11 +939,17 @@ def XsamsRadTranBroadening(G):
     """
     helper function for line broadening, called from RadTrans
 
-    allwoed names are: pressure, instrument, doppler, natural
+    allowed names are: pressure, instrument, doppler, natural
     """
     s=''
     if countReturnables('RadTransBroadeningNatural'):
-        s += makeBroadeningType(G, name='Natural')
+        # attempt at making a loop to support multiple natural broadening effects
+        if hasattr(G('RadTransBroadeningNatural'), "Broadenings"):
+            for Broadening in  makeiter(G('RadTransBroadeningNatural').Broadenings):
+                GB = lambda name: GetValue(name, Broadening=Broadening)
+                s += makeBroadeningType(GB, name='Natural')  
+        else:
+            s += makeBroadeningType(G, name='Natural')
     if countReturnables('RadTransBroadeningInstrument'):
         s += makeBroadeningType(G, name='Instrument')
     if countReturnables('RadTransBroadeningDoppler'):
