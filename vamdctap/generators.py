@@ -852,6 +852,7 @@ def XsamsSolids(Solids):
         if hasattr(Solid, "Layers"):
             for Layer in makeiter(Solid.Layers):
                 GL = lambda name: GetValue(name, Layer=Layer)
+                yield "<Layer>"
                 yield "<MaterialName>%s</MaterialName>" % GL("SolidLayerName")
                 if hasattr(Solid, "Components"):
                     makePrimaryType("MaterialComposition", "SolidLayerComponent")
@@ -868,9 +869,33 @@ def XsamsSolids(Solids):
                 yield "<MaterialTopology>%s</MaterialThickness>" % GL("SolidLayerTopology")
                 makeDataType("MaterialTemperature", "SolidLayerTemperature", GL)
                 yield "<Comments>%s</Comments>" % GL("SolidLayerComment")                
+                yield "</Layer>"
         yield "</Solid>"
     yield "</Solids>"
 
+def XsamsParticles(Particles):
+    """
+    Generator for Particles tag.
+    """
+    if not Particles:
+        return 
+    yield "<Particles>"
+    for Particle in makeiter(Particles):
+        cont, ret = checkXML(Particle)
+        if cont:                                                                                                                                                                                                               
+            yield ret                                                                                                                                                                                                          
+            continue   
+        G = lambda name: GetValue(name, Particle=Particle)
+        makePrimaryType("Particle", "Particle", G, extraAttr={"stateID":G("ParticleStateID"), "name":G("ParticleName")})
+        yield "<ParticleProperties>"
+        yield "<ParticleCharge>%s</ParticleCharge>" % G("ParticleCharge")
+        makeDataType("ParticleMass", "ParticleMass", G)
+        yield "<ParticleSpin>%s</ParticleSpin>" % G("ParticleSpin")
+        yield "<ParticlePolarization>%s</ParticlePolarization>" % G("ParticlePolarization")
+        yield "</ParticleProperties>"
+        yield "</Particle>"            
+    yield "</Particles>"
+    
 ###############
 # END SPECIES
 # BEGIN PROCESSES
@@ -1564,8 +1589,8 @@ def generatorError(where):
     return where
 
 def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
-    Environments=None, Atoms=None, Molecules=None, Solids=None, CollTrans=None,
-    RadTrans=None, RadCross=None, NonRadTrans=None):
+          Environments=None, Atoms=None, Molecules=None, Solids=None, Particles=None, 
+          CollTrans=None, RadTrans=None, RadCross=None, NonRadTrans=None):
     """
     The main generator function of XSAMS. This one calls all the
     sub-generators above. It takes the query sets that the node's
@@ -1633,6 +1658,12 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
         for Solid in XsamsSolids(Solids):
             yield Solid
     except: errs += generatorError(' Solids')
+
+    log.debug('Working on Particles.')
+    try:
+        for Particle in XsamsParticles(Particles):
+            yield Particle
+    except: errs += generatorError(' Particles')
 
     yield '</Species>\n'
 
