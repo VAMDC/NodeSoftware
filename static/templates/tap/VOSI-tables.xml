@@ -9,7 +9,7 @@
    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
    xsi:schemaLocation='      http://www.ivoa.net/xml/VOResource/v1.0 http://software.astrogrid.org/schema/vo-resource-types/VOResource/v1.0/VOResource.xsd
       http://www.ivoa.net/xml/VODataService/v1.0 http://software.astrogrid.org/schema/vo-resource-types/VODataService/v1.0/VODataService.xsd
-      urn:astrogrid:schema:TableMetadata {{baseURL}}Tables.xsd'>
+      urn:astrogrid:schema:TableMetadata {{baseURL}}static/xsd/Tables.xsd'>
   <table>
     <name>VAMDC</name>
     <description>VAMDC standard view</description>

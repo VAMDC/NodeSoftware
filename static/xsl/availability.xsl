@@ -1,1 +1,0 @@
-availability.xsl

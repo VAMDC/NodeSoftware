@@ -1,3 +1,13 @@
+
+This document covers the **relase 11.5r1** of the NodeSoftware.
+
+
+PDF-versions of this document are available at:
+
+* http://www.vamdc.org/documents/NodeSoftwareDoc_v11.5r1.pdf (release version)
+* http://vamdc.tmy.se/doc/nodesoftware.pdf (latest development version)
+
+
 .. _intro:
 
 Introduction

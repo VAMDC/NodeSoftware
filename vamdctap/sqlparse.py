@@ -61,8 +61,12 @@ import logging
 log = logging.getLogger('vamdc.tap.sql')
 
 def singleWhere(w,RESTRICTABLES):
-    if not RESTRICTABLES.has_key(w[0]): log.warning('cant find name %s'%w[0]); return ''
-    if not OPTRANS.has_key(w[1]): log.warning('cant find operator %s'%w[1]); return ''
+    if not w[0] in RESTRICTABLES:
+        log.warning('Unsupported Restrictable: %s'%w[0])
+        return 'Q(pk=False)'
+    if not OPTRANS.has_key(w[1]):
+        log.warning('Unsupported operator: %s'%w[1])
+        return ''
     value=w[2].strip('\'"')
     qstring = 'Q(%s="%s")'%(RESTRICTABLES[w[0]] + OPTRANS[w[1]],value)
     return qstring
