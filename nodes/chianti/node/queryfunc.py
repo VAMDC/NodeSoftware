@@ -24,7 +24,7 @@ def setupResults(sql, LIMIT=1000):
     # Find transitions satisfying the criteria.
     transitions = Transitions.objects.filter(q)
     nTransitions = transitions.count()
-    #print nTransitions;
+    LOG("Number of transitions: ", nTransitions)
 
     # Truncate the list of matching transitions.
     # Record the degree of truncation s.t. it can be reported in the output.
