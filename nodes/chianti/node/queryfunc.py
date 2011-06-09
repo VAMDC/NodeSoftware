@@ -9,6 +9,7 @@ from models import States, Transitions
 from django.utils.importlib import import_module
 from vamdctap.sqlparse import *
 from django.db.models import Q
+from vamdctap.caselessdict import CaselessDict
 
 def LOG(s):
     "Simple logger function"
