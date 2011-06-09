@@ -814,7 +814,7 @@ def XsamsMolecules(Molecules):
     """
     if not Molecules: return
     yield '<Molecules>\n'
-    for Molecule in Molecules:
+    for Molecule in makeiter(Molecules):
         cont, ret = checkXML(Molecule)
         if cont:
             yield ret
@@ -833,6 +833,43 @@ def XsamsMolecules(Molecules):
                 yield MS
         yield '</Molecule>\n'
     yield '</Molecules>\n'
+
+
+def XsamsSolids(Solids):
+    """
+    Generator for Solids tag
+    """
+    if not Solids:
+        return 
+    yield "<Solids>"
+    for Solid in makeiter(Solids):
+        cont, ret = checkXML(Solid)
+        if cont:
+            yield ret
+            continue     
+        G = lambda name: GetValue(name, Solid=Solid)
+        makePrimaryType("Solid", "Solid", G, extraAttr={"stateID":"S%s-%s" % (NODEID, G("SolidStateID"))})
+        if hasattr(Solid, "Layers"):
+            for Layer in makeiter(Solid.Layers):
+                GL = lambda name: GetValue(name, Layer=Layer)
+                yield "<MaterialName>%s</MaterialName>" % GL("SolidLayerName")
+                if hasattr(Solid, "Components"):
+                    makePrimaryType("MaterialComposition", "SolidLayerComponent")
+                    for Component in makeiter(Layer.Components):
+                        GLC = lambda name: GetValue(name, Component=Component)
+                        yield "<ChemicalElement>"
+                        yield "<NuclearCharge>%s</NuclearCharge>" % GLC("SolidLayerComponentNuclearCharge")
+                        yield "<ElementSymbol>%s</ElementSymbol>" % GLC("SolidLayerComponentElementSymbol")                        
+                        yield "</ChemicalElement>"
+                        yield "<StochiometricValue>%s</StochiometricValue>" % GLC("SolidLayerComponentStochiometricValue")
+                        yield "<Percentage>%s</Percentage>" % GLC("SolidLayerComponentPercentage")
+                    yield "</MaterialComposition>"
+                makeDataType("MaterialThickness", "SolidLayerThickness", GL)
+                yield "<MaterialTopology>%s</MaterialThickness>" % GL("SolidLayerTopology")
+                makeDataType("MaterialTemperature", "SolidLayerTemperature", GL)
+                yield "<Comments>%s</Comments>" % GL("SolidLayerComment")                
+        yield "</Solid>"
+    yield "</Solids>"
 
 ###############
 # END SPECIES
@@ -1527,7 +1564,7 @@ def generatorError(where):
     return where
 
 def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
-    Environments=None, Atoms=None, Molecules=None, CollTrans=None,
+    Environments=None, Atoms=None, Molecules=None, Solids=None, CollTrans=None,
     RadTrans=None, RadCross=None, NonRadTrans=None):
     """
     The main generator function of XSAMS. This one calls all the
@@ -1590,6 +1627,12 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
         for Molecule in XsamsMolecules(Molecules):
             yield Molecule
     except: errs+=generatorError(' Molecules')
+
+    log.debug('Working on Solids.')
+    try:
+        for Solid in XsamsSolids(Solids):
+            yield Solid
+    except: errs += generatorError(' Solids')
 
     yield '</Species>\n'
 
