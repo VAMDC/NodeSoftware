@@ -69,11 +69,11 @@ def getSpeciesWithStates(transs):
     nstates = 0
     for spec in species:
         # get all transitions in linked to this particular species 
-        spec_transitions = transs.filter(species=spec)
+        spec_transitions = transs.filter(finalstateindex__species=spec)
         # extract reference ids for the states from the transion, combining both
         # upper and lower unique states together
-        up = spec_transitions.values_list('chiantiradtransfinalstateindex',flat=True)
-        lo = spec_transitions.values_list('chiantiradtransinitialstateindex',flat=True)
+        up = spec_transitions.values_list('finalstateindex',flat=True)
+        lo = spec_transitions.values_list('initialstateindex',flat=True)
         sids = set(chain(up, lo))
 
         # use the found reference ids to search the State database table 
@@ -81,7 +81,7 @@ def getSpeciesWithStates(transs):
         # This is important and a requirement looked for by the node 
         # software (all RETURNABLES AtomState* will try to loop over this
         # nested queryset). 
-        spec.States = models.State.objects.filter( pk__in = sids )    
+        spec.States = models.States.objects.filter( pk__in = sids )    
         nstates += spec.States.count()
     return species, nspecies, nstates
 
