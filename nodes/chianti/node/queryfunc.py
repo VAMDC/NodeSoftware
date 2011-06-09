@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import sys
+from itertools import chain
+from django.conf import settings
+from vamdctap.sqlparse import where2q
 import dictionaries
-import settings
 from models import States, Transitions
 from django.utils.importlib import import_module
 from vamdctap.sqlparse import *
