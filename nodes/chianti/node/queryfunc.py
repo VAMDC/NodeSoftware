@@ -25,6 +25,12 @@ def getSpeciesWithStates(transs):
     We also return some statistics of the result 
     """
 
+
+    # Get all the states relevant to the transitions.
+    stateIds = set( transs.values_list('states_id',flat=True) )
+    states = models.States.objects.filter(pk__in=stateIds)
+    nstates = states.count();
+
     # get the reference ids for the 'species' ForeignKey field 
     # (see getRefs comment for more info)
     spids = set( transs.values_list('species_id',flat=True) )
