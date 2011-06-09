@@ -19,11 +19,11 @@ RESTRICTABLES = {\
 'AtomSymbol':'finalstateindex__species__atomsymbol',
 'AtomNuclearCharge':'finalstateindex__species__atomnuclearcharge',
 'AtomIonCharge':'finalstateindex__species__atomioncharge',
-'RadTransWavelengthExperimentalValue':'radtranswavelengthexperimentalvalue'
+'RadTransWavelength':'wavelength'
 }
 
 RETURNABLES = {\
-'NodeID':'chianti',
+'NodeID':'chianti', # Constant value
 'AtomSymbol':'AtomState.atomsymbol',
 'AtomNuclearCharge':'AtomState.atomnuclearcharge',
 'AtomIonCharge':'AtomState.atomioncharge',
@@ -33,11 +33,9 @@ RETURNABLES = {\
 'AtomStateEnergyExperimentalValue':'AtomState.atomstateenergyexperimentalvalue',
 'AtomStateEnergyTheoreticalValue':'AtomState.atomstateenergytheoreticalvalue',
 'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
-'RadTransWavelengthExperimentalValue':'RadTran.radtranswavelengthexperimentalvalue',
-'RadTransWavelengthExperimentalUnits':u'A', # Angstrom symbol
-'RadTransWavelengthTheorecticalValue':'RadTran.radtranswavelengththeoreticalvalue',
-'RadTransWavelengthTheoreticalUnits':u'A', # Angstrom symbol
-'RadTransProbabilityWeightedOscillatorStrengthValue':'RadTran.radtransprobabilityweightedoscillatorstrengthvalue',
-'RadTransProbabilityTransitionProbabilityAValue':'RadTran.radtransprobabilitytransitionprobabilityavalue',
-'RadTransProbabilityTransitionProbabilityAUnits':u'Hz'
+'RadTransWavelength':'RadTran.wavelength',
+'RadTransWavelengthUnit':u'A', # Angstrom symbol
+'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
+'RadTransProbabilityA':'RadTran.probabilityavalue',
+'RadTransProbabilityAUnits':u'Hz'
 }
