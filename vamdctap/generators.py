@@ -50,10 +50,10 @@ def makeiter(obj):
         return []
     if not isiterable(obj):
         return [obj]
-    return obj 
+    return obj
 
 def makeloop(keyword, G, *args):
-    """    
+    """
     Creates a nested list of lists. All arguments should be valid dictionary
     keywords and will be fed to G. They are expected to return iterables of equal lengths.
     The generator yields a list of current element of each argument-list in order, so one can do e.g.
@@ -66,7 +66,7 @@ def makeloop(keyword, G, *args):
     Nargs = len(args)
     lis = []
     for arg in args:
-        lis.append(makeiter(G("%s%s" % (keyword, arg))))        
+        lis.append(makeiter(G("%s%s" % (keyword, arg))))
     try:
         Nlis = lis[0].count()
     except TypeError:
@@ -79,7 +79,7 @@ def makeloop(keyword, G, *args):
             except Exception:
                 olist[k].append("")
     return olist
-    
+
 def GetValue(name, **kwargs):
     """
     the function that gets a value out of the query set, using the global name
@@ -91,11 +91,11 @@ def GetValue(name, **kwargs):
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
-        return '' 
+        return ''
 
     if not name:
         # the key was in the dict, but the value was empty or None.
-        return '' 
+        return ''
 
     for key in kwargs:
         # assign the dict-value to a local variable named as the dict-key
@@ -105,15 +105,18 @@ def GetValue(name, **kwargs):
         # here, the RHS of the RETURNABLES dict is executed.
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
-    except Exception: 
+    except Exception:
+         # this catches the case where the dict-value is a string or mistyped.
 #        log.debug('Exception in generators.py: GetValue()')
 #        log.debug(str(e))
 #        log.debug(name)
-        # this catches the case where the dict-value is a string or mistyped.
-        value = name      
+        value = name
     if value == None:
         # the database returned NULL
-        return '' 
+        return ''
+    elif value == 0:
+        if isinstance(value, real): return '0.0'
+        else: return '0'
 
     # turn it into a string, quote it, but skip the quotation marks
     # edit - no, we need to have the object itself sometimes to loop over
