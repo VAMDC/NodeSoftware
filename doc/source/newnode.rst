@@ -308,6 +308,9 @@ Atoms                 Atom
 ..                                  Atom.ShellPairs                         AtomShellPair
 Molecules             Molecule      
 ..                                  Molecule.States                         MoleculeState
+Solids                Solid         
+..                                  Solid.Layers                            Layer
+..                                  Solid.Layers.Components                 Component
 RadTrans              RadTran
 ..                                  RadTran.ShiftingParams                  ShiftingParam
 ..                                  RadTran.ShiftingParams.Fits             Fit
