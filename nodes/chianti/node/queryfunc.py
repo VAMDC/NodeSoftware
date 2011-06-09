@@ -13,6 +13,7 @@
 import sys
 from itertools import chain
 from django.conf import settings
+from django.db.models import Q 
 from vamdctap.sqlparse import where2q
 
 import dictionaries
@@ -155,14 +156,17 @@ def setupResults(sql, limit=1000):
     q = where2q(sql.where, dictionaries.RESTRICTABLES)
     try: 
         q = eval(q) # test queryset syntax validity
-    except: 
+    except Exception as e:
+        LOG(e)
         return {}
 
     # We build a queryset of database matches on the Transision model
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
-    transs = models.Transition.objects.select_related(depth=2).filter(q)
+    LOG("getting transitions")
+    transs = models.Transitions.objects.select_related(depth=2).filter(q)
+    LOG(transs)
 
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
@@ -176,9 +180,14 @@ def setupResults(sql, limit=1000):
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     #sources = getRefs(transs)
+    sources = {}
     nsources = sources.count()
+    LOG("Getting species")
     species, nspecies, nstates = getSpeciesWithStates(transs)
-    methods = getLifetimeMethods()
+    #methods = getLifetimeMethods()
+    methods = {}
+    functions = {}
+    LOG(species)
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
@@ -189,12 +198,13 @@ def setupResults(sql, limit=1000):
             'count-states':nstates,
             'count-radiative':ntranss
             }
+    LOG(headerinfo)
             
     # Return the data. The keynames are standardized. 
     return {'RadTrans':transs,
             'Atoms':species,
-            #'Sources':sources,
+            'Sources':sources,
             'HeaderInfo':headerinfo,
-            #'Methods':methods
-            #'Functions':functions
+            'Methods':methods,
+            'Functions':functions
            }
