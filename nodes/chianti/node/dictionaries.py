@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from vamdctap.caselessdict import CaselessDict
 
 RESTRICTABLES = {\
 'AtomSymbol':'atomsymbol',
@@ -29,3 +28,6 @@ RETURNABLES = {\
 'RadTransProbabilityTransitionProbabilityAUnits':u'Hz'
 }
 
+from vamdctap.caselessdict import CaselessDict
+RESTRICTABLES = CaselessDict(RESTRICTABLES)
+RETURNABLES = CaselessDict(RETURNABLES)
