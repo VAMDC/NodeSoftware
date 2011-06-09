@@ -60,6 +60,16 @@ def setupResults(sql, LIMIT=1000):
             })
 
 
+# Create the header with some useful info. The key names here are
+    # standardized and shouldn't be changed.
+    headerinfo=CaselessDict({\
+            'Truncated':percentage,
+            'COUNT-SOURCES':nSources,
+            'COUNT-species':nSpecies,
+            'count-states':nStates,
+            'count-radiative':nTransitions
+            })
+
 # return the result dictionary 
     return {\
         'RadTrans':transitions,
