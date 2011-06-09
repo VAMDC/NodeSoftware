@@ -109,39 +109,39 @@ mapping = [
             # these are read from term file
             {'cname':'j',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,1),
+             'cbyte':(get_term_val,0),
              'cnull':'X',},
             {'cname':'l',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,2),
+             'cbyte':(get_term_val,1),
              'cnull':'X',},
             {'cname':'s',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,3),
+             'cbyte':(get_term_val,2),
              'cnull':'X',},
             {'cname':'p',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,4),
+             'cbyte':(get_term_val,3),
              'cnull':'X',},
             {'cname':'j1',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,5),
+             'cbyte':(get_term_val,4),
              'cnull':'X',},
             {'cname':'j2',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,6),
+             'cbyte':(get_term_val,5),
              'cnull':'X',},
             {'cname':'k',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,7),
+             'cbyte':(get_term_val,6),
              'cnull':'X',},
             {'cname':'s2',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,8),
+             'cbyte':(get_term_val,7),
              'cnull':'X',},
             {'cname':'jc',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,9),
+             'cbyte':(get_term_val,8),
              'cnull':'X',},
             ]
      }, # end of upper states
