@@ -24,17 +24,24 @@ RESTRICTABLES = {\
 
 RETURNABLES = {\
 'NodeID':'chianti', # Constant value
-'AtomSymbol':'AtomState.atomsymbol',
-'AtomNuclearCharge':'AtomState.atomnuclearcharge',
-'AtomIonCharge':'AtomState.atomioncharge',
+
+'MethodID':'Method.id',
+'MethodCategory':'Method.category',
+
+'AtomSymbol':'Atom.atomsymbol',
+'AtomNuclearCharge':'Atom.atomnuclearcharge',
+'AtomIonCharge':'Atom.atomioncharge',
+
 'AtomStateS':'AtomState.atomstates',
 'AtomStateL':'AtomState.atomstatel',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
 'AtomStateEnergyExperimentalValue':'AtomState.atomstateenergyexperimentalvalue',
 'AtomStateEnergyTheoreticalValue':'AtomState.atomstateenergytheoreticalvalue',
 'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
-'RadTransWavelength':'RadTran.wavelength',
-'RadTransWavelengthUnit':u'A', # Angstrom symbol
+
+'RadTransWavelength':'RadTran.getBestWavelength()', # Arbitrate between experimental and theoretical values
+'RadTransWavelengthMethod': 'RadTran.getWavelengthMethod()', # Annotate wavelengths to refer to the method of derivation
+'RadTransWavelengthUnit':u'A', # Constant: Angstrom symbol
 'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
 'RadTransProbabilityA':'RadTran.probabilityavalue',
 'RadTransProbabilityAUnits':u'Hz'

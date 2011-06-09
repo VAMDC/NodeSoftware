@@ -115,6 +115,7 @@ def getFunctions(transs):
 
 def getLifetimeMethods():    
     """
+    Chianti has a mix of theor
     In the example we are storing both experimental and theoretical
     data for some quantities, such as in the case of experimental or
     theoretical state lifetimes. A selector method on the model
@@ -134,8 +135,8 @@ def getLifetimeMethods():
             self.category = category
 
     # we will only be needing two methods
-    m1 = Method("MtauEXP", "experiment")
-    m2 = Method("MtauTHEO", "compilation")
+    m1 = Method("EXP", "experimental")
+    m2 = Method("THEO", "theoretical")
     return m1, m2
 
 
@@ -184,8 +185,7 @@ def setupResults(sql, limit=1000):
     nsources = 0
     LOG("Getting species")
     species, nspecies, nstates = getSpeciesWithStates(transs)
-    #methods = getLifetimeMethods()
-    methods = {}
+    methods = getLifetimeMethods()
     functions = {}
     LOG(species)
 
@@ -205,6 +205,5 @@ def setupResults(sql, limit=1000):
             'Atoms':species,
             'Sources':sources,
             'HeaderInfo':headerinfo,
-            'Methods':methods,
-            'Functions':functions
+            'Methods':methods
            }
