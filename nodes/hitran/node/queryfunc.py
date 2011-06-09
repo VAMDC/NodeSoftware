@@ -117,9 +117,10 @@ def setupResults(sql, LIMIT=None):
     LOG('%s states retrieved from HITRAN database' % nstates)
     LOG('%s species retrieved from HITRAN database' % nspecies)
 
-    print 'nspecies =',nspecies
-    print 'nstates =',nstates
-    print 'ntrans =',ntrans
+    print 'nspecies =', nspecies
+    print 'nstates =', nstates
+    print 'ntrans =', ntrans
+    print 'nsources =', len(sources)
 
     headerinfo = CaselessDict({
         'Truncated': '%s %%' % percentage,
