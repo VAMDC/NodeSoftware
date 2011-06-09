@@ -10,6 +10,7 @@ RESTRICTABLES = {\
 }
 
 RETURNABLES = {\
+'NodeID':'chianti',
 'AtomSymbol':'AtomState.atomsymbol',
 'AtomNuclearCharge':'AtomState.atomnuclearcharge',
 'AtomIonCharge':'AtomState.atomioncharge',
