@@ -770,9 +770,9 @@ def makeBroadeningType(G, name='Natural'):
     comm = G('RadTransBroadening%sComment' % name)
     s = '<Broadening name="%s"' % name.lower()
     if meth: 
-        s += ' methodRef="%s"' % meth
+        s += ' methodRef="M%s-%s"' % (NODEID, meth)
     if env: 
-        s += ' envRef="E%s-%s"' % (NODEID,env)
+        s += ' envRef="E%s-%s"' % (NODEID, env)
     s += '>'
     if comm: 
         s +='<Comments>%s</Comments>' % comm
@@ -847,7 +847,7 @@ def XsamsRadTranShifting(RadTran, G):
             if hasattr(ShiftingParam, "Fit"):        
                 for Fit in makeiter(ShiftingParam.Fits):
                     GSF = lambda name: GetValue(name, Fit=Fit)
-                    string += "<FitParameters functionRef=F%s>" % GSF("RadTransShiftingParamFitFunction")
+                    string += "<FitParameters functionRef=F%s-%s>" % (NODEID, GSF("RadTransShiftingParamFitFunction"))
 
                     # hard-code to avoid yet anoter named loop variable 
                     for name, units, desc, llim, ulim in makeloop("RadTransShiftingParamFitArgument", GSF, "Name", "Units", "Description", "LowerLimit", "UpperLimit"):
@@ -1022,9 +1022,9 @@ def XsamsRadCross(RadCross):
         if species or state: 
             yield "<Species>"
             if species:
-                yield "<SpeciesRef>X%s</SpeciesRef>" % species
+                yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
             if state:
-                yield "<StateRef>S%s</StateRef>" % state            
+                yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)            
             yield "</Species>"
         
         # Note - XSAMS dictates a list of BandAssignments here; but this is probably unlikely to
@@ -1120,10 +1120,10 @@ def XsamsCollTrans(CollTrans):
                 yield "<Reactant>"
                 species = GR("CollisionReactantSpecies")
                 if species:
-                    yield "<SpeciesRef>X%s</SpeciesRef>" % species
+                    yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
                 state = GR("CollisionReactantState")
                 if state:
-                    yield "<StateRef>S%s</StateRef>" % state            
+                    yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)            
                 yield "</Reactant>"
 
         if hasattr(CollTran, "IntermediateStates"):
@@ -1138,10 +1138,10 @@ def XsamsCollTrans(CollTrans):
                 yield "<IntermediateState>"
                 species = GI("CollisionIntermediateSpecies")
                 if species:
-                    yield "<SpeciesRef>X%s</SpeciesRef>" % species
+                    yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
                 state = GI("CollisionIntermediateState")            
                 if state: 
-                    yield "<StateRef>S%s</StateRef>" % state
+                    yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)
                 yield "</IntermediateState>"
 
         if hasattr(CollTran, "Products"):
@@ -1156,10 +1156,10 @@ def XsamsCollTrans(CollTrans):
                 yield "<Product>"
                 species = GP("CollisionProductSpecies")
                 if species:
-                    yield "<SpeciesRef>X%s</SpeciesRef>" % species        
+                    yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
                 state = GP("CollisionProductState")
                 if state: 
-                    yield "<StateRef>S%s</StateRef>" % state
+                    yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)
                 species = GP("CollisionProductSpecies")     
                 yield "</Product>"
         
@@ -1195,7 +1195,7 @@ def XsamsCollTrans(CollTrans):
 
                             fref = GDF("CollisionFitDataFunction")
                             if fref:
-                                yield "<FitParameters functionRef=F%s>" % fref
+                                yield "<FitParameters functionRef=F%s-%s>" % (NODEID, fref)
                             else:
                                 yield "<FitParameters>"
 
@@ -1319,13 +1319,13 @@ def XsamsNonRadTrans(NonRadTrans):
         G = lambda name: GetValue(name, NonRadTran=NonRadTran)        
         yield makePrimaryType("NonRadiativeTransition", "NonRadTran", G)
         
-        yield "<InitialStateRef>S%s</InitialStateRef>" % G("NonRadTranInitialState")
+        yield "<InitialStateRef>S%s-%s</InitialStateRef>" % (NODEID, G("NonRadTranInitialState"))
         fstate = G("NonRadTranFinalState")
         if fstate:
-            yield "<FinalStateRef>S%s</FinalStateRef>" % fstate
+            yield "<FinalStateRef>S%s-%s</FinalStateRef>" % (NODEID, fstate)
         fspec = G("NonRadTranSpecies")
         if fspec:
-            yield "<SpeciesRef>X%s</SpeciesRef>" % fspec
+            yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, fspec)
         yield makeDataType("Probability", "NonRadTranProbability", G)
         yield makeDataType("NonRadiativeWidth", "NonRadTranWidth", G)
         yield makeDataType("TransitionEnergy", "NonRadTranEnergy", G)
