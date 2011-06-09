@@ -63,25 +63,21 @@ def getSpeciesWithStates(transs):
     species = models.Species.objects.filter(pk__in=spids)
     nspecies = species.count() # get some statistics 
 
+    # List the IDs (i.e. keys from the states table) of all the states 
+    # connected with all the selected transitions.
+    stateIds = set().union(transs.values_list('initialstateindex', flat=True), transs.values_list('finalstateindex', flat=True))
+
     # get all states. Note that when building a queryset like this,
     # (using objects.filter() etc) will usually not hit the database
     # until it's really necessary, making this very efficient. 
     nstates = 0
     for spec in species:
-        # get all transitions in linked to this particular species 
-        spec_transitions = transs.filter(finalstateindex__species=spec)
-        # extract reference ids for the states from the transion, combining both
-        # upper and lower unique states together
-        up = spec_transitions.values_list('finalstateindex',flat=True)
-        lo = spec_transitions.values_list('initialstateindex',flat=True)
-        sids = set(chain(up, lo))
-
         # use the found reference ids to search the State database table 
         # Note that we store a new queryset called 'States' on the species queryset. 
         # This is important and a requirement looked for by the node 
         # software (all RETURNABLES AtomState* will try to loop over this
         # nested queryset). 
-        spec.States = models.States.objects.filter( pk__in = sids )    
+        spec.States = models.States.objects.filter(species=spec).filter(pk__in=stateIds)    
         nstates += spec.States.count()
     return species, nspecies, nstates
 
