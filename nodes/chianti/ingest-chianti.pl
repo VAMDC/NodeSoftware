@@ -3,6 +3,7 @@
 print "CREATE TABLE states (\n";
 print "         id INTEGER, \n";
 print "		ChiantiIonType CHAR(1), \n";
+print "         species INTEGER, \n";
 print "		AtomSymbol CHAR(8), \n";
 print "		AtomNuclearCharge INTEGER, \n";
 print "		AtomIonCharge INTEGER, \n";
@@ -33,6 +34,7 @@ while(<STATES>) {
 	print 'INSERT INTO states VALUES(';
 	print $index, ', '; # Primary key
 	print '"', shift @fields, '", '; # ChiantiIonType
+        print '0, '; # species reference - filled in later
 	print '"', firstWord(shift @fields), '", '; # AtomSymbol
 	print shift @fields, ', '; # AtomNuclearCharge
 	print shift @fields, ', '; # AtomIonCharge
@@ -90,6 +92,22 @@ while(<TRANSITIONS>) {
         print ");\n";
 }
 
+# Set the foreign key pointing from the states table into the species table.
+print "UPDATE states SET species=(1000*AtomIonCharge) + AtomNuclearCharge;\n";
+
+print "\n";
+print "CREATE table species (\n";
+print "id INTEGER NOT NULL,\n";
+print "AtomSymbol CHAR(2),\n";
+print "AtomNuclearCharge INTEGER,\n";
+print "AtomIonCharge INTEGER,\n";
+print "PRIMARY KEY(id)\n";
+print ");\n";
+
+
+print "INSERT INTO species(id,AtomSymbol,AtomNuclearCharge,AtomIonCharge) SELECT DISTINCT ((1000*AtomIonCharge) + AtomNuclearCharge),AtomSymbol,AtomNuclearCharge,AtomIonCharge FROM states;\n";
+
+
 # Returns the first word of a given sentence in which words are 
 # separated by one or more characters of white space.
 sub firstWord {
@@ -97,3 +115,5 @@ sub firstWord {
 	my @words = split /\s+/, $sentence;
         return shift @words;
 }
+
+
