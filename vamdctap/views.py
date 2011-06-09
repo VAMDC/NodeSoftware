@@ -159,7 +159,7 @@ def tables(request):
     return render_to_response('node/VOSI-tables.xml', c, mimetype='text/xml')
 
 def availability(request):
-    c=RequestContext(request,{})
+    c=RequestContext(request,{"accessURL" : getBaseURL(request)})
     return render_to_response('node/availability.xml', c, mimetype='text/xml')
 
 def availabilityXsl(request):
