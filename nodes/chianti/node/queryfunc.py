@@ -9,7 +9,6 @@ from models import States, Transitions
 from django.utils.importlib import import_module
 from vamdctap.sqlparse import *
 from django.db.models import Q
-from vamdctap.caselessdict import CaselessDict
 
 def LOG(s):
     "Simple logger function"
@@ -90,13 +89,13 @@ def setupResults(sql, LIMIT=1000):
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
-    headerinfo=CaselessDict({\
+    headerinfo={\
             'Truncated':percentage,
             'COUNT-SOURCES':nSources,
             'COUNT-species':nSpecies,
             'count-states':nStates,
             'count-radiative':nTransitions
-            })
+            }
 
     # return the result dictionary 
     return {'RadTrans':transitions,

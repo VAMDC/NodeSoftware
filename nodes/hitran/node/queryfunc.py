@@ -122,13 +122,13 @@ def setupResults(sql, LIMIT=None):
     print 'ntrans =', ntrans
     print 'nsources =', len(sources)
 
-    headerinfo = CaselessDict({
+    headerinfo = {
         'Truncated': '%s %%' % percentage,
         'count-species': nspecies,
         'count-molecules': nspecies,
         'count-states': nstates,
         'count-radiative': ntrans
-    })
+    }
 
     methods = [Method('MEXP', 'experiment', 'experiment'),
                Method('MTHEORY', 'theory', 'theory')]

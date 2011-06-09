@@ -56,6 +56,3 @@ RESTRICTABLES = {\
 'MoleculeChemicalName':'reaction__species__names',
 }
 
-from vamdctap.caselessdict import CaselessDict
-RESTRICTABLES = CaselessDict(RESTRICTABLES)
-RETURNABLES = CaselessDict(RETURNABLES)

@@ -20,12 +20,12 @@ from django.conf import settings
 from django.utils.importlib import import_module
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
-NODEID = DICTS.RETURNABLES['NodeID']
 
 # import helper modules that reside in the same directory
+from caselessdict import CaselessDict
+NODEID = CaselessDict(DICTS.RETURNABLES)['NodeID']
 from generators import *
 from sqlparse import SQL
-from caselessdict import CaselessDict
 
 # This turns a 404 "not found" error into a TAP error-document
 def tapNotFoundError(request):
