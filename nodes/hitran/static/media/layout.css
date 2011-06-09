@@ -7,11 +7,16 @@ body {
 	text-align: justify;
 }
 
+/* XXX why doesn't the font size cascade from body? */
+table { font-size: 9pt;}
+td { padding: 10px;}
+
 h2 {
 	text-align: center;
 }
 
 h4 {
+    font-weight: normal;
 	text-decoration: underline;
 }
 
@@ -23,3 +28,29 @@ h4 {
 	background: #eee;
 }
 
+#searchform_left_panel {
+	width: 400px;
+	margin: auto;
+	float: left;
+}
+#searchform_right_panel {
+	width: 400px;
+	margin: auto;
+	float: right;
+}
+
+#output_fields {
+    font-family: Courier;
+    background: #fff;
+	border: black 1px solid;
+}
+
+#output_fields table {
+    padding: 5px 10px 10px 5px;
+    margin: 0 0 0 0;
+}
+
+#output_fields td {
+    padding: 5px 0 0 5px;
+    margin: 0 0 0 0;
+}

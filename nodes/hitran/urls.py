@@ -17,7 +17,8 @@ urlpatterns = patterns('',
     (r'^HITRAN/', 'searchapp.views.index'),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve',
             {'document_root': settings.MEDIA_PATH}),
-
     )
 
+handler500 = 'vamdctap.views.tapServerError'
+handler404 = 'vamdctap.views.tapNotFoundError'
 

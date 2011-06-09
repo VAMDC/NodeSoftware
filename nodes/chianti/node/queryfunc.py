@@ -1,24 +1,30 @@
 # -*- coding: utf-8 -*-
 
+import dictionaries
 from models import States, Transitions
 from django.utils.importlib import import_module
 from vamdctap.sqlparse import *
-from dictionaries import *
 from django.db.models import Q
 
-def setupResults(sql, LIMIT=1000):
-    #print sql
-    # Obtain the query constraints as Django Q objects - a "query set" IIRC
-    qString = where2q(sql.where,RESTRICTABLES)
-    print qString
-    q = eval(qString)
+def LOG(s):
+    "Simple logger function"
+    if settings.DEBUG: print >> sys.stderr, s
 
-    print Transitions.objects.count();
+def setupResults(sql, LIMIT=1000):
+
+    # convert the incoming sql to a correct django query syntax object 
+    # based on the RESTRICTABLES dictionary in dictionaries.py
+    # (where2q is a helper function to do this for us).
+    q = where2q(sql.where, dictionaries.RESTRICTABLES)
+    try: 
+        q = eval(q) # test queryset syntax validity
+    except: 
+        return {}
 
     # Find transitions satisfying the criteria.
     transitions = Transitions.objects.filter(q)
     nTransitions = transitions.count()
-    print nTransitions;
+    LOG("Number of transitions: ", nTransitions)
 
     # Truncate the list of matching transitions.
     # Record the degree of truncation s.t. it can be reported in the output.
@@ -30,16 +36,16 @@ def setupResults(sql, LIMIT=1000):
         percentage = None
 
     # Find states matching the selected transitions.
-    print "Gettings states matching the transitions list"
+    #print "Gettings states matching the transitions list"
     state_ids = set([])
     for t in transitions:
         state_ids.add(t.chiantiradtransinitialstateindex.pk)
         state_ids.add(t.chiantiradtransfinalstateindex.pk)
     states = States.objects.filter(pk__in = state_ids)
-    print "Finished getting states"
+    #print "Finished getting states"
     nStates = states.count()
     
-    print "returning results to generator"
+    #print "returning results to generator"
 
     if percentage == None:
         headerinfo = CaselessDict({\

@@ -22,6 +22,17 @@
 		<xsl:apply-templates />
 	</xsl:template>
 
+	<xsl:template match="versionOfStandards">
+		<p><xsl:text>Version of VAMDC standards: </xsl:text><xsl:value-of select="."/></p>
+	</xsl:template>
+
+	<xsl:template match="versionOfSoftware">
+		<p><xsl:text>Version of Node Software: </xsl:text><xsl:value-of select="."/></p>
+	</xsl:template>
+
+	<xsl:template match="sampleQuery">
+		<p><xsl:text>Sample query: </xsl:text><xsl:value-of select="."/></p>
+	</xsl:template>
 
 	<xsl:template match="returnable">
 		<p>
