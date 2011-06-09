@@ -18,8 +18,9 @@ log.debug('test log start')
 # Get the node-specific package!
 from django.conf import settings
 from django.utils.importlib import import_module
-QUERYFUNC=import_module(settings.NODEPKG+'.queryfunc')
-DICTS=import_module(settings.NODEPKG+'.dictionaries')
+QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
+DICTS = import_module(settings.NODEPKG+'.dictionaries')
+NODEID = DICTS.RETURNABLES['NodeID']
 
 # import helper modules that reside in the same directory
 from generators import *
@@ -113,7 +114,7 @@ def sync(request):
     results=QUERYFUNC.setupResults(tap.parsedSQL)
     generator=Xsams(**results)
     response=HttpResponse(generator,mimetype='text/xml')
-    response['Content-Disposition'] = 'attachment; filename=request-%s.%s'%(datetime.now().isoformat(),tap.format)
+    response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
 
     if results.has_key('HeaderInfo'):
         response=addHeaders(results['HeaderInfo'],response)
@@ -147,9 +148,9 @@ def capabilities(request):
     c = RequestContext(request, {"accessURL" : getBaseURL(request),
                                  "RESTRICTABLES" : cleandict(DICTS.RESTRICTABLES),
                                  "RETURNABLES" : cleandict(DICTS.RETURNABLES),
-                                 "STANDARDS-VERSION" : settings.VAMDC_STDS_VERSION,
-                                 "SOFTWARE-VERSION" : settings.SOFTWARE_VERSION,
-                                 "EXAMPLE-QUERIES" : settings.EXAMPLE_QUERIES,
+                                 "STANDARDS_VERSION" : settings.VAMDC_STDS_VERSION,
+                                 "SOFTWARE_VERSION" : settings.NODESOFTWARE_VERSION,
+                                 "EXAMPLE_QUERIES" : settings.EXAMPLE_QUERIES,
                                  })
     return render_to_response('node/capabilities.xml', c, mimetype='text/xml')
 
@@ -175,7 +176,7 @@ def capabilitiesXsd(request):
 
 def capabilitiesXsl(request):
     c = RequestContext(request, {})
-    return render_to_response('node/Capabilities.xsl', c)
+    return render_to_response('node/Capabilities.xsl', c, mimetype='text/xsl')
 
 def index(request):
     c=RequestContext(request,{})
