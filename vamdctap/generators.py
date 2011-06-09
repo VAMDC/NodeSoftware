@@ -8,10 +8,12 @@ from xml.sax.saxutils import quoteattr
 from django.conf import settings
 from django.utils.importlib import import_module
 DICTS = import_module(settings.NODEPKG + '.dictionaries')
+from caselessdict import CaselessDict
+RETURNABLES = CaselessDict(DICTS.RETURNABLES)
 
 # This must always be set.
 try:
-    NODEID = DICTS.RETURNABLES['NodeID']
+    NODEID = RETURNABLES['NodeID']
 except:
     NODEID = 'PleaseFillTheNodeID'
 
@@ -27,7 +29,7 @@ def countReturnables(regexp):
     count how often a certain matches the keys of the returnables
     """
     r = re.compile(regexp, flags=re.IGNORECASE)
-    return len(filter(r.match, DICTS.RETURNABLES.keys()))
+    return len(filter(r.match, RETURNABLES.keys()))
 
 # Define some globals that allow skipping parts
 # of the generator below.
@@ -86,7 +88,7 @@ def GetValue(name, **kwargs):
     and the node-specific dictionary.
     """
     try:
-        name = DICTS.RETURNABLES[name]
+        name = RETURNABLES[name]
     except Exception:
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
@@ -829,7 +831,7 @@ def XsamsMolecules(Molecules):
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS
 
-        if not hasattr(Molecule,'States'): 
+        if not hasattr(Molecule,'States'):
             Molecule.States = []
         for MoleculeState in Molecule.States:
             for MS in XsamsMSBuild(MoleculeState):
@@ -843,13 +845,13 @@ def XsamsSolids(Solids):
     Generator for Solids tag
     """
     if not Solids:
-        return 
+        return
     yield "<Solids>"
     for Solid in makeiter(Solids):
         cont, ret = checkXML(Solid)
         if cont:
             yield ret
-            continue     
+            continue
         G = lambda name: GetValue(name, Solid=Solid)
         makePrimaryType("Solid", "Solid", G, extraAttr={"stateID":"S%s-%s" % (NODEID, G("SolidStateID"))})
         if hasattr(Solid, "Layers"):
@@ -863,7 +865,7 @@ def XsamsSolids(Solids):
                         GLC = lambda name: GetValue(name, Component=Component)
                         yield "<ChemicalElement>"
                         yield "<NuclearCharge>%s</NuclearCharge>" % GLC("SolidLayerComponentNuclearCharge")
-                        yield "<ElementSymbol>%s</ElementSymbol>" % GLC("SolidLayerComponentElementSymbol")                        
+                        yield "<ElementSymbol>%s</ElementSymbol>" % GLC("SolidLayerComponentElementSymbol")
                         yield "</ChemicalElement>"
                         yield "<StochiometricValue>%s</StochiometricValue>" % GLC("SolidLayerComponentStochiometricValue")
                         yield "<Percentage>%s</Percentage>" % GLC("SolidLayerComponentPercentage")
@@ -871,7 +873,7 @@ def XsamsSolids(Solids):
                 makeDataType("MaterialThickness", "SolidLayerThickness", GL)
                 yield "<MaterialTopology>%s</MaterialThickness>" % GL("SolidLayerTopology")
                 makeDataType("MaterialTemperature", "SolidLayerTemperature", GL)
-                yield "<Comments>%s</Comments>" % GL("SolidLayerComment")                
+                yield "<Comments>%s</Comments>" % GL("SolidLayerComment")
                 yield "</Layer>"
         yield "</Solid>"
     yield "</Solids>"
@@ -881,13 +883,13 @@ def XsamsParticles(Particles):
     Generator for Particles tag.
     """
     if not Particles:
-        return 
+        return
     yield "<Particles>"
     for Particle in makeiter(Particles):
         cont, ret = checkXML(Particle)
-        if cont:                                                                                                                                                                                                               
-            yield ret                                                                                                                                                                                                          
-            continue   
+        if cont:
+            yield ret
+            continue
         G = lambda name: GetValue(name, Particle=Particle)
         makePrimaryType("Particle", "Particle", G, extraAttr={"stateID":G("ParticleStateID"), "name":G("ParticleName")})
         yield "<ParticleProperties>"
@@ -896,9 +898,9 @@ def XsamsParticles(Particles):
         yield "<ParticleSpin>%s</ParticleSpin>" % G("ParticleSpin")
         yield "<ParticlePolarization>%s</ParticlePolarization>" % G("ParticlePolarization")
         yield "</ParticleProperties>"
-        yield "</Particle>"            
+        yield "</Particle>"
     yield "</Particles>"
-    
+
 ###############
 # END SPECIES
 # BEGIN PROCESSES
