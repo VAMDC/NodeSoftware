@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 RESTRICTABLES = {\
-'AtomSymbol':'atomsymbol',
-'AtomNuclearCharge':'chiantiradtransfinalstateindex__atomnuclearcharge',
-'AtomIonCharge':'atomioncharge',
-'AtomStateEnergyExperimentalValue':'chiantiradtransfinalstateindex__atomstateenergyexperimentalvalue',
-'AtomStateEnergyTheoreticalValue':'chiantiradtransfinalstateindex__atomstateenergytheoreticalvalue',
+'AtomSymbol':'states__species__atomsymbol',
+'AtomNuclearCharge':'states__species__atomnuclearcharge',
+'AtomIonCharge':'states__species__atomioncharge',
 'RadTransWavelengthExperimentalValue':'radtranswavelengthexperimentalvalue'
 }
 
