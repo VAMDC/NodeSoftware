@@ -39,10 +39,10 @@ RETURNABLES = {\
 'AtomStateEnergyTheoreticalValue':'AtomState.atomstateenergytheoreticalvalue',
 'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
 
-'RadTransWavelength':'RadTran.getBestWavelength()', # Arbitrate between experimental and theoretical values
-'RadTransWavelengthMethod': 'RadTran.getWavelengthMethod()', # Annotate wavelengths to refer to the method of derivation
+'RadTransWavelength':'RadTran.wavelength',
+'RadTransWavelengthMethod': 'RadTran.wavelengthmethod',
 'RadTransWavelengthUnit':u'A', # Constant: Angstrom symbol
 'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
-'RadTransProbabilityA':'RadTran.probabilityavalue',
-'RadTransProbabilityAUnits':u'Hz'
+'RadTransProbabilityA':'RadTran.probabilitya',
+'RadTransProbabilityAUnits':u'1/s'
 }
