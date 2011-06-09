@@ -58,7 +58,7 @@ def getSpeciesWithStates(transs):
 
     # get the reference ids for the 'species' ForeignKey field 
     # (see getRefs comment for more info)
-    spids = set( transs.values_list('species_id',flat=True) )
+    spids = set( transs.values_list('finalstateindex__species',flat=True) )
     # use the reference ids to query the Species database table 
     species = models.Species.objects.filter(pk__in=spids)
     nspecies = species.count() # get some statistics 
@@ -72,8 +72,8 @@ def getSpeciesWithStates(transs):
         spec_transitions = transs.filter(species=spec)
         # extract reference ids for the states from the transion, combining both
         # upper and lower unique states together
-        up = spec_transitions.values_list('upstate_id',flat=True)
-        lo = spec_transitions.values_list('lostate_id',flat=True)
+        up = spec_transitions.values_list('chiantiradtransfinalstateindex',flat=True)
+        lo = spec_transitions.values_list('chiantiradtransinitialstateindex',flat=True)
         sids = set(chain(up, lo))
 
         # use the found reference ids to search the State database table 
@@ -166,7 +166,7 @@ def setupResults(sql, limit=1000):
     # hitting the database, making it very efficient.
     LOG("getting transitions")
     transs = models.Transitions.objects.select_related(depth=2).filter(q)
-    LOG(transs)
+    LOG(transs.count())
 
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
@@ -181,7 +181,7 @@ def setupResults(sql, limit=1000):
     # all the relevant database data for our query. 
     #sources = getRefs(transs)
     sources = {}
-    nsources = sources.count()
+    nsources = 0
     LOG("Getting species")
     species, nspecies, nstates = getSpeciesWithStates(transs)
     #methods = getLifetimeMethods()
