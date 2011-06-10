@@ -182,13 +182,13 @@ def setupResults(sql, limit=1000):
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
-    headerinfo=CaselessDict({\
+    headerinfo={\
             'Truncated':percentage,
             'COUNT-SOURCES':nsources,
             'COUNT-species':nspecies,
             'count-states':nstates,
             'count-radiative':ntranss
-            })
+            }
             
     # Return the data. The keynames are standardized. 
     return {'RadTrans':transs,

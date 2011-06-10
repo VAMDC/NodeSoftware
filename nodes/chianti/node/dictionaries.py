@@ -28,7 +28,3 @@ RETURNABLES = {\
 'RadTransProbabilityTransitionProbabilityAValue':'RadTran.radtransprobabilitytransitionprobabilityavalue',
 'RadTransProbabilityTransitionProbabilityAUnits':u'Hz'
 }
-
-from vamdctap.caselessdict import CaselessDict
-RESTRICTABLES = CaselessDict(RESTRICTABLES)
-RETURNABLES = CaselessDict(RETURNABLES)

@@ -9,7 +9,6 @@ from models import States, Transitions
 from django.utils.importlib import import_module
 from vamdctap.sqlparse import *
 from django.db.models import Q
-from vamdctap.caselessdict import CaselessDict
 
 def LOG(s):
     "Simple logger function"
@@ -24,6 +23,12 @@ def getSpeciesWithStates(transs):
     
     We also return some statistics of the result 
     """
+
+
+    # Get all the states relevant to the transitions.
+    stateIds = set( transs.values_list('states_id',flat=True) )
+    states = models.States.objects.filter(pk__in=stateIds)
+    nstates = states.count();
 
     # get the reference ids for the 'species' ForeignKey field 
     # (see getRefs comment for more info)
@@ -84,13 +89,13 @@ def setupResults(sql, LIMIT=1000):
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
-    headerinfo=CaselessDict({\
+    headerinfo={\
             'Truncated':percentage,
             'COUNT-SOURCES':nSources,
             'COUNT-species':nSpecies,
             'count-states':nStates,
             'count-radiative':nTransitions
-            })
+            }
 
     # return the result dictionary 
     return {'RadTrans':transitions,
