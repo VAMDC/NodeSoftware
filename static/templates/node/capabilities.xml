@@ -7,7 +7,7 @@
     xmlns:tx='http://www.vamdc.org/xml/VAMDC-TAP/v1.0'
     xsi:schemaLocation='http://www.ivoa.net/xml/VOResource/v1.0 http://www.ivoa.net/xml/VOResource/v1.0
         http://www.ivoa.net/xml/VODataService/v1.1 http://www.ivoa.net/xml/VODataService/VODataService-v1.0.xsd
-        urn:astrogrid:schema:Capabilities {{accessURL}}Capabilities.xsd'>
+        {{accessURL}}Capabilities.xsd'>
     <capability standardID='ivo://vamdc/std/VAMDC-TAP' xsi:type='tx:VamdcTap'>
         <interface xsi:type='vs:ParamHTTP'>
             <accessURL use='base'>{{accessURL}}</accessURL>
@@ -29,9 +29,8 @@
         </interface>
     </capability>
     <capability standardID="ivo://ivoa.net/std/VOSI#availability">
-        <interface xsi:type="vs:ParamHTTP" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns5="http://www.ivoa.net/xml/VODataService/v1.0">
+        <interface xsi:type="vs:ParamHTTP">
 	    <accessURL use="base">{{accessURL}}availability</accessURL>
 	</interface>
     </capability>
 </cap:capabilities>
-
