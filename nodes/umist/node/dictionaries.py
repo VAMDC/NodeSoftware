@@ -24,7 +24,7 @@ RETURNABLES = {\
 #'SourcePageBegin':'Source.pages',
 #'SourcePageEnd':'Source.pages',
 #'SourceName':'Source.journal',
-'SourceTitle':'Source.title',
+'SourceTitle':'Source.full',
 'SourceURI':'Source.url',
 #'SourceVolume':'Source.volume',
 #'SourceYear':'Source.year',
