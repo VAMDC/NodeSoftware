@@ -128,8 +128,8 @@ def trav(L):
 
 def setupResults(sql, LIMIT=None):
 
-    trav(sql)
-    trav(sql)
+    #trav(sql)
+    #trav(sql)
 
     q = sqlparse.where2q(sql.where,RESTRICTABLES)
     try:

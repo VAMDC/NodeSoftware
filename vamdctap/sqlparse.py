@@ -74,6 +74,15 @@ def singleWhere(w,RESTRICTABLES):
 def where2q(ws,RESTRICTABLES):
     q=''
     for w in ws:
+        if len(w)>4 and w[1]=='in':
+            if not RESTRICTABLES.has_key(w[0]):
+                log.warning('cant find name %s'%w[0]); return ''
+            # join the comma-separated list into a single string and strip
+            # the parentheses
+            w[2] = '"%s"' % ', '.join(w[3:-1])
+            qstring="Q(%s__in=(%s))" % (RESTRICTABLES[w[0]], ', '.join(w[3:-1]))
+            q += qstring
+            return q
         log.debug('w: %s'%w)
         if w=='and': q+=' & '
         elif w=='or': q+=' | '
