@@ -402,3 +402,15 @@ class QNdesc(models.Model):
     col_name = models.IntegerField(null=True)
     class Meta:
         db_table = u'QNdesc'
+
+class Molecule_Names(models.Model):
+    id = models.IntegerField(primary_key=True, null=False)
+    chemical_name = models.CharField(max_length=64, null=False)
+    #molecid = models.ForeignKey('Molecules', db_column='molecID')
+    molecid = models.IntegerField(primary_key=True, null=False,
+                                  db_column='molecID')
+    inchikeystem = models.CharField(max_length=42, db_column='InChIKeyStem')
+    molec_name = models.CharField(max_length=20, null=False,
+                                  db_column='molec_name')
+    class Meta:
+        db_table = u'molecule_names'
