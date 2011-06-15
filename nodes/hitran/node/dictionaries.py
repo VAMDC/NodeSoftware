@@ -49,6 +49,7 @@ RETURNABLES=CaselessDict({\
 'MoleculeStateID':'MoleculeState.id',
 'MoleculeStateMolecularSpeciesID':'MoleculeState.inchikey',
 'MoleculeStateEnergyValue':'MoleculeState.energy',
+'MoleculeStateEnergy':'MoleculeState.energy',
 'MoleculeStateEnergyUnit':'1/cm',
 'MoleculeStateEnergyOrigin':'Zero-point energy',
 'MoleculeStateCharacTotalStatisticalWeight':'MoleculeState.g',
