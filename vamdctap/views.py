@@ -112,16 +112,25 @@ def sync(request):
         return tapServerError(status=400,errmsg=emsg)
 
     results=QUERYFUNC.setupResults(tap.parsedSQL)
+    if not results:
+        log.info('setupResults() gave something empty. Returning 204.')
+        return HttpResponse('', status=204)
+
     generator=Xsams(**results)
     response=HttpResponse(generator,mimetype='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
 
-    if results.has_key('HeaderInfo'):
+    if 'HeaderInfo' in results:
         response=addHeaders(results['HeaderInfo'],response)
 
         # Override with empty response if result is empty
-        if response['VAMDC-APPROX-SIZE'] == 0:
-            response = HttpResponse('', status=204)
+        if 'VAMDC-APPROX-SIZE' in response:
+            try:
+                size = float(response['VAMDC-APPROX-SIZE'])
+                if size == 0.0:
+                    log.info('Empty result')
+                    return HttpResponse('', status=204)
+            except: pass
     else:
         log.warn('Query function did not return information for HTTP-headers.')
 

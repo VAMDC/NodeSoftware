@@ -63,7 +63,7 @@ log = logging.getLogger('vamdc.tap.sql')
 def singleWhere(w,RESTRICTABLES):
     if not w[0] in RESTRICTABLES:
         log.warning('Unsupported Restrictable: %s'%w[0])
-        return 'Q(False)'
+        return 'Q(pk=False)'
     if not OPTRANS.has_key(w[1]):
         log.warning('Unsupported operator: %s'%w[1])
         return ''
