@@ -6,7 +6,7 @@ Bugs and Contact
 Report a bug
 --------------------
 
-The NodesoftWare is in active development and there are some rough edges still.
+The NodeSoftware is in active development and there are some rough edges still.
 We very much appreciate your feedback and complaints are usually resolved
 quickly.
 

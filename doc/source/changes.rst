@@ -9,12 +9,12 @@ Changelog
     document before since terms are used that are introduced later. It is
     meant for returning readers, especially the maintainer of VAMDC nodes.
 
-June 13, 2011
+June 15, 2011
 ------------------
 
 **Version**. This documentation has been updated to match the release of the
 NodeSoftware 11.5r1 which implements the VAMDC Standards release 11.5.
-NodeSoftware 11.5r1 supersedes and obsoltes version 11.5 (released May 26) and
+NodeSoftware 11.5r1 supersedes and obsoletes version 11.5 (released May 26) and
 all nodes are encouraged to upgrade. This is mainly a bug-fix release and upgraded nodes will only have to do the two small changes mentioned below.
 
 **Example Queries**. The way to define example queries in each node's
@@ -38,6 +38,8 @@ in the VAMDC Standards 11.5 but will be in the next Standards release (11.7).
 If you want to use the NodeSoftware's XML-generator for solids, particles or
 molecular quantum numbers, please see http://dictionary.vamdc.org/dict/ for the
 new keywords.
+
+**Registration**. The NodeSoftware now automatically reports its own version and the standards version it implements at *tap/capabilities*. You might want to make the VAMDC Registry re-read this information (click "Edit metadata" and "Update the registry entry").
 
 **Virtual Machine**. The virutal machine has been updated to include Django 1.3 and NodeSoftware 11.5r1.
 
