@@ -118,6 +118,10 @@ def sync(request):
 
     if results.has_key('HeaderInfo'):
         response=addHeaders(results['HeaderInfo'],response)
+
+        # Override with empty response if result is empty
+        if response['VAMDC-APPROX-SIZE'] == 0:
+            response = HttpResponse('', status=204)
     else:
         log.warn('Query function did not return information for HTTP-headers.')
 
