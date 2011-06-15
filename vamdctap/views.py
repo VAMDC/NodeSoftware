@@ -20,12 +20,12 @@ from django.conf import settings
 from django.utils.importlib import import_module
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
-NODEID = DICTS.RETURNABLES['NodeID']
 
 # import helper modules that reside in the same directory
+from caselessdict import CaselessDict
+NODEID = CaselessDict(DICTS.RETURNABLES)['NodeID']
 from generators import *
 from sqlparse import SQL
-from caselessdict import CaselessDict
 
 # This turns a 404 "not found" error into a TAP error-document
 def tapNotFoundError(request):
@@ -112,12 +112,25 @@ def sync(request):
         return tapServerError(status=400,errmsg=emsg)
 
     results=QUERYFUNC.setupResults(tap.parsedSQL)
+    if not results:
+        log.info('setupResults() gave something empty. Returning 204.')
+        return HttpResponse('', status=204)
+
     generator=Xsams(**results)
     response=HttpResponse(generator,mimetype='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
 
-    if results.has_key('HeaderInfo'):
+    if 'HeaderInfo' in results:
         response=addHeaders(results['HeaderInfo'],response)
+
+        # Override with empty response if result is empty
+        if 'VAMDC-APPROX-SIZE' in response:
+            try:
+                size = float(response['VAMDC-APPROX-SIZE'])
+                if size == 0.0:
+                    log.info('Empty result')
+                    return HttpResponse('', status=204)
+            except: pass
     else:
         log.warn('Query function did not return information for HTTP-headers.')
 
@@ -159,7 +172,7 @@ def tables(request):
     return render_to_response('node/VOSI-tables.xml', c, mimetype='text/xml')
 
 def availability(request):
-    c=RequestContext(request,{})
+    c=RequestContext(request,{"accessURL" : getBaseURL(request)})
     return render_to_response('node/availability.xml', c, mimetype='text/xml')
 
 def availabilityXsl(request):

@@ -24,7 +24,7 @@ RETURNABLES = {\
 #'SourcePageBegin':'Source.pages',
 #'SourcePageEnd':'Source.pages',
 #'SourceName':'Source.journal',
-'SourceTitle':'Source.title',
+'SourceTitle':'Source.full',
 'SourceURI':'Source.url',
 #'SourceVolume':'Source.volume',
 #'SourceYear':'Source.year',
@@ -56,6 +56,3 @@ RESTRICTABLES = {\
 'MoleculeChemicalName':'reaction__species__names',
 }
 
-from vamdctap.caselessdict import CaselessDict
-RESTRICTABLES = CaselessDict(RESTRICTABLES)
-RETURNABLES = CaselessDict(RETURNABLES)
