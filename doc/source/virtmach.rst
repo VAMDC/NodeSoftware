@@ -16,7 +16,7 @@ The virtual harddisk
 ----------------------
 
 The file can be downloaded from 
-http://vamdc.tmy.se/files/VAMDCnode.vdi.bz2 (550MB) Last update: March 10, 2011.
+http://vamdc.tmy.se/files/VAMDCnode.vdi.bz2 (600MB).
 
 Unpack it (`bunzip`) and save it whereever it pleases you (unpacked size 
 is over 2GB). The default location on Linux hosts is 
