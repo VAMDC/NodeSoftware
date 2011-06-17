@@ -8,6 +8,18 @@ from vamdctap import sqlparse
 from itertools import chain
 from HITRANfuncsenvs import * 
 
+# This turns a 500 "internal server error" into a TAP error-document
+# XXX this is duplicated from vamdctap/views.py - some time, tidy this up.
+from django.template import Context, loader
+from django.http import HttpResponse
+def tapServerError(request=None, status=500, errmsg=''):
+    text = 'Error in TAP service: %s' % errmsg
+    # XXX I've had to copy TAP-error-document.xml into my node's
+    # template directory to get access to it, as well...
+    document = loader.get_template('TAP-error-document.xml').render(
+            Context({"error_message_text" : text}))
+    return HttpResponse(document, status=status, mimetype='text/xml');
+
 import sys
 def LOG(s):
     print >> sys.stderr, s
@@ -142,3 +154,47 @@ def setupResults(sql, LIMIT=None):
             'Environments': HITRANenvs,
             'Functions': HITRANfuncs}
 
+def returnResults(tap, LIMIT=None):
+    """
+    Return this node's response to the TAP query, tap, where
+    the requested return format is something other than XSAMS.
+    The TAP object has been validated upstream of this method,
+    so we're good to go.
+
+    """
+
+    if tap.format != 'par':
+        emsg = 'Currently, only FORMATs PAR and XSAMS are supported.\n'
+        return tapServerError(status=400, errmsg=emsg)
+
+    # XXX more duplication of code from setupResults():
+    # which uses sql = tap.parsedSQL
+    q = sqlparse.where2q(tap.parsedSQL.where, RESTRICTABLES)
+    try:
+        q=eval(q)
+    except Exception,e:
+        LOG('Exception in setupResults():')
+        LOG(e)
+        return {}
+
+    transs = Trans.objects.filter(q) 
+    ntrans = transs.count()
+    if LIMIT is not None and ntrans > LIMIT:
+        # we need to filter transs again later, so can't take a slice
+        #transs = transs[:LIMIT]
+        # so do this:
+        numax = transs[LIMIT].nu
+        transs = Trans.objects.filter(q, Q(nu__lte=numax))
+        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+    else:
+        percentage = '100'
+    print 'Truncated to %s %%' % percentage
+    print 'ntrans =',ntrans
+    
+    par_generator = Par(transs)
+    response = HttpResponse(par_generator, mimetype='text/plain')
+    return response
+
+def Par(transs):
+    for trans in transs:
+        yield '%s\n' % trans.hitranline
