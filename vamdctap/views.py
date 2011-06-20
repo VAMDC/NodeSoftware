@@ -30,13 +30,13 @@ from sqlparse import SQL
 # This turns a 404 "not found" error into a TAP error-document
 def tapNotFoundError(request):
     text = 'Resource not found: %s'%request.path;
-    document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
     return HttpResponse(document, status=404, mimetype='text/xml');
 
 # This turns a 500 "internal server error" into a TAP error-document
 def tapServerError(request=None, status=500, errmsg=''):
     text = 'Error in TAP service: %s'%errmsg
-    document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
     return HttpResponse(document, status=status, mimetype='text/xml');
 
 
