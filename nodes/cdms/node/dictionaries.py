@@ -114,7 +114,7 @@ RETURNABLES = {
 'RadTransFrequencyAccuracy':'RadTran.energywavelengthaccuracy',
 #'RadTransFrequencyRef':'RadTran.freqmethodref_id',
 #'RadTransFrequencyMethod':'RadTran.freqmethodref_id',
-'RadTransFrequencyMethod':'RadTran.speciesid',
+'RadTransFrequencyMethod':'RadTran.species_id',
 'RadTransProbabilityA':'RadTran.einsteinA',
 'RadTransProbabilityAUnit':'1/cm', # <-New
 #'RadTransProbabilityIdealisedIntensity':'RadTran.',
@@ -175,6 +175,7 @@ RESTRICTABLES = {
 #'MoleculeStateEnergy':'',
 #'MoleculeStateID':'',
 'MoleculeStoichiometricFormula':'species__stoichiometricformula',
+'MoleculeOrdinaryStructuralFormula':'species__stoichiometricformula',
 #'NonRadTranEnergy':'',
 #'NonRadTranProbability':'',
 #'NonRadTranWidth':'',
