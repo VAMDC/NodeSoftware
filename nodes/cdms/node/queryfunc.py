@@ -56,7 +56,9 @@ def attach_partionfunc(molecules):
          
 
 def getSpeciesWithStates(transs):
+#    LOG("speciesList:")
     spids = set( transs.values_list('speciesid',flat=True) )
+#    LOG(spids)
 #    atoms = Species.objects.filter(pk__in=spids,ncomp=1)
     molecules = Molecules.objects.filter(pk__in=spids) #,ncomp__gt=1)
 #    nspecies = atoms.count() + molecules.count()
@@ -85,21 +87,24 @@ def getFreqMethodRefs(transs):
     return Methods.objects.filter(q)
 
 def getSources(transs):
-    ids=set([])
+#    ids=set([])
     meth=[]
-    for trans in transs:
-      ids=ids.union(set([trans.speciesid]))
+#    for trans in transs:
+#      ids=ids.union(set([trans.speciesid]))
+
+    ids = set( transs.values_list('speciesid',flat=True) )
+      
     q=Q(eId__in=ids)
 
     slist = SourcesIDRefs.objects.filter(q).distinct()  
     for src in slist.values_list('eId',flat=True):
         mesrc=SourcesIDRefs.objects.filter(Q(eId=src)).values_list('rId',flat=True)
-        LOG(mesrc)
+#        LOG(mesrc)
         this_method = Method(src,src,'derived','derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data',mesrc)
 #        meth=meth.append(Method(5,src,'derived','derived',mesrc))
-        LOG(this_method.sourcesref)
+#        LOG(this_method.sourcesref)
         meth.append(this_method)
-        LOG(meth)
+#        LOG(meth)
 
         
     sourceids = slist.values_list('rId',flat=True)
@@ -132,8 +137,8 @@ def setupResults(sql):
     except: return {}
 
     LOG(q)
-    #transs = Transition.objects.filter(q).order_by('vacwave')
-    transs = RadiativeTransitions.objects.select_related(depth=2).filter(q)
+    transs = RadiativeTransitions.objects.filter(q) #order_by('vacwave')
+#    transs = RadiativeTransitions.objects.select_related(depth=2).filter(q)
     
 #    ntranss=transs.count()
   #  if TRANSLIM < ntranss :
@@ -146,14 +151,15 @@ def setupResults(sql):
     LOG(ntranss)
 #    sources = getRefs(transs)
     sources, methods = getSources(transs)
-#    nsources = sources.count()
+    nsources = sources.count()
 #    atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs)
+#    LOG(ntranss)
     molecules,nspecies,nstates = getSpeciesWithStates(transs)
-    
+#    LOG(ntranss)
     attach_partionfunc(molecules)
     
-    LOG(ntranss)
-    LOG(methods)
+#    LOG(ntranss)
+#    LOG(methods)
     headerinfo={\
             'Truncated':percentage,
  #           'COUNT-SOURCES':nsources,

@@ -9,11 +9,25 @@
 from django.db.models import *
 #from vamdctap.bibtextools import *
 
+
+class Molecules( Model):
+     speciesid   =  IntegerField(primary_key=True, db_column='I_ID')
+     inchi       =  CharField(max_length=200, db_column='I_Inchi', blank=True)
+     inchikey    =  CharField(max_length=100, db_column='I_Inchikey', blank=True)
+     name        =  CharField(max_length=100, db_column='I_Name', blank=True)
+     htmlname    =  CharField(max_length=200, db_column='I_HtmlName', blank=True)
+     latexname   =  CharField(max_length=100, db_column='I_LatexName', blank=True)
+     stoichiometricformula =  CharField(max_length=200, db_column='I_StoichiometricFormula', blank=True)
+     trivialname =  CharField(max_length=200, db_column='I_TrivialName', blank=True)
+     class Meta:
+         db_table = u'Isotopologs'
+
+
 class StatesMolecules( Model):
     resource =  CharField(max_length=12, db_column='Resource') # Field name made lowercase.
     stateid =  IntegerField(primary_key=True, db_column='StateID') # Field name made lowercase.
-    speciesid =  IntegerField(db_column='E_ID')
-    moleculeid =  IntegerField(db_column='MoleculeID') # Field name made lowercase.
+    speciesid =  ForeignKey(Molecules, db_column='E_ID')
+    moleculeid =  ForeignKey(Molecules, db_column='MoleculeID') # Field name made lowercase.
     chemicalname =  CharField(max_length=600, db_column='ChemicalName', blank=True) # Field name made lowercase.
     molecularchemicalspecies =  CharField(max_length=600, db_column='MolecularChemicalSpecies') # Field name made lowercase.
     isotopomer =  CharField(max_length=300, db_column='Isotopomer', blank=True) # Field name made lowercase.
@@ -78,21 +92,6 @@ class StatesMolecules( Model):
 
 
 
-class Molecules( Model):
-     speciesid   =  IntegerField(primary_key=True, db_column='I_ID')
-     inchi       =  CharField(max_length=200, db_column='I_Inchi', blank=True)
-     inchikey    =  CharField(max_length=100, db_column='I_Inchikey', blank=True)
-     name        =  CharField(max_length=100, db_column='I_Name', blank=True)
-     htmlname    =  CharField(max_length=200, db_column='I_HtmlName', blank=True)
-     latexname   =  CharField(max_length=100, db_column='I_LatexName', blank=True)
-     stoichiometricformula =  CharField(max_length=200, db_column='I_StoichiometricFormula', blank=True)
-     trivialname =  CharField(max_length=200, db_column='I_TrivialName', blank=True)
-     class Meta:
-         db_table = u'Isotopologs'
-
-     statesspecies = ForeignKey(StatesMolecules, related_name='molecules',
-                            db_column='I_ID')
-
 
 class Methods (Model):
     id = IntegerField(primary_key=True, db_column='ME_ID')
@@ -110,7 +109,7 @@ class RadiativeTransitions(Model):
     resource =  CharField(max_length=12, db_column='Resource') # Field name made lowercase.
     radiativetransitionid =  IntegerField(primary_key=True, db_column='RadiativeTransitionID') # Field name made lowercase.
     moleculeid =  IntegerField(db_column='MoleculeID') # Field name made lowercase.
-    speciesid =  IntegerField(db_column='E_ID')
+    speciesid =  ForeignKey(Molecules, db_column='E_ID')
     species = ForeignKey(Molecules, related_name='isspecies', db_column='E_ID', null=False)
     chemicalname =  CharField(max_length=600, db_column='ChemicalName', blank=True) # Field name made lowercase.
     molecularchemicalspecies =  CharField(max_length=600, db_column='MolecularChemicalSpecies') # Field name made lowercase.
