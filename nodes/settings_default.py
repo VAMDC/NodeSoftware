@@ -7,6 +7,12 @@
 import sys, os
 
 ###################################################
+# Software and standards version
+###################################################
+VAMDC_STDS_VERSION = '11.5'
+NODESOFTWARE_VERSION = '11.5r1'
+
+###################################################
 # Basic node setup 
 ###################################################
 # root path of the VAMDC install on your system (should be automatically set)
@@ -23,6 +29,16 @@ ROOT_URLCONF = NODENAME+'.urls'
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
 ADMINS = (('yourname', 'name@mail.net'),) 
 MANAGERS = ADMINS
+
+EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
+                   'SELECT ALL WHERE ... something else',
+                   ]
+
+# This turns on/off the serving of static files
+# though Django. It is better to let the deployment
+# webserver do this, not Django. But it is on
+# by default to make things fail-safe.
+SERVE_STATIC = True
 
 ###################################################
 # Database connection
@@ -51,7 +67,7 @@ INSTALLED_APPS = [
 #    'django.contrib.sites',
 #    'django.contrib.admin',
 #    'django.contrib.admindocs',
-    'django.contrib.staticfiles',
+#    'django.contrib.staticfiles',
     'vamdctap',
     NODEPKG
 ]

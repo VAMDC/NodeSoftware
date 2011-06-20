@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from vamdctap.caselessdict import CaselessDict
-
-RETURNABLES=CaselessDict({\
+RETURNABLES={\
 'NodeID': 'HIT',    # unique identifier for the HITRAN node
 'SourceID': 'Source.sourceid',
 'SourceAuthorName': 'Source.authors',
@@ -42,27 +40,29 @@ RETURNABLES=CaselessDict({\
 'MoleculeID': 'Molecule.inchikey',
 'MoleculeInChI': 'Molecule.inchi',
 'MoleculeInChIKey': 'Molecule.inchikey',
+'MoleculeSpeciesID': 'Molecule.inchikey',
 # use the Comment field to 
 'MoleculeComment': 'Molecule.iso_name',
 
 'MoleculeStateID':'MoleculeState.id',
 'MoleculeStateMolecularSpeciesID':'MoleculeState.inchikey',
 'MoleculeStateEnergyValue':'MoleculeState.energy',
+'MoleculeStateEnergy':'MoleculeState.energy',
 'MoleculeStateEnergyUnit':'1/cm',
 'MoleculeStateEnergyOrigin':'Zero-point energy',
 'MoleculeStateCharacTotalStatisticalWeight':'MoleculeState.g',
-'MoleculeStateQuantumNumbers': 'MoleculeState.parsed_qns',
+'MoleculeStateQuantumNumbers': 'MoleculeState',
 
 'MoleculeQnStateID': 'MolQN.stateid',
 'MoleculeQnCase': 'MolQN.case',      # e.g. 'dcs', 'ltcs', ...
 'MoleculeQnLabel': 'MolQN.label',    # e.g. 'J', 'asSym', ...
 'MoleculeQnValue': 'MolQN.value',
 'MoleculeQnAttribute': 'MolQN.qn_attr',
-'MoleculeQnXML': 'MolQN.xml',
-'Inchikey':'inchikey'})
+'MoleculeQnXML': 'MoleculeState.get_qn_xml()',
+'Inchikey':'inchikey'}
 
-RESTRICTABLES = CaselessDict({\
+RESTRICTABLES = {\
 'MoleculeInchikey':'inchikey',
 'RadTransWavenumber':'nu',
 'RadTransProbabilityA':'a',
-})
+}

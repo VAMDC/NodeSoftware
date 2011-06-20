@@ -1,12 +1,173 @@
 <html>
 <head>
 <link href="/media/layout.css" rel="stylesheet" type="text/css"/>
+
+<script type="text/javascript">
+
+function select_all_molecules()
+{
+	oSelectButton = document.SearchForm.select_all;
+    oElements = document.SearchForm.elements["molecule"];
+	if (oSelectButton.value == "Select All") {
+		for (var i in oElements) {
+            if (oElements[i].name == 'molecule') {
+                oCheckBox = oElements[i];
+                if (oCheckBox) {
+                    oCheckBox.checked = true;
+                }
+            }
+		}
+		oSelectButton.value = "Select None";
+	} else {
+		for (var i in oElements) {
+			if (oElements[i].name == 'molecule') {
+                oCheckBox = oElements[i];
+                if (oCheckBox) {
+                    oCheckBox.checked = false;
+                }
+            }
+		}
+		oSelectButton.value = "Select All";
+	}
+}
+
+function select_first_seven()
+{
+	oSelectButton = document.SearchForm.select_seven;
+    oElements = document.SearchForm.elements["molecule"];
+    var iMolec = 0;
+    for (var i in oElements) {
+        if (oElements[i].name == 'molecule') {
+            oCheckBox = oElements[i];
+            if (oCheckBox) {
+                oCheckBox.checked = true;
+            }
+            iMolec += 1;
+        }
+        if (iMolec == 7) {
+            break;
+        }
+    }
+}
+
+function change_units()
+{
+    
+    oNuMinUnits = document.SearchForm.elements["numin_units"];
+    oNuMaxUnits = document.getElementById("numax_units");
+    oNuMinLabel = document.getElementById("numin_label");
+    oNuMaxLabel = document.getElementById("numax_label");
+    units = oNuMinUnits.value;
+
+    freq = false;
+    freq_units_array = ['cm-1', 'MHz', 'GHz'];
+    for (var i=0; i<freq_units_array.length; i++) {
+        freq_units = freq_units_array[i];
+        if (units == freq_units) {
+            freq = true;
+            break;
+        }
+    }
+    if (freq) {
+        oNuMinLabel.innerHTML = '<em>&nu;</em><sub>min</sub>';
+        oNuMaxLabel.innerHTML = '<em>&nu;</em><sub>max</sub>';
+    } else {
+        oNuMinLabel.innerHTML = '<em>&lambda;</em><sub>min</sub>';
+        oNuMaxLabel.innerHTML = '<em>&lambda;</em><sub>max</sub>';
+    }
+
+    if (units == 'cm-1') {
+        units = 'cm<sup>-1</sup>';
+    } else if (units == 'A') {
+        units = '&Aring;';
+    } else if (units == 'um') {
+        units = '&mu;m';
+    }
+    oNuMaxUnits.innerHTML = units;
+}
+
+function change_output_text_formats()
+{
+    output_text_format = document.SearchForm.elements["output_text_formats"];
+    output_text_format = output_text_format.value;
+    separator = document.SearchForm.elements["sep"];
+    if (output_text_format == 'csv') {
+        separator.value = ',';
+    } else if (output_text_format == 'HITRAN2004') {
+        separator.value = '';
+    }
+}
+
+</script>
+
 </head>
 <body>
 
-<h2>VAMDC HITRAN node</h2>
+<h2>HITRAN search</h2>
+
+<form enctype="multipart/form-data" name="SearchForm" method="POST">
+
 <div id="container">
-<p>To search, use the URL http://127.0.0.1:8000/tap/sync/? and append your query in VSS.</p>
+<!-- the lefthand panel is for the parameters to search on -->
+<div id="searchform_left_panel">
+<table><tr><td><input value="Select All" type="button" name="select_all" onclick='JavaScript:select_all_molecules()'/></td><td><input value="Select First 7" type="button" name="select_seven" onclick='JavaScript:select_first_seven()'/></td></tr></table>
+<!-- the list of molecules -->
+{{ molec_cb_html|safe }}
+
+<table>
+<tr>
+<td id="numin_label"><em>&nu;</em><sub>min</sub></td>
+<td><input type="text" name="numin"></td>
+<td><select onchange="JavaScript:change_units()" name="numin_units"><option value="cm-1" selected>cm-1</option><option value="nm">nm</option><option value="A">&Aring;</option><option value="um">&mu;m</option><option value="MHz">MHz</option><option value="GHz">GHz</option></select></td>
+</tr>
+<tr>
+<td id="numax_label"><em>&nu;</em><sub>max</sub></td>
+<td><input type="text" name="numax"></td>
+<td id="numax_units">cm<sup>-1</sup></td>
+</tr>
+<tr>
+<td><em>S</em><sub>min</sub></td>
+<td><input type="text" name="Smin"></td>
+<td>cm<sup>-1</sup>/molec.cm<sup>-2</sup></td>
+</tr>
+</table>
+
+</div> <!-- searchform_left_panel -->
+
+<!-- the righthand panel is for output formats -->
+<div id="searchform_right_panel">
+<h4>Text File Output Format</h4>
+<p><select onchange="JavaScript:change_output_text_formats()" name="output_text_formats"><option value="aligned_text" selected>Aligned Text Columns</option><option value="HITRAN2004">HITRAN2004</option><option value="csv">Comma Separated</option><option value="tab">Tab Separated</option></select></p>
+
+<p><input type="text" style="width: 20px;" value=";" name="sep"/>&nbsp;Field separator</p>
+
+<h4>Output Fields</h4>
+<div id="output_fields">
+<table>
+<tr><col width="50px"></tr>
+<tr><td>&nu;</td><td>Transition wavenumber</td></tr>
+<tr><td>S</td><td>Transition intensity at 296 K</td></tr>
+<tr><td>A</td><td>Einstein A coefficient</td></tr>
+<tr><td>E"</td><td>Lower state energy</td></tr>
+<tr><td>&gamma;<sub>air</sub></td><td>Air-broadened HWHM</td></tr>
+<tr><td>n<sub>air</sub></td><td>Air-broadening temperature exponent</td></tr>
+<tr><td>&gamma;<sub>self</sub></td><td>Self-broadened HWHM</td></tr>
+<tr><td>g'</td><td>Upper-state degeneracy</td></tr>
+<tr><td>g"</td><td>Lower-state degeneracy</td></tr>
+</table>
 </div>
+
+<p><strong>Or</strong> upload HITRANrequest file in XML:</p>
+<input type="file" name="request_file" size="40"/>
+
+</div> <!-- searchform_right_panel -->
+
+<div style="clear: both; width: 200px; margin: auto;">
+<br/><br/>
+<input type="submit" value="Submit Query"/>
+</div>
+</div>
+
+</form>
 </body>
 </html>

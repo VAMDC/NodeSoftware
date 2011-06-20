@@ -48,8 +48,11 @@ def setupResults(sql):
     log.debug('sql.where: %s'%sql.where)
     q=where2q(sql.where,RESTRICTABLES)
     log.debug('q to be evaluated: %s'%q)
-    try: q=eval(q)
-    except: return {}
+    try:
+        q=eval(q)
+    except Exception,e:
+        log.debug('eval(q) failed: %s'%e)
+        return
 
     transs = Transition.objects.filter(q).order_by('vacwave')
     ntranss=transs.count()
@@ -63,7 +66,7 @@ def setupResults(sql):
     atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs)
 
     if ntranss:
-        size_estimate='%.2f'%(ntranss * 0.00113)
+        size_estimate='%.2f'%(ntranss*0.0014 + 0.01)
     else: size_estimate='0.00'
 
     headerinfo={\

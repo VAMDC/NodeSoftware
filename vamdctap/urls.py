@@ -1,4 +1,6 @@
 from django.conf.urls.defaults import *
+from django.conf import settings
+import django.views.static
 
 urlpatterns = patterns('vamdctap.views',
                        (r'^$', 'index'),
@@ -6,9 +8,13 @@ urlpatterns = patterns('vamdctap.views',
                        #(r'^async/', 'async'),
                        (r'^availability[/]?$', 'availability'),
                        (r'^capabilities[/]?$', 'capabilities'),
-                       (r'^tables/', 'tables'),
-                       (r'^Tables.xsd$', 'tablesXsd'),
-                       (r'^Capabilities.xsd$', 'capabilitiesXsd'),
-                       (r'^Capabilities.xsl$', 'capabilitiesXsl'),
-                       (r'^Availability.xsl$', 'availabilityXsl'),
+                       (r'^tables[/]?$', 'tables'),
                        )
+
+if settings.SERVE_STATIC:
+    import django.views.static
+    urlpatterns += patterns('',
+                    (r'^static/(?P<path>.*)$',
+                    django.views.static.serve,
+                    {'document_root': settings.BASE_PATH+'/static'}),
+                    )

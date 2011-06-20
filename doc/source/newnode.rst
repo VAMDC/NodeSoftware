@@ -67,7 +67,7 @@ There are only a few configuration items that you need to fill
 
 * The information on how to connect to your database.
 * A name and email address for the node administrator(s).
-* An example query that makes sense with your data.
+* Example queries that makes sense with your data.
 * Optionally you can set the location of the log-file and override other options by copying from ``settings_default.py``.
 
 The structure for filling in this information is already inside the newly
@@ -308,6 +308,10 @@ Atoms                 Atom
 ..                                  Atom.ShellPairs                         AtomShellPair
 Molecules             Molecule      
 ..                                  Molecule.States                         MoleculeState
+Solids                Solid         
+..                                  Solid.Layers                            Layer
+..                                  Solid.Layers.Components                 Component
+Particles             Particle      
 RadTrans              RadTran
 ..                                  RadTran.ShiftingParams                  ShiftingParam
 ..                                  RadTran.ShiftingParams.Fits             Fit

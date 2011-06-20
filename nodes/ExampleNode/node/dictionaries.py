@@ -123,6 +123,3 @@ RESTRICTABLES = {\
 'AtomIonCharge':'species__ion'
 }
 
-from vamdctap.caselessdict import CaselessDict
-RESTRICTABLES = CaselessDict(RESTRICTABLES)
-RETURNABLES = CaselessDict(RETURNABLES)

@@ -156,13 +156,13 @@ def setupResults(sql):
     
     LOG(ntranss)
     LOG(methods)
-    headerinfo=CaselessDict({\
+    headerinfo={\
             'Truncated':percentage,
  #           'COUNT-SOURCES':nsources,
             'COUNT-species':nspecies,
             'count-states':nstates,
             'count-radiative':ntranss
-            })
+            }
 
 #    methods = [Method('MOBS', 'observed', 'observed'),
 #                   Method('MDER', 'derived', 'derived')]

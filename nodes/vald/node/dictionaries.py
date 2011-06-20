@@ -90,7 +90,3 @@ RESTRICTABLES = {\
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 }
 
-
-from vamdctap.caselessdict import CaselessDict
-RESTRICTABLES = CaselessDict(RESTRICTABLES)
-RETURNABLES = CaselessDict(RETURNABLES)

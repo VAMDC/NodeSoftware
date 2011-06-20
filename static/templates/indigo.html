@@ -7,7 +7,7 @@
 <meta name="keywords" content="keywords"/> 
 <meta name="author" content="author"/> 
 <link rel="stylesheet" type="text/css" href="/indigo.css" media="screen"/>
-<title>{% block title %}VAMDC Tool Collection{% endblock %}</title>
+<title>{% block title %}VAMDC dictionary{% endblock %}</title>
 {% block addheader %}{% endblock %}
 </head>
 
@@ -18,14 +18,14 @@
 	<div class="header">
 
 		<div class="title">
-		  <h1>{% block headline %}VAMDC Testsite{% endblock %}</h1>
+		  <h1>{% block headline %}The VAMDC dictionary{% endblock %}</h1>
 		</div>
-		<div class="navigation">
+<!--		<div class="navigation">
 		  {% block topnavi %}
 		        <a href="/portal/">Home</a>
 
 		{% endblock %}
-
+-->
 			<div class="clearer"><span></span></div>
 
 		</div>
@@ -37,23 +37,13 @@
 		  {% block content %}
 			<h1>Porttitor posuere</h1>
 			<div class="descr">Jun 13, 2006 by Vulputate</div>
-
-
 		  <p>Eget feugiat est leo tempor quam. Ut quis neque convallis magna consequat molestie.</p>
-		  
-
 		  {% endblock %}
 		</div>
 
 		<div class="sidenav">
 		  {% block sidebar1 %}
 			
-			<h1>Documentation</h1>
-			<ul>
-				<li><a href="/doc/">NodeSoftware</a></li>
-				<li><a href="http://vamdc-standards.readthedocs.org/">Standards</a></li>
-				
-			</ul>
 			<h1>Dictionary</h1>
 			<ul>
 				<li><a href="/dict/">Browse (alphabetical)</a></li>
@@ -64,11 +54,21 @@
 				<li><a href="/dict/log/">Log</a></li>
 				
 			</ul>
-			<h1>Portal</h1>
+			<h1>Documentation</h1>
+            <h4>(delopment versions)</h4>
+            <br/>
+			<ul>
+				<li><a href="http://vamdc-general.readthedocs.org/">General guidelines & procedures</a></li>
+				<li><a href="http://vamdc-standards.readthedocs.org/">Standards</a></li>
+				<li><a href="/doc/">NodeSoftware</a></li>
+				
+			</ul>
+<!---			<h1>Portal</h1>
 			<ul>
 				<li><a href="/portal/">Home</a></li>
 				<li><a href="/portal/query/">Make a query</a></li>
 			</ul>
+-->
 			<h1>Links</h1>
 			<ul>
 				<li><a href="http://www.vamdc.eu">VAMDC Homepage</a></li>

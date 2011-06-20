@@ -18,42 +18,31 @@ ExampleNode dictionary definitions.
 RETURNABLES = {\
 'NodeID':'umist',
 
-'SourceID':'Source.id',
-'SourceAuthorName':'Source.author',
-'SourceCategory':'Source.category',
-'SourcePageBegin':'Source.pages',
-'SourcePageEnd':'Source.pages',
-'SourceName':'Source.journal',
-'SourceTitle':'Source.title',
+'SourceID':'Source.abbr',
+#'SourceAuthorName':'Source.author',
+#'SourceCategory':'Source.category',
+#'SourcePageBegin':'Source.pages',
+#'SourcePageEnd':'Source.pages',
+#'SourceName':'Source.journal',
+'SourceTitle':'Source.full',
 'SourceURI':'Source.url',
-'SourceVolume':'Source.volume',
-'SourceYear':'Source.year',                                                              
+#'SourceVolume':'Source.volume',
+#'SourceYear':'Source.year',
 
-'MethodID':'Method.id',
-'MethodCategory':'Method.category',
-                           
-'FunctionID':'Function.id',
-'FunctionName':'Function.name',
-'FunctionSourceRef': "",
-'FunctionComputerLanguage': "",
-'FunctionExpression':"Function.expression",
-'FunctionYName':"Function.y",
-'FunctionYUnits':"unitless",
-'FunctionYDescription':"",
-'FunctionYLowerLimit':"0.0",
-'FunctionYUpperLimit':"1.0",
-'FunctionArgumentName':'FunctionArgument.name',
-'FunctionArgumentUnits': "unitless",
-'FunctionArgumentDescription': "",
-'FunctionArgumentLowerLimit':"FunctionArgument.lower_limit",
-'FunctionArgumentUpperLimit':"FunctionArgument.upper_limit",
-'FunctionParameterName':"FunctionParameter.name",
-'FunctionParameterUnits':"unitless",
-'FunctionParameterDescription':"",
-'FunctionReferenceFrame':"",
-'FunctionDescription':"",
-'FunctionSourceCodeURL': ""
+'CollisionThreshold':'CollTran.tmin',
+'CollisionThresholdUnit':'K',
+'CollisionThresholdComment':'Minimum temperature',
+'CollisionProductSpecies':'Product.id',
+'CollisionReactantSpecies':'Reactant.id',
 
+'AtomSpeciesID':'Atom.id',
+'AtomInchi':'Atom.vamdc_inchi',
+'AtomInchiKey':'Atom.vamdc_inchikey',
+
+'MoleculeSpeciesID':'Molecule.id',
+'MoleculeOrdinaryStructuralFormula':'Molecule.struct_name',
+'MoleculeInchi':'Molecule.vamdc_inchi',
+'MoleculeInchiKey':'Molecule.vamdc_inchikey',
 }
 
 # The restrictable dictionary defines limitations to the search. 
@@ -62,34 +51,8 @@ RETURNABLES = {\
 # for the Species.atomic field  would be written as species__atomic.
 
 RESTRICTABLES = {\
-'MoleculeInchiKey':'reaction_id__r1_species__vamdc_inchikey',
-'MoleculeInchi':'reaction_id__r1_species__vamdc_inchi',
-'MoleculeChemicalName':'reaction_id__r1_species__names',
-'MoleculeInchiKey':'reaction_id__r2_species__vamdc_inchikey',
-'MoleculeInchi':'reaction_id__r2_species__vamdc_inchi',
-'MoleculeChemicalName':'reaction_id__r2_species__names',
-'MoleculeInchiKey':'reaction_id__r3_species__vamdc_inchikey',
-'MoleculeInchi':'reaction_id__r3_species__vamdc_inchi',
-'MoleculeChemicalName':'reaction_id__r3_species__names',
-'MoleculeInchiKey':'reaction_id__p1_species__vamdc_inchikey',
-'MoleculeInchi':'reaction_id__p1_species__vamdc_inchi',
-'MoleculeChemicalName':'reaction_id__p1_species__names',
-'MoleculeInchiKey':'reaction_id__p2_species__vamdc_inchikey',
-'MoleculeInchi':'reaction_id__p2_species__vamdc_inchi',
-'MoleculeChemicalName':'reaction_id__p2_species__names',
-'MoleculeInchiKey':'reaction_id__p3_species__vamdc_inchikey',
-'MoleculeInchi':'reaction_id__p3_species__vamdc_inchi',
-'MoleculeChemicalName':'reaction_id__p3_species__names',
-'MoleculeInchiKey':'reaction_id__p4_species__vamdc_inchikey',
-'MoleculeInchi':'reaction_id__p4_species__vamdc_inchi',
-'MoleculeChemicalName':'reaction_id__p4_species__names',
-'AtomStateEnergy':'upstate__energy',
-'RadTransWavelength':'vacwave',
-'RadTransWavenumber':'vavenum',
-'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
-'AtomIonCharge':'species__ion'
+'MoleculeInchiKey':'reaction__species__vamdc_inchikey',
+'MoleculeInchi':'reaction__species__vamdc_inchi',
+'MoleculeChemicalName':'reaction__species__names',
 }
 
-from vamdctap.caselessdict import CaselessDict
-RESTRICTABLES = CaselessDict(RESTRICTABLES)
-RETURNABLES = CaselessDict(RETURNABLES)

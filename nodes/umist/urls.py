@@ -10,9 +10,11 @@ urlpatterns = patterns('',
     #(r'^admin/', include(admin.site.urls)),
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-
-    (r'', include('DjNode.urls')),
-    #(r'^tap/', include('DjVAMDC.tapservice.urls')),
-    (r'', include('DjUMIST.umist.urls')),
+    (r'^tap/', include('vamdctap.urls')),
+    #(r'', include('node.urls')),
 
 )
+
+handler500 = 'vamdctap.views.tapServerError'
+handler404 = 'vamdctap.views.tapNotFoundError'
+

@@ -5,7 +5,7 @@ The Code
 
 You can download the NodeSoftware at these locations:
 
-* Release 11.5: http://www.vamdc.eu/downloads/NodeSoftware-v11.5.tar.gz
+* Release 11.5: http://www.vamdc.eu/downloads/NodeSoftware-v11.5r1.tar.gz
 * Release branch: https://github.com/VAMDC/NodeSoftware/tarball/release
 * Latest development branch: https://github.com/VAMDC/NodeSoftware/tarball/master
 
