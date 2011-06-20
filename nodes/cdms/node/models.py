@@ -40,6 +40,43 @@ class StatesMolecules( Model):
         db_table = u'StatesMolecules'
     
 
+    def qns_xml(self):
+        """Yield the XML for the state quantum numbers"""
+        qns = MolecularQuantumNumbers.objects.filter(statesmolecules=self.stateid)
+        case = qns[0].case     
+        caseNS = 'http://vamdc.org/xml/xsams/0.2/cases/%s' % case
+        caseNSloc = '../../cases/%s.xsd' % case
+        xml = []
+        xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
+                   ' xmlns:%s="%s" xsi:schemaLocation="%s %s">'\
+                  % (case, case, case, caseNS, caseNS, caseNSloc))
+        xml.append('<%s:QNs>\n' % case)
+
+        for qn in qns:
+           if qn.attribute:
+               # put quotes around the value of the attribute
+               attr_name, attr_val = qn.attribute.split('=')
+               qn.attribute = ' %s="%s"' % (attr_name, attr_val)
+           else:
+              qn.attribute = ''
+
+           if qn.spinref:
+               # add spinRef to attribute if it exists
+               qn.attribute += ' nuclearSpinRef="%s"' % qn.spinref
+
+           xml.append('<%s%s>%s</%s>\n' % (qn.label, qn.attribute , qn.value, qn.label) )
+        xml.append('</%s:QNs>\n' % case)
+        xml.append('</Case>\n')
+        return ''.join(xml)
+
+    # associate qns_xml with the XML attribute of the States class
+    # so that generators.py checkXML() works:
+
+    XML = qns_xml
+
+
+
+
 
 class Molecules( Model):
      speciesid   =  IntegerField(primary_key=True, db_column='I_ID')

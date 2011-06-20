@@ -65,7 +65,8 @@ RETURNABLES = {
 'MoleculeStateCharacTotalStatisticalWeight':'MoleculeState.statenuclearstatisticalweight', # has to be changed  <- new
 
 'MoleculeStateID':'MoleculeState.stateid',
-'MoleculeStateQuantumNumbers':'MoleculeState.parsed_qns',
+#'MoleculeStateQuantumNumbers':'MoleculeState.parsed_qns',
+'MoleculeStateQuantumNumbers':'MoleculeState',
 'MoleculeStoichiometricFormula':'Molecule.stoichiometricformula',
 
 'MoleculeQnStateID': 'MolQN.stateid', # <- new
@@ -164,7 +165,7 @@ RESTRICTABLES = {
 #'AtomStateQuantumDefect':'',
 #'AtomStateStatisticalWeight':'',
 #'AtomSymbol':'',
-'MoleculeInchikey':'species__inchikey',
+'MoleculeInchiKey':'species__inchikey',
 'MoleculeChemicalName':'molecularchemicalspecies',
 #'MoleculeMolecularWeight':'',
 #'MoleculeNormalModeHarmonicFrequency':'',
