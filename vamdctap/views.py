@@ -166,31 +166,15 @@ def capabilities(request):
                                  "SOFTWARE_VERSION" : settings.NODESOFTWARE_VERSION,
                                  "EXAMPLE_QUERIES" : settings.EXAMPLE_QUERIES,
                                  })
-    return render_to_response('node/capabilities.xml', c, mimetype='text/xml')
-
-def tables(request):
-    c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
-    return render_to_response('node/VOSI-tables.xml', c, mimetype='text/xml')
+    return render_to_response('tap/capabilities.xml', c, mimetype='text/xml')
 
 def availability(request):
     c=RequestContext(request,{"accessURL" : getBaseURL(request)})
-    return render_to_response('node/availability.xml', c, mimetype='text/xml')
+    return render_to_response('tap/availability.xml', c, mimetype='text/xml')
 
-def availabilityXsl(request):
-    c = RequestContext(request, {})
-    return render_to_response('node/Availability.xsl', c, mimetype='text/xsl')
-
-def tablesXsd(request):
-    c = RequestContext(request,{})
-    return render_to_response('static/xsd/Tables.xsd', c)
-
-def capabilitiesXsd(request):
-    c = RequestContext(request, {})
-    return render_to_response('node/Capabilities.xsd', c)
-
-def capabilitiesXsl(request):
-    c = RequestContext(request, {})
-    return render_to_response('node/Capabilities.xsl', c, mimetype='text/xsl')
+def tables(request):
+    c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
+    return render_to_response('tap/VOSI-tables.xml', c, mimetype='text/xml')
 
 def index(request):
     c=RequestContext(request,{})

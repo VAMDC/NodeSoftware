@@ -34,6 +34,11 @@ EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
                    'SELECT ALL WHERE ... something else',
                    ]
 
+# This turns on/off the serving of static files
+# though Django. It is better to let the deployment
+# webserver do this, not Django. But it is on
+# by default to make things fail-safe.
+SERVE_STATIC = True
 
 ###################################################
 # Database connection
