@@ -71,10 +71,8 @@ def getSpeciesWithStates(transs):
             sids = set(chain(up,lo))
             specie.States = StatesMolecules.objects.filter( pk__in = sids)
             nstates += len(sids)
-            attach_state_qns(specie.States)
-#            for state in specie.States:
-#                 q=Q(statesmolecules__in=specie.States.stateid)
-#                 specie.States.MolQN=MolecularQuantumNumbers.objects.filter(q)
+#            attach_state_qns(specie.States)
+
 
 #    return atoms,molecules,nspecies,nstates
     return molecules,nspecies,nstates
