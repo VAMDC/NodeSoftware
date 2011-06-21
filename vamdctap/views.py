@@ -144,10 +144,6 @@ def sync(request):
 
     return response
 
-def async(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
-
 def cleandict(dict):
     """
     throw out keys where the value is ''
@@ -176,7 +172,11 @@ def tables(request):
     c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
     return render_to_response('tap/VOSI-tables.xml', c, mimetype='text/xml')
 
-def index(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
+#def index(request):
+#    c=RequestContext(request,{})
+#    return render_to_response('tap/index.html', c)
+#
+#def async(request):
+#    c=RequestContext(request,{})
+#    return render_to_response('tap/index.html', c)
 
