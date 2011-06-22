@@ -9,18 +9,211 @@
 from django.db.models import *
 #from vamdctap.bibtextools import *
 
-
 class Molecules( Model):
-     speciesid   =  IntegerField(primary_key=True, db_column='I_ID')
-     inchi       =  CharField(max_length=200, db_column='I_Inchi', blank=True)
-     inchikey    =  CharField(max_length=100, db_column='I_Inchikey', blank=True)
-     name        =  CharField(max_length=100, db_column='I_Name', blank=True)
-     htmlname    =  CharField(max_length=200, db_column='I_HtmlName', blank=True)
-     latexname   =  CharField(max_length=100, db_column='I_LatexName', blank=True)
-     stoichiometricformula =  CharField(max_length=200, db_column='I_StoichiometricFormula', blank=True)
-     trivialname =  CharField(max_length=200, db_column='I_TrivialName', blank=True)
+     id                    = IntegerField(primary_key=True, db_column='M_ID') 
+     name                  = CharField(max_length=200, db_column='M_Name', blank=True)
+     symbol                = CharField(max_length=250, db_column='M_Symbol', blank=True)
+     cas                   = CharField(max_length= 20, db_column='M_CAS', blank=True)
+     stoichiometricformula = CharField(max_length=200, db_column='M_StoichiometricFormula', blank=True)
+     structuralformula     = CharField(max_length=200, db_column='M_StructuralFormula', blank=True)
+     trivialname           = CharField(max_length=200, db_column='M_TrivialName', blank=True)
+     numberofatoms         = CharField(max_length= 20, db_column='M_NumberOfAtoms', blank=True)
+     formalcharge          = CharField(max_length=  5, db_column='M_FormalCharge', blank=True)
+     comment               = TextField(db_column='M_Comment', blank=True)
      class Meta:
-         db_table = u'Isotopologs'
+       db_table = u'Molecules'
+       
+
+class Species( Model):
+     id                    = IntegerField(primary_key=True, db_column='E_ID')
+     molecule              = ForeignKey(Molecules, db_column='E_M_ID')
+     speciestag            = IntegerField(db_column='E_TAG')
+     name                  = CharField(max_length=200, db_column='E_Name')
+     isotopolog            = CharField(max_length=100, db_column='E_Isotopomer')
+     state                 = CharField(max_length=200, db_column='E_States')
+     linearsymasym         = CharField(max_length= 20, db_column='E_LinearSymAsym')
+     shell                 = CharField(max_length= 20, db_column='E_Shell')
+     inchi                 = CharField(max_length=200, db_column='E_Inchi')
+     inchikey              = CharField(max_length=100, db_column='E_InchiKey')
+     origin                = IntegerField(db_column='E_Origin')
+     contributor           = CharField(max_length=200, db_column='E_Contributor')
+     version               = CharField(max_length=  5, db_column='E_Version')
+     dateofentry           = DateField(db_column='E_DateOfEntry')
+     comment               = TextField(db_column='E_Comment')
+     archiveflag           = IntegerField(db_column='E_Archive')
+     dateactivated         = DateField(db_column='E_DateActivated')
+     datearchived          = DateField(db_column='E_DateArchived')
+     class Meta:
+       db_table = u'Entries'
+
+
+class Datasets( Model):
+     id                    = IntegerField(primary_key=True, db_column='DAT_ID')
+     species               = ForeignKey(Species, db_column='DAT_E_ID')
+     userid                = IntegerField(db_column='DAT_U_ID')
+     fileid                = IntegerField(db_column='DAT_FIL_ID') 
+     speciestag            = IntegerField(db_column='DAT_E_Tag')
+     qntag                 = IntegerField(db_column='DAT_QN_Tag') 
+     comment               = TextField(db_column='DAT_Comment') 
+     name                  = CharField(max_length=100, db_column='DAT_Name')
+     type                  = CharField(max_length= 10, db_column='DAT_Type') 
+     public                = IntegerField(db_column='DAT_Public') 
+     archiveflag           = IntegerField(db_column='DAT_Archive') 
+     hfsflag               = IntegerField(db_column='DAT_HFS') 
+     createdate            = DateField(db_column='DAT_Createdate')
+     activateddate         = DateField(db_column='DAT_Date_Activated')
+     archvieddate          = DateField(db_column='DAT_Date_Archived')
+     class Meta:
+       db_table = u'Datasets'
+
+
+       
+class States( Model):
+     id                    = IntegerField(primary_key=True, db_column='EGY_ID')
+     species               = ForeignKey(Species, db_column='EGY_E_ID')
+     speciestag            = IntegerField(db_column='EGY_E_Tag')
+     dataset               = ForeignKey(Datasets, db_column='EGY_DAT_ID')
+     energy                = FloatField(null=True, db_column='EGY_Energy')
+     uncertainty           = FloatField(null=True, db_column='EGY_Uncertainty')
+     mixingcoeff           = FloatField(null=True, db_column='EGY_PMIX')
+     block                 = IntegerField(db_column='EGY_IBLK')
+     index                 = IntegerField(db_column='EGY_INDX') 
+     degeneracy            = IntegerField(db_column='EGY_IDGN') 
+     qntag                 = IntegerField(db_column='EGY_QN_Tag') 
+     qn1                   = IntegerField(db_column='EGY_QN1')
+     qn2                   = IntegerField(db_column='EGY_QN2') 
+     qn3                   = IntegerField(db_column='EGY_QN3') 
+     qn4                   = IntegerField(db_column='EGY_QN4') 
+     qn5                   = IntegerField(db_column='EGY_QN5') 
+     qn6                   = IntegerField(db_column='EGY_QN6') 
+     user                  = CharField(max_length=40, db_column='EGY_User')      # obsolete
+     timestamp             = IntegerField(db_column='EGY_TIMESTAMP')
+     class Meta:
+       db_table = u'Energies'
+
+     def qns_xml(self):
+	"""Yield the XML for the state quantum numbers"""
+        qns = MolecularQuantumNumbers.objects.filter(state=self.id)
+        case = qns[0].case     
+        caseNS = 'http://vamdc.org/xml/xsams/0.2/cases/%s' % case
+        caseNSloc = '../../cases/%s.xsd' % case
+        xml = []
+        xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
+                   ' xmlns:%s="%s" xsi:schemaLocation="%s %s">'\
+                  % (case, case, case, caseNS, caseNS, caseNSloc))
+        xml.append('<%s:QNs>\n' % case)
+
+        for qn in qns:
+           if qn.attribute:
+               # put quotes around the value of the attribute
+               attr_name, attr_val = qn.attribute.split('=')
+               qn.attribute = ' %s="%s"' % (attr_name, attr_val)
+           else:
+              qn.attribute = ''
+
+           if qn.spinref:
+               # add spinRef to attribute if it exists
+               qn.attribute += ' nuclearSpinRef="%s"' % qn.spinref
+
+           xml.append('<%s:%s%s>%s</%s:%s>\n' % (case, qn.label, qn.attribute , qn.value, case, qn.label) )
+        xml.append('</%s:QNs>\n' % case)
+        xml.append('</Case>\n')
+        return ''.join(xml)
+
+     # associate qns_xml with the XML attribute of the States class
+     # so that generators.py checkXML() works:
+
+     XML = qns_xml
+
+
+
+class TransitionsCalc( Model):
+     id                    = IntegerField(primary_key=True, db_column='P_ID')
+     species               = ForeignKey(Species, db_column='P_E_ID')
+     speciestag            = IntegerField(db_column='P_E_Tag')
+     frequency             =  FloatField(null=True, db_column='P_Frequency')
+     frequencyexp          =  FloatField(null=True, db_column='P_Frequency_Exp')
+     intensity             =  FloatField(null=True, db_column='P_Intensity')
+     uncertainty           =  FloatField(null=True, db_column='P_Uncertainty')
+     energylower           =  FloatField(null=True, db_column='P_Energy_Lower')
+     energyupper           =  FloatField(null=True, db_column='P_Energy_Upper')
+     qntag                 = IntegerField(db_column='P_QN_TAG')
+     qnup1                 = IntegerField(db_column='P_QN_Up_1')
+     qnup2                 = IntegerField(db_column='P_QN_Up_2')
+     qnup3                 = IntegerField(db_column='P_QN_Up_3')
+     qnup4                 = IntegerField(db_column='P_QN_Up_4')
+     qnup5                 = IntegerField(db_column='P_QN_Up_5')
+     qnup6                 = IntegerField(db_column='P_QN_Up_6')
+     qnlow1                = IntegerField(db_column='P_QN_Low_1')
+     qnlow2                = IntegerField(db_column='P_QN_Low_2')
+     qnlow3                = IntegerField(db_column='P_QN_Low_3')
+     qnlow4                = IntegerField(db_column='P_QN_Low_4')
+     qnlow5                = IntegerField(db_column='P_QN_Low_5')
+     qnlow6                = IntegerField(db_column='P_QN_Low_6')
+     dummy                 = CharField(db_column ='P_Dummy')
+     unit                  = CharField(max_length=200, db_column='P_Unit')
+     degreeoffreedom       = IntegerField(db_column='P_Degree_Of_Freedom')
+     upperstatedegeneracy  = IntegerField(db_column='P_Upper_State_Degeneracy')
+     originid              = IntegerField(db_column='P_Origin_Id')
+     hfsflag               = IntegerField(db_column='P_HFS')
+     userid                = IntegerField(db_column='P_U_ID')
+     dataset               = ForeignKey(Datasets, related_name='isinitialstate', db_column='P_DAT_ID')
+     qualityflag           = IntegerField(db_column='P_Quality')
+     archiveflag           = IntegerField(db_column='P_Archive')
+     timestamp             = DateTimeField(db_column='P_TIMESTAMP')
+     upperstateref =  ForeignKey(States, related_name='upperstate',
+                                db_column='P_Up_EGY_ID')
+     lowerstateref =  ForeignKey(States, related_name='lowerstate',
+                                db_column='P_Low_EGY_ID')
+
+     def __unicode__(self):
+        return u'ID:%s Tag:%s Freq: %s'%(self.id,self.speciestag,self.frequency)
+     class Meta:
+        db_table = u'Predictions'
+        
+        
+class TransitionsExp( Model):
+     id                    = IntegerField(primary_key=True, db_column='F_ID')
+     species               = ForeignKey(Species, db_column='F_E_ID')
+     vid                   = IntegerField(db_column='F_V_ID') # obsolete
+     frequency             = FloatField(null=True, db_column='F_Frequency')
+     uncertainty           = FloatField(null=True, db_column='F_Error')
+     weight                = FloatField(null=True, db_column='F_WT')
+     unit                  = CharField(max_length=10, db_column='F_Unit')
+     qnup1                 = IntegerField(db_column='F_QN_Up_1') 
+     qnup2                 = IntegerField(db_column='F_QN_Up_2') 
+     qnup3                 = IntegerField(db_column='F_QN_Up_3') 
+     qnup4                 = IntegerField(db_column='F_QN_Up_4') 
+     qnup5                 = IntegerField(db_column='F_QN_Up_5') 
+     qnup6                 = IntegerField(db_column='F_QN_Up_6') 
+     qnlow1                = IntegerField(db_column='F_QN_Low_1')
+     qnlow2                = IntegerField(db_column='F_QN_Low_2') 
+     qnlow3                = IntegerField(db_column='F_QN_Low_3') 
+     qnlow4                = IntegerField(db_column='F_QN_Low_4') 
+     qnlow5                = IntegerField(db_column='F_QN_Low_5') 
+     qnlow6                = IntegerField(db_column='F_QN_Low_6')
+     comment               = TextField(db_column='F_Comment')
+     rating                = IntegerField(db_column='F_Rating')
+     userid                = IntegerField(db_column='F_U_ID')
+     papid                 = IntegerField(db_column='F_PAP_ID')  # obsolete
+     dataset               = ForeignKey(Datasets, db_column='F_DAT_ID')
+     timestamp             = DateTimeField(db_column='F_TIMESTAMP')
+     class Meta:
+       db_table = u'Frequencies'
+       
+                
+                
+#class Molecules( Model):
+     #speciesid   =  IntegerField(primary_key=True, db_column='I_ID')
+     #inchi       =  CharField(max_length=200, db_column='I_Inchi', blank=True)
+     #inchikey    =  CharField(max_length=100, db_column='I_Inchikey', blank=True)
+     #name        =  CharField(max_length=100, db_column='I_Name', blank=True)
+     #htmlname    =  CharField(max_length=200, db_column='I_HtmlName', blank=True)
+     #latexname   =  CharField(max_length=100, db_column='I_LatexName', blank=True)
+     #stoichiometricformula =  CharField(max_length=200, db_column='I_StoichiometricFormula', blank=True)
+     #trivialname =  CharField(max_length=200, db_column='I_TrivialName', blank=True)
+     #class Meta:
+         #db_table = u'Isotopologs'
 
 
 class StatesMolecules( Model):
@@ -54,39 +247,39 @@ class StatesMolecules( Model):
         db_table = u'StatesMolecules'
     
 
-    def qns_xml(self):
-        """Yield the XML for the state quantum numbers"""
-        qns = MolecularQuantumNumbers.objects.filter(statesmolecules=self.stateid)
-        case = qns[0].case     
-        caseNS = 'http://vamdc.org/xml/xsams/0.2/cases/%s' % case
-        caseNSloc = '../../cases/%s.xsd' % case
-        xml = []
-        xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
-                   ' xmlns:%s="%s" xsi:schemaLocation="%s %s">'\
-                  % (case, case, case, caseNS, caseNS, caseNSloc))
-        xml.append('<%s:QNs>\n' % case)
+    #def qns_xml(self):
+        #"""Yield the XML for the state quantum numbers"""
+        #qns = MolecularQuantumNumbers.objects.filter(statesmolecules=self.stateid)
+        #case = qns[0].case     
+        #caseNS = 'http://vamdc.org/xml/xsams/0.2/cases/%s' % case
+        #caseNSloc = '../../cases/%s.xsd' % case
+        #xml = []
+        #xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
+                   #' xmlns:%s="%s" xsi:schemaLocation="%s %s">'\
+                  #% (case, case, case, caseNS, caseNS, caseNSloc))
+        #xml.append('<%s:QNs>\n' % case)
 
-        for qn in qns:
-           if qn.attribute:
-               # put quotes around the value of the attribute
-               attr_name, attr_val = qn.attribute.split('=')
-               qn.attribute = ' %s="%s"' % (attr_name, attr_val)
-           else:
-              qn.attribute = ''
+        #for qn in qns:
+           #if qn.attribute:
+               ## put quotes around the value of the attribute
+               #attr_name, attr_val = qn.attribute.split('=')
+               #qn.attribute = ' %s="%s"' % (attr_name, attr_val)
+           #else:
+              #qn.attribute = ''
 
-           if qn.spinref:
-               # add spinRef to attribute if it exists
-               qn.attribute += ' nuclearSpinRef="%s"' % qn.spinref
+           #if qn.spinref:
+               ## add spinRef to attribute if it exists
+               #qn.attribute += ' nuclearSpinRef="%s"' % qn.spinref
 
-           xml.append('<%s%s>%s</%s>\n' % (qn.label, qn.attribute , qn.value, qn.label) )
-        xml.append('</%s:QNs>\n' % case)
-        xml.append('</Case>\n')
-        return ''.join(xml)
+           #xml.append('<%s%s>%s</%s>\n' % (qn.label, qn.attribute , qn.value, qn.label) )
+        #xml.append('</%s:QNs>\n' % case)
+        #xml.append('</Case>\n')
+        #return ''.join(xml)
 
-    # associate qns_xml with the XML attribute of the States class
-    # so that generators.py checkXML() works:
+    ## associate qns_xml with the XML attribute of the States class
+    ## so that generators.py checkXML() works:
 
-    XML = qns_xml
+    #XML = qns_xml
 
 
 
@@ -171,8 +364,9 @@ class RadiativeTransitions(Model):
 
 
 class MolecularQuantumNumbers( Model): 
-
-    stateid =  IntegerField(primary_key=True, db_column='StateID')
+    id = IntegerField(primary_key=True, db_column='Id')
+    state =  ForeignKey(States, related_name='quantumnumbers', db_column='StateID')
+#    stateid =  IntegerField(primary_key=True, db_column='StateID')
     case =  CharField(max_length=10, db_column='Case')
     label =  CharField(max_length=50, db_column='Label')
     value =  CharField(max_length=100, db_column='Value')
@@ -180,10 +374,8 @@ class MolecularQuantumNumbers( Model):
     attribute =  CharField(max_length=100, db_column='Attribute')
 
     class Meta:
-        db_table = 'MolQN'
-
-    statesmolecules =  ForeignKey(StatesMolecules, related_name='quantumnumbers', 
-                            db_column='StateID')
+        db_table = 'V_MolstateQN'
+        managed=False
 
 class BondArray( Model):
     id = IntegerField(primary_key=True, db_column='BA_ID')
