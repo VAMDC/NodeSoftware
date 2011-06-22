@@ -740,52 +740,52 @@ def makeCaseQNs(G):
 
     result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/0.2/cases/%s">'
     result += '<case:QNs>'
-    if ElecStateLabel: result += '<ElecStateLabel>%s</ElecStateLabel>'%ElecStateLabel
-    if elecInv: result += '<elecInv>%s</elecInv>'%elecInv
-    if elecRefl: result += '<elecRefl>%s</elecRefl>'%elecRefl
-    if Lambda: result += '<Lambda>%s</Lambda>'%Lambda
-    if Sigma: result += '<Sigma>%s</Sigma>'%Sigma
-    if Omega: result += '<Omega>%s</Omega>'%Omega
-    if S: result += '<S>%s</S>'%S
-    if v: result += '<v>%s</v>'%v
-    if v1: result += '<v1>%s</v1>'%v1
-    if v2: result += '<v2>%s</v2>'%v2
-    if l2: result += '<l2>%s</l2>'%l2
-    if v3: result += '<v3>%s</v3>'%v3
+    if ElecStateLabel: result += '<case:ElecStateLabel>%s</case:ElecStateLabel>'%ElecStateLabel
+    if elecInv: result += '<case:elecInv>%s</case:elecInv>'%elecInv
+    if elecRefl: result += '<case:elecRefl>%s</case:elecRefl>'%elecRefl
+    if Lambda: result += '<case:Lambda>%s</case:Lambda>'%Lambda
+    if Sigma: result += '<case:Sigma>%s</case:Sigma>'%Sigma
+    if Omega: result += '<case:Omega>%s</case:Omega>'%Omega
+    if S: result += '<case:S>%s</case:S>'%S
+    if v: result += '<case:v>%s</case:v>'%v
+    if v1: result += '<case:v1>%s</case:v1>'%v1
+    if v2: result += '<case:v2>%s</case:v2>'%v2
+    if l2: result += '<case:l2>%s</case:l2>'%l2
+    if v3: result += '<case:v3>%s</case:v3>'%v3
     if vi:
         for val,i in enumerate(makeiter(vi)):
-            result += '<vi mode="%s">%s</vi>'%(makeiter(viMode)[i],val)
+            result += '<case:vi mode="%s">%s</case:vi>'%(makeiter(viMode)[i],val)
     if li:
         for val,i in enumerate(makeiter(li)):
-            result += '<vi mode="%s">%s</vi>'%(makeiter(liMode)[i],val)
-    if l: result += '<l>%s</l>'%l
-    if vibInv: result += '<vibInv>%s</vibInv>'%vibInv
-    if vibRefl: result += '<vibRefl>%s</vibRefl>'%vibRefl
+            result += '<case:vi mode="%s">%s</case:vi>'%(makeiter(liMode)[i],val)
+    if l: result += '<case:l>%s</case:l>'%l
+    if vibInv: result += '<case:vibInv>%s</case:vibInv>'%vibInv
+    if vibRefl: result += '<case:vibRefl>%s</case:vibRefl>'%vibRefl
     if vibSym:
-        if vibSymGroup: result += '<vibSym group="%s">%s</vibSym>'%(vibSymGroup,vibSym)
-        else: result += '<vibSym>%s</vibSym>'%vibSym
-    if J: result += '<J>%s</J>'%J
-    if K: result += '<K>%s</K>'%K
-    if Ka: result += '<Ka>%s</Ka>'%Ka
-    if Kc: result += '<Kc>%s</Kc>'%Kc
+        if vibSymGroup: result += '<case:vibSym group="%s">%s</case:vibSym>'%(vibSymGroup,vibSym)
+        else: result += '<case:vibSym>%s</case:vibSym>'%vibSym
+    if J: result += '<case:J>%s</case:J>'%J
+    if K: result += '<case:K>%s</case:K>'%K
+    if Ka: result += '<case:Ka>%s</case:Ka>'%Ka
+    if Kc: result += '<case:Kc>%s</case:Kc>'%Kc
     if rotSym:
-        if rotSymGroup:  result += '<rotSym group="%s">%s</rotSym>'%(rotSymGroup,rotSym)
-        else: result += '<rotSym>%s</rotSym>'%rotSym
-    if I: result += '<I nuclearSpinRef="%s">%s</I>'%(InuclSpin,I)
+        if rotSymGroup:  result += '<case:rotSym group="%s">%s</case:rotSym>'%(rotSymGroup,rotSym)
+        else: result += '<case:rotSym>%s</case:rotSym>'%rotSym
+    if I: result += '<case:I nuclearSpinRef="%s">%s</case:I>'%(InuclSpin,I)
     if Fj:
         for val,i in enumerate(makeiter(Fj)):
-            result += '<Fj j="%s" nuclearSpinRef="%s">%s</Fj>'%(makeiter(Fjj)[i],makeiter(FjnuclSpin)[i],val)
-    if N: result += '<N>%s</N>'%N
-    if SpinComponentLabel: result += '<SpinComponentLabel>%s</SpinComponentLabel>'%SpinComponentLabel
-    if F1: result += '<F1 nuclearSpinRef="%s">%s</F1>'%(F1nuclSpin,F1)
-    if F2: result += '<F2 nuclearSpinRef="%s">%s</F2>'%(F2nuclSpin,F2)
-    if F: result += '<F nuclearSpinRef="%s">%s</F>'%(FnuclSpin,F)
+            result += '<case:Fj j="%s" nuclearSpinRef="%s">%s</case:Fj>'%(makeiter(Fjj)[i],makeiter(FjnuclSpin)[i],val)
+    if N: result += '<case:N>%s</case:N>'%N
+    if SpinComponentLabel: result += '<case:SpinComponentLabel>%s</case:SpinComponentLabel>'%SpinComponentLabel
+    if F1: result += '<case:F1 nuclearSpinRef="%s">%s</case:F1>'%(F1nuclSpin,F1)
+    if F2: result += '<case:F2 nuclearSpinRef="%s">%s</case:F2>'%(F2nuclSpin,F2)
+    if F: result += '<case:F nuclearSpinRef="%s">%s</case:F>'%(FnuclSpin,F)
     if r:
         for val,i in enumerate(makeiter(r)):
-            result += '<r name="%s">%s</r>'%(makeiter(rName)[i],val)
-    if parity: result += '<parity>%s</parity>'%parity
-    if kronigParity: result += '<kronigParity>%s</kronigParity>'%kronigParity
-    if asSym: result += '<asSym>%s</asSym>'%asSym
+            result += '<case:r name="%s">%s</case:r>'%(makeiter(rName)[i],val)
+    if parity: result += '<case:parity>%s</case:parity>'%parity
+    if kronigParity: result += '<case:kronigParity>%s</case:kronigParity>'%kronigParity
+    if asSym: result += '<case:asSym>%s</case:asSym>'%asSym
 
     result += '</case:QNs>'
     return result+'</Case>'
