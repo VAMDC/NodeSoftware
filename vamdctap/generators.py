@@ -150,16 +150,16 @@ def makePartitionfunc(keyword, G):
     
     string = '<PartitionFunction>\n'
     string += '  <T units="K">\n'
-    string += '     <Datalist>\n'
+    string += '     <DataList>\n'
     for temp in temperature: 
         string += ' %s' % temp   
-    string += '\n     </Datalist>\n'
+    string += '\n     </DataList>\n'
     string += '  </T>\n'
     string += '  <Q>\n'
-    string += '     <Datalist>\n'
+    string += '     <DataList>\n'
     for q in partitionfunc: 
         string += ' %s' % q
-    string += '\n     </Datalist>\n'
+    string += '\n     </DataList>\n'
     string += '  </Q>\n'
     string += '</PartitionFunction>\n'
 
