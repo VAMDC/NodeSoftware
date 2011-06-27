@@ -20,23 +20,23 @@ from django.conf import settings
 from django.utils.importlib import import_module
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
-NODEID = DICTS.RETURNABLES['NodeID']
 
 # import helper modules that reside in the same directory
+from caselessdict import CaselessDict
+NODEID = CaselessDict(DICTS.RETURNABLES)['NodeID']
 from generators import *
 from sqlparse import SQL
-from caselessdict import CaselessDict
 
 # This turns a 404 "not found" error into a TAP error-document
 def tapNotFoundError(request):
     text = 'Resource not found: %s'%request.path;
-    document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
     return HttpResponse(document, status=404, mimetype='text/xml');
 
 # This turns a 500 "internal server error" into a TAP error-document
 def tapServerError(request=None, status=500, errmsg=''):
     text = 'Error in TAP service: %s'%errmsg
-    document = loader.get_template('node/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
     return HttpResponse(document, status=status, mimetype='text/xml');
 
 
@@ -68,11 +68,10 @@ class TAPQUERY(object):
         except: self.errormsg += 'Cannot find QUERY in request.\n'
 
         try: self.format=lower(self.data['FORMAT'])
-        except: self.errormsg += 'Cannot find FROMAT in request.\n'
-        else:
-            if self.format != 'xsams':
-                self.errormsg += 'Currently, only FORMAT=XSAMS is supported.\n'
-
+        except: self.errormsg += 'Cannot find FORMAT in request.\n'
+        #else:
+            #if self.format != 'xsams':
+            #    self.errormsg += 'Currently, only FORMAT=XSAMS is supported.\n'
 
         try: self.parsedSQL=SQL.parseString(self.query)
         except: self.errormsg += 'Could not parse the SQL query string.\n'
@@ -111,13 +110,30 @@ def sync(request):
         log.error(emsg)
         return tapServerError(status=400,errmsg=emsg)
 
+    # if the requested format is not XSAMS, hand over to the node QUERYFUNC
+    if tap.format != 'xsams':
+        return QUERYFUNC.returnResults(tap)
+    # otherwise, setup the results and build the XSAMS response here
     results=QUERYFUNC.setupResults(tap.parsedSQL)
+    if not results:
+        log.info('setupResults() gave something empty. Returning 204.')
+        return HttpResponse('', status=204)
+
     generator=Xsams(**results)
     response=HttpResponse(generator,mimetype='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
 
-    if results.has_key('HeaderInfo'):
+    if 'HeaderInfo' in results:
         response=addHeaders(results['HeaderInfo'],response)
+
+        # Override with empty response if result is empty
+        if 'VAMDC-APPROX-SIZE' in response:
+            try:
+                size = float(response['VAMDC-APPROX-SIZE'])
+                if size == 0.0:
+                    log.info('Empty result')
+                    return HttpResponse('', status=204)
+            except: pass
     else:
         log.warn('Query function did not return information for HTTP-headers.')
 
@@ -127,12 +143,6 @@ def sync(request):
 #        response=HttpResponse(generator,mimetype='text/xml')
 
     return response
-
-
-
-def async(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
 
 def cleandict(dict):
     """
@@ -152,33 +162,21 @@ def capabilities(request):
                                  "SOFTWARE_VERSION" : settings.NODESOFTWARE_VERSION,
                                  "EXAMPLE_QUERIES" : settings.EXAMPLE_QUERIES,
                                  })
-    return render_to_response('node/capabilities.xml', c, mimetype='text/xml')
-
-def tables(request):
-    c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
-    return render_to_response('node/VOSI-tables.xml', c, mimetype='text/xml')
+    return render_to_response('tap/capabilities.xml', c, mimetype='text/xml')
 
 def availability(request):
     c=RequestContext(request,{"accessURL" : getBaseURL(request)})
-    return render_to_response('node/availability.xml', c, mimetype='text/xml')
+    return render_to_response('tap/availability.xml', c, mimetype='text/xml')
 
-def availabilityXsl(request):
-    c = RequestContext(request, {})
-    return render_to_response('node/Availability.xsl', c, mimetype='text/xsl')
+def tables(request):
+    c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
+    return render_to_response('tap/VOSI-tables.xml', c, mimetype='text/xml')
 
-def tablesXsd(request):
-    c = RequestContext(request,{})
-    return render_to_response('static/xsd/Tables.xsd', c)
-
-def capabilitiesXsd(request):
-    c = RequestContext(request, {})
-    return render_to_response('node/Capabilities.xsd', c)
-
-def capabilitiesXsl(request):
-    c = RequestContext(request, {})
-    return render_to_response('node/Capabilities.xsl', c, mimetype='text/xsl')
-
-def index(request):
-    c=RequestContext(request,{})
-    return render_to_response('node/index.html', c)
+#def index(request):
+#    c=RequestContext(request,{})
+#    return render_to_response('tap/index.html', c)
+#
+#def async(request):
+#    c=RequestContext(request,{})
+#    return render_to_response('tap/index.html', c)
 

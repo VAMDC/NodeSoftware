@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from vamdctap.caselessdict import CaselessDict
-
-RETURNABLES=CaselessDict({\
+RETURNABLES={\
 'NodeID': 'HIT',    # unique identifier for the HITRAN node
 'SourceID': 'Source.sourceid',
 'SourceAuthorName': 'Source.authors',
@@ -49,6 +47,7 @@ RETURNABLES=CaselessDict({\
 'MoleculeStateID':'MoleculeState.id',
 'MoleculeStateMolecularSpeciesID':'MoleculeState.inchikey',
 'MoleculeStateEnergyValue':'MoleculeState.energy',
+'MoleculeStateEnergy':'MoleculeState.energy',
 'MoleculeStateEnergyUnit':'1/cm',
 'MoleculeStateEnergyOrigin':'Zero-point energy',
 'MoleculeStateCharacTotalStatisticalWeight':'MoleculeState.g',
@@ -60,10 +59,10 @@ RETURNABLES=CaselessDict({\
 'MoleculeQnValue': 'MolQN.value',
 'MoleculeQnAttribute': 'MolQN.qn_attr',
 'MoleculeQnXML': 'MoleculeState.get_qn_xml()',
-'Inchikey':'inchikey'})
+'Inchikey':'inchikey'}
 
-RESTRICTABLES = CaselessDict({\
+RESTRICTABLES = {\
 'MoleculeInchikey':'inchikey',
 'RadTransWavenumber':'nu',
 'RadTransProbabilityA':'a',
-})
+}

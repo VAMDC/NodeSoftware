@@ -43,8 +43,8 @@ RETURNABLES = {
 'MethodID':'Method.id', # <- NEW
 'MethodSourceRef':'Method.sourcesref', # <- NEW
 
-'MoleculeChemicalName':'Molecule.trivialname',
-'MoleculeID':'Molecule.speciesid',
+'MoleculeChemicalName':'Molecule.molecule.trivialname',
+'MoleculeID':'Molecule.id',
 'MoleculeInchi':'Molecule.inchi',
 'MoleculeInchiKey':'Molecule.inchikey',
 'MoleculePartitionFunctionT':'Molecule.partitionfuncT',
@@ -55,18 +55,19 @@ RETURNABLES = {
 #'MoleculeNuclearSpins':'Molecule.',
 #'MoleculeNuclearSpinsAtomArray':'Molecule.',
 #'MoleculeNuclearSpinsBondArray':'Molecule.',
-'MoleculeSpeciesID':'Molecule.speciesid',
+'MoleculeSpeciesID':'Molecule.id',
 
 #'MoleculeStateCharacLifeTime':'MoleculeState.',
 #'MoleculeStateCharacNuclearSpinSymmetry':'MoleculeState.',
-'MoleculeStateEnergy':'MoleculeState.stateenergyvalue',
+'MoleculeStateEnergy':'MoleculeState.energy',
 'MoleculeStateEnergyOrigin':'Zero-point energy',
 'MoleculeStateEnergyUnit':'1/cm', 
-'MoleculeStateCharacTotalStatisticalWeight':'MoleculeState.statenuclearstatisticalweight', # has to be changed  <- new
+'MoleculeStateCharacTotalStatisticalWeight':'MoleculeState.degeneracy', # has to be changed  <- new
 
-'MoleculeStateID':'MoleculeState.stateid',
-'MoleculeStateQuantumNumbers':'MoleculeState.parsed_qns',
-'MoleculeStoichiometricFormula':'Molecule.stoichiometricformula',
+'MoleculeStateID':'MoleculeState.id',
+#'MoleculeStateQuantumNumbers':'MoleculeState.parsed_qns',
+'MoleculeStateQuantumNumbers':'MoleculeState',
+'MoleculeStoichiometricFormula':'Molecule.molecule.stoichiometricformula',
 
 'MoleculeQnStateID': 'MolQN.stateid', # <- new
 'MoleculeQnCase': 'MolQN.case',       # <- new 
@@ -106,19 +107,20 @@ RETURNABLES = {
 #'RadTransComments':'RadTran.',
 #'RadTransEffectiveLandeFactor':'RadTran.',
 #'RadTransEnergy':'RadTran.',
-'RadTransFinalStateRef':'RadTran.finalstateref_id',
-'RadTransInitialStateRef':'RadTran.initialstateref_id',
-'RadTransFrequency':'RadTran.frequencyvalue',
-'RadTransFrequencyUnit':'RadTran.frequencyunit',
+'RadTransFinalStateRef':'RadTran.upperstateref_id',
+'RadTransInitialStateRef':'RadTran.lowerstateref_id',
+'RadTransFrequency':'RadTran.frequency',
+'RadTransFrequencyUnit':'RadTran.unit',
+'RadTransFrequencyAccuracy':'RadTran.uncertainty',
 #'RadTransFrequencyRef':'RadTran.freqmethodref_id',
 #'RadTransFrequencyMethod':'RadTran.freqmethodref_id',
-'RadTransFrequencyMethod':'RadTran.speciesid',
-'RadTransProbabilityA':'RadTran.einsteinA',
+'RadTransFrequencyMethod':'RadTran.species_id',
+#'RadTransProbabilityA':'RadTran.einsteinA',
 'RadTransProbabilityAUnit':'1/cm', # <-New
 #'RadTransProbabilityIdealisedIntensity':'RadTran.',
 #'RadTransProbabilityLineStrength':'RadTran.',
-'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.log10weightedoscillatorstrengthvalue',
-'RadTransProbabilityMultipole':'RadTran.multipole',
+'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.intensity',
+'RadTransProbabilityMultipole':'E2',
 #'RadTransProbabilityOscillatorStrength':'RadTran.',
 #'RadTransProbabilityWeightedOscillatorStrength':'RadTran.',
 #'RadTransRefs':'RadTran.',
@@ -163,8 +165,8 @@ RESTRICTABLES = {
 #'AtomStateQuantumDefect':'',
 #'AtomStateStatisticalWeight':'',
 #'AtomSymbol':'',
-'InchiKey':'species__inchikey',
-'MoleculeChemicalName':'molecularchemicalspecies',
+'MoleculeInchiKey':'species__inchikey',
+'MoleculeChemicalName':'species__molecule__trivialname',
 #'MoleculeMolecularWeight':'',
 #'MoleculeNormalModeHarmonicFrequency':'',
 #'MoleculeNormalModeIntensity':'',
@@ -172,7 +174,8 @@ RESTRICTABLES = {
 #'MoleculeStateCharacNuclearSpinSymmetry':'',
 #'MoleculeStateEnergy':'',
 #'MoleculeStateID':'',
-'MoleculeStoichiometricFormula':'species__stoichiometricformula',
+'MoleculeStoichiometricFormula':'species__molecule__stoichiometricformula',
+'MoleculeOrdinaryStructuralFormula':'species__molecule__stoichiometricformula',
 #'NonRadTranEnergy':'',
 #'NonRadTranProbability':'',
 #'NonRadTranWidth':'',
@@ -181,8 +184,8 @@ RESTRICTABLES = {
 #'RadTransBandWidth':'',
 #'RadTransEffectiveLandeFactor':'',
 #'RadTransEnergy':'',
-'RadTransFrequency':'frequencyvalue',
-'RadTransProbabilityA':'RadTran.einsteinA',
+'RadTransFrequency':'frequency',
+#'RadTransProbabilityA':'RadTran.einsteinA',
 #'RadTransProbabilityIdealisedIntensity':'',
 #'RadTransProbabilityLineStrength':'',
 #'RadTransProbabilityLog10WeightedOscillatorStrength':'',
@@ -193,10 +196,3 @@ RESTRICTABLES = {
 #'SourceCategory':'',
 #'SourceYear':'',
 }
-
-
-
-# Do not edit or remove these three lines
-from vamdctap.caselessdict import CaselessDict
-RETURNABLES = CaselessDict(RETURNABLES)
-RESTRICTABLES = CaselessDict(RESTRICTABLES)
