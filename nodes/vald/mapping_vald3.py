@@ -109,39 +109,39 @@ mapping = [
             # these are read from term file
             {'cname':'j',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,0),
+             'cbyte':(get_term_val,'J'),
              'cnull':'X',},
             {'cname':'l',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,1),
+             'cbyte':(get_term_val,'L'),
              'cnull':'X',},
             {'cname':'s',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,2),
+             'cbyte':(get_term_val,'S'),
              'cnull':'X',},
             {'cname':'p',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,3),
-             'cnull':'X',},
+             'cbyte':(get_term_val,'parity'), # I think this is what the p stands for at least
+             'cnull':'X',}, 
             {'cname':'j1',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,4),
+             'cbyte':(get_term_val,'J1'),
              'cnull':'X',},
             {'cname':'j2',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,5),
+             'cbyte':(get_term_val,'J2'),
              'cnull':'X',},
             {'cname':'k',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,6),
+             'cbyte':(get_term_val,'K'),
              'cnull':'X',},
             {'cname':'s2',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,7),
+             'cbyte':(get_term_val,'S2'),
              'cnull':'X',},
             {'cname':'jc',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,8),
+             'cbyte':(get_term_val,'Jc'),
              'cnull':'X',},
             ]
      }, # end of upper states
