@@ -92,13 +92,7 @@ def getHITRANsources(transs):
     #    trans.s_ref = 'B_HITRAN2008'
         #sourceIDs = sourceIDs.union(s)
 
-    sources = []
-    for source in Refs.objects.filter(pk__in=sourceIDs):
-        sources.append(Source(source.sourceid, source.type, source.author,
-                    source.title, source.journal, source.volume,
-                    source.pages, source.year, source.institution,
-                    source.note, source.doi))
-    return sources
+    return Refs.objects.filter(pk__in=sourceIDs)
 
 def setupResults(sql, LIMIT=None):
     q = sqlparse.where2q(sql.where,RESTRICTABLES)
