@@ -128,13 +128,26 @@ def get_publications(linedata):
     "extract publication data. This returns a list since it is for a multi-reference."
     return [p.strip() for p in bySepNr(linedata, 4, '||').split(',')]
 
-def get_term_val(linedata, n):
-    "extract configurations from term file"
-    line=linedata[1] # we know we want the second file!
-    l = bySepNr(line, 2, ':')
-    try: return bySepNr(l, n, ',')
-    except: pass
-
+def get_term_val(linedata, varname):
+    """
+    extract configurations from term file. 
+      varname is the value type we want (e.g. s or l); we search the identifyer field of the 
+              term-file to see if it exists and return the corresponding value, otherwise
+              we return 'X'. 
+    """
+    line=linedata[1] # we know we want the second file of the pair (the term file)!
+    # the line consists of 3 parts- coupling:identifiers:values . Coupling we get already from transition file. 
+    parts = line.split(':')    
+    if len(parts) < 3:
+        return 'X'
+    # parse the identifier part of the line
+    idlist = [p.strip() for p in parts[1].split(',')]
+    try:
+        # get the correct section of the value part of the file, if it exists
+        return parts[2].split(',')[idlist.index(varname)]
+    except ValueError, IndexError:
+        return 'X'
+  
 def get_gammawaals(linedata, sep1, sep2):
     "extract gamma - van der waal value"
     l1 = charrange(linedata, sep1, sep2)    

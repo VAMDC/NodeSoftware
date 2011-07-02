@@ -46,7 +46,7 @@ def attach_partionfunc(molecules):
         molecule.partionfuncT = []
         molecule.partionfuncQ = []
         
-        pfs = Partitionfunctions.objects.filter(eid = molecule.speciesid)
+        pfs = Partitionfunctions.objects.filter(eid = molecule.id)
         
         temp=pfs.values_list('temperature',flat=True)
         pf = pfs.values_list('partitionfunc',flat=True)
@@ -56,52 +56,55 @@ def attach_partionfunc(molecules):
          
 
 def getSpeciesWithStates(transs):
-    spids = set( transs.values_list('speciesid',flat=True) )
+#    LOG("speciesList:")
+    spids = set( transs.values_list('species_id',flat=True) )
+#    LOG(spids)
 #    atoms = Species.objects.filter(pk__in=spids,ncomp=1)
-    molecules = Molecules.objects.filter(pk__in=spids) #,ncomp__gt=1)
+    molecules = Species.objects.filter(pk__in=spids) #,ncomp__gt=1)
 #    nspecies = atoms.count() + molecules.count()
     nspecies = molecules.count()
     nstates = 0
 #    for species in [atoms,molecules]:
-    for species in [molecules]:
-        for specie in species:
+#    for species in [molecules]:  
+    for specie in molecules:
             subtranss = transs.filter(species=specie)
-            up=subtranss.values_list('finalstateref',flat=True)
-            lo=subtranss.values_list('initialstateref',flat=True)
+            up=subtranss.values_list('upperstateref',flat=True)
+            lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
-            specie.States = StatesMolecules.objects.filter( pk__in = sids)
+            specie.States = States.objects.filter( pk__in = sids)
             nstates += len(sids)
-            attach_state_qns(specie.States)
-#            for state in specie.States:
-#                 q=Q(statesmolecules__in=specie.States.stateid)
-#                 specie.States.MolQN=MolecularQuantumNumbers.objects.filter(q)
+#            attach_state_qns(specie.States)
+
 
 #    return atoms,molecules,nspecies,nstates
     return molecules,nspecies,nstates
 
 def getFreqMethodRefs(transs):
-    ids=set([])
-    for trans in transs:
-      ids=ids.union(set([trans.freqmethodref_id]))
+    ids=set([5])  # the only one for now
+#    for trans in transs:
+#      ids=ids.union(set([trans.freqmethodref_id]))
     q=Q(id__in=ids)
     return Methods.objects.filter(q)
 
 def getSources(transs):
-    ids=set([])
+#    ids=set([])
     meth=[]
-    for trans in transs:
-      ids=ids.union(set([trans.speciesid]))
+#    for trans in transs:
+#      ids=ids.union(set([trans.speciesid]))
+
+    ids = set( transs.values_list('species_id',flat=True) )
+      
     q=Q(eId__in=ids)
 
     slist = SourcesIDRefs.objects.filter(q).distinct()  
     for src in slist.values_list('eId',flat=True):
         mesrc=SourcesIDRefs.objects.filter(Q(eId=src)).values_list('rId',flat=True)
-        LOG(mesrc)
+#        LOG(mesrc)
         this_method = Method(src,src,'derived','derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data',mesrc)
 #        meth=meth.append(Method(5,src,'derived','derived',mesrc))
-        LOG(this_method.sourcesref)
+#        LOG(this_method.sourcesref)
         meth.append(this_method)
-        LOG(meth)
+#        LOG(meth)
 
         
     sourceids = slist.values_list('rId',flat=True)
@@ -109,22 +112,6 @@ def getSources(transs):
     return Sources.objects.filter(pk__in = sourceids), meth
     
 
-def getCDMSstates2(transs):
-    stateids=set([])
-    for trans in transs:
-       stateids=stateids.union(set([trans.initialstateref, trans.finalstateref]))
-    q=Q(stateid__in=stateids)
-    return StatesMolecules.objects.order_by('isotopomer').filter(q).distinct()
-
-
-def getCDMSqns(states):
-    sids=set([])
-    LOG('Loop States')
-    for state in states:
-       s=set([state.stateid])
-       sids=sids.union(s)
-    q=Q(statesmolecules__in=sids)
-    return MolecularQuantumNumbers.objects.filter(q)
 
 
 def setupResults(sql):
@@ -134,8 +121,8 @@ def setupResults(sql):
     except: return {}
 
     LOG(q)
-    #transs = Transition.objects.filter(q).order_by('vacwave')
-    transs = RadiativeTransitions.objects.select_related(depth=2).filter(q)
+    transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0) #order_by('vacwave')
+#    transs = RadiativeTransitions.objects.select_related(depth=2).filter(q)
     
 #    ntranss=transs.count()
   #  if TRANSLIM < ntranss :
@@ -148,14 +135,16 @@ def setupResults(sql):
     LOG(ntranss)
 #    sources = getRefs(transs)
     sources, methods = getSources(transs)
-#    nsources = sources.count()
+    nsources = sources.count()
 #    atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs)
+    LOG(nsources)
     molecules,nspecies,nstates = getSpeciesWithStates(transs)
-    
+    LOG(nspecies)
+    LOG(nstates)
     attach_partionfunc(molecules)
     
-    LOG(ntranss)
-    LOG(methods)
+#    LOG(ntranss)
+#    LOG(methods)
     headerinfo={\
             'Truncated':percentage,
  #           'COUNT-SOURCES':nsources,

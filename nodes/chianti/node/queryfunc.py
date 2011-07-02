@@ -13,6 +13,7 @@
 import sys
 from itertools import chain
 from django.conf import settings
+from django.db.models import Q 
 from vamdctap.sqlparse import where2q
 
 import dictionaries
@@ -57,30 +58,26 @@ def getSpeciesWithStates(transs):
 
     # get the reference ids for the 'species' ForeignKey field 
     # (see getRefs comment for more info)
-    spids = set( transs.values_list('species_id',flat=True) )
+    spids = set( transs.values_list('finalstateindex__species',flat=True) )
     # use the reference ids to query the Species database table 
     species = models.Species.objects.filter(pk__in=spids)
     nspecies = species.count() # get some statistics 
+
+    # List the IDs (i.e. keys from the states table) of all the states 
+    # connected with all the selected transitions.
+    stateIds = set().union(transs.values_list('initialstateindex', flat=True), transs.values_list('finalstateindex', flat=True))
 
     # get all states. Note that when building a queryset like this,
     # (using objects.filter() etc) will usually not hit the database
     # until it's really necessary, making this very efficient. 
     nstates = 0
     for spec in species:
-        # get all transitions in linked to this particular species 
-        spec_transitions = transs.filter(species=spec)
-        # extract reference ids for the states from the transion, combining both
-        # upper and lower unique states together
-        up = spec_transitions.values_list('upstate_id',flat=True)
-        lo = spec_transitions.values_list('lostate_id',flat=True)
-        sids = set(chain(up, lo))
-
         # use the found reference ids to search the State database table 
         # Note that we store a new queryset called 'States' on the species queryset. 
         # This is important and a requirement looked for by the node 
         # software (all RETURNABLES AtomState* will try to loop over this
         # nested queryset). 
-        spec.States = models.State.objects.filter( pk__in = sids )    
+        spec.States = models.States.objects.filter(species=spec).filter(pk__in=stateIds)    
         nstates += spec.States.count()
     return species, nspecies, nstates
 
@@ -114,6 +111,7 @@ def getFunctions(transs):
 
 def getLifetimeMethods():    
     """
+    Chianti has a mix of theor
     In the example we are storing both experimental and theoretical
     data for some quantities, such as in the case of experimental or
     theoretical state lifetimes. A selector method on the model
@@ -133,8 +131,8 @@ def getLifetimeMethods():
             self.category = category
 
     # we will only be needing two methods
-    m1 = Method("MtauEXP", "experiment")
-    m2 = Method("MtauTHEO", "compilation")
+    m1 = Method("EXP", "experimental")
+    m2 = Method("THEO", "theoretical")
     return m1, m2
 
 
@@ -155,14 +153,17 @@ def setupResults(sql, limit=1000):
     q = where2q(sql.where, dictionaries.RESTRICTABLES)
     try: 
         q = eval(q) # test queryset syntax validity
-    except: 
+    except Exception as e:
+        LOG(e)
         return {}
 
     # We build a queryset of database matches on the Transision model
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
-    transs = models.Transition.objects.select_related(depth=2).filter(q)
+    LOG("getting transitions")
+    transs = models.Transitions.objects.select_related(depth=2).filter(q)
+    LOG(transs.count())
 
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
@@ -176,9 +177,13 @@ def setupResults(sql, limit=1000):
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     #sources = getRefs(transs)
-    nsources = sources.count()
+    sources = {}
+    nsources = 0
+    LOG("Getting species")
     species, nspecies, nstates = getSpeciesWithStates(transs)
     methods = getLifetimeMethods()
+    functions = {}
+    LOG(species)
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
@@ -189,12 +194,12 @@ def setupResults(sql, limit=1000):
             'count-states':nstates,
             'count-radiative':ntranss
             }
+    LOG(headerinfo)
             
     # Return the data. The keynames are standardized. 
     return {'RadTrans':transs,
             'Atoms':species,
-            #'Sources':sources,
+            'Sources':sources,
             'HeaderInfo':headerinfo,
-            #'Methods':methods
-            #'Functions':functions
+            'Methods':methods
            }
