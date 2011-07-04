@@ -63,25 +63,21 @@ def getSpeciesWithStates(transs):
     species = models.Species.objects.filter(pk__in=spids)
     nspecies = species.count() # get some statistics 
 
+    # List the IDs (i.e. keys from the states table) of all the states 
+    # connected with all the selected transitions.
+    stateIds = set().union(transs.values_list('initialstateindex', flat=True), transs.values_list('finalstateindex', flat=True))
+
     # get all states. Note that when building a queryset like this,
     # (using objects.filter() etc) will usually not hit the database
     # until it's really necessary, making this very efficient. 
     nstates = 0
     for spec in species:
-        # get all transitions in linked to this particular species 
-        spec_transitions = transs.filter(finalstateindex__species=spec)
-        # extract reference ids for the states from the transion, combining both
-        # upper and lower unique states together
-        up = spec_transitions.values_list('finalstateindex',flat=True)
-        lo = spec_transitions.values_list('initialstateindex',flat=True)
-        sids = set(chain(up, lo))
-
         # use the found reference ids to search the State database table 
         # Note that we store a new queryset called 'States' on the species queryset. 
         # This is important and a requirement looked for by the node 
         # software (all RETURNABLES AtomState* will try to loop over this
         # nested queryset). 
-        spec.States = models.States.objects.filter( pk__in = sids )    
+        spec.States = models.States.objects.filter(species=spec).filter(pk__in=stateIds)    
         nstates += spec.States.count()
     return species, nspecies, nstates
 
@@ -115,6 +111,7 @@ def getFunctions(transs):
 
 def getLifetimeMethods():    
     """
+    Chianti has a mix of theor
     In the example we are storing both experimental and theoretical
     data for some quantities, such as in the case of experimental or
     theoretical state lifetimes. A selector method on the model
@@ -134,8 +131,8 @@ def getLifetimeMethods():
             self.category = category
 
     # we will only be needing two methods
-    m1 = Method("MtauEXP", "experiment")
-    m2 = Method("MtauTHEO", "compilation")
+    m1 = Method("EXP", "experimental")
+    m2 = Method("THEO", "theoretical")
     return m1, m2
 
 
@@ -184,8 +181,7 @@ def setupResults(sql, limit=1000):
     nsources = 0
     LOG("Getting species")
     species, nspecies, nstates = getSpeciesWithStates(transs)
-    #methods = getLifetimeMethods()
-    methods = {}
+    methods = getLifetimeMethods()
     functions = {}
     LOG(species)
 
@@ -205,6 +201,5 @@ def setupResults(sql, limit=1000):
             'Atoms':species,
             'Sources':sources,
             'HeaderInfo':headerinfo,
-            'Methods':methods,
-            'Functions':functions
+            'Methods':methods
            }
