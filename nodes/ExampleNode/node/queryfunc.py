@@ -14,6 +14,7 @@ import sys
 from itertools import chain
 from django.conf import settings
 from vamdctap.sqlparse import where2q
+from django.db.models import Q
 
 import dictionaries
 import models # this imports models.py from the same directory as this file
