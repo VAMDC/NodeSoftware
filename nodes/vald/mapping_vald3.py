@@ -27,8 +27,8 @@ def get_bibtex_dbref(linedata):
 base = "/vald/"
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'VALD3.cfg'
-vald_file = base + 'vald3.dat'
-terms_file = base + 'terms'
+vald_file = base + 'vald3.inp'
+terms_file = base + 'terms.inp'
 ref_file = base + "VALD3_ref.bib"
 
 # The mapping itself
