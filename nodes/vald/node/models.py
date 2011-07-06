@@ -106,7 +106,11 @@ class State(Model):
     k = DecimalField(max_digits=3, decimal_places=1,db_column=u'K', null=True,blank=True)
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True,blank=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
-    
+    sn = IntegerField(null=True, blank=True)
+
+    transition_type = CharField(max_length=2, null=True, blank=True)
+    autoionized = BooleanField(default=False)
+
     def j1j2(self):
         if self.j1 and self.j2:
             return (self.j1,self.j2)

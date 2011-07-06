@@ -113,7 +113,6 @@ def lineSplit(linedata, splitsep=',', filenum=0):
         pass
 
 
-
 #
 # VALD-specific examples below
 #
@@ -135,7 +134,7 @@ def get_term_val(linedata, varname):
               term-file to see if it exists and return the corresponding value, otherwise
               we return 'X'. 
     """
-    line=linedata[1] # we know we want the second file of the pair (the term file)!
+    line=linedata[1] # we know we want the second file of three read (the term file)!
     # the line consists of 3 parts- coupling:identifiers:values . Coupling we get already from transition file. 
     parts = line.split(':')    
     if len(parts) < 3:
@@ -146,6 +145,29 @@ def get_term_val(linedata, varname):
         # get the correct section of the value part of the file, if it exists
         return parts[2].split(',')[idlist.index(varname)]
     except ValueError, IndexError:
+        return 'X'
+
+def get_term_transtype(linedata, rflag):
+    """
+    extract extra transition info from term file.
+     rflag - return 'ttype' - transition type (string)
+                    'autoio' - autoionized (bool)
+    """
+    line = linedata[2] # we know we want third file of three read (the 2nd term file)
+    
+    # line consists of either
+    #  Allowed_transition:E1, Extra_info:none
+    #  Forbidden_transition:XX, Extra_info:none
+    #  Autoindentation, Extra_info:none
+    print linedata
+    info, extra = line.split(',',1) # ignoring the extra field for now
+    if ':' in info:
+        if rflag == 'ttype': 
+            return [p.strip() for p in info.split(':', 1)][1]
+        return False
+    else:
+        if rflag == 'autoio':
+            return True
         return 'X'
   
 def get_gammawaals(linedata, sep1, sep2):
