@@ -642,7 +642,7 @@ def XsamsAtoms(Atoms):
                 yield '<MagneticQuantumNumber>%s</MagneticQuantumNumber>' % mqn
             yield '</AtomicQuantumNumbers>'
 
-            cont, ret = checkXML(AtomState,'CompositionXML'):
+            cont, ret = checkXML(AtomState,'CompositionXML')
             if cont:
                 yield ret
             else:
