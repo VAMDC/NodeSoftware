@@ -88,16 +88,16 @@ def get_value(linedata, column_dict):
     """
     cbyte = column_dict['cbyte']    
     colfunc = cbyte[0]
+    filenum = column_dict.get('filenum', 0)
+    linedata = linedata[filenum]
     args = ()
     if len(cbyte) > 1:
         args = cbyte[1:]    
     kwargs = column_dict.get('kwargs', {})
-    if len(linedata) == 1:
-        linedata = linedata[0]
-    try:        
+    try:                
         dat = colfunc(linedata,  *args, **kwargs)
     except Exception, e:
-        log_trace(e, "error processing lines '%s' - in %s%s: " % (linedata, colfunc, args))
+        log_trace(e, "error processing line/block '%s' - in %s%s: " % (linedata, colfunc, args))
         raise 
     if not dat or (column_dict.has_key('cnull') \
                        and dat == column_dict['cnull']):

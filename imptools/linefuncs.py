@@ -1,8 +1,8 @@
 """
 Line functions are helper functions available to use in the mapping file.
 
-All importable line functions take 'linedata' as a first argument.
-This can be either a string (the current active line), or a list of strings in the case of lines from many files being read simultaneously. In the latter case, the argument 'filenum' is used to select the correct line. For linefuncs accepting a single line, this selection must be made in the mapping dictionary.
+All importable line functions take 'linedata' as a first argument. This is either a line or a block of 
+text data from the currently parsed input file. 
 
 Example of call from mapping dictionary:
 
@@ -28,36 +28,31 @@ def is_iter(iterable):
 def constant(linedata,value):
     return value
 
-def charrange(linedata, start, end, filenum=0):
+def charrange(linedata, start, end):
     """
     Cut out part of a line of texts based on indices.
 
     Inputs:
      linedata (str or iterable) - current line(s) to operate on
-     start, end (int) - beginning and end indices of the line
-     filenum (int) - optional selection of line if linedata is an iterable
+     start, end (int) - beginning and end indices of the line     
     
     """
-    if is_iter(linedata):
-        linedata = linedata[filenum]        
     try:
         return linedata[start:end].strip()
     except Exception, e:
         #print "charrange skipping '%s': %s (%s)" % (linedata, e)        
         pass
     
-def charrange2int(linedata, start, end, filenum=0):
+def charrange2int(linedata, start, end):
     """
     Cut out part of a line based on indices, return as integer
 
     Inputs:
       linedata (str or iterable) - current line(s) to operate on
       start, end (int) - beginning and end indices of the line
-      filenum (int) - optional selection of line if linedata is an iterable
+
    
     """
-    if is_iter(linedata):
-        linedata = linedata[filenum] 
     try:
         return int(round(float(linedata[start:end].strip())))
     except Exception, e:
@@ -71,7 +66,7 @@ def bySepNr(linedata, number, sep=','):
         pass
         #print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
 
-def bySepNr2(linedata, number, sep=',', filenum=0):
+def bySepNr2(linedata, number, sep=','):
     """
     Split a text line by sep argument and return
     the number:ed split section
@@ -80,18 +75,16 @@ def bySepNr2(linedata, number, sep=',', filenum=0):
       linedata (str or iterable) - current line(s) to operate on
       number (int) - nth section, separated by sep
       sep (str) - a separator to split by
-      filenum (int) - optional selection of line if linedata is an iterable   
 
     """
-    if is_iter(linedata):
-        linedata = linedata[filenum] 
+
     try:
         return linedata.split(sep)[number].strip()
     except Exception, e:
         pass
         #print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
 
-def lineSplit(linedata, splitsep=',', filenum=0):
+def lineSplit(linedata, splitsep=','):
     """
     Splits a line by splitsep, returns a list. The main use for this
     method is creating a many-to-many reference.
@@ -99,13 +92,10 @@ def lineSplit(linedata, splitsep=',', filenum=0):
     Inputs:
       linedata (str or iterable) - current line(s) to operate on
       splitsep (str) - string to split by
-      filenum (int) - optional selection of line if linedata is an iterable   
 
     Returns a list!      
     """    
 
-    if is_iter(linedata):
-        linedata = linedata[filenum]    
     try:
         return [string.strip() for string in linedata.split(splitsep)]
     except Exception, e:
@@ -134,9 +124,8 @@ def get_term_val(linedata, varname):
               term-file to see if it exists and return the corresponding value, otherwise
               we return 'X'. 
     """
-    line=linedata[1] # we know we want the second file of three read (the term file)!
     # the line consists of 3 parts- coupling:identifiers:values . Coupling we get already from transition file. 
-    parts = line.split(':')    
+    parts = linedata.split(':')    
     if len(parts) < 3:
         return 'X'
     # parse the identifier part of the line
@@ -153,14 +142,12 @@ def get_term_transtype(linedata, rflag):
      rflag - return 'ttype' - transition type (string)
                     'autoio' - autoionized (bool)
     """
-    line = linedata[2] # we know we want third file of three read (the 2nd term file)
-    
+        
     # line consists of either
     #  Allowed_transition:E1, Extra_info:none
     #  Forbidden_transition:XX, Extra_info:none
-    #  Autoindentation, Extra_info:none
-    print linedata
-    info, extra = line.split(',',1) # ignoring the extra field for now
+    #  Autoindentation, Extra_info:none    
+    info, extra = linedata.split(',',1) # ignoring the extra field for now
     if ':' in info:
         if rflag == 'ttype': 
             return [p.strip() for p in info.split(':', 1)][1]

@@ -50,7 +50,7 @@ class Reference(Model):
 
 class LineList(Model):
     id = AutoField(primary_key=True, db_index=True)
-    references = ManyToManyField(Reference)
+    references = ManyToManyField(Reference) # handled by external script
     srcfile = CharField(max_length=128)
     srcfile_ref = CharField(max_length=128, null=True)
     speclo = ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True)
@@ -93,9 +93,13 @@ class State(Model):
     coupling = CharField(max_length=2, null=True,blank=True)
     term = CharField(max_length=56, null=True,blank=True)
 
-    energy_ref = ForeignKey(LineList, related_name='isenergyref_state')
-    lande_ref = ForeignKey(LineList, related_name='islanderef_state')
-    level_ref = ForeignKey(LineList, related_name='islevelref_state')
+    energy_ref = ForeignKey(Reference, related_name='isenergyref_state')
+    lande_ref = ForeignKey(Reference, related_name='islanderef_state')
+    level_ref = ForeignKey(Reference, related_name='islevelref_state')
+
+    #energy_ref = ForeignKey(LineList, related_name='isenergyref_state')
+    #lande_ref = ForeignKey(LineList, related_name='islanderef_state')
+    #level_ref = ForeignKey(LineList, related_name='islevelref_state')
 
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True,blank=True)
     l = DecimalField(max_digits=3, decimal_places=1,db_column=u'L', null=True,blank=True)
@@ -136,7 +140,8 @@ class Transition(Model):
     airwave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
     species = ForeignKey(Species,db_column='species')
     loggf = DecimalField(max_digits=8, decimal_places=3,null=True,blank=True)
-    landeff = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
+    # the combined lande factor can be reconstructed from upper/lower state anyway
+    #landeff = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     gammarad = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     gammastark = DecimalField(max_digits=7, decimal_places=3,null=True,blank=True)
     gammawaals = DecimalField(max_digits=6, decimal_places=3,null=True,blank=True)
@@ -146,12 +151,20 @@ class Transition(Model):
     comment = CharField(max_length=128, null=True,blank=True)
 
     srctag = ForeignKey(Reference)
-    wave_ref = ForeignKey(LineList, related_name='iswaveref_trans')
-    loggf_ref = ForeignKey(LineList, related_name='isloggfref_trans')
-    lande_ref = ForeignKey(LineList, related_name='islanderef_trans')
-    gammarad_ref = ForeignKey(LineList, related_name='isgammaradref_trans')
-    gammastark_ref = ForeignKey(LineList, related_name='isgammastarkref_trans')
-    waals_ref = ForeignKey(LineList, related_name='iswaalsref_trans')
+
+    wave_ref = ForeignKey(Reference, related_name='iswaveref_trans')
+    loggf_ref = ForeignKey(Reference, related_name='isloggfref_trans')
+    #lande_ref = ForeignKey(Reference, related_name='islanderef_trans')
+    gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans')
+    gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans')
+    waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans')
+
+    #wave_ref = ForeignKey(LineList, related_name='iswaveref_trans')
+    #loggf_ref = ForeignKey(LineList, related_name='isloggfref_trans')
+    #lande_ref = ForeignKey(LineList, related_name='islanderef_trans')
+    #gammarad_ref = ForeignKey(LineList, related_name='isgammaradref_trans')
+    #gammastark_ref = ForeignKey(LineList, related_name='isgammastarkref_trans')
+    #waals_ref = ForeignKey(LineList, related_name='iswaalsref_trans')
 
     def getWaals(self):
         if self.gammawaals: return self.gammawaals
