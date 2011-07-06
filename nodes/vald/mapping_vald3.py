@@ -34,7 +34,7 @@ ref_file = base + "VALD3_ref.bib"
 # The mapping itself
 mapping = [
     # Populate Species model, using the species input file.
-    {'outfile':'species.dat',
+    {'outfile':base + 'species.dat',
      'infiles':species_list_file,
      'headlines':0,
      'commentchar':'#',
@@ -76,7 +76,7 @@ mapping = [
     # vald file - lower, upper, transition_info
 
     # States output file appended with lower states
-    {'outfile':'states.dat',
+    {'outfile':base + 'states.dat',
      'infiles':(vald_file, vald_file, terms_file, terms_file),
      'headlines':(2, 2, 0, 0), 
      'commentchar':('#','#','#','#'),
@@ -181,7 +181,7 @@ mapping = [
      }, # end of State model creation - lower states
 
     # upper states  
-    {'outfile':'states.dat',    
+    {'outfile':base + 'states.dat',    
      'infiles': (vald_file, vald_file, terms_file, terms_file),
      'headlines':(2, 2, 0, 0),
      'commentchar': ('#', '#', '#','#'),
@@ -284,7 +284,7 @@ mapping = [
      }, # end of upper states
        
     # Transition model, using the vald file    
-    {'outfile':'transitions.dat',
+    {'outfile': base + 'transitions.dat',
      'infiles':(vald_file,vald_file),
      'headlines':(2,2),
      'commentchar':('#','#'),
@@ -378,7 +378,7 @@ mapping = [
     }, # end of transitions
 
     # Populate References with bibtex data file (block parsing)
-    {'outfile':'references.dat',    
+    {'outfile':base + 'references.dat',    
      'infiles':ref_file,
      'headlines':0,        
      'commentchar':'%',
@@ -393,7 +393,7 @@ mapping = [
       }, # end of bibtex 
     
     # Populate LineList model from vald_cfg file
-    {'outfile':'linelists.dat',
+    {'outfile': base + 'linelists.dat',
      'infiles':vald_cfg_file,
      'headlines':1,
      'commentchar':';',
