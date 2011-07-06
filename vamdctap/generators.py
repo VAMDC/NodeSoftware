@@ -311,14 +311,14 @@ def makeNamedDataType(tagname, keyword, G):
 
     return string
 
-def checkXML(obj):
+def checkXML(obj,methodName='XML'):
     """
     If the queryset has an XML method, use that and
     skip the hard-coded implementation.
     """
-    if hasattr(obj,'XML'):
+    if hasattr(obj,methodName):
         try:
-            return True, obj.XML()
+            return True, eval('obj.methodName()')
         except Exception:
             pass
     return False, None 
@@ -642,9 +642,13 @@ def XsamsAtoms(Atoms):
                 yield '<MagneticQuantumNumber>%s</MagneticQuantumNumber>' % mqn
             yield '</AtomicQuantumNumbers>'
 
-            yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
-            yield makeAtomComponent(Atom, G)
-            yield '</AtomicComposition>'
+            cont, ret = checkXML(AtomState,'CompositionXML'):
+            if cont:
+                yield ret
+            else:
+                yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
+                yield makeAtomComponent(Atom, G)
+                yield '</AtomicComposition>'
 
             yield '</AtomicState>'
         G = lambda name: GetValue(name, Atom=Atom) # reset G() to Atoms, not AtomStates
