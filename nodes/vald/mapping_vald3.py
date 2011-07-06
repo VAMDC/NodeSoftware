@@ -71,15 +71,105 @@ mapping = [
             ],
      }, # end of definition for species file
     
-    # State model read from states_file -upper states
-    # (first section) 
+    # State model read from states_file
+    # term files are grouped with 3 lines for every line in the 
+    # vald file - lower, upper, transition_info
+
+    # States output file appended with lower states
+    {'outfile':'states.dat',
+     'infiles':(vald_file, terms_file, terms_file),
+     'headlines':(2, 0, 0), 
+     'commentchar':('#','#','#'),
+     'linestep':(1, 2, 3),   # step lengh in each file
+     'lineoffset':(0, 0, 1), # start point of step in each file
+     'errline':("Unknown", "Unknown", "Unknown"),
+     'linemap':[
+            {'cname':'charid',         #species,coup,jnum,term,energy (lower states) 
+             'cbyte':(merge_cols,
+                      (30,36), (122,124), (58,63), (124,170), (44,58))},
+            {'cname':'species',
+             'cbyte':(charrange, 30,36)},
+            {'cname':'energy',
+             'cbyte':(charrange, 44,58)},
+            #{'cname':'j',
+            # 'cbyte':(charrange, 58,63)},
+            {'cname':'lande',
+             'cbyte':(charrange, 82,88),
+             'cnull':'99.00'},
+            {'cname':'coupling',
+             'cbyte':(charrange, 122,124)},
+            {'cname':'term',
+             'cbyte':(charrange, 124,170)},
+            {'cname':'energy_ref',
+             'cbyte':(charrange, 264,268)},
+             #'references':(models.Source,'pk')},
+            {'cname':'lande_ref',
+             'cbyte':(charrange, 268,272)},
+             #'references':(models.Source,'pk')},
+            {'cname':'level_ref',
+             'cbyte':(charrange, 284,288)},
+             #'references':(models.Source,'pk')},
+            # these are read from term file
+            {'filenum':1, # use term file
+             'cname':'j',
+             'cbyte':(get_term_val,'J'),           
+             'cnull':'X',},
+            {'filenum':1, # use term file
+             'cname':'l',
+             'cbyte':(get_term_val,'L'),
+             'cnull':'X',},
+            {'filenum':1, # use term file
+             'cname':'s',
+             'cbyte':(get_term_val,'S'),
+             'cnull':'X',},
+            {'filenum':1, # use term file
+             'cname':'p',
+             'cbyte':(get_term_val,'parity'),
+             'cnull':'X',},
+            {'filenum':1, # use term file
+             'cname':'j1',
+             'cbyte':(get_term_val,'J1'),
+             'cnull':'X',},
+            {'filenum':1, # use term file
+             'cname':'j2',
+             'cbyte':(get_term_val,'J2'),
+             'cnull':'X',},
+            {'filenum':1, # use term file
+             'cname':'k',
+             'cbyte':(get_term_val,'K'),
+             'cnull':'X',},
+            {'filenum':1, # use term file
+             'cname':'s2',
+             'cbyte':(get_term_val,'S2'),
+             'cnull':'X',},
+            {'filenum':1, # use term file
+             'cname':'jc',
+             'cbyte':(get_term_val,'Jc'),
+             'cnull':'X',},
+            {'filenum':1, # use term file
+             'cname':'sn',             
+             'cbyte':(get_term_val,'seniority'),
+             'cnull':'X',},            
+            # read extra info from every third line in term file
+            {'filenum':2, # use 2nd open term file
+             'cname':'transition_type',             
+             'cbyte':(get_term_transtype,'ttype'),
+             'cnull':'X',},                        
+            {'filenum':2, # use 2nd open term file
+             'cname':'autoionized',             
+             'cbyte':(get_term_transtype,'autoio'),
+             'cnull':'X',},                        
+            ]
+     }, # end of State model creation - lower states
+
+    # upper states  
     {'outfile':'states.dat',    
-     'infiles': (vald_file, terms_file),
-     'headlines':(2, 0),
-     'commentchar': ('#', '#'),
-     'linestep':(1, 2),
-     'lineoffset':(0,1),
-     'errline':("Unknown", "Unknown"),
+     'infiles': (vald_file, terms_file, terms_file),
+     'headlines':(2, 0, 0),
+     'commentchar': ('#', '#','#'),
+     'linestep':(1, 2, 3),
+     'lineoffset':(0, 1, 2), # start point of step
+     'errline':("Unknown", "Unknown","Unknown"),
      'linemap':[
             {'cname':'charid',        #species,coup,jnum,term,energy (upper states)             
              'cbyte':(merge_cols,
@@ -121,7 +211,7 @@ mapping = [
              'cnull':'X',},
             {'cname':'p',
              'filenum':1, # use term file
-             'cbyte':(get_term_val,'parity'), # I think this is what the p stands for at least
+             'cbyte':(get_term_val,'parity'), 
              'cnull':'X',}, 
             {'cname':'j1',
              'filenum':1, # use term file
@@ -143,73 +233,22 @@ mapping = [
              'filenum':1, # use term file
              'cbyte':(get_term_val,'Jc'),
              'cnull':'X',},
+            {'cname':'sn',
+             'filenum':1, # use term file
+             'cbyte':(get_term_val,'seniority'),
+             'cnull':'X',},            
+            # read extra info from every third line in term file
+            {'filenum':2, # use 2nd open term file
+             'cname':'transition_type',             
+             'cbyte':(get_term_transtype,'ttype'),
+             'cnull':'X',},                        
+            {'filenum':2, # use 2nd open term file
+             'cname':'autoionized',             
+             'cbyte':(get_term_transtype,'autoio'),
+             'cnull':'X',},                        
             ]
      }, # end of upper states
-    
-    # States output file appended with lower states
-    {'outfile':'states.dat',
-     'infiles':(vald_file, terms_file),
-     'headlines':(2, 0), 
-     'commentchar':('#','#'),
-     'linestep':(1, 2),     
-     'errline':("Unknown", "Unknown"),
-     'linemap':[
-            {'cname':'charid',         #species,coup,jnum,term,energy (lower states) 
-             'cbyte':(merge_cols,
-                      (30,36), (122,124), (58,63), (124,170), (44,58))},
-            {'cname':'species',
-             'cbyte':(charrange, 30,36)},
-            {'cname':'energy',
-             'cbyte':(charrange, 44,58)},
-            #{'cname':'j',
-            # 'cbyte':(charrange, 58,63)},
-            {'cname':'lande',
-             'cbyte':(charrange, 82,88),
-             'cnull':'99.00'},
-            {'cname':'coupling',
-             'cbyte':(charrange, 122,124)},
-            {'cname':'term',
-             'cbyte':(charrange, 124,170)},
-            {'cname':'energy_ref',
-             'cbyte':(charrange, 264,268)},
-             #'references':(models.Source,'pk')},
-            {'cname':'lande_ref',
-             'cbyte':(charrange, 268,272)},
-             #'references':(models.Source,'pk')},
-            {'cname':'level_ref',
-             'cbyte':(charrange, 284,288)},
-             #'references':(models.Source,'pk')},
-            # these are read from term file
-            {'cname':'j',
-             'cbyte':(get_term_val,1),           
-             'cnull':'X',},
-            {'cname':'l',
-             'cbyte':(get_term_val,2),
-             'cnull':'X',},
-            {'cname':'s',
-             'cbyte':(get_term_val,3),
-             'cnull':'X',},
-            {'cname':'p',
-             'cbyte':(get_term_val,4),
-             'cnull':'X',},
-            {'cname':'j1',
-             'cbyte':(get_term_val,5),
-             'cnull':'X',},
-            {'cname':'j2',
-             'cbyte':(get_term_val,6),
-             'cnull':'X',},
-            {'cname':'k',
-             'cbyte':(get_term_val,7),
-             'cnull':'X',},
-            {'cname':'s2',
-             'cbyte':(get_term_val,8),
-             'cnull':'X',},
-            {'cname':'jc',
-             'cbyte':(get_term_val,9),
-             'cnull':'X',},
-            ]
-     }, # end of State model creation - lower states
-   
+       
     # Transition model, using the vald file    
     {'outfile':'transitions.dat',
      'infiles':vald_file,
