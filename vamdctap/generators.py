@@ -623,7 +623,7 @@ def XsamsAtoms(Atoms):
             yield makeDataType('Polarizability', 'AtomStatePolarizability', G)
             statweig = G('AtomStateStatisticalWeight')
             if statweig: 
-                yield '<StatisticalWeight></StatisticalWeight>' % statweig
+                yield '<StatisticalWeight>%s</StatisticalWeight>' % statweig
             yield makeDataType('HyperfineConstantA', 'AtomStateHyperfineConstantA', G)
             yield makeDataType('HyperfineConstantB', 'AtomStateHyperfineConstantB', G)
             yield '</AtomicNumericalData><AtomicQuantumNumbers>'
@@ -1092,6 +1092,7 @@ def makeDataSeriesType(tagname, keyword, G):
     """
     Creates the dataseries type
     """
+    result=[]
     dic = {}
     xpara = G("%sParameter" % keyword)
     if xpara:
@@ -1101,12 +1102,12 @@ def makeDataSeriesType(tagname, keyword, G):
         dic["units"] = xunits
     xid = G("%sID" % keyword)
     if xid:
-        dic["id"] = "%s-%s" % (NODEID, xid)        
-    yield makePrimaryType("%s" % tagname, "%s" % keyword, G, extraAttr=dic)
+        dic["id"] = "%s-%s" % (NODEID, xid)
+    result.append(makePrimaryType("%s" % tagname, "%s" % keyword, G, extraAttr=dic))
 
     dlist = makeiter(G("%s" % keyword))
     if dlist:
-        yield "<DataList n='%s' units='%s'>%s</DataList>" % (G("%sN" % keyword), G("%sUnits" % keyword), " ".join(dlist))
+        result.append("<DataList n='%s' units='%s'>%s</DataList>" % (G("%sN" % keyword), G("%sUnits" % keyword), " ".join(dlist)))
     csec = G("%sLinearA0" % keyword) and G("%sLinearA1" % keyword)
     if csec:
         dic = {"a0":G("%sLinearA0" % keyword), "a1":G("%sLinearA1" % keyword)}
@@ -1116,19 +1117,20 @@ def makeDataSeriesType(tagname, keyword, G):
         xunits = G("%sLinearUnits" % keyword)
         if xunits:
             dic["units"] = xunits
-        yield makePrimaryType("LinearSequence", "%sLinear" % keyword, G, extraAttr=dic)        
-        yield("</LinearSequence>")
+        result.append(makePrimaryType("LinearSequence", "%sLinear" % keyword, G, extraAttr=dic))
+        result.append("</LinearSequence>")
     dfile = G("%sDataFile" % keyword)
     if dfile:
-        yield "<DataFile>%s</DataFile>" % dfile
+        result.append("<DataFile>%s</DataFile>" % dfile)
     elist = makeiter(G("%sErrorList" % keyword))
     if elist:
-        yield "<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), " ".join(elist))
+        result.append("<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), " ".join(elist)))
     err = G("%sError" % keyword)
     if err:
-        yield "<Error>%s</Error>" % err        
+        result.append("<Error>%s</Error>" % err)
 
-    yield "</%s>" % tagname
+    result.append("</%s>" % tagname)
+    return result
 
 
 def XsamsRadCross(RadCross):
@@ -1143,14 +1145,13 @@ def XsamsRadCross(RadCross):
           Mode.DeltaVs
 
     loop varaibles:
-      
+
     RadCros
       RadCrosBandAssignment
         RadCrosBandAssigmentMode
           RadCrosBandAssignmentModeDeltaV
-    
     """
-    
+
     if not isiterable(RadCross):
         return
 
@@ -1159,7 +1160,7 @@ def XsamsRadCross(RadCross):
         cont, ret = checkXML(RadCros)
         if cont:
             yield ret
-            continue 
+            continue
 
         # create header
 
@@ -1179,19 +1180,19 @@ def XsamsRadCross(RadCross):
 
         species = G("CrossSectionSpecies")
         state = G("CrossSectionState")
-        if species or state: 
+        if species or state:
             yield "<Species>"
             if species:
                 yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
             if state:
-                yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)            
+                yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)
             yield "</Species>"
-        
+
         # Note - XSAMS dictates a list of BandAssignments here; but this is probably unlikely to
         # be used; so for simplicity we only assume one band assignment here. 
 
         yield makePrimaryType("BandAssignment", "CrossSectionBand", G, extraAttr={"name":"CrossSectionBandName"})
-            
+
         yield makeDataType("BandCentre", "CrossSectionBandCentre", G)
         yield makeDataType("BandWidth", "CrossSectionBandWidth", G)
 
