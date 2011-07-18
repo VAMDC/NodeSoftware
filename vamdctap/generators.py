@@ -318,7 +318,6 @@ def checkXML(obj,methodName='XML'):
     """
     if hasattr(obj,methodName):
         try:
-    #        return True, obj.XML()
             return True, eval('obj.%s()' % methodName) 
         except Exception:
             pass
