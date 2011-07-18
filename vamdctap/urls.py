@@ -3,7 +3,7 @@ from django.conf import settings
 import django.views.static
 
 urlpatterns = patterns('vamdctap.views',
-                       (r'^$', 'index'),
+                       #(r'^$', 'index'),
                        (r'^sync[/]?$', 'sync'),
                        #(r'^async/', 'async'),
                        (r'^availability[/]?$', 'availability'),
