@@ -318,7 +318,8 @@ def checkXML(obj,methodName='XML'):
     """
     if hasattr(obj,methodName):
         try:
-            return True, eval('obj.methodName()')
+    #        return True, obj.XML()
+            return True, eval('obj.%s()' % methodName) 
         except Exception:
             pass
     return False, None 
@@ -808,7 +809,16 @@ def XsamsMSBuild(MoleculeState):
     if G("MoleculeStateCharacTotalStatisticalWeight"):
         yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
                     % G("MoleculeStateCharacTotalStatisticalWeight")
+    if G("MoleculeStateCharacNuclearStatisticalWeight"):
+        yield '  <NuclearStatisticalWeight>%s</NuclearStatisticalWeight>\n'\
+                    % G("MoleculeStateCharacNuclearStatisticalWeight")
+    if G("MoleculeStateCharacNuclearSpinIsomer"):
+        yield '  <NuclearSpinIsomer>%s</NuclearSpinIsomer>\n'\
+                    % G("MoleculeStateCharacNuclearSpinIsomer")
     yield '  </MolecularStateCharacterisation>\n'
+
+
+
 
     cont, ret = checkXML(G("MoleculeStateQuantumNumbers"))
     if cont:
