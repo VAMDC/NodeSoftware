@@ -134,6 +134,7 @@ class TransitionsCalc( Model):
      frequency             =  FloatField(null=True, db_column='P_Frequency')
      frequencyexp          =  FloatField(null=True, db_column='P_Frequency_Exp')
      intensity             =  FloatField(null=True, db_column='P_Intensity')
+     einsteina             =  FloatField(null=True, db_column='P_EinsteinA')
      uncertainty           =  FloatField(null=True, db_column='P_Uncertainty')
      energylower           =  FloatField(null=True, db_column='P_Energy_Lower')
      energyupper           =  FloatField(null=True, db_column='P_Energy_Upper')

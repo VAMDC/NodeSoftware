@@ -68,7 +68,8 @@ RETURNABLES = {
 #'MoleculeStateQuantumNumbers':'MoleculeState.parsed_qns',
 'MoleculeStateQuantumNumbers':'MoleculeState',
 'MoleculeStoichiometricFormula':'Molecule.molecule.stoichiometricformula',
-
+'MoleculeOrdinaryStructuralFormula':'Molecule.molecule.structuralformula',
+'MoleculeComment': 'Molecule.name',
 'MoleculeQnStateID': 'MolQN.stateid', # <- new
 'MoleculeQnCase': 'MolQN.case',       # <- new 
 'MoleculeQnLabel': 'MolQN.label',     # <- new 
@@ -115,7 +116,7 @@ RETURNABLES = {
 #'RadTransFrequencyRef':'RadTran.freqmethodref_id',
 #'RadTransFrequencyMethod':'RadTran.freqmethodref_id',
 'RadTransFrequencyMethod':'RadTran.species_id',
-#'RadTransProbabilityA':'RadTran.einsteinA',
+'RadTransProbabilityA':'RadTran.einsteina',
 'RadTransProbabilityAUnit':'1/cm', # <-New
 #'RadTransProbabilityIdealisedIntensity':'RadTran.',
 #'RadTransProbabilityLineStrength':'RadTran.',
