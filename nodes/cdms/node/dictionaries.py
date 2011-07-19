@@ -62,9 +62,9 @@ RETURNABLES = {
 'MoleculeStateEnergy':'MoleculeState.energy',
 'MoleculeStateEnergyOrigin':'Zero-point energy',
 'MoleculeStateEnergyUnit':'1/cm', 
-'MoleculeStateCharacTotalStatisticalWeight':'MoleculeState.degeneracy', # has to be changed  <- new
-'MoleculeStateCharacNuclearSpinIsomer':'MoleculeState.nuclearspinisomer',
-'MoleculeStateCharacNuclearStatisticalWeight':'MoleculeState.nuclearstatisticalweight',
+'MoleculeStateTotalStatisticalWeight':'MoleculeState.degeneracy', # has to be changed  <- new
+'MoleculeStateNuclearSpinIsomer':'MoleculeState.nuclearspinisomer',
+'MoleculeStateNuclearStatisticalWeight':'MoleculeState.nuclearstatisticalweight',
 'MoleculeStateID':'MoleculeState.id',
 #'MoleculeStateQuantumNumbers':'MoleculeState.parsed_qns',
 'MoleculeStateQuantumNumbers':'MoleculeState',
@@ -174,7 +174,7 @@ RESTRICTABLES = {
 #'MoleculeNormalModeIntensity':'',
 #'MoleculeStateCharacLifeTime':'',
 #'MoleculeStateCharacNuclearSpinSymmetry':'',
-'MoleculeStateCharacNuclearSpinIsomer':'lowerstateref__nuclearspinisomer',
+'MoleculeStateNuclearSpinIsomer':'lowerstateref__nuclearspinisomer',
 'MoleculeStateEnergy':'lowerstateref__energy',
 #'MoleculeStateID':'',
 'MoleculeStoichiometricFormula':'species__molecule__stoichiometricformula',
