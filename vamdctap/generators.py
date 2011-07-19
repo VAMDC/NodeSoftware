@@ -805,15 +805,15 @@ def XsamsMSBuild(MoleculeState):
     yield '  <MolecularStateCharacterisation>\n'
     yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G,
                 extraAttr={'energyOrigin':'MoleculeStateEnergyOrigin'})
-    if G("MoleculeStateCharacTotalStatisticalWeight"):
+    if G("MoleculeStateTotalStatisticalWeight"):
         yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
-                    % G("MoleculeStateCharacTotalStatisticalWeight")
-    if G("MoleculeStateCharacNuclearStatisticalWeight"):
+                    % G("MoleculeStateTotalStatisticalWeight")
+    if G("MoleculeStateNuclearStatisticalWeight"):
         yield '  <NuclearStatisticalWeight>%s</NuclearStatisticalWeight>\n'\
-                    % G("MoleculeStateCharacNuclearStatisticalWeight")
-    if G("MoleculeStateCharacNuclearSpinIsomer"):
+                    % G("MoleculeStateNuclearStatisticalWeight")
+    if G("MoleculeStateNuclearSpinIsomer"):
         yield '  <NuclearSpinIsomer>%s</NuclearSpinIsomer>\n'\
-                    % G("MoleculeStateCharacNuclearSpinIsomer")
+                    % G("MoleculeStateNuclearSpinIsomer")
     yield '  </MolecularStateCharacterisation>\n'
 
 
