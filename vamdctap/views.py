@@ -96,38 +96,38 @@ class TAPQUERY(object):
         try: self.parsedSQL=SQL.parseString(self.query)
         except: self.errormsg += 'Could not parse the SQL query string.\n'
 
-        self.parsedSQL.requestables = set()
+        self.requestables = set()
         if self.parsedSQL.columns not in ('*', 'ALL'):
             for r in self.parsedSQL.columns:
                 r = r.lower()
                 if r not in REQUESTABLES:
                     self.errormsg += 'Unknown Requestable: %s\n' % r
                 else:
-                    self.parsedSQL.requestables.add(r)
+                    self.requestables.add(r)
 
-        if 'species' in self.parsedSQL.requestables:
-            self.parsedSQL.requestables.add('atoms')
-            self.parsedSQL.requestables.add('molecules')
-            self.parsedSQL.requestables.add('particles')
-            self.parsedSQL.requestables.add('solids')
-        if 'states' in self.parsedSQL.requestables:
-            self.parsedSQL.requestables.add('atomstates')
-            self.parsedSQL.requestables.add('moleculestates')
-        if 'atomstates' in self.parsedSQL.requestables:
-            self.parsedSQL.requestables.add('atoms')
-        if 'moleculestates' in self.parsedSQL.requestables:
-            self.parsedSQL.requestables.add('molecules')
-        if 'moleculequantumnumbers' in self.parsedSQL.requestables:
-            self.parsedSQL.requestables.add('molecules')
-            self.parsedSQL.requestables.add('moleculestates')
-        if 'processes' in self.parsedSQL.requestables:
-            self.parsedSQL.requestables.add('radiativetransitions')
-            self.parsedSQL.requestables.add('nonradiativetransitions')
-            self.parsedSQL.requestables.add('collisions')
-        # Always return sources, methods, functions for now.
-        self.parsedSQL.requestables.add('sources')
-        self.parsedSQL.requestables.add('functions')
-        self.parsedSQL.requestables.add('methods')
+            if 'species' in self.requestables:
+                self.requestables.add('atoms')
+                self.requestables.add('molecules')
+                self.requestables.add('particles')
+                self.requestables.add('solids')
+            if 'states' in self.requestables:
+                self.requestables.add('atomstates')
+                self.requestables.add('moleculestates')
+            if 'atomstates' in self.requestables:
+                self.requestables.add('atoms')
+            if 'moleculestates' in self.requestables:
+                self.requestables.add('molecules')
+            if 'moleculequantumnumbers' in self.requestables:
+                self.requestables.add('molecules')
+                self.requestables.add('moleculestates')
+            if 'processes' in self.requestables:
+                self.requestables.add('radiativetransitions')
+                self.requestables.add('nonradiativetransitions')
+                self.requestables.add('collisions')
+            # Always return sources, methods, functions for now.
+            self.requestables.add('sources')
+            self.requestables.add('functions')
+            self.requestables.add('methods')
 
         if self.errormsg: self.isvalid=False
 
@@ -172,7 +172,8 @@ def sync(request):
         log.info('setupResults() gave something empty. Returning 204.')
         return HttpResponse('', status=204)
 
-    generator=Xsams(requestables=tap.parsedSQL.requestables,**results)
+    log.debug('Requestables: %s'%tap.requestables)
+    generator=Xsams(requestables=tap.requestables,**results)
     response=HttpResponse(generator,mimetype='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
 
