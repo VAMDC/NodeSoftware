@@ -6,7 +6,7 @@ def setupSQLparser():
     selectStmt = Forward()
     selectToken = Keyword("select", caseless=True)
     ident = Word( alphas, alphanums ).setName("identifier")
-    columnName     = delimitedList( ident, ".", combine=True )
+    columnName     = delimitedList( ident, ",", )#combine=True )
     columnNameList = Group( delimitedList( columnName ) )
     whereExpression = Forward()
     and_ = Keyword("and", caseless=True)
@@ -25,7 +25,6 @@ def setupSQLparser():
     whereCondition = Group(
         ( columnName + binop + columnRval ) |
         ( columnName + in_ + "(" + delimitedList( columnRval ) + ")" ) |
-        ( columnName + in_ + "(" + selectStmt + ")" ) |
         ( "(" + whereExpression + ")" )
         )
     whereExpression << whereCondition + ZeroOrMore( ( and_ | or_ ) + whereExpression )
