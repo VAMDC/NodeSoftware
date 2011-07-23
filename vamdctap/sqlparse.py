@@ -12,17 +12,18 @@ def setupSQLparser():
     and_ = Keyword("and", caseless=True)
     or_ = Keyword("or", caseless=True)
     in_ = Keyword("in", caseless=True)
+    not_ = Keyword("not", caseless=True)
     E = CaselessLiteral("E")
-    binop = oneOf("= != < > >= <= like", caseless=True)
+    binop = oneOf("= != < > >= <= <> like", caseless=True)
     arithSign = Word("+-",exact=1)
     realNum = Combine( Optional(arithSign) + ( Word( nums ) + "." + Optional( Word(nums) )  |
-                                           ( "." + Word(nums) ) ) + 
+                                           ( "." + Word(nums) ) ) +
                        Optional( E + Optional(arithSign) + Word(nums) ) )
-    intNum = Combine( Optional(arithSign) + Word( nums ) + 
+    intNum = Combine( Optional(arithSign) + Word( nums ) +
                       Optional( E + Optional("+") + Word(nums) ) )
 
     columnRval = realNum | intNum | quotedString | columnName
-    whereCondition = Group(
+    whereCondition = Optional(not_) + Group(
         ( columnName + binop + columnRval ) |
         ( columnName + in_ + "(" + delimitedList( columnRval ) + ")" ) |
         ( "(" + whereExpression + ")" )
@@ -32,7 +33,7 @@ def setupSQLparser():
     selectStmt      << ( selectToken +
                          Optional(CaselessLiteral('count')).setResultsName("count")  +
                          Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") +
-                         ( oneOf('* ALL', caseless=True) | columnNameList ).setResultsName( "columns" ) + 
+                         ( oneOf('* ALL', caseless=True) | columnNameList ).setResultsName( "columns" ) +
                          Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) )
 
     # define Oracle comment format, and ignore them
@@ -52,12 +53,35 @@ OPTRANS= { # transfer SQL operators to django-style
     '=':  '__exact',
     '<=': '__lte',
     '>=': '__gte',
+    '!=': '',
+    '<>': '',
     'in': '__in',
-    'like': '__contains',
+    'like': '',
 }
 
 import logging
 log = logging.getLogger('vamdc.tap.sql')
+
+def splitWhere(ws):
+    logic = []
+    rests = []
+    for w in ws:
+        if type(w) == str: logic.append(w)
+        elif w[1] in OPTRANS:
+            logic.append(len(rests))
+            rests.append(w.asList())
+        else:
+            l,r=splitWhere(w)
+            logic += l
+            rests += r
+
+    print logic
+    print rests
+    return logic,rests
+
+
+
+# OLD HELPER FUNCTIONS BELOW HERE
 
 def singleWhere(w,RESTRICTABLES):
     if not w[0] in RESTRICTABLES:
