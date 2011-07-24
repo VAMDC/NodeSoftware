@@ -140,6 +140,8 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
     return qdict
 
 def sql2Q(sql):
+    if not sql.where:
+        return Q()
     logic,rs,count = splitWhere(sql.where)
     qdict = restriction2Q(rs)
     return mergeQwithLogic(qdict,logic)
