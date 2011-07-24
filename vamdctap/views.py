@@ -97,6 +97,7 @@ class TAPQUERY(object):
         except: self.errormsg += 'Could not parse the SQL query string.\n'
 
         self.requestables = set()
+        self.where = self.parsedSQL.where
         if self.parsedSQL.columns not in ('*', 'ALL'):
             for r in self.parsedSQL.columns:
                 r = r.lower()
@@ -167,7 +168,7 @@ def sync(request):
     if tap.format != 'xsams':
         return QUERYFUNC.returnResults(tap)
     # otherwise, setup the results and build the XSAMS response here
-    results=QUERYFUNC.setupResults(tap.parsedSQL)
+    results=QUERYFUNC.setupResults(tap)
     if not results:
         log.info('setupResults() gave something empty. Returning 204.')
         return HttpResponse('', status=204)

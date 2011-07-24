@@ -46,6 +46,16 @@ SQL=setupSQLparser()
 
 ############ SQL PARSER FINISHED; SOME HELPER THINGS BELOW
 
+from django.db.models import Q
+from django.conf import settings
+from django.utils.importlib import import_module
+DICTS = import_module(settings.NODEPKG+'.dictionaries')
+from caselessdict import CaselessDict
+RESTRICTABLES=CaselessDict(DICTS.RESTRICTABLES)
+
+from string import strip
+import logging
+log = logging.getLogger('vamdc.tap.sql')
 
 OPTRANS= { # transfer SQL operators to django-style
     '<':  '__lt',
@@ -59,51 +69,103 @@ OPTRANS= { # transfer SQL operators to django-style
     'like': '',
 }
 
-import logging
-log = logging.getLogger('vamdc.tap.sql')
-
-def splitWhere(ws):
+def splitWhere(ws, counter=0):
     logic = []
-    rests = []
+    rests = {}
     for w in ws:
         if type(w) == str: logic.append(w)
         elif w[1] in OPTRANS:
-            logic.append(len(rests))
-            rests.append(w.asList())
+            logic.append('r%s'%counter)
+            rests[str(counter)] = w.asList()
+            counter += 1
         else:
-            l,r=splitWhere(w)
+            l,r, counter=splitWhere(w, counter)
             logic += l
-            rests += r
+            rests = dict(rests, **r)
 
-    print logic
-    print rests
-    return logic,rests
+    return logic,rests,counter
+
+def mergeQwithLogic(qdict,logic):
+    logic = ' '.join(logic).replace('and','&').replace('not','~').replace('or','|')
+    log.debug('Joined logic before inserting Qs: %s'%logic)
+    for r in qdict: exec('r%s=qdict[r]'%r)
+    try:
+        return eval(logic)
+    except Exception,e:
+        log.error('Eval of logic with Qs failed: %s'%e)
+
+
+def checkLen1(x):
+    if type(x) != list:
+        log.error('this should have been a list: %s'%x)
+    elif len(x) != 1:
+        log.error('this should only have ha one element: %s'%x)
+    elif type(x[0]) != str:
+        log.error('this should have been a string: %s'%x[0])
+    else:
+        return x[0].strip('\'"')
+
+def restriction2Q(rs, restrictables=RESTRICTABLES):
+    qdict = {}
+    for i in rs:
+        r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
+        if r not in restrictables:
+            log.error('Restrictable "%s" not supported!'%r)
+        if op=='in':
+            if not (foo[0]=='(' and foo[-1]==')'):
+                log.error('Values for IN not bracketed: %s'%foo)
+            else: foo=foo[1:-1]
+            ins = map(strip,foo,('\'"',)*len(foo))
+            qstr = 'Q(%s=ins)'% (restrictables[r]+'__in')
+        elif op=='like':
+            foo=checkLen1(foo)
+            if foo.startswith('%') and foo.endswith('%'): o='__contains'
+            elif foo.startswith('%'): o='__endswith'
+            elif foo.endswith('%'): o='__startswith'
+            else:
+                o='__exact'
+                log.warning('LIKE operator used without percent signs. Treating as __exact. (Underscore and [] are unsupported)')
+            qstr = 'Q(%s="%s")'% (restrictables[r]+o, foo.strip('%'))
+        elif op=='<>' or op=='!=':
+            foo = checkLen1(foo)
+            if foo.lower() == 'null': foo = None
+            qstr = '~Q(%s="%s")'% (restrictables[r], foo)
+        else:
+            foo = checkLen1(foo)
+            qstr = 'Q(%s="%s")'% (restrictables[r]+OPTRANS[op], foo)
+        try:
+            log.debug('Q-string: %s'%qstr)
+            qdict[i] = eval(qstr)
+        except Exception,e:
+            log.error('Could not evaluate Q-string "%s": %s'%(qstr,e))
+
+    return qdict
 
 
 
 # OLD HELPER FUNCTIONS BELOW HERE
 
-def singleWhere(w,RESTRICTABLES):
-    if not w[0] in RESTRICTABLES:
+def singleWhere(w,restrictables):
+    if not w[0] in restrictables:
         log.warning('Unsupported Restrictable: %s'%w[0])
         return 'Q(pk=False)'
     if not OPTRANS.has_key(w[1]):
         log.warning('Unsupported operator: %s'%w[1])
         return ''
     value=w[2].strip('\'"')
-    qstring = 'Q(%s="%s")'%(RESTRICTABLES[w[0]] + OPTRANS[w[1]],value)
+    qstring = 'Q(%s="%s")'%(restrictables[w[0]] + OPTRANS[w[1]],value)
     return qstring
 
-def where2q(ws,RESTRICTABLES):
+def where2q(ws,restrictables):
     q=''
     for w in ws:
         if len(w)>4 and w[1]=='in':
-            if not RESTRICTABLES.has_key(w[0]):
+            if not restrictables.has_key(w[0]):
                 log.warning('cant find name %s'%w[0]); return ''
             # join the comma-separated list into a single string and strip
             # the parentheses
             w[2] = '"%s"' % ', '.join(w[3:-1])
-            qstring="Q(%s__in=(%s))" % (RESTRICTABLES[w[0]], ', '.join(w[3:-1]))
+            qstring="Q(%s__in=(%s))" % (restrictables[w[0]], ', '.join(w[3:-1]))
             q += qstring
             return q
         log.debug('w: %s'%w)
@@ -111,9 +173,9 @@ def where2q(ws,RESTRICTABLES):
         elif w=='or': q+=' | '
         elif w[0]=='(' and w[-1]==')': 
             q+=' ( '
-            q+=where2q(w[1:-1],RESTRICTABLES)
+            q+=where2q(w[1:-1],restrictables)
             q+=' ) '
-        elif len(w)==3: q+=singleWhere(w,RESTRICTABLES)
+        elif len(w)==3: q+=singleWhere(w,restrictables)
 
     log.debug('q: %s'%q)
     return q
