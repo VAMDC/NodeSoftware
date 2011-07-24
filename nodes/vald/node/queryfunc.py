@@ -48,7 +48,7 @@ def setupResults(sql):
     q = sql2Q(sql)
     transs = Transition.objects.filter(q).order_by('vacwave')
     ntranss=transs.count()
-    if TRANSLIM < ntranss :
+    if TRANSLIM < ntranss and (not sql.requestables or 'radiative' in sql.requestables):
         percentage='%.1f'%(float(TRANSLIM)/ntranss *100)
         newmax=transs = transs[TRANSLIM].vacwave
         transs=Transition.objects.filter(q,Q(vacwave__lt=newmax))
