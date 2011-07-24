@@ -45,15 +45,7 @@ def getSpeciesWithStates(transs):
     return atoms,molecules,nspecies,nstates
 
 def setupResults(sql):
-    log.debug('sql.where: %s'%sql.where)
-    q=where2q(sql.where,RESTRICTABLES)
-    log.debug('q to be evaluated: %s'%q)
-    try:
-        q=eval(q)
-    except Exception,e:
-        log.debug('eval(q) failed: %s'%e)
-        return
-
+    q = sql2Q(sql)
     transs = Transition.objects.filter(q).order_by('vacwave')
     ntranss=transs.count()
     if TRANSLIM < ntranss :

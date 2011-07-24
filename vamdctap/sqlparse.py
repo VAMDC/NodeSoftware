@@ -100,8 +100,6 @@ def checkLen1(x):
         log.error('this should have been a list: %s'%x)
     elif len(x) != 1:
         log.error('this should only have ha one element: %s'%x)
-    elif type(x[0]) != str:
-        log.error('this should have been a string: %s'%x[0])
     else:
         return x[0].strip('\'"')
 
@@ -141,6 +139,10 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
 
     return qdict
 
+def sql2Q(sql):
+    logic,rs,count = splitWhere(sql.where)
+    qdict = restriction2Q(rs)
+    return mergeQwithLogic(qdict,logic)
 
 
 # OLD HELPER FUNCTIONS BELOW HERE
