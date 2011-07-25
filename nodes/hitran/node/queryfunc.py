@@ -7,7 +7,6 @@ from models import *
 from vamdctap import sqlparse
 from itertools import chain
 from HITRANfuncsenvs import * 
-import pyparsing
 
 # This turns a 500 "internal server error" into a TAP error-document
 # XXX this is duplicated from vamdctap/views.py - some time, tidy this up.
@@ -95,36 +94,7 @@ def getHITRANsources(transs):
 
     return Refs.objects.filter(pk__in=sourceIDs)
 
-def trav(L):
-    for i,item in enumerate(L):
-        if isinstance(item, pyparsing.ParseResults):
-            #print trav(item)
-            trav(item)
-        else:
-            print item
-            if item=='MoleculeChemicalName':
-                L[0] = 'MoleculeInchikey'
-                chemical_name = L[2].strip('"')
-                print 'chemical_name =',chemical_name
-                molecIDs = Molecule_Names.objects.filter(chemical_name=chemical_name).values('molecid')
-                try:
-                    molecID = molecIDs[0]['molecid']
-                except IndexError:
-                    molecID = 0
-                print item,'is', molecID,
-                InChIKeys = Isotopologues.objects.filter(molecid=molecID).order_by('isoid').values('inchikey')
-                try:
-                    InChIKey = InChIKeys[0]['inchikey']
-                except IndexError:
-                    InChIKey = ''
-                print 'is', InChIKey
-                L[2] = InChIKey
-
 def setupResults(sql, LIMIT=None):
-
-    #trav(sql)
-    #trav(sql)
-
     q = sqlparse.where2q(sql.where,RESTRICTABLES)
     try:
         q=eval(q)

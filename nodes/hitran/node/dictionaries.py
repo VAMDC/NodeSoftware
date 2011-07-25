@@ -39,8 +39,8 @@ RETURNABLES={\
 'MoleculeOrdinaryStructuralFormula': 'Molecule.molec_name',
 'MoleculeStoichiometricFormula': 'Molecule.stoichiometric_formula',
 'MoleculeID': 'Molecule.inchikey',
-'MoleculeInChI': 'Molecule.inchi',
-'MoleculeInChIKey': 'Molecule.inchikey',
+'MoleculeInchi': 'Molecule.inchi',
+'MoleculeInchiKey': 'Molecule.inchikey',
 'MoleculeSpeciesID': 'Molecule.inchikey',
 # use the Comment field to 
 'MoleculeComment': 'Molecule.iso_name',
@@ -63,7 +63,7 @@ RETURNABLES={\
 'Inchikey':'inchikey'}
 
 RESTRICTABLES = {\
-'MoleculeInchikey':'inchikey',
-'RadTransWavenumber':'nu',
-'RadTransProbabilityA':'a',
+'MoleculeInchiKey': 'inchikey',
+'RadTransWavenumber': 'nu',
+'RadTransProbabilityA': 'a',
 }
