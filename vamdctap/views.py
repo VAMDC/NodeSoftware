@@ -27,6 +27,26 @@ NODEID = CaselessDict(DICTS.RETURNABLES)['NodeID']
 from generators import *
 from sqlparse import SQL
 
+REQUESTABLES = map(lower, [\
+ 'AtomStates',
+ 'Atoms',
+ 'Collisions',
+ 'Functions',
+ 'Methods',
+ 'MoleculeQuantumNumbers',
+ 'MoleculeStates',
+ 'Molecules',
+ 'NonRadiativeTransitions',
+ 'Particles',
+ 'Processes',
+ 'RadiativeCrossections',
+ 'RadiativeTransitions',
+ 'Solids',
+ 'Sources',
+ 'Species',
+ 'States'] )
+
+
 # This turns a 404 "not found" error into a TAP error-document
 def tapNotFoundError(request):
     text = 'Resource not found: %s'%request.path;
@@ -61,8 +81,8 @@ class TAPQUERY(object):
         try: self.lang = lower(self.data['LANG'])
         except: self.errormsg = 'Cannot find LANG in request.\n'
         else:
-            if self.lang != 'vss1':
-                self.errormsg += 'Currently, only LANG=VSS1 is supported.\n'
+            if self.lang not in ('vss1','vss2'):
+                self.errormsg += 'Only LANG=VSS1 or LANG=VSS2 is supported.\n'
 
         try: self.query = self.data['QUERY']
         except: self.errormsg += 'Cannot find QUERY in request.\n'
@@ -75,6 +95,40 @@ class TAPQUERY(object):
 
         try: self.parsedSQL=SQL.parseString(self.query)
         except: self.errormsg += 'Could not parse the SQL query string.\n'
+
+        self.requestables = set()
+        self.where = self.parsedSQL.where
+        if self.parsedSQL.columns not in ('*', 'ALL'):
+            for r in self.parsedSQL.columns:
+                r = r.lower()
+                if r not in REQUESTABLES:
+                    self.errormsg += 'Unknown Requestable: %s\n' % r
+                else:
+                    self.requestables.add(r)
+
+            if 'species' in self.requestables:
+                self.requestables.add('atoms')
+                self.requestables.add('molecules')
+                self.requestables.add('particles')
+                self.requestables.add('solids')
+            if 'states' in self.requestables:
+                self.requestables.add('atomstates')
+                self.requestables.add('moleculestates')
+            if 'atomstates' in self.requestables:
+                self.requestables.add('atoms')
+            if 'moleculestates' in self.requestables:
+                self.requestables.add('molecules')
+            if 'moleculequantumnumbers' in self.requestables:
+                self.requestables.add('molecules')
+                self.requestables.add('moleculestates')
+            if 'processes' in self.requestables:
+                self.requestables.add('radiativetransitions')
+                self.requestables.add('nonradiativetransitions')
+                self.requestables.add('collisions')
+            # Always return sources, methods, functions for now.
+            self.requestables.add('sources')
+            self.requestables.add('functions')
+            self.requestables.add('methods')
 
         if self.errormsg: self.isvalid=False
 
@@ -114,12 +168,13 @@ def sync(request):
     if tap.format != 'xsams':
         return QUERYFUNC.returnResults(tap)
     # otherwise, setup the results and build the XSAMS response here
-    results=QUERYFUNC.setupResults(tap.parsedSQL)
+    results=QUERYFUNC.setupResults(tap)
     if not results:
         log.info('setupResults() gave something empty. Returning 204.')
         return HttpResponse('', status=204)
 
-    generator=Xsams(**results)
+    log.debug('Requestables: %s'%tap.requestables)
+    generator=Xsams(requestables=tap.requestables,**results)
     response=HttpResponse(generator,mimetype='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
 
