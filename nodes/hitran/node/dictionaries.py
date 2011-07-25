@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 RETURNABLES={\
-'NodeID': '-HIT',    # unique identifier for the HITRAN node
+'NodeID': 'HIT',    # unique identifier for the HITRAN node
 
 'SourceID': 'Source.sourceid',
 'SourceAuthorName': 'Source.authors',

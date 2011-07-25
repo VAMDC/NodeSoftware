@@ -95,13 +95,14 @@ def getHITRANsources(transs):
     return Refs.objects.filter(pk__in=sourceIDs)
 
 def setupResults(sql, LIMIT=None):
-    q = sqlparse.where2q(sql.where,RESTRICTABLES)
-    try:
-        q=eval(q)
-    except Exception,e:
-        LOG('Exception in setupResults():')
-        LOG(e)
-        return {}
+    q = sqlparse.sql2Q(sql)
+    #q = sqlparse.where2q(sql.where,RESTRICTABLES)
+    #try:
+    #    q=eval(q)
+    #except Exception,e:
+    #    LOG('Exception in setupResults():')
+    #    LOG(e)
+    #    return {}
 
     transs = Trans.objects.filter(q) 
     ntrans = transs.count()
