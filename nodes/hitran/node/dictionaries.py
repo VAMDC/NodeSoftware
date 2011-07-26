@@ -62,8 +62,12 @@ RETURNABLES={\
 'MoleculeQnXML': 'MoleculeState.get_qn_xml()',
 'Inchikey':'inchikey'}
 
+# MoleculeChemicalName and MoleculeStoichiometricFormula are associated with
+# 'dummy' because the HITRAN node handles these RESTRICTABLES explicitly,
+# transforming them into the corresponding InChIKeys
 RESTRICTABLES = {\
-'ChemicalName': 'dummy',
+'MoleculeChemicalName': 'dummy',
+'MoleculeStoichiometricFormula': 'dummy',
 'MoleculeInchiKey': 'inchikey',
 'RadTransWavenumber': 'nu',
 'RadTransProbabilityA': 'a',

@@ -7,6 +7,7 @@ from models import *
 from vamdctap import sqlparse
 from itertools import chain
 from HITRANfuncsenvs import * 
+import formula_parser
 
 # This turns a 500 "internal server error" into a TAP error-document
 # XXX this is duplicated from vamdctap/views.py - some time, tidy this up.
@@ -96,23 +97,64 @@ def getHITRANsources(transs):
 
 def ChemicalName2MoleculeInchiKey(op, foo):
     """
-    Replace the query clause 'ChemicalName =|IN XXX' with the corresponding
-    query 'MoleculeInchiKey IN ZZZ' by resolving the chemical names into
-    one or more InChIKeys corresponding to matching isotopologues in the
-    database
+    Replace the query clause 'MoleculeChemicalName =|IN XXX' with the
+    corresponding query 'MoleculeInchiKey IN ZZZ' by resolving the chemical
+    names into one or more InChIKeys corresponding to matching isotopologues
+    in the database.
+
     """
 
     if op == 'in' or op == '=':
         name_list = []
         # strip the open and closing parentheses from the foo list:
         for name in foo:
-            if name=='(' or name==')':
+            if name =='(' or name ==')':
                 continue
             name_list.append(name.replace('"','').replace("'",''))
         molecules = MoleculeNames.objects.filter(chemical_name__in = name_list)
     else:
         print 'I only understand IN and = queries on ChemicalName, but I'
         print 'got', op
+        return None
+    molecids = molecules.values_list('molecid', flat=True)
+    isos = Isotopologues.objects.filter(molecid__in=molecids)
+    inchikeys = isos.values_list('inchikey', flat=True)
+    q = ['MoleculeInchiKey', 'in', '(']
+    for inchikey in inchikeys:
+        q.append(inchikey)
+    q.append(')')
+    return q
+
+def StoichiometricFormula2MoleculeInchiKey(op, foo):
+    """
+    Replace the query clause 'MoleculeStoichiometricFormula IN|= XXX' with the
+    corresponding query 'MoleculeInchiKey IN ZZZ' by resolving the
+    stoichiometric formulae into one or more InChIKeys corresponding to
+    matching isotopologues in the database.
+
+    """
+
+    if op == 'in' or op == '=':
+        stoich_formula_list = []
+        # strip the open and closing parentheses from the foo list:
+        for stoich_formula in foo:
+            if stoich_formula == '(' or stoich_formula == ')':
+                continue
+            stoich_formula = stoich_formula.replace('"','').replace("'",'')
+            try:
+                # put the stoichiometric formula into canonical form:
+                stoich_formula = formula_parser.get_stoichiometric_formula(
+                                stoich_formula)
+            except formula_parser.FormulaError as e:
+                # Oops - couldn't make sense of the stoichiometric formula:
+                print 'Failed to parse stoichiometric formula: %s' % e
+                continue
+            stoich_formula_list.append(stoich_formula)
+        molecules = Molecules.objects.filter(
+                stoichiometric_formula__in = stoich_formula_list)
+    else:
+        print 'I only understand IN and = queries on StoichiometricFormula,'
+        print ' but I got', op
         return None
     molecids = molecules.values_list('molecid', flat=True)
     isos = Isotopologues.objects.filter(molecid__in=molecids)
@@ -130,14 +172,15 @@ def setupResults(sql, LIMIT=None):
     if not sql.where:
         return {}
     logic, rs, count = sqlparse.splitWhere(sql.where)
-    # and replace any restrictions on ChemicalName with the equivalent
-    # on MoleculeInchiKey:
+    # and replace any restrictions on ChemicalName or StoichiometricFormula
+    # with the equivalent on MoleculeInchiKey:
     print 'rs was',rs
     for i in rs:
         r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
-        if r == 'ChemicalName':
+        if r == 'MoleculeChemicalName':
             rs[i] = ChemicalName2MoleculeInchiKey(op, foo)
-        
+        if r == 'MoleculeStoichiometricFormula':
+            rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
     print 'rs is',rs
     qdict = sqlparse.restriction2Q(rs)
     q = sqlparse.mergeQwithLogic(qdict, logic)
