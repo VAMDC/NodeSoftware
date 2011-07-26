@@ -390,7 +390,7 @@ class QNdesc(models.Model):
     class Meta:
         db_table = u'QNdesc'
 
-class Molecule_Names(models.Model):
+class MoleculeNames(models.Model):
     id = models.IntegerField(primary_key=True, null=False)
     chemical_name = models.CharField(max_length=64, null=False)
     #molecid = models.ForeignKey('Molecules', db_column='molecID')

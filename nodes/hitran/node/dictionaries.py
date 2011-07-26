@@ -63,6 +63,7 @@ RETURNABLES={\
 'Inchikey':'inchikey'}
 
 RESTRICTABLES = {\
+'ChemicalName': 'dummy',
 'MoleculeInchiKey': 'inchikey',
 'RadTransWavenumber': 'nu',
 'RadTransProbabilityA': 'a',
