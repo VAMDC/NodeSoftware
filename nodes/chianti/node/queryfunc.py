@@ -136,6 +136,18 @@ def getLifetimeMethods():
     return m1, m2
 
 
+def everythingRequired(sql):
+    return sql.parsedSQL.columns in ('*', 'ALL')
+
+
+def transitionsRequired(sql):
+    return 'radiativetransitions' in sql.requestables or everythingRequired(sql)
+
+
+def statesRequired(sql):
+    return 'atomstates' in sql.requestables or everythingRequired(sql)
+
+
 #------------------------------------------------------------
 # Main function 
 #------------------------------------------------------------
@@ -165,10 +177,12 @@ def setupResults(sql, limit=1000):
     transs = models.Transitions.objects.select_related(depth=2).filter(q)
     LOG(transs.count())
 
-    # count the number of matches, make a simple trunkation if there are
+    # count the number of matches, make a simple truncation if there are
     # too many (record the coverage in the returned header)
+    # If we are constraining by transitions but not returning them,
+    # do not truncate.
     ntranss=transs.count()    
-    if limit < ntranss :
+    if limit < ntranss and transitionsRequired(sql):
         transs = transs[:limit]
         percentage='%.1f' % (float(limit) / ntranss * 100)
     else: 
@@ -184,6 +198,14 @@ def setupResults(sql, limit=1000):
     methods = getLifetimeMethods()
     functions = {}
     LOG(species)
+
+    # Adjust the counts of things returned according to the requestables.
+    # The caller will choose what actually to return, but we have to set
+    # the counts in the header ourselves.
+    if not transitionsRequired(sql):
+        ntranss = 0
+    if not statesRequired(sql):
+        nstates = 0
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
