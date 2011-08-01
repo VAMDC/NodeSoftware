@@ -8,7 +8,7 @@ controlled from a mapping file.
 
 """
 
-import sys, os.path
+import sys
 from time import time 
 
 TOTAL_LINES = 0
@@ -89,7 +89,10 @@ def get_value(linedata, column_dict):
     cbyte = column_dict['cbyte']    
     colfunc = cbyte[0]
     filenum = column_dict.get('filenum', 0)
-    linedata = linedata[filenum]
+    if is_iter(filenum):       
+        linedata = [linedata[num] for num in filenum] # this will raise error if out of bounds, as it should.
+    else:
+        linedata = linedata[filenum]
     args = ()
     if len(cbyte) > 1:
         args = cbyte[1:]    
@@ -296,7 +299,7 @@ def make_outfile(file_dict, global_debug=False):
             debug = global_debug or linedef.has_key('debug') and linedef['debug']
 
             # do not stop or log on errors (this does not hide debug messages if debug is active)
-            skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
+            #skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
             
             # parse the mapping for this line(s)
             dat = get_value(lines, linedef)
