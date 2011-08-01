@@ -311,14 +311,14 @@ def makeNamedDataType(tagname, keyword, G):
 
     return string
 
-def checkXML(obj):
+def checkXML(obj,methodName='XML'):
     """
     If the queryset has an XML method, use that and
     skip the hard-coded implementation.
     """
-    if hasattr(obj,'XML'):
+    if hasattr(obj,methodName):
         try:
-            return True, obj.XML()
+            return True, eval('obj.%s()' % methodName) 
         except Exception:
             pass
     return False, None 
@@ -623,7 +623,7 @@ def XsamsAtoms(Atoms):
             yield makeDataType('Polarizability', 'AtomStatePolarizability', G)
             statweig = G('AtomStateStatisticalWeight')
             if statweig: 
-                yield '<StatisticalWeight></StatisticalWeight>' % statweig
+                yield '<StatisticalWeight>%s</StatisticalWeight>' % statweig
             yield makeDataType('HyperfineConstantA', 'AtomStateHyperfineConstantA', G)
             yield makeDataType('HyperfineConstantB', 'AtomStateHyperfineConstantB', G)
             yield '</AtomicNumericalData><AtomicQuantumNumbers>'
@@ -642,9 +642,13 @@ def XsamsAtoms(Atoms):
                 yield '<MagneticQuantumNumber>%s</MagneticQuantumNumber>' % mqn
             yield '</AtomicQuantumNumbers>'
 
-            yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
-            yield makeAtomComponent(Atom, G)
-            yield '</AtomicComposition>'
+            cont, ret = checkXML(AtomState,'CompositionXML')
+            if cont:
+                yield ret
+            else:
+                yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
+                yield makeAtomComponent(Atom, G)
+                yield '</AtomicComposition>'
 
             yield '</AtomicState>'
         G = lambda name: GetValue(name, Atom=Atom) # reset G() to Atoms, not AtomStates
@@ -801,10 +805,19 @@ def XsamsMSBuild(MoleculeState):
     yield '  <MolecularStateCharacterisation>\n'
     yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G,
                 extraAttr={'energyOrigin':'MoleculeStateEnergyOrigin'})
-    if G("MoleculeStateCharacTotalStatisticalWeight"):
+    if G("MoleculeStateTotalStatisticalWeight"):
         yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
-                    % G("MoleculeStateCharacTotalStatisticalWeight")
+                    % G("MoleculeStateTotalStatisticalWeight")
+    if G("MoleculeStateNuclearStatisticalWeight"):
+        yield '  <NuclearStatisticalWeight>%s</NuclearStatisticalWeight>\n'\
+                    % G("MoleculeStateNuclearStatisticalWeight")
+    if G("MoleculeStateNuclearSpinIsomer"):
+        yield '  <NuclearSpinIsomer>%s</NuclearSpinIsomer>\n'\
+                    % G("MoleculeStateNuclearSpinIsomer")
     yield '  </MolecularStateCharacterisation>\n'
+
+
+
 
     cont, ret = checkXML(G("MoleculeStateQuantumNumbers"))
     if cont:
@@ -1088,6 +1101,7 @@ def makeDataSeriesType(tagname, keyword, G):
     """
     Creates the dataseries type
     """
+    result=[]
     dic = {}
     xpara = G("%sParameter" % keyword)
     if xpara:
@@ -1097,12 +1111,12 @@ def makeDataSeriesType(tagname, keyword, G):
         dic["units"] = xunits
     xid = G("%sID" % keyword)
     if xid:
-        dic["id"] = "%s-%s" % (NODEID, xid)        
-    yield makePrimaryType("%s" % tagname, "%s" % keyword, G, extraAttr=dic)
+        dic["id"] = "%s-%s" % (NODEID, xid)
+    result.append(makePrimaryType("%s" % tagname, "%s" % keyword, G, extraAttr=dic))
 
     dlist = makeiter(G("%s" % keyword))
     if dlist:
-        yield "<DataList n='%s' units='%s'>%s</DataList>" % (G("%sN" % keyword), G("%sUnits" % keyword), " ".join(dlist))
+        result.append("<DataList n='%s' units='%s'>%s</DataList>" % (G("%sN" % keyword), G("%sUnits" % keyword), " ".join(dlist)))
     csec = G("%sLinearA0" % keyword) and G("%sLinearA1" % keyword)
     if csec:
         dic = {"a0":G("%sLinearA0" % keyword), "a1":G("%sLinearA1" % keyword)}
@@ -1112,19 +1126,20 @@ def makeDataSeriesType(tagname, keyword, G):
         xunits = G("%sLinearUnits" % keyword)
         if xunits:
             dic["units"] = xunits
-        yield makePrimaryType("LinearSequence", "%sLinear" % keyword, G, extraAttr=dic)        
-        yield("</LinearSequence>")
+        result.append(makePrimaryType("LinearSequence", "%sLinear" % keyword, G, extraAttr=dic))
+        result.append("</LinearSequence>")
     dfile = G("%sDataFile" % keyword)
     if dfile:
-        yield "<DataFile>%s</DataFile>" % dfile
+        result.append("<DataFile>%s</DataFile>" % dfile)
     elist = makeiter(G("%sErrorList" % keyword))
     if elist:
-        yield "<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), " ".join(elist))
+        result.append("<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), " ".join(elist)))
     err = G("%sError" % keyword)
     if err:
-        yield "<Error>%s</Error>" % err        
+        result.append("<Error>%s</Error>" % err)
 
-    yield "</%s>" % tagname
+    result.append("</%s>" % tagname)
+    return result
 
 
 def XsamsRadCross(RadCross):
@@ -1139,14 +1154,13 @@ def XsamsRadCross(RadCross):
           Mode.DeltaVs
 
     loop varaibles:
-      
+
     RadCros
       RadCrosBandAssignment
         RadCrosBandAssigmentMode
           RadCrosBandAssignmentModeDeltaV
-    
     """
-    
+
     if not isiterable(RadCross):
         return
 
@@ -1155,7 +1169,7 @@ def XsamsRadCross(RadCross):
         cont, ret = checkXML(RadCros)
         if cont:
             yield ret
-            continue 
+            continue
 
         # create header
 
@@ -1175,19 +1189,19 @@ def XsamsRadCross(RadCross):
 
         species = G("CrossSectionSpecies")
         state = G("CrossSectionState")
-        if species or state: 
+        if species or state:
             yield "<Species>"
             if species:
                 yield "<SpeciesRef>X%s-%s</SpeciesRef>" % (NODEID, species)
             if state:
-                yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)            
+                yield "<StateRef>S%s-%s</StateRef>" % (NODEID, state)
             yield "</Species>"
-        
+
         # Note - XSAMS dictates a list of BandAssignments here; but this is probably unlikely to
         # be used; so for simplicity we only assume one band assignment here. 
 
         yield makePrimaryType("BandAssignment", "CrossSectionBand", G, extraAttr={"name":"CrossSectionBandName"})
-            
+
         yield makeDataType("BandCentre", "CrossSectionBandCentre", G)
         yield makeDataType("BandWidth", "CrossSectionBandWidth", G)
 
@@ -1599,7 +1613,7 @@ def generatorError(where):
     log.critical('Generator error in%s!' % where, exc_info=sys.exc_info())
     return where
 
-def Xsams(HeaderInfo=None, Sources=None, Methods=None, Functions=None,
+def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
           Environments=None, Atoms=None, Molecules=None, Solids=None, Particles=None, 
           CollTrans=None, RadTrans=None, RadCross=None, NonRadTrans=None):
     """
@@ -1629,83 +1643,96 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
 
     errs=''
 
-    log.debug('Working on Sources.')
-    try:
-        for Source in XsamsSources(Sources): 
-            yield Source
-    except: errs+=generatorError(' Sources')
+    if not requestables or 'sources' in requestables:
+        log.debug('Working on Sources.')
+        try:
+            for Source in XsamsSources(Sources):
+                yield Source
+        except: errs+=generatorError(' Sources')
 
-    log.debug('Working on Methods, Functions, Environments.')
-    try:
-        for Method in XsamsMethods(Methods):
-            yield Method
-    except: errs+=generatorError(' Methods')
+    if not requestables or 'methods' in requestables:
+        log.debug('Working on Methods, Functions, Environments.')
+        try:
+            for Method in XsamsMethods(Methods):
+                yield Method
+        except: errs+=generatorError(' Methods')
 
-    try:
-        for Function in XsamsFunctions(Functions):
-            yield Function
-    except: errs+=generatorError(' Functions')
+    if not requestables or 'functions' in requestables:
+        try:
+            for Function in XsamsFunctions(Functions):
+                yield Function
+        except: errs+=generatorError(' Functions')
 
-    try:
-        for Environment in XsamsEnvironments(Environments):
-            yield Environment
-    except: errs+=generatorError(' Environments')
+    if not requestables or 'environments' in requestables:
+        try:
+            for Environment in XsamsEnvironments(Environments):
+                yield Environment
+        except: errs+=generatorError(' Environments')
 
     yield '<Species>\n'
-    log.debug('Working on Atoms.')
-    try:
-        for Atom in XsamsAtoms(Atoms):
-            yield Atom
-    except: errs+=generatorError(' Atoms')
+    if not requestables or 'atoms' in requestables:
+        log.debug('Working on Atoms.')
+        try:
+            for Atom in XsamsAtoms(Atoms):
+                yield Atom
+        except: errs+=generatorError(' Atoms')
 
-    log.debug('Working on Molecules.')
-    try:
-        for Molecule in XsamsMolecules(Molecules):
-            yield Molecule
-    except: errs+=generatorError(' Molecules')
+    if not requestables or 'molecules' in requestables:
+        log.debug('Working on Molecules.')
+        try:
+            for Molecule in XsamsMolecules(Molecules):
+                yield Molecule
+        except: errs+=generatorError(' Molecules')
 
-    log.debug('Working on Solids.')
-    try:
-        for Solid in XsamsSolids(Solids):
-            yield Solid
-    except: errs += generatorError(' Solids')
+    if not requestables or 'solids' in requestables:
+        log.debug('Working on Solids.')
+        try:
+            for Solid in XsamsSolids(Solids):
+                yield Solid
+        except: errs += generatorError(' Solids')
 
-    log.debug('Working on Particles.')
-    try:
-        for Particle in XsamsParticles(Particles):
-            yield Particle
-    except: errs += generatorError(' Particles')
+    if not requestables or 'particles' in requestables:
+        log.debug('Working on Particles.')
+        try:
+            for Particle in XsamsParticles(Particles):
+                yield Particle
+        except: errs += generatorError(' Particles')
 
     yield '</Species>\n'
 
-    log.debug('Writing Processes.')
+    log.debug('Working on Processes.')
     yield '<Processes>\n'
     yield '<Radiative>\n'
-    try:
-        for RadTran in XsamsRadTrans(RadTrans):
-            yield RadTran
-    except: 
-        errs+=generatorError(' RadTran')
 
+    if not requestables or 'radiativetransitions' in requestables:
+        try:
+            for RadTran in XsamsRadTrans(RadTrans):
+                yield RadTran
+        except:
+            errs+=generatorError(' RadTran')
 
-    try:
-        for RadCros in XsamsRadCross(RadCross):
-            yield RadCros
-    except: errs+=generatorError(' RadCross')
+    if not requestables or 'radiativecrossections' in requestables:
+        try:
+            for RadCros in XsamsRadCross(RadCross):
+                yield RadCros
+        except: errs+=generatorError(' RadCross')
 
     yield '</Radiative>\n'
 
-    try:
-        for CollTran in XsamsCollTrans(CollTrans):
-            yield CollTran
-    except: errs+=generatorError(' CollTran')
+    if not requestables or 'collisions' in requestables:
+        try:
+            for CollTran in XsamsCollTrans(CollTrans):
+                yield CollTran
+        except: errs+=generatorError(' CollTran')
 
-    try:
-        for NonRadTran in XsamsNonRadTrans(NonRadTrans):
-            yield NonRadTran
-    except: errs+=generatorError(' NonRadTran')
+    if not requestables or 'nonradiativetransitions' in requestables:
+        try:
+            for NonRadTran in XsamsNonRadTrans(NonRadTrans):
+                yield NonRadTran
+        except: errs+=generatorError(' NonRadTran')
 
-    yield '</Processes>\n'
+        yield '</Processes>\n'
+
     if errs: yield """<!--
            ATTENTION: There was an error in making the XML output and at least one item in the following parts was skipped: %s
 -->

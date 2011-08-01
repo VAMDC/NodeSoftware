@@ -9,8 +9,8 @@ import sys, os
 ###################################################
 # Software and standards version
 ###################################################
-VAMDC_STDS_VERSION = '11.5'
-NODESOFTWARE_VERSION = '11.5r1'
+VAMDC_STDS_VERSION = '11.7'
+NODESOFTWARE_VERSION = '11.7beta-vss2'
 
 ###################################################
 # Basic node setup 

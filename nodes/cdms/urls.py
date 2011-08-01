@@ -11,6 +11,6 @@ urlpatterns = patterns('',
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     (r'^tap/', include('vamdctap.urls')),
-    #(r'', include('cdms.node.urls')),
+#    (r'', include('cdms.node.urls')),
 
 )
