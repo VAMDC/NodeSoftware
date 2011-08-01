@@ -82,7 +82,7 @@ class Species:
         return self.__dict__[name]
 
 class States(models.Model):
-    id = models.CharField(primary_key=True, max_length=192, db_column='id')
+    id = models.IntegerField(primary_key=True, db_column='id')
     molecid = models.IntegerField(null=True, db_column='molecID', blank=True)
     isoid = models.IntegerField(null=True, db_column='isoID', blank=True)
     # XXX why does django multiply my VARCHAR lengths by 3???
@@ -131,22 +131,6 @@ class Method:
         self.category = category
         self.description = description
 
-class Source:
-    def __init__(self, sourceid, type, author, title, journal, volume,
-                 pages, year, institution, note, doi):
-        self.sourceid = sourceid
-        self.type = type
-        self.authors = [name for name in author.split(' and ')]
-        self.title = title
-        self.journal = journal
-        self.volume = volume
-        if pages:
-            pages = pages.split('--')
-            self.page_start = pages[0]
-            if len(pages)>1:
-                self.page_end = pages[1]
-        self.year = year
-
 class Refs(models.Model):
     sourceid = models.CharField(max_length=192, primary_key=True,
                                 db_column='sourceID')
@@ -155,11 +139,14 @@ class Refs(models.Model):
     title = models.TextField(blank=True)
     journal = models.TextField(blank=True)
     volume = models.CharField(max_length=30, blank=True)
-    pages = models.CharField(max_length=60, blank=True)
+    page_start = models.CharField(max_length=60, blank=True)
+    page_end = models.CharField(max_length=60, blank=True)
     year = models.TextField(blank=True)
     institution = models.TextField(blank=True)
     note = models.TextField(blank=True)
     doi = models.CharField(max_length=192, blank=True)
+    cited_as_html = models.TextField(blank=True, db_column="cited_as_html")
+    url = models.TextField(blank=True, db_column="url")
     class Meta:
         db_table = u'refs'
 
@@ -191,10 +178,9 @@ class Trans(models.Model):
     molecid = models.IntegerField(db_column='molecID')
     isoid = models.IntegerField(db_column='isoID')
     inchikey = models.CharField(max_length=81, db_column='InChIKey')
-    initialstateref = models.CharField(max_length=192,
-                                       db_column='InitialStateRef', blank=True)
-    finalstateref = models.CharField(max_length=192,
-                                       db_column='FinalStateRef', blank=True)
+    initialstateref = models.IntegerField(db_column='InitialStateRef',
+                                          blank=True)
+    finalstateref = models.IntegerField(db_column='FinalStateRef', blank=True)
     nu = models.FloatField()
     nu_err = models.FloatField(null=True, db_column='nu_err', blank=True)
     nu_ref = models.CharField(max_length=93, db_column='nu_ref', blank=True)
@@ -211,6 +197,7 @@ class Trans(models.Model):
     gpp = models.IntegerField(null=True, db_column='gpp', blank=True)
     fromdate = models.DateField(null=True, db_column='fromdate', blank=True)
     todate = models.DateField(null=True, db_column='todate', blank=True)
+    method = models.CharField(max_length=16, db_column='method', blank=True)
     ierr = models.CharField(max_length=18, db_column='Ierr', blank=True)
     hitranline = models.CharField(max_length=160, db_column='HITRANline',
                                   blank=True)
@@ -403,7 +390,7 @@ class QNdesc(models.Model):
     class Meta:
         db_table = u'QNdesc'
 
-class Molecule_Names(models.Model):
+class MoleculeNames(models.Model):
     id = models.IntegerField(primary_key=True, null=False)
     chemical_name = models.CharField(max_length=64, null=False)
     #molecid = models.ForeignKey('Molecules', db_column='molecID')
