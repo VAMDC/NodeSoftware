@@ -1731,7 +1731,7 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
                 yield NonRadTran
         except: errs+=generatorError(' NonRadTran')
 
-        yield '</Processes>\n'
+    yield '</Processes>\n'
 
     if errs: yield """<!--
            ATTENTION: There was an error in making the XML output and at least one item in the following parts was skipped: %s

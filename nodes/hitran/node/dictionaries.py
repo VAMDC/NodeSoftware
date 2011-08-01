@@ -2,17 +2,18 @@
 
 RETURNABLES={\
 'NodeID': 'HIT',    # unique identifier for the HITRAN node
+
 'SourceID': 'Source.sourceid',
 'SourceAuthorName': 'Source.authors',
 'SourceTitle': 'Source.title',
-# NB my Refs model has pages, not page_begin and page_end:
-'SourcePageBegin': 'Refs.pages',		
-'SourceVolume': 'Source.volume',
-'SourceYear': 'Source.year',
-'SourceName': 'Source.journal',    # closest we can get to the journal name
-'SourceCategory': 'Source.type',
-'SourcePageBegin': 'Source.page_start',
-'SourcePageEnd': 'Source.page_end',
+'SourcePageBegin': 'Refs.page_start',		
+'SourcePageEnd': 'Refs.page_end',		
+'SourceVolume': 'Refs.volume',
+'SourceYear': 'Refs.year',
+'SourceName': 'Refs.journal',    # closest we can get to the journal name
+'SourceCategory': 'Refs.type',
+'SourcePageBegin': 'Refs.page_start',
+'SourcePageEnd': 'Refs.page_end',
 
 'MethodID': 'Method.id',
 'MethodCategory': 'Method.category',
@@ -38,8 +39,8 @@ RETURNABLES={\
 'MoleculeOrdinaryStructuralFormula': 'Molecule.molec_name',
 'MoleculeStoichiometricFormula': 'Molecule.stoichiometric_formula',
 'MoleculeID': 'Molecule.inchikey',
-'MoleculeInChI': 'Molecule.inchi',
-'MoleculeInChIKey': 'Molecule.inchikey',
+'MoleculeInchi': 'Molecule.inchi',
+'MoleculeInchiKey': 'Molecule.inchikey',
 'MoleculeSpeciesID': 'Molecule.inchikey',
 # use the Comment field to 
 'MoleculeComment': 'Molecule.iso_name',
@@ -61,8 +62,13 @@ RETURNABLES={\
 'MoleculeQnXML': 'MoleculeState.get_qn_xml()',
 'Inchikey':'inchikey'}
 
+# MoleculeChemicalName and MoleculeStoichiometricFormula are associated with
+# 'dummy' because the HITRAN node handles these RESTRICTABLES explicitly,
+# transforming them into the corresponding InChIKeys
 RESTRICTABLES = {\
-'MoleculeInchikey':'inchikey',
-'RadTransWavenumber':'nu',
-'RadTransProbabilityA':'a',
+'MoleculeChemicalName': 'dummy',
+'MoleculeStoichiometricFormula': 'dummy',
+'MoleculeInchiKey': 'inchikey',
+'RadTransWavenumber': 'nu',
+'RadTransProbabilityA': 'a',
 }
