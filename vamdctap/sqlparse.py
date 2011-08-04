@@ -161,6 +161,8 @@ def singleWhere(w,restrictables):
     return qstring
 
 def where2q(ws,restrictables):
+    if not ws:
+        return 'Q()'
     q=''
     for w in ws:
         if len(w)>4 and w[1]=='in':
