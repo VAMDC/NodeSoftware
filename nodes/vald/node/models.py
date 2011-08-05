@@ -4,8 +4,8 @@ from vamdctap.bibtextools import *
 class Species(Model):
     id = AutoField(primary_key=True, db_index=True)
     name = CharField(max_length=10, db_index=True)
-    inchi = CharField(max_length=16, db_index=True, null=True, blank=True)
-    inchikey = CharField(max_length=16, db_index=True, null=True, blank=True)
+    inchi = CharField(max_length=128, db_index=True, null=True, blank=True)
+    inchikey = CharField(max_length=25, db_index=True, null=True, blank=True)
     ion = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     mass = DecimalField(max_digits=8, decimal_places=5)
     massno = PositiveSmallIntegerField(null=True, blank=True)
