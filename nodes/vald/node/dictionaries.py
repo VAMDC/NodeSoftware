@@ -81,12 +81,20 @@ RETURNABLES = {\
 #'RadTransBroadeningPressureRef':'RadTran.getRefs("waals")',
 }
 
+# import the unit converter functions
+from vamdctap.unitconv import *
+
 RESTRICTABLES = {\
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'AtomIonCharge':'species__ion',
 'AtomStateEnergy':'upstate__energy',
 'RadTransWavelength':'vacwave',
+'RadTransWavenumber':('vacwave',invcm2Angstr),
+'RadTransFrequency':('vacwave',Hz2Angstr),
+'RadTransEnergy':('vacwave',eV2Angstr),
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
+'RadTransBroadeningNatural':'gammarad',
+'RadTransBroadeningPressure':'gammastark',
 }
 
