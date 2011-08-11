@@ -8,7 +8,7 @@ controlled from a mapping file.
 
 """
 
-import sys, os.path
+import sys
 from time import time 
 
 TOTAL_LINES = 0
@@ -88,16 +88,19 @@ def get_value(linedata, column_dict):
     """
     cbyte = column_dict['cbyte']    
     colfunc = cbyte[0]
+    filenum = column_dict.get('filenum', 0)
+    if is_iter(filenum):       
+        linedata = [linedata[num] for num in filenum] # this will raise error if out of bounds, as it should.
+    else:
+        linedata = linedata[filenum]
     args = ()
     if len(cbyte) > 1:
         args = cbyte[1:]    
     kwargs = column_dict.get('kwargs', {})
-    if len(linedata) == 1:
-        linedata = linedata[0]
-    try:        
+    try:                
         dat = colfunc(linedata,  *args, **kwargs)
     except Exception, e:
-        log_trace(e, "error processing lines '%s' - in %s%s: " % (linedata, colfunc, args))
+        log_trace(e, "error processing line/block '%s' - in %s%s: " % (linedata, colfunc, args))
         raise 
     if not dat or (column_dict.has_key('cnull') \
                        and dat == column_dict['cnull']):
@@ -296,7 +299,7 @@ def make_outfile(file_dict, global_debug=False):
             debug = global_debug or linedef.has_key('debug') and linedef['debug']
 
             # do not stop or log on errors (this does not hide debug messages if debug is active)
-            skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
+            #skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
             
             # parse the mapping for this line(s)
             dat = get_value(lines, linedef)

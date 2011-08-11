@@ -12,11 +12,11 @@
 import sys, pdb
 import itertools
 
-# parse VALD3linlists
+# parse VALD3linlists (VALD3linelists.txt)
 
 def parse_wiki_linelist_file(filename):
     """
-    Parses the lines of the VALD3linelists
+    Parses the lines of VALD3linelists.txt
     """
     f = open(filename, 'r')
 
@@ -122,13 +122,14 @@ def merge_files(infile1, infile2, bibtex_file=None, outfile=None):
             print ", ".join(warn4)
         print " ==== End Cross-correlation mode ====\n"    
             
-    # create new file on format ID;refs,refs,refs;filename;type;elements;...
+    # create new file on format \N;"id","ref" , where ref can occur on many different lines
+    # this file represents a ForeignKey relationship. 
     lines = []
     for filekey1, tup1  in dic1.items():
         if filekey1 in dic2:            
             tup2 = dic2[filekey1]            
             for ref in tup2[2]:                
-                lines.append('\N;"%s";"%s"\n' % (tup1[0], ref))           
+                lines.append('\N;"%s";"%s"\n' % (tup1[0], ref))
     fout.writelines(lines)    
     fout.close()
     
