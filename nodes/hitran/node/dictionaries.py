@@ -70,5 +70,6 @@ RESTRICTABLES = {\
 'MoleculeStoichiometricFormula': 'dummy',
 'MoleculeInchiKey': 'inchikey',
 'RadTransWavenumber': 'nu',
+'RadTransWavelength': 'dummy', 
 'RadTransProbabilityA': 'a',
 }
