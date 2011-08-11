@@ -12,6 +12,17 @@ from copy import deepcopy
 from models import *
 from vamdctap.sqlparse import *
 
+from django.template import Context, loader
+from django.http import HttpResponse
+def tapServerError(request=None, status=500, errmsg=''):
+    text = 'Error in TAP service: %s' % errmsg
+    # XXX I've had to copy TAP-error-document.xml into my node's
+    # template directory to get access to it, as well...
+    document = loader.get_template('tap/TAP-error-document.xml').render(
+                     Context({"error_message_text" : text}))
+    return HttpResponse(document, status=status, mimetype='text/xml');
+                                
+
 if hasattr(settings,'TRANSLIM'):
     TRANSLIM = settings.TRANSLIM
 else: TRANSLIM = 5000
@@ -167,3 +178,163 @@ def setupResults(sql):
   #          'Environments':Environments #this is set up statically in models.py
            }
 
+
+
+def returnResults(tap, LIMIT=None):
+    """
+    Return this node's response to the TAP query, tap, where
+    the requested return format is something other than XSAMS.
+    The TAP object has been validated upstream of this method,
+    so we're good to go.
+
+    """
+
+    if tap.format != 'spcat':
+        emsg = 'Currently, only FORMATs SPCAT and XSAMS are supported.\n'
+        return tapServerError(status=400, errmsg=emsg)
+
+    # XXX more duplication of code from setupResults():
+    # which uses sql = tap.parsedSQL
+    q = where2q(tap.parsedSQL.where, RESTRICTABLES)
+    LOG(tap.parsedSQL.columns)
+    col = tap.parsedSQL.columns #.asList()
+    LOG(q)
+    try:
+        q=eval(q)
+    except Exception,e:
+        LOG('Exception in setupResults():')
+        LOG(e)
+        return {}
+
+    transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0) 
+    ntrans = transs.count()
+    if LIMIT is not None and ntrans > LIMIT:
+        # we need to filter transs again later, so can't take a slice
+        #transs = transs[:LIMIT]
+        # so do this:
+        numax = transs[LIMIT].nu
+        transs = TransitionsCalc.objects.filter(q, Q(nu__lte=numax))
+        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+    else:
+        percentage = '100'
+#    print 'Truncated to %s %%' % percentage
+    transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0) 
+    ntrans = transs.count()
+    if LIMIT is not None and ntrans > LIMIT:
+        # we need to filter transs again later, so can't take a slice
+        #transs = transs[:LIMIT]
+        # so do this:
+        numax = transs[LIMIT].nu
+        transs = TransitionsCalc.objects.filter(q, Q(nu__lte=numax))
+        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+    else:
+        percentage = '100'
+#    print 'Truncated to %s %%' % percentage
+#    print 'ntrans =',ntrans
+
+
+#    if 'radiativetransitions' in col:
+#        cat_generator = Cat(transs)
+#    else:
+#        LOG(col[0])
+#        cat_generator = Cat(transs)
+#        states = States.objects.filter(q,species__origin=5,dataset__archiveflag=0)
+#        egy_generator = gener(transs, states)
+#        cat_generator=egy_generator
+#        cat_generator = ''
+
+
+
+    if (col=='ALL' or 'radiativetransitions' in [x.lower() for x in col]):
+        LOG('TRANSITIONS')
+        transitions = transs
+    else:
+        LOG('NO TRANSITIONS')
+        transitions = []
+
+    if (col=='ALL' or 'states' in [x.lower() for x in col] ):
+        LOG('STATES')
+        states = States.objects.filter(q,species__origin=5,dataset__archiveflag=0)
+    else:
+        LOG('NO STATES')
+        states = []
+        
+
+    generator = gener(transitions, states)
+    response = HttpResponse(generator, mimetype='text/plain')
+        
+    return response
+
+def GetStringValue(value):
+    if value == None: 
+        return ''
+    else:
+        return value
+
+def GetNumericValue(value):
+    if value == None: 
+        return 0
+    else:
+        return value
+    
+
+def gener(transs=None, states=None):
+    for trans in Cat(transs):
+        yield trans
+    for state in Egy(states):
+        yield state
+        
+    
+
+def Cat(transs):
+    for trans in transs:
+        yield '%16.4lf' % trans.frequency
+        yield '%8.4lf' % trans.uncertainty
+        yield '%8.4lf' % trans.intensity
+        yield '%2d' % trans.degreeoffreedom
+        yield '%10.4lf' % trans.energylower
+
+        yield '%3d' % trans.upperstatedegeneracy
+        yield '%7d' % trans.speciestag
+        
+        yield '%7d' % trans.qntag
+        yield '%2s' % GetStringValue(trans.qnup1)
+        yield '%2s' % GetStringValue(trans.qnup2)
+        yield '%2s' % GetStringValue(trans.qnup3)
+        yield '%2s' % GetStringValue(trans.qnup4)
+        yield '%2s' % GetStringValue(trans.qnup5)
+        yield '%2s' % GetStringValue(trans.qnup6)
+
+        yield '%2s' % GetStringValue(trans.qnlow1)
+        yield '%2s' % GetStringValue(trans.qnlow2)
+        yield '%2s' % GetStringValue(trans.qnlow3)
+        yield '%2s' % GetStringValue(trans.qnlow4)
+        yield '%2s' % GetStringValue(trans.qnlow5)
+        yield '%2s' % GetStringValue(trans.qnlow6)
+
+        yield '%s' % trans.species.name
+        yield '\n'
+
+
+def Egy(states):
+    for state in states:
+        yield '%5s' % GetStringValue(state.block)
+        yield '%5s' % GetStringValue(state.index)                
+        yield '%18.6lf' % GetNumericValue(state.energy)
+        yield '%18.6lf' % GetNumericValue(state.mixingcoeff)
+        yield '%18.6lf' % GetNumericValue(state.uncertainty)
+
+        yield '%3s' % GetStringValue(state.qn1)
+        yield '%3s' % GetStringValue(state.qn2)
+        yield '%3s' % GetStringValue(state.qn3)
+        yield '%3s' % GetStringValue(state.qn4)
+        yield '%3s' % GetStringValue(state.qn5)
+        yield '%3s' % GetStringValue(state.qn6)
+
+        yield '%s' % GetStringValue(state.species.name)
+        yield '%3s' % GetStringValue(state.degeneracy)          
+        yield '%4s' % GetStringValue(state.nuclearspinisomer)
+        yield '%7s' % GetStringValue(state.nuclearstatisticalweight)
+        yield '%4s ' % GetStringValue(state.qntag)
+
+        yield '\n'
