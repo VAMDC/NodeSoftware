@@ -33,7 +33,6 @@ class SimpleTest(TestCase):
 def suite():
     """
     This function is called automatically by the django test runner. 
-    This also runs the command tests defined in src/commands/default/tests.py.
     """
     tsuite = unittest.TestSuite()
     tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]))

@@ -155,7 +155,7 @@ def get_term_transtype(linedata, rflag):
     else:
         if rflag == 'autoio':
             return True
-        return 'X'
+    return 'X'
   
 def get_gammawaals(linedata, sep1, sep2):
     "extract gamma - van der waal value"
