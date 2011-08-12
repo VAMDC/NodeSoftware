@@ -24,17 +24,18 @@ def get_bibtex_dbref(linedata):
     return dbref.strip(',').strip()
     
 # Setting up filenames
-base = "/vald/"
+base = "/vald/vamdc/raw_vald_data/"
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'VALD3.cfg'
 vald_file = base + 'vald3.inp'
 terms_file = base + 'terms.inp'
 ref_file = base + "VALD3_ref.bib"
+outbase = "/vald/vamdc/db_input_files/"
 
 # The mapping itself
 mapping = [
     # Populate Species model, using the species input file.
-    {'outfile':base + 'species.dat',
+    {'outfile':outbase + 'species.dat',
      'infiles':species_list_file,
      'headlines':0,
      'commentchar':'#',
@@ -76,7 +77,7 @@ mapping = [
     # every 2 lines (lower, upper) in the vald file
 
     # States output file appended with lower states
-    {'outfile':base + 'states.dat',
+    {'outfile':outbase + 'states.dat',
      'infiles':(vald_file, vald_file, terms_file, terms_file),
      'headlines':(2, 2, 0, 0), 
      'commentchar':('#','#','#','#'),
@@ -181,7 +182,7 @@ mapping = [
      }, # end of State model creation - lower states
 
     # upper states  
-    {'outfile':base + 'states.dat',    
+    {'outfile':outbase + 'states.dat',    
      'infiles': (vald_file, vald_file, terms_file, terms_file),
      'headlines':(2, 2, 0, 0),
      'commentchar': ('#', '#', '#','#'),
@@ -284,7 +285,7 @@ mapping = [
      }, # end of upper states
        
     # Transition model, using the vald file    
-    {'outfile': base + 'transitions.dat',
+    {'outfile': outbase + 'transitions.dat',
      'infiles':(vald_file,vald_file),
      'headlines':(2,2),
      'commentchar':('#','#'),
@@ -378,7 +379,7 @@ mapping = [
     }, # end of transitions
 
     # Populate References with bibtex data file (block parsing)
-    {'outfile':base + 'references.dat',    
+    {'outfile':outbase + 'references.dat',    
      'infiles':ref_file,
      'headlines':0,        
      'commentchar':'%',
@@ -393,7 +394,7 @@ mapping = [
       }, # end of bibtex 
     
     # Populate LineList model from vald_cfg file
-    {'outfile': base + 'linelists.dat',
+    {'outfile': outbase + 'linelists.dat',
      'infiles':vald_cfg_file,
      'headlines':1,
      'commentchar':';',
