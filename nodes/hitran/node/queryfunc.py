@@ -165,7 +165,46 @@ def StoichiometricFormula2MoleculeInchiKey(op, foo):
     q.append(')')
     return q
 
-def setupResults(sql, LIMIT=None):
+def Wavelength2Wavenumber(op, foo):
+    """
+    Replace the query clause "Wavelength <op> <foo>" with
+    "Wavenumber <op'> <foo'>", making the conversion from Angstroms to
+    cm-1.
+
+    """
+
+    if op == 'in':
+        print 'Sorry - "in" queries not yet implemented for RadTransWavelength'
+        return None
+
+    opp = op
+    if op == '<':
+        opp = '>'
+    if op == '<=' or op == '=<':
+        opp = '>='
+    if op == '>':
+        opp = '<'
+    if op == '>=' or op == '=>':
+        opp = '<='
+    try:
+        foop = float(foo[0])
+    except (ValueError, TypeError):
+        print 'failed to convert %s to float' % foo
+        return None
+    except (IndexError):
+        print 'no argument to Wavelength restrictable'
+        return None
+    if foop != 0.:
+        # Angstroms -> cm-1
+        foop = 1.e8 / foop
+    else:
+        # zero wavelength requested, so set wavenumber to something huge
+        foop = 1.e20
+    q = ['RadTransWavenumber', opp, str(foop)]
+    return q
+        
+
+def setupResults(sql, LIMIT=1000):
     # rather than use the sql2Q method:
     #q = sqlparse.sql2Q(sql)
     # we parse the query into its restrictables and logic:
@@ -173,15 +212,18 @@ def setupResults(sql, LIMIT=None):
         return {}
     logic, rs, count = sqlparse.splitWhere(sql.where)
     # and replace any restrictions on ChemicalName or StoichiometricFormula
-    # with the equivalent on MoleculeInchiKey:
-    print 'rs was',rs
+    # with the equivalent on MoleculeInchiKey. Also convert wavelength
+    # (in A) to wavenumber:
+    #print 'rs was',rs
     for i in rs:
         r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
         if r == 'MoleculeChemicalName':
             rs[i] = ChemicalName2MoleculeInchiKey(op, foo)
         if r == 'MoleculeStoichiometricFormula':
             rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
-    print 'rs is',rs
+        if r == 'RadTransWavelength':
+            rs[i] = Wavelength2Wavenumber(op, foo)
+    #print 'rs is',rs
     qdict = sqlparse.restriction2Q(rs)
     q = sqlparse.mergeQwithLogic(qdict, logic)
     

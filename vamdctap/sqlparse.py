@@ -85,6 +85,23 @@ def splitWhere(ws, counter=0):
 
     return logic,rests,counter
 
+def applyRestrictFus(rs,restrictables=RESTRICTABLES):
+    for i in rs:
+        r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
+        if r not in restrictables: continue
+        if type(restrictables[r]) != tuple: continue
+        if len(foo) != 1:
+            log.dedug('Applying a function to a Restrictable works only on a sngle value')
+            continue
+        try:
+            bla, fu = restrictables[r]
+            rs[i] = [r] + fu(op,foo[0])
+        except Exception,e:
+            log.error('Could not apply function %s to Restrictable %s. Errormsg: %s'%(fu,r,e))
+
+    return rs
+
+
 def mergeQwithLogic(qdict,logic):
     logic = ' '.join(logic).replace('and','&').replace('not','~').replace('or','|')
     log.debug('Joined logic before inserting Qs: %s'%logic)
@@ -107,6 +124,9 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
     qdict = {}
     for i in rs:
         r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
+        if type(restrictables[r]) == tuple:
+            rest_rhs = restrictables[r][0]
+        else: rest_rhs = restrictables[r]
         if r not in restrictables:
             log.error('Restrictable "%s" not supported!'%r)
         if op=='in':
@@ -114,7 +134,7 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
                 log.error('Values for IN not bracketed: %s'%foo)
             else: foo=foo[1:-1]
             ins = map(strip,foo,('\'"',)*len(foo))
-            qstr = 'Q(%s=ins)'% (restrictables[r]+'__in')
+            qstr = 'Q(%s=ins)'% (rest_rhs+'__in')
         elif op=='like':
             foo=checkLen1(foo)
             if foo.startswith('%') and foo.endswith('%'): o='__contains'
@@ -123,14 +143,16 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
             else:
                 o='__exact'
                 log.warning('LIKE operator used without percent signs. Treating as __exact. (Underscore and [] are unsupported)')
-            qstr = 'Q(%s="%s")'% (restrictables[r]+o, foo.strip('%'))
+            qstr = 'Q(%s="%s")'% (rest_rhs+o, foo.strip('%'))
         elif op=='<>' or op=='!=':
             foo = checkLen1(foo)
-            if foo.lower() == 'null': foo = None
-            qstr = '~Q(%s="%s")'% (restrictables[r], foo)
+            if foo.lower() == 'null':
+                qstr = '~Q(%s=None)'% rest_rhs
+            else:
+                qstr = '~Q(%s="%s")'% (rest_rhs, foo)
         else:
             foo = checkLen1(foo)
-            qstr = 'Q(%s="%s")'% (restrictables[r]+OPTRANS[op], foo)
+            qstr = 'Q(%s="%s")'% (rest_rhs+OPTRANS[op], foo)
         try:
             log.debug('Q-string: %s'%qstr)
             qdict[i] = eval(qstr)
@@ -143,6 +165,7 @@ def sql2Q(sql):
     if not sql.where:
         return Q()
     logic,rs,count = splitWhere(sql.where)
+    rs = applyRestrictFus(rs)
     qdict = restriction2Q(rs)
     return mergeQwithLogic(qdict,logic)
 
