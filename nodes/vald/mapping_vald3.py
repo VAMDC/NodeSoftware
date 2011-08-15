@@ -11,7 +11,17 @@ import os, sys
 
 from imptools.linefuncs import *
 
-# bibtex-reading helper functions
+# Setting up filenames
+base = "/vald/vamdc/raw_vald_data/"
+species_list_file = base + 'VALD_list_of_species'
+vald_cfg_file = base + 'VALD3.cfg'
+vald_file = base + 'vald3.inp'
+terms_file = base + 'terms.inp'
+ref_file = base + "VALD3_ref.bib"
+outbase = "/vald/vamdc/db_input_files/"
+
+
+# helper functions
 
 def get_bibtex(linedata):
     "return the raw data"
@@ -22,19 +32,50 @@ def get_bibtex_dbref(linedata):
     first_line = linedata.split()[0]
     typ, dbref = first_line.split('{')
     return dbref.strip(',').strip()
-    
-# Setting up filenames
-base = "/vald/"
-species_list_file = base + 'VALD_list_of_species'
-vald_cfg_file = base + 'VALD3.cfg'
-vald_file = base + 'vald3.inp'
-terms_file = base + 'terms.inp'
-ref_file = base + "VALD3_ref.bib"
 
+def parse_linelist_file(filename):
+    """
+    Helper method for parsing the vald3 linelist wiki file into
+    a dictionary of entries. This is the only way to propely 
+    match certain properties of linelists that are only present
+    in this list. Note that no correction for doublet linelist
+    matches are done here. 
+    """
+    f = open(filename, 'r')
+    dic = {}
+    for line in f:        
+        if not line.startswith('||'):
+            continue
+        cols = line.split('||')[1:]
+        if not cols[0].strip() or  not cols[0].strip()[0].isalnum():
+            continue
+        fil = cols[0].strip() # the file name identifier
+        elements = cols[1].strip()
+        typ = cols[2].strip()
+        try:
+            refs = [element.strip().strip(']]').strip().split('|')[1] for element in cols[3].split(',') if element.strip()]
+        except IndexError:
+            pass
+        dic[fil] = (elements, typ, refs)        
+    return dic
+LINELIST_DICT = parse_linelist_file(base + "VALD3linelists.txt")
+
+def get_obstype(linedata):
+    """
+    Extract linedata and compare with pre-cached dictionary of linelists.
+    """
+    global LINELIST_DICT
+    file_ref = get_srcfile_ref(linedata, 0, 3)
+    entry = LINELIST_DICT.get(file_ref, None)
+    if entry:
+        return entry[1] # the type
+    else:
+        return 'X'
+    
 # The mapping itself
 mapping = [
     # Populate Species model, using the species input file.
-    {'outfile':base + 'species.dat',
+    {'outfile':outbase + 'species.dat',
      'infiles':species_list_file,
      'headlines':0,
      'commentchar':'#',
@@ -76,7 +117,7 @@ mapping = [
     # every 2 lines (lower, upper) in the vald file
 
     # States output file appended with lower states
-    {'outfile':base + 'states.dat',
+    {'outfile':outbase + 'states.dat',
      'infiles':(vald_file, vald_file, terms_file, terms_file),
      'headlines':(2, 2, 0, 0), 
      'commentchar':('#','#','#','#'),
@@ -181,7 +222,7 @@ mapping = [
      }, # end of State model creation - lower states
 
     # upper states  
-    {'outfile':base + 'states.dat',    
+    {'outfile':outbase + 'states.dat',    
      'infiles': (vald_file, vald_file, terms_file, terms_file),
      'headlines':(2, 2, 0, 0),
      'commentchar': ('#', '#', '#','#'),
@@ -284,7 +325,7 @@ mapping = [
      }, # end of upper states
        
     # Transition model, using the vald file    
-    {'outfile': base + 'transitions.dat',
+    {'outfile': outbase + 'transitions.dat',
      'infiles':(vald_file,vald_file),
      'headlines':(2,2),
      'commentchar':('#','#'),
@@ -378,7 +419,7 @@ mapping = [
     }, # end of transitions
 
     # Populate References with bibtex data file (block parsing)
-    {'outfile':base + 'references.dat',    
+    {'outfile':outbase + 'references.dat',    
      'infiles':ref_file,
      'headlines':0,        
      'commentchar':'%',
@@ -393,7 +434,8 @@ mapping = [
       }, # end of bibtex 
     
     # Populate LineList model from vald_cfg file
-    {'outfile': base + 'linelists.dat',
+    {#'outfile': outbase + 'linelists.dat',
+     'outfile': 'linelists.dat',
      'infiles':vald_cfg_file,
      'headlines':1,
      'commentchar':';',
@@ -410,6 +452,9 @@ mapping = [
              'cbyte':(bySepNr, 3)},
             {'cname':'listtype',
              'cbyte':(bySepNr, 4)},
+            {'cname':'obstype',
+             'cbyte':(get_obstype, ),
+             'cnull':'X'},                            
             {'cname':'r1',
              'cbyte':(bySepNr, 5)},
             {'cname':'r2',
@@ -432,9 +477,7 @@ mapping = [
              'cbyte':(bySepNr, 14)},
             ],
     }, # end of definition for vald_conf file
-    
-    
-
+   
     ]
 
-#mapping = [mapping[-2]]
+#mapping = [mapping[-1]]

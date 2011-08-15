@@ -132,7 +132,7 @@ def get_term_val(linedata, varname):
     idlist = [p.strip() for p in parts[1].split(',')]
     try:
         # get the correct section of the value part of the file, if it exists
-        return parts[2].split(',')[idlist.index(varname)]
+        return parts[2].strip().split(',')[idlist.index(varname)]
     except ValueError, IndexError:
         return 'X'
 

@@ -81,7 +81,7 @@ def validate_mapping(mapping):
 # working functions for the importer
 def get_value(linedata, column_dict):
     """
-    Process one line of data. Linedata is a tuple that always starts with
+    Process one line/block of data. Linedata is a tuple that always starts with
     the raw string for the line. The function with its arguments is read from
     the column_dict and applied to the linedata. The result is returned, after
     checking for the NULL value.
