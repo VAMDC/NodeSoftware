@@ -56,7 +56,7 @@ class LineList(Model):
     speclo = ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True, db_index=False)
     spechi = ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi',null=True, db_index=False)
     listtype = PositiveSmallIntegerField(null=True)
-    obstype = CharField(max_length=4) # obs, pred, calc etc
+    obstype = CharField(max_length=4, db_index=True) # obs, pred, calc etc
     r1 = PositiveSmallIntegerField(null=True)
     r2 = PositiveSmallIntegerField(null=True)
     r3 = PositiveSmallIntegerField(null=True)
@@ -140,7 +140,7 @@ class Transition(Model):
     vacwave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
     airwave = DecimalField(max_digits=20, decimal_places=8)
 
-    species = ForeignKey(Species,db_column='species', db_index=True)
+    species = ForeignKey(Species, db_index=True)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
     # the combined lande factor can be reconstructed from upper/lower state anyway
     #landeff = DecimalField(max_digits=6, decimal_places=2,null=True)
