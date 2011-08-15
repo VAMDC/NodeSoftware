@@ -56,6 +56,7 @@ class LineList(Model):
     speclo = ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True)
     spechi = ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi',null=True)
     listtype = PositiveSmallIntegerField(null=True,blank=True)
+    obstype = CharField(max_length=4) # obs, pred, calc etc
     r1 = PositiveSmallIntegerField(null=True, blank=True)
     r2 = PositiveSmallIntegerField(null=True, blank=True)
     r3 = PositiveSmallIntegerField(null=True, blank=True)

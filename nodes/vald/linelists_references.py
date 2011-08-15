@@ -37,8 +37,9 @@ def parse_wiki_linelist_file(filename):
                 refs = [element.strip().strip(']]').strip().split('|')[1] for element in cols[3].split(',') if element.strip()]
             except IndexError:
                 print "Error parsing line \n%s\n" % line 
-                raise 
+                raise
             dic[fil] = (elements, typ, refs)        
+        print fil, typ
     return dic
     
 def parse_config_file(filename):
@@ -54,6 +55,7 @@ def parse_config_file(filename):
             continue
         cols = [entry.strip() for entry in line.split(',')]
         fil = cols[0].split('/')[-1].strip("'")
+        #print fil
         if fil in dic:
             raise Exception("Non-unique filename in %s: %s" % (filename, fil))
         else:
