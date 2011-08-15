@@ -71,9 +71,9 @@ mapping = [
             ],
      }, # end of definition for species file
     
-    # State model read 2 lines at a time from vald3 main file
-    # term files are grouped with 3 lines for every 2 line in the 
-    # vald file - lower, upper, transition_info
+    # State model read 2 lines at a time from vald3 main file term
+    # files are grouped with 3 lines (lower,upper,transition_inf) for
+    # every 2 lines (lower, upper) in the vald file
 
     # States output file appended with lower states
     {'outfile':base + 'states.dat',
@@ -94,7 +94,7 @@ mapping = [
             #{'cname':'j',
             # 'cbyte':(charrange, 58,63)},
             {'cname':'lande',
-             'cbyte':(charrange, 86,92),
+             'cbyte':(charrange, 84,90),
              'cnull':'99.00'},
             {'cname':'coupling',
              'cbyte':(charrange, 124,126)},
@@ -191,15 +191,15 @@ mapping = [
      'linemap':[
             {'cname':'charid',        #species,coup,jnum,term,energy (upper states)             
              'cbyte':(merge_cols,
-                      (30,36), (212,214), (78,84), (214,300), (63,77))}, 
+                      (30,36), (212,214), (78,84), (214,300), (64,78))}, 
             {'cname':'species',
              'cbyte':(charrange, 30,36)},
             {'cname':'energy',
-             'cbyte':(charrange, 63,77)},
+             'cbyte':(charrange, 64,78)},
             #{'cname':'j',   
             # 'cbyte':(charrange, 77,82),},
             {'cname':'lande',
-             'cbyte':(charrange, 92,96),
+             'cbyte':(charrange, 90,96),
              'cnull':'99.00'},
             {'cname':'coupling',
              'cbyte':(charrange, 212,214)},
@@ -296,7 +296,7 @@ mapping = [
              'cnull':'NULL'},
             {'cname':'upstate',
              'cbyte':(merge_cols,
-                      (30,36), (212,214), (78,84), (214,300), (63,77))}, 
+                      (30,36), (212,214), (78,84), (214,300), (64,78))}, 
                        #(30,36), (170,172), (77,82), (172,218), (63,77))},
             {'cname':'lostate',
              'cbyte':(merge_cols,
