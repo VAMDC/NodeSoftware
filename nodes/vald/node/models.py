@@ -4,14 +4,14 @@ from vamdctap.bibtextools import *
 class Species(Model):
     id = AutoField(primary_key=True, db_index=True)
     name = CharField(max_length=10, db_index=True)
-    inchi = CharField(max_length=128, db_index=True, null=True, blank=True)
-    inchikey = CharField(max_length=25, db_index=True, null=True, blank=True)
-    ion = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
-    mass = DecimalField(max_digits=8, decimal_places=5)
-    massno = PositiveSmallIntegerField(null=True, blank=True)
-    ionen = DecimalField(max_digits=7, decimal_places=3)
-    solariso = DecimalField(max_digits=5, decimal_places=4)
-    dissen = DecimalField(max_digits=8, decimal_places=4)
+    inchi = CharField(max_length=128, db_index=True)
+    inchikey = CharField(max_length=25, db_index=True)
+    ion = PositiveSmallIntegerField(db_index=True)
+    mass = DecimalField(max_digits=8, decimal_places=5, db_index=True)
+    massno = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
+    ionen = DecimalField(max_digits=7, decimal_places=3, null=True, blank=True)
+    solariso = DecimalField(max_digits=5, decimal_places=4, null=True, blank=True)
+    dissen = DecimalField(max_digits=8, decimal_places=4, null=True, blank=True)
     ncomp = PositiveSmallIntegerField(null=True, blank=True)
     atomic = PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     isotope = PositiveSmallIntegerField(null=True, blank=True)
@@ -53,8 +53,8 @@ class LineList(Model):
     references = ManyToManyField(Reference) # handled by external script
     srcfile = CharField(max_length=128)
     srcfile_ref = CharField(max_length=128, null=True)
-    speclo = ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True)
-    spechi = ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi',null=True)
+    speclo = ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True, db_index=False)
+    spechi = ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi',null=True, db_index=False)
     listtype = PositiveSmallIntegerField(null=True,blank=True)
     r1 = PositiveSmallIntegerField(null=True, blank=True)
     r2 = PositiveSmallIntegerField(null=True, blank=True)
@@ -86,16 +86,16 @@ except: refcache={}
 
 class State(Model):
     id = IntegerField(primary_key=True, db_index=True)
-    species = ForeignKey(Species)
+    species = ForeignKey(Species, db_index=False)
 
-    energy = DecimalField(max_digits=15, decimal_places=4,null=True,blank=True, db_index=True) 
+    energy = DecimalField(max_digits=15, decimal_places=4,null=True,blank=True, db_index=True)
     lande = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     coupling = CharField(max_length=2, null=True,blank=True)
     term = CharField(max_length=56, null=True,blank=True)
 
-    energy_ref = ForeignKey(Reference, related_name='isenergyref_state')
-    lande_ref = ForeignKey(Reference, related_name='islanderef_state')
-    level_ref = ForeignKey(Reference, related_name='islevelref_state')
+    energy_ref = ForeignKey(Reference, related_name='isenergyref_state', db_index=False)
+    lande_ref = ForeignKey(Reference, related_name='islanderef_state', db_index=False)
+    level_ref = ForeignKey(Reference, related_name='islevelref_state', db_index=False)
 
     #energy_ref = ForeignKey(LineList, related_name='isenergyref_state')
     #lande_ref = ForeignKey(LineList, related_name='islanderef_state')
@@ -133,12 +133,13 @@ class State(Model):
 
 class Transition(Model):
     id = AutoField(primary_key=True)
-    upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True)
-    lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True)
+    upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True, db_index=False)
+    lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, db_index=False)
 
     vacwave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
-    airwave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
-    species = ForeignKey(Species,db_column='species')
+    airwave = DecimalField(max_digits=20, decimal_places=8)
+
+    species = ForeignKey(Species,db_column='species', db_index=False)
     loggf = DecimalField(max_digits=8, decimal_places=3,null=True,blank=True)
     # the combined lande factor can be reconstructed from upper/lower state anyway
     #landeff = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
@@ -150,14 +151,14 @@ class Transition(Model):
     accur = CharField(max_length=11, blank=True,null=True)
     comment = CharField(max_length=128, null=True,blank=True)
 
-    srctag = ForeignKey(Reference)
+    srctag = ForeignKey(Reference, db_index=False)
 
-    wave_ref = ForeignKey(Reference, related_name='iswaveref_trans')
-    loggf_ref = ForeignKey(Reference, related_name='isloggfref_trans')
+    wave_ref = ForeignKey(Reference, related_name='iswaveref_trans', db_index=False)
+    loggf_ref = ForeignKey(Reference, related_name='isloggfref_trans', db_index=False)
     #lande_ref = ForeignKey(Reference, related_name='islanderef_trans')
-    gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans')
-    gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans')
-    waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans')
+    gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans', db_index=False)
+    gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans', db_index=False)
+    waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans', db_index=False)
 
     #wave_ref = ForeignKey(LineList, related_name='iswaveref_trans')
     #loggf_ref = ForeignKey(LineList, related_name='isloggfref_trans')
