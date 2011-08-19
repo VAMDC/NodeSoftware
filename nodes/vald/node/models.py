@@ -27,17 +27,6 @@ class Species(Model):
 
 class Reference(Model):
     id = CharField(max_length=64, primary_key=True, db_index=True)
-    #bibref = CharField(max_length=25)
-    #title = CharField(max_length=256, null=True)
-    #author = CharField(max_length = 256, null=True)
-    #category = CharField(max_length=128, null=True)
-    #year = PositiveSmallIntegerField(null=True)
-    #journal = CharField(max_length=256, null=True)
-    #volume = CharField(max_length=64, null=True)
-    #pages = CharField(max_length=64, null=True)
-    #pagebegin = PositiveSmallIntegerField(null=True)
-    #pageend = PositiveSmallIntegerField(null=True)
-    #url = CharField(max_length=512, null=True)  
     bibtex = TextField(null=True)
 
     def XML(self):
@@ -56,7 +45,7 @@ class LineList(Model):
     speclo = ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True)
     spechi = ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi',null=True)
     listtype = PositiveSmallIntegerField(null=True,blank=True)
-    obstype = CharField(max_length=4) # obs, pred, calc etc
+    obstype = PositiveSmallIntegerField(null=True, blank=True) # obs/exp=0, emp=1, pred=2, calc=3, mix=4.
     r1 = PositiveSmallIntegerField(null=True, blank=True)
     r2 = PositiveSmallIntegerField(null=True, blank=True)
     r3 = PositiveSmallIntegerField(null=True, blank=True)
@@ -98,9 +87,9 @@ class State(Model):
     lande_ref = ForeignKey(Reference, related_name='islanderef_state')
     level_ref = ForeignKey(Reference, related_name='islevelref_state')
 
-    #energy_ref = ForeignKey(LineList, related_name='isenergyref_state')
-    #lande_ref = ForeignKey(LineList, related_name='islanderef_state')
-    #level_ref = ForeignKey(LineList, related_name='islevelref_state')
+    energy_linelist = ForeignKey(LineList, related_name='isenergylinelist_state')
+    lande_linelist = ForeignKey(LineList, related_name='islandelinelist_state')
+    level_linelist = ForeignKey(LineList, related_name='islevellinelist_state')
 
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True,blank=True)
     l = DecimalField(max_digits=3, decimal_places=1,db_column=u'L', null=True,blank=True)
@@ -141,7 +130,7 @@ class Transition(Model):
     airwave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
     species = ForeignKey(Species,db_column='species')
     loggf = DecimalField(max_digits=8, decimal_places=3,null=True,blank=True)
-    # the combined lande factor can be reconstructed from upper/lower state anyway
+    # the combined lande factor can be reconstructed from upper/lower states anyway
     #landeff = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     gammarad = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     gammastark = DecimalField(max_digits=7, decimal_places=3,null=True,blank=True)
@@ -160,12 +149,14 @@ class Transition(Model):
     gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans')
     waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans')
 
-    #wave_ref = ForeignKey(LineList, related_name='iswaveref_trans')
-    #loggf_ref = ForeignKey(LineList, related_name='isloggfref_trans')
-    #lande_ref = ForeignKey(LineList, related_name='islanderef_trans')
-    #gammarad_ref = ForeignKey(LineList, related_name='isgammaradref_trans')
-    #gammastark_ref = ForeignKey(LineList, related_name='isgammastarkref_trans')
-    #waals_ref = ForeignKey(LineList, related_name='iswaalsref_trans')
+    wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans')
+    loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans')
+    #lande_linelist = ForeignKey(LineList, related_name='islandelinelist_trans')
+    gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans')
+    gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans')
+    waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans')
+
+    obstype = PositiveSmallIntegerField(null=True, blank=True) # this is the obstype of the wave_linelist, created in post-processing.    
 
     def getWaals(self):
         if self.gammawaals: return self.gammawaals

@@ -60,15 +60,22 @@ def parse_linelist_file(filename):
     return dic
 LINELIST_DICT = parse_linelist_file(base + "VALD3linelists.txt")
 
+# obs/exp - transition between levels with experimentally known energies
+# emp - relativistic Hartree-Fock calculations, normalized to the experimental lifetimes 
+# pred - transitions between predicted energy levels 
+# calc - relativistic Hartree-Fock calculations of lifetimes and transition probabilities
+# mix - mixture of observation times
+OBSTYPE_DICT = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
+
 def get_obstype(linedata):
     """
     Extract linedata and compare with pre-cached dictionary of linelists.
     """
-    global LINELIST_DICT
+    global LINELIST_DICT, OBSTYPE_DICT
     file_ref = get_srcfile_ref(linedata, 0, 3)
     entry = LINELIST_DICT.get(file_ref, None)
     if entry:
-        return entry[1] # the type
+        return OBSTYPE_DICT.get(entry[1], 'X') # the type
     else:
         return 'X'
     
@@ -146,27 +153,21 @@ mapping = [
             {'filenum':1,
              'cname':'energy_ref',
              'cbyte':(charrange, 17,25)},
-             #'references':(models.Source,'pk')},
             {'filenum':1,
              'cname':'lande_ref',
-             'cbyte':(charrange, 33,41)},
-             #'references':(models.Source,'pk')},
+             'cbyte':(charrange, 33,41)},            
             {'filenum':1,
              'cname':'level_ref',
              'cbyte':(charrange, 65,73)},
 
-
             ## this links to linelists rather than refs directly
-            #{'cname':'energy_ref',
-            # 'cbyte':(charrange, 264,268)},
-            # #'references':(models.Source,'pk')},
-            #{'cname':'lande_ref',
-            # 'cbyte':(charrange, 268,272)},
-            # #'references':(models.Source,'pk')},
-            #{'cname':'level_ref',
-            # 'cbyte':(charrange, 284,288)},
-            #'references':(models.Source,'pk')},
-
+            {'cname':'energy_linelist',
+             'cbyte':(charrange, 346,350)},
+            {'cname':'lande_linelist',
+             'cbyte':(charrange, 350,354)},
+            {'cname':'level_linelist',
+             'cbyte':(charrange, 366,370)},
+     
             # these are read from 1st open term file
             {'filenum':2, # use term file
              'cname':'j',
@@ -261,15 +262,12 @@ mapping = [
              'cbyte':(charrange, 65,73)},
 
             ## links to linelist rather than reference directly
-            #{'cname':'energy_ref',
-            # 'cbyte':(charrange, 264,268)},
-            # #'references':(models.Source,'pk')},
-            #{'cname':'lande_ref',
-            # 'cbyte':(charrange, 268,272)},
-            # #'references':(models.Source,'pk')},
-            #{'cname':'level_ref',
-            # 'cbyte':(charrange, 284,288)},
-            # #'references':(models.Source,'pk')},
+            {'cname':'energy_linelist',
+             'cbyte':(charrange, 346,350)},
+            {'cname':'lande_linelist',
+             'cbyte':(charrange, 350,354)},
+            {'cname':'level_linelist',
+             'cbyte':(charrange, 366,370)},
             
             # these are read from term file
             {'cname':'j',
@@ -402,19 +400,21 @@ mapping = [
             {'filenum':1,
              'cname':'waals_ref',  
              'cbyte':(charrange, 57,65)},
+
             ## These are the old connections to linelists rather than refs directly
-            #{'cname':'wave_ref',             
-            # 'cbyte':(charrange, 252,256)},
-            #{'cname':'loggf_ref',
-            # 'cbyte':(charrange, 256,260)},
-            #{'cname':'lande_ref',
-            # 'cbyte':(charrange, 268,272)},
-            #{'cname':'gammarad_ref',
-            # 'cbyte':(charrange, 272,276)},
-            #{'cname':'gammastark_ref',
-            # 'cbyte':(charrange, 276,280)},
-            #{'cname':'waals_ref',  
-            # 'cbyte':(charrange, 280,284)},
+            {'cname':'wave_linelist',             
+             'cbyte':(charrange, 334,338)},
+            {'cname':'loggf_linelist',
+             'cbyte':(charrange, 338,342)},
+            {'cname':'lande_linelist',
+             'cbyte':(charrange, 350,354)},
+            {'cname':'gammarad_linelist',
+             'cbyte':(charrange, 354,358)},
+            {'cname':'gammastark_linelist',
+             'cbyte':(charrange, 358,362)},
+            {'cname':'waals_linelist',  
+             'cbyte':(charrange, 362,366)},
+            # obstype is parsed from wave_linelist in post-processing
             ],
     }, # end of transitions
 
@@ -434,8 +434,8 @@ mapping = [
       }, # end of bibtex 
     
     # Populate LineList model from vald_cfg file
-    {#'outfile': outbase + 'linelists.dat',
-     'outfile': 'linelists.dat',
+    {'outfile': outbase + 'linelists.dat',
+     #'outfile': 'linelists.dat',
      'infiles':vald_cfg_file,
      'headlines':1,
      'commentchar':';',
