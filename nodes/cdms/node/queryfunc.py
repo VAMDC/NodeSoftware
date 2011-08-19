@@ -2,6 +2,7 @@
 from django.db.models import Q
 from django.conf import settings
 import sys
+
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s
 
@@ -37,6 +38,50 @@ else: TRANSLIM = 5000
 #        rids=rids.union(ll.references.values_list('pk',flat=True))
 #    return Reference.objects.filter(pk__in=rids)
 
+
+
+def Wavelength2MHz(op, foo):
+    """
+    Replace the query clause "Wavelength <op> <foo>" with
+    "Frequency <op'> <foo'>", making the conversion from Angstroms to
+    MHz.
+    
+    """
+    
+    if op == 'in':
+        print 'Sorry - "in" queries not yet implemented for RadTransWavelength'
+        return None
+    
+    opp = op
+    if op == '<':
+        opp = '>'
+    if op == '<=' or op == '=<':
+        opp = '>='
+    if op == '>':
+        opp = '<'
+    if op == '>=' or op == '=>':
+        opp = '<='
+    try:
+        foop = float(foo[0])
+    except (ValueError, TypeError):
+        print 'failed to convert %s to float' % foo
+        return None
+    except (IndexError):
+        print 'no argument to Wavelength restrictable'
+        return None
+    if foop != 0.:
+        # Angstroms -> cm-1
+        foop = 2.99792458e12 / foop
+    else:
+        # zero wavelength requested, so set frequency to something huge
+        foop = 1.e20
+    q = ['RadTransFrequency', opp, str(foop)]
+    return q
+
+
+
+
+
 def attach_state_qns(states):
     for state in states:
         state.parsed_qns = []
@@ -65,6 +110,7 @@ def attach_partionfunc(molecules):
         molecule.partitionfuncT=temp
         molecule.partitionfuncQ=pf
          
+
 
 def getSpeciesWithStates(transs):
 #    LOG("speciesList:")
@@ -127,9 +173,23 @@ def getSources(transs):
 
 def setupResults(sql):
     LOG(sql)
-    q=where2q(sql.where,RESTRICTABLES)
-    try: q=eval(q)
-    except: return {}
+#    q = sql2Q(sql)
+
+    # sql2Q(sql) - code copied as c.hill did for the hitran-node
+    logic, rs, count = splitWhere(sql.where)
+    # and replace any restrictions on ChemicalName or StoichiometricFormula
+    # with the equivalent on MoleculeInchiKey. Also convert wavelength
+    # (in A) to wavenumber:
+    for i in rs:
+        r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
+    #    if r == 'MoleculeChemicalName':
+    #        rs[i] = ChemicalName2MoleculeInchiKey(op, foo)
+    #    if r == 'MoleculeStoichiometricFormula':
+    #        rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
+        if r == 'RadTransWavelength':
+            rs[i] = Wavelength2MHz(op, foo)
+    qdict = restriction2Q(rs)
+    q = mergeQwithLogic(qdict, logic)
 
     LOG(q)
     transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0) #order_by('vacwave')
@@ -189,22 +249,42 @@ def returnResults(tap, LIMIT=None):
 
     """
 
-    if tap.format != 'spcat':
-        emsg = 'Currently, only FORMATs SPCAT and XSAMS are supported.\n'
+    # ADD additional restricables for this output method which are
+    # only meaningful for CDMS
+    #RESTRICTABLES['dataset']='dataset'
+    RESTRICTABLES.update(CDMSONLYRESTRICTABLES)
+
+    if tap.format != 'spcat' and tap.format!='png':
+        emsg = 'Currently, only FORMATs PNG, SPCAT and XSAMS are supported.\n'
         return tapServerError(status=400, errmsg=emsg)
 
     # XXX more duplication of code from setupResults():
     # which uses sql = tap.parsedSQL
-    q = where2q(tap.parsedSQL.where, RESTRICTABLES)
-    LOG(tap.parsedSQL.columns)
+#    q = where2q(tap.parsedSQL.where, RESTRICTABLES)
+#    q = sql2Q(tap.parsedSQL)
+    # sql2Q(sql) - code copied as c.hill did for the hitran-node
+    logic, rs, count = splitWhere(tap.parsedSQL.where)
+    # and replace any restrictions on ChemicalName or StoichiometricFormula
+    # with the equivalent on MoleculeInchiKey. Also convert wavelength
+    # (in A) to wavenumber:
+
+    for i in rs:
+        r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
+    #    if r == 'MoleculeChemicalName':
+    #        rs[i] = ChemicalName2MoleculeInchiKey(op, foo)
+    #    if r == 'MoleculeStoichiometricFormula':
+    #        rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
+        if r == 'RadTransWavelength':
+            rs[i] = Wavelength2MHz(op, foo)
+
+        
+    qdict = restriction2Q(rs)
+    q = mergeQwithLogic(qdict, logic)
+
+
+    # use tap.parsedSQL.columns instead of tap.requestables
+    # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
-    LOG(q)
-    try:
-        q=eval(q)
-    except Exception,e:
-        LOG('Exception in setupResults():')
-        LOG(e)
-        return {}
 
     transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0) 
     ntrans = transs.count()
@@ -218,7 +298,7 @@ def returnResults(tap, LIMIT=None):
     else:
         percentage = '100'
 #    print 'Truncated to %s %%' % percentage
-    transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0) 
+    transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0).order_by('frequency') 
     ntrans = transs.count()
     if LIMIT is not None and ntrans > LIMIT:
         # we need to filter transs again later, so can't take a slice
@@ -244,24 +324,32 @@ def returnResults(tap, LIMIT=None):
 #        cat_generator = ''
 
 
-
+    
     if (col=='ALL' or 'radiativetransitions' in [x.lower() for x in col]):
+#    if ('radiativetransitions' in tap.requestables):
         LOG('TRANSITIONS')
         transitions = transs
     else:
         LOG('NO TRANSITIONS')
         transitions = []
 
+        
     if (col=='ALL' or 'states' in [x.lower() for x in col] ):
+#    if ('states' in tap.requestables ):
         LOG('STATES')
         states = States.objects.filter(q,species__origin=5,dataset__archiveflag=0)
     else:
         LOG('NO STATES')
         states = []
         
-
-    generator = gener(transitions, states)
-    response = HttpResponse(generator, mimetype='text/plain')
+    if tap.format=='spcat':
+        generator = gener(transitions, states)
+        response = HttpResponse(generator, mimetype='text/plain')
+    else:
+        if 'states' in tap.requestables:
+            response = plotLevelDiagram(states)
+        else:
+            response = plotStickSpec(transitions)
         
     return response
 
@@ -338,3 +426,109 @@ def Egy(states):
         yield '%4s ' % GetStringValue(state.qntag)
 
         yield '\n'
+
+
+def plotStickSpec(transs):
+    import os
+    os.environ['HOME']='/tmp'
+
+    
+    import matplotlib
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+    from matplotlib.figure import Figure
+    from matplotlib.dates import DateFormatter
+    fig = Figure(facecolor='#eeefff',figsize=(15, 10), dpi=80,edgecolor='w')
+    
+    ax=fig.add_subplot(1,1,1)
+    # bx=fig.add_subplot(2,1,1)
+
+
+    spids = set( transs.values_list('species_id',flat=True) )
+    spidsname = []
+    species = Species.objects.filter(pk__in=spids) #,ncomp__gt=1)
+    i=0
+    bars=[]
+    for specie in species:
+        spidsname.append(specie.name)
+        subtranss = transs.filter(species=specie)
+        intensities = [10.0**trans.intensity for trans in subtranss]
+        frequencies = [trans.frequency for trans in subtranss]
+        #bars.append( ax.bar(frequencies, intensities, color=cm.jet(1.*i/len(spids)))[0] )
+        bars.append( ax.bar(frequencies, intensities, linewidth=1,edgecolor=matplotlib.cm.jet(1.*i/len(spids)), color=matplotlib.cm.jet(1.*i/len(spids)))[0] )
+        i=i+1
+        
+ 
+    ax.legend(bars,spidsname,loc=0)
+#    intensities = [10.0**trans.intensity for trans in transs]
+#    frequencies = [trans.frequency for trans in transs]
+# #   #IDs = [trans.species for trans in transs]
+
+#    ax.bar(frequencies, intensities) #, color=cols)
+    
+    ax.set_xlabel("Frequency [MHz]")
+    ax.set_ylabel("Intensity [nm^2MHz]")
+
+    title = u"Dynamically Generated Stick Spectrum "
+    ax.set_title(title)
+
+
+    ax.grid(True)
+    canvas = FigureCanvas(fig)
+    response = HttpResponse(content_type='image/png')
+    
+    canvas.print_png(response)
+    return response
+
+
+
+def plotLevelDiagram(states):
+    import os
+    os.environ['HOME']='/tmp'
+
+    
+    import matplotlib
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+    from matplotlib.figure import Figure
+    from matplotlib.dates import DateFormatter
+    fig = Figure(facecolor='#eeefff',figsize=(15, 10), dpi=80,edgecolor='w')
+    
+    ax=fig.add_subplot(1,1,1)
+    # bx=fig.add_subplot(2,1,1)
+        
+    ax.set_xlabel("J")
+    ax.set_ylabel("Energy [cm-1]")
+
+
+    spids = set( states.values_list('species_id',flat=True) )
+    spidsname = []
+    species = Species.objects.filter(pk__in=spids) #,ncomp__gt=1)
+    i=0
+    plots=[]
+    for specie in species:
+        spidsname.append(specie.name)
+        substates = states.filter(species=specie)
+
+        for state in states:
+            pl = ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color=matplotlib.cm.jet(1.*i/len(spids)))
+
+        plots.append(pl)
+        i=i+1
+        
+    ax.legend(plots, spidsname, loc=0)
+#    ax.legend(bars,spidsname,loc=0)
+    
+
+#    for state in states:
+#        ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color='b')
+ 
+    
+    title = u"Energy Level Diagram "
+    ax.set_title(title)
+
+
+    ax.grid(True)
+    canvas = FigureCanvas(fig)
+    response = HttpResponse(content_type='image/png')
+    
+    canvas.print_png(response)
+    return response
