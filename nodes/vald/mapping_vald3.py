@@ -162,7 +162,7 @@ mapping = [
 
             ## this links to linelists rather than refs directly
             {'cname':'energy_linelist',
-             'cbyte':(charrange, 346,350)},
+             'cbyte':(charrange, 342,346)},
             {'cname':'lande_linelist',
              'cbyte':(charrange, 350,354)},
             {'cname':'level_linelist',
