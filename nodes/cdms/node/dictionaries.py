@@ -143,6 +143,9 @@ RETURNABLES = {
 }
 
 
+# import the unit converter functions
+from vamdctap.unitconv import *
+
 RESTRICTABLES = { 
 #'AsOfDate':'',
 #'AtomInchi':'',
@@ -186,7 +189,7 @@ RESTRICTABLES = {
 #'RadTransBandCentre':'',
 #'RadTransBandWidth':'',
 #'RadTransEffectiveLandeFactor':'',
-#'RadTransEnergy':'',
+#'RadTransEnergy':('frequency',eV2MHz),
 'RadTransFrequency':'frequency',
 #'RadTransProbabilityA':'RadTran.einsteinA',
 #'RadTransProbabilityIdealisedIntensity':'',
@@ -194,8 +197,15 @@ RESTRICTABLES = {
 #'RadTransProbabilityLog10WeightedOscillatorStrength':'',
 #'RadTransProbabilityOscillatorStrength':'',
 #'RadTransProbabilityWeightedOscillatorStrength':'',
-#'RadTransWavelength':'',
-#'RadTransWavenumber':'',
+#'RadTransWavelength':('frequency',Angstr2MHz),
+#'RadTransWavenumber':('frequency',invcm2MHz),
 #'SourceCategory':'',
 #'SourceYear':'',
+'MoleculeSpeciesID':'species',
+}
+
+CDMSONLYRESTRICTABLES = {
+# 'MoleculeSpeciesID':'species',
+ 'dataset':'dataset',
+ 'hfsflag':'hfsflag',
 }
