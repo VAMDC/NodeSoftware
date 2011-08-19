@@ -268,7 +268,7 @@ mapping = [
              'cbyte':(charrange, 350,354)},
             {'cname':'level_linelist',
              'cbyte':(charrange, 366,370)},
-            
+
             # these are read from term file
             {'cname':'j',
              'filenum':2, # use term file
@@ -400,7 +400,6 @@ mapping = [
             {'filenum':1,
              'cname':'waals_ref',  
              'cbyte':(charrange, 57,65)},
-
             ## These are the old connections to linelists rather than refs directly
             {'cname':'wave_linelist',             
              'cbyte':(charrange, 334,338)},
@@ -434,8 +433,9 @@ mapping = [
       }, # end of bibtex 
     
     # Populate LineList model from vald_cfg file
-    {'outfile': outbase + 'linelists.dat',
-     #'outfile': 'linelists.dat',
+    {#'outfile': outbase + 'linelists.dat',
+     'outfile': 'linelists.dat',
+
      'infiles':vald_cfg_file,
      'headlines':1,
      'commentchar':';',

@@ -19,7 +19,7 @@ else: TRANSLIM = 5000
 
 def getRefs(transs):
     llids=set()
-    for t in transs.values_list('wave_ref_id','loggf_ref_id','lande_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref'):
+    for t in transs.values_list('wave_ref_id','loggf_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref'):
         llids = llids.union(t)
     lls=LineList.objects.filter(pk__in=llids)
     rids=set()
