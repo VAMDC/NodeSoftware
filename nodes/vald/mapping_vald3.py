@@ -124,7 +124,7 @@ mapping = [
     # every 2 lines (lower, upper) in the vald file
 
     # States output file appended with lower states
-    {'outfile':outbase + 'states.dat',
+    {'outfile':outbase + 'lowstates.dat',
      'infiles':(vald_file, vald_file, terms_file, terms_file),
      'headlines':(2, 2, 0, 0), 
      'commentchar':('#','#','#','#'),
@@ -223,7 +223,7 @@ mapping = [
      }, # end of State model creation - lower states
 
     # upper states  
-    {'outfile':outbase + 'states.dat',    
+    {'outfile':outbase + 'upstates.dat',    
      'infiles': (vald_file, vald_file, terms_file, terms_file),
      'headlines':(2, 2, 0, 0),
      'commentchar': ('#', '#', '#','#'),
@@ -433,9 +433,7 @@ mapping = [
       }, # end of bibtex 
     
     # Populate LineList model from vald_cfg file
-    {#'outfile': outbase + 'linelists.dat',
-     'outfile': 'linelists.dat',
-
+    {'outfile': outbase + 'linelists.dat',
      'infiles':vald_cfg_file,
      'headlines':1,
      'commentchar':';',
