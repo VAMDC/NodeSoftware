@@ -300,10 +300,10 @@ def make_outfile(file_dict, global_debug=False):
 
             # do not stop or log on errors (this does not hide debug messages if debug is active)
             #skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
-            
+
             # parse the mapping for this line(s)
             dat = get_value(lines, linedef)
-        
+
             if debug:
                 print "DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat)
 
@@ -312,11 +312,11 @@ def make_outfile(file_dict, global_debug=False):
     outf.close()
 
     print '  %s -> %s: %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), file_dict['outfile'], total, errors)
-    
+
     global TOTAL_LINES, TOTAL_ERRS
     TOTAL_LINES += total
     TOTAL_ERRS += errors
-    
+
 def parse_mapping(mapping, debug=False):
     """
     Step through a list of mappings describing
@@ -324,18 +324,18 @@ def parse_mapping(mapping, debug=False):
     django database fields. This should ideally
     not have to be changed for different database types.
     """
-    
+
     if not validate_mapping(mapping):  return
     t0 = time()
 
     for file_dict in mapping:
-        t1 = time()            
+        t1 = time()
         make_outfile(file_dict, global_debug=debug)
         print "Time used: %s" % ftime(t1, time())
         #pdb.set_trace()
         #print gc.garbage
         #print gc.get_count()
-    
+
     print "Total time used: %s" % ftime(t0, time())
     print "Total number of errors/fails/skips: %s/%s (%g%%)" % (TOTAL_ERRS,
                                                                 TOTAL_LINES,
