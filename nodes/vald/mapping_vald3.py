@@ -414,6 +414,10 @@ mapping = [
             {'cname':'waals_linelist',  
              'cbyte':(charrange, 362,366)},
             # obstype is parsed from wave_linelist in post-processing
+            # but we need to insert NULLs to make the DB accept the file.   
+            {'cname':'id',
+             'cbyte':(constant, 'NULL'),
+             'cnull':'NULL'},
             ],
     }, # end of transitions
 
