@@ -64,15 +64,15 @@ class LineList(Model):
 
 ####
 # REFERENCE CACHE
-def build_refcache():
-    refcache={}
-    lls=LineList.objects.all().values_list('id',flat=True)
-    for ll in lls:
-        refcache[ll]=[r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %d)'%ll)]
-    return refcache
-
-try: refcache=build_refcache()
-except: refcache={}
+#def build_refcache():
+#    refcache={}
+#    lls=LineList.objects.all().values_list('id',flat=True)
+#    for ll in lls:
+#        refcache[ll]=[r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %d)'%ll)]
+#    return refcache
+#
+#try: refcache=build_refcache()
+#except: refcache={}
 ####
 
 class State(Model):
@@ -111,12 +111,12 @@ class State(Model):
         if self.j1 and self.j2:
             return (self.j1,self.j2)
 
-    def getRefs(self,which):
-        try:
-            id = eval('self.'+which+'_ref_id')
-            return refcache[id]
-        except:
-            return None
+    #def getRefs(self,which):
+    #    try:
+    #        id = eval('self.'+which+'_ref_id')
+    #        return refcache[id]
+    #    except:
+    #        return None
 
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
@@ -164,12 +164,12 @@ class Transition(Model):
         elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
         else: return None
 
-    def getRefs(self,which):
-        try:
-            id = eval('self.'+which+'_ref_id')
-            return refcache[id]
-        except:
-            return None
+    #def getRefs(self,which):
+    #    try:
+    #        id = eval('self.'+which+'_ref_id')
+    #        return refcache[id]
+    #    except:
+    #        return None
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.vacwave)

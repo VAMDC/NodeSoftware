@@ -20,3 +20,4 @@ update transitions,sids set transitions.lostate=sids.id where transitions.lostat
 alter table transitions modify upstate INT;
 alter table transitions modify lostate INT;
 
+update transitions t, linelists l set transitions.obstype=l.obstype
