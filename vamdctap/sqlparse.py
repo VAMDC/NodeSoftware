@@ -95,7 +95,7 @@ def applyRestrictFus(rs,restrictables=RESTRICTABLES):
             continue
         try:
             bla, fu = restrictables[r]
-            rs[i][2] = str(fu(foo[0]))
+            rs[i] = [r] + fu(op,foo[0])
         except Exception,e:
             log.error('Could not apply function %s to Restrictable %s. Errormsg: %s'%(fu,r,e))
 
