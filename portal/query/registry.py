@@ -6,16 +6,16 @@ routines for querying the registry
 
 """
 
-#REL_REG='http://registry.vamdc.eu/vamdc_registry/services/RegistryQueryv1_0'
-#DEV_REG='http://casx019-zone1.ast.cam.ac.uk/registry/services/RegistryQueryv1_0'
-#REGURL=DEV_REG
-#WSDL=REGURL+'?wsdl'
+REL_REG='http://registry.vamdc.eu/vamdc_registry/services/RegistryQueryv1_0'
+DEV_REG='http://casx019-zone1.ast.cam.ac.uk/registry/services/RegistryQueryv1_0'
+REGURL=DEV_REG
+WSDL=REGURL+'?wsdl'
 
 WSDL = 'http://www.tmy.se/t/devreg_wsdl.xml'
 
 from suds.client import Client
 from suds.xsd.doctor import Doctor
-class RegistryDoctor(Doctor):    
+class RegistryDoctor(Doctor):
     TNS = 'http://www.ivoa.net/wsdl/RegistrySearch/v1.0'
     def examine(self, node):
         tns = node.get('targetNamespace')
@@ -39,9 +39,9 @@ def getNodeList():
 
     qr="""declare namespace ri='http://www.ivoa.net/xml/RegistryInterface/v1.0';
 for $x in //ri:Resource
-where $x/capability[@standardID='ivo://vamdc/std/TAP-XSAMS']
+where $x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']
 and $x/@status='active'
-return ($x/title, $x/capability[@standardID='ivo://vamdc/std/TAP-XSAMS']/interface/accessURL)"""
+return ($x/title, $x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']/interface/accessURL)"""
 
     v=client.service.XQuerySearch(qr)
     nameurls=[]
