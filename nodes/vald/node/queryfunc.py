@@ -17,16 +17,6 @@ if hasattr(settings,'TRANSLIM'):
     TRANSLIM = settings.TRANSLIM
 else: TRANSLIM = 5000
 
-def getRefs(transs):
-    llids=set()
-    for t in transs.values_list('wave_ref_id','loggf_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref'):
-        llids = llids.union(t)
-    lls=LineList.objects.filter(pk__in=llids)
-    rids=set()
-    for ll in lls:
-        rids=rids.union(ll.references.values_list('pk',flat=True))
-    return Reference.objects.filter(pk__in=rids)
-
 def getSpeciesWithStates(transs):
     spids = set( transs.values_list('species_id',flat=True) )
     atoms = Species.objects.filter(pk__in=spids,ncomp=1)
@@ -54,7 +44,8 @@ def setupResults(sql):
         transs=Transition.objects.filter(q,Q(vacwave__lt=newmax))
     else: percentage=None
     ntranss=transs.count()
-    sources = getRefs(transs)
+    refIDs = set( transs.values_list('wave_ref_id','loggf_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref') )
+    sources = Reference.objects.filter(pk__in=refIDs)
     atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs)
 
     if ntranss:
@@ -77,3 +68,16 @@ def setupResults(sql):
             'HeaderInfo':headerinfo,
             'Environments':Environments #this is set up statically in models.py
            }
+
+# The old way of getting references via linelists.
+#def getRefs(transs):
+#    llids=set()
+#    for t in transs.values_list('wave_ref_id','loggf_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref'):
+#        llids = llids.union(t)
+#    lls=LineList.objects.filter(pk__in=llids)
+#    rids=set()
+#    for ll in lls:
+#        rids=rids.union(ll.references.values_list('pk',flat=True))
+#    return Reference.objects.filter(pk__in=rids)
+
+

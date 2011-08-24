@@ -5,7 +5,8 @@ load data infile '/vald/vamdc/db_input_files/linelists.dat' ignore into table li
 load data infile '/vald/vamdc/db_input_files/linelists_references.dat' ignore into table linelists_references columns terminated by ';' optionally enclosed by '"';
 
 alter table states modify id varchar(255) NOT NULL;
-load data infile '/vald/vamdc/db_input_files/states.dat' ignore into table states columns terminated by ';' optionally enclosed by '"';
+load data infile '/vald/vamdc/db_input_files/upstates.dat' ignore into table states columns terminated by ';' optionally enclosed by '"';
+load data infile '/vald/vamdc/db_input_files/lowstates.dat' ignore into table states columns terminated by ';' optionally enclosed by '"';
 create temporary table `sids` (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, charid VARCHAR(255) NOT NULL UNIQUE);
 insert into sids (charid) select id from states;
 update states,sids set states.id=sids.id where states.id=sids.charid;
@@ -19,3 +20,4 @@ update transitions,sids set transitions.lostate=sids.id where transitions.lostat
 alter table transitions modify upstate INT;
 alter table transitions modify lostate INT;
 
+update transitions t, linelists l set transitions.obstype=l.obstype

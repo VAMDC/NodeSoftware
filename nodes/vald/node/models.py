@@ -64,15 +64,15 @@ class LineList(Model):
 
 ####
 # REFERENCE CACHE
-def build_refcache():
-    refcache={}
-    lls=LineList.objects.all().values_list('id',flat=True)
-    for ll in lls:
-        refcache[ll]=[r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %d)'%ll)]
-    return refcache
-
-try: refcache=build_refcache()
-except: refcache={}
+#def build_refcache():
+#    refcache={}
+#    lls=LineList.objects.all().values_list('id',flat=True)
+#    for ll in lls:
+#        refcache[ll]=[r.id for r in Reference.objects.raw('select id from refs where id in (select reference_id from linelists_references where linelist_id = %d)'%ll)]
+#    return refcache
+#
+#try: refcache=build_refcache()
+#except: refcache={}
 ####
 
 class State(Model):
@@ -89,9 +89,9 @@ class State(Model):
     lande_ref = ForeignKey(Reference, related_name='islanderef_state', db_index=False)
     level_ref = ForeignKey(Reference, related_name='islevelref_state', db_index=False)
 
-    energy_linelist = ForeignKey(LineList, related_name='isenergylinelist_state')
-    lande_linelist = ForeignKey(LineList, related_name='islandelinelist_state')
-    level_linelist = ForeignKey(LineList, related_name='islevellinelist_state')
+    energy_linelist = ForeignKey(LineList, related_name='isenergylinelist_state', db_index=False)
+    lande_linelist = ForeignKey(LineList, related_name='islandelinelist_state', db_index=False)
+    level_linelist = ForeignKey(LineList, related_name='islevellinelist_state', db_index=False)
 
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True)
     l = DecimalField(max_digits=3, decimal_places=1,db_column=u'L', null=True)
@@ -111,12 +111,12 @@ class State(Model):
         if self.j1 and self.j2:
             return (self.j1,self.j2)
 
-    def getRefs(self,which):
-        try:
-            id = eval('self.'+which+'_ref_id')
-            return refcache[id]
-        except:
-            return None
+    #def getRefs(self,which):
+    #    try:
+    #        id = eval('self.'+which+'_ref_id')
+    #        return refcache[id]
+    #    except:
+    #        return None
 
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
@@ -147,17 +147,15 @@ class Transition(Model):
 
     wave_ref = ForeignKey(Reference, related_name='iswaveref_trans', db_index=False)
     loggf_ref = ForeignKey(Reference, related_name='isloggfref_trans', db_index=False)
-    #lande_ref = ForeignKey(Reference, related_name='islanderef_trans')
     gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans', db_index=False)
     gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans', db_index=False)
     waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans', db_index=False)
 
-    wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans')
-    loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans')
-    #lande_linelist = ForeignKey(LineList, related_name='islandelinelist_trans')
-    gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans')
-    gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans')
-    waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans')
+    wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False)
+    loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
+    gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans', db_index=False)
+    gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
+    waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans', db_index=False)
 
     obstype = PositiveSmallIntegerField(null=True, blank=True) # this is the obstype of the wave_linelist, created in post-processing.    
 
@@ -166,12 +164,12 @@ class Transition(Model):
         elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
         else: return None
 
-    def getRefs(self,which):
-        try:
-            id = eval('self.'+which+'_ref_id')
-            return refcache[id]
-        except:
-            return None
+    #def getRefs(self,which):
+    #    try:
+    #        id = eval('self.'+which+'_ref_id')
+    #        return refcache[id]
+    #    except:
+    #        return None
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.vacwave)
