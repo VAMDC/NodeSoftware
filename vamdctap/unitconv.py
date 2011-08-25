@@ -14,3 +14,17 @@ def eV2Angstr(op, eV):
 def invcm2Angstr(op, invcm):
     return [invertOperator(op), str(1.0E8/float(invcm))]
 
+#Vald specific but maybe instructive for others.
+def valdObstype(op,obstype):
+    ourMap = {'experiment':0,
+              'theory':3,
+              'ritz':None, # 
+              'recommended':None,
+              'evaluated':None,
+              'empirical':2,
+              'scalingLaw':None,
+              'semiempirical':None,
+              'compilation':5,
+              'derived':4,
+              'observed':1,}
+    return op, ourMap[obstype]
