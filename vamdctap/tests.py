@@ -130,9 +130,5 @@ class TestBibTex(TestCase):
         self.assertEquals(txml, bibtextools.BibTeX2XML(tbibtex))
 
 
-
-
-
-
 if __name__ == "__main__":    
     print "You should usually run this module from the ExampleNode node with 'manage.py test'."
