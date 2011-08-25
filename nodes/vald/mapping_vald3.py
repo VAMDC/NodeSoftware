@@ -78,7 +78,8 @@ def get_obstype(linedata):
         return OBSTYPE_DICT.get(entry[1], 'X') # the type
     else:
         return 'X'
-    
+
+
 # The mapping itself
 mapping = [
     # Populate Species model, using the species input file.
