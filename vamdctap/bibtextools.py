@@ -1,3 +1,4 @@
+import re
 from StringIO import StringIO
 from pybtex.database.input import bibtex
 from string import strip
@@ -18,7 +19,7 @@ def getEntryFromString(s):
     try:
         parser.parse_stream(StringIO(s))
         key,entry = parser.data.entries.items()[0]
-    except:
+    except Exception:
         bib = parser.parse_stream(StringIO(DUMMY))
         key,entry = parser.data.entries.items()[0]
     return entry
@@ -45,19 +46,18 @@ def BibTeX2XML(bibtexstring):
 
     f = CaselessDict(e.fields)
     url = f.get('bdsk-url-1')
-    title = f.get('title').strip().strip('{}')
+    title = f.get('title', "").strip().strip('{}')
     sourcename = f.get('journal','unknown')
-    doi = f.get('doi')
-    year = f.get('year')
-    volume = f.get('volume')
-    pages = f.get('pages')
+    doi = f.get('doi', "")
+    year = f.get('year', "")
+    volume = f.get('volume', "")
+    pages = f.get('pages', "")
+    p1, p2 = '', ''
+    pages = re.findall(r'[0-9][0-9]*', pages)        
     if pages:
-        if '-' in pages:
-            p1,p2 = pages.split('-')
-        else:
-            p1, p2 = pages, ''
-    else: 
-        p1,p2 = '',''
+        p1 = pages[0]
+        if len(pages) > 1:
+            p2 = pages[-1]
 
     xml += """<Title>%s</Title>
 <Category>%s</Category>
@@ -70,6 +70,6 @@ def BibTeX2XML(bibtexstring):
 <DigitalObjectIdentifier>%s</DigitalObjectIdentifier>
 """ % (title,category,year or 2222,sourcename,volume,p1,p2,url,doi)
 
-    xml += '<BibTeX>%s</BibTeX></Source>'%quoteattr(bibtexstring)[1:-1]
+    xml += '<BibTeX>%s</BibTeX></Source>' % quoteattr(bibtexstring)[1:-1]
 
     return xml
