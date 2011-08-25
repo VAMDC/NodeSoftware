@@ -22,6 +22,8 @@ echo "CREATE DATABASE $DB;" | mysql -u "$usr" -p "$PWD"
 # The next line replaces "syncdb" but we skip the index creation for now
 ./manage.py sql node | grep -v "ADD CONSTRAINT" | mysql -u "$usr" -p "$PWD" "$DB"
 
+# load the inchi table first from the dump
+mysql -p "$PWD" -u "$USR" "$DB" < /vald/vamdc/inchi.sql
 # load the data and do the key rewriting
 mysql -u vald -p valdx < load.sql
 

@@ -157,7 +157,7 @@ class Transition(Model):
     gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
     waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans', db_index=False)
 
-    obstype = PositiveSmallIntegerField(null=True, blank=True) # this is the obstype of the wave_linelist, created in post-processing.    
+    obstype = PositiveSmallIntegerField(null=True, db_index=True) # this is the obstype of the wave_linelist, created in post-processing.    
 
     def getWaals(self):
         if self.gammawaals: return self.gammawaals
