@@ -452,7 +452,7 @@ def makeTermType(tag, keyword, G):
         j = G("%sJKJ" % keyword)
         if j:
             string += "<j>%s</j>" % j
-        S2 = G("sJKS" % keyword)
+        S2 = G("%sJKS" % keyword)
         if S2:
             string += "<S2>%s</S2>" % S2
         string += "<K>%s</K>" % K

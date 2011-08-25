@@ -20,4 +20,4 @@ update transitions,sids set transitions.lostate=sids.id where transitions.lostat
 alter table transitions modify upstate INT;
 alter table transitions modify lostate INT;
 
-update transitions t, linelists l set transitions.obstype=l.obstype
+update transitions t, linelists ll set t.obstype=ll.obstype where t.wave_linelist_id=ll.id;
