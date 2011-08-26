@@ -96,5 +96,6 @@ RESTRICTABLES = {\
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 'RadTransBroadeningNatural':'gammarad',
 'RadTransBroadeningPressure':'gammastark',
+'MethodCategory':('obstype',valdObstype)
 }
 

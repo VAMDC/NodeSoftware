@@ -16,7 +16,7 @@ class Species(Model):
     atomic = PositiveSmallIntegerField(null=True, db_index=True)
     isotope = PositiveSmallIntegerField(null=True)
 
-    components = ManyToManyField('self') # only used in case of molecules
+    components = ManyToManyField('self',through='SpeciesComp', symmetrical=False) # only used in case of molecules
 
     def isMolecule(self):
          return self.ncomp > 1
@@ -25,6 +25,17 @@ class Species(Model):
         return u'ID:%s %s'%(self.id,self.name)
     class Meta:
         db_table = u'species'
+
+class SpeciesComp(Model):
+    """
+    This is just the intermediary model so that species can refer
+    to istself to build molecules.
+    """
+    molecule = ForeignKey(Species,related_name='molec')
+    atom = ForeignKey(Species,related_name='atom')
+    class Meta:
+        db_table = u'species_components'
+
 
 class Reference(Model):
     id = CharField(max_length=64, primary_key=True, db_index=True)
