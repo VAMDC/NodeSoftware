@@ -198,6 +198,7 @@ RESTRICTABLES = {
 #'RadTransProbabilityOscillatorStrength':'',
 #'RadTransProbabilityWeightedOscillatorStrength':'',
 #'RadTransWavelength':('frequency',Angstr2MHz),
+'RadTransWavelength':'frequency',
 #'RadTransWavenumber':('frequency',invcm2MHz),
 #'SourceCategory':'',
 #'SourceYear':'',
