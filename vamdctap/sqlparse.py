@@ -164,9 +164,13 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
 def sql2Q(sql):
     if not sql.where:
         return Q()
+    log.debug('Starting sql2Q.')
     logic,rs,count = splitWhere(sql.where)
+    log.debug('splitWhere() returned: logic: %s\nrs: %s\ncount: %s'%(logic,rs,count))
     rs = applyRestrictFus(rs)
+    log.debug('Restrictables after applyRestrictFus(): %s'%rs)
     qdict = restriction2Q(rs)
+    log.debug('qdict after restriction2Q(rs): %s'%qdict)
     return mergeQwithLogic(qdict,logic)
 
 

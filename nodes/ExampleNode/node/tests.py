@@ -16,7 +16,6 @@ except ImportError:
     import unittest
 from vamdctap import tests as vamdctests
 
-
 # add database-specific tests here. See example below. 
 
 class SimpleTest(TestCase):
@@ -38,4 +37,5 @@ def suite():
     tsuite = unittest.TestSuite()
     tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]))
     tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(vamdctests))
+    
     return tsuite

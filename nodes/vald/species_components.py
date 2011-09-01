@@ -15,28 +15,34 @@ def parse_species_file(filename):
     f = open(filename, 'r')
 
     dic = {}
-    string = ""
+    outstring = ""
     for line in f:
         if line.strip().startswith('#') or line.strip().startswith('@'):
             continue
-        if int(line[20:22]) != 0:
+        sid = int(line[:7].strip())
+        ncomp = int(line[132:133].strip())
+        if sid < 5000:
+            # store atomic components only
+            anum = line[134:136]
+            isot = line[137:140]
+            key = "%s-%s" % (anum, isot)
+            if not key in dic:
+                dic[key] = sid        
             continue
-        if int(line[132:133]) == 1:
-            # an atom
-            dic[line[134:136].strip()] = line[0:7].strip()
         else:
-            # a molecule - at this point we should already have
-            # a full range of (neutral) atoms to search for
-            # atommasses of up to four component species
-            dbref = line[0:7].strip()
-            cdbrefs = [dic.get(line[134:136].strip()),
-                       dic.get(line[141:143].strip()),
-                       dic.get(line[148:150].strip()),
-                       dic.get(line[155:157].strip())]
-            for cdbref in [cm for cm in set(cdbrefs) if cm]:
-                string += '\N;"%s";"%s"\n' % (dbref, cdbref)
-    return string
-
+            # a molecule (we also know that these come AFTER atoms in the file)
+            for icomp in range(ncomp):
+                offset = icomp*7
+                anum = line[134+offset: 136+offset]
+                isot = line[137+offset: 140+offset]
+                key = "%s-%s" % (anum, isot)
+                # match against atom
+                asid = dic.get(key, None)
+                if asid:
+                    outstring += '\N;"%s";"%s"\n' % (sid, asid)
+                else:
+                    outstring += '\N;"%s";\N\n' % sid
+    return outstring
 
 if __name__=='__main__':
 

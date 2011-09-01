@@ -175,6 +175,7 @@ def sync(request):
 
     log.debug('Requestables: %s'%tap.requestables)
     generator=Xsams(requestables=tap.requestables,**results)
+    log.debug('Generator set up, handing it to HttpResponse.')
     response=HttpResponse(generator,mimetype='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
 

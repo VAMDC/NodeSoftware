@@ -452,7 +452,7 @@ def makeTermType(tag, keyword, G):
         j = G("%sJKJ" % keyword)
         if j:
             string += "<j>%s</j>" % j
-        S2 = G("sJKS" % keyword)
+        S2 = G("%sJKS" % keyword)
         if S2:
             string += "<S2>%s</S2>" % S2
         string += "<K>%s</K>" % K
@@ -1164,7 +1164,6 @@ def XsamsRadCross(RadCross):
     if not isiterable(RadCross):
         return
 
-    yield "<CrossSection>"
     for RadCros in RadCross:
         cont, ret = checkXML(RadCros)
         if cont:
@@ -1222,7 +1221,7 @@ def XsamsRadCross(RadCross):
                     else:
                         yield "<DeltaV>%s</DeltaV>" % deltav                    
                 yield "</Modes>"
-            yield "</BandAssignment>"
+        yield "</BandAssignment>"
         yield "</CrossSection>"
 
 
@@ -1254,7 +1253,7 @@ def XsamsCollTrans(CollTrans):
 
     if not isiterable(CollTrans):
         return
-    yield "<Collisions>"
+    #yield "<Collisions>"
     for CollTran in CollTrans:
 
         cont, ret = checkXML(CollTran)

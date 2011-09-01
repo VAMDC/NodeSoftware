@@ -8,7 +8,7 @@ controlled from a mapping file.
 
 """
 
-import sys, os.path
+import sys
 from time import time 
 
 TOTAL_LINES = 0
@@ -81,23 +81,26 @@ def validate_mapping(mapping):
 # working functions for the importer
 def get_value(linedata, column_dict):
     """
-    Process one line of data. Linedata is a tuple that always starts with
+    Process one line/block of data. Linedata is a tuple that always starts with
     the raw string for the line. The function with its arguments is read from
     the column_dict and applied to the linedata. The result is returned, after
     checking for the NULL value.
     """
     cbyte = column_dict['cbyte']    
     colfunc = cbyte[0]
+    filenum = column_dict.get('filenum', 0)
+    if is_iter(filenum):       
+        linedata = [linedata[num] for num in filenum] # this will raise error if out of bounds, as it should.
+    else:
+        linedata = linedata[filenum]
     args = ()
     if len(cbyte) > 1:
         args = cbyte[1:]    
     kwargs = column_dict.get('kwargs', {})
-    if len(linedata) == 1:
-        linedata = linedata[0]
-    try:        
+    try:                
         dat = colfunc(linedata,  *args, **kwargs)
     except Exception, e:
-        log_trace(e, "error processing lines '%s' - in %s%s: " % (linedata, colfunc, args))
+        log_trace(e, "error processing line/block '%s' - in %s%s: " % (linedata, colfunc, args))
         raise 
     if not dat or (column_dict.has_key('cnull') \
                        and dat == column_dict['cnull']):
@@ -296,11 +299,11 @@ def make_outfile(file_dict, global_debug=False):
             debug = global_debug or linedef.has_key('debug') and linedef['debug']
 
             # do not stop or log on errors (this does not hide debug messages if debug is active)
-            skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
-            
+            #skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
+
             # parse the mapping for this line(s)
             dat = get_value(lines, linedef)
-        
+
             if debug:
                 print "DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat)
 
@@ -309,11 +312,11 @@ def make_outfile(file_dict, global_debug=False):
     outf.close()
 
     print '  %s -> %s: %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), file_dict['outfile'], total, errors)
-    
+
     global TOTAL_LINES, TOTAL_ERRS
     TOTAL_LINES += total
     TOTAL_ERRS += errors
-    
+
 def parse_mapping(mapping, debug=False):
     """
     Step through a list of mappings describing
@@ -321,18 +324,18 @@ def parse_mapping(mapping, debug=False):
     django database fields. This should ideally
     not have to be changed for different database types.
     """
-    
+
     if not validate_mapping(mapping):  return
     t0 = time()
 
     for file_dict in mapping:
-        t1 = time()            
+        t1 = time()
         make_outfile(file_dict, global_debug=debug)
         print "Time used: %s" % ftime(t1, time())
         #pdb.set_trace()
         #print gc.garbage
         #print gc.get_count()
-    
+
     print "Total time used: %s" % ftime(t0, time())
     print "Total number of errors/fails/skips: %s/%s (%g%%)" % (TOTAL_ERRS,
                                                                 TOTAL_LINES,
