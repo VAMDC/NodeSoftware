@@ -45,7 +45,10 @@ class Species( Model):
      datearchived          = DateField(db_column='E_DateArchived')
      class Meta:
        db_table = u'Entries'
-
+     
+     def getMassNumber(self):
+          tag = str(self.speciestag)
+          return tag[:-3] #self.speciestag[:-3]
 
 class Datasets( Model):
      id                    = IntegerField(primary_key=True, db_column='DAT_ID')
