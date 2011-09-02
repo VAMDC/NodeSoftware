@@ -131,69 +131,58 @@ class TestBibTex(TestCase):
 
 import bibtextools
 
-
-B1 = """@article{PGHcor,
-        Annote = {(+0.04)},
-        Author = {{Pauls}, U. and {Grevesse}, N. and {Huber}, M.~C.~E.},
-        Date-Modified = {2010-09-27 17:27:07 +0200},
-        Journal = {Astron. and Astrophys.},
-        Keywords = {ABUNDANCE, IRON, METALLICITY, NEAR INFRARED RADIATION, SOLAR SPECTRA, NONEQUILIBRIUM THERMODYNAMICS, PHOTOSPHERE, THERMODYNAMIC EQUILIBRIUM, TRANSITION PROBABILITIES},
-        Month = may,
-        Note = {(PGHcor)},
-        Pages = {536-542},
-        Title = {{Fe II transition probabilities and the solar iron abundance}},
-        Volume = 231,
-        Year = 1990}"""
-B2 = """@misc{GHcor,
-        Author = {{Kurucz}, R.~L.},
-        Annote = {{CB data scaled to GHLb}},
-        Date-Modified = {2010-09-27 17:27:07 +0200},
-        Note = {(GHcor)}}"""
-B3 = """@article{AMS,
-  author = {{ANDERSEN}, T. and {MADSEN}, O.H. and {S{\O}RENSEN}, G.},
-  journal = {J. Opt. Soc. Am.},
-  keywords = {},
-  number = {9},
-  pages = {1118--1118},
-  publisher = {OSA},
-  title = {Radiative Lifetimes in Sn I and Bi I},
-  volume = {62},
-  month = {Sep},
-  year = {1972},
-  url = {http://www.opticsinfobase.org/abstract.cfm?URI=josa-62-9-1118},
-  doi = {10.1364/JOSA.62.001118},
-  Note = {AMS}
+B9 = """@phdthesis{MIL,
+  author = {{Miller}, M.~H.},
+  title = {{Perturbation Theory of Nonlinear Boundary Value Problems in Mathematical Physics.}},
+  school = {University of Maryland, Technical Note BN-550, NEW YORK UNIVERSITY.},
+  year = {1968},
+  adsurl = {http://cdsads.u-strasbg.fr/abs/1968PhDT........27M},
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System},
+  Note = {MIL}
 }"""
 
-B4 = """@misc{GUES,                                                                                                                                                                                                                   Author = {{Kurucz}, R.~L.},                                                                                                                                                                                                      Annote = {{Guess  multiplet table indicates that a line is present}},                                                                                                                                                    
-        Date-Modified = {2010-09-27 17:27:07 +0200},                                                                                                                                                                                   Note = {(GUES)}}"""
-
-B5 = """@article{SEN,
-  author = {{Sengupta}, S.},
-  title = {{Electric quadrupole transitions in LiI, BeII, BIII}},
-  journal = {\jqsrt},
-  year = {1975},
+B1 = """@ARTICLE{JNG,
+   author = {{Johansson}, S. and {Nave}, G. and {Geller}, M. and {Sauval}, A.~J. and
+        {Grevesse}, N. and {Schoenfeld}, W.~G. and {Change}, E.~S. and
+        {Farmer}, C.~B.},
+    title = "{Analysis of the 3d^{6}4s(^{6}D)4f-5g supermultiplet of Fe I in laboratory and solar infrared spectra}",
+  journal = {Astrophys. J.},
+   eprint = {arXiv:astro-ph/9404050},
+ keywords = {HYPERFINE STRUCTURE, IRON, LINE SPECTRA, SEMIEMPIRICAL EQUATIONS, SOLAR SPECTRA, ABUNDANCE, LOCAL THERMODYNAMIC EQUILIBRIUM, METEORITIC COMPOSITION},
+     year = 1994,
+    month = jul,
+   volume = 429,
+    pages = {419-426},
+      doi = {10.1086/174333}}"""
+B2 = """@article{BKm,
+  author = {{Blagoev}, K.~B. and {Komarovskii}, V.~A.},
+  title = {{Relative oscillator strengths of the spectral lines of atomic samarium}},
+  journal = {Optics and Spectroscopy},
+  year = {1977},
   month = {Feb},
-  volume = {15},
-  pages = {159-162},
-  doi = {10.1016/0022-4073(75)90014-X},
-  adsurl = {http://cdsads.u-strasbg.fr/abs/1975JQSRT..15..159S},
+  volume = {42},
+  pages = {229-230},
+  adsurl = {http://cdsads.u-strasbg.fr/abs/1977OptSp..42..229B},
   adsnote = {Provided by the SAO/NASA Astrophysics Data System},
-  note = {SEN}
+  Note = {BKm}
 }"""
 
-B6 = """@book{CB,
-  author = {{Corliss}, C.~H. and {Bozman}, W.~R.},
-  title = {{Experimental transition probabilities for spectral lines of seventy elements; derived from the NBS Tables of spectral-line intensities}},
-  booktitle = {NBS Monograph, Washington: US Department of Commerce, National Bureau of Standards, |c1962},
-  year = {1962},
-  editor = {{Corliss, C.~H.~\& Bozman, W.~R.}},
-  adsurl = {http://cdsads.u-strasbg.fr/abs/1962etps.book.....C},
+B3 = """@article{BKP,
+  author = {{Blagoev}, K.~B. and {Komarovskii}, V.~A. and {Penkin}, N.~P.},
+  title = {{Lifetimes of excited states of the samarium atom}},
+  journal = {Optics and Spectroscopy},
+  year = {1977},
+  month = {Mar},
+  volume = {42},
+  pages = {238-239},
+  adsurl = {http://cdsads.u-strasbg.fr/abs/1977OptSp..42..238B},
   adsnote = {Provided by the SAO/NASA Astrophysics Data System},
-  Note = {CB}
+  Note = {BKP}
 }"""
-print bibtextools.BibTeX2XML(B6)
 
+
+print bibtextools.BibTeX2XML(B2)
+print bibtextools.BibTeX2XML(B3)
 
 
 if __name__ == "__main__":    

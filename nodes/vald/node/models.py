@@ -105,7 +105,8 @@ class State(Model):
     level_linelist = ForeignKey(LineList, related_name='islevellinelist_state', db_index=False)
 
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True)
-    l = DecimalField(max_digits=3, decimal_places=1,db_column=u'L', null=True)
+    l = IntegerField(null=True)
+    #l = DecimalField(max_digits=3, decimal_places=1,db_column=u'L', null=True)
     s = DecimalField(max_digits=3, decimal_places=1,db_column=u'S', null=True)
     p = DecimalField(max_digits=3, decimal_places=1,db_column=u'P', null=True)
     j1 = DecimalField(max_digits=3, decimal_places=1,db_column=u'J1', null=True)
