@@ -129,7 +129,8 @@ def getSpeciesWithStates(transs):
             lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
             specie.States = States.objects.filter( pk__in = sids)
-            nstates += len(sids)
+#            nstates += len(sids)
+            nstates += specie.States.count()
 #            attach_state_qns(specie.States)
 
 
@@ -173,24 +174,7 @@ def getSources(transs):
 
 def setupResults(sql):
     LOG(sql)
-#    q = sql2Q(sql)
-
-    # sql2Q(sql) - code copied as c.hill did for the hitran-node
-    logic, rs, count = splitWhere(sql.where)
-    # and replace any restrictions on ChemicalName or StoichiometricFormula
-    # with the equivalent on MoleculeInchiKey. Also convert wavelength
-    # (in A) to wavenumber:
-    for i in rs:
-        r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
-    #    if r == 'MoleculeChemicalName':
-    #        rs[i] = ChemicalName2MoleculeInchiKey(op, foo)
-    #    if r == 'MoleculeStoichiometricFormula':
-    #        rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
-        if r == 'RadTransWavelength':
-            rs[i] = Wavelength2MHz(op, foo)
-    qdict = restriction2Q(rs)
-    q = mergeQwithLogic(qdict, logic)
-
+    q = sql2Q(sql)
     LOG(q)
     transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0) #order_by('vacwave')
 #    transs = RadiativeTransitions.objects.select_related(depth=2).filter(q)
@@ -217,12 +201,13 @@ def setupResults(sql):
 #    LOG(ntranss)
 #    LOG(methods)
     headerinfo={\
-            'Truncated':percentage,
- #           'COUNT-SOURCES':nsources,
-            'COUNT-species':nspecies,
-            'count-states':nstates,
-            'count-radiative':ntranss
-            }
+        'Truncated':percentage,
+        'count-sources':nsources,
+        'count-species':nspecies,
+        'count-molecules':nspecies,
+        'count-states':nstates,
+        'count-radiative':ntranss
+    }
 
 #    methods = [Method('MOBS', 'observed', 'observed'),
 #                   Method('MDER', 'derived', 'derived')]
@@ -258,29 +243,7 @@ def returnResults(tap, LIMIT=None):
         emsg = 'Currently, only FORMATs PNG, SPCAT and XSAMS are supported.\n'
         return tapServerError(status=400, errmsg=emsg)
 
-    # XXX more duplication of code from setupResults():
-    # which uses sql = tap.parsedSQL
-#    q = where2q(tap.parsedSQL.where, RESTRICTABLES)
-#    q = sql2Q(tap.parsedSQL)
-    # sql2Q(sql) - code copied as c.hill did for the hitran-node
-    logic, rs, count = splitWhere(tap.parsedSQL.where)
-    # and replace any restrictions on ChemicalName or StoichiometricFormula
-    # with the equivalent on MoleculeInchiKey. Also convert wavelength
-    # (in A) to wavenumber:
-
-    for i in rs:
-        r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
-    #    if r == 'MoleculeChemicalName':
-    #        rs[i] = ChemicalName2MoleculeInchiKey(op, foo)
-    #    if r == 'MoleculeStoichiometricFormula':
-    #        rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
-        if r == 'RadTransWavelength':
-            rs[i] = Wavelength2MHz(op, foo)
-
-        
-    qdict = restriction2Q(rs)
-    q = mergeQwithLogic(qdict, logic)
-
+    q = sql2Q(tap.parsedSQL)
 
     # use tap.parsedSQL.columns instead of tap.requestables
     # because only the selected columns should be returned and no additional ones
@@ -444,27 +407,30 @@ def plotStickSpec(transs):
 
 
     spids = set( transs.values_list('species_id',flat=True) )
-    spidsname = []
-    species = Species.objects.filter(pk__in=spids) #,ncomp__gt=1)
-    i=0
-    bars=[]
-    for specie in species:
-        spidsname.append(specie.name)
-        subtranss = transs.filter(species=specie)
-        intensities = [10.0**trans.intensity for trans in subtranss]
-        frequencies = [trans.frequency for trans in subtranss]
-        #bars.append( ax.bar(frequencies, intensities, color=cm.jet(1.*i/len(spids)))[0] )
-        bars.append( ax.bar(frequencies, intensities, linewidth=1,edgecolor=matplotlib.cm.jet(1.*i/len(spids)), color=matplotlib.cm.jet(1.*i/len(spids)))[0] )
-        i=i+1
+
+    if (len(spids)>0): 
+            
+        spidsname = []
+        species = Species.objects.filter(pk__in=spids) #,ncomp__gt=1)
+        i=0
+        bars=[]
+        for specie in species:
+            spidsname.append(specie.name)
+            subtranss = transs.filter(species=specie)
+            intensities = [10.0**trans.intensity for trans in subtranss]
+            frequencies = [trans.frequency for trans in subtranss]
+            #bars.append( ax.bar(frequencies, intensities, color=cm.jet(1.*i/len(spids)))[0] )
+            bars.append( ax.bar(frequencies, intensities, linewidth=1,edgecolor=matplotlib.cm.jet(1.*i/len(spids)), color=matplotlib.cm.jet(1.*i/len(spids)))[0] )
+            i=i+1
         
  
-    ax.legend(bars,spidsname,loc=0)
-#    intensities = [10.0**trans.intensity for trans in transs]
-#    frequencies = [trans.frequency for trans in transs]
-# #   #IDs = [trans.species for trans in transs]
-
-#    ax.bar(frequencies, intensities) #, color=cols)
-    
+        ax.legend(bars,spidsname,loc=0)
+        #    intensities = [10.0**trans.intensity for trans in transs]
+        #    frequencies = [trans.frequency for trans in transs]
+        # #   #IDs = [trans.species for trans in transs]
+        
+        #    ax.bar(frequencies, intensities) #, color=cols)
+        
     ax.set_xlabel("Frequency [MHz]")
     ax.set_ylabel("Intensity [nm^2MHz]")
 

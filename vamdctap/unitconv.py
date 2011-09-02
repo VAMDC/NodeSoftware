@@ -19,6 +19,19 @@ def eV2Angstr(op, eV):
 def invcm2Angstr(op, invcm):
     return [invertOperator(op), str(1.0E8/float(invcm))]
 
+
+def Angstr2MHz(op, Angstr):
+    return [invertOperator(op), str(2.99792458E12/float(Angstr)) ]
+
+def invcm2MHz(op, invcm):
+    return [op, str(29979.2458*float(invcm)) ]
+
+def eV2MHz (op, eV):
+    return [op, str(2.417989348E8*float(eV)) ]
+        
+def Hz2MHz(op, Hz):
+    return [op, str(float(Hz)/1000000.0) ]
+    
 #Vald specific but maybe instructive for others.
 def valdObstype(op,obstype):
     obstype=obstype.strip().strip('\'"')
