@@ -116,14 +116,16 @@ def getSpeciesWithStates(transs):
 #    LOG("speciesList:")
     spids = set( transs.values_list('species_id',flat=True) )
 #    LOG(spids)
-#    atoms = Species.objects.filter(pk__in=spids,ncomp=1)
-    molecules = Species.objects.filter(pk__in=spids) #,ncomp__gt=1)
+    atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic')
+    molecules = Species.objects.filter(pk__in=spids).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
 #    nspecies = atoms.count() + molecules.count()
     nspecies = molecules.count()
     nstates = 0
-#    for species in [atoms,molecules]:
+#    nmolecules = 0
+#    natoms = 0
+#    for specie in [atoms,molecules]:
 #    for species in [molecules]:  
-    for specie in molecules:
+    for specie in chain(atoms , molecules):
             subtranss = transs.filter(species=specie)
             up=subtranss.values_list('upperstateref',flat=True)
             lo=subtranss.values_list('lowerstateref',flat=True)
@@ -131,11 +133,14 @@ def getSpeciesWithStates(transs):
             specie.States = States.objects.filter( pk__in = sids)
 #            nstates += len(sids)
             nstates += specie.States.count()
+#            nmolecules += specie.States.count()
 #            attach_state_qns(specie.States)
 
 
+
+
 #    return atoms,molecules,nspecies,nstates
-    return molecules,nspecies,nstates
+    return atoms,molecules,nspecies,nstates
 
 def getFreqMethodRefs(transs):
     ids=set([5])  # the only one for now
@@ -193,7 +198,7 @@ def setupResults(sql):
     nsources = sources.count()
 #    atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs)
     LOG(nsources)
-    molecules,nspecies,nstates = getSpeciesWithStates(transs)
+    atoms, molecules,nspecies,nstates = getSpeciesWithStates(transs)
     LOG(nspecies)
     LOG(nstates)
     attach_partionfunc(molecules)
@@ -205,6 +210,7 @@ def setupResults(sql):
         'count-sources':nsources,
         'count-species':nspecies,
         'count-molecules':nspecies,
+        'count-atoms':atoms.count(),
         'count-states':nstates,
         'count-radiative':ntranss
     }
@@ -215,7 +221,7 @@ def setupResults(sql):
 #    methods = getFreqMethodRefs(transs)
 
     return {'RadTrans':transs,
-  #          'Atoms':atoms,
+            'Atoms':atoms,
             'Molecules':molecules,
             'Sources':sources,
             'Methods':methods,
