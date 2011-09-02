@@ -61,7 +61,7 @@ RETURNABLES = {\
 'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
 #'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.accur',
 'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
-'RadTransProbabilityLog10WeightedOscillatorStrengthRef':'RadTran._loggf_ref_id',
+'RadTransProbabilityLog10WeightedOscillatorStrengthRef':'RadTran.loggf_ref_id',
 'RadTransBroadeningNaturalLineshapeParameter':'RadTran.gammarad',
 'RadTransBroadeningNaturalLineshapeParameterName':'log(gamma)',
 'RadTransBroadeningNaturalLineshapeParameterUnit':'cm3/s',

@@ -20,7 +20,7 @@ echo "DROP DATABASE $DB;" | mysql -u "$usr" -p "$PWD"
 echo "CREATE DATABASE $DB;" | mysql -u "$usr" -p "$PWD"
 
 # The next line replaces "syncdb" but we skip the index creation for now
-./manage.py sql node | grep -v "ADD CONSTRAINT" | mysql -u "$usr" -p "$PWD" "$DB"
+./manage.py sql node | grep -v "\`transitions\` ADD CONSTRAINT" | mysql -u "$usr" -p "$PWD" "$DB"
 
 # load the inchi table first from the dump
 mysql -p "$PWD" -u "$USR" "$DB" < /vald/vamdc/inchi.sql
