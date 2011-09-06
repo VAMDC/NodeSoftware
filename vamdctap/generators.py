@@ -1430,20 +1430,20 @@ def XsamsCollTrans(CollTrans):
                         # handle X components of XY
                         Nx = G("CollisionTabulatedDataXN")
                         xunits = G("CollisionTabulatedDataXUnits")
-                                                
-                        yield "<X units='%s' parameter='%s'" % (Nx, xunits)                    
+
+                        yield "<X units='%s' parameter='%s'" % (Nx, xunits)
                         yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataX"))))
-                        yield "<Error> n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataYError"))))
+                        yield "<Error> n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXError"))))
                         yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXNegativeError"))))
                         yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXPositiveError"))))
                         yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataXDescription")
-                        yield "</X>"                    
+                        yield "</X>"
 
                         # handle Y components of XY
                         Ny = G("CollisionTabulatedDataYN")
                         yunits = G("CollisionTabulatedDataYUnits")
 
-                        yield "<Y units='%s' parameter='%s'" % (Ny, yunits)                    
+                        yield "<Y units='%s' parameter='%s'" % (Ny, yunits)
                         yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataY"))))
                         yield "<Error> n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYError"))))
                         yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYNegativeError"))))
