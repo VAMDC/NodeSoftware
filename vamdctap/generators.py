@@ -1253,7 +1253,7 @@ def XsamsCollTrans(CollTrans):
 
     if not isiterable(CollTrans):
         return
-    #yield "<Collisions>"
+    yield "<Collisions>"
     for CollTran in CollTrans:
 
         cont, ret = checkXML(CollTran)
