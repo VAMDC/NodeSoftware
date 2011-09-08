@@ -1,0 +1,24 @@
+How to release a new version of the NodeSoftware
+
+About versioning:
+* Version numbers like "11.5" reflect the standard.
+* NodeSoftware adds suffixes r1, r2 etc for incremental
+  updates based on that standard.
+* The Nodesoftware can implement Returnables that are
+  not yet in the released standard.
+
+To do:
+* Fix all bugs that are tagged for the release
+* Double-check changes in the standards.
+* Write Changelog in Documentation!
+* Update the bits in documentation that need updating!
+* Edit the version in settings_default.py
+* merge into release branch
+* push release branch to vamdc-repo
+* make the tag
+* push the tag
+* pull and rebuild docs on http://vamdc.tmy.se/
+* notify vamdc.eu/org that they should grab the tar-ball
+  from the tag at GitHub and put it on the web. And to
+  update their build of the docs.
+* write a short email to vamdc.developers.
