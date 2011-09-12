@@ -8,92 +8,52 @@ from vamdctap import sqlparse
 from itertools import chain
 from HITRANfuncsenvs import * 
 import formula_parser
-
-# This turns a 500 "internal server error" into a TAP error-document
-# XXX this is duplicated from vamdctap/views.py - some time, tidy this up.
-from django.template import Context, loader
-from django.http import HttpResponse
-def tapServerError(request=None, status=500, errmsg=''):
-    text = 'Error in TAP service: %s' % errmsg
-    # XXX I've had to copy TAP-error-document.xml into my node's
-    # template directory to get access to it, as well...
-    document = loader.get_template('TAP-error-document.xml').render(
-            Context({"error_message_text" : text}))
-    return HttpResponse(document, status=status, mimetype='text/xml');
-
 import sys
+
 def LOG(s):
     print >> sys.stderr, s
 
-case_prefixes = {}
-case_prefixes[1] = 'dcs'
-case_prefixes[2] = 'hunda'
-case_prefixes[3] = 'hundb'
-case_prefixes[4] = 'ltcs'
-case_prefixes[5] = 'nltcs'
-case_prefixes[6] = 'stcs'
-case_prefixes[7] = 'lpcs'
-case_prefixes[8] = 'asymcs'
-case_prefixes[9] = 'asymos'
-case_prefixes[10] = 'sphcs'
-case_prefixes[11] = 'sphos'
-case_prefixes[12] = 'ltos'
-case_prefixes[13] = 'lpos'
-case_prefixes[14] = 'nltos'
+def get_species(transitions):
+    """
+    Return a list of the species with transitions matching the search
+    parameters and attach the relevant states to them.
 
-def attach_state_qns(states):
-    for state in states:
-        state.parsed_qns = []
-        qns = Qns.objects.filter(stateid=state.id)
-        for qn in qns.order_by('id'):
-            if qn.qn_attr:
-                # put quotes around the value of the attribute
-                attr_name, attr_val = qn.qn_attr.split('=')
-                qn.qn_attr = '%s="%s"' % (attr_name, attr_val)
-            state.parsed_qns.append(MolQN(qn.stateid, case_prefixes[qn.caseid],
-                               qn.qn_name, qn.qn_val, qn.qn_attr, qn.xml))
+    """
 
-def getHITRANmolecules(transs):
-    InChIKeys = set(transs.values_list('inchikey', flat=True))
     nstates = 0
-    species = []
-    for isotopologue in Isotopologues.objects.filter(pk__in=InChIKeys):
-        molecules = Molecules.objects.filter(pk=isotopologue.molecid)
-        molecule = molecules[0]
-        this_species = Species(isotopologue.molecid, isotopologue.isoid,
-                isotopologue.inchikey, molecule.molec_name,
-                isotopologue.iso_name, molecule.chemical_names,
-                molecule.stoichiometric_formula,
-                molecule.stoichiometric_formula)
-        this_species.inchi = isotopologue.inchi
+    species = Iso.objects.filter(pk__in=transitions.values_list('iso')
+                                 .distinct())
+    nspecies = species.count()
+    for iso in species:
         states = []
         # all the transitions for this species:
-        sptranss = transs.filter(inchikey=isotopologue.inchikey)
+        sptransitions = transitions.filter(iso=iso)
         # sids is all the stateIDs involved in these transitions:
-        stateps = sptranss.values_list('finalstateref', flat=True)
-        statepps = sptranss.values_list('initialstateref', flat=True)
+        stateps = sptransitions.values_list('statep', flat=True)
+        statepps = sptransitions.values_list('statepp', flat=True)
         sids = set(chain(stateps, statepps))
-        # attach the corresponding states to the molecule:
-        this_species.States = States.objects.filter( pk__in = sids)
-        #attach_state_qns(this_species.States)
+        # attach the corresponding states to the species:
+        iso.states = State.objects.filter(pk__in = sids)
         nstates += len(sids)
-        # add this species object to the list:
-        species.append(this_species)
-    nspecies = len(species)
     return species, nspecies, nstates
 
-def getHITRANsources(transs):
-    # for now, we set all the references to HITRAN2008
-    #sourceIDs = set([])
-    sourceIDs = ['B_HITRAN2008',]
-    #for trans in transs:
-        #s = set([trans.nu_ref, trans.a_ref])
-    #    trans.nu_ref = 'B_HITRAN2008'
-    #    trans.a_ref = 'B_HITRAN2008'
-    #    trans.s_ref = 'B_HITRAN2008'
-        #sourceIDs = sourceIDs.union(s)
+def get_sources(transitions):
+    return None
+    refIDs = set()
+    for trans in transitions:
+        refIDs.add(trans.nu.ref)
+        refIDs.add(trans.A.ref)
+    return Ref.objects.filter(pk__in=refIDs)
 
-    return Refs.objects.filter(pk__in=sourceIDs)
+def attach_prms(transitions):
+    """
+    Attach the parameters for each transition to its Trans object as
+    prm.val, prm.err, and prm.ref
+
+    """
+    for trans in transitions:
+        for prm in trans.prm_set.all():
+            exec('trans.%s = prm' % prm.name)
 
 def ChemicalName2MoleculeInchiKey(op, foo):
     """
@@ -111,14 +71,15 @@ def ChemicalName2MoleculeInchiKey(op, foo):
             if name =='(' or name ==')':
                 continue
             name_list.append(name.replace('"','').replace("'",''))
-        molecules = MoleculeNames.objects.filter(chemical_name__in = name_list)
+        moleculename_ids = MoleculeName.objects.filter(name__in=name_list)\
+                            .values_list('molecule', flat=True)
     else:
         print 'I only understand IN and = queries on ChemicalName, but I'
         print 'got', op
         return None
-    molecids = molecules.values_list('molecid', flat=True)
-    isos = Isotopologues.objects.filter(molecid__in=molecids)
-    inchikeys = isos.values_list('inchikey', flat=True)
+    molecules = Molecule.objects.filter(pk__in=moleculename_ids)
+    isos = Iso.objects.filter(molecule__in=molecules)
+    inchikeys = isos.values_list('InChIKey', flat=True)
     q = ['MoleculeInchiKey', 'in', '(']
     for inchikey in inchikeys:
         q.append(inchikey)
@@ -150,14 +111,14 @@ def StoichiometricFormula2MoleculeInchiKey(op, foo):
                 print 'Failed to parse stoichiometric formula: %s' % e
                 continue
             stoich_formula_list.append(stoich_formula)
-        molecules = Molecules.objects.filter(
+        molecules = Molecule.objects.filter(
                 stoichiometric_formula__in = stoich_formula_list)
     else:
         print 'I only understand IN and = queries on StoichiometricFormula,'
         print ' but I got', op
         return None
     molecids = molecules.values_list('molecid', flat=True)
-    isos = Isotopologues.objects.filter(molecid__in=molecids)
+    isos = Iso.objects.filter(molecid__in=molecids)
     inchikeys = isos.values_list('inchikey', flat=True)
     q = ['MoleculeInchiKey', 'in', '(']
     for inchikey in inchikeys:
@@ -223,27 +184,28 @@ def setupResults(sql, LIMIT=1000):
             rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
         if r == 'RadTransWavelength':
             rs[i] = Wavelength2Wavenumber(op, foo)
-    #print 'rs is',rs
+    print 'rs is',rs
     qdict = sqlparse.restriction2Q(rs)
     q = sqlparse.mergeQwithLogic(qdict, logic)
     
-
-    transs = Trans.objects.filter(q) 
-    ntrans = transs.count()
+    transitions = Trans.objects.filter(q) 
+    ntrans = transitions.count()
     if LIMIT is not None and ntrans > LIMIT:
-        # we need to filter transs again later, so can't take a slice
-        #transs = transs[:LIMIT]
+        # we need to filter transitions again later, so can't take a slice
+        #transitions = transitions[:LIMIT]
         # so do this:
-        numax = transs[LIMIT].nu
-        transs = Trans.objects.filter(q, Q(nu__lte=numax))
+        numax = transitions[LIMIT].nu
+        transitions = Trans.objects.filter(q, Q(nu__lte=numax))
         percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
     else:
         percentage = '100'
     print 'Truncated to %s %%' % percentage
 
-    sources = getHITRANsources(transs)
+    attach_prms(transitions)
+
+    sources = get_sources(transitions)
     # extract the state quantum numbers in a form that generators.py can use:
-    species, nspecies, nstates = getHITRANmolecules(transs)
+    species, nspecies, nstates = get_species(transitions)
     LOG('%s transitions retrieved from HITRAN database' % ntrans)
     LOG('%s states retrieved from HITRAN database' % nstates)
     LOG('%s species retrieved from HITRAN database' % nspecies)
@@ -251,7 +213,8 @@ def setupResults(sql, LIMIT=1000):
     print 'nspecies =', nspecies
     print 'nstates =', nstates
     print 'ntrans =', ntrans
-    print 'nsources =', len(sources)
+    if sources is not None:
+        print 'nsources =', len(sources)
 
     headerinfo = {
         'Truncated': '%s %%' % percentage,
@@ -267,7 +230,7 @@ def setupResults(sql, LIMIT=1000):
    # return the dictionary as described above
     return {'HeaderInfo': headerinfo,
             'Methods': methods,
-            'RadTrans': transs,
+            'RadTrans': transitions,
             'Sources': sources,
             'Molecules': species,
             'Environments': HITRANenvs,
@@ -296,24 +259,24 @@ def returnResults(tap, LIMIT=None):
         LOG(e)
         return {}
 
-    transs = Trans.objects.filter(q) 
-    ntrans = transs.count()
+    transitions = Trans.objects.filter(q) 
+    ntrans = transitions.count()
     if LIMIT is not None and ntrans > LIMIT:
-        # we need to filter transs again later, so can't take a slice
-        #transs = transs[:LIMIT]
+        # we need to filter transitions again later, so can't take a slice
+        #transitions = transitions[:LIMIT]
         # so do this:
-        numax = transs[LIMIT].nu
-        transs = Trans.objects.filter(q, Q(nu__lte=numax))
+        numax = transitions[LIMIT].nu
+        transitions = Trans.objects.filter(q, Q(nu__lte=numax))
         percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
     else:
         percentage = '100'
     print 'Truncated to %s %%' % percentage
     print 'ntrans =',ntrans
     
-    par_generator = Par(transs)
+    par_generator = Par(transitions)
     response = HttpResponse(par_generator, mimetype='text/plain')
     return response
 
-def Par(transs):
-    for trans in transs:
+def Par(transitions):
+    for trans in transitions:
         yield '%s\n' % trans.hitranline

@@ -107,11 +107,11 @@ def GetValue(name, **kwargs):
         # here, the RHS of the RETURNABLES dict is executed.
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
-    except Exception:
+    except Exception as e:
          # this catches the case where the dict-value is a string or mistyped.
-#        log.debug('Exception in generators.py: GetValue()')
-#        log.debug(str(e))
-#        log.debug(name)
+        #log.debug('Exception in generators.py: GetValue()')
+        #log.debug(str(e))
+        #log.debug(name)
         value = name
     if value == None:
         # the database returned NULL

@@ -134,6 +134,7 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
                 log.error('Values for IN not bracketed: %s'%foo)
             else: foo=foo[1:-1]
             ins = map(strip,foo,('\'"',)*len(foo))
+            print 'ins is', ins
             qstr = 'Q(%s=ins)'% (rest_rhs+'__in')
         elif op=='like':
             foo=checkLen1(foo)
