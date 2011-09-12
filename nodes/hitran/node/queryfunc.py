@@ -117,9 +117,8 @@ def StoichiometricFormula2MoleculeInchiKey(op, foo):
         print 'I only understand IN and = queries on StoichiometricFormula,'
         print ' but I got', op
         return None
-    molecids = molecules.values_list('molecid', flat=True)
-    isos = Iso.objects.filter(molecid__in=molecids)
-    inchikeys = isos.values_list('inchikey', flat=True)
+    isos = Iso.objects.filter(molecule__in=molecules)
+    inchikeys = isos.values_list('InChIKey', flat=True)
     q = ['MoleculeInchiKey', 'in', '(']
     for inchikey in inchikeys:
         q.append(inchikey)
@@ -164,7 +163,6 @@ def Wavelength2Wavenumber(op, foo):
     q = ['RadTransWavenumber', opp, str(foop)]
     return q
         
-
 def setupResults(sql, LIMIT=1000):
     # rather than use the sql2Q method:
     #q = sqlparse.sql2Q(sql)

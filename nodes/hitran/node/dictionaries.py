@@ -63,9 +63,9 @@ RETURNABLES={\
 # transforming them into the corresponding InChIKeys
 RESTRICTABLES = {\
 'MoleculeChemicalName': 'dummy',
-#'MoleculeStoichiometricFormula': 'dummy',
-'MoleculeInchiKey': 'iso.InChIKey',
+'MoleculeStoichiometricFormula': 'dummy',
+'MoleculeInchiKey': 'iso__InChIKey',
 'RadTransWavenumber': 'nu',
-#'RadTransWavelength': 'dummy', 
+'RadTransWavelength': 'dummy', 
 'RadTransProbabilityA': 'A',
 }
