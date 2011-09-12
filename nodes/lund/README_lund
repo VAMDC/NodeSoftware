@@ -19,11 +19,12 @@ gunicorn_django -c gunicorn.conf
 
 followed by 
 
-sudo /etc/init.d nginx start
+sudo /etc/init.d/nginx start
 
 - Updating the node software
 ----------------------------
 
+If you did changes, first: 
 git commit -a
 <write commit message>
 
