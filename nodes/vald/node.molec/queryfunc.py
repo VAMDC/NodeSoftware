@@ -30,7 +30,7 @@ def addStates(transs,species):
 def getSpeciesWithStates(transs,addAtomStates,addMoleStates):
     log.debug('Entered getSpeciesWithStates(). Add states: %s %s'%(addAtomStates,addMoleStates))
     spids = transs.values_list('species_id',flat=True).distinct()
-    spids = set(spids) # this is not to throw out duplicates but to evaluate the QuerySet, 
+    spids = set(spids) # this is not to throw out duplicates but to evaluate the QuerySet,
                        # otherwise it becomes slow due to false optimization.
     atoms = Species.objects.filter(pk__in=spids,ncomp=1)
     molecules = Species.objects.filter(pk__in=spids,ncomp__gt=1)
@@ -52,9 +52,9 @@ def setupResults(sql):
     ntranss=transs.count()
     if TRANSLIM < ntranss and (not sql.requestables or 'radiative' in sql.requestables):
         percentage = '%.1f'%(float(TRANSLIM)/ntranss *100)
-        transs = transs.order_by('vacwave')
-        newmax = transs[TRANSLIM].vacwave
-        transs = Transition.objects.filter(q,Q(vacwave__lt=newmax))
+        transs = transs.order_by('wave')
+        newmax = transs[TRANSLIM].wave
+        transs = Transition.objects.filter(q,Q(wave__lt=newmax))
         log.debug('Truncated results to %s, i.e %s A.'%(TRANSLIM,newmax))
     else: percentage=None
     ntranss=transs.count()

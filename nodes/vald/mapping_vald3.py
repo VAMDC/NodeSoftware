@@ -36,14 +36,14 @@ def get_bibtex_dbref(linedata):
 def parse_linelist_file(filename):
     """
     Helper method for parsing the vald3 linelist wiki file into
-    a dictionary of entries. This is the only way to propely 
+    a dictionary of entries. This is the only way to propely
     match certain properties of linelists that are only present
     in this list. Note that no correction for doublet linelist
-    matches are done here. 
+    matches are done here.
     """
     f = open(filename, 'r')
     dic = {}
-    for line in f:        
+    for line in f:
         if not line.startswith('||'):
             continue
         cols = line.split('||')[1:]
@@ -56,13 +56,13 @@ def parse_linelist_file(filename):
             refs = [element.strip().strip(']]').strip().split('|')[1] for element in cols[3].split(',') if element.strip()]
         except IndexError:
             pass
-        dic[fil] = (elements, typ, refs)        
+        dic[fil] = (elements, typ, refs)
     return dic
 LINELIST_DICT = parse_linelist_file(base + "VALD3linelists.txt")
 
 # obs/exp - transition between levels with experimentally known energies
-# emp - relativistic Hartree-Fock calculations, normalized to the experimental lifetimes 
-# pred - transitions between predicted energy levels 
+# emp - relativistic Hartree-Fock calculations, normalized to the experimental lifetimes
+# pred - transitions between predicted energy levels
 # calc - relativistic Hartree-Fock calculations of lifetimes and transition probabilities
 # mix - mixture of observation times
 OBSTYPE_DICT = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
@@ -109,7 +109,7 @@ mapping = [
             {'cname':'solariso',
              'cbyte':(charrange, 41,47)},
             {'cname':'dissen',
-             'cbyte':(charrange, 48,57)},            
+             'cbyte':(charrange, 48,57)},
             {'cname':'ncomp',
              'cbyte':(charrange, 132,133)},
             {'cname':'atomic',
@@ -119,7 +119,7 @@ mapping = [
             # many2many field "species" handled by separate table
             ],
      }, # end of definition for species file
-    
+
     # State model read 2 lines at a time from vald3 main file term
     # files are grouped with 3 lines (lower,upper,transition_inf) for
     # every 2 lines (lower, upper) in the vald file
@@ -127,13 +127,13 @@ mapping = [
     # States output file appended with lower states
     {'outfile':outbase + 'lowstates.dat',
      'infiles':(vald_file, vald_file, terms_file, terms_file),
-     'headlines':(2, 2, 0, 0), 
+     'headlines':(2, 2, 0, 0),
      'commentchar':('#','#','#','#'),
      'linestep':(2, 2, 3, 3),   # step lengh in each file
      'lineoffset':(0, 1, 0, 2), # start point of step in each file
      'errline':("Unknown", "Unknown", "Unknown", "Unknown"),
      'linemap':[
-            {'cname':'charid',         #species,coup,jnum,term,energy (lower states) 
+            {'cname':'charid',         #species,coup,jnum,term,energy (lower states)
              'cbyte':(merge_cols,
                       (30,36), (124,126), (58,64), (126,212), (44,58))},
             {'cname':'species',
@@ -156,7 +156,7 @@ mapping = [
              'cbyte':(charrange, 17,25)},
             {'filenum':1,
              'cname':'lande_ref',
-             'cbyte':(charrange, 33,41)},            
+             'cbyte':(charrange, 33,41)},
             {'filenum':1,
              'cname':'level_ref',
              'cbyte':(charrange, 65,73)},
@@ -168,11 +168,11 @@ mapping = [
              'cbyte':(charrange, 350,354)},
             {'cname':'level_linelist',
              'cbyte':(charrange, 366,370)},
-     
+
             # these are read from 1st open term file
             {'filenum':2, # use term file
              'cname':'j',
-             'cbyte':(get_term_val,'J'),           
+             'cbyte':(get_term_val,'J'),
              'cnull':'X',},
             {'filenum':2, # use term file
              'cname':'l',
@@ -207,24 +207,24 @@ mapping = [
              'cbyte':(get_term_val,'Jc'),
              'cnull':'X',},
             {'filenum':2, # use term file
-             'cname':'sn',             
+             'cname':'sn',
              'cbyte':(get_term_val,'seniority'),
-             'cnull':'X',},            
+             'cnull':'X',},
 
             # read extra info from 2nd open term file
             {'filenum':3, # use 2nd open term file
-             'cname':'transition_type',             
+             'cname':'transition_type',
              'cbyte':(get_term_transtype,'ttype'),
-             'cnull':'X',},                        
+             'cnull':'X',},
             {'filenum':3, # use 2nd open term file
-             'cname':'autoionized',             
+             'cname':'autoionized',
              'cbyte':(get_term_transtype,'autoio'),
-             'cnull':'X',},                        
+             'cnull':'X',},
             ]
      }, # end of State model creation - lower states
 
-    # upper states  
-    {'outfile':outbase + 'upstates.dat',    
+    # upper states
+    {'outfile':outbase + 'upstates.dat',
      'infiles': (vald_file, vald_file, terms_file, terms_file),
      'headlines':(2, 2, 0, 0),
      'commentchar': ('#', '#', '#','#'),
@@ -232,14 +232,14 @@ mapping = [
      'lineoffset':(0, 1, 1, 2), # start point of step
      'errline':("Unknown", "Unknown","Unknown"),
      'linemap':[
-            {'cname':'charid',        #species,coup,jnum,term,energy (upper states)             
+            {'cname':'charid',        #species,coup,jnum,term,energy (upper states)
              'cbyte':(merge_cols,
-                      (30,36), (212,214), (78,84), (214,300), (64,78))}, 
+                      (30,36), (212,214), (78,84), (214,300), (64,78))},
             {'cname':'species',
              'cbyte':(charrange, 30,36)},
             {'cname':'energy',
              'cbyte':(charrange, 64,78)},
-            #{'cname':'j',   
+            #{'cname':'j',
             # 'cbyte':(charrange, 77,82),},
             {'cname':'lande',
              'cbyte':(charrange, 90,96),
@@ -285,8 +285,8 @@ mapping = [
              'cnull':'X',},
             {'cname':'p',
              'filenum':2, # use term file
-             'cbyte':(get_term_val,'parity'), 
-             'cnull':'X',}, 
+             'cbyte':(get_term_val,'parity'),
+             'cnull':'X',},
             {'cname':'j1',
              'filenum':2, # use term file
              'cbyte':(get_term_val,'J1'),
@@ -310,20 +310,20 @@ mapping = [
             {'cname':'sn',
              'filenum':2, # use term file
              'cbyte':(get_term_val,'seniority'),
-             'cnull':'X',},            
+             'cnull':'X',},
             # read extra info from every third line in term file
             {'filenum':3, # use 2nd open term file
-             'cname':'transition_type',             
+             'cname':'transition_type',
              'cbyte':(get_term_transtype,'ttype'),
-             'cnull':'X',},                        
+             'cnull':'X',},
             {'filenum':3, # use 2nd open term file
-             'cname':'autoionized',             
+             'cname':'autoionized',
              'cbyte':(get_term_transtype,'autoio'),
-             'cnull':'X',},                        
+             'cnull':'X',},
             ]
      }, # end of upper states
-       
-    # Transition model, using the vald file    
+
+    # Transition model, using the vald file
     {'outfile': outbase + 'transitions.dat',
      'infiles':(vald_file,vald_file),
      'headlines':(2,2),
@@ -336,15 +336,15 @@ mapping = [
              'cnull':'NULL'},
             {'cname':'upstate',
              'cbyte':(merge_cols,
-                      (30,36), (212,214), (78,84), (214,300), (64,78))}, 
+                      (30,36), (212,214), (78,84), (214,300), (64,78))},
                        #(30,36), (170,172), (77,82), (172,218), (63,77))},
             {'cname':'lostate',
              'cbyte':(merge_cols,
                       (30,36), (124,126), (58,64), (126,212), (44,58))},
                       #(30,36), (122,124), (58,63), (124,170), (44,58))},
-            {'cname':'vacwave',
+            {'cname':'ritzwave',
              'cbyte':(charrange, 0,15)},
-            {'cname':'airwave',
+            {'cname':'wave',
              'cbyte':(charrange, 15,30)},
             {'cname':'species',
              'cbyte':(charrange, 30,36)},
@@ -359,12 +359,12 @@ mapping = [
              'cnull':'0.0'},
             {'cname':'gammastark',
              'cbyte':(charrange, 109,116),
-             'cnull':'0.000'},            
+             'cnull':'0.000'},
             {'cname':'gammawaals',
              'cbyte':(get_gammawaals, 116,124),
              'cnull':'0.000',
              'debug':False},
-            {'cname':'sigmawaals', # only filled if raw value > 0.  
+            {'cname':'sigmawaals', # only filled if raw value > 0.
              'cbyte':(get_sigmawaals, 116,124),
              'cnull':'0.000',
              'debug':False},
@@ -379,14 +379,14 @@ mapping = [
              'cbyte':(charrange, 318,334)},
             {'cname':'srctag',
              'cbyte':(charrange, 300,307),
-             'skiperror':True},             
-            
+             'skiperror':True},
+
             # read from every second line of the vald file
             {'filenum':1,
-             'cname':'wave_ref',             
+             'cname':'wave_ref',
              'cbyte':(charrange, 0,9)},
             {'filenum':1,
-             'cname':'loggf_ref',       
+             'cname':'loggf_ref',
              'cbyte':(charrange, 9,17)},
             # removed - see comment about lande factor above
             #{'filenum':1,
@@ -399,10 +399,10 @@ mapping = [
              'cname':'gammastark_ref',
              'cbyte':(charrange, 49,57)},
             {'filenum':1,
-             'cname':'waals_ref',  
+             'cname':'waals_ref',
              'cbyte':(charrange, 57,65)},
             ## These are the old connections to linelists rather than refs directly
-            {'cname':'wave_linelist',             
+            {'cname':'wave_linelist',
              'cbyte':(charrange, 334,338)},
             {'cname':'loggf_linelist',
              'cbyte':(charrange, 338,342)},
@@ -412,10 +412,10 @@ mapping = [
              'cbyte':(charrange, 354,358)},
             {'cname':'gammastark_linelist',
              'cbyte':(charrange, 358,362)},
-            {'cname':'waals_linelist',  
+            {'cname':'waals_linelist',
              'cbyte':(charrange, 362,366)},
             # obstype is parsed from wave_linelist in post-processing
-            # but we need to insert NULLs to make the DB accept the file.   
+            # but we need to insert NULLs to make the DB accept the file.
             {'cname':'id',
              'cbyte':(constant, 'NULL'),
              'cnull':'NULL'},
@@ -423,20 +423,20 @@ mapping = [
     }, # end of transitions
 
     # Populate References with bibtex data file (block parsing)
-    {'outfile':outbase + 'references.dat',    
+    {'outfile':outbase + 'references.dat',
      'infiles':ref_file,
-     'headlines':0,        
+     'headlines':0,
      'commentchar':'%',
      'startblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE','@phdthesis','@unpublished'),
      'endblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE','@phdthesis','@unpublished'),
-     'linemap':[           
+     'linemap':[
             {'cname':'dbref',
              'cbyte':(get_bibtex_dbref,)},
             {'cname':'bibtex',
-             'cbyte':(get_bibtex,)}, 
-          ], 
-      }, # end of bibtex 
-    
+             'cbyte':(get_bibtex,)},
+          ],
+      }, # end of bibtex
+
     # Populate LineList model from vald_cfg file
     {'outfile': outbase + 'linelists.dat',
      'infiles':vald_cfg_file,
@@ -447,7 +447,7 @@ mapping = [
              'cbyte':(bySepNr, 1)},
             {'cname':'srcfile',
              'cbyte':(bySepNr, 0)},
-            {'cname':'srcfile_ref',             
+            {'cname':'srcfile_ref',
              'cbyte':(get_srcfile_ref, 0, 3)},
             {'cname':'speclo',
              'cbyte':(bySepNr, 2)},
@@ -457,7 +457,7 @@ mapping = [
              'cbyte':(bySepNr, 4)},
             {'cname':'obstype',
              'cbyte':(get_obstype, ),
-             'cnull':'X'},                            
+             'cnull':'X'},
             {'cname':'r1',
              'cbyte':(bySepNr, 5)},
             {'cname':'r2',
@@ -480,7 +480,7 @@ mapping = [
              'cbyte':(bySepNr, 14)},
             ],
     }, # end of definition for vald_conf file
-   
+
     ]
 
 #mapping = [mapping[-1]]

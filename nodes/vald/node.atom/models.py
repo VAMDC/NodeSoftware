@@ -139,8 +139,8 @@ class Transition(Model):
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True, db_index=False)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, db_index=False)
 
-    vacwave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
-    airwave = DecimalField(max_digits=20, decimal_places=8)
+    ritzwave = DecimalField(max_digits=20, decimal_places=8)
+    wave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
 
     species = ForeignKey(Species, db_index=True)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
@@ -168,7 +168,7 @@ class Transition(Model):
     gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
     waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans', db_index=False)
 
-    obstype = PositiveSmallIntegerField(null=True, db_index=True) # this is the obstype of the wave_linelist, created in post-processing.    
+    obstype = PositiveSmallIntegerField(null=True, db_index=True) # this is the obstype of the wave_linelist, created in post-processing.
 
     def getWaals(self):
         if self.gammawaals: return self.gammawaals
@@ -183,7 +183,7 @@ class Transition(Model):
     #        return None
 
     def __unicode__(self):
-        return u'ID:%s Wavel: %s'%(self.id,self.vacwave)
+        return u'ID:%s Wavel: %s'%(self.id,self.wave)
     class Meta:
         db_table = u'transitions'
 
