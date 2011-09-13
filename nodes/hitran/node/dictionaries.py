@@ -42,13 +42,13 @@ RETURNABLES={\
 'MoleculeSpeciesID': 'Molecule.InChIKey',
 'MoleculeComment': 'Molecule.iso_name',
 
-'MoleculeStateID': 'State.id',
-'MoleculeStateMolecularSpeciesID': 'State.iso.InChIKey',
-'MoleculeStateEnergy': 'State.energy',
+'MoleculeStateID': 'MoleculeState.id',
+'MoleculeStateMolecularSpeciesID': 'MoleculeState.iso.InChIKey_explicit',
+'MoleculeStateEnergy': 'MoleculeState.energy',
 'MoleculeStateEnergyUnit': '1/cm',
 'MoleculeStateEnergyOrigin': 'Zero-point energy',
-'MoleculeStateCharacTotalStatisticalWeight': 'State.g',
-'MoleculeStateQuantumNumbers': 'State.qns_xml',
+'MoleculeStateTotalStatisticalWeight': 'MoleculeState.g',
+'MoleculeStateQuantumNumbers': 'MoleculeState',
 
 'MoleculeQnStateID': 'Qns.state',
 'MoleculeQnCase': 'Qns.case',      # e.g. 'dcs', 'ltcs', ...
@@ -64,7 +64,7 @@ RETURNABLES={\
 RESTRICTABLES = {\
 'MoleculeChemicalName': 'dummy',
 'MoleculeStoichiometricFormula': 'dummy',
-'MoleculeInchiKey': 'iso__InChIKey',
+'MoleculeInchiKey': 'iso__InChIKey_explicit',
 'RadTransWavenumber': 'nu',
 'RadTransWavelength': 'dummy', 
 'RadTransProbabilityA': 'A',

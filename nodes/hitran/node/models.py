@@ -115,6 +115,18 @@ class State(models.Model):
     g = models.IntegerField(blank=True, null=True)
     s_qns = models.CharField(max_length=500, blank=True, null=True)
     qns_xml = models.TextField(blank=True, null=True)
+
+    def XML(self):
+        xml = []
+        # XXX this is wrong! we should have the case prefix here instead
+        # of 'this_case'
+        xml.append('<Case = xsi:type="case:Case" caseID="%s" xmlns:%s='
+              '"http://vamdc.org/xml/xsams/0.2/cases/%s">'
+            % ('this_case', 'this_case', 'this_case'))
+        xml.append(self.qns_xml)
+        xml.append('</Case>')
+        return '\n'.join(xml)
+
     class Meta:
         db_table = 'hitranlbl_state'
 

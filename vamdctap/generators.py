@@ -823,6 +823,8 @@ def XsamsMSBuild(MoleculeState):
 
 
     cont, ret = checkXML(G("MoleculeStateQuantumNumbers"))
+    print 'G("MoleculeStateQuantumNumbers") =', G("MoleculeStateQuantumNumbers")
+    obj = G("MoleculeStateQuantumNumbers") 
     if cont:
         yield ret
     else:
