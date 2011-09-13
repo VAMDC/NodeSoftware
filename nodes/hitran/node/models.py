@@ -120,7 +120,7 @@ class State(models.Model):
         xml = []
         # XXX this is wrong! we should have the case prefix here instead
         # of 'this_case'
-        xml.append('<Case = xsi:type="case:Case" caseID="%s" xmlns:%s='
+        xml.append('<Case xsi:type="case:Case" caseID="%s" xmlns:%s='
               '"http://vamdc.org/xml/xsams/0.2/cases/%s">'
             % ('this_case', 'this_case', 'this_case'))
         xml.append(self.qns_xml)
