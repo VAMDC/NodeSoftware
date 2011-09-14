@@ -266,6 +266,10 @@ def returnResults(tap, LIMIT=None):
     col = tap.parsedSQL.columns #.asList()
 
     transs = TransitionsCalc.objects.filter(q,species__origin=5,species__archiveflag=0,dataset__archiveflag=0) 
+<<<<<<< HEAD
+=======
+
+>>>>>>> cpe/master
     ntrans = transs.count()
     if LIMIT is not None and ntrans > LIMIT:
         # we need to filter transs again later, so can't take a slice
@@ -516,7 +520,10 @@ def plotLevelDiagram(states):
     return response
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> cpe/master
 def specieslist():
     speciess = Species.objects.filter(archiveflag=0)
     for specie in speciess:
