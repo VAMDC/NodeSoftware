@@ -46,7 +46,7 @@
                 <xsl:text>'</xsl:text>
                 <xsl:value-of select="$initialState/../../../xsams:ChemicalElement/xsams:ElementSymbol"/>
                 <xsl:text> </xsl:text>
-                <xsl:value-of select="$initialState/../xsams:IonCharge"/>
+                <xsl:value-of select="1 + $initialState/../xsams:IonCharge"/>
                 <xsl:text>', </xsl:text>
                 <xsl:value-of select="./xsams:EnergyWavelength/xsams:Wavelength/xsams:Value"/>
                 <xsl:text>, </xsl:text>
