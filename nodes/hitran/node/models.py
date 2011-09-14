@@ -1,5 +1,6 @@
 from django.db import models
 import datetime
+import re
 
 class Molecule(models.Model):
     molecID = models.IntegerField(primary_key=True, unique=True)
@@ -46,6 +47,32 @@ class Iso(models.Model):
     # not maximum abundance, apart from Br) isotopeNumbers specified:
     cml = models.TextField(null=True, blank=True)
     case = models.ForeignKey('Case', null=True, blank=True)
+
+    def CML(self):
+        """
+        Return the CML version of the molecular structure from the cml field
+        on the Iso table. XSAMS only wants the <atomArray> and <bondArray>
+        tags, and it wants all the elements prefixed with cml, so we've
+        got a bit of parsing to do...
+
+        """
+
+        grab = False
+        cml = []
+        for line in self.cml.split('\n'):
+            if re.match('<atomArray', line):
+                grab = True
+            if grab:
+                cml_line = line
+                cml_line = cml_line.replace('<atom','<cml:atom')
+                cml_line = cml_line.replace('</atom','</cml:atom')
+                cml_line = cml_line.replace('<bond','<cml:bond')
+                cml_line = cml_line.replace('</bond','</cml:bond')
+                cml.append(cml_line)
+            if re.match('</bondArray', line):
+                break
+        return '\n'.join(cml)
+
     class Meta:
         db_table = 'hitranmeta_iso'
 

@@ -41,6 +41,7 @@ RETURNABLES={\
 'MoleculeInchiKey': 'Molecule.InChIKey',
 'MoleculeSpeciesID': 'Molecule.InChIKey',
 'MoleculeComment': 'Molecule.iso_name',
+'MoleculeStructure': 'Molecule',    # we have an XML() method for this
 
 'MoleculeStateID': 'MoleculeState.id',
 'MoleculeStateMolecularSpeciesID': 'MoleculeState.iso.InChIKey_explicit',
@@ -48,7 +49,7 @@ RETURNABLES={\
 'MoleculeStateEnergyUnit': '1/cm',
 'MoleculeStateEnergyOrigin': 'Zero-point energy',
 'MoleculeStateTotalStatisticalWeight': 'MoleculeState.g',
-'MoleculeStateQuantumNumbers': 'MoleculeState',
+'MoleculeStateQuantumNumbers': 'MoleculeState',    # use the an XML() method
 
 'MoleculeQnStateID': 'Qns.state',
 'MoleculeQnCase': 'Qns.case',      # e.g. 'dcs', 'ltcs', ...

@@ -687,6 +687,12 @@ def XsamsMCSBuild(Molecule):
 
     yield makePartitionfunc("MoleculePartitionFunction", G)
 
+    cont, ret = checkXML(G("MoleculeStructure"), 'CML')
+    if cont:
+        yield '<MoleculeStructure>\n'
+        yield ret
+        yield '</MoleculeStructure>\n'
+
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
     if G("MoleculeComment"):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
@@ -1629,6 +1635,7 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xmlns="http://vamdc.org/xml/xsams/0.2"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:cml="http://www.xml-cml.org/schema"
 xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
 """
 
