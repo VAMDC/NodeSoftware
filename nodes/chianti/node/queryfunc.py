@@ -14,7 +14,7 @@ import sys
 from itertools import chain
 from django.conf import settings
 from django.db.models import Q 
-from vamdctap.sqlparse import where2q
+from vamdctap.sqlparse import sql2Q
 
 import dictionaries
 import models # this imports models.py from the same directory as this file
@@ -161,13 +161,7 @@ def setupResults(sql, limit=1000):
 
     # convert the incoming sql to a correct django query syntax object 
     # based on the RESTRICTABLES dictionary in dictionaries.py
-    # (where2q is a helper function to do this for us).
-    q = where2q(sql.where, dictionaries.RESTRICTABLES)
-    try: 
-        q = eval(q) # test queryset syntax validity
-    except Exception as e:
-        LOG(e)
-        return {}
+    q = sql2Q(sql)
 
     # We build a queryset of database matches on the Transision model
     # since through this model (in our example) we are be able to
