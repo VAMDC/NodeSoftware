@@ -15,7 +15,6 @@ class Species(Model):
     atomic = PositiveSmallIntegerField(null=True, db_index=True)
     isotope = PositiveSmallIntegerField(null=True)
 
-
     components = ManyToManyField('self',through='SpeciesComp', symmetrical=False) # only used in case of molecules
 
     def isMolecule(self):
@@ -35,7 +34,6 @@ class SpeciesComp(Model):
     atom = ForeignKey(Species,related_name='atom')
     class Meta:
         db_table = u'species_components'
-
 
 class Reference(Model):
     id = CharField(max_length=64, primary_key=True, db_index=True)

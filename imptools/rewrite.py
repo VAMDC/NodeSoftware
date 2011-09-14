@@ -9,6 +9,7 @@ controlled from a mapping file.
 """
 
 import sys
+import gzip
 from time import time 
 
 TOTAL_LINES = 0
@@ -126,7 +127,7 @@ class MappingFile(object):
 
         if not startblock and endblock == '\n':
             # fast line-generator
-            for line in self.file.xreadlines():
+            for line in self.file:#.xreadlines():
                 yield line
             return
 
@@ -185,7 +186,12 @@ class MappingFile(object):
         "Initialize the file"
 
         self.commentchar = commentchar
-        self.file = open(filepath, 'r')
+
+        if filepath.endswith('.gz'):
+            # a gzipped file. Try to open with gzip library
+            self.file = gzip.open(filepath, 'r')
+        else:
+            self.file = open(filepath, 'r')
         self.blocks = self.block_generator(self.file, startblock, endblock) # a generator
         for i in range(headblocks + blockoffset):
             self.blocks.next()
