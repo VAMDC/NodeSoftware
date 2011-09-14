@@ -15,9 +15,10 @@ from imptools.linefuncs import *
 base = "/vald/vamdc/raw_vald_data/"
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'VALD3.cfg'
-vald_file = base + 'vald3.inp'
-terms_file = base + 'terms.inp'
+vald_file = base + 'vald3_atoms.dat.gz' # change to vald3_molec.dat.gz for molecules
+terms_file = base + 'term_atoms.dat.gz'
 ref_file = base + "VALD3_ref.bib"
+linelist_file = base + "VALD3linelists.txt"
 outbase = "/vald/vamdc/db_input_files/"
 
 
@@ -79,46 +80,55 @@ def get_obstype(linedata):
     else:
         return 'X'
 
+def charrange_atom(linedata, molid, ia, ib):
+    """
+    This method is to be used to read species data. 
+    It returns data only if the species currently worked on 
+    is an atom and not a molecule. Otherwise return 'X'
+     molid - minimum species id for species to be a molecule
+     ia,ib - index1, index2
+    """
+    if charrange2int(linedata, 0, 7) < molid:
+        return charrange(linedata, ia, ib)
+    return 'X'
 
 # The mapping itself
 mapping = [
     # Populate Species model, using the species input file.
     {'outfile':outbase + 'species.dat',
      'infiles':species_list_file,
-     'headlines':0,
+     'headlines':16,
      'commentchar':'#',
      'linemap':[
             {'cname':'id',
              'cbyte':(charrange, 0,7)},
             {'cname':'name',
              'cbyte':(charrange, 9,19)},
+            {'cname':'echarge',
+             'cbyte':(charrange, 20, 22)},
             {'cname':'inchi',
-             'cbyte':(constant, 'NULL'),
-             'cnull':'NULL'},
+             'cbyte':(charrange, 23, 54)},
             {'cname':'inchikey',
-             'cbyte':(constant, 'NULL'),
-             'cnull':'NULL'},
-            {'cname':'ion',
-             'cbyte':(charrange, 20,22)},
+             'cbyte':(charrange, 55, 82)},
             {'cname':'mass',
-             'cbyte':(charrange, 23,30)},
-            {'cname':'massno',
-             'cbyte':(charrange2int, 23,30)},
+             'cbyte':(charrange, 84, 91)},
             {'cname':'ionen',
-             'cbyte':(charrange, 31,40)},
+             'cbyte':(charrange, 92, 102)},
             {'cname':'solariso',
-             'cbyte':(charrange, 41,47)},
+             'cbyte':(charrange, 103,109)},
             {'cname':'dissen',
-             'cbyte':(charrange, 48,57)},
+             'cbyte':(charrange, 110, 119)},
             {'cname':'ncomp',
-             'cbyte':(charrange, 132,133)},
+             'cbyte':(charrange, 194, 195)},            
             {'cname':'atomic',
-             'cbyte':(charrange, 134,136)},
+             'cbyte':(charrange_atom, 5000, 196, 198),
+             'cnull':'X'},                       
             {'cname':'isotope',
-             'cbyte':(charrange, 137,140)},
-            # many2many field "species" handled by separate table
+             'cbyte':(charrange_atom, 5000, 199, 202),
+             'cnull':'X'},
             ],
      }, # end of definition for species file
+
 
     # State model read 2 lines at a time from vald3 main file term
     # files are grouped with 3 lines (lower,upper,transition_inf) for
@@ -483,4 +493,45 @@ mapping = [
 
     ]
 
-#mapping = [mapping[-1]]
+# short-cutting the mapping for testing
+mapping = [mapping[1]]
+
+
+
+# Stand-alone scrípts (cannot depend on tables created above, these
+# are run first!)
+
+def species_component(species_file, outfile):
+    """
+    This is a stand-alone function for creating 
+    a species-to-component mapping file representing
+    the many2many relationship. 
+    """
+    outstring = ""
+    f = open(species_file, 'r')
+    for line in f:
+        if line.strip() and (line.strip().startswith('#') or line.strip().startswith('@')):
+            continue        
+        sid = line[:7].strip()  
+        if int(sid) < 5000:
+            continue         
+        #import pdb;pdb.set_trace()
+        # we have a molecule
+        ncomp = int(line[194:195])
+        for icomp in range(ncomp):
+            csid = line[196+icomp*8 : 203+icomp*8].strip()
+            outstring += '\N;"%s";"%s"\n' % (sid, csid)
+    f.close()
+    f = open(outfile, 'w')
+    f.write(outstring)
+    f.close()
+    print "... Created file %s." % outfile
+
+# create many2many tables 
+
+print "Running species_component ..."
+species_component(species_list_file, outbase + "species_components.dat")
+
+import linelists_references 
+print "Running linelists_references ..."
+linelists_references.linelists_references(vald_cfg_file, linelist_file, outfile=outbase + "linelists_references.dat")

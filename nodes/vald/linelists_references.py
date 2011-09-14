@@ -39,7 +39,7 @@ def parse_wiki_linelist_file(filename):
                 print "Error parsing line \n%s\n" % line 
                 raise
             dic[fil] = (elements, typ, refs)        
-        print fil, typ
+        #print fil, typ
     return dic
     
 def parse_config_file(filename):
@@ -86,7 +86,7 @@ def parse_bibtex_file(filename):
         print ", ".join(["%s (x%s)" % (entry[0], entry[1]) for entry in doublets])
     return bset
         
-def merge_files(infile1, infile2, bibtex_file=None, outfile=None):
+def linelists_references(infile1, infile2, bibtex_file=None, outfile=None):
     """
     Main program
     """
@@ -137,7 +137,6 @@ def merge_files(infile1, infile2, bibtex_file=None, outfile=None):
     
 if __name__=='__main__':
 
-    import pdb
     #pdb.set_trace()
     argv = sys.argv
     if len(argv) < 3:
@@ -156,5 +155,5 @@ these will be printed.
     else:
         bibtex_file = argv[3]
     output = "linelists_references.dat"        
-    merge_files(argv[1], argv[2], bibtex_file=bibtex_file, outfile=output)
+    linelists_references(argv[1], argv[2], bibtex_file=bibtex_file, outfile=output)
     print "... Created file %s." % (output) 
