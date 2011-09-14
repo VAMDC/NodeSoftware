@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from vamdctap.unitconv import invcm2eV
+
 # In the RESTRICTABLES dictionary, keys are names from the dictionary and values are 
 # names from the Django model for the transitions table.
 #
@@ -19,6 +21,7 @@ RESTRICTABLES = {\
 'AtomSymbol':'finalstateindex__species__atomsymbol',
 'AtomNuclearCharge':'finalstateindex__species__atomnuclearcharge',
 'AtomIonCharge':'finalstateindex__species__atomioncharge',
+'AtomStateEnergy':('finalstateindex__atomstateenergyexperimentalvalue', invcm2eV),
 'RadTransWavelength':'wavelength'
 }
 
