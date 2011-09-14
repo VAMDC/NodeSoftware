@@ -11,7 +11,24 @@
 </xsl:text></xsl:variable>
 
     <xsl:template match="/xsams:XSAMSData/xsams:Processes/xsams:Radiative">
-        <xsl:text>0, 0, </xsl:text>
+
+       <xsl:variable name="the_max">
+         <xsl:for-each select="./xsams:RadiativeTransition/xsams:EnergyWavelength/xsams:Wavelength/xsams:Value">
+           <xsl:sort data-type="number" order="descending"/>
+           <xsl:if test="position()=1"><xsl:value-of select="."/></xsl:if>
+         </xsl:for-each>
+       </xsl:variable>
+       <xsl:variable name="the_min">
+         <xsl:for-each select="./xsams:RadiativeTransition/xsams:EnergyWavelength/xsams:Wavelength/xsams:Value">
+           <xsl:sort data-type="number" order="ascending"/>
+           <xsl:if test="position()=1"><xsl:value-of select="."/></xsl:if>
+         </xsl:for-each>
+       </xsl:variable>
+
+        <xsl:value-of select="$the_min"/>
+        <xsl:text>, </xsl:text>
+        <xsl:value-of select="$the_max"/>
+        <xsl:text>, </xsl:text>
         <xsl:value-of select="count(//xsams:RadiativeTransition)"/>
         <xsl:text>, </xsl:text>
         <xsl:value-of select="$newline"/>
@@ -32,7 +49,7 @@
                 <xsl:text>', </xsl:text>
                 <xsl:value-of select="./xsams:EnergyWavelength/xsams:Wavelength/xsams:Value"/>
                 <xsl:text>, </xsl:text>
-                <xsl:value-of select="$initialState/xsams:AtomicNumericalData/xsams:StateEnergy/xsams:Value"/>
+                <xsl:value-of select="1.239841930E-4 * $initialState/xsams:AtomicNumericalData/xsams:StateEnergy/xsams:Value"/>
                 <xsl:text>, 0,</xsl:text>
                 <xsl:value-of select="./xsams:Probability/xsams:Log10WeightedOscillatorStrength/xsams:Value"/>
                 <xsl:text>, 0,0,0,0,0,''</xsl:text>
