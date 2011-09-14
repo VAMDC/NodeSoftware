@@ -150,18 +150,22 @@ def getFreqMethodRefs(transs):
     return Methods.objects.filter(q)
 
 def getSources(transs):
-#    ids=set([])
-    meth=[]
-#    for trans in transs:
-#      ids=ids.union(set([trans.speciesid]))
+    """
+    Get a complete list ofsources and methods for the set of transitions
+    """
 
+    meth=[]
+
+    # Get the list of species (entries). One method is generated for each specie
     ids = set( transs.values_list('species_id',flat=True) )
       
     q=Q(eId__in=ids)
 
-    slist = SourcesIDRefs.objects.filter(q).distinct()  
+    slist = SourcesIDRefs.objects.filter(q).distinct()
+
+    # Loop over species list and get sources
     for src in slist.values_list('eId',flat=True):
-        mesrc=SourcesIDRefs.objects.filter(Q(eId=src)).values_list('rId',flat=True)
+        mesrc=SourcesIDRefs.objects.filter(Q(eId=src)).distinct().values_list('rId',flat=True)
 #        LOG(mesrc)
         this_method = Method(src,src,'derived','derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data',mesrc)
 #        meth=meth.append(Method(5,src,'derived','derived',mesrc))
@@ -181,7 +185,7 @@ def setupResults(sql):
     LOG(sql)
     q = sql2Q(sql)
     LOG(q)
-    transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0) #order_by('vacwave')
+    transs = TransitionsCalc.objects.filter(q,species__origin=5,species__archiveflag=0,dataset__archiveflag=0) #order_by('vacwave')
 #    transs = RadiativeTransitions.objects.select_related(depth=2).filter(q)
     
 #    ntranss=transs.count()
@@ -245,9 +249,15 @@ def returnResults(tap, LIMIT=None):
     #RESTRICTABLES['dataset']='dataset'
     RESTRICTABLES.update(CDMSONLYRESTRICTABLES)
 
-    if tap.format != 'spcat' and tap.format!='png':
+    if tap.format != 'spcat' and tap.format!='png' and tap.format!='list':
         emsg = 'Currently, only FORMATs PNG, SPCAT and XSAMS are supported.\n'
         return tapServerError(status=400, errmsg=emsg)
+
+    if tap.format == 'list':
+        speclist=specieslist()
+        response = HttpResponse(speclist, mimetype='text/plain')
+        return response
+    
 
     q = sql2Q(tap.parsedSQL)
 
@@ -255,7 +265,7 @@ def returnResults(tap, LIMIT=None):
     # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
 
-    transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0) 
+    transs = TransitionsCalc.objects.filter(q,species__origin=5,species__archiveflag=0,dataset__archiveflag=0) 
     ntrans = transs.count()
     if LIMIT is not None and ntrans > LIMIT:
         # we need to filter transs again later, so can't take a slice
@@ -504,3 +514,21 @@ def plotLevelDiagram(states):
     
     canvas.print_png(response)
     return response
+
+
+
+def specieslist():
+    speciess = Species.objects.filter(archiveflag=0)
+    for specie in speciess:
+        yield "<name>%s</name> \n" % specie.name
+        yield "  <inchikey>%s</inchikey> \n" % specie.inchikey
+        yield "  <stoichi>%s</stoichi> \n" % specie.molecule.stoichiometricformula
+        yield "  <inchikeystem>%s<inchikeystem> \n" %  GetStringValue(specie.inchikey)[0:14]
+
+        for nm in GetStringValue(specie.molecule.trivialname).split(","):
+            yield "     <trivialname>%s<trivialname> \n" % nm
+#        yield "  <trivialname>%s<trivialname> " %  GetStringValue(specie.molecule.trivialname)[0:14]
+        
+        yield "\n"
+
+
