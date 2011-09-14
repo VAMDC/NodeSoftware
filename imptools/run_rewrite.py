@@ -38,6 +38,10 @@ def mod_import(mod_path):
     path, filename = mod_path.rsplit(os.path.sep, 1)
     modname = filename.rstrip('.py')
 
+    # for good measure, add given path to sys so one can for example import 
+    # modules in the same directory from inside the mapping file.
+    sys.path.append(os.path.abspath(path))
+
     try:
         result = imp.find_module(modname, [path])
     except ImportError:

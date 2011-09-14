@@ -39,7 +39,7 @@ def parse_wiki_linelist_file(filename):
                 print "Error parsing line \n%s\n" % line 
                 raise
             dic[fil] = (elements, typ, refs)        
-        print fil, typ
+        #print fil, typ
     return dic
     
 def parse_config_file(filename):
@@ -137,7 +137,6 @@ def linelists_references(infile1, infile2, bibtex_file=None, outfile=None):
     
 if __name__=='__main__':
 
-    import pdb
     #pdb.set_trace()
     argv = sys.argv
     if len(argv) < 3:
