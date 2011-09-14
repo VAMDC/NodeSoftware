@@ -104,7 +104,7 @@ mapping = [
              'cbyte':(charrange, 0,7)},
             {'cname':'name',
              'cbyte':(charrange, 9,19)},
-            {'cname':'echarge',
+            {'cname':'ion',
              'cbyte':(charrange, 20, 22)},
             {'cname':'inchi',
              'cbyte':(charrange, 23, 54)},
