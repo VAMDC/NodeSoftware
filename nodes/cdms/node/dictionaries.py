@@ -1,21 +1,23 @@
 RETURNABLES = {
-#'AtomInchi':'AtomState.',
-#'AtomInchiKey':'AtomState.',
-#'AtomIonCharge':'AtomState.',
+'AtomInchi':'Atom.inchi',
+'AtomInchiKey':'Atom.inchikey',
+'AtomIonCharge':'Atom.molecule.formalcharge',
 #'AtomMass':'AtomState.',
-#'AtomMassNumber':'AtomState.',
+'AtomMassNumber':'Atom.getMassNumber()',
 #'AtomNuclearCharge':'AtomState.',
 #'AtomNuclearSpin':'AtomState.',
-#'AtomSpeciesID':'AtomState.',
+'AtomSpeciesID':'Atom.id',
 #'AtomStateCompositionComments':'AtomState.',
 #'AtomStateConfigurationLabel':'AtomState.',
 #'AtomStateCoupling':'AtomState.',
 #'AtomStateDescription':'AtomState.',
-#'AtomStateEnergy':'AtomState.',
+'AtomStateEnergy':'AtomState.energy',
+'AtomStateEnergyOrigin':'Zero-point energy',
+'AtomStateEnergyUnit':'1/cm', 
 #'AtomStateHyperfineConstantA':'AtomState.',
 #'AtomStateHyperfineConstantB':'AtomState.',
 #'AtomStateHyperfineMomentum':'AtomState.',
-#'AtomStateID':'AtomState.',
+'AtomStateID':'AtomState.id',
 #'AtomStateIonizationEnergy':'AtomState.',
 #'AtomStateJ1':'AtomState.',
 #'AtomStateJ2':'AtomState.',
@@ -33,8 +35,8 @@ RETURNABLES = {
 #'AtomStateS':'AtomState.',
 #'AtomStateS2':'AtomState.',
 #'AtomStateStatisticalWeight':'AtomState.',
-#'AtomStateTotalAngMom':'AtomState.',
-#'AtomSymbol':'AtomState.',
+'AtomStateTotalAngMom':'AtomState.qn1',
+'AtomSymbol':'Atom.molecule.stoichiometricformula',
 
 'MethodComment':'Method.description',
 'MethodCategory':'Method.category', # <- NEW
@@ -56,6 +58,7 @@ RETURNABLES = {
 #'MoleculeNuclearSpinsAtomArray':'Molecule.',
 #'MoleculeNuclearSpinsBondArray':'Molecule.',
 'MoleculeSpeciesID':'Molecule.id',
+'MoleculeStructure': 'Molecule',    # we have an XML() method for this
 
 #'MoleculeStateCharacLifeTime':'MoleculeState.',
 #'MoleculeStateCharacNuclearSpinSymmetry':'MoleculeState.',
@@ -69,7 +72,7 @@ RETURNABLES = {
 #'MoleculeStateQuantumNumbers':'MoleculeState.parsed_qns',
 'MoleculeStateQuantumNumbers':'MoleculeState',
 'MoleculeStoichiometricFormula':'Molecule.molecule.stoichiometricformula',
-'MoleculeOrdinaryStructuralFormula':'Molecule.molecule.structuralformula',
+'MoleculeOrdinaryStructuralFormula':'Molecule.isotopolog',
 'MoleculeComment': 'Molecule.name',
 'MoleculeQnStateID': 'MolQN.stateid', # <- new
 'MoleculeQnCase': 'MolQN.case',       # <- new 
@@ -143,6 +146,9 @@ RETURNABLES = {
 }
 
 
+# import the unit converter functions
+from vamdctap.unitconv import *
+
 RESTRICTABLES = { 
 #'AsOfDate':'',
 #'AtomInchi':'',
@@ -178,7 +184,7 @@ RESTRICTABLES = {
 'MoleculeStateEnergy':'lowerstateref__energy',
 #'MoleculeStateID':'',
 'MoleculeStoichiometricFormula':'species__molecule__stoichiometricformula',
-'MoleculeOrdinaryStructuralFormula':'species__molecule__stoichiometricformula',
+'MoleculeOrdinaryStructuralFormula':'species__isotopolog',
 #'NonRadTranEnergy':'',
 #'NonRadTranProbability':'',
 #'NonRadTranWidth':'',
@@ -186,7 +192,7 @@ RESTRICTABLES = {
 #'RadTransBandCentre':'',
 #'RadTransBandWidth':'',
 #'RadTransEffectiveLandeFactor':'',
-#'RadTransEnergy':'',
+'RadTransEnergy':('frequency',eV2MHz),
 'RadTransFrequency':'frequency',
 #'RadTransProbabilityA':'RadTran.einsteinA',
 #'RadTransProbabilityIdealisedIntensity':'',
@@ -194,8 +200,16 @@ RESTRICTABLES = {
 #'RadTransProbabilityLog10WeightedOscillatorStrength':'',
 #'RadTransProbabilityOscillatorStrength':'',
 #'RadTransProbabilityWeightedOscillatorStrength':'',
-#'RadTransWavelength':'',
-#'RadTransWavenumber':'',
+'RadTransWavelength':('frequency',Angstr2MHz),
+#'RadTransWavelength':'frequency',
+'RadTransWavenumber':('frequency',invcm2MHz),
 #'SourceCategory':'',
 #'SourceYear':'',
+'MoleculeSpeciesID':'species',
+}
+
+CDMSONLYRESTRICTABLES = {
+# 'MoleculeSpeciesID':'species',
+ 'dataset':'dataset',
+ 'hfsflag':'hfsflag',
 }
