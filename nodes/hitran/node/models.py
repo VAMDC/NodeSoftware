@@ -118,6 +118,9 @@ class Ref(models.Model):
     # a URL to the source, if available
     url = models.TextField(null=True, blank=True)
 
+    def author_list(self):
+        return self.authors.split(',')
+
     def __unicode__(self):
         return self.refID
 
