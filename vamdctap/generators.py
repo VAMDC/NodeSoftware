@@ -358,14 +358,15 @@ def XsamsSources(Sources):
 <Title>%s</Title>
 <Category>%s</Category>
 <Year>%s</Year>
-<SourceName>%s</SourceName>
-</Source>\n""" % ( G('SourceTitle'), G('SourceCategory'),
-                   G('SourceYear'), G('SourceName') )
+<SourceName>%s</SourceName>""" % ( G('SourceTitle'), G('SourceCategory'),
+                                   G('SourceYear'), G('SourceName') )
 
         yield makeOptionalTag('Volume','SourceVolume',G)
         yield makeOptionalTag('PageBegin','SourcePageBegin',G)
         yield makeOptionalTag('PageEnd','SourcePageEnd',G)
         yield makeOptionalTag('UniformResourceIdentifier','SourceURI',G)
+        yield makeOptionalTag('Comments','SourceComments',G)
+        yield '</Source>\n'
     yield '</Sources>\n'
 
 def XsamsEnvironments(Environments):

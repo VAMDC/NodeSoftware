@@ -3,15 +3,16 @@
 RETURNABLES={\
 'NodeID': 'HIT',    # unique identifier for the HITRAN node
 
-'SourceID': 'Ref.refid',
-'SourceAuthorName': 'Ref.authors',
-'SourceTitle': 'Ref.title',
-'SourcePageBegin': 'Ref.page_start',		
-'SourcePageEnd': 'Ref.page_end',		
-'SourceVolume': 'Ref.volume',
-'SourceYear': 'Ref.year',
-'SourceName': 'Ref.journal',    # closest we can get to the journal name
-'SourceCategory': 'Ref.ref_type',
+'SourceID': 'Source.refID',
+'SourceAuthorName': 'Source.author_list()',
+'SourceTitle': 'Source.title',
+'SourcePageBegin': 'Source.page_start',		
+'SourcePageEnd': 'Source.page_end',		
+'SourceVolume': 'Source.volume',
+'SourceYear': 'Source.year',
+'SourceName': 'Source.journal',    # closest we can get to the journal name
+'SourceCategory': 'Source.ref_type',
+'SourceComments': 'Source.note',
 
 'MethodID': 'Method.id',
 'MethodCategory': 'Method.category',

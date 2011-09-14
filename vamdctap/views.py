@@ -142,6 +142,7 @@ def addHeaders(headers,response):
     HEADS=['COUNT-SOURCES',
            'COUNT-ATOMS',
            'COUNT-MOLECULES',
+           'COUNT-SPECIES',
            'COUNT-STATES',
            'COUNT-COLLISIONS',
            'COUNT-RADIATIVE',
@@ -193,7 +194,7 @@ def sync(request):
     else:
         log.warn('Query function did not return information for HTTP-headers.')
 
-#    elif tap.format == 'votable': 
+#    elif tap.format == 'votable':
 #        transs,states,sources=QUERYFUNC.setupResults(tap)
 #        generator=votable(transs,states,sources)
 #        response=HttpResponse(generator,mimetype='text/xml')
