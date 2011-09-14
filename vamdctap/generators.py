@@ -365,6 +365,7 @@ def XsamsSources(Sources):
         yield makeOptionalTag('PageBegin','SourcePageBegin',G)
         yield makeOptionalTag('PageEnd','SourcePageEnd',G)
         yield makeOptionalTag('UniformResourceIdentifier','SourceURI',G)
+        yield makeOptionalTag('DigitalObjectIdentifier','SourceDOI',G)
         yield makeOptionalTag('Comments','SourceComments',G)
         yield '</Source>\n'
     yield '</Sources>\n'
