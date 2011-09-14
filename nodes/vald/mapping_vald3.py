@@ -18,6 +18,7 @@ vald_cfg_file = base + 'VALD3.cfg'
 vald_file = base + 'vald3.inp'
 terms_file = base + 'terms.inp'
 ref_file = base + "VALD3_ref.bib"
+linelist_file = base + "VALD3linelists.txt"
 outbase = "/vald/vamdc/db_input_files/"
 
 
@@ -492,4 +493,44 @@ mapping = [
 
     ]
 
-#mapping = [mapping[-1]]
+# short-cutting the mapping for testing
+mapping = [mapping[1]]
+
+
+
+# Stand-alone scrípts (cannot depend on tables created above, these
+# are run first!)
+
+def species_component(species_file, outfile):
+    """
+    This is a stand-alone function for creating 
+    a species-to-component mapping file representing
+    the many2many relationship. 
+    """
+    outstring = ""
+    f = open(filename, 'r')
+    for line in f:
+        if line.strip().startswith('#') or line.strip().startswith('@'):
+            continue        
+        sid = line[:7].strip()  
+        if sid < '5000':
+            continue         
+        # we have a molecule
+        ncomp = int(line[200:203])
+        for icomp in range(ncomp):
+            csid = line[197+icomp*8 : 204+icomp*8]
+            outstring += '\N;"%s";"%s"\n' % (sid, csid)
+    f.close()
+    f = open(outfile, 'w')
+    f.write(outstring)
+    f.close()
+    print "... Created file %s." % outfile
+
+# create many2many tables 
+
+print "Running species_component ..."
+species_component(species_list_file, outbase + "species_components.dat")
+
+from linelists_references import linelists_references
+print "Running linelists_references ..."
+linelists_references(vald_cfg_file, linelist_file, outfile=outbase + "linelists_references.dat")

@@ -86,7 +86,7 @@ def parse_bibtex_file(filename):
         print ", ".join(["%s (x%s)" % (entry[0], entry[1]) for entry in doublets])
     return bset
         
-def merge_files(infile1, infile2, bibtex_file=None, outfile=None):
+def linelists_references(infile1, infile2, bibtex_file=None, outfile=None):
     """
     Main program
     """
@@ -156,5 +156,5 @@ these will be printed.
     else:
         bibtex_file = argv[3]
     output = "linelists_references.dat"        
-    merge_files(argv[1], argv[2], bibtex_file=bibtex_file, outfile=output)
+    linelists_references(argv[1], argv[2], bibtex_file=bibtex_file, outfile=output)
     print "... Created file %s." % (output) 

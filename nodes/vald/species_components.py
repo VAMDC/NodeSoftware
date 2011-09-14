@@ -17,23 +17,19 @@ def parse_species_file(filename):
     dic = {}
     outstring = ""
     for line in f:
-        if line.strip().startswith('#') or line.strip().startswith('@'):
-            continue
-        sid = int(line[:7].strip())
-        ncomp = int(line[195:196].strip())
+
         if sid < 5000:
             # store atomic components only
-            anum = line[134:136]
-            isot = line[137:140]
-            key = "%s-%s" % (anum, isot)
+            atomid = line[0:7]
             if not key in dic:
                 dic[key] = sid        
             continue
         else:
             # a molecule (we also know that these come AFTER atoms in the file)
             for icomp in range(ncomp):
-                offset = icomp*7
-                anum = line[134+offset: 136+offset]
+                offset = icomp * 8
+
+                anum = 
                 isot = line[137+offset: 140+offset]
                 key = "%s-%s" % (anum, isot)
                 # match against atom
