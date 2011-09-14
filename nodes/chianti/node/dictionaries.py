@@ -28,10 +28,12 @@ RETURNABLES = {\
 'MethodID':'Method.id',
 'MethodCategory':'Method.category',
 
+'AtomSpeciesId':'Atom.id',
 'AtomSymbol':'Atom.atomsymbol',
 'AtomNuclearCharge':'Atom.atomnuclearcharge',
 'AtomIonCharge':'Atom.atomioncharge',
 
+'AtomStateId':'AtomState.id',
 'AtomStateS':'AtomState.atomstates',
 'AtomStateL':'AtomState.atomstatel',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
@@ -44,5 +46,8 @@ RETURNABLES = {\
 'RadTransWavelengthUnit':u'A', # Constant: Angstrom symbol
 'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
 'RadTransProbabilityA':'RadTran.probabilitya',
-'RadTransProbabilityAUnits':u'1/s'
+'RadTransProbabilityAUnits':u'1/s',
+'RadTransInitialStateRef':'RadTran.initialstateindex.id',
+'RadTransFinalStateRef':'RadTran.finalstateindex.id',
+'RadTransSpeciesRef':'RadTran.initialstateindex.species.id'
 }
