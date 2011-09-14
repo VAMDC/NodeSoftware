@@ -50,13 +50,16 @@ class Species( Model):
           tag = str(self.speciestag)
           return tag[:-3] #self.speciestag[:-3]
 
-     def _get_cml(self):
+     def CML(self):
+          """
+          Return the CML version of the molecular structure.
+          Use the database function F_GetCML to get the string
+          """
           cursor = connection.cursor()
-#          cursor.execute("SELECT F_GetCML(%s) as cml FROM Entries WHERE id=%s", [settings.SECRET_KEY, self.id])
-          cursor.execute("SELECT F_GetCML(%s) as cml ", [self.id])
+          cursor.execute("SELECT F_GetCML4XSAMS(%s) as cml ", [self.id])
           return cursor.fetchone()[0]
      
-     cml = property(_get_cml)
+     cmlstring = property(CML)
 
 
 class Datasets( Model):

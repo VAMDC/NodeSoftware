@@ -58,6 +58,7 @@ RETURNABLES = {
 #'MoleculeNuclearSpinsAtomArray':'Molecule.',
 #'MoleculeNuclearSpinsBondArray':'Molecule.',
 'MoleculeSpeciesID':'Molecule.id',
+'MoleculeStructure': 'Molecule',    # we have an XML() method for this
 
 #'MoleculeStateCharacLifeTime':'MoleculeState.',
 #'MoleculeStateCharacNuclearSpinSymmetry':'MoleculeState.',
