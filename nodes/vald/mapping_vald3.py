@@ -79,46 +79,55 @@ def get_obstype(linedata):
     else:
         return 'X'
 
+def charrange_atom(linedata, molid, ia, ib):
+    """
+    This method is to be used to read species data. 
+    It returns data only if the species currently worked on 
+    is an atom and not a molecule. Otherwise return 'X'
+     molid - minimum species id for species to be a molecule
+     ia,ib - index1, index2
+    """
+    if charrange2int(linedata, 0, 7) < molid:
+        return charrange(linedata, ia, ib)
+    return 'X'
 
 # The mapping itself
 mapping = [
     # Populate Species model, using the species input file.
     {'outfile':outbase + 'species.dat',
      'infiles':species_list_file,
-     'headlines':0,
+     'headlines':16,
      'commentchar':'#',
      'linemap':[
             {'cname':'id',
              'cbyte':(charrange, 0,7)},
             {'cname':'name',
-             'cbyte':(charrange, 9,19)},
+             'cbyte':(charrange, 10,20)},
+            {'cname':'echarge',
+             'cbyte':(charrange, 21, 23)},
             {'cname':'inchi',
-             'cbyte':(constant, 'NULL'),
-             'cnull':'NULL'},
+             'cbyte':(charrange, 24, 55)},
             {'cname':'inchikey',
-             'cbyte':(constant, 'NULL'),
-             'cnull':'NULL'},
-            {'cname':'ion',
-             'cbyte':(charrange, 20,22)},
+             'cbyte':(charrange, 56, 83)},
             {'cname':'mass',
-             'cbyte':(charrange, 23,30)},
-            {'cname':'massno',
-             'cbyte':(charrange2int, 23,30)},
+             'cbyte':(charrange, 85, 92)},
             {'cname':'ionen',
-             'cbyte':(charrange, 31,40)},
+             'cbyte':(charrange, 93, 103)},
             {'cname':'solariso',
-             'cbyte':(charrange, 41,47)},
+             'cbyte':(charrange, 104,110)},
             {'cname':'dissen',
-             'cbyte':(charrange, 48,57)},
+             'cbyte':(charrange, 111, 120)},
             {'cname':'ncomp',
-             'cbyte':(charrange, 132,133)},
+             'cbyte':(charrange, 195, 196)},            
             {'cname':'atomic',
-             'cbyte':(charrange, 134,136)},
-            {'cname':'isotope',
-             'cbyte':(charrange, 137,140)},
-            # many2many field "species" handled by separate table
+             'cbyte':(charrange_atom, 5000, 197, 199),
+             'cnull':'X'},                       
+            {'cname':'ncomp',
+             'cbyte':(charrange_atom, 5000, 200, 203),
+             'cnull':'X'},
             ],
      }, # end of definition for species file
+
 
     # State model read 2 lines at a time from vald3 main file term
     # files are grouped with 3 lines (lower,upper,transition_inf) for
