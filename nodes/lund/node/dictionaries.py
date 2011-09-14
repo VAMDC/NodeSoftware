@@ -38,6 +38,7 @@ RETURNABLES = {\
 'AtomStateLifeTime': 'AtomState.get_best_tau()',
 'AtomStateLifeTimeMethod': 'AtomState.get_tau_ref()',
 'AtomStateLifeTimeAccuracy': 'AtomState.tau_accur',                                     
+'AtomStateLifeTimeDecay': 'totalRadiative',
                                                                          
 'RadTransSpeciesRef':'RadTran.species_id',
 'RadTransComments':'Wavelength is for vacuum.',
