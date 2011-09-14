@@ -33,6 +33,7 @@
         <xsl:text>, </xsl:text>
         <xsl:value-of select="$newline"/>
         <xsl:value-of select="$newline"/>
+        <xsl:value-of select="$newline"/>
 
         <xsl:apply-templates/>
     </xsl:template>
