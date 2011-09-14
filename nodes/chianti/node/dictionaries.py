@@ -21,7 +21,7 @@ RESTRICTABLES = {\
 'AtomSymbol':'finalstateindex__species__atomsymbol',
 'AtomNuclearCharge':'finalstateindex__species__atomnuclearcharge',
 'AtomIonCharge':'finalstateindex__species__atomioncharge',
-'AtomStateEnergy':('finalstateindex__atomstateenergyexperimentalvalue', invcm2eV),
+'AtomStateEnergy':'finalstateindex__atomstateenergyexperimentalvalue',
 'RadTransWavelength':'wavelength'
 }
 
@@ -40,8 +40,8 @@ RETURNABLES = {\
 'AtomStateS':'AtomState.atomstates',
 'AtomStateL':'AtomState.atomstatel',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
-'AtomStateEnergyExperimentalValue':'AtomState.atomstateenergyexperimentalvalue',
-'AtomStateEnergyTheoreticalValue':'AtomState.atomstateenergytheoreticalvalue',
+'AtomStateEnergy':'AtomState.atomstateenergyexperimentalvalue',
+'AtomStateEnergyUnit':u'1/cm',
 'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
 
 'RadTransWavelength':'RadTran.wavelength',
