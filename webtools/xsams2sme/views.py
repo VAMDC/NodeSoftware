@@ -3,7 +3,7 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.http import HttpResponseRedirect, HttpResponse
-from django.forms import Form,FileField,URLField
+from django.forms import Form,FileField,URLField,TextInput
 from django.core.exceptions import ValidationError
 
 from lxml import etree as e
@@ -13,7 +13,7 @@ from urllib2 import urlopen
 
 class ConversionForm(Form):
     infile = FileField(label='Input file',required=False)
-    inurl = URLField(label='Input URL',required=False)
+    inurl = URLField(label='Input URL',required=False,widget=TextInput(attrs={'size': 100, 'title': 'Paste here a URL that delivers an XSAMS document.',}))
 
     def clean(self):
         cleaned_data = self.cleaned_data
