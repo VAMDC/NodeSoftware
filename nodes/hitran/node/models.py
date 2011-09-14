@@ -1,5 +1,6 @@
 from django.db import models
 import datetime
+import re
 
 class Molecule(models.Model):
     molecID = models.IntegerField(primary_key=True, unique=True)
@@ -46,11 +47,36 @@ class Iso(models.Model):
     # not maximum abundance, apart from Br) isotopeNumbers specified:
     cml = models.TextField(null=True, blank=True)
     case = models.ForeignKey('Case', null=True, blank=True)
+
+    def CML(self):
+        """
+        Return the CML version of the molecular structure from the cml field
+        on the Iso table. XSAMS only wants the <atomArray> and <bondArray>
+        tags, and it wants all the elements prefixed with cml, so we've
+        got a bit of parsing to do...
+
+        """
+
+        grab = False
+        cml = []
+        for line in self.cml.split('\n'):
+            if re.match('<atomArray', line):
+                grab = True
+            if grab:
+                cml_line = line
+                cml_line = cml_line.replace('<atom','<cml:atom')
+                cml_line = cml_line.replace('</atom','</cml:atom')
+                cml_line = cml_line.replace('<bond','<cml:bond')
+                cml_line = cml_line.replace('</bond','</cml:bond')
+                cml.append(cml_line)
+            if re.match('</bondArray', line):
+                break
+        return '\n'.join(cml)
+
     class Meta:
         db_table = 'hitranmeta_iso'
 
 class Case(models.Model):
-    caseID = models.IntegerField(unique=True)
     case_prefix = models.CharField(max_length=10, unique=True)
     case_description = models.CharField(max_length=50)
     class Meta:
@@ -115,6 +141,17 @@ class State(models.Model):
     g = models.IntegerField(blank=True, null=True)
     s_qns = models.CharField(max_length=500, blank=True, null=True)
     qns_xml = models.TextField(blank=True, null=True)
+
+    def XML(self):
+        xml = []
+        case_prefix = self.iso.case.case_prefix
+        xml.append('<Case xsi:type="%s:Case" caseID="%s" xmlns:%s='
+              '"http://vamdc.org/xml/xsams/0.2/cases/%s">'
+            % (case_prefix, case_prefix, case_prefix, case_prefix))
+        xml.append(self.qns_xml)
+        xml.append('</Case>')
+        return '\n'.join(xml)
+
     class Meta:
         db_table = 'hitranlbl_state'
 
@@ -163,7 +200,7 @@ class Trans(models.Model):
                    '          </FitArgument>\n'\
                    '          <FitParameter name="gammaL_ref">\n')
             if self.gamma_air.ref is not None:
-                lineshape_xml.append('            <SourceRef>%s</SourceRef>\n'
+                lineshape_xml.append('            <SourceRef>B%s</SourceRef>\n'
                                      % self.gamma_air.ref)
             lineshape_xml.append('            <Value units="1/cm">%s</Value>\n'
                                  % self.gamma_air.val)
@@ -174,10 +211,10 @@ class Trans(models.Model):
             if 'n_air' in self.__dict__:
                 lineshape_xml.append('          <FitParameter name="n">\n')
                 if self.n_air.ref is not None:
-                    lineshape_xml.append('            <SourceRef>%s'
+                    lineshape_xml.append('            <SourceRef>B%s'
                                          '</SourceRef>\n' % self.n_air.ref)
                 lineshape_xml.append('            <Value units="unitless">%s'
-                                     '</Value>\n' % self.n_air.ref)
+                                     '</Value>\n' % self.n_air.val)
                 if self.n_air.err is not None:
                     lineshape_xml.append('            <Accuracy><Statistical>'
                       '%s</Statistical></Accuracy>\n' % str(self.n_air.err))
@@ -192,7 +229,8 @@ class Trans(models.Model):
             lineshape_xml.append('      <Lineshape name="Lorentzian">\n'\
                            '        <LineshapeParameter name="gammaL">\n')
             if self.gamma_self.ref is not None:
-                lineshape_xml.append('          <SourceRef>%s</SourceRef>\n')
+                lineshape_xml.append('          <SourceRef>B%s</SourceRef>\n'
+                                     % self.gamma_self.ref)
             lineshape_xml.append('          <Value units="1/cm">%s</Value>\n'
                       % self.gamma_self.val)
             if self.gamma_self.err is not None:
@@ -223,7 +261,7 @@ class Trans(models.Model):
                    '          </FitArgument>\n'
                    '          <FitParameter name="delta_ref">\n')
             if self.delta_air.ref is not None:
-                shifting_xml.append('            <SourceRef>%s</SourceRef>\n'
+                shifting_xml.append('            <SourceRef>B%s</SourceRef>\n'
                                     % self.delta_air.ref)
             shifting_xml.append('            <Value units="unitless">%s'
                                 '</Value>\n' % self.delta_air.val)

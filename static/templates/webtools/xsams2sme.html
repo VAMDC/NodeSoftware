@@ -11,7 +11,7 @@ Convert VAMDC-XSAMS format into CSV for SME
 {% block content %}
 <p>You can either upload a file or paste a query URL.</p>
 
-<form action="." method="post">
+<form enctype="multipart/form-data" action="." method="post">
 {% csrf_token %}
 {{  conversion.as_p }}
 <p><input type="submit" value="Submit" /></p>

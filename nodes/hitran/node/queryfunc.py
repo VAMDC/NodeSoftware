@@ -25,7 +25,6 @@ def get_species(transitions):
                                  .distinct())
     nspecies = species.count()
     for iso in species:
-        states = []
         # all the transitions for this species:
         sptransitions = transitions.filter(iso=iso)
         # sids is all the stateIDs involved in these transitions:
@@ -33,7 +32,7 @@ def get_species(transitions):
         statepps = sptransitions.values_list('statepp', flat=True)
         sids = set(chain(stateps, statepps))
         # attach the corresponding states to the species:
-        iso.states = State.objects.filter(pk__in = sids)
+        iso.States = State.objects.filter(pk__in = sids)
         nstates += len(sids)
     return species, nspecies, nstates
 
@@ -79,7 +78,7 @@ def ChemicalName2MoleculeInchiKey(op, foo):
         return None
     molecules = Molecule.objects.filter(pk__in=moleculename_ids)
     isos = Iso.objects.filter(molecule__in=molecules)
-    inchikeys = isos.values_list('InChIKey', flat=True)
+    inchikeys = isos.values_list('InChIKey_explicit', flat=True)
     q = ['MoleculeInchiKey', 'in', '(']
     for inchikey in inchikeys:
         q.append(inchikey)
