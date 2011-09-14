@@ -66,8 +66,7 @@ Preparing the input files
 In the not so unlikely case that the data are not yet in a format
 exacly matching the database layout, the Node Software ships with a
 *rewrite tool* to convert your data into such a format. The output will be ascii
-files that can be loaded as described in the previous section and will
- fulfill the following criteria:
+files that can be loaded as described in the previous section and will fulfill the following criteria:
 
 * One file per database table. LOAD DATA cannot update existing rows.
 * Same number of columns in the file as in the table and in the right order. Although LOAD DATA can take a list of columns to circumvent this restriction, it makes sense to get this right.

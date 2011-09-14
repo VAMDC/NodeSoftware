@@ -50,6 +50,14 @@ class Species( Model):
           tag = str(self.speciestag)
           return tag[:-3] #self.speciestag[:-3]
 
+     def _get_cml(self):
+          cursor = connection.cursor()
+#          cursor.execute("SELECT F_GetCML(%s) as cml FROM Entries WHERE id=%s", [settings.SECRET_KEY, self.id])
+          cursor.execute("SELECT F_GetCML(%s) as cml ", [self.id])
+          return cursor.fetchone()[0]
+     
+     cml = property(_get_cml)
+
 class Datasets( Model):
      id                    = IntegerField(primary_key=True, db_column='DAT_ID')
      species               = ForeignKey(Species, db_column='DAT_E_ID')

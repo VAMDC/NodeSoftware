@@ -107,11 +107,11 @@ def GetValue(name, **kwargs):
         # here, the RHS of the RETURNABLES dict is executed.
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
-    except Exception:
+    except Exception as e:
          # this catches the case where the dict-value is a string or mistyped.
-#        log.debug('Exception in generators.py: GetValue()')
-#        log.debug(str(e))
-#        log.debug(name)
+        #log.debug('Exception in generators.py: GetValue()')
+        #log.debug(str(e))
+        #log.debug(name)
         value = name
     if value == None:
         # the database returned NULL
@@ -687,6 +687,12 @@ def XsamsMCSBuild(Molecule):
 
     yield makePartitionfunc("MoleculePartitionFunction", G)
 
+    cont, ret = checkXML(G("MoleculeStructure"), 'CML')
+    if cont:
+        yield '<MoleculeStructure>\n'
+        yield ret
+        yield '</MoleculeStructure>\n'
+
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
     if G("MoleculeComment"):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
@@ -745,7 +751,7 @@ def makeCaseQNs(G):
     F2nuclSpin = G("MoleculeQNF2nuclSpin")
     K = G("MoleculeQNK")
 
-    result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/0.2/cases/%s">'
+    result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/0.2/cases/%s">' % (case, case)
     result += '<case:QNs>'
     if ElecStateLabel: result += '<case:ElecStateLabel>%s</case:ElecStateLabel>'%ElecStateLabel
     if elecInv: result += '<case:elecInv>%s</case:elecInv>'%elecInv
@@ -1629,6 +1635,7 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
     yield """<?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xmlns="http://vamdc.org/xml/xsams/0.2"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:cml="http://www.xml-cml.org/schema"
 xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
 """
 
