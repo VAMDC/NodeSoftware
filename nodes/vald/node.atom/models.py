@@ -4,22 +4,22 @@ from vamdctap.bibtextools import *
 class Species(Model):
     id = AutoField(primary_key=True, db_index=True)
     name = CharField(max_length=10, db_index=True)
-    inchi = CharField(max_length=128, db_index=True)
-    inchikey = CharField(max_length=25, db_index=True)
-    ion = PositiveSmallIntegerField(db_index=True)
-    mass = DecimalField(max_digits=8, decimal_places=5, db_index=True)
-    massno = PositiveSmallIntegerField(null=True, db_index=True)
-    ionen = DecimalField(max_digits=7, decimal_places=3, null=True)
-    solariso = DecimalField(max_digits=5, decimal_places=4, null=True)
+    echarge = PositiveSmallIntegerField(db_index=True)
+    inchi = CharField(max_length=32, db_index=True)
+    inchikey = CharField(max_length=28, db_index=True)    
+    mass = DecimalField(max_digits=8, decimal_places=5, db_index=True)    
+    ionen = DecimalField(max_digits=10, decimal_places=3, null=True)
+    solariso = DecimalField(max_digits=6, decimal_places=4, null=True)
     dissen = DecimalField(max_digits=8, decimal_places=4, null=True)
     ncomp = PositiveSmallIntegerField(null=True)
     atomic = PositiveSmallIntegerField(null=True, db_index=True)
     isotope = PositiveSmallIntegerField(null=True)
 
+
     components = ManyToManyField('self',through='SpeciesComp', symmetrical=False) # only used in case of molecules
 
     def isMolecule(self):
-         return self.ncomp > 1
+         return self.ncomp and self.ncomp > 1
 
     def __unicode__(self):
         return u'ID:%s %s'%(self.id,self.name)
@@ -29,7 +29,7 @@ class Species(Model):
 class SpeciesComp(Model):
     """
     This is just the intermediary model so that species can refer
-    to istself to build molecules.
+    to itself to build molecules.
     """
     molecule = ForeignKey(Species,related_name='molec')
     atom = ForeignKey(Species,related_name='atom')

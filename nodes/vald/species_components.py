@@ -20,7 +20,7 @@ def parse_species_file(filename):
         if line.strip().startswith('#') or line.strip().startswith('@'):
             continue
         sid = int(line[:7].strip())
-        ncomp = int(line[132:133].strip())
+        ncomp = int(line[195:196].strip())
         if sid < 5000:
             # store atomic components only
             anum = line[134:136]
