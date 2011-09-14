@@ -103,28 +103,28 @@ mapping = [
             {'cname':'id',
              'cbyte':(charrange, 0,7)},
             {'cname':'name',
-             'cbyte':(charrange, 10,20)},
+             'cbyte':(charrange, 9,19)},
             {'cname':'echarge',
-             'cbyte':(charrange, 21, 23)},
+             'cbyte':(charrange, 20, 22)},
             {'cname':'inchi',
-             'cbyte':(charrange, 24, 55)},
+             'cbyte':(charrange, 23, 54)},
             {'cname':'inchikey',
-             'cbyte':(charrange, 56, 83)},
+             'cbyte':(charrange, 55, 82)},
             {'cname':'mass',
-             'cbyte':(charrange, 85, 92)},
+             'cbyte':(charrange, 84, 91)},
             {'cname':'ionen',
-             'cbyte':(charrange, 93, 103)},
+             'cbyte':(charrange, 92, 102)},
             {'cname':'solariso',
-             'cbyte':(charrange, 104,110)},
+             'cbyte':(charrange, 103,109)},
             {'cname':'dissen',
-             'cbyte':(charrange, 111, 120)},
+             'cbyte':(charrange, 110, 119)},
             {'cname':'ncomp',
-             'cbyte':(charrange, 195, 196)},            
+             'cbyte':(charrange, 194, 195)},            
             {'cname':'atomic',
-             'cbyte':(charrange_atom, 5000, 197, 199),
+             'cbyte':(charrange_atom, 5000, 196, 198),
              'cnull':'X'},                       
-            {'cname':'ncomp',
-             'cbyte':(charrange_atom, 5000, 200, 203),
+            {'cname':'isotope',
+             'cbyte':(charrange_atom, 5000, 199, 202),
              'cnull':'X'},
             ],
      }, # end of definition for species file
@@ -508,17 +508,18 @@ def species_component(species_file, outfile):
     the many2many relationship. 
     """
     outstring = ""
-    f = open(filename, 'r')
+    f = open(species_file, 'r')
     for line in f:
-        if line.strip().startswith('#') or line.strip().startswith('@'):
+        if line.strip() and (line.strip().startswith('#') or line.strip().startswith('@')):
             continue        
         sid = line[:7].strip()  
-        if sid < '5000':
+        if int(sid) < 5000:
             continue         
+        #import pdb;pdb.set_trace()
         # we have a molecule
-        ncomp = int(line[200:203])
+        ncomp = int(line[194:195])
         for icomp in range(ncomp):
-            csid = line[197+icomp*8 : 204+icomp*8]
+            csid = line[196+icomp*8 : 203+icomp*8].strip()
             outstring += '\N;"%s";"%s"\n' % (sid, csid)
     f.close()
     f = open(outfile, 'w')
@@ -531,6 +532,6 @@ def species_component(species_file, outfile):
 print "Running species_component ..."
 species_component(species_list_file, outbase + "species_components.dat")
 
-from linelists_references import linelists_references
+import linelists_references 
 print "Running linelists_references ..."
-linelists_references(vald_cfg_file, linelist_file, outfile=outbase + "linelists_references.dat")
+linelists_references.linelists_references(vald_cfg_file, linelist_file, outfile=outbase + "linelists_references.dat")
