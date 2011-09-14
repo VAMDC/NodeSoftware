@@ -17,7 +17,7 @@ DATABASES = {
 
 ROOT_URLCONF = 'urls'
 TEMPLATE_DIRS = (
-    '/home/tom/py/vamdc/static/templates',
+    '/opt/NodeSoftware/static/templates',
 )
 
 INSTALLED_APPS = (
