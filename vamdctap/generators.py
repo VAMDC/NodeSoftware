@@ -745,7 +745,7 @@ def makeCaseQNs(G):
     F2nuclSpin = G("MoleculeQNF2nuclSpin")
     K = G("MoleculeQNK")
 
-    result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/0.2/cases/%s">'
+    result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/0.2/cases/%s">' % (case, case)
     result += '<case:QNs>'
     if ElecStateLabel: result += '<case:ElecStateLabel>%s</case:ElecStateLabel>'%ElecStateLabel
     if elecInv: result += '<case:elecInv>%s</case:elecInv>'%elecInv
