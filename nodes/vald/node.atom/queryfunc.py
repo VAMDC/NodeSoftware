@@ -76,6 +76,7 @@ def setupResults(sql):
             'TRUNCATED':percentage,
             'COUNT-ATOMS':atoms.count(),
             'COUNT-MOLECULES':molecules.count(),
+            'COUNT-SPECIES':atoms.count() + molecules.count(),
             'COUNT-STATES':nstates,
             'CoUNT-RADIATIVE':ntranss,
             'APPROX-SIZE':size_estimate,
