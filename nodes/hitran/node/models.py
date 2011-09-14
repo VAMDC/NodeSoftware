@@ -50,7 +50,6 @@ class Iso(models.Model):
         db_table = 'hitranmeta_iso'
 
 class Case(models.Model):
-    caseID = models.IntegerField(unique=True)
     case_prefix = models.CharField(max_length=10, unique=True)
     case_description = models.CharField(max_length=50)
     class Meta:
@@ -118,11 +117,10 @@ class State(models.Model):
 
     def XML(self):
         xml = []
-        # XXX this is wrong! we should have the case prefix here instead
-        # of 'this_case'
-        xml.append('<Case xsi:type="case:Case" caseID="%s" xmlns:%s='
+        case_prefix = self.iso.case.case_prefix
+        xml.append('<Case xsi:type="%s:Case" caseID="%s" xmlns:%s='
               '"http://vamdc.org/xml/xsams/0.2/cases/%s">'
-            % ('this_case', 'this_case', 'this_case'))
+            % (case_prefix, case_prefix, case_prefix, case_prefix))
         xml.append(self.qns_xml)
         xml.append('</Case>')
         return '\n'.join(xml)
@@ -175,7 +173,7 @@ class Trans(models.Model):
                    '          </FitArgument>\n'\
                    '          <FitParameter name="gammaL_ref">\n')
             if self.gamma_air.ref is not None:
-                lineshape_xml.append('            <SourceRef>%s</SourceRef>\n'
+                lineshape_xml.append('            <SourceRef>B%s</SourceRef>\n'
                                      % self.gamma_air.ref)
             lineshape_xml.append('            <Value units="1/cm">%s</Value>\n'
                                  % self.gamma_air.val)
@@ -186,10 +184,10 @@ class Trans(models.Model):
             if 'n_air' in self.__dict__:
                 lineshape_xml.append('          <FitParameter name="n">\n')
                 if self.n_air.ref is not None:
-                    lineshape_xml.append('            <SourceRef>%s'
+                    lineshape_xml.append('            <SourceRef>B%s'
                                          '</SourceRef>\n' % self.n_air.ref)
                 lineshape_xml.append('            <Value units="unitless">%s'
-                                     '</Value>\n' % self.n_air.ref)
+                                     '</Value>\n' % self.n_air.val)
                 if self.n_air.err is not None:
                     lineshape_xml.append('            <Accuracy><Statistical>'
                       '%s</Statistical></Accuracy>\n' % str(self.n_air.err))
@@ -204,7 +202,8 @@ class Trans(models.Model):
             lineshape_xml.append('      <Lineshape name="Lorentzian">\n'\
                            '        <LineshapeParameter name="gammaL">\n')
             if self.gamma_self.ref is not None:
-                lineshape_xml.append('          <SourceRef>%s</SourceRef>\n')
+                lineshape_xml.append('          <SourceRef>B%s</SourceRef>\n'
+                                     % self.gamma_self.ref)
             lineshape_xml.append('          <Value units="1/cm">%s</Value>\n'
                       % self.gamma_self.val)
             if self.gamma_self.err is not None:
@@ -235,7 +234,7 @@ class Trans(models.Model):
                    '          </FitArgument>\n'
                    '          <FitParameter name="delta_ref">\n')
             if self.delta_air.ref is not None:
-                shifting_xml.append('            <SourceRef>%s</SourceRef>\n'
+                shifting_xml.append('            <SourceRef>B%s</SourceRef>\n'
                                     % self.delta_air.ref)
             shifting_xml.append('            <Value units="unitless">%s'
                                 '</Value>\n' % self.delta_air.val)
