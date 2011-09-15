@@ -8,6 +8,7 @@ class Species(Model):
     inchi = CharField(max_length=32, db_index=True)
     inchikey = CharField(max_length=28, db_index=True)    
     mass = DecimalField(max_digits=8, decimal_places=5, db_index=True)    
+    massno = PositiveSmallIntegerField(null=True, db_index=True)
     ionen = DecimalField(max_digits=10, decimal_places=3, null=True)
     solariso = DecimalField(max_digits=6, decimal_places=4, null=True)
     dissen = DecimalField(max_digits=8, decimal_places=4, null=True)
