@@ -1345,12 +1345,10 @@ def XsamsCollTrans(CollTrans):
                 yield "</Product>"
 
         yield makeDataType("Threshold", "CollisionThreshold", G)
-
-
         yield "<DataSets>"
+
         if hasattr(CollTran, "DataSets"):
             for DataSet in CollTran.DataSets:
-
                 cont, ret = checkXML(DataSet)
                 if cont:
                     yield ret
@@ -1358,10 +1356,9 @@ def XsamsCollTrans(CollTrans):
 
                 GD = lambda name: GetValue(name, DataSet=DataSet)
 
-                yield makePrimaryType("DataSet", "CollisionDataSet", GD, extraArgs={"dataDescription":GD("CollisionDataSetDescription")})
+                yield makePrimaryType("DataSet", "CollisionDataSet", GD, extraAttr={"dataDescription":GD("CollisionDataSetDescription")})
 
                 # Fit data
-
                 if hasattr(DataSet, "FitData"):
                     for FitData in DataSet.FitData:
 
@@ -1424,10 +1421,8 @@ def XsamsCollTrans(CollTrans):
                                 yield "</FitData>"
 
                 # Tabulated data
-
                 if hasattr(DataSet, "TabData"):
                     for TabData in DataSet.TabData:
-
                         cont, ret = checkXML(TabData)
                         if cont:
                             yield ret
@@ -1443,7 +1438,7 @@ def XsamsCollTrans(CollTrans):
                         Nx = G("CollisionTabulatedDataXN")
                         xunits = G("CollisionTabulatedDataXUnits")
 
-                        yield "<X units='%s' parameter='%s'" % (Nx, xunits)
+                        yield "<X units='%s' parameter='%s'>" % (Nx, xunits)
                         yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataX"))))
                         yield "<Error> n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXError"))))
                         yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXNegativeError"))))
@@ -1455,7 +1450,7 @@ def XsamsCollTrans(CollTrans):
                         Ny = G("CollisionTabulatedDataYN")
                         yunits = G("CollisionTabulatedDataYUnits")
 
-                        yield "<Y units='%s' parameter='%s'" % (Ny, yunits)
+                        yield "<Y units='%s' parameter='%s'>" % (Ny, yunits)
                         yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataY"))))
                         yield "<Error> n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYError"))))
                         yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYNegativeError"))))
