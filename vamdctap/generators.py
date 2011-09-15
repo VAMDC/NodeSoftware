@@ -1625,7 +1625,7 @@ def XsamsMethods(Methods):
     yield '</Methods>\n'
 
 def generatorError(where):
-    log.critical('Generator error in%s!' % where, exc_info=sys.exc_info())
+    log.warn('Generator error in%s!' % where, exc_info=sys.exc_info())
     return where
 
 def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
