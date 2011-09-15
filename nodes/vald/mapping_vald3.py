@@ -494,7 +494,7 @@ mapping = [
     ]
 
 # short-cutting the mapping for testing
-mapping = [mapping[1]]
+#mapping = [mapping[0]] + mapping[2:]
 
 
 
