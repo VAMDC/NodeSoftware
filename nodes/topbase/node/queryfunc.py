@@ -13,7 +13,7 @@
 import sys
 from itertools import chain
 from django.conf import settings
-from vamdctap.sqlparse import where2q
+from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.db import connection
 import logging
