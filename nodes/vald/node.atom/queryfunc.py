@@ -57,7 +57,6 @@ def setupResults(sql):
         transs = Transition.objects.filter(q,Q(wave__lt=newmax))
         log.debug('Truncated results to %s, i.e %s A.'%(TRANSLIM,newmax))
     else: percentage=None
-    ntranss=transs.count()
     log.debug('Transitions QuerySet set up. References next.')
     #refIDs = set( transs.values_list('wave_ref_id','loggf_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref') )
     #sources = Reference.objects.filter(pk__in=refIDs)
