@@ -680,8 +680,7 @@ def XsamsMCSBuild(Molecule):
 
     yield '<StoichiometricFormula>%s</StoichiometricFormula>\n'\
             % G("MoleculeStoichiometricFormula")
-    yield '<IonCharge>%s</IonCharge>\n'\
-            % G("MoleculeIonCharge")
+    yield makeOptionalTag('IonCharge', 'MoleculeIonCharge', G)
     if G("MoleculeChemicalName"):
         yield '<ChemicalName><Value>%s</Value></ChemicalName>\n'\
             % G("MoleculeChemicalName")

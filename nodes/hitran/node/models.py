@@ -17,6 +17,10 @@ class Molecule(models.Model):
     common_name = models.CharField(max_length=100, null=True, blank=True)
     # CML representation of the species, with no isotope information
     cml = models.TextField(null=True, blank=True)
+
+    # until we put this in the database model, hard-code it here:
+    charge = 0
+
     class Meta:
             db_table = u'hitranmeta_molecule'
 
