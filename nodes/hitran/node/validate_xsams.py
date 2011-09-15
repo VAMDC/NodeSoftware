@@ -36,8 +36,8 @@ query = 'REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT%%20ALL%%20'\
 url = '%s?%s' % (url_prefix, query)
 print url
 
-# get the XSAMS using curl and send it to the file <molec_name>.xsams
-xsams_name = '%s.xsams' % molec_name
+# get the XSAMS using curl and send it to the file /tmp/<molec_name>.xsams
+xsams_name = '/tmp/%s.xsams' % molec_name
 fo = open(xsams_name, 'w')
 call(['curl', '-L', url], stdout=fo)
 fo.close()
