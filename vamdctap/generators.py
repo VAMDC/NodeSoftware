@@ -1440,9 +1440,9 @@ def XsamsCollTrans(CollTrans):
 
                         yield "<X units='%s' parameter='%s'>" % (Nx, xunits)
                         yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataX"))))
-                        yield "<Error> n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXError"))))
-                        yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXNegativeError"))))
-                        yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXPositiveError"))))
+                        yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXError"))))
+                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXNegativeError"))))
+                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXPositiveError"))))
                         yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataXDescription")
                         yield "</X>"
 
@@ -1452,9 +1452,9 @@ def XsamsCollTrans(CollTrans):
 
                         yield "<Y units='%s' parameter='%s'>" % (Ny, yunits)
                         yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataY"))))
-                        yield "<Error> n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYError"))))
-                        yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYNegativeError"))))
-                        yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYPositiveError"))))
+                        yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYError"))))
+                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYNegativeError"))))
+                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYPositiveError"))))
                         yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataYDescription")
                         yield "</Y>"
 
