@@ -1659,6 +1659,14 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
 
     errs=''
 
+    # this might be a cheap hack, but should work
+    if requestables and Atoms and ('atomstates' not in requestables):
+        for Atom in Atoms:
+            Atom.States = None
+    if requestables and Molecules and ('moleculestates' not in requestables):
+        for Molecule in Molecules:
+                Molecule.States = None
+
     if not requestables or 'sources' in requestables:
         log.debug('Working on Sources.')
         try:
