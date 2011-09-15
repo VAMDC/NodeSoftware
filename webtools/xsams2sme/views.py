@@ -32,10 +32,11 @@ class ConversionForm(Form):
         try: xml=e.parse(data)
         except Exception,err:
             raise ValidationError('Could not parse XML file: %s'%err)
-        try: return xsl(xml)
+        try: self.cleaned_data['sme'] = xsl(xml)
         except Exception,err:
             raise ValidationError('Could not transform XML file: %s'%err)
 
+        return self.cleaned_data
 
 def xsams2sme(request):
     if request.method != 'POST':
@@ -43,9 +44,9 @@ def xsams2sme(request):
     else:
         ConvForm = ConversionForm(request.POST, request.FILES)
         if ConvForm.is_valid():
-            response=HttpResponse(data,mimetype='text/csv')
+            response=HttpResponse(ConvForm.cleaned_data['sme'],mimetype='text/csv')
             response['Content-Disposition'] = \
-                'attachment; filename=%s.sme'% (getattr(infile, 'name', None) or 'output')
+                'attachment; filename=%s.sme'% (ConvForm.cleaned_data.get('infile') or 'output')
             return response
 
     return render_to_response('webtools/xsams2sme.html',
