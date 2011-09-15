@@ -17,6 +17,15 @@ try:
 except:
     NODEID = 'PleaseFillTheNodeID'
 
+try:
+    XSAMS_VERSION = RETURNABLES['XSAMSVersion']
+except:
+    XSAMS_VERSION = '0.2'
+try:
+    SCHEMA_LOCATION = RETURNABLES['SchemaLocation']
+except:
+    SCHEMA_LOCATION = 'xsams.xsd'
+
 import logging
 log = logging.getLogger('vamdc.tap.generator')
 
@@ -754,7 +763,7 @@ def makeCaseQNs(G):
     F2nuclSpin = G("MoleculeQNF2nuclSpin")
     K = G("MoleculeQNK")
 
-    result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/0.2/cases/%s">' % (case, case)
+    result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/%s/cases/%s">' % (case, XSAMS_VERSION, case)
     result += '<case:QNs>'
     if ElecStateLabel: result += '<case:ElecStateLabel>%s</case:ElecStateLabel>'%ElecStateLabel
     if elecInv: result += '<case:elecInv>%s</case:elecInv>'%elecInv
@@ -1626,16 +1635,16 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
     The main generator function of XSAMS. This one calls all the
     sub-generators above. It takes the query sets that the node's
     setupResult() has constructed as arguments with given names.
-    This function is to be passed to the HTTP-respose object directly
+    This function is to be passed to the HTTP-response object directly
     and not to be looped over beforehand.
     """
 
-    yield """<?xml version="1.0" encoding="UTF-8"?>
-<XSAMSData xmlns="http://vamdc.org/xml/xsams/0.2"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xmlns:cml="http://www.xml-cml.org/schema"
-xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
-"""
+    yield '<?xml version="1.0" encoding="UTF-8"?>\n'
+    yield '<XSAMSData xmlns="http://vamdc.org/xml/xsams/%s"' % XSAMS_VERSION
+    yield ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
+    yield ' xmlns:cml="http://www.xml-cml.org/schema"'
+    yield ' xsi:schemaLocation="http://vamdc.org/xml/xsams/%s %s">'\
+            % (XSAMS_VERSION, SCHEMA_LOCATION)
 
     if HeaderInfo:
         if HeaderInfo.has_key('Truncated'):
