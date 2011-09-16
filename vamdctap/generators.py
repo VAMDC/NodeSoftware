@@ -96,12 +96,14 @@ def GetValue(name, **kwargs):
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
+    #log.debug("getvalue, name : "+name)
     try:
         name = RETURNABLES[name]
-    except Exception:
+    except Exception as e:
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
+        #log.debug(e)
         return ''
 
     if not name:
@@ -114,13 +116,12 @@ def GetValue(name, **kwargs):
 
     try:
         # here, the RHS of the RETURNABLES dict is executed.
+        #log.debug(" try eval : " + name)
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
     except Exception as e:
          # this catches the case where the dict-value is a string or mistyped.
         #log.debug('Exception in generators.py: GetValue()')
-        #log.debug(str(e))
-        #log.debug(name)
         value = name
     if value == None:
         # the database returned NULL
@@ -1444,27 +1445,27 @@ def XsamsCollTrans(CollTrans):
                         yield "<DataXY>"
 
                         # handle X components of XY
-                        Nx = G("CollisionTabulatedDataXN")
-                        xunits = G("CollisionTabulatedDataXUnits")
+                        Nx = GDT("CollisionTabulatedDataXN")
+                        xunits = GDT("CollisionTabulatedDataXUnits")
 
                         yield "<X units='%s' parameter='%s'>" % (Nx, xunits)
-                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataX"))))
-                        yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXError"))))
-                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXNegativeError"))))
-                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXPositiveError"))))
-                        yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataXDescription")
+                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
+                        yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXError"))))
+                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXNegativeError"))))
+                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXPositiveError"))))
+                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
                         yield "</X>"
 
                         # handle Y components of XY
-                        Ny = G("CollisionTabulatedDataYN")
-                        yunits = G("CollisionTabulatedDataYUnits")
+                        Ny = GDT("CollisionTabulatedDataYN")
+                        yunits = GDT("CollisionTabulatedDataYUnits")
 
                         yield "<Y units='%s' parameter='%s'>" % (Ny, yunits)
-                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataY"))))
-                        yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYError"))))
-                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYNegativeError"))))
-                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYPositiveError"))))
-                        yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataYDescription")
+                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
+                        yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYError"))))
+                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYNegativeError"))))
+                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYPositiveError"))))
+                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
                         yield "</Y>"
 
                         yield "</DataXY>"
