@@ -21,5 +21,3 @@ alter table transitions modify upstate INT;
 alter table transitions modify lostate INT;
 
 update transitions t, linelists ll set t.obstype=ll.obstype where t.wave_linelist_id=ll.id;
-
-update species s, inchi i set s.inchi=i.inchi, s.inchikey=i.inchi_key where s.id=i.specie_id;
