@@ -9,6 +9,7 @@
 import os
 import sys
 import argparse
+import urllib
 from subprocess import call
 
 HOME = os.getenv('HOME')
@@ -30,8 +31,15 @@ url_prefix = 'http://vamdc.mssl.ucl.ac.uk/node/hitran/tap/sync/'
 if local:
    url_prefix = 'http://127.0.0.1:8000/tap/sync/' 
 
-query = 'REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT%%20ALL%%20'\
-        'WHERE%%20MoleculeChemicalName="%s"' % molec_name
+q = {'REQUEST': 'doQuery',
+     'LANG': 'VSS2',
+     'FORMAT': 'XSAMS',
+     'QUERY': 'SELECT ALL WHERE MoleculeChemicalName="%s"' % molec_name
+    }
+query = urllib.urlencode(q)
+
+#query = 'REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT%%20ALL%%20'\
+#        'WHERE%%20MoleculeChemicalName="%s"' % molec_name
 
 url = '%s?%s' % (url_prefix, query)
 print url
