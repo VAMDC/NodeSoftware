@@ -1365,7 +1365,7 @@ def XsamsCollTrans(CollTrans):
 
                 GD = lambda name: GetValue(name, DataSet=DataSet)
 
-                yield makePrimaryType("DataSet", "CollisionDataSet", GD, extraAttr={"dataDescription":GD("CollisionDataSetDescription")})
+                yield makePrimaryType("DataSet", "CollisionDataSet", GD, extraAttr={"dataDescription":"CollisionDataSetDescription"})
 
                 # Fit data
                 if hasattr(DataSet, "FitData"):
