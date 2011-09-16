@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema elementFormDefault="qualified" attributeFormDefault="qualified" targetNamespace="http://vamdc.org/xml/xsams/0.2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2">
+	<xs:redefine schemaLocation="http://vamdc.org/xml/xsams/0.2/">
+		<xs:complexType name="AtomicStateType">
+			<xs:complexContent>
+				<xs:extension base="AtomicStateType">
+					<xs:sequence>
+						<xs:element name="Verification" type="atomicStateVerification" minOccurs="0"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="MolecularStateType">
+			<xs:complexContent>
+				<xs:extension base="MolecularStateType">
+					<xs:sequence>
+						<xs:element name="Verification" type="molecularStateVerification" minOccurs="0"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="RadiativeTransitionType">
+			<xs:complexContent>
+				<xs:extension base="RadiativeTransitionType">
+					<xs:sequence>
+						<xs:element name="Verification" type="radiativeTransitionVerification" minOccurs="0"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="NonRadiativeTransitionType">
+			<xs:complexContent>
+				<xs:extension base="NonRadiativeTransitionType">
+					<xs:sequence>
+						<xs:element name="Verification" type="nonRadiativeTransitionVerification" minOccurs="0"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:redefine>
+	<xs:complexType name="atomicStateVerification">
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="molecularStateVerification">
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="radiativeTransitionVerification">
+		<xs:sequence>
+			<xs:group ref="TransitionRules"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="nonRadiativeTransitionVerification">
+		<xs:sequence>
+			<xs:group ref="TransitionRules"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:group name="TransitionRules">
+		<xs:sequence>
+			<xs:element ref="Rule1" minOccurs="0"/>
+			<xs:element ref="Rule2" minOccurs="0"/>
+		</xs:sequence>
+	</xs:group>
+	<xs:element name="Rule1" type="xs:boolean">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule>
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<or/>
+							<apply>
+								<eq/>
+								<apply>
+									<abs/>
+									<apply>
+										<minus/>
+										<ci>TotalAngularMomentum@InitialStateRef</ci>
+										<ci>TotalAngularMomentum@FinalStateRef</ci>
+									</apply>
+								</apply>
+								<cn>1</cn>
+							</apply>
+							<apply>
+								<eq/>
+								<ci>TotalAngularMomentum@InitialStateRef</ci>
+								<ci>TotalAngularMomentum@FinalStateRef</ci>
+							</apply>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="Rule2" type="xs:boolean">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule>
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<neq/>
+							<ci>Parity@InitialStateRef</ci>
+							<ci>Parity@FinalStateRef</ci>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="rule">
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="xs:anyType">
+					<xs:attribute name="substances" type="plainSubstanceNameList" use="optional"/>
+					<xs:attribute name="symmetry" type="plainSymmetryGroupList" use="optional"/>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="plainSubstanceNameList">
+		<xs:list itemType="plainSubstanceName"/>
+	</xs:simpleType>
+	<xs:simpleType name="plainSubstanceName">
+		<xs:restriction base="xs:string"><!-- _12C_16O2 _16O_13C_16O _18O_13C_18O _12C_18O2 -->
+			<xs:pattern value="([_A-Za-z0-9]+(_plus|_minus)?)+"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="plainSymmetryGroupList">
+		<xs:list itemType="plainSubstanceName"/>
+	</xs:simpleType>
+	<xs:simpleType name="plainSymmetryGroup">
+		<xs:restriction base="xs:string"><!-- C2v  Dinf_h-->
+			<xs:pattern value="[_A-Za-z0-9]+"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="plainMainSubstanceNameAndSymmetryGroupList">
+		<xs:list itemType="plainSubstanceName"/>
+	</xs:simpleType>
+	<xs:simpleType name="plainMainSubstanceNameAndSymmetryGroup">
+		<xs:restriction base="xs:string"><!-- _1H2_16O@C2v  _12C2_1H2@Dinf_h-->
+			<xs:pattern value="([_A-Za-z0-9]+(_plus|_minus)?)+@[_A-Za-z0-9]+"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
