@@ -1,6 +1,10 @@
 from django.db import models
+from dictionaries import RETURNABLES
 import datetime
 import re
+
+NODEID = RETURNABLES['NodeID']
+source_prefix = 'B%s-' % NODEID
 
 class Molecule(models.Model):
     molecID = models.IntegerField(primary_key=True, unique=True)
@@ -207,8 +211,8 @@ class Trans(models.Model):
                    '          </FitArgument>\n'\
                    '          <FitParameter name="gammaL_ref">\n')
             if self.gamma_air.ref is not None:
-                lineshape_xml.append('            <SourceRef>B%s</SourceRef>\n'
-                                     % self.gamma_air.ref)
+                lineshape_xml.append('           <SourceRef>%s%s</SourceRef>\n'
+                                     % (source_prefix, self.gamma_air.ref))
             lineshape_xml.append('            <Value units="1/cm">%s</Value>\n'
                                  % self.gamma_air.val)
             if self.gamma_air.err is not None:
@@ -218,8 +222,8 @@ class Trans(models.Model):
             if 'n_air' in self.__dict__:
                 lineshape_xml.append('          <FitParameter name="n">\n')
                 if self.n_air.ref is not None:
-                    lineshape_xml.append('            <SourceRef>B%s'
-                                         '</SourceRef>\n' % self.n_air.ref)
+                    lineshape_xml.append('            <SourceRef>%s%s'
+                            '</SourceRef>\n' % (source_prefix, self.n_air.ref))
                 lineshape_xml.append('            <Value units="unitless">%s'
                                      '</Value>\n' % self.n_air.val)
                 if self.n_air.err is not None:
@@ -236,8 +240,8 @@ class Trans(models.Model):
             lineshape_xml.append('      <Lineshape name="Lorentzian">\n'\
                            '        <LineshapeParameter name="gammaL">\n')
             if self.gamma_self.ref is not None:
-                lineshape_xml.append('          <SourceRef>B%s</SourceRef>\n'
-                                     % self.gamma_self.ref)
+                lineshape_xml.append('          <SourceRef>%s%s</SourceRef>\n'
+                                     % (source_prefix, self.gamma_self.ref))
             lineshape_xml.append('          <Value units="1/cm">%s</Value>\n'
                       % self.gamma_self.val)
             if self.gamma_self.err is not None:
@@ -268,8 +272,8 @@ class Trans(models.Model):
                    '          </FitArgument>\n'
                    '          <FitParameter name="delta_ref">\n')
             if self.delta_air.ref is not None:
-                shifting_xml.append('            <SourceRef>B%s</SourceRef>\n'
-                                    % self.delta_air.ref)
+                shifting_xml.append('            <SourceRef>%s%s</SourceRef>\n'
+                                    % (source_prefix, self.delta_air.ref))
             shifting_xml.append('            <Value units="unitless">%s'
                                 '</Value>\n' % self.delta_air.val)
             if self.delta_air.err is not None:

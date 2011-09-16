@@ -2,6 +2,8 @@
 
 RETURNABLES={\
 'NodeID': 'HIT',    # unique identifier for the HITRAN node
+'XSAMSVersion': '0.2',
+'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/release-0.2/xsams.xsd',
 
 'SourceID': 'Source.refID',
 'SourceAuthorName': 'Source.author_list()',
