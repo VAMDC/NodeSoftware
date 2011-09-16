@@ -52,7 +52,7 @@ def setupResults(sql):
     ntranss=transs.count()
     if TRANSLIM < ntranss and (not sql.requestables or 'radiative' in sql.requestables):
         percentage = '%.1f'%(float(TRANSLIM)/ntranss *100)
-        transs = transs.order_by('wave')
+        #transs = transs.order_by('wave')
         newmax = transs[TRANSLIM].wave
         transs = Transition.objects.filter(q,Q(wave__lt=newmax))
         log.debug('Truncated results to %s, i.e %s A.'%(TRANSLIM,newmax))
