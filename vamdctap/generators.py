@@ -17,6 +17,15 @@ try:
 except:
     NODEID = 'PleaseFillTheNodeID'
 
+try:
+    XSAMS_VERSION = RETURNABLES['XSAMSVersion']
+except:
+    XSAMS_VERSION = '0.2'
+try:
+    SCHEMA_LOCATION = RETURNABLES['SchemaLocation']
+except:
+    SCHEMA_LOCATION = 'xsams.xsd'
+
 import logging
 log = logging.getLogger('vamdc.tap.generator')
 
@@ -87,12 +96,14 @@ def GetValue(name, **kwargs):
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
+    #log.debug("getvalue, name : "+name)
     try:
         name = RETURNABLES[name]
-    except Exception:
+    except Exception as e:
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
+        #log.debug(e)
         return ''
 
     if not name:
@@ -105,13 +116,12 @@ def GetValue(name, **kwargs):
 
     try:
         # here, the RHS of the RETURNABLES dict is executed.
+        #log.debug(" try eval : " + name)
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
     except Exception as e:
          # this catches the case where the dict-value is a string or mistyped.
         #log.debug('Exception in generators.py: GetValue()')
-        #log.debug(str(e))
-        #log.debug(name)
         value = name
     if value == None:
         # the database returned NULL
@@ -365,6 +375,7 @@ def XsamsSources(Sources):
         yield makeOptionalTag('PageBegin','SourcePageBegin',G)
         yield makeOptionalTag('PageEnd','SourcePageEnd',G)
         yield makeOptionalTag('UniformResourceIdentifier','SourceURI',G)
+        yield makeOptionalTag('DigitalObjectIdentifier','SourceDOI',G)
         yield makeOptionalTag('Comments','SourceComments',G)
         yield '</Source>\n'
     yield '</Sources>\n'
@@ -679,6 +690,7 @@ def XsamsMCSBuild(Molecule):
 
     yield '<StoichiometricFormula>%s</StoichiometricFormula>\n'\
             % G("MoleculeStoichiometricFormula")
+    yield makeOptionalTag('IonCharge', 'MoleculeIonCharge', G)
     if G("MoleculeChemicalName"):
         yield '<ChemicalName><Value>%s</Value></ChemicalName>\n'\
             % G("MoleculeChemicalName")
@@ -752,7 +764,7 @@ def makeCaseQNs(G):
     F2nuclSpin = G("MoleculeQNF2nuclSpin")
     K = G("MoleculeQNK")
 
-    result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/0.2/cases/%s">' % (case, case)
+    result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/%s/cases/%s">' % (case, XSAMS_VERSION, case)
     result += '<case:QNs>'
     if ElecStateLabel: result += '<case:ElecStateLabel>%s</case:ElecStateLabel>'%ElecStateLabel
     if elecInv: result += '<case:elecInv>%s</case:elecInv>'%elecInv
@@ -1343,12 +1355,10 @@ def XsamsCollTrans(CollTrans):
                 yield "</Product>"
 
         yield makeDataType("Threshold", "CollisionThreshold", G)
-
-
         yield "<DataSets>"
+
         if hasattr(CollTran, "DataSets"):
             for DataSet in CollTran.DataSets:
-
                 cont, ret = checkXML(DataSet)
                 if cont:
                     yield ret
@@ -1356,10 +1366,9 @@ def XsamsCollTrans(CollTrans):
 
                 GD = lambda name: GetValue(name, DataSet=DataSet)
 
-                yield makePrimaryType("DataSet", "CollisionDataSet", GD, extraArgs={"dataDescription":GD("CollisionDataSetDescription")})
+                yield makePrimaryType("DataSet", "CollisionDataSet", GD, extraAttr={"dataDescription":"CollisionDataSetDescription"})
 
                 # Fit data
-
                 if hasattr(DataSet, "FitData"):
                     for FitData in DataSet.FitData:
 
@@ -1422,10 +1431,8 @@ def XsamsCollTrans(CollTrans):
                                 yield "</FitData>"
 
                 # Tabulated data
-
                 if hasattr(DataSet, "TabData"):
                     for TabData in DataSet.TabData:
-
                         cont, ret = checkXML(TabData)
                         if cont:
                             yield ret
@@ -1438,27 +1445,27 @@ def XsamsCollTrans(CollTrans):
                         yield "<DataXY>"
 
                         # handle X components of XY
-                        Nx = G("CollisionTabulatedDataXN")
-                        xunits = G("CollisionTabulatedDataXUnits")
+                        Nx = GDT("CollisionTabulatedDataXN")
+                        xunits = GDT("CollisionTabulatedDataXUnits")
 
-                        yield "<X units='%s' parameter='%s'" % (Nx, xunits)
-                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataX"))))
-                        yield "<Error> n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXError"))))
-                        yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXNegativeError"))))
-                        yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXPositiveError"))))
-                        yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataXDescription")
+                        yield "<X units='%s' parameter='%s'>" % (Nx, xunits)
+                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
+                        yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXError"))))
+                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXNegativeError"))))
+                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXPositiveError"))))
+                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
                         yield "</X>"
 
                         # handle Y components of XY
-                        Ny = G("CollisionTabulatedDataYN")
-                        yunits = G("CollisionTabulatedDataYUnits")
+                        Ny = GDT("CollisionTabulatedDataYN")
+                        yunits = GDT("CollisionTabulatedDataYUnits")
 
-                        yield "<Y units='%s' parameter='%s'" % (Ny, yunits)
-                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataY"))))
-                        yield "<Error> n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYError"))))
-                        yield "<NegativeError> n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYNegativeError"))))
-                        yield "<PositiveError> n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYPositiveError"))))
-                        yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataYDescription")
+                        yield "<Y units='%s' parameter='%s'>" % (Ny, yunits)
+                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
+                        yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYError"))))
+                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYNegativeError"))))
+                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYPositiveError"))))
+                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
                         yield "</Y>"
 
                         yield "</DataXY>"
@@ -1619,7 +1626,7 @@ def XsamsMethods(Methods):
     yield '</Methods>\n'
 
 def generatorError(where):
-    log.critical('Generator error in%s!' % where, exc_info=sys.exc_info())
+    log.warn('Generator error in%s!' % where, exc_info=sys.exc_info())
     return where
 
 def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
@@ -1629,16 +1636,16 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
     The main generator function of XSAMS. This one calls all the
     sub-generators above. It takes the query sets that the node's
     setupResult() has constructed as arguments with given names.
-    This function is to be passed to the HTTP-respose object directly
+    This function is to be passed to the HTTP-response object directly
     and not to be looped over beforehand.
     """
 
-    yield """<?xml version="1.0" encoding="UTF-8"?>
-<XSAMSData xmlns="http://vamdc.org/xml/xsams/0.2"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xmlns:cml="http://www.xml-cml.org/schema"
-xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
-"""
+    yield '<?xml version="1.0" encoding="UTF-8"?>\n'
+    yield '<XSAMSData xmlns="http://vamdc.org/xml/xsams/%s"' % XSAMS_VERSION
+    yield ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
+    yield ' xmlns:cml="http://www.xml-cml.org/schema"'
+    yield ' xsi:schemaLocation="http://vamdc.org/xml/xsams/%s %s">'\
+            % (XSAMS_VERSION, SCHEMA_LOCATION)
 
     if HeaderInfo:
         if HeaderInfo.has_key('Truncated'):
@@ -1652,6 +1659,14 @@ xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../../xsams.xsd">
 """ % HeaderInfo['Truncated']
 
     errs=''
+
+    # this might be a cheap hack, but should work
+    if requestables and Atoms and ('atomstates' not in requestables):
+        for Atom in Atoms:
+            Atom.States = []
+    if requestables and Molecules and ('moleculestates' not in requestables):
+        for Molecule in Molecules:
+            Molecule.States = []
 
     if not requestables or 'sources' in requestables:
         log.debug('Working on Sources.')

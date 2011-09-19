@@ -25,6 +25,9 @@ def get_species(transitions):
                                  .distinct())
     nspecies = species.count()
     for iso in species:
+        if iso.molecule.molecID == 36:
+            # XXX for now, hard-code the molecular charge for NO+
+            iso.molecule.charge = 1
         # all the transitions for this species:
         sptransitions = transitions.filter(iso=iso)
         # sids is all the stateIDs involved in these transitions:

@@ -2,6 +2,8 @@
 
 RETURNABLES={\
 'NodeID': 'HIT',    # unique identifier for the HITRAN node
+'XSAMSVersion': '0.2',
+'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/release-0.2/xsams.xsd',
 
 'SourceID': 'Source.refID',
 'SourceAuthorName': 'Source.author_list()',
@@ -37,6 +39,7 @@ RETURNABLES={\
 'MoleculeChemicalName': 'Molecule.molecule.common_name',
 'MoleculeOrdinaryStructuralFormula': 'Molecule.molecule.ordinary_formula',
 'MoleculeStoichiometricFormula': 'Molecule.molecule.stoichiometric_formula',
+'MoleculeIonCharge': 'Molecule.molecule.charge',
 'MoleculeID': 'Molecule.InChIKey',
 'MoleculeInchi': 'Molecule.InChI',
 'MoleculeInchiKey': 'Molecule.InChIKey',

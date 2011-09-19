@@ -143,6 +143,7 @@ RETURNABLES = {
 #'SourceURI':'Source.',
 'SourceVolume':'Source.vol',
 'SourceYear':'Source.year',
+'SourceDOI':'Source.doi'
 }
 
 

@@ -112,6 +112,8 @@ mapping = [
              'cbyte':(charrange, 55, 82)},
             {'cname':'mass',
              'cbyte':(charrange, 84, 91)},
+            {'cname':'massno',
+             'cbyte':(charrange2int, 84, 91)},
             {'cname':'ionen',
              'cbyte':(charrange, 92, 102)},
             {'cname':'solariso',
@@ -494,7 +496,7 @@ mapping = [
     ]
 
 # short-cutting the mapping for testing
-mapping = [mapping[1]]
+#mapping = [mapping[0]] + mapping[2:]
 
 
 
