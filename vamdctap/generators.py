@@ -926,10 +926,10 @@ def XsamsParticles(Particles):
             yield ret
             continue
         G = lambda name: GetValue(name, Particle=Particle)
-        makePrimaryType("Particle", "Particle", G, extraAttr={"stateID":G("ParticleStateID"), "name":G("ParticleName")})
+        yield makePrimaryType("Particle", "Particle", G, extraAttr={"stateID":"ParticleStateID", "name":"ParticleName"})
         yield "<ParticleProperties>"
         yield "<ParticleCharge>%s</ParticleCharge>" % G("ParticleCharge")
-        makeDataType("ParticleMass", "ParticleMass", G)
+        yield makeDataType("ParticleMass", "ParticleMass", G)
         yield "<ParticleSpin>%s</ParticleSpin>" % G("ParticleSpin")
         yield "<ParticlePolarization>%s</ParticlePolarization>" % G("ParticlePolarization")
         yield "</ParticleProperties>"
