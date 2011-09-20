@@ -82,8 +82,8 @@ def get_obstype(linedata):
 
 def charrange_atom(linedata, molid, ia, ib):
     """
-    This method is to be used to read species data. 
-    It returns data only if the species currently worked on 
+    This method is to be used to read species data.
+    It returns data only if the species currently worked on
     is an atom and not a molecule. Otherwise return 'X'
      molid - minimum species id for species to be a molecule
      ia,ib - index1, index2
@@ -121,10 +121,10 @@ mapping = [
             {'cname':'dissen',
              'cbyte':(charrange, 110, 119)},
             {'cname':'ncomp',
-             'cbyte':(charrange, 194, 195)},            
+             'cbyte':(charrange, 194, 195)},
             {'cname':'atomic',
              'cbyte':(charrange_atom, 5000, 196, 198),
-             'cnull':'X'},                       
+             'cnull':'X'},
             {'cname':'isotope',
              'cbyte':(charrange_atom, 5000, 199, 202),
              'cnull':'X'},
@@ -505,18 +505,18 @@ mapping = [
 
 def species_component(species_file, outfile):
     """
-    This is a stand-alone function for creating 
+    This is a stand-alone function for creating
     a species-to-component mapping file representing
-    the many2many relationship. 
+    the many2many relationship.
     """
     outstring = ""
     f = open(species_file, 'r')
     for line in f:
         if line.strip() and (line.strip().startswith('#') or line.strip().startswith('@')):
-            continue        
-        sid = line[:7].strip()  
+            continue
+        sid = line[:7].strip()
         if int(sid) < 5000:
-            continue         
+            continue
         #import pdb;pdb.set_trace()
         # we have a molecule
         ncomp = int(line[194:195])
@@ -529,11 +529,11 @@ def species_component(species_file, outfile):
     f.close()
     print "... Created file %s." % outfile
 
-# create many2many tables 
+# create many2many tables
 
 print "Running species_component ..."
 species_component(species_list_file, outbase + "species_components.dat")
 
-import linelists_references 
+import linelists_references
 print "Running linelists_references ..."
 linelists_references.linelists_references(vald_cfg_file, linelist_file, outfile=outbase + "linelists_references.dat")
