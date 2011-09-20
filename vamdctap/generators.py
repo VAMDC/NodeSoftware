@@ -401,7 +401,6 @@ def XsamsEnvironments(Environments):
             yield '<Composition>'
             for EnvSpecies in makeiter(Environment.Species):
                 GS = lambda name: GetValue(name, EnvSpecies=EnvSpecies)
-                log.debug("collider name : "+EnvSpecies.name)
                 yield '<Species name="%s" speciesRef="X%s-%s">' % (GS('EnvironmentSpeciesName'), NODEID, GS('EnvironmentSpeciesRef'))
                 yield makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', GS)
                 yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', GS)
