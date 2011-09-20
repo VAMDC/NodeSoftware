@@ -64,7 +64,6 @@ def getSpeciesWithStates(transs):
     nstates = 0
 
     for trans in transs :
-        # add 
         setSpecies(trans)
         setDataset(trans)
 
@@ -78,9 +77,6 @@ def getSpeciesWithStates(transs):
         sids = set(chain(up, lo))
 
         # use the found reference ids to search the State database table
-        # Note that we store a new queryset called 'States' on the species queryset.
-        # This is important and a requirement looked for by the node
-        # software
         specie.States = models.Atomicstate.objects.filter( pk__in = sids )
         for state in specie.States :
             state.Component = getCoupling(state)
@@ -89,25 +85,37 @@ def getSpeciesWithStates(transs):
 
     
 def setDataset(trans):
-        data = models.Tabulateddata.objects.filter(collisionaltransition = trans.id)
-        trans.DataSets = []
-        dataset = models.Dataset()
-        dataset.TabData = data
-        dataset.Description = data[0].datadescription.value
-        trans.DataSets.append(dataset)
+    """
+     create Dataset with Tabulated data
+    """
+    data = models.Tabulateddata.objects.filter(collisionaltransition = trans.id)
+    trans.DataSets = []
+    dataset = models.Dataset()
+    dataset.TabData = data
+    dataset.Description = data[0].datadescription.value
+    trans.DataSets.append(dataset)
 
 def setSpecies(trans):
+    """
+    add product and reactant states
+    """
     setReactants(trans)
     setProducts(trans)
 
 def setReactants(trans):
+    """
+    add reactants
+    """
     trans.Reactants = []
     trans.Reactants.append(trans.initialatomicstate.version)
-    particle = models.Particle.objects.filter(name='electron')
-    if(len(particle) == 1 ):
+    particle = models.Particle.objects.filter(name='electron') # second reactant is always an electron for now
+    if(len(particle) == 1 ):    
         trans.Reactants.append(particle[0])
 
 def setProducts(trans):
+    """
+    add product
+    """
     trans.Products = []
     trans.Products.append(trans.finalatomicstate.version)
 
@@ -121,8 +129,18 @@ def getCoupling(state):
         component.Lscoupling = models.Lscoupling.objects.get(atomiccomponent=component)
     return components[0]
     
-def getParticles():
+def getParticles():    
     return models.Particle.objects.all()
+    
+    
+def truncateTransitions(transitions, request, maxTransitionNumber):
+    """
+    Limit the number of transitions when it is too high
+    """
+    percentage='%.1f' % (float(maxTransitionNumber) / transitions.count() * 100)
+    transitions = transitions.order_by('initialatomicstate__stateenergy')
+    newmax = transitions[maxTransitionNumber].initialatomicstate.stateenergy
+    return models.Collisionaltransition.objects.filter(request,Q(initialatomicstate__stateenergy__lt=newmax)), percentage
 
     
 
@@ -141,21 +159,13 @@ def setupResults(sql, limit=1000):
     q = sql2Q(sql)   
     
     transs = models.Collisionaltransition.objects.filter(q)
-
-
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
     ntranss=transs.count()
-
-    '''if limit < ntranss :
-        #transs = transs[:limit]
-        percentage='%.1f' % (float(limit) / ntranss * 100)
-        transs = transs.order_by('wavelength')
-        newmax = transs[limit].wavelength
-        transs = models.Radiativetransition.objects.filter(q,Q(wavelength__lt=newmax))
-        log.debug('Truncated results to %s, i.e %s A.'%(limit,newmax))
-    else: '''
-    percentage=None
+    if limit < ntranss :
+        transs, percentage = truncateTransitions(transs, q, limit)
+    else:
+        percentage=None
 
     # Through the transition-matches, use our helper functions to extract
     # all the relevant database data for our query.
@@ -164,7 +174,6 @@ def setupResults(sql, limit=1000):
     species, nstates = getSpeciesWithStates(transs)
     # electron collider
     particles = getParticles()
-    log.debug("particle : "+particles[0].name)
 
     # cross sections
     states = []
