@@ -202,60 +202,63 @@ def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
     The dictionary-suffixes are appended and the values retrieved. If the
     sources is iterable, it is looped over.
 
-    #This extends the PrimaryType with some often-seen arguments.
+    The value mapped to the keyword in the RETURNABLES dictionary may be
+    a list of strings. In this case, one DataType is written for each
+    element in the list, treating the value of the the element as a 
+    substitute keyword. E.g. AtomStateEnergy could be mapped to
+    ('AtomStateEnergyExperimental','AtomStateEnergyTheoretical'), where
+    AtomStateEnergyExperimental and AtomStateEnergyExperimental
+    are mapped to two different fields in one of the Django models. In this 
+    case the two energies would appear as sibling elements in the output XML 
+    with the same element-name.
+    
 
     """
+    try:
+        dictValue = RETURNABLES[keyword]
+    except KeyError:
+	    return ''
 
-    #string = makePrimaryType(tagname, keyword, G, extraAttr=extraAttr)
+    if (isiterable(dictValue)):
+        print "Iterable: ", keyword, "\n"
+        sequence = []
+        for k in dictValue:
+            print "Expanded: ", k, "\n"
+            sequence.append(makeDataType(tagname, k, G, extraAttr, extraElem))
+        return "".join(sequence)
+    else:
+        print "Noniterable: ", keyword, "\n"
+        value = G(keyword)
+        if not value:
+            return ''
 
-    # value = G(keyword)
-    # if not value:
-    #     return ''
+        unit = G(keyword + 'Unit')
+        method = G(keyword + 'Method')
+        comment = G(keyword + 'Comment')
+        acc = G(keyword + 'Accuracy')
+        refs = G(keyword + 'Ref')
 
-    # unit = G(keyword + 'Unit')
-    # acc = G(keyword + 'Accuracy')
+        string = '\n<%s' % tagname
+        if method:
+            string += ' methodRef="M%s-%s"' % (NODEID, method)
+        if extraAttr:
+            for k, v in extraAttr.items():
+                string += ' %s="%s"'% (k, G(v))
+        string += '>'
 
-    # string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
-    # if acc:
-    #     string += '<Accuracy>%s</Accuracy>' % acc
-    # string += '</%s>' % tagname
+        if comment:
+            string += '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1]
+        string += makeSourceRefs(refs)
+        string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
+        if acc:
+            string += '<Accuracy><Statistical>%s</Statistical></Accuracy>' % acc
+        string += '</%s>' % tagname
 
-    # if extraElem:
-    #     for k, v in extraElem. items():
-    #         string += '<%s>%s</%s>' % (k, G(v), k)
+        if extraElem:
+            for k, v in extraElem. items():
+                string += '<%s>%s</%s>' % (k, G(v), k)
 
-    value = G(keyword)
-    if not value:
-        return ''
-
-    unit = G(keyword + 'Unit')
-    method = G(keyword + 'Method')
-    comment = G(keyword + 'Comment')
-    acc = G(keyword + 'Accuracy')
-    refs = G(keyword + 'Ref')
-
-    string = '\n<%s' % tagname
-    if method:
-        string += ' methodRef="M%s-%s"' % (NODEID, method)
-    if extraAttr:
-        for k, v in extraAttr.items():
-            string += ' %s="%s"'% (k, G(v))
-    string += '>'
-
-    if comment:
-        string += '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1]
-    string += makeSourceRefs(refs)
-    string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
-    if acc:
-        #string += '<Accuracy>%s</Accuracy>' % acc
-        string += '<Accuracy><Statistical>%s</Statistical></Accuracy>' % acc
-    string += '</%s>' % tagname
-
-    if extraElem:
-        for k, v in extraElem. items():
-            string += '<%s>%s</%s>' % (k, G(v), k)
-
-    return string
+        return string
 
 def makeArgumentType(tagname, keyword, G):
     """
@@ -618,8 +621,7 @@ def XsamsAtoms(Atoms):
                 yield '<Description>%s</Description>' % desc
 
             yield '<AtomicNumericalData>'
-            yield makeDataType('StateEnergy', 'AtomStateEnergyExperimental', G)
-            yield makeDataType('StateEnergy', 'AtomStateEnergyTheoretical', G)
+            yield makeDataType('StateEnergy', 'AtomStateEnergy', G)
             yield makeDataType('IonizationEnergy', 'AtomStateIonizationEnergy', G)
             yield makeDataType('LandeFactor', 'AtomStateLandeFactor', G)
             yield makeDataType('QuantumDefect', 'AtomStateQuantumDefect', G)

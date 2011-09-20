@@ -40,6 +40,7 @@ RETURNABLES = {\
 'AtomStateS':'AtomState.atomstates',
 'AtomStateL':'AtomState.atomstatel',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
+'AtomStateEnergy':['AtomStateEnergyExperimental','AtomStateEnergyTheoretical'],
 'AtomStateEnergyExperimental':'AtomState.atomstateenergyexperimentalvalue',
 'AtomStateEnergyExperimentalUnit':u'1/cm',
 'AtomStateEnergyExperimentalMethod':u'EXP',
