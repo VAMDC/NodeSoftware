@@ -17,11 +17,10 @@ from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.db import connection
 import logging
-log=logging.getLogger('vamdc.tap')
-
-
 import dictionaries
 import models # this imports models.py from the same directory as this file
+
+log=logging.getLogger('vamdc.tap')
 
 #------------------------------------------------------------
 # Helper functions (called from setupResults)
@@ -56,20 +55,15 @@ def getSpeciesWithStates(transs):
 
     We also return some statistics of the result
     """
-    log.debug("species with states")
     # get ions according to selected transitions
     ionids = transs.values_list('version', flat=True).distinct()
     species = models.Version.objects.filter(id__in=ionids)
-    #nspecies = species.count() # get some statistics
-    log.debug(connection.queries)
-    # get all states.
     nstates = 0
 
     for specie in species:
-        log.debug("test 1")
         # get all transitions in linked to this particular species
         spec_transitions = transs.filter(version=specie.id)
-        log.debug('test 2')
+        
         # extract reference ids for the states from the transion, combining both
         # upper and lower unique states together
         up = spec_transitions.values_list('initialatomicstate',flat=True)
@@ -77,9 +71,6 @@ def getSpeciesWithStates(transs):
         sids = set(chain(up, lo))
 
         # use the found reference ids to search the State database table
-        # Note that we store a new queryset called 'States' on the species queryset.
-        # This is important and a requirement looked for by the node
-        # software
         specie.States = models.Atomicstate.objects.filter( pk__in = sids )
         for state in specie.States :
             state.Component = getCoupling(state)
@@ -94,7 +85,15 @@ def getCoupling(state):
     for component in components:
         component.Lscoupling = models.Lscoupling.objects.get(atomiccomponent=component)
     return components[0]
-
+    
+def truncateTransitions(transitions, request, maxTransitionNumber):
+    """
+    Limit the number of transitions when it is too high
+    """
+    percentage='%.1f' % (float(maxTransitionNumber) / transitions.count() * 100)
+    transitions = transitions.order_by('wavelength')
+    newmax = transitions[maxTransitionNumber].wavelength
+    return models.Radiativetransition.objects.filter(request,Q(wavelength__lt=newmax)), percentage
 
 #------------------------------------------------------------
 # Main function
@@ -108,30 +107,16 @@ def setupResults(sql, limit=1000):
     log.debug(sql)
 
     # convert the incoming sql to a correct django query syntax object
-    # based on the RESTRICTABLES dictionary in dictionaries.py
     q = sql2Q(sql)
-
-    # We build a queryset of database matches on the Transision model
-    # since through this model (in our example) we are be able to
-    # reach all other models.
+    
     transs = models.Radiativetransition.objects.filter(q)
-
-    # count the number of matches, make a simple trunkation if there are
-    # too many (record the coverage in the returned header)
     ntranss=transs.count()
 
     if limit < ntranss :
-        #transs = transs[:limit]
-        percentage='%.1f' % (float(limit) / ntranss * 100)
-        transs = transs.order_by('wavelength')
-        newmax = transs[limit].wavelength
-        transs = models.Radiativetransition.objects.filter(q,Q(wavelength__lt=newmax))
-        log.debug('Truncated results to %s, i.e %s A.'%(limit,newmax))
+        transs, percentage = truncateTransitions(transs, q, limit)
     else:
         percentage=None
 
-    # Through the transition-matches, use our helper functions to extract
-    # all the relevant database data for our query.
     #sources = getRefs(transs)
     #nsources = sources.count()
     species, nstates = getSpeciesWithStates(transs)
