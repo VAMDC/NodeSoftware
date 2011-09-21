@@ -621,7 +621,7 @@ def XsamsAtoms(Atoms):
                 yield '<Description>%s</Description>' % desc
 
             yield '<AtomicNumericalData>'
-            yield makeDataType('StateEnergy', 'AtomStateEnergy', G)
+            yield makeNamedDataType('StateEnergy', 'AtomStateEnergy', G)
             yield makeDataType('IonizationEnergy', 'AtomStateIonizationEnergy', G)
             yield makeDataType('LandeFactor', 'AtomStateLandeFactor', G)
             yield makeDataType('QuantumDefect', 'AtomStateQuantumDefect', G)
