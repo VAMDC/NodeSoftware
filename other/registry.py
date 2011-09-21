@@ -11,7 +11,9 @@ DEV_REG='http://casx019-zone1.ast.cam.ac.uk/registry/services/RegistryQueryv1_0'
 REGURL=DEV_REG
 WSDL=REGURL+'?wsdl'
 
-WSDL = 'http://www.tmy.se/t/devreg_wsdl.xml'
+# this is a copy of the URL above but with
+# schema locations fixed:
+WSDL = 'http://tmy.se/t/devreg_wsdl.xml'
 
 from suds.client import Client
 from suds.xsd.doctor import Doctor
