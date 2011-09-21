@@ -52,9 +52,9 @@ RETURNABLES = {\
 #'AtomStateEnergyTheoreticalMethod':u'THEO',
 'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
 
-'RadTransWavelength':'RadTran.wavelength',
-'RadTransWavelengthMethod': 'RadTran.wavelengthmethod',
-'RadTransWavelengthUnit':u'A', # Constant: Angstrom symbol
+'RadTransWavelength':'[RadTran.wavelengthexperimental, RadTran.wavelengththeoretical]',
+'RadTransWavelengthMethod':'["EXP", "THEO"]',
+'RadTransWavelengthUnit':u'A', # Constant: Angstroms
 'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
 'RadTransProbabilityA':'RadTran.probabilitya',
 'RadTransProbabilityAUnits':u'1/s',

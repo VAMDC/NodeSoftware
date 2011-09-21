@@ -1070,7 +1070,7 @@ def XsamsRadTrans(RadTrans):
             yield '<Comments>%s</Comments>' % comm
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
-        yield makeDataType('Wavelength', 'RadTransWavelength', G)
+        yield makeNamedDataType('Wavelength', 'RadTransWavelength', G)
         yield makeDataType('Wavenumber', 'RadTransWavenumber', G)
         yield makeDataType('Frequency', 'RadTransFrequency', G)
         yield makeDataType('Energy', 'RadTransEnergy', G)
