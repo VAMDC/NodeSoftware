@@ -396,7 +396,7 @@ def parityLabel(parity):
 
     """
     try:
-        parity = float(parity)
+        parity = int(parity)
     except Exception:
         return parity
 
@@ -564,14 +564,9 @@ def XsamsAtoms(Atoms):
 
     """
 
-    if not isiterable(Atoms):
-        return
-    if not Atoms.count():
-        return
-
+    if not Atoms: return
     yield '<Atoms>'
-
-    for Atom in Atoms:
+    for Atom in makeiter(Atoms):
         cont, ret = checkXML(Atom)
         if cont:
             yield ret
@@ -600,15 +595,10 @@ def XsamsAtoms(Atoms):
                 yield ret
                 continue
             G = lambda name: GetValue(name, AtomState=AtomState)
-            yield """<AtomicState stateID="S%s-%s">""" % (G('NodeID'), G('AtomStateID'))
-            comm = G('AtomStateDescription')
-            if comm:
-                yield '<Comments>%s</Comments>' % comm
+            yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
             yield makeSourceRefs(G('AtomStateRef'))
+            yield makeOptionalTag('Description','AtomStateDescription',G)
             desc = G('AtomStateDescription')
-            if desc:
-                yield '<Description>%s</Description>' % desc
-
             yield '<AtomicNumericalData>'
             yield makeDataType('StateEnergy', 'AtomStateEnergy', G)
             yield makeDataType('IonizationEnergy', 'AtomStateIonizationEnergy', G)
