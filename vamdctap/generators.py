@@ -205,86 +205,7 @@ def makePrimaryType(tagname, keyword, G, extraAttr=None):
 
     return string
 
-def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
-    """
-    This is for treating the case where a keyword corresponds to a
-    DataType in the schema which can have units, comment, sources etc.
-    The dictionary-suffixes are appended and the values retrieved. If the
-    sources is iterable, it is looped over.
-
-    #This extends the PrimaryType with some often-seen arguments.
-
-    """
-
-    #string = makePrimaryType(tagname, keyword, G, extraAttr=extraAttr)
-
-    # value = G(keyword)
-    # if not value:
-    #     return ''
-
-    # unit = G(keyword + 'Unit')
-    # acc = G(keyword + 'Accuracy')
-
-    # string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
-    # if acc:
-    #     string += '<Accuracy>%s</Accuracy>' % acc
-    # string += '</%s>' % tagname
-
-    # if extraElem:
-    #     for k, v in extraElem. items():
-    #         string += '<%s>%s</%s>' % (k, G(v), k)
-
-    value = G(keyword)
-    if not value:
-        return ''
-
-    unit = G(keyword + 'Unit')
-    method = G(keyword + 'Method')
-    comment = G(keyword + 'Comment')
-    acc = G(keyword + 'Accuracy')
-    refs = G(keyword + 'Ref')
-
-    string = '\n<%s' % tagname
-    if method:
-        string += ' methodRef="M%s-%s"' % (NODEID, method)
-    if extraAttr:
-        for k, v in extraAttr.items():
-            string += ' %s="%s"'% (k, G(v))
-    string += '>'
-
-    if comment:
-        string += '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1]
-    string += makeSourceRefs(refs)
-    string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
-    if acc:
-        #string += '<Accuracy>%s</Accuracy>' % acc
-        string += '<Accuracy><Statistical>%s</Statistical></Accuracy>' % acc
-    string += '</%s>' % tagname
-
-    if extraElem:
-        for k, v in extraElem. items():
-            string += '<%s>%s</%s>' % (k, G(v), k)
-
-    return string
-
-def makeArgumentType(tagname, keyword, G):
-    """
-    Build ArgumentType
-
-    """
-    string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword))
-    string += "<Description>%s</Description>" % G("%sDescription" % keyword)
-    string += "<LowerLimit>%s</LowerLimit>" % G("%sLowerLimit" % keyword)
-    string += "<UpperLimit>%s</UpperLimit>" % G("%sUpperLimit" % keyword)
-    string += "</%s>" % tagname
-    return string
-
-def makeDataFuncType(tagname, keyword, Parameter, G):
-    """
-    Build the DataFuncType.
-    """
-
-def makeNamedDataType(tagname, keyword, G):
+def makeRepeatedDataType(tagname, keyword, G):
     """
     Similar to makeDataType above, but allows the result of G()
     to be iterable and adds the name-attribute. If the
@@ -326,6 +247,65 @@ def makeNamedDataType(tagname, keyword, G):
         string += '</%s>' % tagname
 
     return string
+
+# an alias for compatibility reasons
+makeNamedDataType = makeRepeatedDataType
+
+def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
+    """
+    This is for treating the case where a keyword corresponds to a
+    DataType in the schema which can have units, comment, sources etc.
+    The dictionary-suffixes are appended and the values retrieved. If the
+    sources is iterable, it is looped over.
+
+    """
+
+    value = G(keyword)
+    if not value:
+        return ''
+    if isiterable(value):
+        return makeRepeatedDataType(tagname, keyword, G)
+
+    unit = G(keyword + 'Unit')
+    method = G(keyword + 'Method')
+    comment = G(keyword + 'Comment')
+    acc = G(keyword + 'Accuracy')
+    refs = G(keyword + 'Ref')
+
+    result = ['\n<%s' % tagname]
+    if method:
+        result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
+    if extraAttr:
+        for k, v in extraAttr.items():
+            result.append( ' %s="%s"'% (k, G(v)) )
+    result.append( '>' )
+
+    if comment:
+        result.append( '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1] )
+    result.append( makeSourceRefs(refs) )
+    result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
+    if acc:
+        result.append( '<Accuracy><Statistical>%s</Statistical></Accuracy>' % acc )
+    result.append( '</%s>' % tagname )
+
+    if extraElem:
+        for k, v in extraElem. items():
+            result.append( '<%s>%s</%s>' % (k, G(v), k) )
+
+    return ''.join(result)
+
+def makeArgumentType(tagname, keyword, G):
+    """
+    Build ArgumentType
+
+    """
+    string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword))
+    string += "<Description>%s</Description>" % G("%sDescription" % keyword)
+    string += "<LowerLimit>%s</LowerLimit>" % G("%sLowerLimit" % keyword)
+    string += "<UpperLimit>%s</UpperLimit>" % G("%sUpperLimit" % keyword)
+    string += "</%s>" % tagname
+    return string
+
 
 def checkXML(obj,methodName='XML'):
     """
