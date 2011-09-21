@@ -161,8 +161,8 @@ def setupResults(sql, limit=1000):
     transs = models.Collisionaltransition.objects.filter(q)
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
-    ntranss=transs.count()
-    if limit < ntranss :
+    ncoll=transs.count()
+    if limit < ncoll :
         transs, percentage = truncateTransitions(transs, q, limit)
     else:
         percentage=None
@@ -186,7 +186,7 @@ def setupResults(sql, limit=1000):
             'Truncated':percentage,
             #'COUNT-SOURCES':nsources,
             'count-states':nstates,
-            'count-radiative':ntranss
+            'count-collisions':ncoll
             }
 
     # Return the data. The keynames are standardized.
