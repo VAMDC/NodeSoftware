@@ -96,12 +96,14 @@ def GetValue(name, **kwargs):
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
+    #log.debug("getvalue, name : "+name)
     try:
         name = RETURNABLES[name]
-    except Exception:
+    except Exception as e:
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
+        #log.debug(e)
         return ''
 
     if not name:
@@ -114,13 +116,12 @@ def GetValue(name, **kwargs):
 
     try:
         # here, the RHS of the RETURNABLES dict is executed.
+        #log.debug(" try eval : " + name)
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
     except Exception as e:
          # this catches the case where the dict-value is a string or mistyped.
         #log.debug('Exception in generators.py: GetValue()')
-        #log.debug(str(e))
-        #log.debug(name)
         value = name
     if value == None:
         # the database returned NULL
@@ -204,86 +205,7 @@ def makePrimaryType(tagname, keyword, G, extraAttr=None):
 
     return string
 
-def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
-    """
-    This is for treating the case where a keyword corresponds to a
-    DataType in the schema which can have units, comment, sources etc.
-    The dictionary-suffixes are appended and the values retrieved. If the
-    sources is iterable, it is looped over.
-
-    #This extends the PrimaryType with some often-seen arguments.
-
-    """
-
-    #string = makePrimaryType(tagname, keyword, G, extraAttr=extraAttr)
-
-    # value = G(keyword)
-    # if not value:
-    #     return ''
-
-    # unit = G(keyword + 'Unit')
-    # acc = G(keyword + 'Accuracy')
-
-    # string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
-    # if acc:
-    #     string += '<Accuracy>%s</Accuracy>' % acc
-    # string += '</%s>' % tagname
-
-    # if extraElem:
-    #     for k, v in extraElem. items():
-    #         string += '<%s>%s</%s>' % (k, G(v), k)
-
-    value = G(keyword)
-    if not value:
-        return ''
-
-    unit = G(keyword + 'Unit')
-    method = G(keyword + 'Method')
-    comment = G(keyword + 'Comment')
-    acc = G(keyword + 'Accuracy')
-    refs = G(keyword + 'Ref')
-
-    string = '\n<%s' % tagname
-    if method:
-        string += ' methodRef="M%s-%s"' % (NODEID, method)
-    if extraAttr:
-        for k, v in extraAttr.items():
-            string += ' %s="%s"'% (k, G(v))
-    string += '>'
-
-    if comment:
-        string += '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1]
-    string += makeSourceRefs(refs)
-    string += '<Value units="%s">%s</Value>' % (unit or 'unitless', value)
-    if acc:
-        #string += '<Accuracy>%s</Accuracy>' % acc
-        string += '<Accuracy><Statistical>%s</Statistical></Accuracy>' % acc
-    string += '</%s>' % tagname
-
-    if extraElem:
-        for k, v in extraElem. items():
-            string += '<%s>%s</%s>' % (k, G(v), k)
-
-    return string
-
-def makeArgumentType(tagname, keyword, G):
-    """
-    Build ArgumentType
-
-    """
-    string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword))
-    string += "<Description>%s</Description>" % G("%sDescription" % keyword)
-    string += "<LowerLimit>%s</LowerLimit>" % G("%sLowerLimit" % keyword)
-    string += "<UpperLimit>%s</UpperLimit>" % G("%sUpperLimit" % keyword)
-    string += "</%s>" % tagname
-    return string
-
-def makeDataFuncType(tagname, keyword, Parameter, G):
-    """
-    Build the DataFuncType.
-    """
-
-def makeNamedDataType(tagname, keyword, G):
+def makeRepeatedDataType(tagname, keyword, G):
     """
     Similar to makeDataType above, but allows the result of G()
     to be iterable and adds the name-attribute. If the
@@ -325,6 +247,65 @@ def makeNamedDataType(tagname, keyword, G):
         string += '</%s>' % tagname
 
     return string
+
+# an alias for compatibility reasons
+makeNamedDataType = makeRepeatedDataType
+
+def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
+    """
+    This is for treating the case where a keyword corresponds to a
+    DataType in the schema which can have units, comment, sources etc.
+    The dictionary-suffixes are appended and the values retrieved. If the
+    sources is iterable, it is looped over.
+
+    """
+
+    value = G(keyword)
+    if not value:
+        return ''
+    if isiterable(value):
+        return makeRepeatedDataType(tagname, keyword, G)
+
+    unit = G(keyword + 'Unit')
+    method = G(keyword + 'Method')
+    comment = G(keyword + 'Comment')
+    acc = G(keyword + 'Accuracy')
+    refs = G(keyword + 'Ref')
+
+    result = ['\n<%s' % tagname]
+    if method:
+        result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
+    if extraAttr:
+        for k, v in extraAttr.items():
+            result.append( ' %s="%s"'% (k, G(v)) )
+    result.append( '>' )
+
+    if comment:
+        result.append( '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1] )
+    result.append( makeSourceRefs(refs) )
+    result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
+    if acc:
+        result.append( '<Accuracy><Statistical>%s</Statistical></Accuracy>' % acc )
+    result.append( '</%s>' % tagname )
+
+    if extraElem:
+        for k, v in extraElem. items():
+            result.append( '<%s>%s</%s>' % (k, G(v), k) )
+
+    return ''.join(result)
+
+def makeArgumentType(tagname, keyword, G):
+    """
+    Build ArgumentType
+
+    """
+    string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword))
+    string += "<Description>%s</Description>" % G("%sDescription" % keyword)
+    string += "<LowerLimit>%s</LowerLimit>" % G("%sLowerLimit" % keyword)
+    string += "<UpperLimit>%s</UpperLimit>" % G("%sUpperLimit" % keyword)
+    string += "</%s>" % tagname
+    return string
+
 
 def checkXML(obj,methodName='XML'):
     """
@@ -400,7 +381,7 @@ def XsamsEnvironments(Environments):
             yield '<Composition>'
             for EnvSpecies in makeiter(Environment.Species):
                 GS = lambda name: GetValue(name, EnvSpecies=EnvSpecies)
-                yield '<Species name="%s" speciesRef="X%s-%s">' % (G('EnvironmentSpeciesName'), NODEID, GS('EnvironmentSpeciesRef'))
+                yield '<Species name="%s" speciesRef="X%s-%s">' % (GS('EnvironmentSpeciesName'), NODEID, GS('EnvironmentSpeciesRef'))
                 yield makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', GS)
                 yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', GS)
                 yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', GS)
@@ -415,7 +396,7 @@ def parityLabel(parity):
 
     """
     try:
-        parity = float(parity)
+        parity = int(parity)
     except Exception:
         return parity
 
@@ -583,14 +564,9 @@ def XsamsAtoms(Atoms):
 
     """
 
-    if not isiterable(Atoms):
-        return
-    if not Atoms.count():
-        return
-
+    if not Atoms: return
     yield '<Atoms>'
-
-    for Atom in Atoms:
+    for Atom in makeiter(Atoms):
         cont, ret = checkXML(Atom)
         if cont:
             yield ret
@@ -619,15 +595,10 @@ def XsamsAtoms(Atoms):
                 yield ret
                 continue
             G = lambda name: GetValue(name, AtomState=AtomState)
-            yield """<AtomicState stateID="S%s-%s">""" % (G('NodeID'), G('AtomStateID'))
-            comm = G('AtomStateDescription')
-            if comm:
-                yield '<Comments>%s</Comments>' % comm
+            yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
             yield makeSourceRefs(G('AtomStateRef'))
+            yield makeOptionalTag('Description','AtomStateDescription',G)
             desc = G('AtomStateDescription')
-            if desc:
-                yield '<Description>%s</Description>' % desc
-
             yield '<AtomicNumericalData>'
             yield makeDataType('StateEnergy', 'AtomStateEnergy', G)
             yield makeDataType('IonizationEnergy', 'AtomStateIonizationEnergy', G)
@@ -925,10 +896,10 @@ def XsamsParticles(Particles):
             yield ret
             continue
         G = lambda name: GetValue(name, Particle=Particle)
-        makePrimaryType("Particle", "Particle", G, extraAttr={"stateID":G("ParticleStateID"), "name":G("ParticleName")})
+        yield """<Particle stateID="S%s-%s" name="%s">""" % (G('NodeID'), G('ParticleStateID'), G('ParticleName'))
         yield "<ParticleProperties>"
         yield "<ParticleCharge>%s</ParticleCharge>" % G("ParticleCharge")
-        makeDataType("ParticleMass", "ParticleMass", G)
+        yield makeDataType("ParticleMass", "ParticleMass", G)
         yield "<ParticleSpin>%s</ParticleSpin>" % G("ParticleSpin")
         yield "<ParticlePolarization>%s</ParticlePolarization>" % G("ParticlePolarization")
         yield "</ParticleProperties>"
@@ -1365,7 +1336,7 @@ def XsamsCollTrans(CollTrans):
 
                 GD = lambda name: GetValue(name, DataSet=DataSet)
 
-                yield makePrimaryType("DataSet", "CollisionDataSet", GD, extraAttr={"dataDescription":GD("CollisionDataSetDescription")})
+                yield makePrimaryType("DataSet", "CollisionDataSet", GD, extraAttr={"dataDescription":"CollisionDataSetDescription"})
 
                 # Fit data
                 if hasattr(DataSet, "FitData"):
@@ -1444,27 +1415,27 @@ def XsamsCollTrans(CollTrans):
                         yield "<DataXY>"
 
                         # handle X components of XY
-                        Nx = G("CollisionTabulatedDataXN")
-                        xunits = G("CollisionTabulatedDataXUnits")
+                        Nx = GDT("CollisionTabulatedDataXN")
+                        xunits = GDT("CollisionTabulatedDataXUnits")
 
                         yield "<X units='%s' parameter='%s'>" % (Nx, xunits)
-                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataX"))))
-                        yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXError"))))
-                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXNegativeError"))))
-                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(G("CollisionTabulatedDataXPositiveError"))))
-                        yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataXDescription")
+                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
+                        yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXError"))))
+                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXNegativeError"))))
+                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXPositiveError"))))
+                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
                         yield "</X>"
 
                         # handle Y components of XY
-                        Ny = G("CollisionTabulatedDataYN")
-                        yunits = G("CollisionTabulatedDataYUnits")
+                        Ny = GDT("CollisionTabulatedDataYN")
+                        yunits = GDT("CollisionTabulatedDataYUnits")
 
                         yield "<Y units='%s' parameter='%s'>" % (Ny, yunits)
-                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataY"))))
-                        yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYError"))))
-                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYNegativeError"))))
-                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(G("CollisionTabulatedDataYPositiveError"))))
-                        yield "<DataDescription>%s</DataDescription>" % G("CollisionTabulatedDataYDescription")
+                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
+                        yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYError"))))
+                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYNegativeError"))))
+                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYPositiveError"))))
+                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
                         yield "</Y>"
 
                         yield "</DataXY>"
