@@ -488,4 +488,25 @@ class Method:
         self.description = description
         self.sourcesref = sourcesref
         
-                                
+class Parameter (Model):
+     id = IntegerField(primary_key=True, db_column='PAR_ID')
+     specie = ForeignKey(Species, db_column='PAR_E_ID')
+     speciestag = IntegerField(db_column='PAR_M_TAG')
+     parameter = CharField(max_length=100, db_column='PAR_PARAMETER')
+     value = CharField(max_length=100, db_column='PAR_VALUE')
+     unit = CharField(max_length=7, db_column='PAR_UNIT')
+     type = CharField(max_length=30, db_column='PAR_Type')
+     rId = ForeignKey(Sources, db_column='PAR_R_ID')
+     class Meta:
+          db_table = u'Parameter'
+
+class Files (Model):
+     id = IntegerField(primary_key=True, db_column='FIL_ID')
+     specie = ForeignKey(Species, db_column='FIL_E_ID')
+     name = CharField(max_length=50, db_column='FIL_Name')
+     type = CharField(max_length=10, db_column='FIL_Type')
+     asciifile = CharField(db_column='FIL_ASCIIFILE')
+     comment = CharField(db_column='FIL_Comment')
+     createdate = DateField(db_column='FIL_Createdate')
+     class Meta:
+          db_table = u'Files'
