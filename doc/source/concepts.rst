@@ -63,7 +63,7 @@ within VAMDC for a certain bit of information. This is what we mean in
 the following when we talk about "global names" or "keywords".
 
 The full VAMDC dictionary is still being worked on and it currently 
-resides at http://vamdc.tmy.se/dict/ where also some helper tools
+resides at http://dictionary.vamdc.eu/ where also some helper tools
 are provided.
 
 At the nodes, the dictionary is used in the following different ways. 
