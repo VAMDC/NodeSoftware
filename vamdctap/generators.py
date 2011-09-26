@@ -504,12 +504,14 @@ def makeAtomComponent(Atom, G):
     string = "<Component>"
 
     if hasattr(Atom, "SuperShells"):
+        string += "<SuperConfiguration>"
         for SuperShell in makeiter(Atom.SuperShells):
             GA = lambda name: GetValue(name, SuperShell=SuperShell)
             string += "<SuperShell>"
             string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % GA("AtomStateSuperShellPrincipalQN")
             string += "<NumberOfElectrons>%s</NumberOfElectrons>" % GA("AtomStateSuperShellNumberOfElectrons")
             string += "</SuperShell>"
+        string += "</SuperConfiguration>"
 
     string += "<Configuration>"
     string += "<AtomicCore>"
@@ -528,18 +530,22 @@ def makeAtomComponent(Atom, G):
     string += "</AtomicCore>"
 
     if hasattr(Atom, "Shells"):
+        string += "<Shells>"
         for AtomShell in makeiter(Atom.Shells):
             GS = lambda name: GetValue(name, AtomShell=AtomShell)
             string += makeShellType("Shell", "AtomStateShell", GS)
 
-    if hasattr(Atom, "ShellPair"):
-        for AtomShellPair in makeiter(Atom.ShellPairs):
-            GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
-            string += "<ShellPair shellPairID=%s-%s>" % (NODEID, GS("AtomStateShellPairID"))
-            string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
-            string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
-            string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
+        if hasattr(Atom, "ShellPair"):
+            for AtomShellPair in makeiter(Atom.ShellPairs):
+                GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
+                string += "<ShellPair shellPairID=%s-%s>" % (NODEID, GS("AtomStateShellPairID"))
+                string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
+                string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
+                string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
             string += "</ShellPair>"
+
+        string += "</Shells>"
+
     clabel = G("AtomStateConfigurationLabel")
     if clabel:
         string += "<ConfigurationLabel>%s</ConfigurationLabel>" % clabel
