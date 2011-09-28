@@ -202,7 +202,10 @@ def applyStylesheet(inurl, xsl = None):
     # from django.core.exceptions import ValidationError
     
     from lxml import etree as e
-    xsl=e.XSLT(e.parse(open('/home/endres/Projects/vamdc/nodes/cdms/node/convertXSAMS2html.xslt')))
+    if xsl:
+        xsl=e.XSLT(e.parse(open(xsl)))
+    else:
+        xsl=e.XSLT(e.parse(open('/home/endres/Projects/vamdc/nodes/cdms/node/convertXSAMS2html.xslt')))
 
     from urllib2 import urlopen
 
