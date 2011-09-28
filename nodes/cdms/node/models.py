@@ -139,8 +139,29 @@ class States( Model):
 
      # associate qns_xml with the XML attribute of the States class
      # so that generators.py checkXML() works:
-
      XML = qns_xml
+
+     def qns_dict(self):
+          """ Yield the quantum numbers as a dictionary """
+          qns = MolecularQuantumNumbers.objects.filter(state=self.id)
+          dictqns = {}
+          
+          for qn in qns:
+#               if qn.attribute:
+#                    # put quotes around the value of the attribute
+#                    attr_name, attr_val = qn.attribute.split('=')
+#                    qn.attribute = ' %s="%s"' % (attr_name, attr_val)
+#               else:
+#                    qn.attribute = ''
+#                    
+#               if qn.spinref:
+#                    # add spinRef to attribute if it exists
+#                    qn.attribute += ' nuclearSpinRef="%s"' % qn.spinref
+
+               dictqns.update({qn.label : qn.value})
+          return dictqns
+
+          
 
 
 
@@ -394,6 +415,36 @@ class MolecularQuantumNumbers( Model):
     class Meta:
         db_table = 'V_MolstateQN'
         managed=False
+
+class QuantumNumbersFilter(Model):
+     """
+     This table (StateQNXsams) is used to map spcat's QuantumNumbers
+     to XSAMS Quantum numbers (case description)
+     """
+     id  = IntegerField(primary_key=True, db_column='SQN_ID')
+     species = ForeignKey(Species, db_column='SQN_E_ID')
+     qntag = IntegerField(db_column='SQN_QN_Tag')
+     qn1 = IntegerField(db_column='SQN_QN1')
+     qn2 = IntegerField(db_column='SQN_QN1')
+     qn3 = IntegerField(db_column='SQN_QN1')
+     qn4 = IntegerField(db_column='SQN_QN1')
+     qn5 = IntegerField(db_column='SQN_QN1')
+     qn6 = IntegerField(db_column='SQN_QN1')
+     case = CharField(max_length=20, db_column='SQN_Case')
+     label = CharField(max_length=100, db_column='SQN_Label')
+     slaplabel = CharField(max_length=100, db_column='SQN_SLAP_Label')
+     valuefloat = FloatField(db_column='SQN_ValueFloat')
+     valuestring = CharField(max_length=100, db_column='SQN_ValueString')
+     columnvalue = IntegerField(db_column='SQN_ColumnValue')
+     columnvaluefunc = CharField(max_length=10, db_column='SQN_ColumnValueFunction')
+     spinref= CharField(max_length=10, db_column='SQN_SpinRef')
+     attribute = CharField(max_length=20, db_column='SQN_Attribute')
+     order = IntegerField(db_column='SQN_Order')
+     comment = CharField(db_column='SQN_Comment')
+
+     class Meta:
+          db_table='StateQNXsams'
+          
 
 class BondArray( Model):
     id = IntegerField(primary_key=True, db_column='BA_ID')

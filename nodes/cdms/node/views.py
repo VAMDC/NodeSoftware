@@ -2,7 +2,7 @@
 
 # This is where you would add additional functionality to your node, 
 # bound to certain URLs in urls.py
-
+import sys
 from django.template import RequestContext
 from django.shortcuts import render_to_response,get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, QueryDict
@@ -16,7 +16,8 @@ from cdmsportalfunc import *
 class QUERY(object):
     """
     """
-    baseurl = "http://cdms.ph1.uni-koeln.de:8090/DjCDMS/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY="
+#    baseurl = "http://cdms.ph1.uni-koeln.de:8090/DjCDMS/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY="
+    baseurl = "http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
 
     def __init__(self, data):
         self.isvalid = True
@@ -56,9 +57,16 @@ class QUERY(object):
 
         if self.format == 'spcat':
             self.url = self.url.replace('XSAMS','spcat').replace("ALL","RadiativeTransitions")
-        
 
+        # this is slightly different to spcat and uses correct qn labels
+        if self.format == 'comfort':
+            self.url = self.url.replace('XSAMS','xspcat').replace("ALL","RadiativeTransitions")
 
+        if self.format == 'png':
+            self.url = self.url.replace('XSAMS','png').replace("ALL","RadiativeTransitions")
+
+        print >> sys.stderr, self.format
+        print >> sys.stderr, self.url
 
 
 
@@ -145,6 +153,10 @@ def showResults(request):
     if postvars.url:
         if  postvars.format=='xsams':
             result = applyStylesheet(postvars.url, xsl = None)
+        elif  postvars.format=='rad3d':
+            result = "<pre>" + str(applyStylesheet(postvars.url, xsl = "/var/www/vamdcdev/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
+        elif postvars.format=='png':
+            result = "<img class='full' width='100%' src="+postvars.url+" alt='Stick Spectrum'>"
         else:
             result = "<pre>" + geturl(postvars.url) + "</pre>"
     else:
