@@ -168,7 +168,7 @@ def sync(request):
         return tapServerError(status=400,errmsg=emsg)
 
     # if the requested format is not XSAMS, hand over to the node QUERYFUNC
-    if tap.format != 'xsams' and QUERYFUNC.hasattr('returnResults'):
+    if tap.format != 'xsams' and hasattr(QUERYFUNC,'returnResults'):
         return QUERYFUNC.returnResults(tap)
     # otherwise, setup the results and build the XSAMS response here
 

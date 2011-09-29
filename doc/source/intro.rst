@@ -1,10 +1,10 @@
 
-This document covers the **relase 11.5r1** of the NodeSoftware.
+This document covers the **relase 11.5r2** of the NodeSoftware.
 
 
 PDF-versions of this document are available at:
 
-* http://www.vamdc.org/documents/NodeSoftwareDoc_v11.5r1.pdf (release version)
+* http://www.vamdc.org/documents/NodeSoftwareDoc_v11.5r2.pdf (release version)
 * http://vamdc.tmy.se/doc/nodesoftware.pdf (latest development version)
 
 
@@ -23,9 +23,10 @@ infrastructure project and you can read all about it on http://vamdc.eu/
 VAMDC nodes
 -------------
 
-A "node" within VAMDC is a data service that offers its data using the 
-standards and protocols defined by the VAMDC. They are RESTful HTTP 
-services, the specification of which can be found in the documentation for the VAMDC standards: http://vamdc.org/documents/standards/ 
+A "node" within VAMDC is a data service that offers its data using the
+standards and protocols defined by the VAMDC. They are web services with a
+simple API, the specification of which can be found in the documentation for
+the VAMDC standards: http://vamdc.org/documents/standards/ 
 
 The scope of this document is to serve as documentation for the 
 reference implementation of such a service. The goal of this 
