@@ -249,7 +249,7 @@ def returnResults(tap, LIMIT=None):
     #RESTRICTABLES['dataset']='dataset'
     RESTRICTABLES.update(CDMSONLYRESTRICTABLES)
 
-    if tap.format != 'spcat' and tap.format!='png' and tap.format!='list':
+    if tap.format != 'spcat' and tap.format!='png' and tap.format!='list' and tap.format!='xspcat':
         emsg = 'Currently, only FORMATs PNG, SPCAT and XSAMS are supported.\n'
         return tapServerError(status=400, errmsg=emsg)
 
@@ -277,7 +277,7 @@ def returnResults(tap, LIMIT=None):
     else:
         percentage = '100'
 #    print 'Truncated to %s %%' % percentage
-    transs = TransitionsCalc.objects.filter(q,species__origin=5,dataset__archiveflag=0).order_by('frequency') 
+    transs = TransitionsCalc.objects.filter(q,species__origin=5,species__archiveflag=0,dataset__archiveflag=0).order_by('frequency') 
     ntrans = transs.count()
     if LIMIT is not None and ntrans > LIMIT:
         # we need to filter transs again later, so can't take a slice
@@ -320,9 +320,10 @@ def returnResults(tap, LIMIT=None):
     else:
         LOG('NO STATES')
         states = []
-        
-    if tap.format=='spcat':
-        generator = gener(transitions, states)
+
+
+    if tap.format=='spcat' or tap.format=='xspcat':
+        generator = gener(transitions, states, format=tap.format)
         response = HttpResponse(generator, mimetype='text/plain')
     else:
         if 'states' in tap.requestables:
@@ -345,17 +346,21 @@ def GetNumericValue(value):
         return value
     
 
-def gener(transs=None, states=None):
-    for trans in Cat(transs):
-        yield trans
-    for state in Egy(states):
-        yield state
+def gener(transs=None, states=None, format='spcat'):
+
+    if format=='xspcat':
+        for trans in xCat(transs):
+            yield trans
+    else:
+        for trans in Cat(transs):
+            yield trans
+        for state in Egy(states):
+            yield state
         
-    
 
 def Cat(transs):
     for trans in transs:
-        yield '%16.4lf' % trans.frequency
+        yield '%13.4lf' % trans.frequency
         yield '%8.4lf' % trans.uncertainty
         yield '%8.4lf' % trans.intensity
         yield '%2d' % trans.degreeoffreedom
@@ -364,7 +369,7 @@ def Cat(transs):
         yield '%3d' % trans.upperstatedegeneracy
         yield '%7d' % trans.speciestag
         
-        yield '%7d' % trans.qntag
+        yield '%4d' % trans.qntag
         yield '%2s' % GetStringValue(trans.qnup1)
         yield '%2s' % GetStringValue(trans.qnup2)
         yield '%2s' % GetStringValue(trans.qnup3)
@@ -381,6 +386,132 @@ def Cat(transs):
 
         yield '%s' % trans.species.name
         yield '\n'
+
+
+def xCat(transs):
+    # qnlabels = ["J","N","Ka","Kc","v"]
+    qnlabels = []
+    tagarray = transs.values_list('species','qntag').distinct()
+    for specie, qntag in tagarray:
+        filter = QuantumNumbersFilter.objects.filter(species = specie, qntag=qntag).order_by('order')
+        qnlabels = chain(qnlabels, filter.values_list('label','order'))
+    
+#    qnlabels = set(qnlabels)
+    qnlabels = sorted(set(qnlabels),key=lambda x:x[1])
+
+#    statess = set( transs.values_list('upperstateref',flat=True) )
+
+#    qns = MolecularQuantumNumbers.objects.filter(pk__in=statess).distinct()
+#    dictqns = {}
+#          
+#          for qn in qns:
+#               if qn.attribute:
+#                    # put quotes around the value of the attribute
+#                    attr_name, attr_val = qn.attribute.split('=')
+#                    qn.attribute = ' %s="%s"' % (attr_name, attr_val)
+#               else:
+#                    qn.attribute = ''
+#                    
+#               if qn.spinref:
+#                    # add spinRef to attribute if it exists
+#                    qn.attribute += ' nuclearSpinRef="%s"' % qn.spinref
+
+#               dictqns.update({qn.label : qn.value})
+
+
+    # Header
+    yield '%13s' % "Frequency"
+    yield '%8s' % "Unc."
+    yield '%8s' % "Intens."
+    yield '%4s' % "DOF"
+    yield '%12s' % "l. Energy."
+    
+    yield '%5s ' % "Gup"
+
+    for qnlabel in qnlabels:
+        yield '%4s' % qnlabel[0][:4]
+
+    yield ' - '
+    for qnlabel in qnlabels:
+        yield '%4s' % qnlabel[0][:4]
+
+
+    yield ' Specie'
+    yield '\n'
+    
+    for trans in transs:
+        yield '%13.4lf' % trans.frequency
+        yield '%8.4lf' % trans.uncertainty
+        yield '%8.4lf' % trans.intensity
+        yield '%4d' % trans.degreeoffreedom
+        yield '%12.4lf' % trans.energylower
+
+        yield '%5d ' % trans.upperstatedegeneracy
+#        yield '%7d' % trans.speciestag
+        
+
+        # Create quantum number output
+        upperqns = trans.upperstateref.qns_dict()
+        lowerqns = trans.lowerstateref.qns_dict()
+
+#        yield '<div class="qn label">(%s) = </div>' % ",".join(upperqns)
+
+        for label in qnlabels:
+            if label[0]=='ElecStateLabel':
+                val = str(upperqns.get(label[0]))[:1]
+            else:
+                val = str(upperqns.get(label[0]))
+
+            if val=="None":
+                val=""
+                
+            yield '<div class="qn %s">%4s</div>' % (label[0], val)
+
+#        yield " <- "
+        yield '   '
+
+        for label in qnlabels:
+            if label[0]=='ElecStateLabel':
+                val = str(lowerqns.get(label[0]))[:1]
+            else:
+                val = str(lowerqns.get(label[0]))
+
+            if  val=="None":
+                val=""
+                
+            yield '<div class="qn %s">%4s</div>' % (label[0], val)
+            
+
+        yield ' %s' % trans.species.name
+
+        
+        yield '\n'
+
+        # QUERY and Display Experimental values
+        exptranss = TransitionsExp.objects.filter(species=trans.species,
+                                            qnup1=trans.qnup1,
+                                            qnlow1=trans.qnlow1,
+                                            qnup2=trans.qnup2,
+                                            qnlow2=trans.qnlow2,
+                                            qnup3=trans.qnup3,
+                                            qnlow4=trans.qnlow4,
+                                            qnup5=trans.qnup5,
+                                            qnlow6=trans.qnlow6)
+        for exptrans in exptranss:
+            yield '<small style="color:blue">'
+            yield '    %16.4lf' % exptrans.frequency
+            yield '    %10.4lf' % exptrans.uncertainty
+#            if exptrans.comment:
+#            yield '    %20s' % (exptrans.comment if exptrans.comment else "")
+
+            yield '   '
+            sources = SourcesIDRefs.objects.filter(fId=exptrans.id)
+            for source in sources:
+                yield '[%s] ' % source.referenceid.rId
+
+            yield '</small>\n'
+            
+
 
 
 def Egy(states):
