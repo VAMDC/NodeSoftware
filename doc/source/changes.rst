@@ -16,9 +16,11 @@ September 26, 2011
 
 **Unit conversions**. 
 
+**Requestables**.
+
 **Dictionaries**. All support wavelength, vss2-prefixes, remove CaselessDict.
 
-**Requestables**.
+The section on **Logging** has been extended: :ref:`logging`
 
 June 15, 2011
 ------------------
