@@ -12,6 +12,7 @@ and maybe necessary for a particular node setup.
 Unit conversions for Restrictables
 ---------------------------------------------
 
+The
 
 .. _specialrestr:
 
@@ -19,10 +20,37 @@ Treating a Restrictable as a special case
 ---------------------------------------------
 
 
+.. _specialreturnable:
+
 Using a custom model method for filling a Returnable
 -----------------------------------------------------
 
-tbw
+Sometimes it is necessary to do something with your data before returning them
+and then it is not possible to directly use the field name in the
+right-hand-side of the Returnable. Now remember that the string there simply
+gets evaluated and that your models can not only have fields but also custom
+methods. Therefore the easiest solution is to write a small method in your
+class that returns what you want, and then call this function though the
+returnable.
+
+For example, assume you for some reason have two energies for your states and want them both returned into the Returnable *AtomStateEnergy* which can handle vectors as input. Then, in your ``models.py``, you do::
+
+    class State(Model):
+        energy1 = FloatField()
+        energy2 = FloatField()
+
+        def bothenergies(self):
+            return [self.energy1, self.energy2]
+
+And correspondingly in your RETURNABLES in ``dictionaries.py``::
+
+    RETURNABLES = {\
+        ...
+        'AtomStateEnergy':'AtomState.bothenergies()',
+        }
+
+.. note::
+    Use this sparingly since it adds some overhead. For doing simple calculations like unit conversions it is usually better to do them once and for all in the database, instead of doing them for every query.
 
 Handling the Requestables better
 ----------------------------------

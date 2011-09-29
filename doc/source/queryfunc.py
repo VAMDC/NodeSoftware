@@ -6,7 +6,7 @@ from models import *
 LIMIT = 10000
 
 def setupResults(sql):
-    q = eval( where2q(sql.where,RESTRICTABLES) )
+    q = sql2Q(sql)
     transs = Transition.objects.filter(q).order_by('wavelength')
     ntranss = transs.count()
 
