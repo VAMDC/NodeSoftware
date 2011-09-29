@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from vamdctap.unitconv import invcm2eV
+
 # In the RESTRICTABLES dictionary, keys are names from the dictionary and values are 
 # names from the Django model for the transitions table.
 #
@@ -19,6 +21,7 @@ RESTRICTABLES = {\
 'AtomSymbol':'finalstateindex__species__atomsymbol',
 'AtomNuclearCharge':'finalstateindex__species__atomnuclearcharge',
 'AtomIonCharge':'finalstateindex__species__atomioncharge',
+'AtomStateEnergy':'finalstateindex__atomstateenergyexperimentalvalue',
 'RadTransWavelength':'wavelength'
 }
 
@@ -37,13 +40,14 @@ RETURNABLES = {\
 'AtomStateS':'AtomState.atomstates',
 'AtomStateL':'AtomState.atomstatel',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
-'AtomStateEnergyExperimentalValue':'AtomState.atomstateenergyexperimentalvalue',
-'AtomStateEnergyTheoreticalValue':'AtomState.atomstateenergytheoreticalvalue',
+'AtomStateEnergy':'[AtomState.atomstateenergyexperimentalvalue, AtomState.atomstateenergytheoreticalvalue]',
+'AtomStateEnergyMethod':'["EXP", "THEO"]',
+'AtomStateEnergyUnit':u'1/cm',
 'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
 
-'RadTransWavelength':'RadTran.wavelength',
-'RadTransWavelengthMethod': 'RadTran.wavelengthmethod',
-'RadTransWavelengthUnit':u'A', # Constant: Angstrom symbol
+'RadTransWavelength':'[RadTran.wavelengthexperimental, RadTran.wavelengththeoretical]',
+'RadTransWavelengthMethod':'["EXP", "THEO"]',
+'RadTransWavelengthUnit':u'A', # Constant: Angstroms
 'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
 'RadTransProbabilityA':'RadTran.probabilitya',
 'RadTransProbabilityAUnits':u'1/s',

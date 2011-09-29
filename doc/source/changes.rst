@@ -9,6 +9,17 @@ Changelog
     document before since terms are used that are introduced later. It is
     meant for returning readers, especially the maintainer of VAMDC nodes.
 
+September 26, 2011
+---------------------
+
+**Query functions**. sql2Q, treat special cases
+
+**Unit conversions**. 
+
+**Dictionaries**. All support wavelength, vss2-prefixes, remove CaselessDict.
+
+**Requestables**.
+
 June 15, 2011
 ------------------
 

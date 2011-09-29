@@ -124,11 +124,11 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
     qdict = {}
     for i in rs:
         r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
+        if r not in restrictables:
+            log.debug('Restrictable "%s" not supported!'%r)
         if type(restrictables[r]) == tuple:
             rest_rhs = restrictables[r][0]
         else: rest_rhs = restrictables[r]
-        if r not in restrictables:
-            log.error('Restrictable "%s" not supported!'%r)
         if op=='in':
             if not (foo[0]=='(' and foo[-1]==')'):
                 log.error('Values for IN not bracketed: %s'%foo)
