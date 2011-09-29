@@ -62,7 +62,7 @@
 		  
 		  
 		  {% for specie in species_list %}
-		  <li id="{{specie.id}}" class="molRow" onclick="{% block clickevent %}show_doc({{specie.id}});{% endblock %}" ondblclick="{% block dblclickevent %}show_doc({{specie.id}});{% endblock %}">
+		  <li id="{{specie.id}}" class="molRow" onclick="{% block clickevent %}selectMolRow2({{specie.id}});show_doc({{specie.id}});{% endblock %}" ondblclick="{% block dblclickevent %}selectMolRow2({{specie.id}});show_doc({{specie.id}});{% endblock %}">
 		    <a>
 		<div id="eTag{{specie.tag}}" style="font-weight:bold;display:inline;min-width:50px" class="eTag float_left">  {{specie.speciestag}}</div> 
 		<div class="eName float_left" style="font-weight:bold;display:inline; min-width:100px">     {{specie.molecule.name}} </div>
