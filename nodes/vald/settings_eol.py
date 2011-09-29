@@ -25,8 +25,10 @@ DATABASES = {
 }
 
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
-#LOGGING['handlers']['logfile']['filename'] = '/tmp/mylog.log'
 EXAMPLE_QUERIES = ['SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4005',
                    'SELECT ALL WHERE AtomSymbol = U']
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
 
+LOGGING['handlers']['logfile']['filename'] = '/tmp/valdnode.log'
+if not DEBUG:
+    LOGGING['handlers']['logfile']['level'] = 'INFO'

@@ -13,7 +13,6 @@ randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
 import logging
 log=logging.getLogger('vamdc.tap')
-log.debug('test log start')
 
 # Get the node-specific package!
 from django.conf import settings
