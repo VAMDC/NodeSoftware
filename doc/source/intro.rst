@@ -1,11 +1,15 @@
 
-This document covers the **relase 11.5r2** of the NodeSoftware.
+This document covers the **relase 11.10beta** of the NodeSoftware.
 
+Links to HTML-versions:
 
-PDF-versions of this document are available at:
+* Last release: http://readthedocs.org/docs/vamdc-nodesoftware/en/release/
+* Latest development: http://readthedocs.org/docs/vamdc-nodesoftware/en/latest/
 
-* http://www.vamdc.org/documents/NodeSoftwareDoc_v11.5r2.pdf (release version)
-* http://vamdc.tmy.se/doc/nodesoftware.pdf (latest development version)
+Links to PDF-versions:
+
+* Last release: http://media.readthedocs.org/pdf/vamdc-nodesoftware/release/vamdc-nodesoftware.pdf 
+* Latest development: http://media.readthedocs.org/pdf/vamdc-nodesoftware/latest/vamdc-nodesoftware.pdf
 
 
 .. _intro:

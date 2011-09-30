@@ -12,13 +12,17 @@ Changelog
 September 26, 2011
 ---------------------
 
-**Query functions**. sql2Q, treat special cases
+**Query functions**. The standard way of starting a node's query function has changed: the function *where2q()* is superseded by *sql2Q()*. **This means you should change this in your code!**. See the updated example in :ref:`queryfu`.
 
 **Unit conversions**. 
 
+**Requestables**.
+
+**Returnables**. Many Returnables (e.g. all that correspond to a DataType in the XML schema) now can receive vectors which allows to give several values of the same quantity. See :ref:`specialreturnable` on how to do this.
+
 **Dictionaries**. All support wavelength, vss2-prefixes, remove CaselessDict.
 
-**Requestables**.
+The section on **Logging** has been extended: :ref:`logging`
 
 June 15, 2011
 ------------------
