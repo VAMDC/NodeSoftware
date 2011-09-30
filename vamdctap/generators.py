@@ -603,14 +603,16 @@ def XsamsAtoms(Atoms):
             G = lambda name: GetValue(name, AtomState=AtomState)
             yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
             yield makeSourceRefs(G('AtomStateRef'))
-            yield makeOptionalTag('Description','AtomStateDescription',G)
-            desc = G('AtomStateDescription')
+            yield makeOptionalTag('Description','AtomStateDescription',G)            
             yield '<AtomicNumericalData>'
             yield makeDataType('StateEnergy', 'AtomStateEnergy', G)
             yield makeDataType('IonizationEnergy', 'AtomStateIonizationEnergy', G)
             yield makeDataType('LandeFactor', 'AtomStateLandeFactor', G)
             yield makeDataType('QuantumDefect', 'AtomStateQuantumDefect', G)
-            yield makeDataType('LifeTime', 'AtomStateLifeTime', G, extraAttr={"decay":"AtomStateLifeTimeDecay"})
+            if G('AtomStateLifeTime'):
+                # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
+                # the decay attr is a string, either: 'total', 'totalRadiative' or 'totalNonRadiative'
+                yield makeDataType('LifeTime', 'AtomStateLifeTime', G, extraAttr={"decay":"AtomStateLifeTimeDecay"})
             yield makeDataType('Polarizability', 'AtomStatePolarizability', G)
             statweig = G('AtomStateStatisticalWeight')
             if statweig:
@@ -797,21 +799,60 @@ def XsamsMSBuild(MoleculeState):
     Generator for MolecularState tag
     """
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    yield '<MolecularState stateID="S%s-%s">\n' % (G('NodeID'),
-                                                   G("MoleculeStateID"))
-    yield '  <Description/>\n'
-    yield '  <MolecularStateCharacterisation>\n'
+    yield '<MolecularState stateID="S%s-%s">' % (G('NodeID'),
+                                                 G("MoleculeStateID"))
+    yield '  <Description/>'
+    yield '  <MolecularStateCharacterisation>'
     yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G,
                 extraAttr={'energyOrigin':'MoleculeStateEnergyOrigin'})
     if G("MoleculeStateTotalStatisticalWeight"):
-        yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>\n'\
+        yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>'\
                     % G("MoleculeStateTotalStatisticalWeight")
     if G("MoleculeStateNuclearStatisticalWeight"):
-        yield '  <NuclearStatisticalWeight>%s</NuclearStatisticalWeight>\n'\
+        yield '  <NuclearStatisticalWeight>%s</NuclearStatisticalWeight>'\
                     % G("MoleculeStateNuclearStatisticalWeight")
     if G("MoleculeStateNuclearSpinIsomer"):
         yield '  <NuclearSpinIsomer>%s</NuclearSpinIsomer>\n'\
                     % G("MoleculeStateNuclearSpinIsomer")
+    if G("MoleculeStateLifeTime"):
+        # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
+        # the decay attr is a string, either: 'total', 'totalRadiative' or 'totalNonRadiative'
+        yield makeDataType('LifeTime','MoleculeStateLifeTime', G, extraAttrs={'decay':'MoleculeStateLifeTimeDecay'}) 
+    if hasattr(MoleculeState, "Parameters"):
+        for Parameter in makeiter(MoleculeState.Parameters):
+            cont, ret = checkXML(Parameter)
+            if cont:
+                yield ret
+                continue 
+            GP = lambda name: GetValue(name, Parameter=Parameter)
+            yield makePrimaryType("Parameters","MoleculeStateParameters", GP)
+            if GP("MoleculeStateParametersValueData"):
+                yield makeDataType("ValueData", "MoleculeStateParametersValueData", GP)            
+            if GP("MoleculeStateParametersVectorData"):
+                yield makePrimaryType("VectorData", "MoleculeStateParametersVectorData", GP, extraAttr={"units":"MoleculeStateParametersVectorUnits"})
+                if hasattr(Parameter, "Vector"):
+                    for VectorValue in makeiter(Parameter.Vector):                                           
+                        GPV = lambda name: GetValue(name, VectorValue)
+                        yield makePrimaryType("Vector", "MoleculeStateParameterVector", GPV,
+                                              extraAttr={"ref":"MoleculeStateParameterVectorRef",
+                                                         "x3":"MoleculeStateParameterVectorX3",
+                                                         "y3":"MoleculeStateParameterVectorY3",
+                                                         "z3":"MoleculeStateParameterVectorZ3"})                                                
+                        yield "</Vector>"                
+                yield "</VectorData>"
+            if GP("MoleculeStateParametersMatrixData"):
+                yield makePrimaryType("MatrixData", "MoleculeStateParametersMatrixData", GP,
+                                      extraAttr={"units":"MoleculeStateParametersMatrixUnits",
+                                                 "nrows":"MoleculeStateParametersMatrixNrows",
+                                                 "ncols":"MoleculeStateParametersMatrixNcols",
+                                                 "form":"MoleculeStateParametersMatrixForm",
+                                                 "values":"MoleculeStateParametersMatrixValues"})
+                yield "<RowRefs>%s</RowRefs>" % GP("MoleculeStateParametersMatrixDataRowRefs") # space-separated list of strings
+                yield "<ColRefs>%s</ColRefs>" % GP("MoleculeStateParametersMatrixDataColRefs") # space-separated list of strings
+                yield "<Matrix>%s</Matrix>" % GP("MoleculeStateParametersMatrixDataMatrix") # space-separated list of strings
+                yield "</MatrixData>"
+            yield "</Parameters>"
+
     yield '  </MolecularStateCharacterisation>\n'
 
 
@@ -822,7 +863,7 @@ def XsamsMSBuild(MoleculeState):
         yield ret
     else:
         yield makeCaseQNs(G)
-    yield '</MolecularState>\n'
+    yield '</MolecularState>'
 
 def XsamsMolecules(Molecules):
     """
