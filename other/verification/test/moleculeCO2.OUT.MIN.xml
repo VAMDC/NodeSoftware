@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Sources>
+        <Source sourceID="BHIT-CO2-nu-12">
+            <Authors>
+                <Author>
+                    <Name>C. Hill</Name>
+                </Author>
+                <Author>
+                    <Name> M.-L. Dubernet</Name>
+                </Author>
+            </Authors>
+            <Title/>
+            <Category>private communication</Category>
+            <Year>2011</Year>
+            <SourceName/>
+            <Comments>The reference identified by CO2-nu-12 cannot be resolved into valid XSAMS</Comments>
+        </Source>
+    </Sources>
+	<Species>
+		<Molecules>
+			<Molecule speciesID="XHIT-CURLTUGMZLYLDI-RGIGPVFXSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>CO2</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>CO2</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Carbon Dioxide</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/CO2/c2-1-3/i1+1,2+2</InChI>
+					<InChIKey>CURLTUGMZLYLDI-RGIGPVFXSA-N</InChIKey>
+					<MoleculeStructure>
+						<cml:atomArray>
+							<cml:atom elementType="O" id="O1" isotopeNumber="18"/>
+							<cml:atom elementType="O" id="O2"/>
+							<cml:atom elementType="C" id="C1" isotopeNumber="13"/>
+						</cml:atomArray>
+						<cml:bondArray>
+							<cml:bond atomRefs2="C1 O1" id="C1_O1" order="D"/>
+							<cml:bond atomRefs2="C1 O2" id="C1_O2" order="D"/>
+						</cml:bondArray>
+					</MoleculeStructure>
+					<StableMolecularProperties/>
+					<Comment>(16O)(13C)(18O)</Comment>
+				</MolecularChemicalSpecies>
+                <MolecularState stateID="SHIT-2721">
+                    <Description/>
+                    <MolecularStateCharacterisation>
+                        <StateEnergy energyOrigin="Zero-point energy">
+                            <Value units="1/cm">4060.404</Value>
+                        </StateEnergy>
+                        <TotalStatisticalWeight>74</TotalStatisticalWeight>
+                    </MolecularStateCharacterisation>
+                    <Case caseID="ltcs" xsi:type="ltcs:Case" xmlns:ltcs="http://vamdc.org/xml/xsams/0.2/cases/ltcs">
+                        <ltcs:QNs>
+                            <ltcs:ElecStateLabel>X</ltcs:ElecStateLabel>
+                            <ltcs:v1>3</ltcs:v1>
+                            <ltcs:l2>0</ltcs:l2>
+                            <ltcs:v3>0</ltcs:v3>
+                            <ltcs:J>18</ltcs:J>
+                            <ltcs:r name="Fermi resonance rank">2</ltcs:r>
+                            <ltcs:kronigParity>f</ltcs:kronigParity>
+                        </ltcs:QNs>
+                    </Case>
+                    <Verification>
+                        <RuleC01>false</RuleC01>
+                        <RuleC02 xsi:nil="true"/>
+                        <RuleC03>true</RuleC03>
+                    </Verification>
+                </MolecularState>
+                <MolecularState stateID="SHIT-2722">
+                    <Description/>
+                    <MolecularStateCharacterisation>
+                        <StateEnergy energyOrigin="Zero-point energy">
+                            <Value units="1/cm">4060.404</Value>
+                        </StateEnergy>
+                        <TotalStatisticalWeight>74</TotalStatisticalWeight>
+                    </MolecularStateCharacterisation>
+                    <Verification xsi:nil="true"/>
+                </MolecularState>
+				<MolecularState stateID="SHIT-2723">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">4060.404</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>74</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case caseID="ltcs" xsi:type="ltcs:Case" xmlns:ltcs="http://vamdc.org/xml/xsams/0.2/cases/ltcs">
+						<ltcs:QNs>
+							<ltcs:ElecStateLabel>X</ltcs:ElecStateLabel>
+							<ltcs:v1>3</ltcs:v1>
+							<ltcs:v2>0</ltcs:v2>
+							<ltcs:l2>0</ltcs:l2>
+							<ltcs:v3>0</ltcs:v3>
+							<ltcs:J>18</ltcs:J>
+							<ltcs:r name="Fermi resonance rank">2</ltcs:r>
+							<ltcs:kronigParity>f</ltcs:kronigParity>
+						</ltcs:QNs>
+					</Case>
+                    <Verification>
+                        <RuleC01>false</RuleC01>
+                        <RuleC02>true</RuleC02>
+                        <RuleC03>true</RuleC03>
+                    </Verification>
+				</MolecularState>
+                <MolecularState stateID="SHIT-2724">
+                    <Description/>
+                    <MolecularStateCharacterisation>
+                        <StateEnergy energyOrigin="Zero-point energy">
+                            <Value units="1/cm">1482.1115</Value>
+                        </StateEnergy>
+                        <TotalStatisticalWeight>78</TotalStatisticalWeight>
+                    </MolecularStateCharacterisation>
+                    <Case caseID="ltcs" xsi:type="ltcs:Case" xmlns:ltcs="http://vamdc.org/xml/xsams/0.2/cases/ltcs">
+                        <ltcs:QNs>
+                            <ltcs:ElecStateLabel>X</ltcs:ElecStateLabel>
+                            <ltcs:v1>1</ltcs:v1>
+                            <ltcs:v2>1</ltcs:v2>
+                            <ltcs:l2>0</ltcs:l2>
+                            <ltcs:v3>0</ltcs:v3>
+                            <ltcs:J>19</ltcs:J>
+                            <ltcs:r name="Fermi resonance rank">1</ltcs:r>
+                            <ltcs:parity>-</ltcs:parity>
+                            <ltcs:kronigParity>e</ltcs:kronigParity>
+                        </ltcs:QNs>
+                    </Case>
+                    <Verification>
+                        <RuleC01>true</RuleC01>
+                        <RuleC02>false</RuleC02>
+                        <RuleC03>true</RuleC03>
+                    </Verification>
+                </MolecularState>
+                <MolecularState stateID="SHIT-2725">
+                    <Description/>
+                    <MolecularStateCharacterisation>
+                        <StateEnergy energyOrigin="Zero-point energy">
+                            <Value units="1/cm">5933.6681</Value>
+                        </StateEnergy>
+                        <TotalStatisticalWeight>38</TotalStatisticalWeight>
+                    </MolecularStateCharacterisation>
+                    <Case caseID="ltcs" xsi:type="ltcs:Case" xmlns:ltcs="http://vamdc.org/xml/xsams/0.2/cases/ltcs">
+                        <ltcs:QNs>
+                            <ltcs:ElecStateLabel>X</ltcs:ElecStateLabel>
+                            <ltcs:v1>2</ltcs:v1>
+                            <ltcs:v2>10</ltcs:v2>
+                            <ltcs:l2>10</ltcs:l2>
+                            <ltcs:v3>1</ltcs:v3>
+                            <ltcs:J>9</ltcs:J>
+                            <ltcs:r name="Fermi resonance rank">3</ltcs:r>
+                            <ltcs:kronigParity>e</ltcs:kronigParity>
+                        </ltcs:QNs>
+                    </Case>
+                    <Verification>
+                        <RuleC01>true</RuleC01>
+                        <RuleC02>true</RuleC02>
+                        <RuleC03>false</RuleC03>
+                    </Verification>
+                </MolecularState>
+			</Molecule>
+            <Molecule speciesID="XHIT-CURLTUGMZLYLDI-FSPCKYAWSA-N">
+                <MolecularChemicalSpecies>
+                    <OrdinaryStructuralFormula>
+                        <Value>CO2</Value>
+                    </OrdinaryStructuralFormula>
+                    <StoichiometricFormula>CO2</StoichiometricFormula>
+                    <IonCharge>0</IonCharge>
+                    <ChemicalName>
+                        <Value>Carbon Dioxide</Value>
+                    </ChemicalName>
+                    <InChI>InChI=1S/CO2/c2-1-3/i1+1,2+0,3+0</InChI>
+                    <InChIKey>CURLTUGMZLYLDI-FSPCKYAWSA-N</InChIKey>
+                    <MoleculeStructure>
+                        <cml:atomArray>
+                            <cml:atom elementType="O" id="O1" isotopeNumber="18"/>
+                            <cml:atom elementType="O" id="O2"/>
+                            <cml:atom elementType="C" id="C1" isotopeNumber="13"/>
+                        </cml:atomArray>
+                        <cml:bondArray>
+                            <cml:bond atomRefs2="C1 O1" id="C1_O1" order="D"/>
+                            <cml:bond atomRefs2="C1 O2" id="C1_O2" order="D"/>
+                        </cml:bondArray>
+                    </MoleculeStructure>
+                    <StableMolecularProperties/>
+                    <Comment>(16O)(13C)(16O)</Comment>
+                </MolecularChemicalSpecies>
+				<MolecularState stateID="SHIT-2727">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">3298.0547</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>54</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case caseID="ltcs" xsi:type="ltcs:Case" xmlns:ltcs="http://vamdc.org/xml/xsams/0.2/cases/ltcs">
+						<ltcs:QNs>
+							<ltcs:ElecStateLabel>X</ltcs:ElecStateLabel>
+							<ltcs:v1>2</ltcs:v1>
+							<ltcs:v2>0</ltcs:v2>
+							<ltcs:l2>0</ltcs:l2>
+							<ltcs:v3>0</ltcs:v3>
+							<ltcs:J>13</ltcs:J>
+							<ltcs:r name="Fermi resonance rank">2</ltcs:r>
+							<ltcs:kronigParity>f</ltcs:kronigParity>
+						</ltcs:QNs>
+					</Case>
+                    <Verification>
+                        <RuleC01>false</RuleC01>
+                        <RuleC02>true</RuleC02>
+                        <RuleC03>true</RuleC03>
+                        <RuleC04>true</RuleC04>
+                    </Verification>
+				</MolecularState>
+				<MolecularState stateID="SHIT-2728">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">1311.9684</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>54</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case caseID="ltcs" xsi:type="ltcs:Case" xmlns:ltcs="http://vamdc.org/xml/xsams/0.2/cases/ltcs">
+						<ltcs:QNs>
+							<ltcs:ElecStateLabel>X</ltcs:ElecStateLabel>
+							<ltcs:v1>1</ltcs:v1>
+							<ltcs:v2>0</ltcs:v2>
+							<ltcs:l2>0</ltcs:l2>
+							<ltcs:v3>0</ltcs:v3>
+							<ltcs:J>15</ltcs:J>
+							<ltcs:r name="Fermi resonance rank">2</ltcs:r>
+							<ltcs:parity>-</ltcs:parity>
+							<ltcs:kronigParity>e</ltcs:kronigParity>
+						</ltcs:QNs>
+					</Case>
+                    <Verification>
+                        <RuleC01>true</RuleC01>
+                        <RuleC02>true</RuleC02>
+                        <RuleC03>true</RuleC03>
+                        <RuleC04>false</RuleC04>
+                    </Verification>
+				</MolecularState>
+			</Molecule>
+		</Molecules>
+	</Species>
+    <Processes>
+        <Radiative>
+            <RadiativeTransition>
+                <EnergyWavelength>
+                    <Wavenumber>
+                        <SourceRef>BHIT-CO2-nu-12</SourceRef>
+                        <Value units="1/cm">2578.29252</Value>
+                        <Accuracy>
+                            <Statistical>0.001</Statistical>
+                        </Accuracy>
+                    </Wavenumber>
+                </EnergyWavelength>
+                <InitialStateRef>SHIT-2724</InitialStateRef>
+                <FinalStateRef>SHIT-2723</FinalStateRef>
+                <Verification>
+                    <RuleC05>true</RuleC05>
+                    <RuleC06>false</RuleC06>
+                    <RuleC07>true</RuleC07>
+                </Verification>
+            </RadiativeTransition>
+            <RadiativeTransition>
+                <EnergyWavelength>
+                    <Wavenumber>
+                        <SourceRef>BHIT-CO2-nu-12</SourceRef>
+                        <Value units="1/cm">1986.08634</Value>
+                        <Accuracy>
+                            <Statistical>0.001</Statistical>
+                        </Accuracy>
+                    </Wavenumber>
+                </EnergyWavelength>
+                <InitialStateRef>SHIT-2728</InitialStateRef>
+                <FinalStateRef>SHIT-2727</FinalStateRef>
+                <Verification>
+                    <RuleC05>false</RuleC05>
+                    <RuleC06>false</RuleC06>
+                    <RuleC07>false</RuleC07>
+                    <RuleC08>false</RuleC08>
+                </Verification>
+            </RadiativeTransition>
+        </Radiative>
+    </Processes>
+</XSAMSData>
