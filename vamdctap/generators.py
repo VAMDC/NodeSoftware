@@ -33,26 +33,6 @@ log = logging.getLogger('vamdc.tap.generator')
 isiterable = lambda obj: hasattr(obj, '__iter__')
 escape = lambda s: quoteattr(s)[1:-1]
 
-def countReturnables(regexp):
-    """
-    count how often a certain matches the keys of the returnables
-    """
-    r = re.compile(regexp, flags=re.IGNORECASE)
-    return len(filter(r.match, RETURNABLES.keys()))
-
-# Define some globals that allow skipping parts
-# of the generator below.
-N_ENV_KWS = countReturnables('^Environment.*')
-N_METHOD_KWS = countReturnables('^Method.*')
-N_FUNCTION_KWS = countReturnables('^Function.*')
-N_MOLESTATE_KWS = countReturnables('^MoleculeState.*')
-N_MOLE_KWS = countReturnables('^Molecule.*') - N_MOLESTATE_KWS
-N_ATOMSTATE_KWS = countReturnables('^AtomState.*')
-N_ATOM_KWS = countReturnables('^Atom.*') - N_ATOMSTATE_KWS
-N_COLLTRAN_KWS = countReturnables('Collision.*')
-N_RADTRAN_KWS = countReturnables('^RadTran.*')
-N_BROAD_KWS = countReturnables('^.*Broadening.*')
-
 def makeiter(obj):
     """
     Return an iterable, no matter what
