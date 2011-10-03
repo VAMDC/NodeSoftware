@@ -308,6 +308,8 @@ Atoms                 Atom
 ..                                  Atom.ShellPairs                         AtomShellPair
 Molecules             Molecule      
 ..                                  Molecule.States                         MoleculeState
+..                                  Molecule.States.Parameters              Parameter
+..                                  Molecule.States.Parameters.Vector       VectorValueOA
 Solids                Solid         
 ..                                  Solid.Layers                            Layer
 ..                                  Solid.Layers.Components                 Component

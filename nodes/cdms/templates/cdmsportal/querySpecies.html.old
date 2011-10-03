@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+      <html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="NavFrame.css" type="text/css">
+    <link href="http://cdms.ph1.uni-koeln.de/cdms/css/cdms_base.css" rel="stylesheet" type="text/css"/>
+    <meta name="generator" content="1. Physikalisches Institut der Universität zu Köln">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="date" content="2004-04-29">
+    
+    <meta name="author" content="Christian Endres">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="proxy" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="EXPIRES" content="0">
+    <title>CDMS</title>
+<!--    <script type="text/javascript" src="http://cdms.ph1.uni-koeln.de/cdms/jquery.js"></script>
+    <script language="JavaScript" src="http://cdms.ph1.uni-koeln.de/cdms/main.js" type="text/javascript"></script> -->
+  <script type="text/javascript" src="http://cdms.ph1.uni-koeln.de:8090/DjCDMS/tap/static/js/jquery.js"></script>
+  <script language="JavaScript" src="http://cdms.ph1.uni-koeln.de:8090/DjCDMS/tap/static/js/main.js" type="text/javascript"></script>
+
+  </head>
+  
+    
+  
+  <body ONLOAD="setFocus('SearchPredictionSpecies');">
+    
+    <div class="page_margins">
+      <div class="page">
+	<div id="header"  role="banner">
+	  <a href="./" title="Home" rel="home" id="logo"><img src="https://cdms.ph1.uni-koeln.de/sites/all/themes/cdms/logo.png" alt="Home" /></a><br>
+	  <span>(beta - Version)</span>
+	  
+	</div>  <!-- header -->
+	
+	
+	<!-- begin: main navigation #nav -->
+	<!--    <div id="nav" role="navigation"> -->
+	<div class="hlist" style="-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);">
+	  <ul>
+	    <li> <a href="./index.php?page=Home"  style="font-weight:400;"><div style="font-weight:bold">HOME</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">First page</div> </a> </li>
+	  <li><a href="#" style="font-weight:400;"><div style="font-weight:bold">GENERAL</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Description of the Catalog</div></a></li>
+	  <li><a href="./index.php?page=Catalog"  style="font-weight:400;"><div style="font-weight:bold">SPECIES</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Description of the Catalog Species</div></a></li>
+	  <li><a href="./queryForm"  style="font-weight:400;"><div style="font-weight:bold">QUERY</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Query the Catalog</div></a></li>
+	  <li><a href="./index.php?page=PF"  style="font-weight:400;"><div style="font-weight:bold">PARTITION FUNCTIONS</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Listing of Partition functions</div></a></li>
+	  
+	  <li><a href="./index.php?page=Contact"  style="font-weight:400;"><div style="font-weight:bold">CONTACT</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Get in contact with real people</div></a></li>
+	  
+	</ul>
+	</div>
+
+	<!--    </div> -->
+	<!-- end: main navigation -->
+	  
+	  
+	  
+	  
+	  
+	<div id="main">
+	  <form name="PARAMETER" action="./queryPage" style="background-color:transparent" class="yform full" role="application"  method="post">
+	    
+	    <!-- begin: #col1 - first float column -->
+	  <div id="col1" style="background-color:white;" role="complementary">
+	    <div id="col1_content" class="clearfix">
+	      
+	      
+	      <INPUT TYPE="HIDDEN" NAME="T_PAGE" VALUE="SearchPrediction">
+
+	      <h6 class="vlist"> FILTER SPECIES LIST</h6>
+	      
+	      <p id="navFilterInfo" class="info center"> Use regular expressions! </p><div class="type-text"><label for="eTagFilter">Tag</label> <input id="eTagFilter" onkeyup="filterRows2()"  onblur="filterRows2()"  onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+		
+	      </div><div class="type-text"><label for="molNameFilter">Molecule</label> <input id="molNameFilter" onkeyup="filterRows2()" onblur="filterRows2()" onkeyPress="return disableEnterKey(event)"  type="text" name="filterTag"> 
+	      </div><div class="type-text"><label for="molTrivNameFilter">Trivial&nbsp;Name</label> <input id="molTrivNameFilter" onkeyup="filterRows2()"  onblur="filterRows2()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+	      </div><div class="type-text"><label for="isoFilter">Isotopolog</label> <input id="isoFilter" onkeyup="filterRows2()"  onblur="filterRows2()"  onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+	      </div><div class="type-text"><label for="stateFilter">State</label> <input id="stateFilter" onkeyup="filterRows2()"  onblur="filterRows2()"  onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+	      </div><div class="type-select"><label for="Moleculesgrp">Group</label><select id="Moleculesgrp" name="Moleculesgrp" multiple size="4">
+		  <option>all species</option>
+		  
+		  <option> ISM/CSM </option>
+		  <option> atomic fine structure </option>
+		  <option> Anions </option>
+		  <option> Cations </option>
+		  <option> CnH </option>
+		  <option> CnH2 </option>
+		  
+		  <option> Complex molecules </option>
+		  <option> Cyano Comp. </option>
+		  <option> Deuterated Species </option>
+		  <option> Hydride Species AHn </option>
+		  <option> metal compounds </option>
+		  <option> Other N Comp. </option>
+		  
+		  <option> O Compounds </option>
+		  <option> P Compounds </option>
+		  <option> S Compounds </option>
+		  <option> Si Compounds </option>
+		</select>
+	      </div>
+	      
+	    </div>
+	    
+	  </div>
+	  <!-- end: #col1 -->
+	  <!-- begin: #col3 static column -->
+	  
+	  <!--  <div id="col3" style="background-color:#F0F0F0;" role="main"> -->
+	  <div id="col3" role="main">
+	    <div id="col3_content" class="clearfix">
+	      
+	      
+	      
+	      <!--
+	      <fieldset>
+	      <legend>Select Species</legend>
+	      -->
+	      
+	      <input id="orderBy" type="hidden" name="T_OrderBy" value="E_TAG ASC">
+	      <input id="EID" type="hidden" name="T_EID" value="">
+	      <fieldset class="full" >
+		
+		<h3 class="center"> 
+		  <strong>SELECT</strong>&nbsp;<i>SPECIES.MOLECULES.ISOTOPOLOGS</i> </h3>
+		<br><br>
+		<p class="important"> Select one or multiple species by mouse clicks! </p>
+		<div class="entryTableHead">
+		  <div class="float_left" style="margin-left:5.0em;font-weight:bold;min-width:50px;">Tag</div>
+		  <div class="float_left" style="font-weight:bold;min-width:100px">Molecule</div>
+		  <div class="float_left" style="font-weight:bold;min-width:100px">Isotopolog</div>
+		  <div class="float_left" style="font-weight:bold;min-width:120px">State</div>
+		</div>
+		<ul class="selectMolsHead vlist full" style="height:300px;overflow-y:scroll;">
+		  
+		  
+		  {% for specie in species_list %}
+		  <li id="{{specie.id}}" class="molRow" onclick="selectMolRow2({{specie.id}});" ondblclick="">
+		    <a>
+		<div id="eTag{{specie.tag}}" style="font-weight:bold;display:inline;min-width:50px" class="eTag float_left">  {{specie.speciestag}}</div> 
+		<div class="eName float_left" style="font-weight:bold;display:inline; min-width:100px">     {{specie.molecule.name}} </div>
+		<div class="eIso float_left" style="font-weight:bold;display:inline; float:left; min-width:100px">   {{specie.isotopolog}} </div>
+		<div class="eState float_left" style="display:inline; float:left; min-width:120px">  {{specie.state}} </div><br>
+		<div class="mTrivName float_left" style="display:inline; text-align:left;float:left; min-width:250px"> {{specie.molecule.trivialname}} </div>&nbsp;
+	      </a>
+	      </li>
+		
+		{% endfor %}
+	      </ul>
+		
+		<div class="type-button center">  
+		  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="Select All" NAME="B_SelectAll" onclick="selectAll();">   
+		  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="Deselect All" NAME="B_DeselectAll" onclick="deselectAll();">   
+		  <INPUT style="width:30%;float:right;" TYPE="SUBMIT"  VALUE="Confirm Selection" NAME="B_Query" onclick="createPostVar();"> <!-- load_page('SearchPrediction');"> -->
+		</div></fieldset>
+	      
+	      
+	      
+	    </div>
+	  </form>
+	    
+	  </div>
+	  <div id="footer" role="contentinfo">
+	    &copy; I. Physikalisches Institut der Universität zu Köln
+	  </a>
+	  </div>
+	  
+	  
+	</div> <!-- page-margin -->
+      </div> <!-- page -->
+      
+      <!-- end: #footer -->
+      <!-- full skiplink functionality in webkit browsers -->
+      
+      <script src="/yaml/core/js/yaml-focusfix.js" type="text/javascript"></script>
+  </body>
+</html> 
+
+

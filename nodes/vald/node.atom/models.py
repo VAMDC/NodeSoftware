@@ -112,7 +112,7 @@ class State(Model):
     k = DecimalField(max_digits=3, decimal_places=1,db_column=u'K', null=True)
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True)
-    sn = SmallIntegerField(null=True)
+    sn = PositiveSmallIntegerField(null=True)
 
     #transition_type = CharField(max_length=2, null=True)
     #autoionized = NullBooleanField(default=False)
@@ -146,7 +146,7 @@ class Transition(Model):
     gammarad = DecimalField(max_digits=6, decimal_places=2,null=True)
     gammastark = DecimalField(max_digits=7, decimal_places=3,null=True)
     gammawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
-    sigmawaals = IntegerField(null=True)
+    sigmawaals = PositiveSmallIntegerField(null=True)
     alphawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
     #accur = CharField(max_length=11,null=True)
     #comment = CharField(max_length=128, null=True)

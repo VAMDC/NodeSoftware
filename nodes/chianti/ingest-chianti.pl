@@ -62,8 +62,8 @@ print "		ChiantiRadTransType CHAR(1), \n";
 print "		AtomSymbol CHAR(8), \n";
 print "		ChiantiRadTransFinalStateIndex INTEGER, \n";
 print "		ChiantiRadTransInitialStateIndex INTEGER, \n";
-print "		RadTransWavelength DOUBLE, \n";
-print "         RadTransWavelengthMethod Char(4), \n";
+print "		wavelengthexperimental DOUBLE, \n";
+print "		wavelengththeoretical DOUBLE, \n";
 print "		RadTransProbabilityWeightedOscillatorStrength DOUBLE, \n";
 print "		RadTransProbabilityTransitionProbabilityA DOUBLE, \n";
 print "         PRIMARY KEY (id) \n";
@@ -80,50 +80,34 @@ while(<TRANSITIONS>) {
 	my $line = $_;
 	chomp $line;
 	my @fields = split(/\s*\|\s*/, $line);
-        my $transTypeCode = shift @fields;
-        my $atomSymbol = firstWord(shift @fields);
-        $nuclearCharge = shift @fields; # AtomNuclearCharge - unwanted
-        $ionCharge     = shift @fields; # AtomIonCharge - unwanted
-        my $finalStateIndex   = (1000000 * (shift @fields)) + (1000 * $ionCharge) + $nuclearCharge;
-        my $initialStateIndex = (1000000 * (shift @fields)) + (1000 * $ionCharge) + $nuclearCharge;;
-        my $experimentalWavelength = shift @fields;
-        my $theoreticalWavelength = shift @fields;
-        my $weightedOscilatorStrength = shift @fields;
-        my $probabilityAValue = shift @fields;
+    my $transTypeCode = shift @fields;
+    my $atomSymbol = firstWord(shift @fields);
+    my $nuclearCharge = shift @fields; # AtomNuclearCharge - unwanted
+    my $ionCharge     = shift @fields; # AtomIonCharge - unwanted
+    my $finalStateIndex   = (1000000 * (shift @fields)) + (1000 * $ionCharge) + $nuclearCharge;
+    my $initialStateIndex = (1000000 * (shift @fields)) + (1000 * $ionCharge) + $nuclearCharge;;
+    my $experimentalWavelength = shift @fields; # RadTransWavelength
+    my $theoreticalWavelength = shift @fields; # RadTransWavelength
+    my $weightedOscilatorStrength = shift @fields; # RadTransProbabilityWeightedOscillatorStrength
+    my $probabilityAValue = shift @fields; # RadTransProbabilityTransitionProbabilityAValue
 
-        if ($experimentalWavelength > 0) {
-          $index = $index + 1;
-	  print 'INSERT INTO transitions VALUES(';
-          print $index, ', '; # index - the primary key
-	  print '"', $transTypeCode, '", '; 
-	  print '"', $atomSymbol, '", '; # AtomSymbol
-  	  print $finalStateIndex, ', '; # ChiantiRadTransFinalStateIndex
-	  print $initialStateIndex, ', '; # ChiantiRadTransInitialStateIndex
-	  print $experimentalWavelength, ', '; # RadTransWavelengthExperimentalValue
-          print '"EXP", ';
-	  print $weightedOscilatorStrength, ', '; # RadTransProbabilityWeightedOscillatorStrengthValue
-	  print $probabilityAValue; # RadTransProbabilityTransitionProbabilityAValue
-          print ");\n";
-	}
-
-	if ($theoreticalWavelength > 0) {
-          $index = $index + 1;
-	  print 'INSERT INTO transitions VALUES(';
-          print $index, ', '; # index - the primary key
-	  print '"', $transTypeCode, '", '; 
-	  print '"', $atomSymbol, '", ';
-  	  print $finalStateIndex, ', ';
-	  print $initialStateIndex, ', ';
-	  print $theoreticalWavelength, ', ';
-          print '"THEO", ';
-	  print $weightedOscilatorStrength, ', ';
-	  print $probabilityAValue;
-          print ");\n";
-	}
+    $index = $index + 1;
+	print 'INSERT INTO transitions VALUES(';
+    print $index, ', '; # the primary key
+	print '"', $transTypeCode, '", '; 
+	print '"', $atomSymbol, '", ';
+  	print $finalStateIndex, ', ';
+	print $initialStateIndex, ', ';
+	print $experimentalWavelength, ', ';
+	print $theoreticalWavelength, ', ';
+	print $weightedOscilatorStrength, ', ';
+	print $probabilityAValue; 
+    print ");\n";
 }
 
-# In the input, unknown oscillator strengths are denoted by -1. Change these to proper nulls.
+# In the input, unknowns are denoted by -1. Change these to proper nulls.
 print "UPDATE transitions SET RadTransProbabilityWeightedOscillatorStrength = NULL WHERE RadTransProbabilityWeightedOscillatorStrength < 0.0;\n";
+print "UPDATE transitions SET RadTransProbabilityTransitionProbabilityA = NULL WHERE RadTransProbabilityTransitionProbabilityA < 0.0;\n";
 
 
 # Set the foreign key pointing from the states table into the species table.

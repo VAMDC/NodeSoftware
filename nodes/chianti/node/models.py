@@ -39,8 +39,8 @@ class Transitions(models.Model):
     atomsymbol = models.CharField(max_length=24, db_column='AtomSymbol', blank=True)
     finalstateindex = models.ForeignKey(States, related_name='+', db_column='chiantiradtransfinalstateindex')
     initialstateindex = models.ForeignKey(States, related_name='+', db_column='chiantiradtransinitialstateindex')
-    wavelength = models.FloatField(null=True, db_column='RadTransWavelength', blank=True)
-    wavelengthmethod = models.CharField(max_length=4, db_column='RadTransWavelengthMethod');
+    wavelengthexperimental = models.FloatField(null=True, db_column='wavelengthexperimental', blank=True)
+    wavelengththeoretical = models.FloatField(null=True, db_column='wavelengththeoretical', blank=True)
     weightedoscillatorstrength = models.FloatField(null=True, db_column='RadTransProbabilityWeightedOscillatorStrength', blank=True)
     probabilitya = models.FloatField(null=True, db_column='RadTransProbabilityTransitionProbabilityA', blank=True)
 

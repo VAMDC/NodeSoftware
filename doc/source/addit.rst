@@ -1,10 +1,139 @@
 .. _addit:
 
-Additional topics
-=============================================
+Miscellaneous
+=================
+
+There are a few more bits and pieces that are both good to know
+and maybe necessary for a particular node setup.
 
 
+.. _unitconv:
 
+Unit conversions for Restrictables
+---------------------------------------------
+
+It is possible in ``dictionaries.py`` to apply a function to the values that
+come in the WHERE-clause of a query together with the Restrictables::
+
+    from vamdctap.unitconv import *
+    RESTRICTABLES = {\
+    'RadTransWavelength':'wave',
+    'RadTransWavenumber':('wave',invcm2Angstr),
+
+Here we give a two-tuple as the right-hand-side of the Restrictable *RadTransWavenumber* where the first element is the name of the model field (as usual) and the second is the function that is to be applied.
+
+.. note::
+    The second part of the tuple needs to be the function itself, not its name as a string. This allows you to write custom functions in the same file, just above where you use them.
+
+.. note::
+    The common functions for unit conversion reside in ``vamdctap/unitconv.py``. This set is far from complete and you are welcome to ask for additions that you need.
+
+.. _specialrestr:
+
+Treating a Restrictable as a special case
+---------------------------------------------
+
+Perhaps a unit conversion (see above) is not enough to handle a Restrictable, e. g. because you do not have the quantity available in your database but know it anyway. Suppose a database has information on one atom only, say iron. For the output one would simply hardcode the information on iron in the Returnables as constant strings. For the query on the other hand, you would like to support AtomSymbol but have no field in your database to check against - after all it would be useles to have a database column that is the same everywhere.
+
+The solution here is to manipulate the set of restrictions by hand instead of letting *sql2Q()* handle it automatically. *sql2Q()* is a shorthand function that does these steps after each other:
+
+1. Use *splitWhere(sql.where)* to split the WHERE statement in two:
+
+* a structure that represents the logical structure of the query.
+* a dictionary with numbers as keys and a list as values that each contain the Restrictable, the operator and the arument(s).
+* For example, the query *SELECT ALL WHERE RadTranswavelenth > 3000 and RadTranswavelenth < 3100 and (AtomSymbol = 'Fe' OR AtomSymbol = 'Mg')* would return the two variables like 
+
+ * *['r0', 'and', 'r1', 'and', '(', 'r2', 'or', 'r3', ')']*
+ * *{'1': [u'RadTranswavelength', '<', u'3100'], '0': [u'RadTranswavelength', '>', u'3000'], '3': [u'AtomSymbol', '=', u"'Mg'"], '2': [u'AtomSymbol', '=', u"'Fe'"]}*
+
+2. Go through the Restrictables and apply the unit conversion functions that were specified with the mechanism above.
+
+3. Make use of the information in ``dictionaries.py`` to rewrite the restrictions into the native format.
+
+4. Merge the individual restrictions together with their logic connection again and evaluate the whole shebang.
+
+So, in summary, the call *q=sql2Q(sql)* at the start of the query function can be replaced by::
+
+    logic,rs,count = splitWhere(sql.where)
+    rs = applyRestrictFus(rs)
+    qdict = restriction2Q(rs)
+    q = mergeQwithLogic(qdict,logic)
+
+Now, depending on what you want to do, you can manipulate the variables at any intermediate step. To continue the example, we insert the following right after the call to *splitWhere()*::
+
+    ids = [r for r in rs if rs[r][0]=='AtomSymbol'] # find the numbers where the Restrictable is AtomSymbol
+    for id in ids:
+        
+        
+    
+.. note::
+    We are aware that this is not very comfortable yet and are thinking of a better solution. Suggestions are welcome. :)
+
+.. _specialreturnable:
+
+Using a custom model method for filling a Returnable
+-----------------------------------------------------
+
+Sometimes it is necessary to do something with your data before returning them
+and then it is not possible to directly use the field name in the
+right-hand-side of the Returnable. Now remember that the string there simply
+gets evaluated and that your models can not only have fields but also custom
+methods. Therefore the easiest solution is to write a small method in your
+class that returns what you want, and then call this function though the
+returnable.
+
+For example, assume you for some reason have two energies for your states and want them both returned into the Returnable *AtomStateEnergy* which can handle vectors as input. Then, in your ``models.py``, you do::
+
+    class State(Model):
+        energy1 = FloatField()
+        energy2 = FloatField()
+
+        def bothenergies(self):
+            return [self.energy1, self.energy2]
+
+And correspondingly in your RETURNABLES in ``dictionaries.py``::
+
+    RETURNABLES = {\
+        ...
+        'AtomStateEnergy':'AtomState.bothenergies()',
+        }
+
+.. note::
+    Use this sparingly since it adds some overhead. For doing simple calculations like unit conversions it is usually better to do them once and for all in the database, instead of doing them for every query.
+
+.. _manualrequestables:
+
+Handling the Requestables better
+----------------------------------
+
+The XML generator is aware of the Requestables and it only returns the parts of the schema that are wanted. Therefore the nodes need in principle not care about this. However, there are two issues that can interfere:
+
+* If a node imposes volume limitations, this can lead to false results. For
+  example, when a client asks for "SELECT SPECIES" without any restriction and a
+  node's query function usually finds out the species for a set of transitions,
+  which gets truncated, then only the species for the first few transitions in
+  the database are returned.
+* Again taking "SELECT SPECIES" as example, this can lead to performance issues
+  if a node's query stategy is to impose the restrictions onto the most numerous
+  model fist, since this query then corresponds to selecting everything and
+  afterwards throwing everything away except the species information.
+
+The solution is to make the queryfunction aware of the Returnables. The are attached to the object **sql** that comes as input. For example, one can test if the setup of atomic states is needed like this::
+
+    needAtomStates = not sql.requestables or 'atomstates' in sql.requestables
+
+and then use the boolean variable **needAtomStates** to skip parts of the
+QuerySet building.  This test checks first, if we have requestables at
+all (otherwise "ALL" is default) and then whether 'atomstates' is one
+of them.
+
+.. note::
+    The query parser tries to be smart and adds the Requestables that are implied by another
+    one. For example it adds 'atomstates' and 'moleculestates' when the client asks for
+    'states'. Therefore it is enough to test for the most explicit one in the query functions.
+
+.. note::
+    The keywords in **sql.requestables** are all lower-case!
 
 .. _relatedname:
 
@@ -50,215 +179,19 @@ of `.XML()` which means that this needs to be coded as a function/method in
 your model, not as an attribute.
 
 
-.. _gitcollab:
+.. _moredjango:
 
-Collaborating with git and GitHub
------------------------------------
-
-Git is a decentralized version control system (http://git-scm.com/). This 
-means among other things that:
-
-* Each checked out copy of the code has the full version history.
-* There is no central repository, all repositories ("repos") are equal (but some *can* be made more equal than others, as we'll see below).
-* Commits happen locally into your working repo, no network connection needed.
-* Repos are updated and synced with each other by pushing and pulling commits back and forth between them. 
-* There are web-platforms that offer free web-repositories which
-  facilitates syncing and merging. We'll use *GitHub* (http://www.github.com/).
-
-The setup that we want looks like this:
-
-.. image:: gitcollab.png
-   :width: 300 px
-   :alt: The three repositories and their relation
-
-
-* The **local repository** (also known as your "working copy") is your own workspace. This is where you do
-  all your work. It offers you full local version control without
-  necessarily having to upload the changes anywhere. We'll get to how you create your
-  local repo in a minute.
-* Your **origin** is an online version of your repository, stored online
-  at GitHub. When you want to sync the two you need to *push* your
-  latest local changes to origin. Once online, others will also be able to see the changes. 
-* **Upstream** is a unique repository that serves as an online
-  code "central" managed by VAMDC. It too is hosted on
-  GitHub. Upstream serves as a convenient way to update your
-  distribution; you should regularly *pull* the latest changes into your
-  local repo to stay updated. Conversely, if you want your own changes
-  to be incoorperated into the central distribution you can send a
-  *pull request* to upstream. The relevant commit(s) in your **origin**
-  repo will be reviewed and will, if accepted, be merged into upstream
-  so that others will get the changes next time they do a pull.
-* You can certainly have **several local repositories**, e.g. one on your laptop, 
-  one on your desktop and one on the server where the node runs. You 
-  then use the online **origin** repository to keep them in sync. For example: You work 
-  from your laptop and commit your changes locally. You then push them to 
-  your origin repository. Next all you need to do is to tell your other local
-  repos to pull from origin and they will all be synced. 
-  
-Now enough with theory, let's do this in practice. To create your own 
-repositories (origin and local) do the following:
-
-* Go to http://github.com and make an account. This includes that you 
-  (create and) upload an ssh-key to be able to pull and push securely and 
-  without typing your password all the time. Simply follow the instructions
-  on GitHub.
-* Visit the repository at https://github.com/VAMDC/NodeSoftware and
-  klick "fork" in the upper right corner. This will make a copy of the
-  original repository under your account. This is your **origin** (see above).
-  For more information on forking, you can read http://help.github.com/forking/.
-* Github will give you instructions on how to *clone* your origin
-  to your own computer, thereby creating a local repo, your **local
-  repository**, aka your "working copy". 
-* You can repeat the cloning on as many machines as you see fit.
-* Tell your local repos where **upstream** is by running the following
-  command in each of them: *git remote add upstream git://github.com/VAMDC/NodeSoftware.git* 
-
-Now that you are all set, a typical working session may look like this::
-
-    $ cd $VAMDCROOT               # got to your local repo
-    $ git status                  # should tell you you have a clean tree and are on the branch "master"
-    $ git pull origin             # pull from your origin, in case you pushed things there from another of your local repos.
-    $ git pull upstream           # fetch the latest from upstream and merge it with your tree.
-    $ git log                     # read the commit log about what is new.
-    $ ....                    # edit your files
-    $ git status                  # review which files have changed
-    $ git diff                    # review details of your changes
-    $ git diff <filename>         # see canges in one file only
-    $ git add <filename>          # add a file to be commited with the next commit, e.g. a new file
-    $ git commit -a -m "message"  # commit all changed files. ALWAYS check the status before you use -a to prevent that you commit unwanted files.
-    $ git commit -m "message" <filenames>   # commit, but include only the named files in the commit    
-    $ ....                   # more edits, more commits. until, at the end of day:
-    $ git status                  # also tells you how many commits you are ahead of your origin
-    $ git push                    # push all commits to your origin, also the new ones that came from upstream.
-
-
-.. note::
-    There are several graphical user interfaces available for git that
-    will facilitate overview and some operations for the less 
-    command-line adept. Commonly used ones for Linux are *gitk* and *gitg*.
-    Good editors also integrate with git so that you can handle the 
-    version control from within the editor.
-
-After you pushed your work to your origin, you can go to the *GitHub* 
-wesite and send a *pull request* to the upstream repository, if you want 
-your changes to be propagated to everybody else. We will then look at 
-your commits and merge them.
-
-A few dos and don'ts that are worthwhile to keep in mind with git:
-
-* Do commit often. It goes instantly.
-* Pull and push less often, but often enough. You certainly want to pull 
-  from upstream before making changes, since you otherwise
-  might work on outdated versions of files which
-  will result in conflicts later. You also do no want to sit on your
-  local commits for too long but push them frequently instead.
-* Never pull into a dirty tree (i.e. one that has uncommitted changes). 
-  Commit first, then pull. Alternatively read *git help stash*.
-* Do *not* commit data files that you have put in your node directory.
-  (check ``git status`` on what will be committed before you use ``git commit -a``.)
-* *Git* trusts you know what you are doing. It will allow you to do stupid
-  things, too.
-* Don't panic. Yes, *git* may have a comparably steep learning curve, but it
-  is a powerful tool and all problems can be resolved.
-
-
-
-Situations that commonly arise and how to solve them
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**Merge conflicts.** When you pull from Upstream into your repo, other's 
-changes are merged with yours. It might however happen that someone else 
-has changed the same line in the same file as you have in onw of your 
-own commits, which results in a merge conflict. The pull commands warns 
-you about this and *git status* shows the file in question as "both 
-modified". The file itself contains both versions of the conflicting 
-lines, clearly marked. Edit the file so that only one version remains 
-and remove the markings. Then you simply commit the file (and push).
-
-**Undo a commit.** To undo a commit means exactly that, *not* that any 
-of the files change. For example, undoing the last commit leaves you 
-with as much uncommitted changes as you had before your last commit. 
-None of your edits is reversed. Undoing commits is practical e.g. when 
-you have committed too many things at once or unwanted files; or when 
-you want to split one commit into several. You undo a commit with *git 
-reset --soft <REF>* where <REF> is the commit that should be resetted to 
-(i.e. the next-to-last one, if you want to undo your last commit). Common values for <REF> include:
-
-* *HEAD^* - this is the next-to-last
-* *HEAD^^* - the one before the next-to-last.
-* *HEAD~5* - five commits back
-* *111521cb9d3771e636f5f053d3d1048aa7c8852f* - each commit has a long 
-  hash number that uniquely identifies it. They can be seen in *git log* 
-  and you can give the hash number of the commit that you want to reset to 
-  to *git reset*.
-
-**Revert to an earlier version.** If you want to *throw away* your edits 
-since a certain commit, you use *git reset --hard*. For example, to 
-revert all files to the state that they were in at the last commit (thow 
-away uncommitted changes), you do *git reset --hard HEAD*. Similarly to 
-the soft reset, you can also specify earlier commits that you want to 
-reset to.
-
-**Look at an earlier version.** You can check out any earlier version of 
-any file at any time. For example, *git checkout "master@{1 month ago}" 
-<filename>"* will give you the version of the file <filename> from a 
-month ago. To go back to the latest, you do *git checkout master 
-<filename>* ("master" is the name of the default branch where all you 
-commits are). Note that the last command can also be used to thow away 
-uncommitted changes in a specific file - a more gentle way than the 
-reset described above.
-
-You can also skip the <filename> to check out an earlier version of the 
-whole repo (*git checkout master* brings you back to the latest). 
-Instead of "master@{1 month ago}" you can use any of the <REF> mentioned 
-above, or have a look at http://book.git-scm.com/4_git_treeishes.html.
-
-**Make a branch**. Read *git help branch* for this.
-
-
-Commit guidelines
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**One thing at a time.** Please commit often and only include things in 
-one commit that logically belong together. For example, changes to your 
-node and changes to the common library should not be in the same commit 
-but committed separately.
-
-**Meaningful commit messages.** This goes together with the previous: If 
-you cannot meaningfully summarize the changes you want to commit in onw 
-or two lines, your commit is likely to be too large. Try to make the log 
-messages meaningful!
-
-**Good code.** Please try to avoid spaghetti-code, write modular, and follow http://www.python.org/dev/peps/pep-0008/
-
-**Pull first.** Before you send a pull request, please make sure that you 
-have pulled from upstream. This will make the merging of your code 
-easier, since it will be you who needs to resolve potential conflicts 
-before you push to your origin again.
-
-The admin of *upstream* (aka the writer of these lines) might be bribed 
-and/or convinced to turn a blind eye on violations against any of the above 
-points, but he will be very happy if you try to follow them.
-
-
-Adding more views or apps to your node
+Making more use of Django
 ------------------------------------------
 
-tbw
+Django offers a plethora of features that we do not use for the purpose of
+a bare VAMDC node but that might be useful for adding custom funcitonality.
+For example you could:
 
+* Use the included **admin-interface** to browse and manipulate the content of your database.
+* Add a custom query form that is suited specifically for the most common use case of your data.
+* Add a web-browsable view of your data.
 
-The Django admin interface
----------------------------
+For more information on all this have a look into Django's excellect documentation at https://docs.djangoproject.com/
 
-tbw
-
-Handling advanced queries
-----------------------------
-
-tbw
-
-Using a custom model method for filling a Returnable
------------------------------------------------------
-
-tbw
-
+For extending your node beyond the VAMDC-TAP interface, you would normally add a second *app* to your node directory, besides the existing one called *node*. Then you simply tell your ``urls.py`` to serve the new app at a certain URL.

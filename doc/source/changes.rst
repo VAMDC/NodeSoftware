@@ -3,11 +3,49 @@
 Changelog
 =================
 
-.. _note:
-
+.. note::
     This chapter will be difficult to understand if you have not read the whole
-    document before since terms are used that are introduced later. It is
-    meant for returning readers, especially the maintainer of VAMDC nodes.
+    document before since terms are used that are introduced later. It is meant
+    for returning readers, especially the maintainer of VAMDC nodes.
+
+September 30, 2011
+---------------------
+
+**Version**. This is for NodeSoftware 11.10beta, which has most of the changes
+for the upcoming 11.10 standards release and is aleady more robust than
+previous releases. All nodes are encouraged to upgrade.
+
+**Query functions**. The standard way of starting a node's query function has
+changed: the function *where2q()* is superseded by *sql2Q()*. **This means you
+should change this in your code!** See the updated example in :ref:`queryfu`.
+
+**Requestables**. Queries to the nodes can now ask to return only a certain
+part of the XML document, for example "SELECT Spiecies WHERE ..." instead of
+"SELECT ALL WHERE ...". This works behind the scenes, but a node's query
+function might want to skip some of the work, see :ref:`manualrequestables`
+
+**Returnables**. Many Returnables (e.g. all that correspond to a DataType in
+the XML schema) now can receive vectors which allows to give several values of
+the same quantity. See :ref:`specialreturnable` on how to do this.
+
+**Unit conversions**. Each Restrictable has a default unit in which the queries
+are formulated. If a node's database has the quantity in a different unit, the
+value in the query needs to be converted to the internal unit. There is now a
+comfortable mechanism to do this, see :ref:`unitconv`
+
+**Special Restrictables**. If a node needs to handle one or more Restrictables
+as special cases, for example because the corresponding value is not in the
+database, this is certainly possible. See :ref:`specialrestr`
+
+**Dictionaries**. While we're at Restrictables, it is good to keep in mind that
+a node is the more useful the more Restrictables it supports, simply because it
+will be able to answer a higer fraction of queries. All nodes that have data
+about radiative transitions are **highly encouraged** to support
+RadTransWavelength, even if they internally keep frequency or wavenumber. Some
+clients, like the current portal, made the choice to always use wavelength.
+
+The section on :ref:`logging` has been extended as well and a few notes about
+:ref:`moredjango` were added.
 
 June 15, 2011
 ------------------
@@ -15,7 +53,8 @@ June 15, 2011
 **Version**. This documentation has been updated to match the release of the
 NodeSoftware 11.5r1 which implements the VAMDC Standards release 11.5.
 NodeSoftware 11.5r1 supersedes and obsoletes version 11.5 (released May 26) and
-all nodes are encouraged to upgrade. This is mainly a bug-fix release and upgraded nodes will only have to do the two small changes mentioned below.
+all nodes are encouraged to upgrade. This is mainly a bug-fix release and
+upgraded nodes will only have to do the two small changes mentioned below.
 
 **Example Queries**. The way to define example queries in each node's
 ``settings.py`` has changed in order to allow several of them. They will be used
@@ -31,7 +70,8 @@ registry. New example::
 ``dictionaries.py`` or ``queryfunc.py`` is not longer necessary and should be
 removed.
 
-**Limitations**. A chapter on the limitations of the NodeSoftware has been addedd to the documentation: :ref:`limitations`
+**Limitations**. A chapter on the limitations of the NodeSoftware has been
+addedd to the documentation: :ref:`limitations`
 
 **Dictionary**. The NodeSoftware makes use of dictionary keywords that are not
 in the VAMDC Standards 11.5 but will be in the next Standards release (11.7).
@@ -39,33 +79,59 @@ If you want to use the NodeSoftware's XML-generator for solids, particles or
 molecular quantum numbers, please see http://dictionary.vamdc.org/dict/ for the
 new keywords.
 
-**Registration**. The NodeSoftware now automatically reports its own version and the standards version it implements at *tap/capabilities*. You might want to make the VAMDC Registry re-read this information (click "Edit metadata" and "Update the registry entry").
+**Registration**. The NodeSoftware now automatically reports its own version
+and the standards version it implements at *tap/capabilities*. You might want
+to make the VAMDC Registry re-read this information (click "Edit metadata" and
+"Update the registry entry").
 
-**Virtual Machine**. The virutal machine has been updated to include Django 1.3 and NodeSoftware 11.5r1.
+**Virtual Machine**. The virutal machine has been updated to include Django 1.3
+and NodeSoftware 11.5r1.
 
 May 26, 2011
 ------------------
 
-**Version numbers**. As of now, we introduce version numbers for both the standards (XSAMS, VAMDC-TAP, see separate documentation) and for their implementation in the NodeSoftware which is the concern of this document. Version numbers follow the format YY.MMrX where YY is for the year, MM the month, and X an increasing number for bugfix revisions that do not affect the usage of the NodeSoftware.
+**Version numbers**. As of now, we introduce version numbers for both the
+standards (XSAMS, VAMDC-TAP, see separate documentation) and for their
+implementation in the NodeSoftware which is the concern of this document.
+Version numbers follow the format YY.MMrX where YY is for the year, MM the
+month, and X an increasing number for bugfix revisions that do not affect the
+usage of the NodeSoftware.
 
-The most important changes from the perspective of a node-operator who wants to upgrade to this `11.5` release are:
+The most important changes from the perspective of a node-operator who wants to
+upgrade to this `11.5` release are:
 
-**Update to Django 1.3**. The NodeSoftware now requires Django version 1.3 and node operators probably need to upgrade their installation of Django. See :ref:`upgrading`.
+**Update to Django 1.3**. The NodeSoftware now requires Django version 1.3 and
+node operators probably need to upgrade their installation of Django. See
+:ref:`upgrading`.
 
-**Email**. Make sure you have set a correct email address in ``settings.py``. It will be used to report critical errors to, including reports on what went wrong.
+**Email**. Make sure you have set a correct email address in ``settings.py``.
+It will be used to report critical errors to, including reports on what went
+wrong.
 
-**Logging**. The capabilities to log debug and error-messages have been extended. See :ref:`logging`. 
+**Logging**. The capabilities to log debug and error-messages have been
+extended. See :ref:`logging`. 
 
-**Example query**. As soon as a node becomes operational, please add an example query to its ``settings.py``. It will be used for automated testing. Example::
+**Example query**. As soon as a node becomes operational, please add an example
+query to its ``settings.py``. It will be used for automated testing. Example::
 
     EXAMPLE_QUERY = 'SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4005'
 
-**Volume estimate**. In order to allow the portal (and other queries to your node) to find out how big the resulting XML-output for a particular query will be, nodes should estimate this and relay it via the new HTTP-header `VAMDC-APPROX-SIZE`. The easiest way to do this is to run a test query, determine the outputs size (in MB) and divide it by the number of items (e.g. transitions, if these dominate your results). This number can then be used to estimate the size of any query, see the updated example at :ref:`queryfu`.
+**Volume estimate**. In order to allow the portal (and other queries to your
+node) to find out how big the resulting XML-output for a particular query will
+be, nodes should estimate this and relay it via the new HTTP-header
+`VAMDC-APPROX-SIZE`. The easiest way to do this is to run a test query,
+determine the outputs size (in MB) and divide it by the number of items (e.g.
+transitions, if these dominate your results). This number can then be used to
+estimate the size of any query, see the updated example at :ref:`queryfu`.
 
-**Other Header changes**. The header `VAMDC-COUNT-SPECIES` has been replaced by `VAMDC-COUNT-ATOMS` and `VAMDC-COUNT-MOLECULES`. See the standards documentation for the full definition.
+**Other Header changes**. The header `VAMDC-COUNT-SPECIES` has been replaced by
+`VAMDC-COUNT-ATOMS` and `VAMDC-COUNT-MOLECULES`. See the standards
+documentation for the full definition.
 
-**Error handling in urls.py**. The NodeSoftware has become more error-safe
-and tries to handle unexected input and "crashes" more gracefully. You need not care about this, excpet making sure that the following two lines are present at the end of the file ``urls.py`` in your node's main directory::
+**Error handling in urls.py**. The NodeSoftware has become more error-safe and
+tries to handle unexected input and "crashes" more gracefully. You need not
+care about this, excpet making sure that the following two lines are present at
+the end of the file ``urls.py`` in your node's main directory::
 
     handler500 = 'vamdctap.views.tapServerError'
     handler404 = 'vamdctap.views.tapNotFoundError'
