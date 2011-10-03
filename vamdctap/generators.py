@@ -474,7 +474,7 @@ def makeShellType(tag, keyword, G):
     sid = G("%sID" % keyword)
     string = "<%s" % tag
     if sid:
-        string += " shellid=%s-%s" % (NODEID, sid)
+        string += ' shellid"=%s-%s"' % (NODEID, sid)
     string += ">"
     string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % G("%sPrincipalQN" % keyword)
 
@@ -538,7 +538,7 @@ def makeAtomComponent(Atom, G):
         if hasattr(Atom, "ShellPair"):
             for AtomShellPair in makeiter(Atom.ShellPairs):
                 GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
-                string += "<ShellPair shellPairID=%s-%s>" % (NODEID, GS("AtomStateShellPairID"))
+                string += '<ShellPair shellPairID="%s-%s">' % (NODEID, GS("AtomStateShellPairID"))
                 string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
                 string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
                 string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
@@ -603,7 +603,7 @@ def XsamsAtoms(Atoms):
             G = lambda name: GetValue(name, AtomState=AtomState)
             yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
             yield makeSourceRefs(G('AtomStateRef'))
-            yield makeOptionalTag('Description','AtomStateDescription',G)            
+            yield makeOptionalTag('Description','AtomStateDescription',G)
             yield '<AtomicNumericalData>'
             yield makeDataType('StateEnergy', 'AtomStateEnergy', G)
             yield makeDataType('IonizationEnergy', 'AtomStateIonizationEnergy', G)
@@ -817,28 +817,28 @@ def XsamsMSBuild(MoleculeState):
     if G("MoleculeStateLifeTime"):
         # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
         # the decay attr is a string, either: 'total', 'totalRadiative' or 'totalNonRadiative'
-        yield makeDataType('LifeTime','MoleculeStateLifeTime', G, extraAttrs={'decay':'MoleculeStateLifeTimeDecay'}) 
+        yield makeDataType('LifeTime','MoleculeStateLifeTime', G, extraAttrs={'decay':'MoleculeStateLifeTimeDecay'})
     if hasattr(MoleculeState, "Parameters"):
         for Parameter in makeiter(MoleculeState.Parameters):
             cont, ret = checkXML(Parameter)
             if cont:
                 yield ret
-                continue 
+                continue
             GP = lambda name: GetValue(name, Parameter=Parameter)
             yield makePrimaryType("Parameters","MoleculeStateParameters", GP)
             if GP("MoleculeStateParametersValueData"):
-                yield makeDataType("ValueData", "MoleculeStateParametersValueData", GP)            
+                yield makeDataType("ValueData", "MoleculeStateParametersValueData", GP)
             if GP("MoleculeStateParametersVectorData"):
                 yield makePrimaryType("VectorData", "MoleculeStateParametersVectorData", GP, extraAttr={"units":"MoleculeStateParametersVectorUnits"})
                 if hasattr(Parameter, "Vector"):
-                    for VectorValue in makeiter(Parameter.Vector):                                           
+                    for VectorValue in makeiter(Parameter.Vector):
                         GPV = lambda name: GetValue(name, VectorValue)
                         yield makePrimaryType("Vector", "MoleculeStateParameterVector", GPV,
                                               extraAttr={"ref":"MoleculeStateParameterVectorRef",
                                                          "x3":"MoleculeStateParameterVectorX3",
                                                          "y3":"MoleculeStateParameterVectorY3",
-                                                         "z3":"MoleculeStateParameterVectorZ3"})                                                
-                        yield "</Vector>"                
+                                                         "z3":"MoleculeStateParameterVectorZ3"})
+                        yield "</Vector>"
                 yield "</VectorData>"
             if GP("MoleculeStateParametersMatrixData"):
                 yield makePrimaryType("MatrixData", "MoleculeStateParametersMatrixData", GP,
