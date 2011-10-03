@@ -997,7 +997,7 @@ def XsamsRadTranShifting(RadTran, G):
     Shifting type
     """
     dic = {}
-    nam = G("RadtransShiftingType")
+    nam = G("RadtransShiftingName")
     eref = G("RadtransShiftingEnv")
     if nam:
         dic["name"] = nam
