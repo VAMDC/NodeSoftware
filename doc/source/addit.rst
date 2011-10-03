@@ -63,7 +63,7 @@ Now, depending on what you want to do, you can manipulate the variables at any i
 
     ids = [r for r in rs if rs[r][0]=='AtomSymbol'] # find the numbers where the Restrictable is AtomSymbol
     for id in ids:
-        
+        #to be continued.        
         
     
 .. note::
@@ -178,6 +178,24 @@ values from the Retunable for the current block of XSAMS. Note the *execution*
 of `.XML()` which means that this needs to be coded as a function/method in
 your model, not as an attribute.
 
+
+
+.. _returnresult:
+
+How to skip the XSAMS generator and return a custom format
+----------------------------------------------------------
+
+Currently, only queries with *FORMAT=XSAMS* are officially supported. Since
+some nodes wanted to be able to return other formats (that are only useful for
+their community, for example to inculde binary data like an image of a
+molecule) there is a mechanism to to do this. 
+
+Whenever *FORMAT* is something else than *XSAMS*, the NodeSoftware checks whether there is a function called *returnResults()* in a node's ``queryfunc.py``. If so, it completely hands the responsibility to assemble the output to this function.
+
+.. note::
+    This means that you have to return a HttpResponse object from it and
+    know a little more about Django views. In addition you are on your own
+    to assembe your custom data format.
 
 .. _moredjango:
 

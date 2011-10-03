@@ -33,10 +33,6 @@ are formulated. If a node's database has the quantity in a different unit, the
 value in the query needs to be converted to the internal unit. There is now a
 comfortable mechanism to do this, see :ref:`unitconv`
 
-**Special Restrictables**. If a node needs to handle one or more Restrictables
-as special cases, for example because the corresponding value is not in the
-database, this is certainly possible. See :ref:`specialrestr`
-
 **Dictionaries**. While we're at Restrictables, it is good to keep in mind that
 a node is the more useful the more Restrictables it supports, simply because it
 will be able to answer a higer fraction of queries. All nodes that have data
@@ -44,8 +40,26 @@ about radiative transitions are **highly encouraged** to support
 RadTransWavelength, even if they internally keep frequency or wavenumber. Some
 clients, like the current portal, made the choice to always use wavelength.
 
+**Restrictable prefixes**. Apart from the Requestables (see above) the second
+major addition in the query language VSS2 is that Restrictables can have
+prefixes, separated by a dot from the usual keyword. For example *SELECT *
+WHERE Upper.AtomStateEnergy > 13*. See the standard documentation for all
+available prefixes. Currently the easiest way for a node to support these is to
+treat them as separate Restrictables in ``dictionaries.py``. This becomes
+tricky for collisions where the prefixes allow to group Restrictables to belong
+to reactants and/or products. Since this very much depends on the individual
+node, there are currently no specific tools for this, but we are certainly open
+for ideas on how to solve this.
+
+**Special Restrictables**. If a node needs to handle one or more Restrictables
+as special cases, for example because the corresponding value is not in the
+database, this is certainly possible. See :ref:`specialrestr`
+
+**Custom return formats**. This goes beyong the VAMDC standard but if you are interested to return other formats from your node, you can have a look at :ref:`returnresult`.
+
 The section on :ref:`logging` has been extended as well and a few notes about
 :ref:`moredjango` were added.
+
 
 June 15, 2011
 ------------------
