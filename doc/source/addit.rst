@@ -69,6 +69,54 @@ Now, depending on what you want to do, you can manipulate the variables at any i
 .. note::
     We are aware that this is not very comfortable yet and are thinking of a better solution. Suggestions are welcome. :)
 
+
+
+.. _fillingids:
+
+Filling the IDs
+---------------------
+
+As you know, XSAMS is a hierarchical structure where certain parts reference
+other parts. For example, each (molecular or atomic) state has an ID, which can
+be used by a radiative transition to point to its initial and final states.
+Similarly, all species, bibliographic sources etc. have an ID that other parts
+use to point to them.
+
+Here is a list of the most important Returnable names for IDs:
+
+* **AtomSpeciesID** uniquely identifies an atomic spieces. Different isotopes and ions are considered different species.
+* **AtomStateID** is the ID for the states within an atomic species.
+* **CrossSectionID** identifies radiative crosssections.
+* **EnvironmentID** identifies environments.
+* **FunctionID** numbers functions.
+* **MethodID** is for the defined methods.
+* **MoleculeSpeciesID** identifies molecular species. As for atoms, different isotopologues are considered to be separate species.
+* **MoleculeStateID** 
+* **ParticleSpeciesID** identifies particles.
+* **SolidSpeciesID** identifies solids.
+* **SourceID** identifies the bibliographical sources and is used in many places of the schema to connect data to its origin.
+
+**NodeID** is "special" in the sense that it is not formally part of the
+schema. The XML generator uses it to make all the other IDs unique within
+VAMDC. Say, for example that you (in ``dictionaries.py``) set your NodeID to
+"xyz" and fill the SourceID with numbers from your database. Then the XML
+output will look something like *<Source sourceID="Bxyz-1">* for your first
+source. This means that the generator takes care of adding the prefix "B" as
+mandated for sourceIDs by the schema, plus it inserts the NodeID to prevent
+clashed with IDs from other VAMDC nodes.
+
+**IDs are mandatory** which means that you *have* to fill the Returnables from
+the list above, if you use the corresponding part of the schema.
+
+Ideally the node's database layout roughly matches the XSAMS structure which
+means for example that you have separate tables for the atoms/molecules and
+their states. The linking indexes between the tables (usually an integer) are
+then directly suited to be used as the IDs above because the generator formats it as described.
+
+In order to do this, it is good to be aware of the following Djangoism: Consider the example data model from :ref:`here <thedatamodel>` and that *s* is an instance of the *State* model. Then *s.species* is, contrary to non-ForeignKey fields, not the key value of the corresponding spiecies, but the actual instance of the species model.
+
+
+
 .. _specialreturnable:
 
 Using a custom model method for filling a Returnable

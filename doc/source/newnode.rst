@@ -83,6 +83,9 @@ following:
 
 all of which will be explained in detail in the following.
 
+
+.. _thedatamodel:
+
 The data model and the database
 ---------------------------------
 
