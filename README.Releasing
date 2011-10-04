@@ -18,6 +18,7 @@ To do:
 * make the tag
 * push the tag
 * pull and rebuild docs on http://vamdc.tmy.se/
+* update the virtual machine and upload new image
 * notify vamdc.eu/org that they should grab the tar-ball
   from the tag at GitHub and put it on the web. And to
   update their build of the docs.

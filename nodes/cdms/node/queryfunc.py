@@ -102,7 +102,7 @@ def attach_partionfunc(molecules):
         molecule.partionfuncT = []
         molecule.partionfuncQ = []
         
-        pfs = Partitionfunctions.objects.filter(eid = molecule.id)
+        pfs = Partitionfunctions.objects.filter(eid = molecule.id, mid__isnull=False)
         
         temp=pfs.values_list('temperature',flat=True)
         pf = pfs.values_list('partitionfunc',flat=True)

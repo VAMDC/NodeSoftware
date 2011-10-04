@@ -6,8 +6,8 @@ class Species(Model):
     name = CharField(max_length=10, db_index=True)
     ion = PositiveSmallIntegerField(db_index=True)
     inchi = CharField(max_length=32, db_index=True)
-    inchikey = CharField(max_length=28, db_index=True)    
-    mass = DecimalField(max_digits=8, decimal_places=5, db_index=True)    
+    inchikey = CharField(max_length=28, db_index=True)
+    mass = DecimalField(max_digits=8, decimal_places=5, db_index=True)
     massno = PositiveSmallIntegerField(null=True, db_index=True)
     ionen = DecimalField(max_digits=10, decimal_places=3, null=True)
     solariso = DecimalField(max_digits=6, decimal_places=4, null=True)
@@ -37,7 +37,7 @@ class SpeciesComp(Model):
         db_table = u'species_components'
 
 class Reference(Model):
-    id = CharField(max_length=64, primary_key=True, db_index=True)
+    id = CharField(max_length=7, primary_key=True, db_index=True)
     bibtex = TextField(null=True)
 
     def XML(self):
@@ -92,16 +92,16 @@ class State(Model):
 
     energy = DecimalField(max_digits=15, decimal_places=4,null=True, db_index=True)
     lande = DecimalField(max_digits=6, decimal_places=2,null=True)
-    coupling = CharField(max_length=2, null=True)
-    term = CharField(max_length=56, null=True)
+    #coupling = CharField(max_length=2, null=True)
+    #term = CharField(max_length=56, null=True)
 
     energy_ref = ForeignKey(Reference, related_name='isenergyref_state', db_index=False)
     lande_ref = ForeignKey(Reference, related_name='islanderef_state', db_index=False)
     level_ref = ForeignKey(Reference, related_name='islevelref_state', db_index=False)
 
-    energy_linelist = ForeignKey(LineList, related_name='isenergylinelist_state', db_index=False)
-    lande_linelist = ForeignKey(LineList, related_name='islandelinelist_state', db_index=False)
-    level_linelist = ForeignKey(LineList, related_name='islevellinelist_state', db_index=False)
+    #energy_linelist = ForeignKey(LineList, related_name='isenergylinelist_state', db_index=False)
+    #lande_linelist = ForeignKey(LineList, related_name='islandelinelist_state', db_index=False)
+    #level_linelist = ForeignKey(LineList, related_name='islevellinelist_state', db_index=False)
 
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True)
     l = PositiveSmallIntegerField(db_column=u'L', null=True)
@@ -112,10 +112,10 @@ class State(Model):
     k = DecimalField(max_digits=3, decimal_places=1,db_column=u'K', null=True)
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True)
-    sn = IntegerField(null=True)
+    sn = PositiveSmallIntegerField(null=True)
 
-    transition_type = CharField(max_length=2, null=True)
-    autoionized = NullBooleanField(default=False)
+    #transition_type = CharField(max_length=2, null=True)
+    #autoionized = NullBooleanField(default=False)
 
     def j1j2(self):
         if self.j1 and self.j2:
@@ -138,22 +138,20 @@ class Transition(Model):
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True, db_index=False)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, db_index=False)
 
-    ritzwave = DecimalField(max_digits=20, decimal_places=8)
+    #ritzwave = DecimalField(max_digits=20, decimal_places=8)
     wave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
 
     species = ForeignKey(Species, db_index=True)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
-    # the combined lande factor can be reconstructed from upper/lower state anyway
-    #landeff = DecimalField(max_digits=6, decimal_places=2,null=True)
     gammarad = DecimalField(max_digits=6, decimal_places=2,null=True)
     gammastark = DecimalField(max_digits=7, decimal_places=3,null=True)
     gammawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
-    sigmawaals = IntegerField(null=True)
+    sigmawaals = PositiveSmallIntegerField(null=True)
     alphawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
-    accur = CharField(max_length=11,null=True)
-    comment = CharField(max_length=128, null=True)
+    #accur = CharField(max_length=11,null=True)
+    #comment = CharField(max_length=128, null=True)
 
-    srctag = ForeignKey(Reference, db_index=False)
+    #srctag = ForeignKey(Reference, db_index=False)
 
     wave_ref = ForeignKey(Reference, related_name='iswaveref_trans', db_index=False)
     loggf_ref = ForeignKey(Reference, related_name='isloggfref_trans', db_index=False)
@@ -161,11 +159,11 @@ class Transition(Model):
     gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans', db_index=False)
     waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans', db_index=False)
 
-    wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False)
-    loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
-    gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans', db_index=False)
-    gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
-    waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans', db_index=False)
+    #wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False)
+    #loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
+    #gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans', db_index=False)
+    #gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
+    #waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans', db_index=False)
 
     obstype = PositiveSmallIntegerField(null=True, db_index=True) # this is the obstype of the wave_linelist, created in post-processing.
 
@@ -173,13 +171,6 @@ class Transition(Model):
         if self.gammawaals: return self.gammawaals
         elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
         else: return None
-
-    #def getRefs(self,which):
-    #    try:
-    #        id = eval('self.'+which+'_ref_id')
-    #        return refcache[id]
-    #    except:
-    #        return None
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.wave)
