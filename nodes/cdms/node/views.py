@@ -152,9 +152,9 @@ def showResults(request):
 
     if postvars.url:
         if  postvars.format=='xsams':
-            result = applyStylesheet(postvars.url, xsl = None)
+            result = applyStylesheet(postvars.url, xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt')
         elif  postvars.format=='rad3d':
-            result = "<pre>" + str(applyStylesheet(postvars.url, xsl = "/var/www/vamdcdev/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
+            result = "<pre>" + str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + "/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
         elif postvars.format=='png':
             result = "<img class='full' width='100%' src="+postvars.url+" alt='Stick Spectrum'>"
         else:
