@@ -534,7 +534,7 @@ def makeAtomComponent(Atom, G):
     string += makeTermType("Term", "AtomStateTerm", G)
     mixCoe = G("AtomStateMixingCoeff")
     if mixCoe:
-        string += '<MixingCoefficient mixingclass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
+        string += '<MixingCoefficient mixingClass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
     coms = G("AtomStateComponentComment")
     if coms:
         string += "<Comments>%s</Comments>" % coms
