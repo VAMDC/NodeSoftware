@@ -225,8 +225,34 @@ class TransitionsCalc( Model):
      lowerstateref =  ForeignKey(States, related_name='lowerstate',
                                 db_column='P_Low_EGY_ID')
 
+#     frequencyArray        = []
+     
      def __unicode__(self):
         return u'ID:%s Tag:%s Freq: %s'%(self.id,self.speciestag,self.frequency)
+
+#     def get_exp_transitions(self):
+#          exptranss = TransitionsExp.objects.filter(species=self.species,
+#                                                    qnup1=self.qnup1,
+#                                                    qnlow1=self.qnlow1,
+#                                                    qnup2=self.qnup2,
+#                                                    qnlow2=self.qnlow2,
+#                                                    qnup3=self.qnup3,
+#                                                    qnlow4=self.qnlow4,
+#                                                    qnup5=self.qnup5,
+#                                                    qnlow6=self.qnlow6)
+#          freqs=[]
+#          for trans in exptranss:
+#               freqs.append(trans.frequency)
+
+#          self.frequencyArray = freqs
+#          return freqs
+
+
+#     def __init__(self):
+#          self.frequencyArray = [12345,2345]
+#          
+#     frequencyArray = get_exp_transitions() #[12345,23456]
+        
      class Meta:
         db_table = u'Predictions'
         
@@ -402,7 +428,8 @@ class SourcesIDRefs( Model):
      rId   =  IntegerField(null=True, db_column='RL_R_ID')
      eId   =  IntegerField(null=True, db_column='RL_E_ID')
      datId =  IntegerField(null=True, db_column='RL_DAT_ID', blank=True)
-     fId   =  IntegerField(null=True, db_column='RL_F_ID', blank=True)
+     fId   =  ForeignKey(TransitionsExp, null=True, db_column='RL_F_ID', related_name='sources', blank=True)
+#     fId   =  IntegerField(null=True, db_column='RL_F_ID', blank=True)
      class Meta:
           db_table = u'ReferenceList'
 
