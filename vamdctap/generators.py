@@ -885,7 +885,7 @@ def XsamsSolids(Solids):
             yield ret
             continue
         G = lambda name: GetValue(name, Solid=Solid)
-        makePrimaryType("Solid", "Solid", G, extraAttr={"stateID":"S%s-%s" % (NODEID, G("SolidStateID"))})
+        makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
         if hasattr(Solid, "Layers"):
             for Layer in makeiter(Solid.Layers):
                 GL = lambda name: GetValue(name, Layer=Layer)
@@ -923,7 +923,7 @@ def XsamsParticles(Particles):
             yield ret
             continue
         G = lambda name: GetValue(name, Particle=Particle)
-        yield """<Particle stateID="S%s-%s" name="%s">""" % (G('NodeID'), G('ParticleStateID'), G('ParticleName'))
+        yield """<Particle speciesID="S%s-%s" name="%s">""" % (G('NodeID'), G('ParticleSpeciesID'), G('ParticleName'))
         yield "<ParticleProperties>"
         yield "<ParticleCharge>%s</ParticleCharge>" % G("ParticleCharge")
         yield makeDataType("ParticleMass", "ParticleMass", G)
