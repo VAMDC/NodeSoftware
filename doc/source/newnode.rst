@@ -548,7 +548,7 @@ Continuing our example from above, where the State model has a field called
 your model, but the *loop variable* inside the generator as it is listed in the
 second (or forth, in the case of an inner loop) column of the table above.
 
-There is only one keyword that you must fill, all the others depend on your
+There is only one keyword that you **must** fill, all the others depend on your
 data. The obligatory one is `NodeID` which you should set to a short string
 that is unique to your node. It will be used in the internal reference keys of
 an XSAMS document. By including the NodeID, we make these keys globally unique
@@ -581,7 +581,7 @@ with::
 $ ./manage.py runserver
 
 This will use port 8000 at your local machine which means that you 
-should be able to browse to http://127.0.0.1:8000/tap/availability/ and 
+should be able to browse to http://127.0.0.1:8000/tap/availability and 
 hopefully see a positive status message.
 
 You should also be able to run queries by accessing URLS like::
@@ -595,9 +595,13 @@ replacing the last part by whatever restriction makes sense for your data set.
 	similar. Web browsers usually do that for you. To also see
 	the statistics headers, you can use `wget -S -O output.xml "<URL>"`.
 
-A more extensive test framework is in the making and will be documented 
-here soon. In any case you should run test queries to your node and make 
-sure that the output in terms of volume and values matches your 
+You should run several different test queries to your node, using all the
+Restrictables that you defined. Make sure that the output values matches your
 expectations.
 
-Once your node does what it should with the test server, you can start thinking about :ref:`deploying it <deploy>`.
+There is a very convenient software called **TAPvalidator** (see
+http://www.vamdc.org/software) which can be used to query a node, browse the
+output and check that it is valid with respect to the xsams standard.
+
+Once your node does what it should do with the test server, you can start
+thinking about :ref:`deploying it <deploy>`.

@@ -55,10 +55,17 @@ for ideas on how to solve this.
 as special cases, for example because the corresponding value is not in the
 database, this is certainly possible. See :ref:`specialrestr`
 
-**Custom return formats**. This goes beyong the VAMDC standard but if you are interested to return other formats from your node, you can have a look at :ref:`returnresult`.
+**Custom return formats**. This goes beyong the VAMDC standard but if you are
+interested to return other formats from your node, you can have a look at
+:ref:`returnresult`.
 
 The section on :ref:`logging` has been extended as well and a few notes about
 :ref:`moredjango` were added.
+
+Lastly, since we often are asked how to test a node, we'd like to mention that
+is a very convenient software called **TAPvalidator** (see
+http://www.vamdc.org/software) which can be used to query a node, browse the
+output and check that it is valid with respect to the xsams standard.
 
 
 June 15, 2011
