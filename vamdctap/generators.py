@@ -79,7 +79,7 @@ def GetValue(name, **kwargs):
     #log.debug("getvalue, name : "+name)
     try:
         name = RETURNABLES[name]
-    except Exception as e:
+    except Exception, e:
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
@@ -99,7 +99,7 @@ def GetValue(name, **kwargs):
         #log.debug(" try eval : " + name)
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
-    except Exception as e:
+    except Exception, e:
          # this catches the case where the dict-value is a string or mistyped.
         #log.debug('Exception in generators.py: GetValue()')
         value = name
