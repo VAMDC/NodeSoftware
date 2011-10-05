@@ -46,6 +46,7 @@ RETURNABLES = {\
 'AtomStateMixingCoeff':'AtomState.Component.mixingcoefficient',
 'AtomStateMixingCoeffClass' : 'AtomState.Component.mixingclass.value',
 'AtomStateLifeTime': 'AtomState.lifetime',
+'AtomStateLifeTimeDecay':'totalRadiative',
 'AtomStateStatisticalWeight' : 'AtomState.statisticalweight',
 'AtomStateStatisticalWeightUnit' : 'AtomState.statisticalweightunit.value',
 'AtomStateLifeTimeUnit': 'AtomState.lifetimeunit.value',
