@@ -1119,10 +1119,10 @@ def makeDataSeriesType(tagname, keyword, G):
     dic = {}
     xpara = G("%sParameter" % keyword)
     if xpara:
-        dic["parameter"] = xpara
+        dic["parameter"] = "%sParameter" % keyword
     xunits = G("%sUnits" % keyword)
     if xunits:
-        dic["units"] = xunits
+        dic["units"] = "%sUnits" % keyword
     xid = G("%sID" % keyword)
     if xid:
         dic["id"] = "%s-%s" % (NODEID, xid)
@@ -1153,7 +1153,7 @@ def makeDataSeriesType(tagname, keyword, G):
         result.append("<Error>%s</Error>" % err)
 
     result.append("</%s>" % tagname)
-    return result
+    return ''.join(result)
 
 
 def XsamsRadCross(RadCross):
@@ -1720,6 +1720,12 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
     log.debug('Working on Processes.')
     yield '<Processes>\n'
     yield '<Radiative>\n'
+    
+    if not requestables or 'radiativecrossections' in requestables:
+        try:
+            for RadCros in XsamsRadCross(RadCross):
+                yield RadCros
+        except: errs+=generatorError(' RadCross')
 
     if not requestables or 'radiativetransitions' in requestables:
         try:
@@ -1727,12 +1733,6 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
                 yield RadTran
         except:
             errs+=generatorError(' RadTran')
-
-    if not requestables or 'radiativecrossections' in requestables:
-        try:
-            for RadCros in XsamsRadCross(RadCross):
-                yield RadCros
-        except: errs+=generatorError(' RadCross')
 
     yield '</Radiative>\n'
 
