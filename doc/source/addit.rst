@@ -113,7 +113,17 @@ means for example that you have separate tables for the atoms/molecules and
 their states. The linking indexes between the tables (usually an integer) are
 then directly suited to be used as the IDs above because the generator formats it as described.
 
-In order to do this, it is good to be aware of the following Djangoism: Consider the example data model from :ref:`here <thedatamodel>` and that *s* is an instance of the *State* model. Then *s.species* is, contrary to non-ForeignKey fields, not the key value of the corresponding spiecies, but the actual instance of the species model.
+In order to do this, it is good to be aware of the following Djangoism:
+Consider the example data model from :ref:`here <thedatamodel>` and that *s* is
+an instance of the *State* model. Then *s.energy* gives the value of the energy
+column in the database, as you expect. *s.species* however is, contrary to
+non-ForeignKey fields, not the key value of the corresponding species, but the
+actual instance of the species model because Django tries to be smart and
+convenient. Now we could use *s.species.id* to get the key value, but this
+would be slow since we would unnecessarily traverse into the species table to
+get it. The better way is to use *s.species_id* which is provided
+automatically, i.e. **for any ForeignKey field xyz there is a field xyz_id
+which holds the key value instead of the linked object.**
 
 
 
