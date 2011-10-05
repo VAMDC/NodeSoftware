@@ -8,10 +8,25 @@ Changelog
     document before since terms are used that are introduced later. It is meant
     for returning readers, especially the maintainer of VAMDC nodes.
 
+
+October XX, 2011
+----------------------
+
+**Version**. This is for *NodeSoftware 11.10* which implements the VAMDC standards 11.10. (Make sure to also read the changes for the beta release below.)
+
+The standard now makes mandatory several IDs in an XSAMS document. Please read
+:ref:`fillingids` on how to do this.
+
+Since we often are asked how to test a node, we'd like to mention that
+is a very convenient software called **TAPvalidator** (see
+http://www.vamdc.org/software) which can be used to query a node, browse the
+output and check that it is valid with respect to the xsams standard.
+
+
 September 30, 2011
 ---------------------
 
-**Version**. This is for NodeSoftware 11.10beta, which has most of the changes
+**Version**. This is for *NodeSoftware 11.10beta*, which has most of the changes
 for the upcoming 11.10 standards release and is aleady more robust than
 previous releases. All nodes are encouraged to upgrade.
 
@@ -61,11 +76,6 @@ interested to return other formats from your node, you can have a look at
 
 The section on :ref:`logging` has been extended as well and a few notes about
 :ref:`moredjango` were added.
-
-Lastly, since we often are asked how to test a node, we'd like to mention that
-is a very convenient software called **TAPvalidator** (see
-http://www.vamdc.org/software) which can be used to query a node, browse the
-output and check that it is valid with respect to the xsams standard.
 
 
 June 15, 2011

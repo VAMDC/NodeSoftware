@@ -885,7 +885,7 @@ def XsamsSolids(Solids):
             yield ret
             continue
         G = lambda name: GetValue(name, Solid=Solid)
-        makePrimaryType("Solid", "Solid", G, extraAttr={"stateID":"S%s-%s" % (NODEID, G("SolidStateID"))})
+        makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
         if hasattr(Solid, "Layers"):
             for Layer in makeiter(Solid.Layers):
                 GL = lambda name: GetValue(name, Layer=Layer)
@@ -923,7 +923,7 @@ def XsamsParticles(Particles):
             yield ret
             continue
         G = lambda name: GetValue(name, Particle=Particle)
-        yield """<Particle stateID="S%s-%s" name="%s">""" % (G('NodeID'), G('ParticleStateID'), G('ParticleName'))
+        yield """<Particle speciesID="S%s-%s" name="%s">""" % (G('NodeID'), G('ParticleSpeciesID'), G('ParticleName'))
         yield "<ParticleProperties>"
         yield "<ParticleCharge>%s</ParticleCharge>" % G("ParticleCharge")
         yield makeDataType("ParticleMass", "ParticleMass", G)
@@ -975,22 +975,17 @@ def XsamsRadTranBroadening(G):
 
     allowed names are: pressure, instrument, doppler, natural
     """
-    s=''
-    if countReturnables('RadTransBroadeningNatural'):
-        # attempt at making a loop to support multiple natural broadening effects
-        if hasattr(G('RadTransBroadeningNatural'), "Broadenings"):
-            for Broadening in  makeiter(G('RadTransBroadeningNatural').Broadenings):
-                GB = lambda name: GetValue(name, Broadening=Broadening)
-                s += makeBroadeningType(GB, name='Natural')
-        else:
-            s += makeBroadeningType(G, name='Natural')
-    if countReturnables('RadTransBroadeningInstrument'):
-        s += makeBroadeningType(G, name='Instrument')
-    if countReturnables('RadTransBroadeningDoppler'):
-        s += makeBroadeningType(G, name='Doppler')
-    if countReturnables('RadTransBroadeningPressure'):
-        s += makeBroadeningType(G, name='Pressure')
-    return s
+    s=[]
+    if hasattr(G('RadTransBroadeningNatural'), "Broadenings"):
+        for Broadening in  makeiter(G('RadTransBroadeningNatural').Broadenings):
+            GB = lambda name: GetValue(name, Broadening=Broadening)
+            s.append( makeBroadeningType(GB, name='Natural') )
+    else:
+        s.append( makeBroadeningType(G, name='Natural') )
+    s.append( makeBroadeningType(G, name='Instrument') )
+    s.append( makeBroadeningType(G, name='Doppler') )
+    s.append( makeBroadeningType(G, name='Pressure') )
+    return '\n'.join(s)
 
 def XsamsRadTranShifting(RadTran, G):
     """
