@@ -923,12 +923,18 @@ def XsamsParticles(Particles):
             yield ret
             continue
         G = lambda name: GetValue(name, Particle=Particle)
-        yield """<Particle speciesID="S%s-%s" name="%s">""" % (G('NodeID'), G('ParticleSpeciesID'), G('ParticleName'))
+        yield """<Particle speciesID="X%s-%s" name="%s">""" % (G('NodeID'), G('ParticleSpeciesID'), G('ParticleName'))
         yield "<ParticleProperties>"
-        yield "<ParticleCharge>%s</ParticleCharge>" % G("ParticleCharge")
+        charge = G("ParticleCharge")
+        if charge :
+            yield "<ParticleCharge>%s</ParticleCharge>" % charge
         yield makeDataType("ParticleMass", "ParticleMass", G)
-        yield "<ParticleSpin>%s</ParticleSpin>" % G("ParticleSpin")
-        yield "<ParticlePolarization>%s</ParticlePolarization>" % G("ParticlePolarization")
+        spin = G("ParticleSpin")
+        if spin : 
+            yield "<ParticleSpin>%s</ParticleSpin>" % spin
+        polarization = G("ParticlePolarization")
+        if polarization  :
+            yield "<ParticlePolarization>%s</ParticlePolarization>" % polarization
         yield "</ParticleProperties>"
         yield "</Particle>"
     yield "</Particles>"
@@ -1347,9 +1353,10 @@ def XsamsCollTrans(CollTrans):
                 yield "</Product>"
 
         yield makeDataType("Threshold", "CollisionThreshold", G)
-        yield "<DataSets>"
+        
 
         if hasattr(CollTran, "DataSets"):
+            yield "<DataSets>"
             for DataSet in CollTran.DataSets:
                 cont, ret = checkXML(DataSet)
                 if cont:
@@ -1439,8 +1446,9 @@ def XsamsCollTrans(CollTrans):
                         # handle X components of XY
                         Nx = GDT("CollisionTabulatedDataXN")
                         xunits = GDT("CollisionTabulatedDataXUnits")
+                        xparameters=GDT("CollisionTabulatedDataXParameter")
 
-                        yield "<X units='%s' parameter='%s'>" % (Nx, xunits)
+                        yield "<X units='%s' parameter='%s'>" % (xunits, xparameters)
                         yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
                         yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXError"))))
                         yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXNegativeError"))))
@@ -1451,8 +1459,9 @@ def XsamsCollTrans(CollTrans):
                         # handle Y components of XY
                         Ny = GDT("CollisionTabulatedDataYN")
                         yunits = GDT("CollisionTabulatedDataYUnits")
+                        yparameters=GDT("CollisionTabulatedDataYParameter")
 
-                        yield "<Y units='%s' parameter='%s'>" % (Ny, yunits)
+                        yield "<Y units='%s' parameter='%s'>" % (yunits, yparameters)
                         yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
                         yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYError"))))
                         yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYNegativeError"))))
@@ -1474,8 +1483,8 @@ def XsamsCollTrans(CollTrans):
 
                         yield "</TabulatedData>"
 
-            yield "</DataSet>"
-        yield "</DataSets>"
+                yield "</DataSet>"
+            yield "</DataSets>"
         yield "</CollisionalTransition>"
     yield '</Collisions>'
 
