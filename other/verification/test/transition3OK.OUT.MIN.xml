@@ -115,90 +115,90 @@
 					</Ion>
 				</Isotope>
 			</Atom>
-            <Atom>
-                <ChemicalElement>
-                    <NuclearCharge>26</NuclearCharge>
-                    <ElementSymbol>Fe</ElementSymbol>
-                </ChemicalElement>
-                <Isotope>
-                    <IsotopeParameters>
-                        <MassNumber>56</MassNumber>
-                    </IsotopeParameters>
-                    <Ion speciesID="Xvald-326">
-                        <IonCharge>0</IonCharge>
-                        <AtomicState stateID="Svald-6993">
-                            <AtomicNumericalData>
-                                <StateEnergy>
-                                    <SourceRef>Bvald-K03</SourceRef>
-                                    <SourceRef>Bvald-K06</SourceRef>
-                                    <Value units="1/cm">40052.0320</Value>
-                                </StateEnergy>
-                                <LandeFactor>
-                                    <SourceRef>Bvald-K03</SourceRef>
-                                    <SourceRef>Bvald-K06</SourceRef>
-                                    <Value units="unitless">2.34</Value>
-                                </LandeFactor>
-                            </AtomicNumericalData>
-                            <AtomicQuantumNumbers>
-                                <TotalAngularMomentum>4.0</TotalAngularMomentum>
-                            </AtomicQuantumNumbers>
-                            <AtomicComposition>
-                                <Component>
-                                    <Configuration>
-                                        <AtomicCore>
-                                            <Term/>
-                                        </AtomicCore>
-                                    </Configuration>
-                                    <Term>
-                                        <LS>
-                                            <L>
-                                                <Value>4</Value>
-                                            </L>
-                                            <S>2.0</S>
-                                        </LS>
-                                    </Term>
-                                </Component>
-                            </AtomicComposition>
-                        </AtomicState>
-                        <AtomicState stateID="Svald-7002">
-                            <AtomicNumericalData>
-                                <StateEnergy>
-                                    <SourceRef>Bvald-K03</SourceRef>
-                                    <SourceRef>Bvald-K06</SourceRef>
-                                    <Value units="1/cm">56720.4050</Value>
-                                </StateEnergy>
-                                <LandeFactor>
-                                    <SourceRef>Bvald-K03</SourceRef>
-                                    <SourceRef>Bvald-K06</SourceRef>
-                                    <Value units="unitless">1.82</Value>
-                                </LandeFactor>
-                            </AtomicNumericalData>
-                            <AtomicQuantumNumbers>
-                                <TotalAngularMomentum>4.0</TotalAngularMomentum>
-                            </AtomicQuantumNumbers>
-                            <AtomicComposition>
-                                <Component>
-                                    <Configuration>
-                                        <AtomicCore>
-                                            <Term/>
-                                        </AtomicCore>
-                                    </Configuration>
-                                    <Term>
-                                        <LS>
-                                            <L>
-                                                <Value>1</Value>
-                                            </L>
-                                            <S>2.0</S>
-                                        </LS>
-                                    </Term>
-                                </Component>
-                            </AtomicComposition>
-                        </AtomicState>
-                        <InChI>InChI=1S/Fe/i1+0</InChI>
-                        <InChIKey>XEEYBQQBJWHFJM-I</InChIKey>
-                    </Ion>
-                </Isotope>
-            </Atom>
+			<Atom>
+				<ChemicalElement>
+					<NuclearCharge>26</NuclearCharge>
+					<ElementSymbol>Fe</ElementSymbol>
+				</ChemicalElement>
+				<Isotope>
+					<IsotopeParameters>
+						<MassNumber>56</MassNumber>
+					</IsotopeParameters>
+					<Ion speciesID="Xvald-326">
+						<IonCharge>0</IonCharge>
+						<AtomicState stateID="Svald-6993">
+							<AtomicNumericalData>
+								<StateEnergy>
+									<SourceRef>Bvald-K03</SourceRef>
+									<SourceRef>Bvald-K06</SourceRef>
+									<Value units="1/cm">40052.0320</Value>
+								</StateEnergy>
+								<LandeFactor>
+									<SourceRef>Bvald-K03</SourceRef>
+									<SourceRef>Bvald-K06</SourceRef>
+									<Value units="unitless">2.34</Value>
+								</LandeFactor>
+							</AtomicNumericalData>
+							<AtomicQuantumNumbers>
+								<TotalAngularMomentum>4.0</TotalAngularMomentum>
+							</AtomicQuantumNumbers>
+							<AtomicComposition>
+								<Component>
+									<Configuration>
+										<AtomicCore>
+											<Term/>
+										</AtomicCore>
+									</Configuration>
+									<Term>
+										<LS>
+											<L>
+												<Value>4</Value>
+											</L>
+											<S>2.0</S>
+										</LS>
+									</Term>
+								</Component>
+							</AtomicComposition>
+						</AtomicState>
+						<AtomicState stateID="Svald-7002">
+							<AtomicNumericalData>
+								<StateEnergy>
+									<SourceRef>Bvald-K03</SourceRef>
+									<SourceRef>Bvald-K06</SourceRef>
+									<Value units="1/cm">56720.4050</Value>
+								</StateEnergy>
+								<LandeFactor>
+									<SourceRef>Bvald-K03</SourceRef>
+									<SourceRef>Bvald-K06</SourceRef>
+									<Value units="unitless">1.82</Value>
+								</LandeFactor>
+							</AtomicNumericalData>
+							<AtomicQuantumNumbers>
+								<TotalAngularMomentum>4.0</TotalAngularMomentum>
+							</AtomicQuantumNumbers>
+							<AtomicComposition>
+								<Component>
+									<Configuration>
+										<AtomicCore>
+											<Term/>
+										</AtomicCore>
+									</Configuration>
+									<Term>
+										<LS>
+											<L>
+												<Value>1</Value>
+											</L>
+											<S>2.0</S>
+										</LS>
+									</Term>
+								</Component>
+							</AtomicComposition>
+						</AtomicState>
+						<InChI>InChI=1S/Fe/i1+0</InChI>
+						<InChIKey>XEEYBQQBJWHFJM-I</InChIKey>
+					</Ion>
+				</Isotope>
+			</Atom>
 			<Atom>
 				<ChemicalElement>
 					<NuclearCharge>26</NuclearCharge>
@@ -307,27 +307,35 @@
 						<Value units="unitless">-3.090</Value>
 					</Log10WeightedOscillatorStrength>
 				</Probability>
-			<Verification><RuleA01>false</RuleA01><RuleA02 xsi:nil="true"/></Verification></RadiativeTransition>
-            <RadiativeTransition>
-                <Comments>Wavelength is for vacuum.</Comments>
-                <EnergyWavelength>
-                    <Wavelength>
-                        <SourceRef>Bvald-K03</SourceRef>
-                        <SourceRef>Bvald-K06</SourceRef>
-                        <Value units="A">5999.25477257</Value>
-                    </Wavelength>
-                </EnergyWavelength>
-                <InitialStateRef>Svald-7002</InitialStateRef>
-                <FinalStateRef>Svald-6993</FinalStateRef>
-                <SpeciesRef>Xvald-326</SpeciesRef>
-                <Probability>
-                    <Log10WeightedOscillatorStrength>
-                        <SourceRef>Bvald-K03</SourceRef>
-                        <SourceRef>Bvald-K06</SourceRef>
-                        <Value units="unitless">-1.035</Value>
-                    </Log10WeightedOscillatorStrength>
-                </Probability>
-            <Verification><RuleA01>true</RuleA01><RuleA02 xsi:nil="true"/></Verification></RadiativeTransition>
+				<Verification>
+					<RuleTA01>false</RuleTA01>
+					<RuleTA02 xsi:nil="true"/>
+				</Verification>
+			</RadiativeTransition>
+			<RadiativeTransition>
+				<Comments>Wavelength is for vacuum.</Comments>
+				<EnergyWavelength>
+					<Wavelength>
+						<SourceRef>Bvald-K03</SourceRef>
+						<SourceRef>Bvald-K06</SourceRef>
+						<Value units="A">5999.25477257</Value>
+					</Wavelength>
+				</EnergyWavelength>
+				<InitialStateRef>Svald-7002</InitialStateRef>
+				<FinalStateRef>Svald-6993</FinalStateRef>
+				<SpeciesRef>Xvald-326</SpeciesRef>
+				<Probability>
+					<Log10WeightedOscillatorStrength>
+						<SourceRef>Bvald-K03</SourceRef>
+						<SourceRef>Bvald-K06</SourceRef>
+						<Value units="unitless">-1.035</Value>
+					</Log10WeightedOscillatorStrength>
+				</Probability>
+				<Verification>
+					<RuleTA01>true</RuleTA01>
+					<RuleTA02 xsi:nil="true"/>
+				</Verification>
+			</RadiativeTransition>
 			<RadiativeTransition>
 				<Comments>Wavelength is for vacuum.</Comments>
 				<EnergyWavelength>
@@ -345,7 +353,11 @@
 						<Value units="unitless">-2.270</Value>
 					</Log10WeightedOscillatorStrength>
 				</Probability>
-			<Verification><RuleA01>false</RuleA01><RuleA02>false</RuleA02></Verification></RadiativeTransition>
+				<Verification>
+					<RuleTA01>false</RuleTA01>
+					<RuleTA02>false</RuleTA02>
+				</Verification>
+			</RadiativeTransition>
 		</Radiative>
 	</Processes>
 </XSAMSData>

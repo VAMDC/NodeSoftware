@@ -1,8 +1,12 @@
 import sys
+
+
 if __name__ == '__main__':
     VERIFICATION_SCHEMA_LOCATION = u"../verification.xsd"
 else:
     import verification
+
+
     VERIFICATION_SCHEMA_LOCATION = verification.VERIFICATION_SCHEMA_LOCATION
 
 import re
@@ -40,10 +44,12 @@ class Verification:
         schemaLocationAttr.value = locations[0] + ' ' + locations[1]
 
 
-    def run(self, doRemove=True):
+    def run(self, doReport = True, doRemove=True):
         if not self.lock:
             self._removeVerificationNode()
             self._addRulesNodes()
+            if doReport:
+                self._addVerificationResultNode()
             if doRemove:
                 self._removeRedundantNodes()
 
@@ -102,19 +108,22 @@ class Verification:
 
                 flag = True
                 while flag:
-                    flag =False
+                    flag = False
                     for childNode in usefulParentNode.parentNode.childNodes[:]:
                         if not (childNode in usefulParentNodes):
                             hasIDs = False
                             isRedundantNode = True
                             idNodes = {}
-                            if childNode.nodeType == Node.ELEMENT_NODE and childNode.tagName == 'Processes' and childNode.hasChildNodes():
-                                context = xpath.CreateContext(childNode)
-                                context.setNamespaces({'xsi': 'http://www.w3.org/2001/XMLSchema-instance'})
-                                if not xpath.Evaluate('.//child::Verification[contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil]', childNode, context):
-                                    usefulParentNode.parentNode.removeChild(childNode)
-                                    flag=True
-                                    break
+                            if childNode.nodeType == Node.ELEMENT_NODE and  childNode.tagName == 'Processes' and childNode.hasChildNodes():
+                                    context = xpath.CreateContext(childNode)
+                                    context.setNamespaces({'xsi': 'http://www.w3.org/2001/XMLSchema-instance'})
+                                    if not xpath.Evaluate('.//child::Verification[contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil]', childNode, context):
+                                        usefulParentNode.parentNode.removeChild(childNode)
+                                        flag = True
+                                        break
+                            elif childNode.nodeType == Node.ELEMENT_NODE and childNode.tagName == 'VerificationResult' and childNode.hasChildNodes():
+                                pass
+
                             else:
                                 for idNode in xpath.Evaluate('descendant-or-self::node()[contains(local-name(@*), "ID")]', childNode):
                                     if idNode.hasAttributes():
@@ -137,6 +146,7 @@ class Verification:
     def _setStateNodes(self):
         for stateNode in xpath.Evaluate('//*[@stateID]', self.doc):
             self.stateNodes[stateNode.getAttribute('stateID')] = stateNode
+
 
     def _setExtraRules(self, rules):
         for fakeRule in self.excludedRules:
@@ -168,22 +178,22 @@ class Verification:
                 domainFlag = 'Transition'
 
         return domainFlag
-    
+
+
     def printRules(self):
         rules = self._setExtraRules(VerificationParser().getRules())
         for rule in sorted(rules):
             print rules[rule]['math'].serialize("python")
 
+
     def _addRulesNodes(self):
         if not self.lock:
-
             self._setStateNodes()
-            
-            dataNodes = {'AtomicState':[], 'MolecularState':[], 'Transition':[]}
+
+            dataNodes = {'AtomicState': [], 'MolecularState': [], 'Transition': []}
 
             rules = self._setExtraRules(VerificationParser().getRules())
             for rule in sorted(rules):
-
                 if self.excludedRules and rule in self.excludedRules:
                     continue
 
@@ -194,7 +204,7 @@ class Verification:
                     domainFlag = self._checkDomains(rules[rule])
                 else:
                     continue
-                    
+
                 templateExp = rules[rule]['math'].serialize("python")
 
                 identifiers = {}
@@ -253,8 +263,10 @@ class Verification:
                         if dataNode.cache.has_key(identifier):
                             if available is None:
                                 if dataNode.cache[identifier]["value"] is None:
+                                    available = self._isAvailableNode(self.stateNodes[dataNode.cache[identifier]["stateID"]], rules[rule])
+                                    if available:
+                                        self._addRuleNode(dataNode, [rule, None])
                                     available = False
-                                    self._addRuleNode(dataNode, [rule, None])
                                 elif dataNode.cache[identifier]["value"] == False:
                                     available = False
                                 else:
@@ -268,9 +280,93 @@ class Verification:
 
                     if available:
                         self._addRuleNode(dataNode, [rule, str(eval(currentExp)).lower()])
-                self.lock = True
+
+            self.lock = True
         return self.doc
 
+    def _addVerificationResultNode(self):
+
+        if self.doc.hasChildNodes():
+            rootNode = self.doc.childNodes[0]
+
+            verificationDataElement = self.doc.createElement('VerificationData')
+            for attr in rootNode.attributes.values():
+                verificationDataElement.setAttributeNS(attr.namespaceURI, attr.nodeName, attr.value)
+                a = verificationDataElement.getAttributeNodeNS(attr.namespaceURI, attr.localName)
+                a.specified = attr.specified
+
+            rootNode._attrs.clear()
+
+            self.doc.replaceChild(verificationDataElement, rootNode)
+            verificationDataElement.appendChild(rootNode)
+            rootNode = verificationDataElement
+
+            verificationResultNodes = xpath.Evaluate('./VerificationResult', rootNode)
+            if verificationResultNodes:
+                for childNode in verificationResultNodes[:]:
+                    verificationResultNodes[0].parentNode.removeChild(childNode)
+
+            verificationResultElement = self.doc.createElement('VerificationResult')
+
+            nodesWithVerification = xpath.Evaluate('//child::Verification', self.doc)
+            if nodesWithVerification:
+                domainNumbers = {'AtomicState':None, 'MolecularState':None, 'RadiativeTransition':None, 'NonRadiativeTransition':None}
+
+                for domain in domainNumbers:
+                    domainNumbers[domain] = {'total':0, 'correct':0, 'incorrect':0, 'unidentified':0}
+
+                for nodeWithVerification in nodesWithVerification:
+                    domain = nodeWithVerification.parentNode.nodeName
+                    domainNumbers[domain]['total'] += 1
+                    if nodeWithVerification.getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "nil") == "true":
+                        domainNumbers[domain]['unidentified'] += 1
+                    else:
+                        flagOne = True
+                        for ruleNode in nodeWithVerification.childNodes:
+                            if ruleNode.nodeType == Node.ELEMENT_NODE:
+                                if not domainNumbers.has_key(ruleNode.nodeName):
+                                    domainNumbers[ruleNode.nodeName] = {'correct':0, 'incorrect':0, 'unidentified':0}
+                                if ruleNode.getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "nil") == "true":
+                                    flagOne = None
+                                    domainNumbers[ruleNode.nodeName]['unidentified'] += 1
+                                elif ruleNode.hasChildNodes():
+                                    if ruleNode.childNodes[0].nodeType == Node.TEXT_NODE:
+                                        if ruleNode.childNodes[0].data == "true":
+                                            domainNumbers[ruleNode.nodeName]['correct'] += 1
+                                        else:
+                                            if flagOne is not None:
+                                                flagOne = False
+                                            domainNumbers[ruleNode.nodeName]['incorrect'] += 1
+                        if flagOne:
+                            domainNumbers[domain]['correct'] += 1
+                        elif flagOne is None:
+                            domainNumbers[domain]['unidentified'] += 1
+                        else:
+                            domainNumbers[domain]['incorrect'] += 1
+
+                for ruleName in sorted(domainNumbers):
+                    if ruleName[0:4] != 'Rule':
+                        if domainNumbers[ruleName]['total'] == 0:
+                            continue
+                        numberElement = self.doc.createElement('NumberOf' + ruleName + 's')
+                    else:
+                        numberElement = self.doc.createElement('NumberOfVerificationByRule')
+                        numberElement.setAttribute('name', ruleName)
+                    for numberName in domainNumbers[ruleName]:
+                        numberElement.setAttribute(numberName, str(domainNumbers[ruleName][numberName]))
+                    verificationResultElement.appendChild(numberElement)
+            else:
+                verificationResultElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xsi:nil", "true")
+
+            if rootNode.hasChildNodes():
+                rootNode.insertBefore(verificationResultElement, rootNode.childNodes[0])
+            else:
+                rootNode.appendChild(verificationResultElement)
+
+            return verificationResultElement
+
+        else:
+            return None
 
     def _isAvailableNode(self, element, rule):
         if not rule['forInChIList']:

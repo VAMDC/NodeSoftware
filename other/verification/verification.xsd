@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema elementFormDefault="qualified" attributeFormDefault="qualified" targetNamespace="http://vamdc.org/xml/xsams/0.2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2">
+<xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://vamdc.org/xml/xsams/0.2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2">
 	<xs:redefine schemaLocation="http://vamdc.org/xml/xsams/0.2/">
 		<xs:complexType name="AtomicStateType">
 			<xs:complexContent>
@@ -14,7 +14,7 @@
 			<xs:complexContent>
 				<xs:extension base="MolecularStateType">
 					<xs:sequence>
-						<xs:element name="Verification" type="molecularStateVerification" minOccurs="0"  nillable="true"/>
+						<xs:element name="Verification" type="molecularStateVerification" minOccurs="0" nillable="true"/>
 					</xs:sequence>
 				</xs:extension>
 			</xs:complexContent>
@@ -23,7 +23,7 @@
 			<xs:complexContent>
 				<xs:extension base="RadiativeTransitionType">
 					<xs:sequence>
-						<xs:element name="Verification" type="radiativeTransitionVerification" minOccurs="0"  nillable="true"/>
+						<xs:element name="Verification" type="radiativeTransitionVerification" minOccurs="0" nillable="true"/>
 					</xs:sequence>
 				</xs:extension>
 			</xs:complexContent>
@@ -32,22 +32,68 @@
 			<xs:complexContent>
 				<xs:extension base="NonRadiativeTransitionType">
 					<xs:sequence>
-						<xs:element name="Verification" type="nonRadiativeTransitionVerification" minOccurs="0"  nillable="true"/>
+						<xs:element name="Verification" type="nonRadiativeTransitionVerification" minOccurs="0" nillable="true"/>
 					</xs:sequence>
 				</xs:extension>
 			</xs:complexContent>
 		</xs:complexType>
 	</xs:redefine>
+	<xs:element name="VerificationData" type="verificationDataType"/>
+	<xs:complexType name="verificationDataType">
+		<xs:complexContent>
+			<xs:restriction base="xs:anyType">
+				<xs:sequence>
+					<xs:element name="VerificationResult" type="verificationResult" minOccurs="0" maxOccurs="1" nillable="true"/>
+					<xs:element ref="XSAMSData" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="verificationResult">
+		<xs:sequence>
+			<xs:element name="NumberOfAtomicStates" minOccurs="0" maxOccurs="1" type="totalNumberOfVerification"/>
+			<xs:element name="NumberOfMolecularStates" minOccurs="0" maxOccurs="1" type="totalNumberOfVerification"/>
+			<xs:element name="NumberOfNonRadiativeTransitions" minOccurs="0" maxOccurs="1" type="totalNumberOfVerification"/>
+			<xs:element name="NumberOfRadiativeTransitions" minOccurs="0" maxOccurs="1" type="totalNumberOfVerification"/>
+			<xs:element name="NumberOfVerificationByRule" minOccurs="0" maxOccurs="unbounded" type="numberOfVerificationByRule"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="totalNumberOfVerification">
+		<xs:complexContent>
+			<xs:extension base="xs:anyType">
+				<xs:attribute name="total" type="xs:nonNegativeInteger" use="required"/>
+				<xs:attribute name="correct" type="xs:nonNegativeInteger" use="required"/>
+				<xs:attribute name="incorrect" type="xs:nonNegativeInteger" use="required"/>
+				<xs:attribute name="unidentified" type="xs:nonNegativeInteger" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="numberOfVerificationByRule">
+		<xs:complexContent>
+			<xs:extension base="xs:anyType">
+				<xs:attribute name="name" type="nameOfRuleType" use="required"/>
+				<xs:attribute name="correct" type="xs:nonNegativeInteger" use="required"/>
+				<xs:attribute name="incorrect" type="xs:nonNegativeInteger" use="required"/>
+				<xs:attribute name="unidentified" type="xs:nonNegativeInteger" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="nameOfRuleType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="Rule[ST][A-Z]+[0-9][0-9]"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<xs:complexType name="atomicStateVerification">
 		<xs:sequence/>
 	</xs:complexType>
 	<xs:complexType name="molecularStateVerification">
 		<xs:sequence>
-			<xs:element ref="RuleB01" minOccurs="0"/>
-            <xs:element ref="RuleC01" minOccurs="0"/>
-            <xs:element ref="RuleC02" minOccurs="0"/>
-            <xs:element ref="RuleC03" minOccurs="0"/>
-            <xs:element ref="RuleC04" minOccurs="0"/>
+			<xs:element ref="RuleSB01" minOccurs="0"/>
+			<xs:element ref="RuleSC01" minOccurs="0"/>
+			<xs:element ref="RuleSC02" minOccurs="0"/>
+			<xs:element ref="RuleSC03" minOccurs="0"/>
+			<xs:element ref="RuleSC04" minOccurs="0"/>
+			<xs:element ref="RuleSC05" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="radiativeTransitionVerification">
@@ -62,18 +108,22 @@
 	</xs:complexType>
 	<xs:group name="TransitionRules">
 		<xs:sequence>
-			<xs:element ref="RuleA01" minOccurs="0"/>
-			<xs:element ref="RuleA02" minOccurs="0"/>
-			<xs:element ref="RuleB02" minOccurs="0"/>
-			<xs:element ref="RuleB03" minOccurs="0"/>
-            <xs:element ref="RuleB04" minOccurs="0"/>
-            <xs:element ref="RuleC05" minOccurs="0"/>
-            <xs:element ref="RuleC06" minOccurs="0"/>
-            <xs:element ref="RuleC07" minOccurs="0"/>
-            <xs:element ref="RuleC08" minOccurs="0"/>
+			<xs:element ref="RuleTA01" minOccurs="0"/>
+			<xs:element ref="RuleTA02" minOccurs="0"/>
+			<xs:element ref="RuleTB01" minOccurs="0"/>
+			<xs:element ref="RuleTB02" minOccurs="0"/>
+			<xs:element ref="RuleTB03" minOccurs="0"/>
+			<xs:element ref="RuleTC01" minOccurs="0"/>
+			<xs:element ref="RuleTC02" minOccurs="0"/>
+			<xs:element ref="RuleTC03" minOccurs="0"/>
+			<xs:element ref="RuleTC04" minOccurs="0"/>
+			<xs:element ref="RuleTC05" minOccurs="0"/>
+			<xs:element ref="RuleTC06" minOccurs="0"/>
+			<xs:element ref="RuleTC07" minOccurs="0"/>
+			<xs:element ref="RuleTC08" minOccurs="0"/>
 		</xs:sequence>
 	</xs:group>
-	<xs:element name="RuleA01" type="xs:boolean" nillable="true">
+	<xs:element name="RuleTA01" type="xs:boolean" nillable="true">
 		<xs:annotation>
 			<xs:appinfo>
 				<rule>
@@ -103,7 +153,7 @@
 			</xs:appinfo>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="RuleA02" type="xs:boolean" nillable="true">
+	<xs:element name="RuleTA02" type="xs:boolean" nillable="true">
 		<xs:annotation>
 			<xs:appinfo>
 				<rule>
@@ -118,7 +168,7 @@
 			</xs:appinfo>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="RuleB01" type="xs:boolean" nillable="true">
+	<xs:element name="RuleSB01" type="xs:boolean" nillable="true">
 		<xs:annotation>
 			<xs:appinfo>
 				<rule>
@@ -153,7 +203,7 @@
 			</xs:appinfo>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="RuleB02" type="xs:boolean" nillable="true">
+	<xs:element name="RuleTB01" type="xs:boolean" nillable="true">
 		<xs:annotation>
 			<xs:appinfo>
 				<rule>
@@ -183,7 +233,7 @@
 			</xs:appinfo>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="RuleB03" type="xs:boolean" nillable="true">
+	<xs:element name="RuleTB02" type="xs:boolean" nillable="true">
 		<xs:annotation>
 			<xs:appinfo>
 				<rule forInChIList="InChI=1S/H2O/h1H2'.*'">
@@ -209,10 +259,9 @@
 			</xs:appinfo>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="RuleB04" type="xs:boolean" nillable="true">
+	<xs:element name="RuleTB03" type="xs:boolean" nillable="true">
 		<xs:annotation>
-			<xs:appinfo>
-                <!-- 1S/H2O/h1H2 or 1S/H2O/h1H2/i/hD2 or 1S/H2O/h1H2/i1+2 or 1S/H2O/h1H2/i1+2/hT2-->
+			<xs:appinfo><!-- 1S/H2O/h1H2 or 1S/H2O/h1H2/i/hD2 or 1S/H2O/h1H2/i1+2 or 1S/H2O/h1H2/i1+2/hT2-->
 				<rule forInChIList="InChI=1S/H2O/h1H2'($|\/i(1\+\d)?($|\/h[HDT]2))'">
 					<math xmlns="http://www.w3.org/1998/Math/MathML">
 						<apply>
@@ -235,350 +284,473 @@
 			</xs:appinfo>
 		</xs:annotation>
 	</xs:element>
-    <xs:element name="RuleC01" type="xs:boolean" nillable="true">
-        <xs:annotation>
-            <xs:appinfo>
-                <rule forInChIList="InChI=1S/CO2/c2-1-3'.*'">
-                    <math xmlns="http://www.w3.org/1998/Math/MathML">
-                        <apply>
-                            <not/>
-                            <apply>
-                                <and/>
-                                <apply>
-                                    <eq/>
-                                    <ci>ltcs:l2</ci>
-                                    <cn>0</cn>
-                                </apply>
-                                <apply>
-                                    <neq/>
-                                    <ci>ltcs:kronigParity</ci>
-                                    <ci>'e'</ci>
-                                </apply>
-                            </apply>
-                        </apply>
-                    </math>
-                </rule>
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="RuleC02" type="xs:boolean" nillable="true">
-        <xs:annotation>
-            <xs:appinfo>
-                <rule forInChIList="InChI=1S/CO2/c2-1-3'.*'">
-                    <math xmlns="http://www.w3.org/1998/Math/MathML">
-                        <apply>
-                            <eq/>
-                            <ci>ltcs:l2</ci>
-                            <ci>ltcs:v2</ci>
-                        </apply>
-                    </math>
-                </rule>
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="RuleC03" type="xs:boolean" nillable="true">
-        <xs:annotation>
-            <xs:appinfo>
-                <rule forInChIList="InChI=1S/CO2/c2-1-3'.*'">
-                    <math xmlns="http://www.w3.org/1998/Math/MathML">
-                        <apply>
-                            <geq/>
-                            <ci>ltcs:J</ci>
-                            <ci>ltcs:l2</ci>
-                        </apply>
-                    </math>
-                </rule>
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="RuleC04" type="xs:boolean" nillable="true">
-        <xs:annotation>
-            <xs:appinfo>
-                <rule forInChIList="InChI=1S/CO2/c2-1-3'($|\/i1\+[01]($|,2\+0,3\+0|,2\+2,3\+2]))'">
-                    <math xmlns="http://www.w3.org/1998/Math/MathML">
-                        <apply>
-                            <not/>
-                            <apply>
-                                <or/>
-                                <apply>
-                                    <and/>
-                                    <apply>
-                                        <eq/>
-                                        <ci>ltcs:kronigParity</ci>
-                                        <ci>'e'</ci>
-                                    </apply>
-                                    <apply>
-                                        <or/>
-                                        <apply>
-                                            <and/>
-                                            <apply>
-                                                <eq/>
-                                                <apply>
-                                                    <rem/>
-                                                    <ci>ltcs:J</ci>
-                                                    <cn>2</cn>
-                                                </apply>
-                                                <cn>1</cn>
-                                            </apply>
-                                            <apply>
-                                                <eq/>
-                                                <apply>
-                                                    <rem/>
-                                                    <apply>
-                                                        <plus/>
-                                                        <ci>ltcs:v2</ci>
-                                                        <ci>ltcs:v3</ci>
-                                                    </apply>
-                                                    <cn>2</cn>
-                                                </apply>
-                                                <cn>0</cn>
-                                            </apply>
-                                        </apply>
-                                        <apply>
-                                            <and/>
-                                            <apply>
-                                                <eq/>
-                                                <apply>
-                                                    <rem/>
-                                                    <ci>ltcs:J</ci>
-                                                    <cn>2</cn>
-                                                </apply>
-                                                <cn>0</cn>
-                                            </apply>
-                                            <apply>
-                                                <eq/>
-                                                <apply>
-                                                    <rem/>
-                                                    <apply>
-                                                        <plus/>
-                                                        <ci>ltcs:v2</ci>
-                                                        <ci>ltcs:v3</ci>
-                                                    </apply>
-                                                    <cn>2</cn>
-                                                </apply>
-                                                <cn>1</cn>
-                                            </apply>
-                                        </apply>
-                                    </apply>
-                                </apply>
-                                <apply>
-                                    <and/>
-                                    <apply>
-                                        <eq/>
-                                        <ci>ltcs:kronigParity</ci>
-                                        <ci>'f'</ci>
-                                    </apply>
-                                    <apply>
-                                        <or/>
-                                        <apply>
-                                            <and/>
-                                            <apply>
-                                                <eq/>
-                                                <apply>
-                                                    <rem/>
-                                                    <ci>ltcs:J</ci>
-                                                    <cn>2</cn>
-                                                </apply>
-                                                <cn>0</cn>
-                                            </apply>
-                                            <apply>
-                                                <eq/>
-                                                <apply>
-                                                    <rem/>
-                                                    <apply>
-                                                        <plus/>
-                                                        <ci>ltcs:v2</ci>
-                                                        <ci>ltcs:v3</ci>
-                                                    </apply>
-                                                    <cn>2</cn>
-                                                </apply>
-                                                <cn>0</cn>
-                                            </apply>
-                                        </apply>
-                                        <apply>
-                                            <and/>
-                                            <apply>
-                                                <eq/>
-                                                <apply>
-                                                    <rem/>
-                                                    <ci>ltcs:J</ci>
-                                                    <cn>2</cn>
-                                                </apply>
-                                                <cn>1</cn>
-                                            </apply>
-                                            <apply>
-                                                <eq/>
-                                                <apply>
-                                                    <rem/>
-                                                    <apply>
-                                                        <plus/>
-                                                        <ci>ltcs:v2</ci>
-                                                        <ci>ltcs:v3</ci>
-                                                    </apply>
-                                                    <cn>2</cn>
-                                                </apply>
-                                                <cn>1</cn>
-                                            </apply>
-                                        </apply>
-                                    </apply>
-                                </apply>
-                            </apply>
-                        </apply>
-                    </math>
-                </rule>
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="RuleC05" type="xs:boolean" nillable="true">
-        <xs:annotation>
-            <xs:appinfo>
-                <rule forInChIList="InChI=1S/CO2/c2-1-3'.*'">
-                    <math xmlns="http://www.w3.org/1998/Math/MathML">
-                        <apply>
-                            <leq/>
-                            <apply>
-                                <abs/>
-                                <apply>
-                                    <minus/>
-                                    <ci>ltcs:J@InitialStateRef</ci>
-                                    <ci>ltcs:J@FinalStateRef</ci>
-                                </apply>
-                            </apply>
-                            <cn>1</cn>
-                        </apply>
-                    </math>
-                </rule>
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="RuleC06" type="xs:boolean" nillable="true">
-        <xs:annotation>
-            <xs:appinfo>
-                <rule forInChIList="InChI=1S/CO2/c2-1-3'.*'">
-                    <math xmlns="http://www.w3.org/1998/Math/MathML">
-                        <apply>
-                            <or/>
-                            <apply>
-                                <and/>
-                                <apply>
-                                    <eq/>
-                                    <ci>ltcs:kronigParity@InitialStateRef</ci>
-                                    <ci>ltcs:kronigParity@FinalStateRef</ci>
-                                </apply>
-                                <apply>
-                                    <eq/>
-                                    <apply>
-                                        <abs/>
-                                        <apply>
-                                            <minus/>
-                                            <ci>ltcs:J@InitialStateRef</ci>
-                                            <ci>ltcs:J@FinalStateRef</ci>
-                                        </apply>
-                                    </apply>
-                                    <cn>1</cn>
-                                </apply>
-                            </apply>
-                            <apply>
-                                <and/>
-                                <apply>
-                                    <neq/>
-                                    <ci>ltcs:kronigParity@InitialStateRef</ci>
-                                    <ci>ltcs:kronigParity@FinalStateRef</ci>
-                                </apply>
-                                <apply>
-                                    <eq/>
-                                    <apply>
-                                        <abs/>
-                                        <apply>
-                                            <minus/>
-                                            <ci>ltcs:J@InitialStateRef</ci>
-                                            <ci>ltcs:J@FinalStateRef</ci>
-                                        </apply>
-                                    </apply>
-                                    <cn>0</cn>
-                                </apply>
-                            </apply>
-                        </apply>
-                    </math>
-                </rule>
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="RuleC07" type="xs:boolean" nillable="true">
-        <xs:annotation>
-            <xs:appinfo>
-                <rule forInChIList="InChI=1S/CO2/c2-1-3'.*'">
-                    <math xmlns="http://www.w3.org/1998/Math/MathML">
-                        <apply>
-                            <not/>
-                            <apply>
-                                <and/>
-                                <apply>
-                                    <eq/>
-                                    <ci>ltcs:l2@InitialStateRef</ci>
-                                    <cn>0</cn>
-                                </apply>
-                                <apply>
-                                    <eq/>
-                                    <ci>ltcs:l2@FinalStateRef</ci>
-                                    <cn>0</cn>
-                                </apply>
-                                <apply>
-                                    <neq/>
-                                    <apply>
-                                        <abs/>
-                                        <apply>
-                                            <minus/>
-                                            <ci>ltcs:J@InitialStateRef</ci>
-                                            <ci>ltcs:J@FinalStateRef</ci>
-                                        </apply>
-                                    </apply>
-                                    <cn>1</cn>
-                                </apply>
-                            </apply>
-                        </apply>
-                    </math>
-                </rule>
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:element>
-    <xs:element name="RuleC08" type="xs:boolean" nillable="true">
-        <xs:annotation>
-            <xs:appinfo>
-                <rule forInChIList="InChI=1S/CO2/c2-1-3'($|\/i1\+[01]($|,2\+0,3\+0|,2\+1,3\+1|,2\+2,3\+2]))'">
-                    <math xmlns="http://www.w3.org/1998/Math/MathML">
-                        <apply>
-                            <eq/>
-                            <apply>
-                                <rem/>
-                                <apply>
-                                    <plus/>
-                                    <apply>
-                                        <abs/>
-                                        <apply>
-                                            <minus/>
-                                            <ci>ltcs:v2@InitialStateRef</ci>
-                                            <ci>ltcs:v2@FinalStateRef</ci>
-                                        </apply>
-                                    </apply>
-                                    <apply>
-                                        <abs/>
-                                        <apply>
-                                            <minus/>
-                                            <ci>ltcs:v3@InitialStateRef</ci>
-                                            <ci>ltcs:v3@FinalStateRef</ci>
-                                        </apply>
-                                    </apply>
-                                </apply>
-                                <cn>2</cn>
-                            </apply>
-                            <cn>1</cn>
-                        </apply>
-                    </math>
-                </rule>
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:element>
+	<xs:element name="RuleSC01" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO2/c2-1-3'.*' InChI=1S/N2O/c1-2-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<not/>
+							<apply>
+								<and/>
+								<apply>
+									<eq/>
+									<ci>ltcs:l2</ci>
+									<cn>0</cn>
+								</apply>
+								<apply>
+									<neq/>
+									<ci>ltcs:kronigParity</ci>
+									<ci>'e'</ci>
+								</apply>
+							</apply>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleSC02" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO2/c2-1-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<eq/>
+							<ci>ltcs:l2</ci>
+							<ci>ltcs:v2</ci>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleSC03" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO2/c2-1-3'.*'  InChI=1S/N2O/c1-2-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<geq/>
+							<ci>ltcs:J</ci>
+							<ci>ltcs:l2</ci>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleSC04" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO2/c2-1-3'($|\/i1\+[01]($|,2\+0,3\+0|,2\+2,3\+2]))'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<not/>
+							<apply>
+								<or/>
+								<apply>
+									<and/>
+									<apply>
+										<eq/>
+										<ci>ltcs:kronigParity</ci>
+										<ci>'e'</ci>
+									</apply>
+									<apply>
+										<or/>
+										<apply>
+											<and/>
+											<apply>
+												<eq/>
+												<apply>
+													<rem/>
+													<ci>ltcs:J</ci>
+													<cn>2</cn>
+												</apply>
+												<cn>1</cn>
+											</apply>
+											<apply>
+												<eq/>
+												<apply>
+													<rem/>
+													<apply>
+														<plus/>
+														<ci>ltcs:v2</ci>
+														<ci>ltcs:v3</ci>
+													</apply>
+													<cn>2</cn>
+												</apply>
+												<cn>0</cn>
+											</apply>
+										</apply>
+										<apply>
+											<and/>
+											<apply>
+												<eq/>
+												<apply>
+													<rem/>
+													<ci>ltcs:J</ci>
+													<cn>2</cn>
+												</apply>
+												<cn>0</cn>
+											</apply>
+											<apply>
+												<eq/>
+												<apply>
+													<rem/>
+													<apply>
+														<plus/>
+														<ci>ltcs:v2</ci>
+														<ci>ltcs:v3</ci>
+													</apply>
+													<cn>2</cn>
+												</apply>
+												<cn>1</cn>
+											</apply>
+										</apply>
+									</apply>
+								</apply>
+								<apply>
+									<and/>
+									<apply>
+										<eq/>
+										<ci>ltcs:kronigParity</ci>
+										<ci>'f'</ci>
+									</apply>
+									<apply>
+										<or/>
+										<apply>
+											<and/>
+											<apply>
+												<eq/>
+												<apply>
+													<rem/>
+													<ci>ltcs:J</ci>
+													<cn>2</cn>
+												</apply>
+												<cn>0</cn>
+											</apply>
+											<apply>
+												<eq/>
+												<apply>
+													<rem/>
+													<apply>
+														<plus/>
+														<ci>ltcs:v2</ci>
+														<ci>ltcs:v3</ci>
+													</apply>
+													<cn>2</cn>
+												</apply>
+												<cn>0</cn>
+											</apply>
+										</apply>
+										<apply>
+											<and/>
+											<apply>
+												<eq/>
+												<apply>
+													<rem/>
+													<ci>ltcs:J</ci>
+													<cn>2</cn>
+												</apply>
+												<cn>1</cn>
+											</apply>
+											<apply>
+												<eq/>
+												<apply>
+													<rem/>
+													<apply>
+														<plus/>
+														<ci>ltcs:v2</ci>
+														<ci>ltcs:v3</ci>
+													</apply>
+													<cn>2</cn>
+												</apply>
+												<cn>1</cn>
+											</apply>
+										</apply>
+									</apply>
+								</apply>
+							</apply>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleSC05" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/N2O/c1-2-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<and/>
+							<apply>
+								<leq/>
+								<ci>ltcs:l2</ci>
+								<ci>ltcs:v2</ci>
+							</apply>
+							<apply>
+								<eq/>
+								<apply>
+									<rem/>
+									<apply>
+										<abs/>
+										<apply>
+											<minus/>
+											<ci>ltcs:v2</ci>
+											<ci>ltcs:l2</ci>
+										</apply>
+									</apply>
+									<cn>2</cn>
+								</apply>
+								<cn>0</cn>
+							</apply>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleTC01" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO2/c2-1-3'.*' InChI=1S/N2O/c1-2-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<leq/>
+							<apply>
+								<abs/>
+								<apply>
+									<minus/>
+									<ci>ltcs:J@InitialStateRef</ci>
+									<ci>ltcs:J@FinalStateRef</ci>
+								</apply>
+							</apply>
+							<cn>1</cn>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleTC02" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO2/c2-1-3'.*' InChI=1S/N2O/c1-2-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<or/>
+							<apply>
+								<and/>
+								<apply>
+									<eq/>
+									<ci>ltcs:kronigParity@InitialStateRef</ci>
+									<ci>ltcs:kronigParity@FinalStateRef</ci>
+								</apply>
+								<apply>
+									<eq/>
+									<apply>
+										<abs/>
+										<apply>
+											<minus/>
+											<ci>ltcs:J@InitialStateRef</ci>
+											<ci>ltcs:J@FinalStateRef</ci>
+										</apply>
+									</apply>
+									<cn>1</cn>
+								</apply>
+							</apply>
+							<apply>
+								<and/>
+								<apply>
+									<neq/>
+									<ci>ltcs:kronigParity@InitialStateRef</ci>
+									<ci>ltcs:kronigParity@FinalStateRef</ci>
+								</apply>
+								<apply>
+									<eq/>
+									<apply>
+										<abs/>
+										<apply>
+											<minus/>
+											<ci>ltcs:J@InitialStateRef</ci>
+											<ci>ltcs:J@FinalStateRef</ci>
+										</apply>
+									</apply>
+									<cn>0</cn>
+								</apply>
+							</apply>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleTC03" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO2/c2-1-3'.*' InChI=1S/N2O/c1-2-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<not/>
+							<apply>
+								<and/>
+								<apply>
+									<eq/>
+									<ci>ltcs:l2@InitialStateRef</ci>
+									<cn>0</cn>
+								</apply>
+								<apply>
+									<eq/>
+									<ci>ltcs:l2@FinalStateRef</ci>
+									<cn>0</cn>
+								</apply>
+								<apply>
+									<neq/>
+									<apply>
+										<abs/>
+										<apply>
+											<minus/>
+											<ci>ltcs:J@InitialStateRef</ci>
+											<ci>ltcs:J@FinalStateRef</ci>
+										</apply>
+									</apply>
+									<cn>1</cn>
+								</apply>
+							</apply>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleTC04" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO2/c2-1-3'($|\/i1\+[01]($|,2\+0,3\+0|,2\+1,3\+1|,2\+2,3\+2]))'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<eq/>
+							<apply>
+								<rem/>
+								<apply>
+									<plus/>
+									<apply>
+										<abs/>
+										<apply>
+											<minus/>
+											<ci>ltcs:v2@InitialStateRef</ci>
+											<ci>ltcs:v2@FinalStateRef</ci>
+										</apply>
+									</apply>
+									<apply>
+										<abs/>
+										<apply>
+											<minus/>
+											<ci>ltcs:v3@InitialStateRef</ci>
+											<ci>ltcs:v3@FinalStateRef</ci>
+										</apply>
+									</apply>
+								</apply>
+								<cn>2</cn>
+							</apply>
+							<cn>1</cn>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleTC05" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/N2O/c1-2-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<leq/>
+							<apply>
+								<abs/>
+								<apply>
+									<minus/>
+									<ci>ltcs:v1@InitialStateRef</ci>
+									<ci>ltcs:v1@FinalStateRef</ci>
+								</apply>
+							</apply>
+							<cn>10</cn>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleTC06" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/N2O/c1-2-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<leq/>
+							<apply>
+								<abs/>
+								<apply>
+									<minus/>
+									<ci>ltcs:v2@InitialStateRef</ci>
+									<ci>ltcs:v2@FinalStateRef</ci>
+								</apply>
+							</apply>
+							<cn>20</cn>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleTC07" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/N2O/c1-2-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<leq/>
+							<apply>
+								<abs/>
+								<apply>
+									<minus/>
+									<ci>ltcs:v3@InitialStateRef</ci>
+									<ci>ltcs:v3@FinalStateRef</ci>
+								</apply>
+							</apply>
+							<cn>10</cn>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleTC08" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/N2O/c1-2-3'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<leq/>
+							<apply>
+								<abs/>
+								<apply>
+									<minus/>
+									<ci>ltcs:l2@InitialStateRef</ci>
+									<ci>ltcs:l2@FinalStateRef</ci>
+								</apply>
+							</apply>
+							<cn>3</cn>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+
 	<xs:element name="rule">
 		<xs:complexType>
 			<xs:complexContent>

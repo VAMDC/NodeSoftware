@@ -7,7 +7,7 @@
 					<Name>C. Hill</Name>
 				</Author>
 				<Author>
-					<Name> M.-L. Dubernet</Name>
+					<Name>M.-L. Dubernet</Name>
 				</Author>
 			</Authors>
 			<Title/>
@@ -65,7 +65,7 @@
 						</nltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleB01>false</RuleB01>
+						<RuleSB01>false</RuleSB01>
 					</Verification>
 				</MolecularState>
 				<MolecularState stateID="SHIT-5102">
@@ -88,177 +88,177 @@
 						</nltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleB01>true</RuleB01>
+						<RuleSB01>true</RuleSB01>
 					</Verification>
 				</MolecularState>
 			</Molecule>
-            <Molecule speciesID="XHIT-XLYOFNOQVPJJNP-TUGWDZLBSA-N">
-                <MolecularChemicalSpecies>
-                    <OrdinaryStructuralFormula>
-                        <Value>H2O</Value>
-                    </OrdinaryStructuralFormula>
-                    <StoichiometricFormula>H2O</StoichiometricFormula>
-                    <IonCharge>0</IonCharge>
-                    <ChemicalName>
-                        <Value>Water</Value>
-                    </ChemicalName>
-                    <InChI>InChI=1S/H2O/h1H2/i1+2/hDH</InChI>
-                    <InChIKey>XLYOFNOQVPJJNP-TUGWDZLBSA-N</InChIKey>
-                    <MoleculeStructure>
-                        <cml:atomArray>
-                            <cml:atom elementType="H" id="H1"/>
-                            <cml:atom elementType="H" id="H2"/>
-                            <cml:atom elementType="O" id="O1"/>
-                        </cml:atomArray>
-                        <cml:bondArray>
-                            <cml:bond atomRefs2="H1 O1" id="H1_O1" order="S"/>
-                            <cml:bond atomRefs2="H2 O1" id="H2_O1" order="S"/>
-                        </cml:bondArray>
-                    </MoleculeStructure>
-                    <StableMolecularProperties/>
-                    <Comment>H2(16O)</Comment>
-                </MolecularChemicalSpecies>
-                <MolecularState stateID="SHIT-5099">
-                    <Description/>
-                    <MolecularStateCharacterisation>
-                        <StateEnergy energyOrigin="Zero-point energy">
-                            <Value units="1/cm">9873.2269</Value>
-                        </StateEnergy>
-                        <TotalStatisticalWeight>45</TotalStatisticalWeight>
-                    </MolecularStateCharacterisation>
-                    <Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
-                        <nltcs:QNs>
-                            <nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
-                            <nltcs:v1>1</nltcs:v1>
-                            <nltcs:v2>1</nltcs:v2>
-                            <nltcs:v3>1</nltcs:v3>
-                            <nltcs:J>7</nltcs:J>
-                            <nltcs:Ka>4</nltcs:Ka>
-                            <nltcs:Kc>2</nltcs:Kc>
-                        </nltcs:QNs>
-                    </Case>
-                    <Verification>
-                        <RuleB01>false</RuleB01>
-                    </Verification>
-                </MolecularState>
-                <MolecularState stateID="SHIT-5100">
-                    <Description/>
-                    <MolecularStateCharacterisation>
-                        <StateEnergy energyOrigin="Zero-point energy">
-                            <Value units="1/cm">842.357</Value>
-                        </StateEnergy>
-                        <TotalStatisticalWeight>45</TotalStatisticalWeight>
-                    </MolecularStateCharacterisation>
-                    <Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
-                        <nltcs:QNs>
-                            <nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
-                            <nltcs:v1>0</nltcs:v1>
-                            <nltcs:v2>0</nltcs:v2>
-                            <nltcs:v3>0</nltcs:v3>
-                            <nltcs:J>7</nltcs:J>
-                            <nltcs:Ka>3</nltcs:Ka>
-                            <nltcs:Kc>4</nltcs:Kc>
-                        </nltcs:QNs>
-                    </Case>
-                    <Verification>
-                        <RuleB01>true</RuleB01>
-                    </Verification>
-                </MolecularState>
-            </Molecule>
-            <Molecule speciesID="XHIT-XLYOFNOQVPJJNP-OXEBXWKTSA-N">
-                <MolecularChemicalSpecies>
-                    <OrdinaryStructuralFormula>
-                        <Value>H2O</Value>
-                    </OrdinaryStructuralFormula>
-                    <StoichiometricFormula>H2O</StoichiometricFormula>
-                    <IonCharge>0</IonCharge>
-                    <ChemicalName>
-                        <Value>Water</Value>
-                    </ChemicalName>
-                    <InChI>InChI=1S/H2O/h1H2/i1+2/hH2</InChI>
-                    <InChIKey>XLYOFNOQVPJJNP-OXEBXWKTSA-N</InChIKey>
-                    <MoleculeStructure>
-                        <cml:atomArray>
-                            <cml:atom elementType="H" id="H1"/>
-                            <cml:atom elementType="H" id="H2"/>
-                            <cml:atom elementType="O" id="O1"/>
-                        </cml:atomArray>
-                        <cml:bondArray>
-                            <cml:bond atomRefs2="H1 O1" id="H1_O1" order="S"/>
-                            <cml:bond atomRefs2="H2 O1" id="H2_O1" order="S"/>
-                        </cml:bondArray>
-                    </MoleculeStructure>
-                    <StableMolecularProperties/>
-                    <Comment>H2(16O)</Comment>
-                </MolecularChemicalSpecies>
-                <MolecularState stateID="SHIT-5103">
-                    <Description/>
-                    <MolecularStateCharacterisation>
-                        <StateEnergy energyOrigin="Zero-point energy">
-                            <Value units="1/cm">9873.2269</Value>
-                        </StateEnergy>
-                        <TotalStatisticalWeight>45</TotalStatisticalWeight>
-                    </MolecularStateCharacterisation>
-                    <Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
-                        <nltcs:QNs>
-                            <nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
-                            <nltcs:v1>1</nltcs:v1>
-                            <nltcs:v2>1</nltcs:v2>
-                            <nltcs:v3>1</nltcs:v3>
-                            <nltcs:J>7</nltcs:J>
-                            <nltcs:Ka>4</nltcs:Ka>
-                            <nltcs:Kc>2</nltcs:Kc>
-                        </nltcs:QNs>
-                    </Case>
-                    <Verification>
-                        <RuleB01>false</RuleB01>
-                    </Verification>
-                </MolecularState>
-                <MolecularState stateID="SHIT-5104">
-                    <Description/>
-                    <MolecularStateCharacterisation>
-                        <StateEnergy energyOrigin="Zero-point energy">
-                            <Value units="1/cm">842.357</Value>
-                        </StateEnergy>
-                        <TotalStatisticalWeight>45</TotalStatisticalWeight>
-                    </MolecularStateCharacterisation>
-                    <Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
-                        <nltcs:QNs>
-                            <nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
-                            <nltcs:v1>0</nltcs:v1>
-                            <nltcs:v2>0</nltcs:v2>
-                            <nltcs:v3>0</nltcs:v3>
-                            <nltcs:J>7</nltcs:J>
-                            <nltcs:Ka>3</nltcs:Ka>
-                            <nltcs:Kc>4</nltcs:Kc>
-                        </nltcs:QNs>
-                    </Case>
-                    <Verification>
-                        <RuleB01>true</RuleB01>
-                    </Verification>
-                </MolecularState>
-            </Molecule>
+			<Molecule speciesID="XHIT-XLYOFNOQVPJJNP-TUGWDZLBSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>H2O</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>H2O</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Water</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/H2O/h1H2/i1+2/hDH</InChI>
+					<InChIKey>XLYOFNOQVPJJNP-TUGWDZLBSA-N</InChIKey>
+					<MoleculeStructure>
+						<cml:atomArray>
+							<cml:atom elementType="H" id="H1"/>
+							<cml:atom elementType="H" id="H2"/>
+							<cml:atom elementType="O" id="O1"/>
+						</cml:atomArray>
+						<cml:bondArray>
+							<cml:bond atomRefs2="H1 O1" id="H1_O1" order="S"/>
+							<cml:bond atomRefs2="H2 O1" id="H2_O1" order="S"/>
+						</cml:bondArray>
+					</MoleculeStructure>
+					<StableMolecularProperties/>
+					<Comment>H2(16O)</Comment>
+				</MolecularChemicalSpecies>
+				<MolecularState stateID="SHIT-5099">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">9873.2269</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>45</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+						<nltcs:QNs>
+							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
+							<nltcs:v1>1</nltcs:v1>
+							<nltcs:v2>1</nltcs:v2>
+							<nltcs:v3>1</nltcs:v3>
+							<nltcs:J>7</nltcs:J>
+							<nltcs:Ka>4</nltcs:Ka>
+							<nltcs:Kc>2</nltcs:Kc>
+						</nltcs:QNs>
+					</Case>
+					<Verification>
+						<RuleSB01>false</RuleSB01>
+					</Verification>
+				</MolecularState>
+				<MolecularState stateID="SHIT-5100">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">842.357</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>45</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+						<nltcs:QNs>
+							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
+							<nltcs:v1>0</nltcs:v1>
+							<nltcs:v2>0</nltcs:v2>
+							<nltcs:v3>0</nltcs:v3>
+							<nltcs:J>7</nltcs:J>
+							<nltcs:Ka>3</nltcs:Ka>
+							<nltcs:Kc>4</nltcs:Kc>
+						</nltcs:QNs>
+					</Case>
+					<Verification>
+						<RuleSB01>true</RuleSB01>
+					</Verification>
+				</MolecularState>
+			</Molecule>
+			<Molecule speciesID="XHIT-XLYOFNOQVPJJNP-OXEBXWKTSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>H2O</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>H2O</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Water</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/H2O/h1H2/i1+2/hH2</InChI>
+					<InChIKey>XLYOFNOQVPJJNP-OXEBXWKTSA-N</InChIKey>
+					<MoleculeStructure>
+						<cml:atomArray>
+							<cml:atom elementType="H" id="H1"/>
+							<cml:atom elementType="H" id="H2"/>
+							<cml:atom elementType="O" id="O1"/>
+						</cml:atomArray>
+						<cml:bondArray>
+							<cml:bond atomRefs2="H1 O1" id="H1_O1" order="S"/>
+							<cml:bond atomRefs2="H2 O1" id="H2_O1" order="S"/>
+						</cml:bondArray>
+					</MoleculeStructure>
+					<StableMolecularProperties/>
+					<Comment>H2(16O)</Comment>
+				</MolecularChemicalSpecies>
+				<MolecularState stateID="SHIT-5103">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">9873.2269</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>45</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+						<nltcs:QNs>
+							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
+							<nltcs:v1>1</nltcs:v1>
+							<nltcs:v2>1</nltcs:v2>
+							<nltcs:v3>1</nltcs:v3>
+							<nltcs:J>7</nltcs:J>
+							<nltcs:Ka>4</nltcs:Ka>
+							<nltcs:Kc>2</nltcs:Kc>
+						</nltcs:QNs>
+					</Case>
+					<Verification>
+						<RuleSB01>false</RuleSB01>
+					</Verification>
+				</MolecularState>
+				<MolecularState stateID="SHIT-5104">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">842.357</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>45</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+						<nltcs:QNs>
+							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
+							<nltcs:v1>0</nltcs:v1>
+							<nltcs:v2>0</nltcs:v2>
+							<nltcs:v3>0</nltcs:v3>
+							<nltcs:J>7</nltcs:J>
+							<nltcs:Ka>3</nltcs:Ka>
+							<nltcs:Kc>4</nltcs:Kc>
+						</nltcs:QNs>
+					</Case>
+					<Verification>
+						<RuleSB01>true</RuleSB01>
+					</Verification>
+				</MolecularState>
+			</Molecule>
 		</Molecules>
 	</Species>
 	<Processes>
 		<Radiative>
-            <RadiativeTransition>
-                <EnergyWavelength>
-                    <Wavenumber>
-                        <SourceRef>BHIT-H2O-nu-40</SourceRef>
-                        <Value units="1/cm">9030.8699</Value>
-                        <Accuracy>
-                            <Statistical>0.001</Statistical>
-                        </Accuracy>
-                    </Wavenumber>
-                </EnergyWavelength>
-                <InitialStateRef>SHIT-5100</InitialStateRef>
-                <FinalStateRef>SHIT-5099</FinalStateRef>
-                <Verification>
-                    <RuleB02>true</RuleB02>
-                    <RuleB03>false</RuleB03>
-                </Verification>
-            </RadiativeTransition>
+			<RadiativeTransition>
+				<EnergyWavelength>
+					<Wavenumber>
+						<SourceRef>BHIT-H2O-nu-40</SourceRef>
+						<Value units="1/cm">9030.8699</Value>
+						<Accuracy>
+							<Statistical>0.001</Statistical>
+						</Accuracy>
+					</Wavenumber>
+				</EnergyWavelength>
+				<InitialStateRef>SHIT-5100</InitialStateRef>
+				<FinalStateRef>SHIT-5099</FinalStateRef>
+				<Verification>
+					<RuleTB01>true</RuleTB01>
+					<RuleTB02>false</RuleTB02>
+				</Verification>
+			</RadiativeTransition>
 			<RadiativeTransition>
 				<EnergyWavelength>
 					<Wavenumber>
@@ -272,29 +272,29 @@
 				<InitialStateRef>SHIT-5102</InitialStateRef>
 				<FinalStateRef>SHIT-5101</FinalStateRef>
 				<Verification>
-					<RuleB02>false</RuleB02>
-                    <RuleB03>true</RuleB03>
-                    <RuleB04>false</RuleB04>
+					<RuleTB01>false</RuleTB01>
+					<RuleTB02>true</RuleTB02>
+					<RuleTB03>false</RuleTB03>
 				</Verification>
 			</RadiativeTransition>
-            <RadiativeTransition>
-                <EnergyWavelength>
-                    <Wavenumber>
-                        <SourceRef>BHIT-H2O-nu-40</SourceRef>
-                        <Value units="1/cm">11964.0248</Value>
-                        <Accuracy>
-                            <Statistical>0.001</Statistical>
-                        </Accuracy>
-                    </Wavenumber>
-                </EnergyWavelength>
-                <InitialStateRef>SHIT-5103</InitialStateRef>
-                <FinalStateRef>SHIT-5104</FinalStateRef>
-                <Verification>
-                    <RuleB02>true</RuleB02>
-                    <RuleB03>false</RuleB03>
-                    <RuleB04>false</RuleB04>
-                </Verification>
-            </RadiativeTransition>
+			<RadiativeTransition>
+				<EnergyWavelength>
+					<Wavenumber>
+						<SourceRef>BHIT-H2O-nu-40</SourceRef>
+						<Value units="1/cm">11964.0248</Value>
+						<Accuracy>
+							<Statistical>0.001</Statistical>
+						</Accuracy>
+					</Wavenumber>
+				</EnergyWavelength>
+				<InitialStateRef>SHIT-5103</InitialStateRef>
+				<FinalStateRef>SHIT-5104</FinalStateRef>
+				<Verification>
+					<RuleTB01>true</RuleTB01>
+					<RuleTB02>false</RuleTB02>
+					<RuleTB03>false</RuleTB03>
+				</Verification>
+			</RadiativeTransition>
 		</Radiative>
 	</Processes>
 </XSAMSData>
