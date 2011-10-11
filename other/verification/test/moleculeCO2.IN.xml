@@ -7,7 +7,7 @@
 					<Name>C. Hill</Name>
 				</Author>
 				<Author>
-					<Name> M.-L. Dubernet</Name>
+					<Name>M.-L. Dubernet</Name>
 				</Author>
 			</Authors>
 			<Title/>
@@ -30,21 +30,24 @@
 	<Functions>
 		<Function functionID="Fdelta">
 			<Comments>This function gives the pressure-dependence of the absorption
-                line wavenumber shift: nu = nu_ref + (delta).(p/pref)</Comments>
+				line wavenumber shift: nu = nu_ref + (delta).(p/pref)
+			</Comments>
 			<Expression computerLanguage="Fortran">
-                delta_ref * p
-            </Expression>
+				delta_ref * p
+			</Expression>
 			<Y name="delta" units="1/cm"/>
 			<Arguments>
 				<Argument name="p" units="atm">
 					<Description>The pressure of the shifting environment,
-                                 in atm</Description>
+						in atm
+					</Description>
 				</Argument>
 			</Arguments>
 			<Parameters>
 				<Parameter name="delta_ref" units="1/cm">
 					<Description>The pressure-shift of the absorption line at
-                        pref = 1 atm</Description>
+						pref = 1 atm
+					</Description>
 				</Parameter>
 			</Parameters>
 		</Function>
@@ -104,15 +107,15 @@
 						</ltcs:QNs>
 					</Case>
 				</MolecularState>
-                <MolecularState stateID="SHIT-2722">
-                    <Description/>
-                    <MolecularStateCharacterisation>
-                        <StateEnergy energyOrigin="Zero-point energy">
-                            <Value units="1/cm">4060.404</Value>
-                        </StateEnergy>
-                        <TotalStatisticalWeight>74</TotalStatisticalWeight>
-                    </MolecularStateCharacterisation>
-                </MolecularState>
+				<MolecularState stateID="SHIT-2722">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">4060.404</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>74</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+				</MolecularState>
 				<MolecularState stateID="SHIT-2723">
 					<Description/>
 					<MolecularStateCharacterisation>
@@ -199,33 +202,33 @@
 						</ltcs:QNs>
 					</Case>
 				</MolecularState>
-            </Molecule>
-            <Molecule speciesID="XHIT-CURLTUGMZLYLDI-FSPCKYAWSA-N">
-                <MolecularChemicalSpecies>
-                    <OrdinaryStructuralFormula>
-                        <Value>CO2</Value>
-                    </OrdinaryStructuralFormula>
-                    <StoichiometricFormula>CO2</StoichiometricFormula>
-                    <IonCharge>0</IonCharge>
-                    <ChemicalName>
-                        <Value>Carbon Dioxide</Value>
-                    </ChemicalName>
-                    <InChI>InChI=1S/CO2/c2-1-3/i1+1,2+0,3+0</InChI>
-                    <InChIKey>CURLTUGMZLYLDI-FSPCKYAWSA-N</InChIKey>
-                    <MoleculeStructure>
-                        <cml:atomArray>
-                            <cml:atom elementType="O" id="O1" isotopeNumber="18"/>
-                            <cml:atom elementType="O" id="O2"/>
-                            <cml:atom elementType="C" id="C1" isotopeNumber="13"/>
-                        </cml:atomArray>
-                        <cml:bondArray>
-                            <cml:bond atomRefs2="C1 O1" id="C1_O1" order="D"/>
-                            <cml:bond atomRefs2="C1 O2" id="C1_O2" order="D"/>
-                        </cml:bondArray>
-                    </MoleculeStructure>
-                    <StableMolecularProperties/>
-                    <Comment>(16O)(13C)(16O)</Comment>
-                </MolecularChemicalSpecies>
+			</Molecule>
+			<Molecule speciesID="XHIT-CURLTUGMZLYLDI-FSPCKYAWSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>CO2</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>CO2</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Carbon Dioxide</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/CO2/c2-1-3/i1+1,2+0,3+0</InChI>
+					<InChIKey>CURLTUGMZLYLDI-FSPCKYAWSA-N</InChIKey>
+					<MoleculeStructure>
+						<cml:atomArray>
+							<cml:atom elementType="O" id="O1" isotopeNumber="18"/>
+							<cml:atom elementType="O" id="O2"/>
+							<cml:atom elementType="C" id="C1" isotopeNumber="13"/>
+						</cml:atomArray>
+						<cml:bondArray>
+							<cml:bond atomRefs2="C1 O1" id="C1_O1" order="D"/>
+							<cml:bond atomRefs2="C1 O2" id="C1_O2" order="D"/>
+						</cml:bondArray>
+					</MoleculeStructure>
+					<StableMolecularProperties/>
+					<Comment>(16O)(13C)(16O)</Comment>
+				</MolecularChemicalSpecies>
 				<MolecularState stateID="SHIT-2727">
 					<Description/>
 					<MolecularStateCharacterisation>

@@ -1,3 +1,6 @@
+Dependencies:
+ http://mathdom.sourceforge.net/
+
 1. python check.py
 Read from test/transition3OK.IN.xml
 Write to stdout

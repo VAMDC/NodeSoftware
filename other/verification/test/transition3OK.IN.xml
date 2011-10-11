@@ -18,23 +18,23 @@
 			<DigitalObjectIdentifier>None</DigitalObjectIdentifier>
 			<BibTeX>@article{K03, Author = {{Kurucz}, R.~L.}, Title = {Robert L. Kurucz on-line database of observed and predicted atomic transitions}, Bdsk-Url-1 = {http://kurucz.harvard.edu/atoms/2801/gf2801.pos, http://kurucz.harvard.edu/atoms/2900/gfemq2900.pos, http://kurucz.harvard.edu/atoms/2901/gfemq2901.pos}}</BibTeX>
 		</Source>
-        <Source sourceID="Bvald-K04">
-            <Authors>
-                <Author>
-                    <Name>R. L. Kurucz</Name>
-                </Author>
-            </Authors>
-            <Title>Robert L. Kurucz on-line database of observed and predicted atomic transitions</Title>
-            <Category>journal</Category>
-            <Year>2222</Year>
-            <SourceName>unknown</SourceName>
-            <Volume>None</Volume>
-            <PageBegin/>
-            <PageEnd/>
-            <UniformResourceIdentifier>http://kurucz.harvard.edu/atoms/2801/gf2801.pos, http://kurucz.harvard.edu/atoms/2900/gfemq2900.pos, http://kurucz.harvard.edu/atoms/2901/gfemq2901.pos</UniformResourceIdentifier>
-            <DigitalObjectIdentifier>None</DigitalObjectIdentifier>
-            <BibTeX>@article{K03, Author = {{Kurucz}, R.~L.}, Title = {Robert L. Kurucz on-line database of observed and predicted atomic transitions}, Bdsk-Url-1 = {http://kurucz.harvard.edu/atoms/2801/gf2801.pos, http://kurucz.harvard.edu/atoms/2900/gfemq2900.pos, http://kurucz.harvard.edu/atoms/2901/gfemq2901.pos}}</BibTeX>
-        </Source>
+		<Source sourceID="Bvald-K04">
+			<Authors>
+				<Author>
+					<Name>R. L. Kurucz</Name>
+				</Author>
+			</Authors>
+			<Title>Robert L. Kurucz on-line database of observed and predicted atomic transitions</Title>
+			<Category>journal</Category>
+			<Year>2222</Year>
+			<SourceName>unknown</SourceName>
+			<Volume>None</Volume>
+			<PageBegin/>
+			<PageEnd/>
+			<UniformResourceIdentifier>http://kurucz.harvard.edu/atoms/2801/gf2801.pos, http://kurucz.harvard.edu/atoms/2900/gfemq2900.pos, http://kurucz.harvard.edu/atoms/2901/gfemq2901.pos</UniformResourceIdentifier>
+			<DigitalObjectIdentifier>None</DigitalObjectIdentifier>
+			<BibTeX>@article{K03, Author = {{Kurucz}, R.~L.}, Title = {Robert L. Kurucz on-line database of observed and predicted atomic transitions}, Bdsk-Url-1 = {http://kurucz.harvard.edu/atoms/2801/gf2801.pos, http://kurucz.harvard.edu/atoms/2900/gfemq2900.pos, http://kurucz.harvard.edu/atoms/2901/gfemq2901.pos}}</BibTeX>
+		</Source>
 		<Source sourceID="Bvald-K06">
 			<Authors>
 				<Author>
