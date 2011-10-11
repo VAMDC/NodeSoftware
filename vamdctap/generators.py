@@ -948,7 +948,7 @@ def makeBroadeningType(G, name='Natural'):
     """
     Create the Broadening tag
     """
-
+    
     lsparams = makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter' % name, G)
     if not lsparams:
         return ''
@@ -982,15 +982,16 @@ def XsamsRadTranBroadening(G):
     allowed names are: pressure, instrument, doppler, natural
     """
     s=[]
-    if hasattr(G('RadTransBroadeningNatural'), "Broadenings"):
-        for Broadening in  makeiter(G('RadTransBroadeningNatural').Broadenings):
+    broadenings = {'Natural', 'Instrument', 'Doppler', 'Pressure'}
+
+    for broadening in broadenings : 
+       if hasattr(G('RadTransBroadening'+broadening), "Broadenings"):
+        for Broadening in  makeiter(G('RadTransBroadening'+broadening).Broadenings):
             GB = lambda name: GetValue(name, Broadening=Broadening)
-            s.append( makeBroadeningType(GB, name='Natural') )
-    else:
-        s.append( makeBroadeningType(G, name='Natural') )
-    s.append( makeBroadeningType(G, name='Instrument') )
-    s.append( makeBroadeningType(G, name='Doppler') )
-    s.append( makeBroadeningType(G, name='Pressure') )
+            s.append( makeBroadeningType(GB, name=broadening) )
+        else:
+            s.append( makeBroadeningType(G, name=broadening) )
+
     return '\n'.join(s)
 
 def XsamsRadTranShifting(RadTran, G):
