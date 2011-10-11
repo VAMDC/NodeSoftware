@@ -968,7 +968,7 @@ def makeBroadeningType(G, name='Natural'):
 
     # in principle we should loop over lineshapes but
     # lets not do so unless somebody actually has several lineshapes
-    # per broadening type
+    # per broadening type             RadTransBroadening%sLineshapeName
     s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
     s += lsparams
     s += '</Lineshape>'
@@ -983,38 +983,34 @@ def XsamsRadTranBroadening(G):
     """
     s=[]
     broadenings = {'Natural', 'Instrument', 'Doppler', 'Pressure'}
-
     for broadening in broadenings : 
-       if hasattr(G('RadTransBroadening'+broadening), "Broadenings"):
-        for Broadening in  makeiter(G('RadTransBroadening'+broadening).Broadenings):
-            GB = lambda name: GetValue(name, Broadening=Broadening)
-            s.append( makeBroadeningType(GB, name=broadening) )
+        if hasattr(G('RadTransBroadening'+broadening), "Broadenings"):
+            for Broadening in  makeiter(G('RadTransBroadening'+broadening).Broadenings):
+                GB = lambda name: GetValue(name, Broadening=Broadening)
+                s.append( makeBroadeningType(GB, name=broadening) )
         else:
             s.append( makeBroadeningType(G, name=broadening) )
-
     return '\n'.join(s)
+    
 
 def XsamsRadTranShifting(RadTran, G):
     """
     Shifting type
     """
     dic = {}
-    nam = G("RadtransShiftingName")
-    eref = G("RadtransShiftingEnv")
+    nam = G("RadTransShiftingName")
+    eref = G("RadTransShiftingEnv")
     if nam:
         dic["name"] = nam
     else:
         return ''
     if eref:
         dic["envRef"] = "E%s-%s"  % (NODEID, eref)
-    string = makePrimaryType("Shifting", "RadtransShifting", G, extraAttr=dic)
-
+    string = makePrimaryType("Shifting", "RadTransShifting", G, extraAttr=dic)
     if hasattr(RadTran, "ShiftingParams"):
         for ShiftingParam in RadTran.ShiftingParams:
             GS = lambda name: GetValue(name, ShiftingParam=ShiftingParam)
-
-            string = makePrimaryType("ShiftingParameter", "RadTransShiftingParam", GS, extraAttr={"name":GS("RadTransShiftingParamName")})
-
+            string += makePrimaryType("ShiftingParameter", "RadTransShiftingParam", GS, extraAttr={"name":GS("RadTransShiftingParamName")})
             val = GS("RadTransShiftingParamValueUnits")
 
             if val:
