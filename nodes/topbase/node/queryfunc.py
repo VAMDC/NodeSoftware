@@ -74,7 +74,10 @@ def getSpeciesWithStates(transs):
         specie.States = models.Atomicstate.objects.filter( pk__in = sids )
         for state in specie.States :
             state.Component = getCoupling(state)
+            log.debug('cross unit : '+str(type(state.crosssectionunit)))
         nstates += specie.States.count()
+        
+        
     return species, nstates
 
 def getCoupling(state):
@@ -124,9 +127,11 @@ def setupResults(sql, limit=1000):
 
     # cross sections
     states = []
-    for specie in species:
-        states.extend(specie.States)
-
+    for specie in species:        
+        for state in specie.States : 
+            if state.xdata is not None : # do not add state without xdata/ydata
+                states.append(state)
+    
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
     headerinfo={\
