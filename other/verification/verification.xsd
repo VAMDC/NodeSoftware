@@ -121,6 +121,9 @@
 			<xs:element ref="RuleTC06" minOccurs="0"/>
 			<xs:element ref="RuleTC07" minOccurs="0"/>
 			<xs:element ref="RuleTC08" minOccurs="0"/>
+			<xs:element ref="RuleTD01" minOccurs="0"/>
+			<xs:element ref="RuleTD02" minOccurs="0"/>
+			<xs:element ref="RuleTD03" minOccurs="0"/>
 		</xs:sequence>
 	</xs:group>
 	<xs:element name="RuleTA01" type="xs:boolean" nillable="true">
@@ -750,7 +753,87 @@
 			</xs:appinfo>
 		</xs:annotation>
 	</xs:element>
-
+	<xs:element name="RuleTD01" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO/c1-2'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<eq/>
+							<apply>
+								<abs/>
+								<apply>
+									<minus/>
+									<ci>dcs:J@InitialStateRef</ci>
+									<ci>dcs:J@FinalStateRef</ci>
+								</apply>
+							</apply>
+							<cn>1</cn>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleTD02" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO/c1-2'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<not/>
+							<apply>
+								<and/>
+								<apply>
+									<eq/>
+									<apply>
+										<abs/>
+										<apply>
+											<minus/>
+											<ci>dcs:v@InitialStateRef</ci>
+											<ci>dcs:v@FinalStateRef</ci>
+										</apply>
+									</apply>
+									<cn>0</cn>
+								</apply>
+								<apply>
+									<neq/>
+									<apply>
+										<minus/>
+										<ci>dcs:J@InitialStateRef</ci>
+										<ci>dcs:J@FinalStateRef</ci>
+									</apply>
+									<cn>1</cn>
+								</apply>
+							</apply>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="RuleTD03" type="xs:boolean" nillable="true">
+		<xs:annotation>
+			<xs:appinfo>
+				<rule forInChIList="InChI=1S/CO/c1-2'.*'">
+					<math xmlns="http://www.w3.org/1998/Math/MathML">
+						<apply>
+							<leq/>
+							<apply>
+								<abs/>
+								<apply>
+									<minus/>
+									<ci>dcs:v@InitialStateRef</ci>
+									<ci>dcs:v@FinalStateRef</ci>
+								</apply>
+							</apply>
+							<cn>5</cn>
+						</apply>
+					</math>
+				</rule>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="rule">
 		<xs:complexType>
 			<xs:complexContent>
