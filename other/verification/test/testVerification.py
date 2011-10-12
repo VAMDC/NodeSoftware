@@ -20,7 +20,7 @@ class VerificationTestCase(unittest.TestCase):
     def setUp(self):
         pass
 
-    
+
     def testRunRulesTransition1MinOK(self):
         ver = Verification(open("test/transition1OK.IN.xml"))
         ver.onlyRules = {"RuleTA02F": {"copy": "RuleTA02", "forInChIList": "InChI=1S/Fe/q+3/"}}
@@ -64,6 +64,13 @@ class VerificationTestCase(unittest.TestCase):
         ver = Verification(open("test/moleculeN2O.IN.xml"))
         doc = ver.run()
         self.assertEquals(etree.tostring(objectify.fromstring(open("test/moleculeN2O.OUT.MIN.xml").read())), etree.tostring(objectify.fromstring(doc.toxml())))
+
+
+    def testRunRulesMoleculeCOMinOK(self):
+        ver = Verification(open("test/moleculeCO.IN.xml"))
+        #ver.printRules()
+        doc = ver.run()
+        self.assertEquals(etree.tostring(objectify.fromstring(open("test/moleculeCO.OUT.MIN.xml").read())), etree.tostring(objectify.fromstring(doc.toxml())))
 
 
     def tearDown(self):
@@ -172,7 +179,7 @@ def _removeRedundantParentNodes(usefulParentNodes, stopNode, whiteListOfRefs):
 
     _removeRedundantParentNodes(parentsOfNodes, stopNode, whiteListOfRefs)
 
-#makeTestFile('moleculeN2O', 5)
+#makeTestFile('moleculeCO', 3)
 
 if __name__ == '__main__':
     unittest.main()
