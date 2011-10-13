@@ -45,6 +45,23 @@ def getSpeciesWithStates(transs,addAtomStates,addMoleStates):
 
     return atoms,molecules,nspecies,nstates
 
+def getMethods():
+    "Define and map the methods of VALD to xsams equivalents. Store on object for easy access through dictionary"
+    class Method(object):
+        # OBSTYPE_DICT = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
+        CATEGORY_DICT = {0:'experiment', 1:'semiempirical', 2:'derived', 3:'theory',4:'semiempirical',5:'compilation'}
+        DESC_DICT = {0: "VALD exp - transition between levels with experimentally known energies",
+                     1: "VALD obs - transition between levels with experimentally known energies",
+                     2: "VALD emp - relativistic Hartree-Fock calculations, normalized to the experimental lifetimes",
+                     3: "VALD pred - transitions between predicted energy levels",
+                     4: "VALD calc - relativistic Hartree-Fock calculations of lifetimes and transition probabilities",
+                     5: "VALD mix - mixture of observation times"}
+        def __init__(self, ID):                        
+            self.id = ID
+            self.category = self.CATEGORY_DICT[ID]
+            self.description = self.DESC_DICT[ID]
+    return (Method(0), Method(1), Method(2), Method(3), Method(4), Method(5))
+
 def setupResults(sql):
     q = sql2Q(sql)
     log.debug('Just ran sql2Q(sql); setting up QuerySets now.')
@@ -68,6 +85,8 @@ def setupResults(sql):
     addMoleStates = (not sql.requestables or 'moleculestates' in sql.requestables)
     atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs,addAtomStates,addMoleStates)
 
+    methods = getMethods()
+
     if ntranss:
         size_estimate='%.2f'%(ntranss*0.0014 + 0.01)
     else: size_estimate='0.00'
@@ -87,7 +106,8 @@ def setupResults(sql):
             'Molecules':molecules,
             'Sources':sources,
             'HeaderInfo':headerinfo,
-            'Environments':Environments #this is set up statically in models.py
+            'Environments':Environments, #this is set up statically in models.py
+            'Methods':methods
            }
 
 # The old way of getting references via linelists.

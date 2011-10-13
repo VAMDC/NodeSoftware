@@ -13,6 +13,10 @@ RETURNABLES = {\
 'SourceVolume':'Source.volume',
 'SourceYear':'Source.year',
 #############################################################
+'MethodID':'Method.id',
+'MethodCategory':'Method.category',
+'MethodDescription':'Method.description',
+#############################################################
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'Atom.name',
 'AtomSpeciesID':'Atom.id',
@@ -43,6 +47,7 @@ RETURNABLES = {\
 'RadTransWavelengthRef':'RadTran.wave_ref_id',
 'RadTransFinalStateRef':'RadTran.upstate_id',
 'RadTransInitialStateRef':'RadTran.lostate_id',
+'RadTransMethod':'RadTran.method_return',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
 #'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.accur',
 'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
@@ -83,6 +88,6 @@ RESTRICTABLES = {\
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 'RadTransBroadeningNatural':'gammarad',
 'RadTransBroadeningPressure':'gammastark',
-'MethodCategory':('obstype',valdObstype)
+'MethodCategory':('method_restrict',valdObstype)
 }
 
