@@ -162,13 +162,20 @@ class Transition(Model):
     gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans', db_index=False)
     waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans', db_index=False)
 
-    wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False)
-    loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
-    gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans', db_index=False)
-    gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
-    waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans', db_index=False)
+    #wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False)
+    #loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
+    #gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans', db_index=False)
+    #gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
+    #waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans', db_index=False)
 
-    obstype = PositiveSmallIntegerField(null=True, db_index=True) # this is the obstype of the wave_linelist, created in post-processing.
+    # Method information. Since some xsams method categories are represented more than one vald equivalent,
+    # we need one field for restrictable's queries and returnable's queries respectively.
+    # vald category mapping = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
+    # vald->xsams mapping = {0:'experiment', 1:'semiempirical', 2:'derived', 3:'theory',4:'semiempirical',5:'compilation'}
+    # mapping between method_return and method_restrict = {0:0, 1:1, 2:2, 3:3, 4:1, 5:5} (i.e. xsams=semiempirical is represented in vald by both obs and calc (1 and 4)).
+
+    method_return = PositiveSmallIntegerField(null=True, db_index=True) # this is the method category
+    method_restrict = PositiveSmallIntegerField(null=True, db_index=True) # this is the method category to restrict on, populated in post-processing.
 
     def getWaals(self):
         if self.gammawaals: return self.gammawaals

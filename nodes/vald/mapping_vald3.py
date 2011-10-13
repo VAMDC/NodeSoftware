@@ -66,9 +66,9 @@ LINELIST_DICT = parse_linelist_file(base + "VALD3linelists.txt")
 # pred - transitions between predicted energy levels
 # calc - relativistic Hartree-Fock calculations of lifetimes and transition probabilities
 # mix - mixture of observation times
-OBSTYPE_DICT = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
+METHOD_DICT = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
 
-def get_obstype(linedata):
+def get_method_type(linedata):
     """
     Extract linedata and compare with pre-cached dictionary of linelists.
     """
@@ -76,7 +76,7 @@ def get_obstype(linedata):
     file_ref = get_srcfile_ref(linedata, 0, 3)
     entry = LINELIST_DICT.get(file_ref, None)
     if entry:
-        return OBSTYPE_DICT.get(entry[1], 'X') # the type
+        return METHOD_DICT.get(entry[1], 'X') # the type
     else:
         return 'X'
 
@@ -458,8 +458,8 @@ mapping = [
              'cbyte':(bySepNr, 3)},
             {'cname':'listtype',
              'cbyte':(bySepNr, 4)},
-            {'cname':'obstype',
-             'cbyte':(get_obstype, ),
+            {'cname':'method_return',
+             'cbyte':(get_method_type, ),
              'cnull':'X'},
             {'cname':'r1',
              'cbyte':(bySepNr, 5)},
