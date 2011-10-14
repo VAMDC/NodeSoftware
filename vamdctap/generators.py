@@ -33,26 +33,6 @@ log = logging.getLogger('vamdc.tap.generator')
 isiterable = lambda obj: hasattr(obj, '__iter__')
 escape = lambda s: quoteattr(s)[1:-1]
 
-def countReturnables(regexp):
-    """
-    count how often a certain matches the keys of the returnables
-    """
-    r = re.compile(regexp, flags=re.IGNORECASE)
-    return len(filter(r.match, RETURNABLES.keys()))
-
-# Define some globals that allow skipping parts
-# of the generator below.
-N_ENV_KWS = countReturnables('^Environment.*')
-N_METHOD_KWS = countReturnables('^Method.*')
-N_FUNCTION_KWS = countReturnables('^Function.*')
-N_MOLESTATE_KWS = countReturnables('^MoleculeState.*')
-N_MOLE_KWS = countReturnables('^Molecule.*') - N_MOLESTATE_KWS
-N_ATOMSTATE_KWS = countReturnables('^AtomState.*')
-N_ATOM_KWS = countReturnables('^Atom.*') - N_ATOMSTATE_KWS
-N_COLLTRAN_KWS = countReturnables('Collision.*')
-N_RADTRAN_KWS = countReturnables('^RadTran.*')
-N_BROAD_KWS = countReturnables('^.*Broadening.*')
-
 def makeiter(obj):
     """
     Return an iterable, no matter what
@@ -99,7 +79,7 @@ def GetValue(name, **kwargs):
     #log.debug("getvalue, name : "+name)
     try:
         name = RETURNABLES[name]
-    except Exception as e:
+    except Exception, e:
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
@@ -119,7 +99,7 @@ def GetValue(name, **kwargs):
         #log.debug(" try eval : " + name)
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
-    except Exception as e:
+    except Exception, e:
          # this catches the case where the dict-value is a string or mistyped.
         #log.debug('Exception in generators.py: GetValue()')
         value = name
@@ -474,7 +454,7 @@ def makeShellType(tag, keyword, G):
     sid = G("%sID" % keyword)
     string = "<%s" % tag
     if sid:
-        string += " shellid=%s-%s" % (NODEID, sid)
+        string += ' shellid"=%s-%s"' % (NODEID, sid)
     string += ">"
     string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % G("%sPrincipalQN" % keyword)
 
@@ -538,7 +518,7 @@ def makeAtomComponent(Atom, G):
         if hasattr(Atom, "ShellPair"):
             for AtomShellPair in makeiter(Atom.ShellPairs):
                 GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
-                string += "<ShellPair shellPairID=%s-%s>" % (NODEID, GS("AtomStateShellPairID"))
+                string += '<ShellPair shellPairID="%s-%s">' % (NODEID, GS("AtomStateShellPairID"))
                 string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
                 string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
                 string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
@@ -554,7 +534,7 @@ def makeAtomComponent(Atom, G):
     string += makeTermType("Term", "AtomStateTerm", G)
     mixCoe = G("AtomStateMixingCoeff")
     if mixCoe:
-        string += '<MixingCoefficient mixingclass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
+        string += '<MixingCoefficient mixingClass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
     coms = G("AtomStateComponentComment")
     if coms:
         string += "<Comments>%s</Comments>" % coms
@@ -603,7 +583,7 @@ def XsamsAtoms(Atoms):
             G = lambda name: GetValue(name, AtomState=AtomState)
             yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
             yield makeSourceRefs(G('AtomStateRef'))
-            yield makeOptionalTag('Description','AtomStateDescription',G)            
+            yield makeOptionalTag('Description','AtomStateDescription',G)
             yield '<AtomicNumericalData>'
             yield makeDataType('StateEnergy', 'AtomStateEnergy', G)
             yield makeDataType('IonizationEnergy', 'AtomStateIonizationEnergy', G)
@@ -817,28 +797,28 @@ def XsamsMSBuild(MoleculeState):
     if G("MoleculeStateLifeTime"):
         # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
         # the decay attr is a string, either: 'total', 'totalRadiative' or 'totalNonRadiative'
-        yield makeDataType('LifeTime','MoleculeStateLifeTime', G, extraAttrs={'decay':'MoleculeStateLifeTimeDecay'}) 
+        yield makeDataType('LifeTime','MoleculeStateLifeTime', G, extraAttrs={'decay':'MoleculeStateLifeTimeDecay'})
     if hasattr(MoleculeState, "Parameters"):
         for Parameter in makeiter(MoleculeState.Parameters):
             cont, ret = checkXML(Parameter)
             if cont:
                 yield ret
-                continue 
+                continue
             GP = lambda name: GetValue(name, Parameter=Parameter)
             yield makePrimaryType("Parameters","MoleculeStateParameters", GP)
             if GP("MoleculeStateParametersValueData"):
-                yield makeDataType("ValueData", "MoleculeStateParametersValueData", GP)            
+                yield makeDataType("ValueData", "MoleculeStateParametersValueData", GP)
             if GP("MoleculeStateParametersVectorData"):
                 yield makePrimaryType("VectorData", "MoleculeStateParametersVectorData", GP, extraAttr={"units":"MoleculeStateParametersVectorUnits"})
                 if hasattr(Parameter, "Vector"):
-                    for VectorValue in makeiter(Parameter.Vector):                                           
+                    for VectorValue in makeiter(Parameter.Vector):
                         GPV = lambda name: GetValue(name, VectorValue)
                         yield makePrimaryType("Vector", "MoleculeStateParameterVector", GPV,
                                               extraAttr={"ref":"MoleculeStateParameterVectorRef",
                                                          "x3":"MoleculeStateParameterVectorX3",
                                                          "y3":"MoleculeStateParameterVectorY3",
-                                                         "z3":"MoleculeStateParameterVectorZ3"})                                                
-                        yield "</Vector>"                
+                                                         "z3":"MoleculeStateParameterVectorZ3"})
+                        yield "</Vector>"
                 yield "</VectorData>"
             if GP("MoleculeStateParametersMatrixData"):
                 yield makePrimaryType("MatrixData", "MoleculeStateParametersMatrixData", GP,
@@ -905,7 +885,7 @@ def XsamsSolids(Solids):
             yield ret
             continue
         G = lambda name: GetValue(name, Solid=Solid)
-        makePrimaryType("Solid", "Solid", G, extraAttr={"stateID":"S%s-%s" % (NODEID, G("SolidStateID"))})
+        makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
         if hasattr(Solid, "Layers"):
             for Layer in makeiter(Solid.Layers):
                 GL = lambda name: GetValue(name, Layer=Layer)
@@ -943,7 +923,7 @@ def XsamsParticles(Particles):
             yield ret
             continue
         G = lambda name: GetValue(name, Particle=Particle)
-        yield """<Particle stateID="S%s-%s" name="%s">""" % (G('NodeID'), G('ParticleStateID'), G('ParticleName'))
+        yield """<Particle speciesID="S%s-%s" name="%s">""" % (G('NodeID'), G('ParticleSpeciesID'), G('ParticleName'))
         yield "<ParticleProperties>"
         yield "<ParticleCharge>%s</ParticleCharge>" % G("ParticleCharge")
         yield makeDataType("ParticleMass", "ParticleMass", G)
@@ -995,29 +975,24 @@ def XsamsRadTranBroadening(G):
 
     allowed names are: pressure, instrument, doppler, natural
     """
-    s=''
-    if countReturnables('RadTransBroadeningNatural'):
-        # attempt at making a loop to support multiple natural broadening effects
-        if hasattr(G('RadTransBroadeningNatural'), "Broadenings"):
-            for Broadening in  makeiter(G('RadTransBroadeningNatural').Broadenings):
-                GB = lambda name: GetValue(name, Broadening=Broadening)
-                s += makeBroadeningType(GB, name='Natural')
-        else:
-            s += makeBroadeningType(G, name='Natural')
-    if countReturnables('RadTransBroadeningInstrument'):
-        s += makeBroadeningType(G, name='Instrument')
-    if countReturnables('RadTransBroadeningDoppler'):
-        s += makeBroadeningType(G, name='Doppler')
-    if countReturnables('RadTransBroadeningPressure'):
-        s += makeBroadeningType(G, name='Pressure')
-    return s
+    s=[]
+    if hasattr(G('RadTransBroadeningNatural'), "Broadenings"):
+        for Broadening in  makeiter(G('RadTransBroadeningNatural').Broadenings):
+            GB = lambda name: GetValue(name, Broadening=Broadening)
+            s.append( makeBroadeningType(GB, name='Natural') )
+    else:
+        s.append( makeBroadeningType(G, name='Natural') )
+    s.append( makeBroadeningType(G, name='Instrument') )
+    s.append( makeBroadeningType(G, name='Doppler') )
+    s.append( makeBroadeningType(G, name='Pressure') )
+    return '\n'.join(s)
 
 def XsamsRadTranShifting(RadTran, G):
     """
     Shifting type
     """
     dic = {}
-    nam = G("RadtransShiftingType")
+    nam = G("RadtransShiftingName")
     eref = G("RadtransShiftingEnv")
     if nam:
         dic["name"] = nam
@@ -1144,10 +1119,10 @@ def makeDataSeriesType(tagname, keyword, G):
     dic = {}
     xpara = G("%sParameter" % keyword)
     if xpara:
-        dic["parameter"] = xpara
+        dic["parameter"] = "%sParameter" % keyword
     xunits = G("%sUnits" % keyword)
     if xunits:
-        dic["units"] = xunits
+        dic["units"] = "%sUnits" % keyword
     xid = G("%sID" % keyword)
     if xid:
         dic["id"] = "%s-%s" % (NODEID, xid)
@@ -1178,7 +1153,7 @@ def makeDataSeriesType(tagname, keyword, G):
         result.append("<Error>%s</Error>" % err)
 
     result.append("</%s>" % tagname)
-    return result
+    return ''.join(result)
 
 
 def XsamsRadCross(RadCross):
@@ -1745,6 +1720,12 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
     log.debug('Working on Processes.')
     yield '<Processes>\n'
     yield '<Radiative>\n'
+    
+    if not requestables or 'radiativecrossections' in requestables:
+        try:
+            for RadCros in XsamsRadCross(RadCross):
+                yield RadCros
+        except: errs+=generatorError(' RadCross')
 
     if not requestables or 'radiativetransitions' in requestables:
         try:
@@ -1752,12 +1733,6 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
                 yield RadTran
         except:
             errs+=generatorError(' RadTran')
-
-    if not requestables or 'radiativecrossections' in requestables:
-        try:
-            for RadCros in XsamsRadCross(RadCross):
-                yield RadCros
-        except: errs+=generatorError(' RadCross')
 
     yield '</Radiative>\n'
 

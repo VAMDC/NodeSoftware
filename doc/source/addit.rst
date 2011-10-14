@@ -63,11 +63,69 @@ Now, depending on what you want to do, you can manipulate the variables at any i
 
     ids = [r for r in rs if rs[r][0]=='AtomSymbol'] # find the numbers where the Restrictable is AtomSymbol
     for id in ids:
-        
+        #to be continued.        
         
     
 .. note::
     We are aware that this is not very comfortable yet and are thinking of a better solution. Suggestions are welcome. :)
+
+
+
+.. _fillingids:
+
+Filling the IDs
+---------------------
+
+As you know, XSAMS is a hierarchical structure where certain parts reference
+other parts. For example, each (molecular or atomic) state has an ID, which can
+be used by a radiative transition to point to its initial and final states.
+Similarly, all species, bibliographic sources etc. have an ID that other parts
+use to point to them.
+
+Here is a list of the most important Returnable names for IDs:
+
+* **AtomSpeciesID** uniquely identifies an atomic spieces. Different isotopes and ions are considered different species.
+* **AtomStateID** is the ID for the states within an atomic species.
+* **CrossSectionID** identifies radiative crosssections.
+* **EnvironmentID** identifies environments.
+* **FunctionID** numbers functions.
+* **MethodID** is for the defined methods.
+* **MoleculeSpeciesID** identifies molecular species. As for atoms, different isotopologues are considered to be separate species.
+* **MoleculeStateID** 
+* **ParticleSpeciesID** identifies particles.
+* **SolidSpeciesID** identifies solids.
+* **SourceID** identifies the bibliographical sources and is used in many places of the schema to connect data to its origin.
+
+**NodeID** is "special" in the sense that it is not formally part of the
+schema. The XML generator uses it to make all the other IDs unique within
+VAMDC. Say, for example that you (in ``dictionaries.py``) set your NodeID to
+"xyz" and fill the SourceID with numbers from your database. Then the XML
+output will look something like *<Source sourceID="Bxyz-1">* for your first
+source. This means that the generator takes care of adding the prefix "B" as
+mandated for sourceIDs by the schema, plus it inserts the NodeID to prevent
+clashed with IDs from other VAMDC nodes.
+
+**IDs are mandatory** which means that you *have* to fill the Returnables from
+the list above, if you use the corresponding part of the schema.
+
+Ideally the node's database layout roughly matches the XSAMS structure which
+means for example that you have separate tables for the atoms/molecules and
+their states. The linking indexes between the tables (usually an integer) are
+then directly suited to be used as the IDs above because the generator formats it as described.
+
+In order to do this, it is good to be aware of the following Djangoism:
+Consider the example data model from :ref:`here <thedatamodel>` and that *s* is
+an instance of the *State* model. Then *s.energy* gives the value of the energy
+column in the database, as you expect. *s.species* however is, contrary to
+non-ForeignKey fields, not the key value of the corresponding species, but the
+actual instance of the species model because Django tries to be smart and
+convenient. Now we could use *s.species.id* to get the key value, but this
+would be slow since we would unnecessarily traverse into the species table to
+get it. The better way is to use *s.species_id* which is provided
+automatically, i.e. **for any ForeignKey field xyz there is a field xyz_id
+which holds the key value instead of the linked object.**
+
+
 
 .. _specialreturnable:
 
@@ -178,6 +236,24 @@ values from the Retunable for the current block of XSAMS. Note the *execution*
 of `.XML()` which means that this needs to be coded as a function/method in
 your model, not as an attribute.
 
+
+
+.. _returnresult:
+
+How to skip the XSAMS generator and return a custom format
+----------------------------------------------------------
+
+Currently, only queries with *FORMAT=XSAMS* are officially supported. Since
+some nodes wanted to be able to return other formats (that are only useful for
+their community, for example to inculde binary data like an image of a
+molecule) there is a mechanism to to do this. 
+
+Whenever *FORMAT* is something else than *XSAMS*, the NodeSoftware checks whether there is a function called *returnResults()* in a node's ``queryfunc.py``. If so, it completely hands the responsibility to assemble the output to this function.
+
+.. note::
+    This means that you have to return a HttpResponse object from it and
+    know a little more about Django views. In addition you are on your own
+    to assembe your custom data format.
 
 .. _moredjango:
 
