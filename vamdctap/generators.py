@@ -982,7 +982,7 @@ def XsamsRadTranBroadening(G):
     allowed names are: pressure, instrument, doppler, natural
     """
     s=[]
-    broadenings = {'Natural', 'Instrument', 'Doppler', 'Pressure'}
+    broadenings = ['Natural', 'Instrument', 'Doppler', 'Pressure']
     for broadening in broadenings : 
         if hasattr(G('RadTransBroadening'+broadening), "Broadenings"):
             for Broadening in  makeiter(G('RadTransBroadening'+broadening).Broadenings):
