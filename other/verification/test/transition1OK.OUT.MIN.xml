@@ -154,7 +154,7 @@
 					</Log10WeightedOscillatorStrength>
 				</Probability>
 				<Verification>
-					<RuleTA02F>false</RuleTA02F>
+					<atomRuleT02F>false</atomRuleT02F>
 				</Verification>
 			</RadiativeTransition>
 		</Radiative>

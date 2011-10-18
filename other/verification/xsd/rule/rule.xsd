@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+
+	<xs:element name="rule">
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="xs:anyType">
+					<xs:attribute name="forInChIList" type="InChIListType" use="optional"/>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="InChIListType">
+		<xs:list itemType="InChIType"/>
+	</xs:simpleType>
+	<xs:simpleType name="InChIType">
+		<xs:restriction base="xs:string"><!--
+            InChI=1S/CO2/c2-1-3/i1+1,2+2 and/or regular expressions in single quotes
+            -->
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

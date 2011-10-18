@@ -65,7 +65,7 @@
 						</nltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSB01>false</RuleSB01>
+						<nltcsRuleS01>false</nltcsRuleS01>
 					</Verification>
 				</MolecularState>
 				<MolecularState stateID="SHIT-5102">
@@ -88,7 +88,7 @@
 						</nltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSB01>true</RuleSB01>
+						<nltcsRuleS01>true</nltcsRuleS01>
 					</Verification>
 				</MolecularState>
 			</Molecule>
@@ -138,7 +138,7 @@
 						</nltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSB01>false</RuleSB01>
+						<nltcsRuleS01>false</nltcsRuleS01>
 					</Verification>
 				</MolecularState>
 				<MolecularState stateID="SHIT-5100">
@@ -161,7 +161,7 @@
 						</nltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSB01>true</RuleSB01>
+						<nltcsRuleS01>true</nltcsRuleS01>
 					</Verification>
 				</MolecularState>
 			</Molecule>
@@ -211,7 +211,7 @@
 						</nltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSB01>false</RuleSB01>
+						<nltcsRuleS01>false</nltcsRuleS01>
 					</Verification>
 				</MolecularState>
 				<MolecularState stateID="SHIT-5104">
@@ -234,7 +234,7 @@
 						</nltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSB01>true</RuleSB01>
+						<nltcsRuleS01>true</nltcsRuleS01>
 					</Verification>
 				</MolecularState>
 			</Molecule>
@@ -255,8 +255,8 @@
 				<InitialStateRef>SHIT-5100</InitialStateRef>
 				<FinalStateRef>SHIT-5099</FinalStateRef>
 				<Verification>
-					<RuleTB01>true</RuleTB01>
-					<RuleTB02>false</RuleTB02>
+					<nltcsRuleT01>true</nltcsRuleT01>
+					<nltcsRuleT02>false</nltcsRuleT02>
 				</Verification>
 			</RadiativeTransition>
 			<RadiativeTransition>
@@ -272,9 +272,9 @@
 				<InitialStateRef>SHIT-5102</InitialStateRef>
 				<FinalStateRef>SHIT-5101</FinalStateRef>
 				<Verification>
-					<RuleTB01>false</RuleTB01>
-					<RuleTB02>true</RuleTB02>
-					<RuleTB03>false</RuleTB03>
+					<nltcsRuleT01>false</nltcsRuleT01>
+					<nltcsRuleT02>true</nltcsRuleT02>
+					<nltcsRuleT03>false</nltcsRuleT03>
 				</Verification>
 			</RadiativeTransition>
 			<RadiativeTransition>
@@ -290,9 +290,9 @@
 				<InitialStateRef>SHIT-5103</InitialStateRef>
 				<FinalStateRef>SHIT-5104</FinalStateRef>
 				<Verification>
-					<RuleTB01>true</RuleTB01>
-					<RuleTB02>false</RuleTB02>
-					<RuleTB03>false</RuleTB03>
+					<nltcsRuleT01>true</nltcsRuleT01>
+					<nltcsRuleT02>false</nltcsRuleT02>
+					<nltcsRuleT03>false</nltcsRuleT03>
 				</Verification>
 			</RadiativeTransition>
 		</Radiative>

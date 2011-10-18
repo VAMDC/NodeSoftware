@@ -65,9 +65,9 @@
 						</ltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSC01>false</RuleSC01>
-						<RuleSC02 xsi:nil="true"/>
-						<RuleSC03>true</RuleSC03>
+						<ltcsRuleS01>false</ltcsRuleS01>
+						<ltcsRuleS02 xsi:nil="true"/>
+						<ltcsRuleS03>true</ltcsRuleS03>
 					</Verification>
 				</MolecularState>
 				<MolecularState stateID="SHIT-2722">
@@ -101,9 +101,9 @@
 						</ltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSC01>false</RuleSC01>
-						<RuleSC02>true</RuleSC02>
-						<RuleSC03>true</RuleSC03>
+						<ltcsRuleS01>false</ltcsRuleS01>
+						<ltcsRuleS02>true</ltcsRuleS02>
+						<ltcsRuleS03>true</ltcsRuleS03>
 					</Verification>
 				</MolecularState>
 				<MolecularState stateID="SHIT-2724">
@@ -128,9 +128,9 @@
 						</ltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSC01>true</RuleSC01>
-						<RuleSC02>false</RuleSC02>
-						<RuleSC03>true</RuleSC03>
+						<ltcsRuleS01>true</ltcsRuleS01>
+						<ltcsRuleS02>false</ltcsRuleS02>
+						<ltcsRuleS03>true</ltcsRuleS03>
 					</Verification>
 				</MolecularState>
 				<MolecularState stateID="SHIT-2725">
@@ -154,9 +154,9 @@
 						</ltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSC01>true</RuleSC01>
-						<RuleSC02>true</RuleSC02>
-						<RuleSC03>false</RuleSC03>
+						<ltcsRuleS01>true</ltcsRuleS01>
+						<ltcsRuleS02>true</ltcsRuleS02>
+						<ltcsRuleS03>false</ltcsRuleS03>
 					</Verification>
 				</MolecularState>
 			</Molecule>
@@ -207,10 +207,10 @@
 						</ltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSC01>false</RuleSC01>
-						<RuleSC02>true</RuleSC02>
-						<RuleSC03>true</RuleSC03>
-						<RuleSC04>true</RuleSC04>
+						<ltcsRuleS01>false</ltcsRuleS01>
+						<ltcsRuleS02>true</ltcsRuleS02>
+						<ltcsRuleS03>true</ltcsRuleS03>
+						<ltcsRuleS04>true</ltcsRuleS04>
 					</Verification>
 				</MolecularState>
 				<MolecularState stateID="SHIT-2728">
@@ -235,10 +235,10 @@
 						</ltcs:QNs>
 					</Case>
 					<Verification>
-						<RuleSC01>true</RuleSC01>
-						<RuleSC02>true</RuleSC02>
-						<RuleSC03>true</RuleSC03>
-						<RuleSC04>false</RuleSC04>
+						<ltcsRuleS01>true</ltcsRuleS01>
+						<ltcsRuleS02>true</ltcsRuleS02>
+						<ltcsRuleS03>true</ltcsRuleS03>
+						<ltcsRuleS04>false</ltcsRuleS04>
 					</Verification>
 				</MolecularState>
 			</Molecule>
@@ -259,9 +259,9 @@
 				<InitialStateRef>SHIT-2724</InitialStateRef>
 				<FinalStateRef>SHIT-2723</FinalStateRef>
 				<Verification>
-					<RuleTC01>true</RuleTC01>
-					<RuleTC02>false</RuleTC02>
-					<RuleTC03>true</RuleTC03>
+					<ltcsRuleT01>true</ltcsRuleT01>
+					<ltcsRuleT02>false</ltcsRuleT02>
+					<ltcsRuleT03>true</ltcsRuleT03>
 				</Verification>
 			</RadiativeTransition>
 			<RadiativeTransition>
@@ -277,10 +277,10 @@
 				<InitialStateRef>SHIT-2728</InitialStateRef>
 				<FinalStateRef>SHIT-2727</FinalStateRef>
 				<Verification>
-					<RuleTC01>false</RuleTC01>
-					<RuleTC02>false</RuleTC02>
-					<RuleTC03>false</RuleTC03>
-					<RuleTC04>false</RuleTC04>
+					<ltcsRuleT01>false</ltcsRuleT01>
+					<ltcsRuleT02>false</ltcsRuleT02>
+					<ltcsRuleT03>false</ltcsRuleT03>
+					<ltcsRuleT04>false</ltcsRuleT04>
 				</Verification>
 			</RadiativeTransition>
 		</Radiative>

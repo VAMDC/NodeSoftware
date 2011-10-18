@@ -3,16 +3,16 @@
 	<VerificationResult>
 		<NumberOfMolecularStates correct="3" incorrect="3" total="6" unidentified="0"/>
 		<NumberOfRadiativeTransitions correct="1" incorrect="2" total="3" unidentified="0"/>
-		<NumberOfVerificationByRule correct="5" incorrect="1" name="RuleSC01" unidentified="0"/>
-		<NumberOfVerificationByRule correct="5" incorrect="1" name="RuleSC03" unidentified="0"/>
-		<NumberOfVerificationByRule correct="4" incorrect="2" name="RuleSC05" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="RuleTC01" unidentified="0"/>
-		<NumberOfVerificationByRule correct="1" incorrect="2" name="RuleTC02" unidentified="0"/>
-		<NumberOfVerificationByRule correct="3" incorrect="0" name="RuleTC03" unidentified="0"/>
-		<NumberOfVerificationByRule correct="3" incorrect="0" name="RuleTC05" unidentified="0"/>
-		<NumberOfVerificationByRule correct="3" incorrect="0" name="RuleTC06" unidentified="0"/>
-		<NumberOfVerificationByRule correct="3" incorrect="0" name="RuleTC07" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="RuleTC08" unidentified="0"/>
+		<NumberOfVerificationByRule correct="5" incorrect="1" name="ltcsRuleS01" unidentified="0"/>
+		<NumberOfVerificationByRule correct="5" incorrect="1" name="ltcsRuleS03" unidentified="0"/>
+		<NumberOfVerificationByRule correct="4" incorrect="2" name="ltcsRuleS05" unidentified="0"/>
+		<NumberOfVerificationByRule correct="2" incorrect="1" name="ltcsRuleT01" unidentified="0"/>
+		<NumberOfVerificationByRule correct="1" incorrect="2" name="ltcsRuleT02" unidentified="0"/>
+		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT03" unidentified="0"/>
+		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT05" unidentified="0"/>
+		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT06" unidentified="0"/>
+		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT07" unidentified="0"/>
+		<NumberOfVerificationByRule correct="2" incorrect="1" name="ltcsRuleT08" unidentified="0"/>
 	</VerificationResult>
 	<XSAMSData>
 		<Sources>
@@ -80,9 +80,9 @@
 							</ltcs:QNs>
 						</Case>
 						<Verification>
-							<RuleSC01>true</RuleSC01>
-							<RuleSC03>true</RuleSC03>
-							<RuleSC05>true</RuleSC05>
+							<ltcsRuleS01>true</ltcsRuleS01>
+							<ltcsRuleS03>true</ltcsRuleS03>
+							<ltcsRuleS05>true</ltcsRuleS05>
 						</Verification>
 					</MolecularState>
 					<MolecularState stateID="SHIT-6266">
@@ -106,9 +106,9 @@
 							</ltcs:QNs>
 						</Case>
 						<Verification>
-							<RuleSC01>true</RuleSC01>
-							<RuleSC03>true</RuleSC03>
-							<RuleSC05>false</RuleSC05>
+							<ltcsRuleS01>true</ltcsRuleS01>
+							<ltcsRuleS03>true</ltcsRuleS03>
+							<ltcsRuleS05>false</ltcsRuleS05>
 						</Verification>
 					</MolecularState>
 					<MolecularState stateID="SHIT-6267">
@@ -131,9 +131,9 @@
 							</ltcs:QNs>
 						</Case>
 						<Verification>
-							<RuleSC01>false</RuleSC01>
-							<RuleSC03>true</RuleSC03>
-							<RuleSC05>true</RuleSC05>
+							<ltcsRuleS01>false</ltcsRuleS01>
+							<ltcsRuleS03>true</ltcsRuleS03>
+							<ltcsRuleS05>true</ltcsRuleS05>
 						</Verification>
 					</MolecularState>
 					<MolecularState stateID="SHIT-6268">
@@ -157,9 +157,9 @@
 							</ltcs:QNs>
 						</Case>
 						<Verification>
-							<RuleSC01>true</RuleSC01>
-							<RuleSC03>false</RuleSC03>
-							<RuleSC05>false</RuleSC05>
+							<ltcsRuleS01>true</ltcsRuleS01>
+							<ltcsRuleS03>false</ltcsRuleS03>
+							<ltcsRuleS05>false</ltcsRuleS05>
 						</Verification>
 					</MolecularState>
 				</Molecule>
@@ -180,13 +180,13 @@
 					<InitialStateRef>SHIT-6266</InitialStateRef>
 					<FinalStateRef>SHIT-6265</FinalStateRef>
 					<Verification>
-						<RuleTC01>false</RuleTC01>
-						<RuleTC02>false</RuleTC02>
-						<RuleTC03>true</RuleTC03>
-						<RuleTC05>true</RuleTC05>
-						<RuleTC06>true</RuleTC06>
-						<RuleTC07>true</RuleTC07>
-						<RuleTC08>true</RuleTC08>
+						<ltcsRuleT01>false</ltcsRuleT01>
+						<ltcsRuleT02>false</ltcsRuleT02>
+						<ltcsRuleT03>true</ltcsRuleT03>
+						<ltcsRuleT05>true</ltcsRuleT05>
+						<ltcsRuleT06>true</ltcsRuleT06>
+						<ltcsRuleT07>true</ltcsRuleT07>
+						<ltcsRuleT08>true</ltcsRuleT08>
 					</Verification>
 				</RadiativeTransition>
 				<RadiativeTransition>
@@ -202,13 +202,13 @@
 					<InitialStateRef>SHIT-6268</InitialStateRef>
 					<FinalStateRef>SHIT-6267</FinalStateRef>
 					<Verification>
-						<RuleTC01>true</RuleTC01>
-						<RuleTC02>false</RuleTC02>
-						<RuleTC03>true</RuleTC03>
-						<RuleTC05>true</RuleTC05>
-						<RuleTC06>true</RuleTC06>
-						<RuleTC07>true</RuleTC07>
-						<RuleTC08>false</RuleTC08>
+						<ltcsRuleT01>true</ltcsRuleT01>
+						<ltcsRuleT02>false</ltcsRuleT02>
+						<ltcsRuleT03>true</ltcsRuleT03>
+						<ltcsRuleT05>true</ltcsRuleT05>
+						<ltcsRuleT06>true</ltcsRuleT06>
+						<ltcsRuleT07>true</ltcsRuleT07>
+						<ltcsRuleT08>false</ltcsRuleT08>
 					</Verification>
 				</RadiativeTransition>
 			</Radiative>
