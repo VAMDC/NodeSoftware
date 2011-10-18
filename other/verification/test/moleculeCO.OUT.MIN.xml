@@ -2,9 +2,9 @@
 <VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<VerificationResult>
 		<NumberOfRadiativeTransitions correct="1" incorrect="2" total="3" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="RuleTD01" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="RuleTD02" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="RuleTD03" unidentified="0"/>
+		<NumberOfVerificationByRule correct="2" incorrect="1" name="dcsRuleT01" unidentified="0"/>
+		<NumberOfVerificationByRule correct="2" incorrect="1" name="dcsRuleT02" unidentified="0"/>
+		<NumberOfVerificationByRule correct="2" incorrect="1" name="dcsRuleT03" unidentified="0"/>
 	</VerificationResult>
 	<XSAMSData>
 		<Sources>
@@ -143,9 +143,9 @@
 					<InitialStateRef>SHIT-6960</InitialStateRef>
 					<FinalStateRef>SHIT-6959</FinalStateRef>
 					<Verification>
-						<RuleTD01>false</RuleTD01>
-						<RuleTD02>true</RuleTD02>
-						<RuleTD03>false</RuleTD03>
+						<dcsRuleT01>false</dcsRuleT01>
+						<dcsRuleT02>true</dcsRuleT02>
+						<dcsRuleT03>false</dcsRuleT03>
 					</Verification>
 				</RadiativeTransition>
 				<RadiativeTransition>
@@ -161,9 +161,9 @@
 					<InitialStateRef>SHIT-6962</InitialStateRef>
 					<FinalStateRef>SHIT-6961</FinalStateRef>
 					<Verification>
-						<RuleTD01>true</RuleTD01>
-						<RuleTD02>false</RuleTD02>
-						<RuleTD03>true</RuleTD03>
+						<dcsRuleT01>true</dcsRuleT01>
+						<dcsRuleT02>false</dcsRuleT02>
+						<dcsRuleT03>true</dcsRuleT03>
 					</Verification>
 				</RadiativeTransition>
 			</Radiative>

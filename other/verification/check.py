@@ -13,7 +13,7 @@ import re
 from mathml.mathdom import MathDOM
 from mathml.utils import pyterm # register Python term builder
 from xml.dom import minidom, Node
-from xml import xpath
+from xml import xpath, ns
 
 
 class NoMathMLException(Exception):
@@ -27,18 +27,19 @@ class NoValidException(Exception):
 
 
 class Verification:
-    excludedRules = {}
-    onlyRules = {}
-
-    stateNodes = {}
-    whiteListOfRefs = {}
-
 
     def __init__(self, file):
         self.doc = minidom.parse(file)
         self.lock = False
+
+        self.excludedRules = {}
+        self.onlyRules = {}
+
+        self.stateNodes = {}
+        self.whiteListOfRefs = {}
+
         root = self.doc._get_documentElement()
-        schemaLocationAttr = root.getAttributeNodeNS('http://www.w3.org/2001/XMLSchema-instance', 'schemaLocation')
+        schemaLocationAttr = root.getAttributeNodeNS(ns.SCHEMA.XSI3 , 'schemaLocation')
         locations = schemaLocationAttr.value.split(' ')
         locations[1] = VERIFICATION_SCHEMA_LOCATION
         schemaLocationAttr.value = locations[0] + ' ' + locations[1]
@@ -61,7 +62,7 @@ class Verification:
         parentsOfNodesWithVerification = {}
 
         context = xpath.CreateContext(self.doc)
-        context.setNamespaces({'xsi': 'http://www.w3.org/2001/XMLSchema-instance'})
+        context.setNamespaces({'xsi': ns.SCHEMA.XSI3})
 
         nodesWithVerification = xpath.Evaluate('//child::Verification[contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil]', self.doc, context)
         if nodesWithVerification:
@@ -69,7 +70,7 @@ class Verification:
                 if not xpath.Evaluate('./child::*[contains(self::node(),  "false") or contains(self::node(),  "true")]', nodeWithVerification):
                     for childNode in nodeWithVerification.childNodes[:]:
                         nodeWithVerification.removeChild(childNode)
-                    nodeWithVerification.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xsi:nil", "true")
+                    nodeWithVerification.setAttributeNS(ns.SCHEMA.XSI3, "xsi:nil", "true")
 
                 for refNode in xpath.Evaluate('.//*[contains(local-name(@*), "Ref") or contains(local-name(), "Ref")]', nodeWithVerification.parentNode):
                     if refNode.hasAttributes():
@@ -116,7 +117,7 @@ class Verification:
                             idNodes = {}
                             if childNode.nodeType == Node.ELEMENT_NODE and  childNode.tagName == 'Processes' and childNode.hasChildNodes():
                                     context = xpath.CreateContext(childNode)
-                                    context.setNamespaces({'xsi': 'http://www.w3.org/2001/XMLSchema-instance'})
+                                    context.setNamespaces({'xsi': ns.SCHEMA.XSI3})
                                     if not xpath.Evaluate('.//child::Verification[contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil]', childNode, context):
                                         usefulParentNode.parentNode.removeChild(childNode)
                                         flag = True
@@ -210,19 +211,19 @@ class Verification:
                 identifiers = {}
                 for ci in xpath.Evaluate('.//ci[not(contains(self::node(),  "\'"))]', rules[rule]['math']):
                     name = ci.value().data
-                    identifiers[name] = name.split('@')
+                    identifiers[name] = name.split('#')
 
                 for identifier in identifiers:
                     if len(identifiers[identifier]) > 1:
                         if domainFlag != 'Transition':
-                            raise NoValidException("Allowed only 'ci' with the '@' symbol but not " + str(identifiers[identifier]))
+                            raise NoValidException("Allowed only 'ci' with the '#' symbol but not " + str(identifiers[identifier]))
                         if not dataNodes[domainFlag]:
                             for domain in rules[rule]['domains']:
                                 dataNodes[domainFlag].extend(xpath.Evaluate('//' + domain + '[./' + identifiers[identifier][1] + ']', self.doc))
                         break
                     else:
                         if domainFlag != 'AtomicState' and domainFlag != 'MolecularState':
-                            raise NoValidException("Allowed only 'ci' without the '@' symbol but not " + str(identifiers[identifier]))
+                            raise NoValidException("Allowed only 'ci' without the '#' symbol but not " + str(identifiers[identifier]))
                         if domainFlag == 'AtomicState' and identifier.find(':') != -1:
                             raise NoValidException("Allowed only 'ci' without the ':' symbol but not " + str(identifiers[identifier]))
                         if domainFlag == 'MolecularState' and identifier.find(':') == -1:
@@ -237,6 +238,7 @@ class Verification:
                         dataNode.cache = {}
 
                     currentExp = templateExp
+
 
                     available = None
                     for identifier in identifiers:
@@ -318,7 +320,7 @@ class Verification:
                 for nodeWithVerification in nodesWithVerification:
                     domain = nodeWithVerification.parentNode.nodeName
                     domainNumbers[domain]['total'] += 1
-                    if nodeWithVerification.getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "nil") == "true":
+                    if nodeWithVerification.getAttributeNS(ns.SCHEMA.XSI3, "nil") == "true":
                         domainNumbers[domain]['unidentified'] += 1
                     else:
                         flagOne = True
@@ -326,7 +328,7 @@ class Verification:
                             if ruleNode.nodeType == Node.ELEMENT_NODE:
                                 if not domainNumbers.has_key(ruleNode.nodeName):
                                     domainNumbers[ruleNode.nodeName] = {'correct':0, 'incorrect':0, 'unidentified':0}
-                                if ruleNode.getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "nil") == "true":
+                                if ruleNode.getAttributeNS(ns.SCHEMA.XSI3, "nil") == "true":
                                     flagOne = None
                                     domainNumbers[ruleNode.nodeName]['unidentified'] += 1
                                 elif ruleNode.hasChildNodes():
@@ -345,7 +347,7 @@ class Verification:
                             domainNumbers[domain]['incorrect'] += 1
 
                 for ruleName in sorted(domainNumbers):
-                    if ruleName[0:4] != 'Rule':
+                    if ruleName.find('Rule') == -1:
                         if domainNumbers[ruleName]['total'] == 0:
                             continue
                         numberElement = self.doc.createElement('NumberOf' + ruleName + 's')
@@ -356,7 +358,7 @@ class Verification:
                         numberElement.setAttribute(numberName, str(domainNumbers[ruleName][numberName]))
                     verificationResultElement.appendChild(numberElement)
             else:
-                verificationResultElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xsi:nil", "true")
+                verificationResultElement.setAttributeNS(ns.SCHEMA.XSI3, "xsi:nil", "true")
 
             if rootNode.hasChildNodes():
                 rootNode.insertBefore(verificationResultElement, rootNode.childNodes[0])
@@ -421,6 +423,8 @@ class Verification:
 
     def _getValue(self, element, name):
         if element.nodeName == 'AtomicState' or element.nodeName == 'MolecularState':
+            context = xpath.CreateContext(element)
+
             if element.nodeName == 'AtomicState':
                 cases = element.getElementsByTagName('AtomicQuantumNumbers')
                 if cases:
@@ -438,12 +442,14 @@ class Verification:
                             return False
                     else:
                         return None
+
+                    context.setNamespaces({caseID: 'http://vamdc.org/xml/xsams/0.2/cases/' + caseID})
                 else:
                     return None
 
-            qn = element.getElementsByTagName(name)
-            if qn and qn[0] and qn[0].hasChildNodes() and qn[0].childNodes[0].nodeType == Node.TEXT_NODE:
-                data = qn[0].childNodes[0].data
+            qns = xpath.Evaluate('.//' + name, element, context)
+            if qns and qns[0] and qns[0].hasChildNodes() and qns[0].childNodes[0].nodeType == Node.TEXT_NODE:
+                data = qns[0].childNodes[0].data
                 return data if is_number(data) else '"' + data + '"'
             else:
                 return None
@@ -454,7 +460,7 @@ class Verification:
     def _addRuleNode(self, element, ruleItem):
         ruleElement = self.doc.createElement(ruleItem[0])
         if ruleItem[1] is None:
-            ruleElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xsi:nil", "true")
+            ruleElement.setAttributeNS(ns.SCHEMA.XSI3, "xsi:nil", "true")
         else:
             ruleElement.appendChild(self.doc.createTextNode(ruleItem[1]))
 
@@ -495,18 +501,17 @@ def is_number(s):
 
 
 class VerificationParser:
-    domains = {}
-
 
     def __init__(self):
-        pass
+        self.domains = {}
+        self.rules = {}
 
 
-    def setDomains(self, currentNode, name):
+    def _setDomains(self, prefix, currentNode, name):
         localContext = xpath.CreateContext(currentNode)
-        localContext.setNamespaces({'xs': 'http://www.w3.org/2001/XMLSchema'})
+        localContext.setNamespaces({prefix: ns.SCHEMA.XSD3})
 
-        rulesList = xpath.Evaluate('.//xs:element', currentNode, localContext)
+        rulesList = xpath.Evaluate('.//' + prefix + ':element', currentNode, localContext)
         for ruleNode in rulesList:
             if ruleNode.hasAttribute('name'):
                 if not (ruleNode.getAttribute('name') in self.domains):
@@ -519,40 +524,149 @@ class VerificationParser:
                 if not (name in self.domains[ruleNode.getAttribute('ref')]):
                     self.domains[ruleNode.getAttribute('ref')].append(name)
 
-        groupRefList = xpath.Evaluate('.//xs:group[@ref]', currentNode, localContext)
+        groupRefList = xpath.Evaluate('.//'+prefix+':group[@ref]', currentNode, localContext)
         for groupRefNode in groupRefList:
-            groupList = xpath.Evaluate('//xs:group[@name = "' + groupRefNode.getAttribute('ref') + '"]', currentNode, localContext)
+            groupList = xpath.Evaluate('//' +prefix+':group[@name = "' + groupRefNode.getAttribute('ref') + '"]', currentNode, localContext)
             for groupNode in groupList:
-                self.setDomains(groupNode, name)
+                self._setDomains(prefix, groupNode, name)
 
 
     def getRules(self):
-        rules = {}
+        if not self.rules:
 
-        doc = minidom.parse(open("verification.xsd"))
+            doc = self._makeOneSchema("verification.xsd")
+            if not doc:
+                return self.rules
+
+            root = doc._get_documentElement()
+            prefix = root.prefix
+
+            context = xpath.CreateContext(doc)
+            context.setNamespaces({prefix: ns.SCHEMA.XSD3})
+
+            verificationTypes = xpath.Evaluate('//'+prefix+':complexType[contains(@name, "Verification")]', doc, context)
+            for verificationType in verificationTypes:
+                name = verificationType.getAttribute('name')
+                name = name[0].upper() + name[1:-len('Verification')]
+                self._setDomains(prefix, verificationType, name)
+
+            ruleNodes = xpath.Evaluate('//'+prefix+':element[contains(@name, "Rule")]', doc, context)
+            for ruleNode in ruleNodes:
+                mathNodes = xpath.Evaluate('.//math', ruleNode)
+                if mathNodes:
+                    mathDoc = MathDOM(mathNodes[0])
+                    if mathDoc is None:
+                        raise NoMathMLException("The 'math' construction has errors")
+
+                    self.rules[ruleNode.getAttribute('name')] = {'domains': self.domains[ruleNode.getAttribute('name')] if self.domains.has_key(ruleNode.getAttribute('name')) else [],
+                                                            'forInChIList': mathDoc.parentNode.getAttribute('forInChIList'),
+                                                            'math': mathDoc}
+
+        return self.rules
+
+
+    def _makeOneSchema(self, fileName):
+
+        file = open(fileName)
+        if not file:
+            return None
+        doc = minidom.parse(file)
+        innerRoot = doc._get_documentElement()
+        prefix = innerRoot.prefix
+
+        dir = fileName[0: fileName.rfind('/') + 1]
+
         context = xpath.CreateContext(doc)
-        context.setNamespaces({'xs': 'http://www.w3.org/2001/XMLSchema'})
+        context.setNamespaces({prefix: ns.SCHEMA.XSD3})
 
-        verificationTypes = xpath.Evaluate('//xs:complexType[contains(@name, "Verification")]', doc, context)
-        for verificationType in verificationTypes:
-            name = verificationType.getAttribute('name')
-            name = name[0].upper() + name[1:-len('Verification')]
-            self.setDomains(verificationType, name)
+        availableElements = {}
+        includes = ["include", "redefine"]
+        for include in includes:
+            includeList = xpath.Evaluate('/' + prefix + ':schema/' + prefix + ':' + include, doc, context)
+            for includeElement in includeList:
+                schemaLocation = includeElement.getAttribute("schemaLocation")
+                if schemaLocation.find('http://') > -1:
+                    continue
+                location = dir + schemaLocation
+                parent = includeElement.parentNode
+                
+                redefines = []
+                if include == 'redefine':
+                    if includeElement.hasChildNodes(): 
+                        redefineElements = includeElement.childNodes
+                        for redefineChild in redefineElements:
+                            if isinstance(redefineChild, minidom.Element):
+                                if not availableElements.has_key(redefineChild.tagName):
+                                    availableElements[redefineChild.tagName] = {}
 
-        ruleNodes = xpath.Evaluate('//xs:element[contains(@name, "Rule")]', doc, context)
-        for ruleNode in ruleNodes:
-            mathNodes = xpath.Evaluate('.//math', ruleNode)
-            if mathNodes:
-                mathDoc = MathDOM(mathNodes[0])
-                if mathDoc is None:
-                    raise NoMathMLException("The 'math' construction has errors")
+                                if redefineChild.tagName == prefix + ":simpleType":
+                                    items = redefineChild.getElementsByTagName(prefix + 'restriction')
+                                    for item in items: 
+                                        item.removeAttribute("base")
+                                        availableElements[redefineChild.tagName][redefineChild.getAttribute("name")] = item
 
-                rules[ruleNode.getAttribute('name')] = {'domains': self.domains[ruleNode.getAttribute('name')] if self.domains.has_key(ruleNode.getAttribute('name')) else [],
-                                                        'forInChIList': mathDoc.parentNode.getAttribute('forInChIList'),
-                                                        'math': mathDoc}
+                                if redefineChild.tagName == prefix + ":complexType":
+                                    if redefineChild.hasChildNodes():
+                                        for redefineChildContent in redefineChild.childNodes:
+                                            if isinstance(redefineChildContent, minidom.Element):
+                                                if redefineChildContent.tagName == prefix + ":complexContent":
+                                                    items = redefineChildContent.getElementsByTagName(prefix + 'restriction')
+                                                    for item in items:
+                                                        item.removeAttribute("base")
+                                                        availableElements[redefineChild.tagName][redefineChild.getAttribute("name")] = item
+                                                    items = redefineChildContent.getElementsByTagName(prefix + 'extension')
+                                                    for item in items:
+                                                        item.removeAttribute("base")
+                                                        availableElements[redefineChild.tagName][redefineChild.getAttribute("name")] = item
 
-        return rules
 
+                                previousSibling = redefineChild.previousSibling
+                                if previousSibling is not None and previousSibling.nodeType == Node.TEXT_NODE:
+                                    redefines.append(previousSibling)
+                                
+                                redefines.append(redefineChild)
+                            
+                for elem in redefines:
+                    parent.appendChild(elem)
+
+                innerDoc =  self._makeOneSchema(location)
+                if not innerDoc:
+                    return None
+
+                innerRoot = innerDoc._get_documentElement()
+                if innerRoot.hasChildNodes():
+                    previousSibling = includeElement.previousSibling
+                    if previousSibling is not None and previousSibling.nodeType == Node.TEXT_NODE:
+                        parent.removeChild(previousSibling)
+
+                    parent.removeChild(includeElement)
+
+                    children = innerRoot.childNodes
+                    for innerChild in children:
+                        if isinstance(innerChild, minidom.Element):
+                            if availableElements.has_key(innerChild.tagName) and availableElements[innerChild.tagName].has_key(innerChild.getAttribute("name")):
+                                unknown = availableElements[innerChild.tagName][innerChild.getAttribute("name")]
+                                if isinstance(unknown, minidom.Element):
+                                    copyInnerNode = doc.importNode(innerChild, True)
+                                    copyInnerNode.removeAttribute("name")
+                                    unknown.insertBefore(copyInnerNode, unknown.firstChild)
+
+                                lastChild = parent.lastChild
+                                if lastChild is not None and lastChild.nodeType == Node.TEXT_NODE:
+                                    if isinstance(unknown, minidom.Element):
+                                        unknown.insertBefore(lastChild.cloneNode(), unknown.firstChild)
+
+                                    parent.removeChild(lastChild)
+                                continue
+
+                            if not availableElements.has_key(innerChild.tagName):
+                                availableElements[innerChild.tagName] = {}
+
+                            availableElements[innerChild.tagName][innerChild.getAttribute("name")] = True
+
+                        copyInnerNode = doc.importNode(innerChild, True)
+                        parent.appendChild(copyInnerNode)
+        return doc
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1]:

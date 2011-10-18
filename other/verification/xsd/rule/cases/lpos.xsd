@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+	<xs:include schemaLocation="../rule.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Schema for checking the quantum numbers of open-shell linear polyatomic molecules</xs:documentation>
+	</xs:annotation>
+
+	<xs:group name="lposStateRules">
+		<xs:sequence>
+
+		</xs:sequence>
+	</xs:group>
+
+	<xs:group name="lposTransitionRules">
+		<xs:sequence>
+
+		</xs:sequence>
+	</xs:group>
+
+</xs:schema>

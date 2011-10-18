@@ -2,8 +2,8 @@
 <VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<VerificationResult>
 		<NumberOfRadiativeTransitions correct="0" incorrect="1" total="3" unidentified="2"/>
-		<NumberOfVerificationByRule correct="1" incorrect="2" name="RuleTA01" unidentified="0"/>
-		<NumberOfVerificationByRule correct="0" incorrect="1" name="RuleTA02" unidentified="2"/>
+		<NumberOfVerificationByRule correct="1" incorrect="2" name="atomRuleT01" unidentified="0"/>
+		<NumberOfVerificationByRule correct="0" incorrect="1" name="atomRuleT02" unidentified="2"/>
 	</VerificationResult>
 	<XSAMSData>
 		<Sources>
@@ -370,8 +370,8 @@
 						</Log10WeightedOscillatorStrength>
 					</Probability>
 					<Verification>
-						<RuleTA01>false</RuleTA01>
-						<RuleTA02 xsi:nil="true"/>
+						<atomRuleT01>false</atomRuleT01>
+						<atomRuleT02 xsi:nil="true"/>
 					</Verification>
 				</RadiativeTransition>
 				<RadiativeTransition>
@@ -394,8 +394,8 @@
 						</Log10WeightedOscillatorStrength>
 					</Probability>
 					<Verification>
-						<RuleTA01>true</RuleTA01>
-						<RuleTA02 xsi:nil="true"/>
+						<atomRuleT01>true</atomRuleT01>
+						<atomRuleT02 xsi:nil="true"/>
 					</Verification>
 				</RadiativeTransition>
 				<RadiativeTransition>
@@ -416,8 +416,8 @@
 						</Log10WeightedOscillatorStrength>
 					</Probability>
 					<Verification>
-						<RuleTA01>false</RuleTA01>
-						<RuleTA02>false</RuleTA02>
+						<atomRuleT01>false</atomRuleT01>
+						<atomRuleT02>false</atomRuleT02>
 					</Verification>
 				</RadiativeTransition>
 			</Radiative>

@@ -308,8 +308,8 @@
 					</Log10WeightedOscillatorStrength>
 				</Probability>
 				<Verification>
-					<RuleTA01>false</RuleTA01>
-					<RuleTA02 xsi:nil="true"/>
+					<atomRuleT01>false</atomRuleT01>
+					<atomRuleT02 xsi:nil="true"/>
 				</Verification>
 			</RadiativeTransition>
 			<RadiativeTransition>
@@ -332,8 +332,8 @@
 					</Log10WeightedOscillatorStrength>
 				</Probability>
 				<Verification>
-					<RuleTA01>true</RuleTA01>
-					<RuleTA02 xsi:nil="true"/>
+					<atomRuleT01>true</atomRuleT01>
+					<atomRuleT02 xsi:nil="true"/>
 				</Verification>
 			</RadiativeTransition>
 			<RadiativeTransition>
@@ -354,8 +354,8 @@
 					</Log10WeightedOscillatorStrength>
 				</Probability>
 				<Verification>
-					<RuleTA01>false</RuleTA01>
-					<RuleTA02>false</RuleTA02>
+					<atomRuleT01>false</atomRuleT01>
+					<atomRuleT02>false</atomRuleT02>
 				</Verification>
 			</RadiativeTransition>
 		</Radiative>
