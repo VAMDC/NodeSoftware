@@ -207,7 +207,7 @@ def Wavelength2Wavenumber(op, foo):
     q = ['RadTransWavenumber', opp, str(foop)]
     return q
         
-def setupResults(sql, LIMIT=2000):
+def setupResults(sql, LIMIT=None):
     # rather than use the sql2Q method:
     #q = sqlparse.sql2Q(sql)
     # we parse the query into its restrictables and logic:
