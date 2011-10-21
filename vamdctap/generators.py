@@ -664,6 +664,12 @@ def XsamsMCSBuild(Molecule):
         yield ret
         yield '</MoleculeStructure>\n'
 
+    cont, ret = checkXML(G('NormalModes'))
+    if cont:
+        yield '<NormalModes>\n'
+        yield ret
+        yield '</NormalModes>\n'
+
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
     if G("MoleculeComment"):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
