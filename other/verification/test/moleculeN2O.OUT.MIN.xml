@@ -1,0 +1,217 @@
+<?xml version="1.0" ?>
+<VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<VerificationResult>
+		<NumberOfMolecularStates correct="3" incorrect="3" total="6" unidentified="0"/>
+		<NumberOfRadiativeTransitions correct="1" incorrect="2" total="3" unidentified="0"/>
+		<NumberOfVerificationByRule correct="5" incorrect="1" name="ltcsRuleS01" unidentified="0"/>
+		<NumberOfVerificationByRule correct="5" incorrect="1" name="ltcsRuleS03" unidentified="0"/>
+		<NumberOfVerificationByRule correct="4" incorrect="2" name="ltcsRuleS05" unidentified="0"/>
+		<NumberOfVerificationByRule correct="2" incorrect="1" name="ltcsRuleT01" unidentified="0"/>
+		<NumberOfVerificationByRule correct="1" incorrect="2" name="ltcsRuleT02" unidentified="0"/>
+		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT03" unidentified="0"/>
+		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT05" unidentified="0"/>
+		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT06" unidentified="0"/>
+		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT07" unidentified="0"/>
+		<NumberOfVerificationByRule correct="2" incorrect="1" name="ltcsRuleT08" unidentified="0"/>
+	</VerificationResult>
+	<XSAMSData>
+		<Sources>
+			<Source sourceID="BHIT-N2O-nu-6">
+				<Authors>
+					<Author>
+						<Name>C. Hill</Name>
+					</Author>
+					<Author>
+						<Name>M.-L. Dubernet</Name>
+					</Author>
+				</Authors>
+				<Title/>
+				<Category>private communication</Category>
+				<Year>2011</Year>
+				<SourceName/>
+				<Comments>The reference identified by N2O-nu-6 cannot be resolved into valid XSAMS</Comments>
+			</Source>
+		</Sources>
+		<Species>
+			<Molecules>
+				<Molecule speciesID="XHIT-GQPLMRYTRLFLPF-OUBTZVSYSA-N">
+					<MolecularChemicalSpecies>
+						<OrdinaryStructuralFormula>
+							<Value>N2O</Value>
+						</OrdinaryStructuralFormula>
+						<StoichiometricFormula>N2O</StoichiometricFormula>
+						<IonCharge>0</IonCharge>
+						<ChemicalName>
+							<Value>Nitrous Oxide</Value>
+						</ChemicalName>
+						<InChI>InChI=1S/N2O/c1-2-3/i1+1</InChI>
+						<InChIKey>GQPLMRYTRLFLPF-OUBTZVSYSA-N</InChIKey>
+						<MoleculeStructure>
+							<cml:atomArray>
+								<cml:atom elementType="N" id="N1" isotopeNumber="15"/>
+								<cml:atom elementType="N" id="N2"/>
+								<cml:atom elementType="O" id="O1"/>
+							</cml:atomArray>
+							<cml:bondArray>
+								<cml:bond atomRefs2="N1 N2" id="N1_N2" order="D"/>
+								<cml:bond atomRefs2="N2 O1" id="N2_O1" order="D"/>
+							</cml:bondArray>
+						</MoleculeStructure>
+						<StableMolecularProperties/>
+						<Comment>(15N)(14N)(16O)</Comment>
+					</MolecularChemicalSpecies>
+					<MolecularState stateID="SHIT-6265">
+						<Description/>
+						<MolecularStateCharacterisation>
+							<StateEnergy energyOrigin="Zero-point energy">
+								<Value units="1/cm">2066.8916</Value>
+							</StateEnergy>
+							<TotalStatisticalWeight>270</TotalStatisticalWeight>
+						</MolecularStateCharacterisation>
+						<Case caseID="ltcs" xmlns:ltcs="http://vamdc.org/xml/xsams/0.2/cases/ltcs" xsi:type="ltcs:Case">
+							<ltcs:QNs>
+								<ltcs:ElecStateLabel>X</ltcs:ElecStateLabel>
+								<ltcs:v1>1</ltcs:v1>
+								<ltcs:v2>1</ltcs:v2>
+								<ltcs:l2>1</ltcs:l2>
+								<ltcs:v3>0</ltcs:v3>
+								<ltcs:J>21</ltcs:J>
+								<ltcs:kronigParity>e</ltcs:kronigParity>
+							</ltcs:QNs>
+						</Case>
+						<Verification>
+							<ltcsRuleS01>true</ltcsRuleS01>
+							<ltcsRuleS03>true</ltcsRuleS03>
+							<ltcsRuleS05>true</ltcsRuleS05>
+						</Verification>
+					</MolecularState>
+					<MolecularState stateID="SHIT-6266">
+						<Description/>
+						<MolecularStateCharacterisation>
+							<StateEnergy energyOrigin="Zero-point energy">
+								<Value units="1/cm">808.8422</Value>
+							</StateEnergy>
+							<TotalStatisticalWeight>282</TotalStatisticalWeight>
+						</MolecularStateCharacterisation>
+						<Case caseID="ltcs" xmlns:ltcs="http://vamdc.org/xml/xsams/0.2/cases/ltcs" xsi:type="ltcs:Case">
+							<ltcs:QNs>
+								<ltcs:ElecStateLabel>X</ltcs:ElecStateLabel>
+								<ltcs:v1>0</ltcs:v1>
+								<ltcs:v2>1</ltcs:v2>
+								<ltcs:l2>0</ltcs:l2>
+								<ltcs:v3>0</ltcs:v3>
+								<ltcs:J>23</ltcs:J>
+								<ltcs:parity>-</ltcs:parity>
+								<ltcs:kronigParity>e</ltcs:kronigParity>
+							</ltcs:QNs>
+						</Case>
+						<Verification>
+							<ltcsRuleS01>true</ltcsRuleS01>
+							<ltcsRuleS03>true</ltcsRuleS03>
+							<ltcsRuleS05>false</ltcsRuleS05>
+						</Verification>
+					</MolecularState>
+					<MolecularState stateID="SHIT-6267">
+						<Description/>
+						<MolecularStateCharacterisation>
+							<StateEnergy energyOrigin="Zero-point energy">
+								<Value units="1/cm">2948.3989</Value>
+							</StateEnergy>
+							<TotalStatisticalWeight>426</TotalStatisticalWeight>
+						</MolecularStateCharacterisation>
+						<Case caseID="ltcs" xmlns:ltcs="http://vamdc.org/xml/xsams/0.2/cases/ltcs" xsi:type="ltcs:Case">
+							<ltcs:QNs>
+								<ltcs:ElecStateLabel>X</ltcs:ElecStateLabel>
+								<ltcs:v1>1</ltcs:v1>
+								<ltcs:v2>2</ltcs:v2>
+								<ltcs:l2>0</ltcs:l2>
+								<ltcs:v3>0</ltcs:v3>
+								<ltcs:J>35</ltcs:J>
+								<ltcs:kronigParity>f</ltcs:kronigParity>
+							</ltcs:QNs>
+						</Case>
+						<Verification>
+							<ltcsRuleS01>false</ltcsRuleS01>
+							<ltcsRuleS03>true</ltcsRuleS03>
+							<ltcsRuleS05>true</ltcsRuleS05>
+						</Verification>
+					</MolecularState>
+					<MolecularState stateID="SHIT-6268">
+						<Description/>
+						<MolecularStateCharacterisation>
+							<StateEnergy energyOrigin="Zero-point energy">
+								<Value units="1/cm">1642.4582</Value>
+							</StateEnergy>
+							<TotalStatisticalWeight>414</TotalStatisticalWeight>
+						</MolecularStateCharacterisation>
+						<Case caseID="ltcs" xmlns:ltcs="http://vamdc.org/xml/xsams/0.2/cases/ltcs" xsi:type="ltcs:Case">
+							<ltcs:QNs>
+								<ltcs:ElecStateLabel>X</ltcs:ElecStateLabel>
+								<ltcs:v1>0</ltcs:v1>
+								<ltcs:v2>2</ltcs:v2>
+								<ltcs:l2>35</ltcs:l2>
+								<ltcs:v3>0</ltcs:v3>
+								<ltcs:J>34</ltcs:J>
+								<ltcs:parity>+</ltcs:parity>
+								<ltcs:kronigParity>e</ltcs:kronigParity>
+							</ltcs:QNs>
+						</Case>
+						<Verification>
+							<ltcsRuleS01>true</ltcsRuleS01>
+							<ltcsRuleS03>false</ltcsRuleS03>
+							<ltcsRuleS05>false</ltcsRuleS05>
+						</Verification>
+					</MolecularState>
+				</Molecule>
+			</Molecules>
+		</Species>
+		<Processes>
+			<Radiative>
+				<RadiativeTransition>
+					<EnergyWavelength>
+						<Wavenumber>
+							<SourceRef>BHIT-N2O-nu-6</SourceRef>
+							<Value units="1/cm">1258.04942</Value>
+							<Accuracy>
+								<Statistical>0.001</Statistical>
+							</Accuracy>
+						</Wavenumber>
+					</EnergyWavelength>
+					<InitialStateRef>SHIT-6266</InitialStateRef>
+					<FinalStateRef>SHIT-6265</FinalStateRef>
+					<Verification>
+						<ltcsRuleT01>false</ltcsRuleT01>
+						<ltcsRuleT02>false</ltcsRuleT02>
+						<ltcsRuleT03>true</ltcsRuleT03>
+						<ltcsRuleT05>true</ltcsRuleT05>
+						<ltcsRuleT06>true</ltcsRuleT06>
+						<ltcsRuleT07>true</ltcsRuleT07>
+						<ltcsRuleT08>true</ltcsRuleT08>
+					</Verification>
+				</RadiativeTransition>
+				<RadiativeTransition>
+					<EnergyWavelength>
+						<Wavenumber>
+							<SourceRef>BHIT-N2O-nu-6</SourceRef>
+							<Value units="1/cm">1305.94074</Value>
+							<Accuracy>
+								<Statistical>0.001</Statistical>
+							</Accuracy>
+						</Wavenumber>
+					</EnergyWavelength>
+					<InitialStateRef>SHIT-6268</InitialStateRef>
+					<FinalStateRef>SHIT-6267</FinalStateRef>
+					<Verification>
+						<ltcsRuleT01>true</ltcsRuleT01>
+						<ltcsRuleT02>false</ltcsRuleT02>
+						<ltcsRuleT03>true</ltcsRuleT03>
+						<ltcsRuleT05>true</ltcsRuleT05>
+						<ltcsRuleT06>true</ltcsRuleT06>
+						<ltcsRuleT07>true</ltcsRuleT07>
+						<ltcsRuleT08>false</ltcsRuleT08>
+					</Verification>
+				</RadiativeTransition>
+			</Radiative>
+		</Processes>
+	</XSAMSData>
+</VerificationData>

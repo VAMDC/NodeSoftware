@@ -1,0 +1,22 @@
+Dependencies:
+ http://mathdom.sourceforge.net/
+
+1. python check.py
+Read from test/transition3OK.IN.xml
+Write to stdout
+WARNING! xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd"
+
+First argument - input xml-file
+Second argument - output xml-file
+
+
+2.  python check.py test/transition3OK.IN.xml
+Read from test/transition3OK.IN.xml
+Write to stdout
+WARNING! xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd"
+
+
+3.  python check.py test/transition3OK.IN.xml test/transition3OK.OUT.xml
+Read from test/transition3OK.IN.xml
+Write to test/transition3OK.OUT.xml
+WARNING! xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd"

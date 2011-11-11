@@ -21,6 +21,7 @@ RETURNABLES = {\
 'AtomStateStatisticalWeight' : 'AtomState.statisticalweight',
 'AtomStateStatisticalWeightUnit' : 'AtomState.statisticalweightunit.value',
 'AtomStateLifeTimeUnit': 'AtomState.lifetimeunit.value',
+'AtomStateLifeTimeDecay':'totalRadiative',
 'AtomStateIonizationEnergy' : 'AtomState.ionizationenergy',
 'AtomStateIonizationEnergyUnit' : 'AtomState.ionizationenergyunit.value',
 'AtomStateTotalAngMom' : 'AtomState.totalangularmomentum',
@@ -31,12 +32,19 @@ RETURNABLES = {\
 
                                                                          
 'CollisionTabulatedDataX' : 'TabData.xdata',
+'CollisionTabulatedDataXUnits' : 'undef',
+'CollisionTabulatedDataXN' : 'len(TabData.xdata.split(" "))',
+'CollisionTabulatedDataXParameter' : 'undef',
 'CollisionTabulatedDataY' : 'TabData.ydata',
+'CollisionTabulatedDataYUnits' : 'undef',
+'CollisionTabulatedDataYN' : 'len(TabData.ydata.split(" "))',
+'CollisionTabulatedDataYParameter' : 'undef',
 'CollisionDataSetDescription' : 'DataSet.Description',
 'CollisionReactantState' : 'Reactant.state_id()',
+'CollisionReactantSpecies' : 'Reactant.species_id()',
 'CollisionProductState' : 'Product.state_id()',
 
-'ParticleStateID' : 'Particle.state_id()',
+'ParticleSpeciesID' : 'Particle.species_id()',
 'ParticleName' : 'Particle.name',
 'ParticleMass' : 'Particle.mass',
 'ParticleMassUnit' : 'Particle.massunit.value',

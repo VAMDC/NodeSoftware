@@ -664,6 +664,12 @@ def XsamsMCSBuild(Molecule):
         yield ret
         yield '</MoleculeStructure>\n'
 
+    cont, ret = checkXML(G('NormalModes'))
+    if cont:
+        yield '<NormalModes>\n'
+        yield ret
+        yield '</NormalModes>\n'
+
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
     if G("MoleculeComment"):
         yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
@@ -923,12 +929,18 @@ def XsamsParticles(Particles):
             yield ret
             continue
         G = lambda name: GetValue(name, Particle=Particle)
-        yield """<Particle speciesID="S%s-%s" name="%s">""" % (G('NodeID'), G('ParticleSpeciesID'), G('ParticleName'))
+        yield """<Particle speciesID="X%s-%s" name="%s">""" % (G('NodeID'), G('ParticleSpeciesID'), G('ParticleName'))
         yield "<ParticleProperties>"
-        yield "<ParticleCharge>%s</ParticleCharge>" % G("ParticleCharge")
+        charge = G("ParticleCharge")
+        if charge :
+            yield "<ParticleCharge>%s</ParticleCharge>" % charge
         yield makeDataType("ParticleMass", "ParticleMass", G)
-        yield "<ParticleSpin>%s</ParticleSpin>" % G("ParticleSpin")
-        yield "<ParticlePolarization>%s</ParticlePolarization>" % G("ParticlePolarization")
+        spin = G("ParticleSpin")
+        if spin : 
+            yield "<ParticleSpin>%s</ParticleSpin>" % spin
+        polarization = G("ParticlePolarization")
+        if polarization  :
+            yield "<ParticlePolarization>%s</ParticlePolarization>" % polarization
         yield "</ParticleProperties>"
         yield "</Particle>"
     yield "</Particles>"
@@ -942,7 +954,7 @@ def makeBroadeningType(G, name='Natural'):
     """
     Create the Broadening tag
     """
-
+    
     lsparams = makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter' % name, G)
     if not lsparams:
         return ''
@@ -962,7 +974,7 @@ def makeBroadeningType(G, name='Natural'):
 
     # in principle we should loop over lineshapes but
     # lets not do so unless somebody actually has several lineshapes
-    # per broadening type
+    # per broadening type             RadTransBroadening%sLineshapeName
     s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
     s += lsparams
     s += '</Lineshape>'
@@ -976,38 +988,35 @@ def XsamsRadTranBroadening(G):
     allowed names are: pressure, instrument, doppler, natural
     """
     s=[]
-    if hasattr(G('RadTransBroadeningNatural'), "Broadenings"):
-        for Broadening in  makeiter(G('RadTransBroadeningNatural').Broadenings):
-            GB = lambda name: GetValue(name, Broadening=Broadening)
-            s.append( makeBroadeningType(GB, name='Natural') )
-    else:
-        s.append( makeBroadeningType(G, name='Natural') )
-    s.append( makeBroadeningType(G, name='Instrument') )
-    s.append( makeBroadeningType(G, name='Doppler') )
-    s.append( makeBroadeningType(G, name='Pressure') )
+    broadenings = ['Natural', 'Instrument', 'Doppler', 'Pressure']
+    for broadening in broadenings : 
+        if hasattr(G('RadTransBroadening'+broadening), "Broadenings"):
+            for Broadening in  makeiter(G('RadTransBroadening'+broadening).Broadenings):
+                GB = lambda name: GetValue(name, Broadening=Broadening)
+                s.append( makeBroadeningType(GB, name=broadening) )
+        else:
+            s.append( makeBroadeningType(G, name=broadening) )
     return '\n'.join(s)
+    
 
 def XsamsRadTranShifting(RadTran, G):
     """
     Shifting type
     """
     dic = {}
-    nam = G("RadtransShiftingName")
-    eref = G("RadtransShiftingEnv")
+    nam = G("RadTransShiftingName")
+    eref = G("RadTransShiftingEnv")
     if nam:
         dic["name"] = nam
     else:
         return ''
     if eref:
         dic["envRef"] = "E%s-%s"  % (NODEID, eref)
-    string = makePrimaryType("Shifting", "RadtransShifting", G, extraAttr=dic)
-
+    string = makePrimaryType("Shifting", "RadTransShifting", G, extraAttr=dic)
     if hasattr(RadTran, "ShiftingParams"):
         for ShiftingParam in RadTran.ShiftingParams:
             GS = lambda name: GetValue(name, ShiftingParam=ShiftingParam)
-
-            string = makePrimaryType("ShiftingParameter", "RadTransShiftingParam", GS, extraAttr={"name":GS("RadTransShiftingParamName")})
-
+            string += makePrimaryType("ShiftingParameter", "RadTransShiftingParam", GS, extraAttr={"name":GS("RadTransShiftingParamName")})
             val = GS("RadTransShiftingParamValueUnits")
 
             if val:
@@ -1347,9 +1356,10 @@ def XsamsCollTrans(CollTrans):
                 yield "</Product>"
 
         yield makeDataType("Threshold", "CollisionThreshold", G)
-        yield "<DataSets>"
+        
 
         if hasattr(CollTran, "DataSets"):
+            yield "<DataSets>"
             for DataSet in CollTran.DataSets:
                 cont, ret = checkXML(DataSet)
                 if cont:
@@ -1439,8 +1449,9 @@ def XsamsCollTrans(CollTrans):
                         # handle X components of XY
                         Nx = GDT("CollisionTabulatedDataXN")
                         xunits = GDT("CollisionTabulatedDataXUnits")
+                        xparameters=GDT("CollisionTabulatedDataXParameter")
 
-                        yield "<X units='%s' parameter='%s'>" % (Nx, xunits)
+                        yield "<X units='%s' parameter='%s'>" % (xunits, xparameters)
                         yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
                         yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXError"))))
                         yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXNegativeError"))))
@@ -1451,8 +1462,9 @@ def XsamsCollTrans(CollTrans):
                         # handle Y components of XY
                         Ny = GDT("CollisionTabulatedDataYN")
                         yunits = GDT("CollisionTabulatedDataYUnits")
+                        yparameters=GDT("CollisionTabulatedDataYParameter")
 
-                        yield "<Y units='%s' parameter='%s'>" % (Ny, yunits)
+                        yield "<Y units='%s' parameter='%s'>" % (yunits, yparameters)
                         yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
                         yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYError"))))
                         yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYNegativeError"))))
@@ -1474,8 +1486,8 @@ def XsamsCollTrans(CollTrans):
 
                         yield "</TabulatedData>"
 
-            yield "</DataSet>"
-        yield "</DataSets>"
+                yield "</DataSet>"
+            yield "</DataSets>"
         yield "</CollisionalTransition>"
     yield '</Collisions>'
 

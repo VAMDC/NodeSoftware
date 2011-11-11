@@ -68,10 +68,7 @@ class Version(models.Model):
     radiativetransitionsource = models.ForeignKey(Source, null=True, db_column='radiativetransitionsourceid', blank=True, related_name='+')
     crosssectionsource = models.ForeignKey(Source, null=True, db_column='crosssectionsourceid', blank=True)
     ionversion = models.IntegerField(unique=True)
-    creationdate = models.DateField()
-    
-    def state_id(self):
-        return self.id
+    creationdate = models.DateField()  
         
     class Meta:
         db_table = u't_version'
@@ -104,6 +101,13 @@ class Atomicstate(models.Model):
     statisticalweight = models.IntegerField()
     statisticalweightunit = models.ForeignKey(Unit, db_column='statisticalweightunitid', related_name='+')
     parity = models.ForeignKey(Parity, db_column='parityid')
+    
+    def state_id(self):
+        return self.id
+        
+    def species_id(self):
+        return None
+        
     class Meta:
         db_table = u't_atomicstate'
         
@@ -113,10 +117,12 @@ class Particle(models.Model):
     mass = models.FloatField()
     massunit = models.ForeignKey(Unit, db_column='massunitid', related_name='+')
     charge = models.FloatField()
-    chargeunit = models.ForeignKey(Unit, db_column='chargeunitid', related_name='+')
-    
-    def state_id(self):
+   
+    def species_id(self):
         return 'P%s'%self.id
+        
+    def state_id(self):
+        return None
         
     class Meta:
         db_table = u't_particle'
