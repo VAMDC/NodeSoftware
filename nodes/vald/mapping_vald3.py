@@ -402,10 +402,10 @@ mapping = [
              'cbyte':(charrange, 49,57)},
             {'filenum':1,
              'cname':'waals_ref',
-             'cbyte':(charrange, 57,65)},
+             'cbyte':(charrange, 57,65)},            
+            {'cname':'wave_linelist',
+             'cbyte':(charrange, 334,338)},
             ## These are the old connections to linelists rather than refs directly
-            #{'cname':'wave_linelist',
-            # 'cbyte':(charrange, 334,338)},
             #{'cname':'loggf_linelist',
             # 'cbyte':(charrange, 338,342)},
             #{'cname':'lande_linelist',
@@ -417,11 +417,16 @@ mapping = [
             #{'cname':'waals_linelist',
             # 'cbyte':(charrange, 362,366)},
             # 
-            # obstype is parsed from wave_linelist in post-processing
+            # methods are parsed from wave_linelist in post-processing
             # but we need to insert NULLs to make the DB accept the file.
-            {'cname':'obstype',
+            {'cname':'method_return',
              'cbyte':(constant, 'NULL'),
              'cnull':'NULL'},
+            {'cname':'method_restrict',
+             'cbyte':(constant, 'NULL'),
+             'cnull':'NULL'},
+
+
             ],
     }, # end of transitions
 
@@ -458,7 +463,7 @@ mapping = [
              'cbyte':(bySepNr, 3)},
             {'cname':'listtype',
              'cbyte':(bySepNr, 4)},
-            {'cname':'method_return',
+            {'cname':'method',
              'cbyte':(get_method_type, ),
              'cnull':'X'},
             {'cname':'r1',
