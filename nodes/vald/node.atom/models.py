@@ -159,6 +159,12 @@ class Transition(Model):
     gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans', db_index=False)
     gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans', db_index=False)
     waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans', db_index=False)
+    
+    wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False) # needed for population
+    #loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
+    #gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans', db_index=False)
+    #gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
+    #waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans', db_index=False)
 
     # Method information. Since some xsams method categories are represented more than one vald equivalent,
     # we need one field for restrictable's queries and returnable's queries respectively.
