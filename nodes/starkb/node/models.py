@@ -25,6 +25,9 @@ class Ion(models.Model):
     ionization_decimal = models.IntegerField(null=True)
     nuclear_charge = models.IntegerField()
     
+    def ion_charge(self):
+        return self.ionization_decimal - 1
+    
     def species_id(self):
         return self.id
         
@@ -109,7 +112,9 @@ class Level(models.Model):
     
     def j_asFloat(self):
         #add .0 to "1/2" or "3/2" to get float value
-        return eval(self.j+".0")
+        if(self.j is not None) :
+            return eval(self.j+".0")
+        return None
         
     class Meta:
         db_table = u't_levels'
