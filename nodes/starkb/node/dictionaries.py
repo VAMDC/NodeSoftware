@@ -7,7 +7,7 @@ RETURNABLES = ({\
 'AtomSymbol':'Atom.ion.symbol',
 'AtomNuclearCharge':'Atom.ion.nuclear_charge',
 'AtomSpeciesID':'Atom.particle_ion_id()',
-'AtomIonCharge':'Atom.ion.ionization_decimal',
+'AtomIonCharge':'Atom.ion.ion_charge()',
 
 
 'AtomStateConfigurationLabel':'AtomState.config',
