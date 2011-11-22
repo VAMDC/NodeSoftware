@@ -12,9 +12,10 @@ RETURNABLES = {\
 'SourceURI':'Source.url',
 'SourceVolume':'Source.volume',
 'SourceYear':'Source.year',
-#'MethodID':'"MOBS"',
-#'MethodCategory':'"observed"',
-#'MethodDescription':'',
+############################################################
+'MethodID':'Method.id',
+'MethodCategory':'Method.category',
+'MethodDescription':'Method.description',
 ############################################################
 'MoleculeStateID':'MoleculeState.id',
 'MoleculeChemicalName':'Molecule.name',
@@ -36,6 +37,7 @@ RETURNABLES = {\
 'RadTransWavelengthRef':'RadTran.wave_ref_id',
 'RadTransFinalStateRef':'RadTran.upstate_id',
 'RadTransInitialStateRef':'RadTran.lostate_id',
+'RadTransMethod':'RadTran.method.return',
 #'RadTransEffectiveLandeFactor':'RadTran.landeff',
 #'RadTransEffectiveLandeFactorUnit':'unitless',
 #'RadTransEffectiveLandeFactorRef':'RadTran.lande_ref_id',
@@ -77,6 +79,6 @@ RESTRICTABLES = {\
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 'RadTransBroadeningNatural':'gammarad',
 'RadTransBroadeningPressure':'gammastark',
-'MethodCategory':('obstype',valdObstype)
+'MethodCategory':('method_restrict',valdObstype)
 }
 

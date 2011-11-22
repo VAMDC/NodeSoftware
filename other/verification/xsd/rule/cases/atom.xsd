@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+	<xs:include schemaLocation="../rule.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Schema for checking the quantum numbers of atoms</xs:documentation>
+	</xs:annotation>
+
+
+	<xs:group name="atomStateRules">
+		<xs:sequence>
+
+		</xs:sequence>
+	</xs:group>
+
+	<xs:group name="atomTransitionRules">
+		<xs:sequence>
+			<xs:element name="atomRuleT01" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule>
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<or/>
+									<apply>
+										<eq/>
+										<apply>
+											<abs/>
+											<apply>
+												<minus/>
+												<ci>TotalAngularMomentum#InitialStateRef</ci>
+												<ci>TotalAngularMomentum#FinalStateRef</ci>
+											</apply>
+										</apply>
+										<cn>1</cn>
+									</apply>
+									<apply>
+										<eq/>
+										<ci>TotalAngularMomentum#InitialStateRef</ci>
+										<ci>TotalAngularMomentum#FinalStateRef</ci>
+									</apply>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="atomRuleT02" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule>
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<neq/>
+									<ci>Parity#InitialStateRef</ci>
+									<ci>Parity#FinalStateRef</ci>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+
+		</xs:sequence>
+	</xs:group>
+
+</xs:schema>

@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+	<xs:include schemaLocation="../rule.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Schema for checking the quantum numbers of closed-shell linear polyatomic molecules</xs:documentation>
+	</xs:annotation>
+
+	<xs:group name="lpcsStateRules">
+		<xs:sequence>
+
+			<xs:element name="lpcsRuleS01" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/C2H2/c1-2/h1-2H'.*'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<geq/>
+									<apply>
+										<abs/>
+										<apply>
+											<plus/>
+											<ci>lpcs:vi[@mode=4]</ci>
+											<ci>lpcs:vi[@mode=5]</ci>
+										</apply>
+									</apply>
+									<ci>lpcs:l</ci>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="lpcsRuleS02" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/C2H2/c1-2/h1-2H'.*'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<geq/>
+									<ci>lpcs:J</ci>
+									<ci>lpcs:l</ci>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="lpcsRuleS03" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/C2H2/c1-2/h1-2H'.*'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<not/>
+									<apply>
+										<and/>
+										<apply>
+											<eq/>
+											<ci>lpcs:l</ci>
+											<cn>0</cn>
+										</apply>
+										<apply>
+											<gt/>
+											<ci>lpcs:vi[@mode=4]</ci>
+											<cn>0</cn>
+										</apply>
+										<apply>
+											<gt/>
+											<ci>lpcs:vi[@mode=5]</ci>
+											<cn>0</cn>
+										</apply>
+										<apply>
+											<or/>
+											<apply>
+												<and/>
+												<apply>
+													<eq/>
+													<ci>lpcs:kronigParity</ci>
+													<ci>'e'</ci>
+												</apply>
+												<apply>
+													<neq/>
+													<ci>lpcs:parity</ci>
+													<ci>'+'</ci>
+												</apply>
+											</apply>
+											<apply>
+												<and/>
+												<apply>
+													<eq/>
+													<ci>lpcs:kronigParity</ci>
+													<ci>'f'</ci>
+												</apply>
+												<apply>
+													<neq/>
+													<ci>lpcs:parity</ci>
+													<ci>'-'</ci>
+												</apply>
+											</apply>
+										</apply>
+									</apply>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="lpcsRuleS04" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/C2H2/c1-2/h1-2H'.*'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<or/>
+									<apply>
+										<and/>
+										<apply>
+											<eq/>
+											<ci>lpcs:vibInv</ci>
+											<ci>'g'</ci>
+										</apply>
+										<apply>
+											<eq/>
+											<apply>
+												<rem/>
+												<apply>
+													<plus/>
+													<ci>lpcs:vi[@mode=3]</ci>
+													<ci>lpcs:vi[@mode=5]</ci>
+												</apply>
+												<cn>2</cn>
+											</apply>
+											<cn>0</cn>
+										</apply>
+									</apply>
+									<apply>
+										<and/>
+										<apply>
+											<eq/>
+											<ci>lpcs:vibInv</ci>
+											<ci>'u'</ci>
+										</apply>
+										<apply>
+											<eq/>
+											<apply>
+												<rem/>
+												<apply>
+													<plus/>
+													<ci>lpcs:vi[@mode=3]</ci>
+													<ci>lpcs:vi[@mode=5]</ci>
+												</apply>
+												<cn>2</cn>
+											</apply>
+											<cn>1</cn>
+										</apply>
+									</apply>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+
+		</xs:sequence>
+	</xs:group>
+
+	<xs:group name="lpcsTransitionRules">
+		<xs:sequence>
+			<xs:element name="lpcsRuleT01" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/C2H2/c1-2/h1-2H'.*'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<leq/>
+									<apply>
+										<abs/>
+										<apply>
+											<minus/>
+											<ci>lpcs:J#InitialStateRef</ci>
+											<ci>lpcs:J#FinalStateRef</ci>
+										</apply>
+									</apply>
+									<cn>1</cn>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="lpcsRuleT02" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/C2H2/c1-2/h1-2H'.*'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<or/>
+									<apply>
+										<and/>
+										<apply>
+											<eq/>
+											<ci>lpcs:kronigParity#InitialStateRef</ci>
+											<ci>lpcs:kronigParity#FinalStateRef</ci>
+										</apply>
+										<apply>
+											<eq/>
+											<apply>
+												<abs/>
+												<apply>
+													<minus/>
+													<ci>lpcs:J#InitialStateRef</ci>
+													<ci>lpcs:J#FinalStateRef</ci>
+												</apply>
+											</apply>
+											<cn>1</cn>
+										</apply>
+									</apply>
+									<apply>
+										<and/>
+										<apply>
+											<neq/>
+											<ci>lpcs:kronigParity#InitialStateRef</ci>
+											<ci>lpcs:kronigParity#FinalStateRef</ci>
+										</apply>
+										<apply>
+											<eq/>
+											<apply>
+												<abs/>
+												<apply>
+													<minus/>
+													<ci>lpcs:J#InitialStateRef</ci>
+													<ci>lpcs:J#FinalStateRef</ci>
+												</apply>
+											</apply>
+											<cn>0</cn>
+										</apply>
+									</apply>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="lpcsRuleT03" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/C2H2/c1-2/h1-2H'($|\/i(1[HDT]?,2[HDT]?|1\+0[HDT]?,2\+0[HDT]?|1\+1[HDT]?,2\+1[HDT]?|1\+2[HDT]?,2\+2[HDT]?))'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<or/>
+									<apply>
+										<and/>
+										<apply>
+											<eq/>
+											<apply>
+												<rem/>
+												<apply>
+													<minus/>
+													<ci>lpcs:vi[@mode=5]#InitialStateRef</ci>
+													<ci>lpcs:vi[@mode=5]#FinalStateRef</ci>
+												</apply>
+												<cn>2</cn>
+											</apply>
+											<cn>1</cn>
+										</apply>
+										<apply>
+											<eq/>
+											<apply>
+												<rem/>
+												<apply>
+													<minus/>
+													<ci>lpcs:vi[@mode=3]#InitialStateRef</ci>
+													<ci>lpcs:vi[@mode=3]#FinalStateRef</ci>
+												</apply>
+												<cn>2</cn>
+											</apply>
+											<cn>0</cn>
+										</apply>
+									</apply>
+									<apply>
+										<and/>
+										<apply>
+											<eq/>
+											<apply>
+												<rem/>
+												<apply>
+													<minus/>
+													<ci>lpcs:vi[@mode=5]#InitialStateRef</ci>
+													<ci>lpcs:vi[@mode=5]#FinalStateRef</ci>
+												</apply>
+												<cn>2</cn>
+											</apply>
+											<cn>0</cn>
+										</apply>
+										<apply>
+											<eq/>
+											<apply>
+												<rem/>
+												<apply>
+													<minus/>
+													<ci>lpcs:vi[@mode=3]#InitialStateRef</ci>
+													<ci>lpcs:vi[@mode=3]#FinalStateRef</ci>
+												</apply>
+												<cn>2</cn>
+											</apply>
+											<cn>1</cn>
+										</apply>
+									</apply>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:group>
+
+</xs:schema>

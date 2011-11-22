@@ -1,0 +1,426 @@
+<?xml version="1.0" ?>
+<VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<VerificationResult>
+		<NumberOfRadiativeTransitions correct="0" incorrect="1" total="3" unidentified="2"/>
+		<NumberOfVerificationByRule correct="1" incorrect="2" name="atomRuleT01" unidentified="0"/>
+		<NumberOfVerificationByRule correct="0" incorrect="1" name="atomRuleT02" unidentified="2"/>
+	</VerificationResult>
+	<XSAMSData>
+		<Sources>
+			<Source sourceID="Bvald-K03">
+				<Authors>
+					<Author>
+						<Name>R. L. Kurucz</Name>
+					</Author>
+				</Authors>
+				<Title>Robert L. Kurucz on-line database of observed and predicted atomic transitions</Title>
+				<Category>journal</Category>
+				<Year>2222</Year>
+				<SourceName>unknown</SourceName>
+				<Volume>None</Volume>
+				<PageBegin/>
+				<PageEnd/>
+				<UniformResourceIdentifier>http://kurucz.harvard.edu/atoms/2801/gf2801.pos, http://kurucz.harvard.edu/atoms/2900/gfemq2900.pos, http://kurucz.harvard.edu/atoms/2901/gfemq2901.pos</UniformResourceIdentifier>
+				<DigitalObjectIdentifier>None</DigitalObjectIdentifier>
+				<BibTeX>@article{K03, Author = {{Kurucz}, R.~L.}, Title = {Robert L. Kurucz on-line database of observed and predicted atomic transitions}, Bdsk-Url-1 = {http://kurucz.harvard.edu/atoms/2801/gf2801.pos, http://kurucz.harvard.edu/atoms/2900/gfemq2900.pos, http://kurucz.harvard.edu/atoms/2901/gfemq2901.pos}}</BibTeX>
+			</Source>
+			<Source sourceID="Bvald-K04">
+				<Authors>
+					<Author>
+						<Name>R. L. Kurucz</Name>
+					</Author>
+				</Authors>
+				<Title>Robert L. Kurucz on-line database of observed and predicted atomic transitions</Title>
+				<Category>journal</Category>
+				<Year>2222</Year>
+				<SourceName>unknown</SourceName>
+				<Volume>None</Volume>
+				<PageBegin/>
+				<PageEnd/>
+				<UniformResourceIdentifier>http://kurucz.harvard.edu/atoms/2801/gf2801.pos, http://kurucz.harvard.edu/atoms/2900/gfemq2900.pos, http://kurucz.harvard.edu/atoms/2901/gfemq2901.pos</UniformResourceIdentifier>
+				<DigitalObjectIdentifier>None</DigitalObjectIdentifier>
+				<BibTeX>@article{K03, Author = {{Kurucz}, R.~L.}, Title = {Robert L. Kurucz on-line database of observed and predicted atomic transitions}, Bdsk-Url-1 = {http://kurucz.harvard.edu/atoms/2801/gf2801.pos, http://kurucz.harvard.edu/atoms/2900/gfemq2900.pos, http://kurucz.harvard.edu/atoms/2901/gfemq2901.pos}}</BibTeX>
+			</Source>
+			<Source sourceID="Bvald-K06">
+				<Authors>
+					<Author>
+						<Name>R. L. Kurucz</Name>
+					</Author>
+				</Authors>
+				<Title>Robert L. Kurucz on-line database of observed and predicted atomic transitions</Title>
+				<Category>journal</Category>
+				<Year>2222</Year>
+				<SourceName>unknown</SourceName>
+				<Volume>None</Volume>
+				<PageBegin/>
+				<PageEnd/>
+				<UniformResourceIdentifier>http://kurucz.harvard.edu/atoms/2402/gfemq2402.pos, http://kurucz.harvard.edu/atoms/2602/gfemq2602.pos, http://kurucz.harvard.edu/atoms/2603/gfemq2603.pos, http://kurucz.harvard.edu/atoms/2604/gfemq2604.pos, http://kurucz.harvard.edu/atoms/2605/gfemq2605.pos, http://kurucz.harvard.edu/atoms/2701/gfemq2701.pos, http://kurucz.harvard.edu/atoms/3900/gfemq3900.pos, http://kurucz.harvard.edu/atoms/3900/gf3900.lines, http://kurucz.harvard.edu/atoms/2402/gf2402.lines</UniformResourceIdentifier>
+				<DigitalObjectIdentifier>None</DigitalObjectIdentifier>
+				<BibTeX>@article{K06, Author = {{Kurucz}, R.~L.}, Title = {Robert L. Kurucz on-line database of observed and predicted atomic transitions}, Bdsk-Url-1 = {http://kurucz.harvard.edu/atoms/2402/gfemq2402.pos, http://kurucz.harvard.edu/atoms/2602/gfemq2602.pos, http://kurucz.harvard.edu/atoms/2603/gfemq2603.pos, http://kurucz.harvard.edu/atoms/2604/gfemq2604.pos, http://kurucz.harvard.edu/atoms/2605/gfemq2605.pos, http://kurucz.harvard.edu/atoms/2701/gfemq2701.pos, http://kurucz.harvard.edu/atoms/3900/gfemq3900.pos, http://kurucz.harvard.edu/atoms/3900/gf3900.lines, http://kurucz.harvard.edu/atoms/2402/gf2402.lines}}</BibTeX>
+			</Source>
+		</Sources>
+		<Environments>
+			<Environment envID="Evald-natural">
+				<Comments>There are no parameters for natural/radiative broadening.</Comments>
+			</Environment>
+		</Environments>
+		<Species>
+			<Atoms>
+				<Atom>
+					<ChemicalElement>
+						<NuclearCharge>24</NuclearCharge>
+						<ElementSymbol>Cr</ElementSymbol>
+					</ChemicalElement>
+					<Isotope>
+						<IsotopeParameters>
+							<MassNumber>52</MassNumber>
+						</IsotopeParameters>
+						<Ion speciesID="Xvald-277">
+							<IonCharge>0</IonCharge>
+							<AtomicState stateID="Svald-5308">
+								<AtomicNumericalData>
+									<StateEnergy>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="1/cm">40971.2680</Value>
+									</StateEnergy>
+									<LandeFactor>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="unitless">1.28</Value>
+									</LandeFactor>
+								</AtomicNumericalData>
+								<AtomicQuantumNumbers>
+									<TotalAngularMomentum>4.0</TotalAngularMomentum>
+								</AtomicQuantumNumbers>
+								<AtomicComposition>
+									<Component>
+										<Configuration>
+											<AtomicCore>
+												<Term/>
+											</AtomicCore>
+										</Configuration>
+										<Term/>
+									</Component>
+								</AtomicComposition>
+							</AtomicState>
+							<AtomicState stateID="Svald-5329">
+								<AtomicNumericalData>
+									<StateEnergy>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="1/cm">47697.4080</Value>
+									</StateEnergy>
+									<LandeFactor>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="unitless">2.34</Value>
+									</LandeFactor>
+								</AtomicNumericalData>
+								<AtomicQuantumNumbers>
+									<TotalAngularMomentum>7.0</TotalAngularMomentum>
+								</AtomicQuantumNumbers>
+								<AtomicComposition>
+									<Component>
+										<Configuration>
+											<AtomicCore>
+												<Term/>
+											</AtomicCore>
+										</Configuration>
+										<Term>
+											<LS>
+												<L>
+													<Value>0</Value>
+												</L>
+												<S>2.0</S>
+											</LS>
+										</Term>
+									</Component>
+								</AtomicComposition>
+							</AtomicState>
+							<InChI>InChI=1S/Cr/i1+0</InChI>
+							<InChIKey>VYZAMTAEIAYCRO-I</InChIKey>
+						</Ion>
+					</Isotope>
+				</Atom>
+				<Atom>
+					<ChemicalElement>
+						<NuclearCharge>26</NuclearCharge>
+						<ElementSymbol>Fe</ElementSymbol>
+					</ChemicalElement>
+					<Isotope>
+						<IsotopeParameters>
+							<MassNumber>56</MassNumber>
+						</IsotopeParameters>
+						<Ion speciesID="Xvald-326">
+							<IonCharge>0</IonCharge>
+							<AtomicState stateID="Svald-6853">
+								<AtomicNumericalData>
+									<StateEnergy>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="1/cm">33765.3040</Value>
+									</StateEnergy>
+									<LandeFactor>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="unitless">0.68</Value>
+									</LandeFactor>
+								</AtomicNumericalData>
+								<AtomicQuantumNumbers>
+									<TotalAngularMomentum>3.0</TotalAngularMomentum>
+								</AtomicQuantumNumbers>
+								<AtomicComposition>
+									<Component>
+										<Configuration>
+											<AtomicCore>
+												<Term/>
+											</AtomicCore>
+										</Configuration>
+										<Term>
+											<LS>
+												<L>
+													<Value>2</Value>
+												</L>
+												<S>2.0</S>
+											</LS>
+										</Term>
+									</Component>
+								</AtomicComposition>
+							</AtomicState>
+							<AtomicState stateID="Svald-6993">
+								<AtomicNumericalData>
+									<StateEnergy>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="1/cm">40052.0320</Value>
+									</StateEnergy>
+									<LandeFactor>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="unitless">2.34</Value>
+									</LandeFactor>
+								</AtomicNumericalData>
+								<AtomicQuantumNumbers>
+									<TotalAngularMomentum>4.0</TotalAngularMomentum>
+								</AtomicQuantumNumbers>
+								<AtomicComposition>
+									<Component>
+										<Configuration>
+											<AtomicCore>
+												<Term/>
+											</AtomicCore>
+										</Configuration>
+										<Term>
+											<LS>
+												<L>
+													<Value>4</Value>
+												</L>
+												<S>2.0</S>
+											</LS>
+										</Term>
+									</Component>
+								</AtomicComposition>
+							</AtomicState>
+							<AtomicState stateID="Svald-7002">
+								<AtomicNumericalData>
+									<StateEnergy>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="1/cm">56720.4050</Value>
+									</StateEnergy>
+									<LandeFactor>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="unitless">1.82</Value>
+									</LandeFactor>
+								</AtomicNumericalData>
+								<AtomicQuantumNumbers>
+									<TotalAngularMomentum>4.0</TotalAngularMomentum>
+								</AtomicQuantumNumbers>
+								<AtomicComposition>
+									<Component>
+										<Configuration>
+											<AtomicCore>
+												<Term/>
+											</AtomicCore>
+										</Configuration>
+										<Term>
+											<LS>
+												<L>
+													<Value>1</Value>
+												</L>
+												<S>2.0</S>
+											</LS>
+										</Term>
+									</Component>
+								</AtomicComposition>
+							</AtomicState>
+							<InChI>InChI=1S/Fe/i1+0</InChI>
+							<InChIKey>XEEYBQQBJWHFJM-I</InChIKey>
+						</Ion>
+					</Isotope>
+				</Atom>
+				<Atom>
+					<ChemicalElement>
+						<NuclearCharge>26</NuclearCharge>
+						<ElementSymbol>Fe</ElementSymbol>
+					</ChemicalElement>
+					<Isotope>
+						<IsotopeParameters>
+							<MassNumber>56</MassNumber>
+						</IsotopeParameters>
+						<Ion speciesID="Xvald-329">
+							<IonCharge>3</IonCharge>
+							<AtomicState stateID="Svald-8396">
+								<AtomicNumericalData>
+									<StateEnergy>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="1/cm">66720.1000</Value>
+									</StateEnergy>
+									<LandeFactor>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="unitless">2.00</Value>
+									</LandeFactor>
+								</AtomicNumericalData>
+								<AtomicQuantumNumbers>
+									<Parity>odd</Parity>
+									<TotalAngularMomentum>5.0</TotalAngularMomentum>
+								</AtomicQuantumNumbers>
+								<AtomicComposition>
+									<Component>
+										<Configuration>
+											<AtomicCore>
+												<Term/>
+											</AtomicCore>
+										</Configuration>
+										<Term>
+											<LS>
+												<L>
+													<Value>1</Value>
+												</L>
+												<S>1.0</S>
+											</LS>
+										</Term>
+									</Component>
+								</AtomicComposition>
+							</AtomicState>
+							<AtomicState stateID="Svald-8450">
+								<AtomicNumericalData>
+									<StateEnergy>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="1/cm">50051.4000</Value>
+									</StateEnergy>
+									<LandeFactor>
+										<SourceRef>Bvald-K03</SourceRef>
+										<SourceRef>Bvald-K06</SourceRef>
+										<Value units="unitless">0.79</Value>
+									</LandeFactor>
+								</AtomicNumericalData>
+								<AtomicQuantumNumbers>
+									<TotalAngularMomentum>3.0</TotalAngularMomentum>
+									<Parity>odd</Parity>
+								</AtomicQuantumNumbers>
+								<AtomicComposition>
+									<Component>
+										<Configuration>
+											<AtomicCore>
+												<Term/>
+											</AtomicCore>
+										</Configuration>
+										<Term>
+											<LS>
+												<L>
+													<Value>1</Value>
+												</L>
+												<S>2.0</S>
+											</LS>
+										</Term>
+									</Component>
+								</AtomicComposition>
+							</AtomicState>
+							<InChI>InChI=1S/Fe/q+3/</InChI>
+							<InChIKey>VTLYFUHAOXGGBS-I</InChIKey>
+						</Ion>
+					</Isotope>
+				</Atom>
+			</Atoms>
+		</Species>
+		<Processes>
+			<Radiative>
+				<RadiativeTransition>
+					<Comments>Wavelength is for vacuum.</Comments>
+					<EnergyWavelength>
+						<Wavelength>
+							<SourceRef>Bvald-K03</SourceRef>
+							<SourceRef>Bvald-K06</SourceRef>
+							<Value units="A">5999.05214976</Value>
+						</Wavelength>
+					</EnergyWavelength>
+					<InitialStateRef>Svald-5308</InitialStateRef>
+					<FinalStateRef>Svald-5329</FinalStateRef>
+					<SpeciesRef>Xvald-277</SpeciesRef>
+					<Probability>
+						<Log10WeightedOscillatorStrength>
+							<SourceRef>Bvald-K03</SourceRef>
+							<Value units="unitless">-3.090</Value>
+						</Log10WeightedOscillatorStrength>
+					</Probability>
+					<Verification>
+						<atomRuleT01>false</atomRuleT01>
+						<atomRuleT02 xsi:nil="true"/>
+					</Verification>
+				</RadiativeTransition>
+				<RadiativeTransition>
+					<Comments>Wavelength is for vacuum.</Comments>
+					<EnergyWavelength>
+						<Wavelength>
+							<SourceRef>Bvald-K03</SourceRef>
+							<SourceRef>Bvald-K06</SourceRef>
+							<Value units="A">5999.25477257</Value>
+						</Wavelength>
+					</EnergyWavelength>
+					<InitialStateRef>Svald-7002</InitialStateRef>
+					<FinalStateRef>Svald-6993</FinalStateRef>
+					<SpeciesRef>Xvald-326</SpeciesRef>
+					<Probability>
+						<Log10WeightedOscillatorStrength>
+							<SourceRef>Bvald-K03</SourceRef>
+							<SourceRef>Bvald-K06</SourceRef>
+							<Value units="unitless">-1.035</Value>
+						</Log10WeightedOscillatorStrength>
+					</Probability>
+					<Verification>
+						<atomRuleT01>true</atomRuleT01>
+						<atomRuleT02 xsi:nil="true"/>
+					</Verification>
+				</RadiativeTransition>
+				<RadiativeTransition>
+					<Comments>Wavelength is for vacuum.</Comments>
+					<EnergyWavelength>
+						<Wavelength>
+							<SourceRef>Bvald-K03</SourceRef>
+							<Value units="A">5999.99556000</Value>
+						</Wavelength>
+					</EnergyWavelength>
+					<InitialStateRef>Svald-8450</InitialStateRef>
+					<FinalStateRef>Svald-8396</FinalStateRef>
+					<SpeciesRef>Xvald-329</SpeciesRef>
+					<Probability>
+						<Log10WeightedOscillatorStrength>
+							<SourceRef>Bvald-K06</SourceRef>
+							<Value units="unitless">-2.270</Value>
+						</Log10WeightedOscillatorStrength>
+					</Probability>
+					<Verification>
+						<atomRuleT01>false</atomRuleT01>
+						<atomRuleT02>false</atomRuleT02>
+					</Verification>
+				</RadiativeTransition>
+			</Radiative>
+		</Processes>
+	</XSAMSData>
+</VerificationData>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+
+	<xs:include schemaLocation="cases/asymcs.xsd"/>
+	<xs:include schemaLocation="cases/asymos.xsd"/>
+	<xs:include schemaLocation="cases/atom.xsd"/>
+	<xs:include schemaLocation="cases/dcs.xsd"/>
+	<xs:include schemaLocation="cases/gen.xsd"/>
+	<xs:include schemaLocation="cases/hunda.xsd"/>
+	<xs:include schemaLocation="cases/hundb.xsd"/>
+	<xs:include schemaLocation="cases/lpcs.xsd"/>
+	<xs:include schemaLocation="cases/lpos.xsd"/>
+	<xs:include schemaLocation="cases/ltcs.xsd"/>
+	<xs:include schemaLocation="cases/ltos.xsd"/>
+	<xs:include schemaLocation="cases/nltcs.xsd"/>
+	<xs:include schemaLocation="cases/nltos.xsd"/>
+	<xs:include schemaLocation="cases/sphcs.xsd"/>
+	<xs:include schemaLocation="cases/sphos.xsd"/>
+	<xs:include schemaLocation="cases/stcs.xsd"/>
+</xs:schema>
