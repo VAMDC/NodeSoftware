@@ -6,7 +6,7 @@ monkey.patch_all()
 
 import sys
 import requests
-from vamdc.other.registry import getNodeList
+from registry import getNodeList
 
 try:
     QUERY = sys.argv[1]

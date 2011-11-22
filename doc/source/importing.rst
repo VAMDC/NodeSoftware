@@ -89,6 +89,7 @@ files in a format the database can import.
 
 
 Starting the rewrite
+++++++++++++++++++++
 
 Once you have defined the mapping file as described in the following 
 section, you need to place yourself in the *imptools/* directory (this
@@ -98,16 +99,26 @@ mapping file as an argument to the *imptools/run_rewrite.py* program::
     $ python run_rewrite.py ../nodes/MyNode/mapping_mynode.py
 
 
-Depending on the amount of data, the conversion might take some
-time. The result will be a set of ascii output files.
+The result will be a set of ascii output files on the right form.
+
+
+.. note:: 
+   For large amounts of raw data, the rewrite operation can be very
+   time consuming. We have found that a speed-up of as much as five
+   times can be achieved by not using standard Python but an
+   alternative implementation of Python  called *pypy*. If installed
+   you run the rewrite program just as above except you replace
+   *python* with *pypy*. See http://pypy.org for further details on *pypy* usage. 
+
 
 
 The mapping file
 ----------------
 
 The mapping file is a standard Python file and describes how the
-rewriter reads the raw data. *imptools/mapping_sample.py* is a minimal
-mapping file one can build from. A much more complete example is found
+rewriter reads the raw data so it can be converted on the form needed
+for database import.  *imptools/mapping_sample.py* is a minimal
+mapping file one can build from. A much more extensive example is found
 in the *nodes/ExampleNode* directory.
 
 The mapping file must define a variable 
@@ -140,58 +151,69 @@ The ``mapping`` list
 
 The ``mapping`` variable is a list of Python *dictionaries*. A
 standard python dictionary is written as ``{key:value, key2:value2,
-... }`` and is a very efficient means of storing data. One of
-these keys, *linemap*, tself points to a list with further dictionaries. The
-structure looks like this::
+... }`` and is a very efficient means of storing data. Each of the
+dictionaries in ``mapping`` describes how to output data to exactly one output
+file and thus correspons to one database table (described by a model in
+*node/models.py*). It can use any number of raw input data files to get this
+data. 
+
+Each mapping is executed in parallel, using multiple processors if
+available. This means that you should not have any mapping write to
+the same output file as any other mapping. For example, one could be
+tempted to have two mappings both write to an outfile *states.dat*,
+writing upper- and lower- states into the file respectively. Due to
+the parallel operation, this will likely lead to file lock clashes. 
+Output instead to two files (e.g. *states_upper.dat* and *states_lower.dat*)
+and read them separately into the same table later.  
+
+Only certain key names are allowed in each mapping dictionary. One of
+these keys, *linemap* holds a list with further dictionaries since it
+details exactly how to read each line/block of data from the input. The
+structure of the ``mapping`` variable looks like this::
 
  mapping = [
     {key : value, 
      key : value,
+     ... 
      linemap : [
          {linemap_key : value, 
           linemap_key : value},
          {linemap_key : value, 
-          linemap_key : value}] }
-     {key : value, 
-      key : value, 
-      linemap : [ ... ]}
+          linemap_key : value}] },    
+    {...},
+    {...},
+     ...
     ] 
 
 
-The *key* s and *value* s of
-each dictionary describes how to populate one output 
-file using any number of source text files. Remember that each such
-output file is to be read into the database later and will populate
-one database table -- that is one "model" in your schema. 
+And so on, continuing with more dictionaries. The *key* s and *value* s of
+each dictionary describes all aspects of the parsing, although not all
+options are mandatory depending on your structure. 
 
 =============  =========================================================
 **key**        **value**
 -------------  ---------------------------------------------------------
 *Mandatory*
-outfile        The name of the file that should be created. Note that
-               each such output file will be read into one database
-               model. 
-infiles        Input file(s). This may also accept a list of multiple
+outfile        The name of the file that should be created. Each such
+               output file will later be read into one database 
+               table/ model. 
+infiles        Input file(s). This may be a single file name or a list of multiple
                file names. More than one file may
                be relevant if the raw data is stored in multiple files
-               related to each other by line number. 
+               related to each other by line number only.
 linemap        A list of dictionaries defining how to parse each line/block 
                of the file(s) into its components (see the next table
-               below for defining the linemap list)
-.
+               below for the keys relevant when defining the linemap list)
+
 *Optional*
 headlines      Number of header lines at the top of the 
-               input file() (default: 0). If more than one infile is
-               used, this must be a list of headlines, as many as
-               there are files.
+               input file(s) (default: 0). If more than one infile is
+               used, this must be a list of headlines in the same
+               order, as many as there are input files.
 commentchar    Which comment symbol is used in the input
                file(s) to indicate a line to ignore (default is: '#').
-               As above, this must be a list
-               if more than one filename is read. 
-cnull          Values in the input file(s) that should be
-               considered 'null' and ignored (no default). As above,
-               this must be a list if more than one filename is read. 
-errline        Whole lines in the input file(s) that should 
+               As above, this must be a list if more than one filename is used. 
+errlines       Whole lines in the input file(s) that should 
                be considered non-valid and ignored (no default). As
                above, this must be a list if more than one filename is
                read. 
@@ -211,17 +233,19 @@ lineoffset     A starting offset when reading a file, after headers have
                point. If many files are read, this must be given as a
                list of offsets, as many as there are files. 
 startblock     This is a string or a list of strings to be interpreted
-               as starting sentinels for data records stretching over 
+               as *starting sentinels* for data records stretching over 
                more than one line. So if every data block is wrapped
                in BEGIN ... END clauses, you should put "BEGIN" here. 
-               (default is the line break character). The variables
+               (default is the line break character, making each "block"
+               equivalent to a line). The variables
                *linestep*  and *lineoffset* will step through full
-               blocks if so given. 
+               blocks instead of lines if this is given. 
 endblock       This is a string or list of strings to be interpreted
-               as ending sentinels for data records stretching over
+               as *ending sentinels* for data records stretching over
                more than one line. So if every data block is wrapped
                in BEGIN ... END clauses, you should put "END"
-               here. (default is the line break character). If blocks
+               here. (default is the line break character, making each
+               "block" equivalent to a line). If blocks
                are only separated by a single sentinel 
                (e.g. ... RECORD ... RECORD ... ), simply put the same
                sentinel ("RECORD" in this example)  as both startblock
@@ -233,8 +257,10 @@ A note about reading multiple files at the same time: The only main use for
 this is really if your raw data is related to data in other files by
 *record number only* (i.e. by counting line number or maybe block number). If you
 cannot use line numbers since you use, say, an ID string to relate data
-in one file to that in another, you should read the files as separate
-reads. Exactly how the read will looks depend on your planned database
+in one file to that in another, you cannot correlate them to each
+other this way. You should then instead read the files as separate
+reads. Exactly how the
+read will looks depend on your planned database 
 layout and the models you need to
 populate. */nodes/vald/mapping_vald3.py* contains an advanced example
 of reading upper and lower atomic States from a file in two passes, using ID
@@ -245,14 +271,15 @@ The *linemap* key points to another list with dictionaries. This is the
 actual operating piece of code and describes exactly how to parse each
 line or block (or lines/blocks, if more than one input file is read
 simultaneously). Each dictionary works for a single database field in
-your current model and describes exactly how to parse the
+your current model (that is, the model your output file will be read
+to down the line)  and describes exactly how to parse the
 current line/block so as to produce a value in that field.
 
 ==================  =========================================================
 **linemap_key**     **value**
 ------------------  ---------------------------------------------------------
 *Mandatory*
-cname               The name of the field in your database model.
+cname               The name of the field in your database model to populate.
 cbyte               A tuple ``(linefunction, arguments)``. This names a
                     function capable of parsing the line(s) to produce
                     the data needed to feed to the field *cname*. The only
@@ -266,7 +293,7 @@ cbyte               A tuple ``(linefunction, arguments)``. This names a
                     a particular index range or the Nth separated
                     section etc) come with the package and can be used
                     directly by importing from *imptools/linefuncs.py*.
-.
+
 *Optional*
 filenum             This is an integer or a list of integers used only when more than one
                     file is read simultaneously. It allows you to specify
@@ -275,7 +302,7 @@ filenum             This is an integer or a list of integers used only when more
                     merge data from two or more files to produce one
                     value, you need to write a custom line function
                     for this and then use this setting to specify which
-                    files should be used. 
+                    file(s) should be used. 
 cnull               Indicates what should be interpreted as NULL data.
                     If this string is found, the `\N` symbol will be stored in
                     the output file instead.
@@ -318,6 +345,7 @@ line functions *bySepNr* and *charrange* available (among many others)::
            'cbyte'(charrange, 45, 45, 1)}, # retrieved from file3!
              # ...
           {'cname':'source',
+           'filenum':1,     # read from current line of second file!
            'cbyte':(charrange, 0, 10),
                    ]
         }]
@@ -336,7 +364,7 @@ look:
   program will automatically send this to  the function as it steps
   through the file. If you read multiple input files *and* supplied
   multiple *linenum* values in the mapping, this first argument will
-  also be a list with the corresponding lines/blocks. It's up to the
+  be a list with the corresponding lines/blocks. It's up to the
   custom function to handle this list properly.
 * The function must return its extracted piece of data in a format
   suitable for the field it is to be stored in. So a function parsing
@@ -371,8 +399,8 @@ and combine them into a unique identifier that you will then use as a
 key for connecting your model to another via a One-to-Many
 relationship. Or maybe you want to put a value in different fields
 depending on if they are bigger/smaller than a certain value. 
-The default line functions in *linefuncs.py* cannot do this out of the
-box.  
+There is no way for the default line functions in *linefuncs.py* to 
+account for all possibilities.
 
 The solution is to write your own line function. You have the full
 power of Python at your command. Often you can use the
@@ -390,10 +418,10 @@ by parsing different parts of lines from different files::
      """
      extracts id from several lines. 
        sepnr - nth separator to pick from file 1
-       index1, index2 - indices marking piece to pick from file 2
+       index1, index2 - indices marking start/end index from file 2
         
-       (file3 is always used the same way, so we hard-code the
-       indices for that file.)
+       (file3 is (in this example) always used the same way, 
+        so we hard-code the indices for that file.)
      """
      l1 = bySepNr(linedata[0], sepnr, ',')
      l2 = charrange(linedata[1], index1, index2)
@@ -409,10 +437,22 @@ checking to replace data on the spot. The end result is a string
 combined from all sources. 
 
 This function assumes linedata is a list. It must thus be called from
-a mapping where at least three files are read and where *filenum* is
+a mapping where at least three files are read (*inputfiles* is a list
+of at least three file names) and where *filenum* is
 given as a list specifying which files' lines/blocks are to be sent to
-the function. From the mapping dictionary we would then call this with
-e.g. ``cbyte: (get_id_from_line, 3, 25, 29)``. 
+the function. The the mapping dictionary could look something like this::
+
+ 
+  ...
+     {'outfile':outfile1,   
+      'infiles': [file1,file2,file3],
+      'linemap': [
+           {cname:'myidfield',
+           filenum = (0,1,2)
+           cbyte: (get_id_from_line, 3, 25, 29)},                    
+           ...
+                 ]     
+    }
 
 
-See *nodes/ExampleNode* for more examples of mappings and linefuncs..
+See *nodes/ExampleNode* for more examples of mappings and linefuncs.

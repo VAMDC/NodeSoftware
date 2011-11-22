@@ -207,7 +207,7 @@ def Wavelength2Wavenumber(op, foo):
     q = ['RadTransWavenumber', opp, str(foop)]
     return q
         
-def setupResults(sql, LIMIT=2000):
+def setupResults(sql, LIMIT=None):
     # rather than use the sql2Q method:
     #q = sqlparse.sql2Q(sql)
     # we parse the query into its restrictables and logic:
@@ -252,14 +252,18 @@ def setupResults(sql, LIMIT=2000):
     LOG('%s states retrieved from HITRAN database' % nstates)
     LOG('%s species retrieved from HITRAN database' % nspecies)
 
+    nsources = 0
+    if sources is not None:
+        # sources is a Python list, not a queryset, so we can't use count()
+        nsources = len(sources)
+    print 'nsources =', nsources
     print 'nspecies =', nspecies
     print 'nstates =', nstates
     print 'ntrans =', ntrans
-    if sources is not None:
-        print 'nsources =', len(sources)
 
     headerinfo = {
         'Truncated': '%s %%' % percentage,
+        'count-sources': nsources,
         'count-species': nspecies,
         'count-molecules': nspecies,
         'count-states': nstates,

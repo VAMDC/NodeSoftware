@@ -46,6 +46,7 @@ RETURNABLES = {\
 'AtomStateMixingCoeff':'AtomState.Component.mixingcoefficient',
 'AtomStateMixingCoeffClass' : 'AtomState.Component.mixingclass.value',
 'AtomStateLifeTime': 'AtomState.lifetime',
+'AtomStateLifeTimeDecay':'totalRadiative',
 'AtomStateStatisticalWeight' : 'AtomState.statisticalweight',
 'AtomStateStatisticalWeightUnit' : 'AtomState.statisticalweightunit.value',
 'AtomStateLifeTimeUnit': 'AtomState.lifetimeunit.value',
@@ -66,6 +67,7 @@ RETURNABLES = {\
 'RadTransProbabilityA' : 'RadTran.transitionprobability',
 
 'CrossSectionState' : 'RadCros.id',
+'CrossSectionID' : 'RadCros.id',
 'CrossSectionX' : 'RadCros.xdata',
 'CrossSectionXUnits' : 'RadCros.crosssectionunit.value',
 'CrossSectionXN' : 'len(RadCros.xdata.split(" "))',

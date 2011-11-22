@@ -103,7 +103,7 @@ format.
 Restrictables
 ~~~~~~~~~~~~~~~~~
 
-It is the list of global names that make sense to put constraints on at a 
+It is the list of global names that make sense to use as constraints for a 
 certain node and therefore tells which names from the dictionary can be 
 used in the WHERE-clause of a query to the node (see query language below).
 
@@ -125,10 +125,6 @@ subset of the data that matches the restrictions. For example, *SELECT
 Species, RadiativeTransitions* would return only the fields in this
 group and skip any information about the states, if it were available.
 
-.. note::
-	This is used for a future feature of the query language
-	that is not yet implemented in the node software.
-
 
 The registry
 ---------------
@@ -142,7 +138,7 @@ register your node there once the setup is complete.
 
 .. note::
     What follows below is not necessary to know for setting up a new 
-    VAMDC node.
+    VAMDC node but it helps to get the broader picture.
 
 
 TAP services
@@ -174,10 +170,9 @@ can be found in the standards documentation at http://vamdc.org/documents/standa
 The query language
 ---------------------
 
-The node software uses the *VAMDC SQL-subset 1* (VSS1) and will 
-implement the future iterations of the VAMDC query language. VSS1 is 
-basically a SQL-like string where the layout of the database behind the 
-answering node does not need to be known - instead one uses the keywords 
+The node software uses the *VAMDC SQL-subset 2* (VSS2) which is a superset of VSS1 for query language as defined in the VAMDC standards. This is 
+basically a SQL-like string where the database layout of the 
+node does not need to be known - instead one uses the keywords 
 from the dictionary in the WHERE part to restrict the selection of data. 
 This means that all nodes understand identical queries and there is no 
 need to adapt the query to a certain node.
