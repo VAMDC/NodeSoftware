@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema">
 	<Sources>
 		<Source sourceID="BHIT-H2O-nu-40">
 			<Authors>
@@ -53,7 +53,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>1</nltcs:v1>
@@ -76,7 +76,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>0</nltcs:v1>
@@ -126,7 +126,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>1</nltcs:v1>
@@ -149,7 +149,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>0</nltcs:v1>
@@ -199,7 +199,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>1</nltcs:v1>
@@ -222,7 +222,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="nltcs" xsi:type="nltcs:Case" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>0</nltcs:v1>

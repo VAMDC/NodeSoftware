@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
-<VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<VerificationData xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.2" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" >
 	<VerificationResult>
 		<NumberOfRadiativeTransitions correct="1" incorrect="2" total="3" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="dcsRuleT01" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="dcsRuleT02" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="dcsRuleT03" unidentified="0"/>
+		<NumberOfVerificationByRule name="dcsRuleT01" correct="2" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="dcsRuleT02" correct="2" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="dcsRuleT03" correct="2" incorrect="1" unidentified="0"/>
 	</VerificationResult>
 	<XSAMSData>
 		<Sources>

@@ -40,25 +40,19 @@
 	</Methods>
 	<Functions>
 		<Function functionID="Fdelta">
-			<Comments>This function gives the pressure-dependence of the absorption
-				line wavenumber shift: nu = nu_ref + (delta).(p/pref)
-			</Comments>
+			<Comments>This function gives the pressure-dependence of the absorption line wavenumber shift: nu = nu_ref + (delta).(p/pref)</Comments>
 			<Expression computerLanguage="Fortran">
 				delta_ref * p
 			</Expression>
 			<Y name="delta" units="1/cm"/>
 			<Arguments>
 				<Argument name="p" units="atm">
-					<Description>The pressure of the shifting environment,
-						in atm
-					</Description>
+					<Description>The pressure of the shifting environment, in atm</Description>
 				</Argument>
 			</Arguments>
 			<Parameters>
 				<Parameter name="delta_ref" units="1/cm">
-					<Description>The pressure-shift of the absorption line at
-						pref = 1 atm
-					</Description>
+					<Description>The pressure-shift of the absorption line at pref = 1 atm</Description>
 				</Parameter>
 			</Parameters>
 		</Function>

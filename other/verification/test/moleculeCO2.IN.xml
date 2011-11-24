@@ -38,16 +38,12 @@
 			<Y name="delta" units="1/cm"/>
 			<Arguments>
 				<Argument name="p" units="atm">
-					<Description>The pressure of the shifting environment,
-						in atm
-					</Description>
+					<Description>The pressure of the shifting environment, in atm</Description>
 				</Argument>
 			</Arguments>
 			<Parameters>
 				<Parameter name="delta_ref" units="1/cm">
-					<Description>The pressure-shift of the absorption line at
-						pref = 1 atm
-					</Description>
+					<Description>The pressure-shift of the absorption line at pref = 1 atm</Description>
 				</Parameter>
 			</Parameters>
 		</Function>
