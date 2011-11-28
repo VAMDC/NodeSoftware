@@ -145,14 +145,6 @@ class Temperature(models.Model):
     transitiondata = models.ForeignKey(Transitiondata, db_column='id_transitiondata')
     temperature = models.IntegerField(unique=True)
     a = models.FloatField(null=True, blank=True)
-    n_we = models.CharField(max_length=24)
-    we = models.FloatField(null=True, blank=True)
-    n_de = models.CharField(max_length=24)
-    de = models.FloatField(null=True, blank=True)
-    n_wp = models.CharField(max_length=24, blank=True)
-    wp = models.FloatField(null=True, blank=True)
-    n_dp = models.CharField(max_length=24, blank=True)
-    dp = models.FloatField(null=True, blank=True)
     class Meta:
         db_table = u't_temperatures'
 
