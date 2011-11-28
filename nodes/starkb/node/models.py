@@ -22,11 +22,12 @@ class Ion(models.Model):
     name = models.CharField(unique=True, max_length=30, blank=True)
     symbol = models.CharField(unique=True, max_length=10)
     ionization = models.CharField(max_length=6, null=True)
-    ionization_decimal = models.IntegerField(null=True)
-    nuclear_charge = models.IntegerField()
+    ionization_decimal = models.IntegerField(null=False)
+    ion_charge = models.IntegerField(null=False)
+    nuclear_charge = models.IntegerField()    
     
-    def ion_charge(self):
-        return self.ionization_decimal - 1
+    '''def ion_charge(self):
+        return self.ionization_decimal - 1'''
     
     def species_id(self):
         return self.id
@@ -122,7 +123,7 @@ class Level(models.Model):
 class Transition(models.Model):
     id = models.IntegerField(primary_key=True)
     dataset = models.ForeignKey(Dataset, db_column='id_dataset')
-    target = models.ForeignKey(Ion, db_column='id_species')
+    target = models.ForeignKey(Species, db_column='id_species')
     #targetspecies = models.ForeignKey(Species, db_column='id_species', related_name='species')
     lower_level = models.ForeignKey(Level, db_column='lower_level', related_name='lower_level')
     upper_level = models.ForeignKey(Level, db_column='upper_level', related_name='upper_level')

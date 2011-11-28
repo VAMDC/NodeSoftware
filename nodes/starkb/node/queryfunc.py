@@ -40,7 +40,7 @@ def getSpeciesWithStates(transs):
     nstates = 0
     
     for specie in species:
-        try :
+        try :            
             target = targets.get(id = specie.pk)# if ion is a target, look for states      
             # get all transitions in linked to this particular species 
             spec_transitions = transs.filter(target__pk = target.pk)   
@@ -138,6 +138,7 @@ def setupResults(sql, limit=1000):
     # convert the incoming sql to a correct django query syntax object 
     # based on the RESTRICTABLES dictionary in dictionaries.py
     # (where2q is a helper function to do this for us).
+    log.debug('where : ' + str(sql.where))
     q = where2q(sql.where, dictionaries.RESTRICTABLES)    
     try:         
         q = eval(q) # test queryset syntax validity        
@@ -147,6 +148,7 @@ def setupResults(sql, limit=1000):
     # We build a queryset of database matches on the Transision model
     # since through this model (in our example) we are be able to
     # reach all other models.
+    log.debug(q)
     transs = models.Transition.objects.filter(q)
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
