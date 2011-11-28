@@ -3,7 +3,8 @@
 # this is not necessarily a working script at all times
 # but mainly a reminder of the steps involved.
 
-VDB="vald_atom"
+AorM="atom"
+VDB="vald_$AroM"
 VUSR="vald"
 VPWD="V@ld"
 
@@ -19,7 +20,8 @@ echo "Dropping and re-creating the database... "
 echo "DROP DATABASE $VDB;" | mysql -u "$VUSR" -p"$VPWD"
 echo "CREATE DATABASE $VDB CHARACTER SET utf8;" | mysql -u "$VUSR" -p"$VPWD"
 # The next line replaces "syncdb" but we skip the index creation for now
-./manage.py sql node | grep -v "\`transitions\` ADD CONSTRAINT" | mysql -u "$VUSR" -p"$VPWD" "$VDB"
+./manage.py sql node_common | grep -v "\`transitions\` ADD CONSTRAINT" | mysql -u "$VUSR" -p"$VPWD" "$VDB"
+./manage.py sql node_$AorM | grep -v "\`transitions\` ADD CONSTRAINT" | mysql -u "$VUSR" -p"$VPWD" "$VDB"
 echo "done."
 
 echo -n "Running load.sql ... "

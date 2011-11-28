@@ -6,23 +6,22 @@ TRANSLIM = 6000
 
 INSTALLED_APPS.remove(NODEPKG)
 INSTALLED_APPS.append(NODENAME+'.node_common')
-NODEPKG=NODENAME+'.node_atom'
+NODEPKG=NODENAME+'.node_molec'
 INSTALLED_APPS.append(NODEPKG)
 
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'vald_atom',
+    'NAME': 'vald_molec',
     'USER': 'vald',
     'PASSWORD': 'V@ld',
   },
 }
 
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
-EXAMPLE_QUERIES = ['SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4005',
-                   'SELECT ALL WHERE AtomSymbol = U']
+EXAMPLE_QUERIES = []
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
 
-LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode.log'
+LOGGING['handlers']['logfile']['filename'] = '/tmp/molecnode.log'
 if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'
