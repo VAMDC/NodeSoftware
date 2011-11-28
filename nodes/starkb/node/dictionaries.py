@@ -7,7 +7,7 @@ RETURNABLES = ({\
 'AtomSymbol':'Atom.ion.symbol',
 'AtomNuclearCharge':'Atom.ion.nuclear_charge',
 'AtomSpeciesID':'Atom.particle_ion_id()',
-'AtomIonCharge':'Atom.ion.ion_charge()',
+'AtomIonCharge':'Atom.ion.ion_charge',
 
 
 'AtomStateConfigurationLabel':'AtomState.config',
@@ -54,5 +54,7 @@ RETURNABLES = ({\
 })
 
 RESTRICTABLES = ({\
-'RadTransWavelength':'wavelength'
+'RadTransWavelength':'wavelength',
+'AtomSymbol':'target__ion__symbol',
+'IonCharge':'target__ion__ion_charge'
 })
