@@ -1,27 +1,20 @@
 from settings_default import *
 
 DEBUG = True
-DEBUG = False
+#DEBUG = False
 TRANSLIM = 6000
+
+INSTALLED_APPS.remove(NODEPKG)
+NODEPKG=NODENAME+'.node_atom'
+INSTALLED_APPS.append(NODEPKG)
 
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'vald',
+    'NAME': 'vald_atom',
     'USER': 'vald',
     'PASSWORD': 'V@ld',
   },
-  'valdx': {
-    'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'valdx',
-    'USER': 'vald',
-    'PASSWORD': 'V@ld',
-  },
-  'sqlite': {
-    'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': 'vald.db',
-  }
-
 }
 
 ADMINS = (('Thomas', 'thomas@marquart.se'),)

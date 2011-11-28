@@ -3,7 +3,7 @@
 # this is not necessarily a working script at all times
 # but mainly a reminder of the steps involved.
 
-VDB="valdx"
+VDB="vald_atom"
 VUSR="vald"
 VPWD="V@ld"
 
