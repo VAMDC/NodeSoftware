@@ -16,7 +16,7 @@ RETURNABLES = ({\
 'AtomStateTotalAngMom' : 'AtomState.j_asFloat()',
 
 'RadTransBroadeningPressure':'RadTran',
-'RadTransBroadeningPressureComment':'stark effect',
+#'RadTransBroadeningPressureComment':'stark effect',
 'RadTransBroadeningPressureLineshapeName':'Lorentzian',
 'RadTransBroadeningPressureLineshapeParameterName':'gammaL',
 'RadTransBroadeningPressureLineshapeParameterComment':'Broadening.comment',
@@ -56,5 +56,7 @@ RETURNABLES = ({\
 RESTRICTABLES = ({\
 'RadTransWavelength':'wavelength',
 'AtomSymbol':'target__ion__symbol',
-'IonCharge':'target__ion__ion_charge'
+'IonCharge':'target__ion__ion_charge',
+'EnvironmentTemperature' : 'temperature',
+'EnvironmentTotalNumberDensity':'density'
 })

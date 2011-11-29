@@ -118,20 +118,23 @@ class Level(models.Model):
         return None
         
     class Meta:
-        db_table = u't_levels'
-
+        db_table = u't_levels'  
+        
+        
 class Transition(models.Model):
     id = models.IntegerField(primary_key=True)
     dataset = models.ForeignKey(Dataset, db_column='id_dataset')
     target = models.ForeignKey(Species, db_column='id_species')
-    #targetspecies = models.ForeignKey(Species, db_column='id_species', related_name='species')
     lower_level = models.ForeignKey(Level, db_column='lower_level', related_name='lower_level')
     upper_level = models.ForeignKey(Level, db_column='upper_level', related_name='upper_level')
-    #multiplet = models.CharField(max_length=24, blank=True)
     wavelength = models.FloatField()
+    temperature = models.FloatField()
+    temperatureid = models.IntegerField(db_column='id_temperature')
+    density = models.FloatField()
     class Meta:
-        db_table = u'v_transitionsvamdc'
-
+        db_table = u'v_transitionsvamdc'    
+        
+        
 class Transitiondata(models.Model):
     id = models.IntegerField(primary_key=True)
     transition = models.ForeignKey(Transition, db_column='id_transition')
@@ -140,6 +143,7 @@ class Transitiondata(models.Model):
     class Meta:
         db_table = u't_transitiondata'
 
+        
 class Temperature(models.Model):
     id = models.IntegerField(primary_key=True)
     transitiondata = models.ForeignKey(Transitiondata, db_column='id_transitiondata')
@@ -147,6 +151,9 @@ class Temperature(models.Model):
     a = models.FloatField(null=True, blank=True)
     class Meta:
         db_table = u't_temperatures'
+
+        
+
 
 class TemperatureCollider(models.Model):
     id = models.IntegerField(primary_key=True)
