@@ -16,22 +16,7 @@ Documentation for the VAMDC node software.
    deploy
    virtmach
    addit
+   limitations
    contact
    modules
-
-PDF
-========
-
-PDF-versions of this document are available at:
-
-* http://www.vamdc.org/documents/NodeSoftwareDoc_v11.5.pdf (release version)
-* http://vamdc.tmy.se/doc/nodesoftware.pdf (latest development version)
-
-Index and search
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
 

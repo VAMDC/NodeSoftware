@@ -41,7 +41,7 @@ def getLifetimeMethods():
         def __init__(self, mid, category):
             self.id = mid
             self.category = category
-    return (Method("MtauEXP", "experiment"), Method("MtauTHEO", "compilation"))
+    return (Method("exp","experiment"),Method("MtauEXP", "experiment"), Method("MtauTHEO", "compilation"))
 
 def setupResults(sql,limit=1000):
     LOG(sql)

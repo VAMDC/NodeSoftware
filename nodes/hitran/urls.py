@@ -12,11 +12,11 @@ urlpatterns = patterns('',
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     (r'^tap/', include('vamdctap.urls')),
-    (r'^HITRAN/searchapp/results/(?P<filename>.*)$',
-            'searchapp.views.serve_file'),
-    (r'^HITRAN/', 'searchapp.views.index'),
-    (r'^media/(?P<path>.*)$', 'django.views.static.serve',
-            {'document_root': settings.MEDIA_PATH}),
+    #(r'^HITRAN/searchapp/results/(?P<filename>.*)$',
+    #        'searchapp.views.serve_file'),
+    #(r'^HITRAN/', 'searchapp.views.index'),
+    #(r'^media/(?P<path>.*)$', 'django.views.static.serve',
+    #        {'document_root': settings.MEDIA_PATH}),
     )
 
 handler500 = 'vamdctap.views.tapServerError'

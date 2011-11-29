@@ -12,11 +12,11 @@
 import sys, pdb
 import itertools
 
-# parse VALD3linlists
+# parse VALD3linlists (VALD3linelists.txt)
 
 def parse_wiki_linelist_file(filename):
     """
-    Parses the lines of the VALD3linelists
+    Parses the lines of VALD3linelists.txt
     """
     f = open(filename, 'r')
 
@@ -37,8 +37,9 @@ def parse_wiki_linelist_file(filename):
                 refs = [element.strip().strip(']]').strip().split('|')[1] for element in cols[3].split(',') if element.strip()]
             except IndexError:
                 print "Error parsing line \n%s\n" % line 
-                raise 
+                raise
             dic[fil] = (elements, typ, refs)        
+        #print fil, typ
     return dic
     
 def parse_config_file(filename):
@@ -54,6 +55,7 @@ def parse_config_file(filename):
             continue
         cols = [entry.strip() for entry in line.split(',')]
         fil = cols[0].split('/')[-1].strip("'")
+        #print fil
         if fil in dic:
             raise Exception("Non-unique filename in %s: %s" % (filename, fil))
         else:
@@ -84,7 +86,7 @@ def parse_bibtex_file(filename):
         print ", ".join(["%s (x%s)" % (entry[0], entry[1]) for entry in doublets])
     return bset
         
-def merge_files(infile1, infile2, bibtex_file=None, outfile=None):
+def linelists_references(infile1, infile2, bibtex_file=None, outfile=None):
     """
     Main program
     """
@@ -122,19 +124,19 @@ def merge_files(infile1, infile2, bibtex_file=None, outfile=None):
             print ", ".join(warn4)
         print " ==== End Cross-correlation mode ====\n"    
             
-    # create new file on format ID;refs,refs,refs;filename;type;elements;...
+    # create new file on format \N;"id","ref" , where ref can occur on many different lines
+    # this file represents a ForeignKey relationship. 
     lines = []
     for filekey1, tup1  in dic1.items():
         if filekey1 in dic2:            
             tup2 = dic2[filekey1]            
             for ref in tup2[2]:                
-                lines.append('\N;"%s";"%s"\n' % (tup1[0], ref))           
+                lines.append('\N;"%s";"%s"\n' % (tup1[0], ref))
     fout.writelines(lines)    
     fout.close()
     
 if __name__=='__main__':
 
-    import pdb
     #pdb.set_trace()
     argv = sys.argv
     if len(argv) < 3:
@@ -153,5 +155,5 @@ these will be printed.
     else:
         bibtex_file = argv[3]
     output = "linelists_references.dat"        
-    merge_files(argv[1], argv[2], bibtex_file=bibtex_file, outfile=output)
+    linelists_references(argv[1], argv[2], bibtex_file=bibtex_file, outfile=output)
     print "... Created file %s." % (output) 

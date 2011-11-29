@@ -1,404 +1,303 @@
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#     * Rearrange models' order
-#     * Make sure each model has one field with primary_key=True
-# Feel free to rename the models, but don't rename db_table values or
-# field names.
-#
-# Also note: You'll have to insert the output of
-# 'django-admin.py sqlcustom [appname]' into your database.
-
 from django.db import models
+from dictionaries import RETURNABLES
+import datetime
+import re
 
-import datetime, time
+NODEID = RETURNABLES['NodeID']
+source_prefix = 'B%s-' % NODEID
 
-case_prefixes = {}
-case_prefixes[1] = 'dcs'
-case_prefixes[2] = 'hunda'
-case_prefixes[3] = 'hundb'
-case_prefixes[4] = 'ltcs'
-case_prefixes[5] = 'nltcs'
-case_prefixes[6] = 'stcs'
-case_prefixes[7] = 'lpcs'
-case_prefixes[8] = 'asymcs'
-case_prefixes[9] = 'asymos'
-case_prefixes[10] = 'sphcs'
-case_prefixes[11] = 'sphos'
-case_prefixes[12] = 'ltos'
-case_prefixes[13] = 'lpos'
-case_prefixes[14] = 'nltos'
+class Molecule(models.Model):
+    molecID = models.IntegerField(primary_key=True, unique=True)
+    molecID_str = models.CharField(max_length=40)
+    InChI = models.CharField(max_length=200, unique=True)
+    InChIKey = models.CharField(max_length=27, unique=True)
+    # canonical stoichiometric formula with atoms in increasing order of
+    # atomic mass:
+    stoichiometric_formula = models.CharField(max_length=40)
+    # ordinary formula for display and search:
+    ordinary_formula = models.CharField(max_length=40)
+    ordinary_formula_html = models.CharField(max_length=200)
+    # the single most common name used to refer to this species:
+    common_name = models.CharField(max_length=100, null=True, blank=True)
+    # CML representation of the species, with no isotope information
+    cml = models.TextField(null=True, blank=True)
 
-class Molecules(models.Model):
-    molecid = models.IntegerField(primary_key=True, null=False,
-                                  db_column='molecID')
-    inchikeystem = models.CharField(max_length=42, db_column='InChIKeyStem')
-    molec_name = models.CharField(max_length=20, null=False,
-                                  db_column='molec_name')
-    molec_name_html = models.CharField(max_length=128, null=False,
-                                       db_column='molec_name_html')
-    molec_name_latex = models.CharField(max_length=128, null=False,
-                                       db_column='molec_name_latex')
-    stoichiometric_formula = models.CharField(max_length=40, null=False,
-                                       db_column='stoichiometric_formula')
-    chemical_names = models.CharField(max_length=256,
-                                      db_column='chemical_names')
+    # until we put this in the database model, hard-code it here:
+    charge = 0
+
     class Meta:
-            db_table = u'molecules'
+            db_table = u'hitranmeta_molecule'
 
-class Isotopologues(models.Model):
-    inchikey = models.CharField(primary_key=True, max_length=81,
-                               db_column='InChIKey')
-    inchi = models.CharField(max_length=384, db_column='InChI')
-    molecid = models.IntegerField(null=False, db_column='molecID')
-    isoid = models.IntegerField(db_column='isoID')
-    iso_name = models.CharField(max_length=384, db_column='iso_name')
-    iso_name_html = models.CharField(max_length=1536,
-                                     db_column='iso_name_html')
-    iso_name_latex = models.CharField(max_length=384,
-                                      db_column='iso_name_latex')
-    abundance = models.FloatField(null=True, blank=True, db_column='abundance')
-    afgl_code = models.IntegerField(null=True, blank=True,
-                                    db_column='AFGL_code')
-    caseid = models.IntegerField(null=True, db_column='caseID')
+class MoleculeName(models.Model):
+    name = models.CharField(max_length=100)
+    molecule = models.ForeignKey('Molecule')
     class Meta:
-            db_table = u'isotopologues'
+        db_table = 'hitranmeta_moleculename'
 
-# This is a plumbing class to make the way my database stores molecule
-# information play nicely with the generic generator code 
-class Species:
-   def __init__(self, molecid, isoid, inchikey, molec_name, iso_name,
-                chemical_names, ordinary_formula, stoichiometric_formula):
-        self.molecid = molecid
-        self.isoid = isoid
-        self.inchikey = inchikey
-        self.molec_name = molec_name
-        self.iso_name = iso_name
-        self.chemical_names = chemical_names
-        self.ordinary_formula = ordinary_formula
-        self.stoichiometric_formula = stoichiometric_formula
-        self.States = None
+class Iso(models.Model):
+    isoID = models.IntegerField()
+    isoID_str = models.CharField(max_length=50)
+    InChI_explicit = models.CharField(max_length=200, null=True, blank=True,
+                                      unique=True)
+    InChIKey_explicit = models.CharField(max_length=27, null=True, blank=True,
+                                         unique=True)
+    InChI = models.CharField(max_length=200, unique=True)
+    InChIKey = models.CharField(max_length=27, unique=True)
+    molecule = models.ForeignKey('Molecule')
+    iso_name = models.CharField(max_length=100)
+    iso_name_html = models.CharField(max_length=500)
+    abundance = models.FloatField(null=True, blank=True)
+    afgl_code = models.CharField(max_length=10, null=True, blank=True)
+    # CML representation of the species, with all isotopeNumbers
+    # specified explicitly:
+    cml_explicit = models.TextField(null=True, blank=True)
+    # CML representation of the species with only the essential (ie
+    # not maximum abundance, apart from Br) isotopeNumbers specified:
+    cml = models.TextField(null=True, blank=True)
+    case = models.ForeignKey('Case', null=True, blank=True)
 
-   def __getitem__(self, name):
-        return self.__dict__[name]
+    def CML(self):
+        """
+        Return the CML version of the molecular structure from the cml field
+        on the Iso table. XSAMS only wants the <atomArray> and <bondArray>
+        tags, and it wants all the elements prefixed with cml, so we've
+        got a bit of parsing to do...
 
-class States(models.Model):
-    id = models.CharField(primary_key=True, max_length=192, db_column='id')
-    molecid = models.IntegerField(null=True, db_column='molecID', blank=True)
-    isoid = models.IntegerField(null=True, db_column='isoID', blank=True)
-    # XXX why does django multiply my VARCHAR lengths by 3???
-    inchikey = models.CharField(max_length=81, db_column='InChIKey')
-    assigned = models.IntegerField(null=True, db_column='assigned', blank=True)
-    energy = models.FloatField(null=True, db_column='energy', blank=True)
-    energy_err = models.FloatField(null=True, db_column='energy_err',
-                                   blank=True)
-    energy_flag = models.CharField(max_length=3, db_column='energy_flag',
-                                   blank=True)
-    g = models.IntegerField(null=True, db_column='g', blank=True)
-    caseid = models.IntegerField(null=True, db_column='caseID', blank=True)
-    qns = models.CharField(max_length=1536, db_column='qns', blank=True)
+        """
+
+        grab = False
+        cml = []
+        for line in self.cml.split('\n'):
+            if re.match('<atomArray', line):
+                grab = True
+            if grab:
+                cml_line = line
+                cml_line = cml_line.replace('<atom','<cml:atom')
+                cml_line = cml_line.replace('</atom','</cml:atom')
+                cml_line = cml_line.replace('<bond','<cml:bond')
+                cml_line = cml_line.replace('</bond','</cml:bond')
+                cml.append(cml_line)
+            if re.match('</bondArray', line):
+                break
+        return '\n'.join(cml)
+
     class Meta:
-        db_table = u'states'
+        db_table = 'hitranmeta_iso'
 
-    def qns_xml(self):
-        """Yield the XML for the state quantum numbers"""
-        qns = Qns.objects.filter(stateid=self.id).order_by('id')
-        if qns:
-            caseID = qns[0].caseid
-            try:
-                case = case_prefixes[caseID]
-            except KeyError:
-                # unrecognised caseID
-                return 'unrecognised case'
-        caseNS = 'http://vamdc.org/xml/xsams/0.2/cases/%s' % case
-        caseNSloc = '../../cases/%s.xsd' % case
+class Case(models.Model):
+    case_prefix = models.CharField(max_length=10, unique=True)
+    case_description = models.CharField(max_length=50)
+    class Meta:
+        db_table = 'hitranmeta_case'
+
+class Ref(models.Model):
+    # unique ID for this reference
+    refID = models.CharField(max_length=100)
+    # reference type (e.g. 'article', 'private communication')
+    ref_type = models.CharField(max_length=50, )
+    # a list of the authors' names in a string as:
+    # 'A.N. Other, B.-C. Person Jr., Ch. Someone-Someone, and N.M.L. Haw Haw'
+    authors = models.TextField(null=True, blank=True)
+    # the article, book, or thesis title
+    title = models.TextField(null=True, blank=True)
+    # the title as HTML
+    title_html = models.TextField(null=True, blank=True)
+    # the journal name
+    journal = models.CharField(max_length=500, null=True, blank=True)
+    # the volume (which may be a string)
+    volume = models.CharField(max_length=10, null=True, blank=True)
+    # the first page (which may be a string e.g. 'L123')
+    page_start = models.CharField(max_length=10, null=True, blank=True)
+    # the last page
+    page_end = models.CharField(max_length=10, null=True, blank=True)
+    # the year of publication, creation, or communication
+    year = models.IntegerField(null=True, blank=True)
+    # the institution name, if relevant and available
+    institution = models.CharField(max_length=500, null=True, blank=True)
+    # a note, perhaps containing cross-references of ref_id inside
+    # square brackets
+    note = models.TextField(null=True, blank=True)
+    # the note as HTML
+    note_html = models.TextField(null=True, blank=True)
+    # the Digital Object Identifier, if available
+    doi = models.CharField(max_length=100, null=True, blank=True)
+    # a string of HTML to be output on websites citing this reference
+    cited_as_html = models.TextField()
+    # a URL to the source, if available
+    url = models.TextField(null=True, blank=True)
+
+    def author_list(self):
+        return self.authors.split(',')
+
+    def __unicode__(self):
+        return self.refID
+
+    class Meta:
+        db_table = 'hitranmeta_ref'
+
+class Qns(models.Model):
+    case = models.ForeignKey('Case')
+    state = models.ForeignKey('State')
+    qn_name = models.CharField(max_length=20)
+    qn_val = models.CharField(max_length=10)
+    qn_attr = models.CharField(max_length=50, blank=True, null=True)
+    xml = models.CharField(max_length=500)
+    
+    class Meta:
+        db_table = 'hitranlbl_qns'
+
+class State(models.Model):
+    iso = models.ForeignKey('Iso')
+    energy = models.FloatField(blank=True, null=True)
+    g = models.IntegerField(blank=True, null=True)
+    s_qns = models.CharField(max_length=500, blank=True, null=True)
+    qns_xml = models.TextField(blank=True, null=True)
+
+    def XML(self):
         xml = []
-        xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
-                   ' xmlns:%s="%s" xsi:schemaLocation="%s %s">'\
-                  % (case, case, case, caseNS, caseNS, caseNSloc))
-        xml.append('<%s:QNs>\n' % case)
-        xml.append('\n'.join([qn.xml for qn in qns]))
-        xml.append('</%s:QNs>\n' % case)
-        xml.append('</Case>\n')
-        return ''.join(xml)
-        #yield ''.join(xml)
-    # associate qns_xml with the XML attribute of the States class
-    # so that generators.py checkXML() works:
-    XML = qns_xml
+        case_prefix = self.iso.case.case_prefix
+        xml.append('<Case xsi:type="%s:Case" caseID="%s" xmlns:%s='
+              '"http://vamdc.org/xml/xsams/0.2/cases/%s">'
+            % (case_prefix, case_prefix, case_prefix, case_prefix))
+        xml.append(self.qns_xml)
+        xml.append('</Case>')
+        return '\n'.join(xml)
 
-class Method:
+    class Meta:
+        db_table = 'hitranlbl_state'
+
+class Trans(models.Model):
+    iso = models.ForeignKey('Iso')
+    statep = models.ForeignKey('State', related_name='trans_upper_set')
+    statepp = models.ForeignKey('State', related_name='trans_lower_set')
+    nu = models.FloatField()
+    Sw = models.FloatField()
+    A = models.FloatField()
+    multipole = models.CharField(max_length=2, blank=True, null=True)
+    Elower = models.FloatField(blank=True, null=True)
+    gp = models.IntegerField(blank=True, null=True)
+    gpp = models.IntegerField(blank=True, null=True)
+    valid_from = models.DateField()
+    # the default is for this data 'never' to expire:
+    valid_to = models.DateField(default=datetime.date(
+            year=3000, month=1, day=1))
+    par_line = models.CharField(max_length=160, blank=True, null=True)
+    
+    class Meta:
+        db_table = 'hitranlbl_trans'
+
+    def XML_Broadening(self):
+        """
+        Build and return the XML for the air- and self-broadening parameters
+        gamma_air, n_air, and gamma_self.
+
+        """
+
+        broadening_xml = []
+        if 'gamma_air' in self.__dict__:
+            lineshape_xml = []
+            lineshape_xml.append('      <Lineshape name="Lorentzian">\n'\
+                   '      <Comments>The temperature-dependent pressure'\
+                   ' broadening Lorentzian lineshape</Comments>\n'\
+                   '      <LineshapeParameter name="gammaL">\n'\
+                   '        <FitParameters functionRef="FgammaL">\n'\
+                   '          <FitArgument name="T" units="K">\n'\
+                   '            <LowerLimit>240</LowerLimit>\n'\
+                   '            <UpperLimit>350</UpperLimit>\n'\
+                   '          </FitArgument>\n'\
+                   '          <FitArgument name="p" units="K">\n'\
+                   '            <LowerLimit>0.</LowerLimit>\n'\
+                   '            <UpperLimit>1.2</UpperLimit>\n'\
+                   '          </FitArgument>\n'\
+                   '          <FitParameter name="gammaL_ref">\n')
+            if self.gamma_air.ref is not None:
+                lineshape_xml.append('           <SourceRef>%s%s</SourceRef>\n'
+                                     % (source_prefix, self.gamma_air.ref))
+            lineshape_xml.append('            <Value units="1/cm">%s</Value>\n'
+                                 % self.gamma_air.val)
+            if self.gamma_air.err is not None:
+                lineshape_xml.append('            <Accuracy><Statistical>'
+                     '%s</Statistical></Accuracy>\n' % str(self.gamma_air.err))
+            lineshape_xml.append('          </FitParameter>\n')
+            if 'n_air' in self.__dict__:
+                lineshape_xml.append('          <FitParameter name="n">\n')
+                if self.n_air.ref is not None:
+                    lineshape_xml.append('            <SourceRef>%s%s'
+                            '</SourceRef>\n' % (source_prefix, self.n_air.ref))
+                lineshape_xml.append('            <Value units="unitless">%s'
+                                     '</Value>\n' % self.n_air.val)
+                if self.n_air.err is not None:
+                    lineshape_xml.append('            <Accuracy><Statistical>'
+                      '%s</Statistical></Accuracy>\n' % str(self.n_air.err))
+                lineshape_xml.append('          </FitParameter>\n')
+            lineshape_xml.append('        </FitParameters>\n'\
+                                 '      </LineshapeParameter>\n</Lineshape>\n')
+            broadening_xml.append('    <Broadening'
+                ' envRef="Eair-broadening-ref-env" name="pressure">\n'
+                '%s    </Broadening>\n' % ''.join(lineshape_xml))
+        if 'gamma_self' in self.__dict__:
+            lineshape_xml = []
+            lineshape_xml.append('      <Lineshape name="Lorentzian">\n'\
+                           '        <LineshapeParameter name="gammaL">\n')
+            if self.gamma_self.ref is not None:
+                lineshape_xml.append('          <SourceRef>%s%s</SourceRef>\n'
+                                     % (source_prefix, self.gamma_self.ref))
+            lineshape_xml.append('          <Value units="1/cm">%s</Value>\n'
+                      % self.gamma_self.val)
+            if self.gamma_self.err is not None:
+                lineshape_xml.append('          <Accuracy><Statistical>'\
+                    '%s</Statistical></Accuracy>\n' % str(self.gamma_self.err))
+            lineshape_xml.append('        </LineshapeParameter>\n'\
+                                 '      </Lineshape>\n')
+            broadening_xml.append('    <Broadening'\
+                ' envRef="Eself-broadening-ref-env" name="pressure">\n'\
+                '%s    </Broadening>\n' % ''.join(lineshape_xml))
+        return '    %s\n' % ''.join(broadening_xml)
+
+    def XML_Shifting(self):
+        """
+        Build and return the XML for the air-shifting parameter, delta_air.
+
+        """
+
+        shifting_xml = []
+        if 'delta_air' in self.__dict__:
+            shifting_xml.append('<Shifting envRef='
+                   '"Eair-broadening-ref-env">\n'
+                   '      <ShiftingParameter name="delta">\n'
+                   '        <FitParameters functionRef="Fdelta">\n'
+                   '          <FitArgument name="p" units="K">\n'
+                   '            <LowerLimit>0.</LowerLimit>\n'
+                   '            <UpperLimit>1.2</UpperLimit>\n'
+                   '          </FitArgument>\n'
+                   '          <FitParameter name="delta_ref">\n')
+            if self.delta_air.ref is not None:
+                shifting_xml.append('            <SourceRef>%s%s</SourceRef>\n'
+                                    % (source_prefix, self.delta_air.ref))
+            shifting_xml.append('            <Value units="unitless">%s'
+                                '</Value>\n' % self.delta_air.val)
+            if self.delta_air.err is not None:
+                shifting_xml.append('            <Accuracy><Statistical>'\
+                    '%s</Statistical></Accuracy>\n' % str(self.delta_air.err))
+            shifting_xml.append('          </FitParameter>\n'\
+                                '        </FitParameters>\n'\
+                                '      </ShiftingParameter>\n'\
+                                '    </Shifting>\n')
+        return '    %s\n' % ''.join(shifting_xml)
+
+class Prm(models.Model):
+    trans = models.ForeignKey('Trans')
+    name = models.CharField(max_length=20)
+    val = models.FloatField()
+    err = models.FloatField(blank=True, null=True)
+    ref = models.ForeignKey('Ref', blank=True, null=True)
+    method = models.IntegerField(blank=True, null=True)
+    
+    class Meta:
+        db_table = 'hitranlbl_prm'
+
+class Method(object):
     def __init__(self, id, category, description):
         self.id = id
         self.category = category
         self.description = description
-
-class Source:
-    def __init__(self, sourceid, type, author, title, journal, volume,
-                 pages, year, institution, note, doi):
-        self.sourceid = sourceid
-        self.type = type
-        self.authors = [name for name in author.split(' and ')]
-        self.title = title
-        self.journal = journal
-        self.volume = volume
-        if pages:
-            pages = pages.split('--')
-            self.page_start = pages[0]
-            if len(pages)>1:
-                self.page_end = pages[1]
-        self.year = year
-
-class Refs(models.Model):
-    sourceid = models.CharField(max_length=192, primary_key=True,
-                                db_column='sourceID')
-    type = models.CharField(max_length=96, blank=True)
-    author = models.TextField(blank=True)
-    title = models.TextField(blank=True)
-    journal = models.TextField(blank=True)
-    volume = models.CharField(max_length=30, blank=True)
-    pages = models.CharField(max_length=60, blank=True)
-    year = models.TextField(blank=True)
-    institution = models.TextField(blank=True)
-    note = models.TextField(blank=True)
-    doi = models.CharField(max_length=192, blank=True)
-    class Meta:
-        db_table = u'refs'
-
-    def XML(self):
-        yield '<Source sourceID="%s">\n' % self.sourceid
-        yield '  <Authors>\n'
-        for author in self.author.split(' and '):
-            yield '    <Author>\n        <Name>%s</Name>\n    </Author>\n' \
-                    % author.strip()
-        yield '  </Authors>\n'
-        if self.title:
-            yield '<Title>%s</Title>\n' % self.title
-        if self.year:
-            yield '<Year>%s</Year>\n' % self.year
-        if self.journal:
-            yield '<Category>journal</Category>\n'
-            yield '<SourceName>%s</SourceName>\n' % self.journal
-        if self.volume:
-            yield '<Volume>%s</Volume>\n' % self.volume
-        if self.pages:
-            pages = self.pages.split('--')
-            yield '<PageBegin>%s</PageBegin>\n' % self.pages[0]
-            if len(pages)>1:
-                yield '<PageEnd>%s</PageEnd>\n' % self.pages[1]
-        yield '</Source>\n'
-
-class Trans(models.Model):
-    id = models.IntegerField(db_column='id', primary_key=True)
-    molecid = models.IntegerField(db_column='molecID')
-    isoid = models.IntegerField(db_column='isoID')
-    inchikey = models.CharField(max_length=81, db_column='InChIKey')
-    initialstateref = models.CharField(max_length=192,
-                                       db_column='InitialStateRef', blank=True)
-    finalstateref = models.CharField(max_length=192,
-                                       db_column='FinalStateRef', blank=True)
-    nu = models.FloatField()
-    nu_err = models.FloatField(null=True, db_column='nu_err', blank=True)
-    nu_ref = models.CharField(max_length=93, db_column='nu_ref', blank=True)
-    s = models.FloatField(null=True, db_column='S', blank=True)
-    s_err = models.FloatField(null=True, db_column='S_err', blank=True)
-    s_ref = models.CharField(max_length=90, db_column='S_ref', blank=True)
-    a = models.FloatField(null=True, db_column='A', blank=True)
-    a_err = models.FloatField(null=True, db_column='A_err', blank=True)
-    a_ref = models.CharField(max_length=90, db_column='A_ref', blank=True)
-    multipole = models.CharField(max_length=6, db_column='multipole',
-                                 blank=True)
-    elower = models.FloatField(null=True, db_column='Elower', blank=True)
-    gp = models.IntegerField(null=True, db_column='gp', blank=True)
-    gpp = models.IntegerField(null=True, db_column='gpp', blank=True)
-    fromdate = models.DateField(null=True, db_column='fromdate', blank=True)
-    todate = models.DateField(null=True, db_column='todate', blank=True)
-    ierr = models.CharField(max_length=18, db_column='Ierr', blank=True)
-    hitranline = models.CharField(max_length=160, db_column='HITRANline',
-                                  blank=True)
-
-    prms = []
-
-    def XML_Broadening(self):
-        prms = Prms.objects.filter(transid=self.id)
-        prm_dict = {}
-        for prm in prms:
-            prm_dict[prm.prm_name] = prm
-            # XXX for now, replace reference with the generic HITRAN08 ref
-            prm_dict[prm.prm_name].prm_ref = 'BHIT-B_HITRAN2008'
-        broadenings = []
-        if 'g_air' in prm_dict.keys() and 'n_air' in prm_dict.keys():
-            g_air_val = str(prm_dict['g_air'].prm_val)
-            g_air_ref = str(prm_dict['g_air'].prm_ref)
-            n_air_val = str(prm_dict['n_air'].prm_val)
-            n_air_ref = str(prm_dict['n_air'].prm_ref)
-            lineshape_xml = ['      <Lineshape name="Lorentzian">\n'\
-   '      <Comments>The temperature-dependent pressure'\
-   ' broadening Lorentzian lineshape</Comments>\n'\
-   '      <LineshapeParameter name="gammaL">\n'\
-   '        <FitParameters functionRef="FgammaL">\n'\
-   '          <FitArgument name="T" units="K">\n'\
-   '            <LowerLimit>240</LowerLimit>\n'\
-   '            <UpperLimit>350</UpperLimit>\n'\
-   '          </FitArgument>\n'\
-   '          <FitArgument name="p" units="K">\n'\
-   '            <LowerLimit>0.</LowerLimit>\n'\
-   '            <UpperLimit>1.2</UpperLimit>\n'\
-   '          </FitArgument>\n'\
-   '          <FitParameter name="gammaL_ref">\n'\
-   '            <SourceRef>%s</SourceRef>\n'\
-   '            <Value units="1/cm">%s</Value>\n'\
-                    % (g_air_ref, g_air_val),]
-            g_air_err = prm_dict['g_air'].prm_err
-            if g_air_err:
-                g_air_err = str(g_air_err)
-                lineshape_xml.append('            <Accuracy><Statistical>'\
-                      '%s</Statistical></Accuracy>\n' % g_air_err)
-            lineshape_xml.append('          </FitParameter>\n'\
-   '          <FitParameter name="n">\n'\
-   '            <SourceRef>%s</SourceRef>\n'\
-   '            <Value units="unitless">%s</Value>\n'\
-                    % (n_air_ref, n_air_val))
-            n_air_err = prm_dict['n_air'].prm_err
-            if n_air_err:
-                n_air_err = str(n_air_err)
-                lineshape_xml.append('            <Accuracy><Statistical>'\
-                      '%s</Statistical></Accuracy>\n' % n_air_err)
-            lineshape_xml.append('          </FitParameter>\n'\
-   '        </FitParameters>\n'\
-   '      </LineshapeParameter>\n</Lineshape>\n')
-            broadening = '    <Broadening'\
-                ' envRef="Eair-broadening-ref-env" name="pressure">\n'\
-                '%s    </Broadening>\n' % ''.join(lineshape_xml)
-            broadenings.append(broadening)
-        if 'g_self' in prm_dict.keys():
-            g_self_val = str(prm_dict['g_self'].prm_val)
-            g_self_ref = str(prm_dict['g_self'].prm_ref)
-            lineshape_xml = ['      <Lineshape name="Lorentzian">\n'\
-       '        <LineshapeParameter name="gammaL">\n'\
-       '          <SourceRef>%s</SourceRef>\n'\
-       '          <Value units="1/cm">%s</Value>\n'\
-                      % (g_self_ref, g_self_val),]
-            g_self_err = prm_dict['g_self'].prm_err
-            if g_self_err:
-                g_self_err = str(g_self_err)
-                lineshape_xml.append('          <Accuracy><Statistical>'\
-                      '%s</Statistical></Accuracy>\n' % g_self_err)
-            lineshape_xml.append('        </LineshapeParameter>\n'\
-       '      </Lineshape>\n')
-            broadening = '    <Broadening'\
-                ' envRef="Eself-broadening-ref-env" name="pressure">\n'\
-                '%s    </Broadening>\n' % ''.join(lineshape_xml)
-            broadenings.append(broadening)
-        # XXX for now, do shiftings at the same time as broadenings
-        shiftings = []
-        if 'delta_air' in prm_dict.keys():
-            delta_air_val = str(prm_dict['delta_air'].prm_val)
-            delta_air_ref = str(prm_dict['delta_air'].prm_ref)
-            shifting_xml = ['    <Shifting envRef='\
-       '"Eair-broadening-ref-env">\n'\
-       '      <ShiftingParameter name="delta">\n'\
-       '        <FitParameters functionRef="Fdelta">\n'\
-       '          <FitArgument name="p" units="K">\n'\
-       '            <LowerLimit>0.</LowerLimit>\n'\
-       '            <UpperLimit>1.2</UpperLimit>\n'\
-       '          </FitArgument>\n'\
-       '          <FitParameter name="delta_ref">'\
-       '            <SourceRef>%s</SourceRef>\n'\
-       '            <Value units="unitless">%s</Value>\n'\
-                        % (delta_air_ref, delta_air_val),]
-            delta_air_err = prm_dict['delta_air'].prm_err
-            if delta_air_err:
-                delta_air_err = str(delta_air_err)
-                shifting_xml.append('            <Accuracy><Statistical>'\
-                    '%s</Statistical></Accuracy>\n' % delta_air_err)
-            shifting_xml.append('          </FitParameter>\n'\
-       '        </FitParameters>\n'\
-       '      </ShiftingParameter>\n'\
-       '    </Shifting>\n')
-            shiftings.append(''.join(shifting_xml))
-        return '    %s\n    %s\n' % (''.join(broadenings), ''.join(shiftings))
-
-    def XML_Shifting(self):
-        return ''
-
-    class Meta:
-        db_table = u'trans'
-
-class Prms(models.Model):
-    id = models.IntegerField(primary_key=True, null=False, db_column='id')
-    molecid = models.IntegerField(db_column='molecID')
-    isoid = models.IntegerField(db_column='isoID')
-    inchikey = models.CharField(max_length=81, db_column='InChIKey')
-    #transid = models.CharField(max_length=192, db_column='transID')
-    transid = models.ForeignKey('Trans', db_column='transID')
-    prm_name = models.CharField(max_length=192, db_column='prm_name')
-    prm_val = models.FloatField(db_column='prm_val')
-    prm_err = models.FloatField(db_column='prm_err')
-    prm_ref = models.CharField(max_length=90, db_column='prm_ref')
-    class Meta:
-            db_table = u'prms'
-
-class Prm():
-    def __init__(self, name, val, err, ref):
-        self.name = name
-        self.val = val
-        self.err = err
-        self.ref = ref
-
-class Qns(models.Model):
-    id = models.IntegerField(primary_key=True, null=False, db_column='id')
-    molecid = models.IntegerField(db_column='molecID')
-    isoid = models.IntegerField(db_column='isoID')
-    inchikey = models.CharField(max_length=81, db_column='InChIKey')
-    stateid = models.CharField(max_length=192, db_column='stateID')
-    caseid = models.IntegerField(db_column='caseID')
-    qn_name = models.CharField(max_length=192, db_column='qn_name')
-    qn_val = models.CharField(max_length=48, db_column='qn_val')
-    qn_attr = models.CharField(max_length=384, db_column='qn_attr')
-    xml = models.CharField(max_length=768, db_column='xml')
-    class Meta:
-        db_table = u'qns'
-
-# This is a plumbing class to make my quantum numbers table play nicely
-# with Christian's generator code:
-class MolQN:
-   def __init__(self, stateid, case_prefix, label, value,
-                qn_attr, xml=None):
-        self.stateid = stateid
-        self.case = case_prefix
-        self.label = label
-        self.value = value
-        self.qn_attr = qn_attr
-        self.xml = xml
-
-   def __getitem__(self, name):
-        return self.__dict__[name]
-
-class Xsec(models.Model):
-    id = models.IntegerField(primary_key=True, null=False)
-    molecid = models.IntegerField(null=False, db_column='molecID', blank=True)
-    metaid = models.IntegerField(null=False, db_column='metaID', blank=True)
-    t = models.FloatField(null=True, db_column='T', blank=True)
-    p = models.FloatField(null=True, db_column='p', blank=True)
-    nu_min = models.FloatField(null=False, db_column='nu_min', blank=True)
-    nu_max = models.FloatField(null=False, db_column='nu_max', blank=True)
-    n = models.FloatField(null=False, db_column='n', blank=True)
-    resolution = models.FloatField(null=True, db_column='resolution', blank=True)
-    broadener = models.CharField(max_length=4, db_column='broadener', blank=True)
-    ref = models.CharField(max_length=30, db_column='ref', blank=True)
-    class Meta:
-            db_table = u'xsec'
-
-class QNdesc(models.Model):
-    caseid = models.IntegerField(primary_key=True, null=False)
-    case_prefix = models.CharField(max_length=32, null=False)
-    name = models.CharField(max_length=32, null=False)
-    HTMLname = models.CharField(max_length=64, null=False)
-    attributes = models.TextField(blank=True)
-    HTMLattributes = models.TextField(blank=True)
-    description = models.TextField(blank=False)
-    restrictions = models.TextField(blank=True)
-    HTMLrestrictions = models.TextField(blank=True)
-    col_index = models.IntegerField(null=True)
-    col_name = models.IntegerField(null=True)
-    class Meta:
-        db_table = u'QNdesc'

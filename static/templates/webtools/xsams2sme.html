@@ -1,0 +1,26 @@
+{% extends "indigo.html" %}
+
+{% block title %}
+Convert VAMDC-XSAMS format into CSV for SME
+{% endblock %}
+{% block headline %}
+Convert VAMDC-XSAMS format into CSV for SME
+{% endblock %}
+
+
+{% block content %}
+<div style="font-size: 1.2em">
+<p>This tool (<a href="https://github.com/VAMDC/NodeSoftware/tree/master/webtools/xsams2sme">source code</a>) takes data in XSAMS format and returns<br/>
+comma-separated values (CSV) in the format expected<br/>
+by <em>spectroscopy made easy</em> (SME).</p>
+
+<p>You can give the input data <strong>either</strong> by uploading a file or pasting a URL here:</p>
+
+<form enctype="multipart/form-data" action="." method="post">
+{% csrf_token %}
+{{  conversion.as_p }}
+<p><input type="submit" value="Download CSV for SME" /></p>
+</form>
+</div>
+{% endblock %}
+
