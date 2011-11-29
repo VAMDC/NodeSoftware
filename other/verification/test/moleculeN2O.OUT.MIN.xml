@@ -1,18 +1,18 @@
 <?xml version="1.0" ?>
-<VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<VerificationData xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.2" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" >
 	<VerificationResult>
 		<NumberOfMolecularStates correct="3" incorrect="3" total="6" unidentified="0"/>
 		<NumberOfRadiativeTransitions correct="1" incorrect="2" total="3" unidentified="0"/>
-		<NumberOfVerificationByRule correct="5" incorrect="1" name="ltcsRuleS01" unidentified="0"/>
-		<NumberOfVerificationByRule correct="5" incorrect="1" name="ltcsRuleS03" unidentified="0"/>
-		<NumberOfVerificationByRule correct="4" incorrect="2" name="ltcsRuleS05" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="ltcsRuleT01" unidentified="0"/>
-		<NumberOfVerificationByRule correct="1" incorrect="2" name="ltcsRuleT02" unidentified="0"/>
-		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT03" unidentified="0"/>
-		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT05" unidentified="0"/>
-		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT06" unidentified="0"/>
-		<NumberOfVerificationByRule correct="3" incorrect="0" name="ltcsRuleT07" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="ltcsRuleT08" unidentified="0"/>
+		<NumberOfVerificationByRule name="ltcsRuleS01" correct="5" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="ltcsRuleS03" correct="5" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="ltcsRuleS05" correct="4" incorrect="2" unidentified="0"/>
+		<NumberOfVerificationByRule name="ltcsRuleT01" correct="2" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="ltcsRuleT02" correct="1" incorrect="2" unidentified="0"/>
+		<NumberOfVerificationByRule name="ltcsRuleT03" correct="3" incorrect="0" unidentified="0"/>
+		<NumberOfVerificationByRule name="ltcsRuleT05" correct="3" incorrect="0" unidentified="0"/>
+		<NumberOfVerificationByRule name="ltcsRuleT06" correct="3" incorrect="0" unidentified="0"/>
+		<NumberOfVerificationByRule name="ltcsRuleT07" correct="3" incorrect="0" unidentified="0"/>
+		<NumberOfVerificationByRule name="ltcsRuleT08" correct="2" incorrect="1" unidentified="0"/>
 	</VerificationResult>
 	<XSAMSData>
 		<Sources>

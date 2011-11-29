@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
-<VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<VerificationData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.2" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd">
 	<VerificationResult>
 		<NumberOfRadiativeTransitions correct="0" incorrect="1" total="3" unidentified="2"/>
-		<NumberOfVerificationByRule correct="1" incorrect="2" name="atomRuleT01" unidentified="0"/>
-		<NumberOfVerificationByRule correct="0" incorrect="1" name="atomRuleT02" unidentified="2"/>
+		<NumberOfVerificationByRule name="atomRuleT01" correct="1" incorrect="2" unidentified="0"/>
+		<NumberOfVerificationByRule name="atomRuleT02" correct="0" incorrect="1" unidentified="2"/>
 	</VerificationResult>
 	<XSAMSData>
 		<Sources>

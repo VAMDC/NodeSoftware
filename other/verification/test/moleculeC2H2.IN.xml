@@ -201,7 +201,6 @@
 							<lpcs:vibInv>u</lpcs:vibInv>
 							<lpcs:J>27</lpcs:J>
 							<lpcs:r name="Fermi resonance rank">1</lpcs:r>
-							<lpcs:parity>+</lpcs:parity>
 							<lpcs:kronigParity>e</lpcs:kronigParity>
 						</lpcs:QNs>
 					</Case>

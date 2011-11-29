@@ -1,106 +1,110 @@
-from xml.dom import minidom, Node
-from xml import xpath, ns
-
+from lxml import etree
+import sys
+sys.path.insert(0, '.')
+from check import *
 
 __author__ = 'aip'
 
-def makeTestFile(fileName, count = 0):
-    doc = minidom.parse(open("test/" + fileName + ".xml"))
 
-    root = doc._get_documentElement()
-    schemaLocationAttr = root.getAttributeNodeNS(ns.SCHEMA.XSI3, 'schemaLocation')
-    locations = schemaLocationAttr.value.split(' ')
-    locations[1] = '../xsd/xsams/0.2/xsams.xsd'
-    schemaLocationAttr.value = locations[0] + ' ' + locations[1]
+def makeTestFileFromBigFile(fileName, count=0):
+	tree = etree.parse(open("test/" + fileName + ".xml"))
 
-    nodes = xpath.Evaluate('//*[child::RadiativeTransition]', doc)
-    whiteListOfRefs = _getWhiteListOfRefs(nodes, ['Probability', 'Broadening', 'Shifting'], count)
-    if not whiteListOfRefs:
-        nodes = xpath.Evaluate('//*[child::NonRadiativeTransition]', doc)
-        whiteListOfRefs = _getWhiteListOfRefs(nodes, ['Probability', 'Broadening', 'Shifting'], count)
-        if not whiteListOfRefs:
-            nodes = xpath.Evaluate('//*[child::MolecularState]', doc)
-            whiteListOfRefs = _getWhiteListOfRefs(nodes, [], count)
-            if not whiteListOfRefs:
-                nodes = xpath.Evaluate('//*[child::AtomicState]', doc)
-                whiteListOfRefs = _getWhiteListOfRefs(nodes, [], count)
+	namespaces = {"xsams":XSAMS_NS}
+	XPathEval = etree.XPathEvaluator(tree, namespaces=namespaces)
 
-    _removeRedundantParentNodes(nodes, doc, whiteListOfRefs)
+	root = tree.getroot()
+	locations = root.get('{%s}schemaLocation' % XSI_NS).split(' ')
+	locations[1] = '../xsd/xsams/0.2/xsams.xsd'
+	root.set('{%s}schemaLocation' % XSI_NS, locations[0] + ' ' + locations[1])
 
-    xml = doc.toxml()
-    #print xml
+	nodes = XPathEval('//*[child::xsams:RadiativeTransition]')
+	whiteListOfRefs = _getWhiteListOfRefs(nodes, ['Probability', 'Broadening', 'Shifting'], count)
+	if not whiteListOfRefs:
+		nodes = XPathEval('//*[child::NonRadiativeTransition]')
+		whiteListOfRefs = _getWhiteListOfRefs(nodes, ['Probability', 'Broadening', 'Shifting'], count)
+		if not whiteListOfRefs:
+			nodes = XPathEval('//*[child::MolecularState]')
+			whiteListOfRefs = _getWhiteListOfRefs(nodes, [], count)
+			if not whiteListOfRefs:
+				nodes = XPathEval('//*[child::AtomicState]')
+				whiteListOfRefs = _getWhiteListOfRefs(nodes, [], count)
 
-    out = open("test/" + fileName + ".IN.xml", 'w')
-    out.write(xml)
-    out.close()
+	_removeRedundantParentNodes(nodes, tree, whiteListOfRefs)
 
-    out = open("test/" + fileName + ".OUT.MIN.xml", 'w')
-    out.write(xml)
-    out.close()
+	xml = etree.tostring(tree, pretty_print = True)
+	#print xml
 
-    return doc
+	out = open("test/" + fileName + ".IN.xml", 'w')
+	out.write(xml)
+	out.close()
 
-def _getWhiteListOfRefs(nodes, ballastList, count = 0):
+	out = open("test/" + fileName + ".OUT.MIN.xml", 'w')
+	out.write(xml)
+	out.close()
 
-    whiteListOfRefs = {}
-    if nodes:
-        for node in nodes:
-            i = 0
-            for childNode in node.childNodes[:]:
-                    if not count or i < count:
-                        if childNode.nodeType == Node.ELEMENT_NODE:
+	return tree
 
-                            for ballastName in ballastList:
-                                for ballastNode in childNode.getElementsByTagName(ballastName):
-                                    childNode.removeChild(ballastNode)
 
-                            for refNode in xpath.Evaluate('.//*[contains(local-name(@*), "Ref") or contains(local-name(), "Ref")]', childNode):
-                                if refNode.hasAttributes():
-                                    for attribute in refNode._attrs:
-                                        if attribute.endswith('Ref'):
-                                            whiteListOfRefs[refNode._attrs[attribute].value] = None
-                                elif refNode.nodeType == Node.ELEMENT_NODE and refNode.nodeName.endswith('Ref') and refNode.hasChildNodes():
-                                    if refNode.childNodes[0].nodeType == Node.TEXT_NODE:
-                                        whiteListOfRefs[refNode.childNodes[0].data] = None
-                            i += 1
-                    else:
-                        node.removeChild(childNode)
 
-    return whiteListOfRefs
+def _getWhiteListOfRefs(nodes, ballastList, count=0):
+	whiteListOfRefs = {}
+	if nodes:
+		for node in nodes:
+			i = 0
+
+			for childNode in list(node)[:]:
+				if not count or i < count:
+					for ballastName in ballastList:
+						for ballastNode in childNode.iter(ballastName):
+							childNode.remove(ballastNode)
+
+					for refNode in childNode.xpath('.//*[contains(local-name(@*), "Ref") or contains(local-name(), "Ref")]'):
+						if refNode.attrib:
+							for attribute in refNode.attrib:
+								if attribute.endswith('Ref'):
+									whiteListOfRefs[refNode.attrib[attribute].value] = None
+						elif refNode.tag.endswith('Ref'):
+								whiteListOfRefs[refNode.text] = None
+					i += 1
+				else:
+					node.remove(childNode)
+
+	return whiteListOfRefs
+
+
 
 def _removeRedundantParentNodes(usefulParentNodes, stopNode, whiteListOfRefs):
-    if not usefulParentNodes or stopNode in usefulParentNodes:
-        return
+	if not usefulParentNodes or stopNode in usefulParentNodes:
+		return
 
-    parentsOfNodes = {}
-    for usefulParentNode in usefulParentNodes:
-        if usefulParentNode.parentNode and not parentsOfNodes.has_key(usefulParentNode.parentNode):
-            parentsOfNodes[usefulParentNode.parentNode] = None
+	parentsOfNodes = {}
+	for usefulParentNode in usefulParentNodes:
+		if usefulParentNode.getparent() is not None and not parentsOfNodes.has_key(usefulParentNode.getparent()):
+			parentsOfNodes[usefulParentNode.getparent()] = None
 
-            childNodeNames = [childNode.nodeName for childNode in usefulParentNode.parentNode.childNodes]
-            singleUseNodeNames = [childNodeName for childNodeName in childNodeNames if childNodeNames.count(childNodeName) == 1]
+			childNodeNames = [childNode.tag for childNode in list(usefulParentNode.getparent())]
+			singleUseNodeNames = [childNodeName for childNodeName in childNodeNames if childNodeNames.count(childNodeName) == 1]
 
-            flag = True
-            while flag:
-                flag = False
-                for childNode in usefulParentNode.parentNode.childNodes[:]:
-                    if not (childNode in usefulParentNodes):
-                        hasIDs = False
-                        isRedundantNode = True
-                        idNodes = {}
-                        for idNode in xpath.Evaluate('descendant-or-self::node()[contains(local-name(@*), "ID")]', childNode):
-                            if idNode.hasAttributes():
-                                for attribute in idNode._attrs:
-                                    if attribute.endswith('ID'):
-                                        hasIDs = True
-                                        if whiteListOfRefs.has_key(idNode._attrs[attribute].value):
-                                            isRedundantNode = False
-                                            idNodes[idNode] = None
+			flag = True
+			while flag:
+				flag = False
+				for childNode in list(usefulParentNode.getparent()):
+					if not (childNode in usefulParentNodes):
+						hasIDs = False
+						isRedundantNode = True
+						idNodes = {}
+						for idNode in childNode.xpath('descendant-or-self::node()[contains(local-name(@*), "ID")]'):
+							for attribute in idNode.attrib:
+								if attribute.endswith('ID'):
+									hasIDs = True
+									if whiteListOfRefs.has_key(idNode.attrib[attribute]):
+										isRedundantNode = False
+										idNodes[idNode] = None
 
-                        if isRedundantNode:
-                            if hasIDs or not (childNode.nodeName in singleUseNodeNames):
-                                usefulParentNode.parentNode.removeChild(childNode)
-                        else:
-                            _removeRedundantParentNodes(idNodes, childNode, whiteListOfRefs)
+						if isRedundantNode:
+							if hasIDs or not (childNode.tag in singleUseNodeNames):
+								usefulParentNode.getparent().remove(childNode)
+						else:
+							_removeRedundantParentNodes(idNodes, childNode, whiteListOfRefs)
 
-    _removeRedundantParentNodes(parentsOfNodes, stopNode, whiteListOfRefs)
+	_removeRedundantParentNodes(parentsOfNodes, stopNode, whiteListOfRefs)

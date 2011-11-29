@@ -1,15 +1,15 @@
 <?xml version="1.0" ?>
-<VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<VerificationData xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.2" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" >
 	<VerificationResult>
 		<NumberOfMolecularStates correct="4" incorrect="2" total="6" unidentified="0"/>
 		<NumberOfRadiativeTransitions correct="1" incorrect="2" total="3" unidentified="0"/>
-		<NumberOfVerificationByRule correct="5" incorrect="1" name="lpcsRuleS01" unidentified="0"/>
-		<NumberOfVerificationByRule correct="5" incorrect="1" name="lpcsRuleS02" unidentified="0"/>
-		<NumberOfVerificationByRule correct="5" incorrect="1" name="lpcsRuleS03" unidentified="0"/>
-		<NumberOfVerificationByRule correct="5" incorrect="1" name="lpcsRuleS04" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="lpcsRuleT01" unidentified="0"/>
-		<NumberOfVerificationByRule correct="1" incorrect="2" name="lpcsRuleT02" unidentified="0"/>
-		<NumberOfVerificationByRule correct="2" incorrect="1" name="lpcsRuleT03" unidentified="0"/>
+		<NumberOfVerificationByRule name="lpcsRuleS01" correct="5" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="lpcsRuleS02" correct="5" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="lpcsRuleS03" correct="5" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="lpcsRuleS04" correct="5" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="lpcsRuleT01" correct="2" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="lpcsRuleT02" correct="1" incorrect="2" unidentified="0"/>
+		<NumberOfVerificationByRule name="lpcsRuleT03" correct="2" incorrect="1" unidentified="0"/>
 	</VerificationResult>
 	<XSAMSData>
 		<Sources>
@@ -56,10 +56,10 @@
 						<InChIKey>HSFWRNGVRCDJHI-VSCNDXRLSA-N</InChIKey>
 						<MoleculeStructure>
 							<cml:atomArray>
-								<cml:atom elementType="H" id="H1" isotopeNumber="1"/>
-								<cml:atom elementType="H" id="H2" isotopeNumber="1"/>
-								<cml:atom elementType="C" id="C1" isotopeNumber="12"/>
-								<cml:atom elementType="C" id="C2" isotopeNumber="12"/>
+								<cml:atom id="H1" elementType="H" isotopeNumber="1"/>
+								<cml:atom id="H2" elementType="H" isotopeNumber="1"/>
+								<cml:atom id="C1" elementType="C" isotopeNumber="12"/>
+								<cml:atom id="C2" elementType="C" isotopeNumber="12"/>
 							</cml:atomArray>
 							<cml:bondArray>
 								<cml:bond atomRefs2="H1 C1" id="H1_C1" order="S"/>
@@ -78,7 +78,7 @@
 							</StateEnergy>
 							<TotalStatisticalWeight>74</TotalStatisticalWeight>
 						</MolecularStateCharacterisation>
-						<Case caseID="lpcs" xsi:type="lpcs:Case" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
+						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
 							<lpcs:QNs>
 								<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
 								<lpcs:vi mode="1">0</lpcs:vi>
@@ -108,7 +108,7 @@
 							</StateEnergy>
 							<TotalStatisticalWeight>70</TotalStatisticalWeight>
 						</MolecularStateCharacterisation>
-						<Case caseID="lpcs" xsi:type="lpcs:Case" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
+						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
 							<lpcs:QNs>
 								<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
 								<lpcs:vi mode="1">0</lpcs:vi>
@@ -138,7 +138,7 @@
 							</StateEnergy>
 							<TotalStatisticalWeight>182</TotalStatisticalWeight>
 						</MolecularStateCharacterisation>
-						<Case caseID="lpcs" xsi:type="lpcs:Case" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
+						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
 							<lpcs:QNs>
 								<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
 								<lpcs:vi mode="1">0</lpcs:vi>
@@ -169,7 +169,7 @@
 							</StateEnergy>
 							<TotalStatisticalWeight>186</TotalStatisticalWeight>
 						</MolecularStateCharacterisation>
-						<Case caseID="lpcs" xsi:type="lpcs:Case" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
+						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
 							<lpcs:QNs>
 								<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
 								<lpcs:vi mode="1">0</lpcs:vi>
