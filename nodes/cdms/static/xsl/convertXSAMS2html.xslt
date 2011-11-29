@@ -77,19 +77,31 @@
   </xsl:template>
 
   <xsl:template match="xsams:RadiativeTransition">
-	<li style="clear:left; border-bottom: 1px solid #90bade;">
+	<li style="clear:both; border-bottom: 1px solid #90bade;">
 	
 	<div style="float:left; min-width:27em;">
 	<ul style="list-style:none;">
 	<li style="font-weight:bold">
 
-	<div style="float:left;text-align:right; min-width:10ex;margin-right:0.5em">
-	<xsl:value-of select="format-number(xsams:EnergyWavelength/xsams:Frequency/xsams:Value,'0.0000')"/>
-	</div>
+	<xsl:choose>
+	  <xsl:when test="xsams:EnergyWavelength/xsams:Frequency">
+	    <div style="float:left;text-align:right; min-width:10ex;margin-right:0.5em">
+            <xsl:value-of select="format-number(xsams:EnergyWavelength/xsams:Frequency/xsams:Value,'0.0000')"/>
+	    </div>
+  	    <div style="float:left;text-align:right; min-width:7ex;margin-right:0.5em">
+   	    <xsl:value-of select="format-number(xsams:EnergyWavelength/xsams:Frequency/xsams:Accuracy,'0.0000 ')"/>
+	    </div>
+	  </xsl:when>	
+	  <xsl:otherwise>
+	    <div style="float:left;text-align:right; min-width:10ex;margin-right:0.5em">
+            <xsl:value-of select="format-number(29979.2458*xsams:EnergyWavelength/xsams:Wavenumber/xsams:Value,'0.0000')"/>
+	    </div>
+	    <div style="float:left;text-align:right; min-width:7ex;margin-right:0.5em">
+   	    <xsl:value-of select="format-number(29979.2458*xsams:EnergyWavelength/xsams:Wavenumber/xsams:Accuracy,'0.0000 ')"/>
+	    </div>
+	  </xsl:otherwise>
+	</xsl:choose>
 
-	<div style="float:left;text-align:right; min-width:7ex;margin-right:0.5em">
-   	<xsl:value-of select="format-number(xsams:EnergyWavelength/xsams:Frequency/xsams:Accuracy,'0.0000 ')"/>
-	</div>
 
 	<div style="float:left;text-align:right; min-width:10ex;">
         <xsl:value-of select="format-number(xsams:Probability/xsams:TransitionProbabilityA/xsams:Value,'0.00000000 ')"/>

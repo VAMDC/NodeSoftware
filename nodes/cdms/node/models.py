@@ -209,7 +209,7 @@ class TransitionsCalc( Model):
      qnlow4                = IntegerField(db_column='P_QN_Low_4')
      qnlow5                = IntegerField(db_column='P_QN_Low_5')
      qnlow6                = IntegerField(db_column='P_QN_Low_6')
-     dummy                 = CharField(db_column ='P_Dummy')
+     dummy                 = CharField(max_length=20, db_column ='P_Dummy')
      unit                  = CharField(max_length=200, db_column='P_Unit')
      degreeoffreedom       = IntegerField(db_column='P_Degree_Of_Freedom')
      upperstatedegeneracy  = IntegerField(db_column='P_Upper_State_Degeneracy')
@@ -348,7 +348,7 @@ class QuantumNumbersFilter(Model):
      spinref= CharField(max_length=10, db_column='SQN_SpinRef')
      attribute = CharField(max_length=20, db_column='SQN_Attribute')
      order = IntegerField(db_column='SQN_Order')
-     comment = CharField(db_column='SQN_Comment')
+     comment = TextField(db_column='SQN_Comment')
 
      class Meta:
           db_table='StateQNXsams'
@@ -485,8 +485,8 @@ class Files (Model):
      specie = ForeignKey(Species, db_column='FIL_E_ID')
      name = CharField(max_length=50, db_column='FIL_Name')
      type = CharField(max_length=10, db_column='FIL_Type')
-     asciifile = CharField(db_column='FIL_ASCIIFILE')
-     comment = CharField(db_column='FIL_Comment')
+     asciifile = TextField(db_column='FIL_ASCIIFILE')
+     comment = TextField(db_column='FIL_Comment')
      createdate = DateField(db_column='FIL_Createdate')
      class Meta:
           db_table = u'Files'
