@@ -89,11 +89,12 @@ def setDataset(trans):
      create Dataset with Tabulated data
     """
     data = models.Tabulateddata.objects.filter(collisionaltransition = trans.id)
-    trans.DataSets = []
-    dataset = models.Dataset()
-    dataset.TabData = data
-    dataset.Description = data[0].datadescription.value
-    trans.DataSets.append(dataset)
+    if data[0].xdata is not None : 
+        trans.DataSets = []
+        dataset = models.Dataset()
+        dataset.TabData = data
+        dataset.Description = data[0].datadescription.value
+        trans.DataSets.append(dataset)
 
 def setSpecies(trans):
     """
@@ -107,7 +108,7 @@ def setReactants(trans):
     add reactants
     """
     trans.Reactants = []
-    trans.Reactants.append(trans.initialatomicstate.version)
+    trans.Reactants.append(trans.initialatomicstate)
     particle = models.Particle.objects.filter(name='electron') # second reactant is always an electron for now
     if(len(particle) == 1 ):    
         trans.Reactants.append(particle[0])
@@ -117,7 +118,7 @@ def setProducts(trans):
     add product
     """
     trans.Products = []
-    trans.Products.append(trans.finalatomicstate.version)
+    trans.Products.append(trans.finalatomicstate)
 
 
 def getCoupling(state):
