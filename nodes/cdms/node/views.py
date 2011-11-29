@@ -11,17 +11,24 @@ from django.utils import simplejson
 from django.conf import settings
 
 from cdmsportalfunc import *
+from forms import *
 
+#from django.views.decorators.csrf import csrf_protect
+#@csrf_protect
 
-class QUERY(object):
+class QUERY(object ):
     """
     """
 #    baseurl = "http://cdms.ph1.uni-koeln.de:8090/DjCDMS/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY="
-    baseurl = "http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
+     #sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
+    requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
 
-    def __init__(self, data):
+    def __init__(self, data, baseurl = "http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/", qformat = None):
         self.isvalid = True
         self.errormsg = ''
+        self.baseurl = baseurl.rstrip()  # remove white spaces from the right side
+        self.format = qformat
+        
         try:
             self.data = data # dict(data)
         except Exception,e:
@@ -39,12 +46,13 @@ class QUERY(object):
         try: self.minint = self.data.get('T_SEARCH_INT',-10)
         except: self.freqto = -10
 
-        try: self.format = self.data.get('T_TYPE','XSAMS')
-        except: self.format = 'XSAMS'
+        if not self.format:
+            try: self.format = self.data.get('T_TYPE','XSAMS')
+            except: self.format = 'XSAMS'
 
         try:
             self.query = self.data.get('QUERY',"").rstrip()
-            self.url = self.baseurl + QueryDict(self.query).urlencode()
+            self.url = self.baseurl + self.requeststring + QueryDict(self.query).urlencode()
             
         except:
             self.query = ""
@@ -175,29 +183,177 @@ def ajaxRequest(request):
     if 'function' in request.POST:
 
         if request.POST['function'] == 'checkQuery':
-            QUERY, htmlcode = checkQuery(request.POST)
-            response_dict.update({'QUERY' : QUERY, 'htmlcode' : htmlcode, 'message' : " Tach "})
+            QUERYs, htmlcode = checkQuery(request.POST)
+            response_dict.update({'QUERY' : QUERYs, 'htmlcode' : htmlcode, 'message' : " Tach "})
         elif request.POST['function'] == 'getVAMDCstats':
             htmlcode = getHtmlNodeList()
             response_dict.update({'htmlcode' : htmlcode, 'message' : " Statistics "})
+        elif request.POST['function'] == 'ajaxQuery':
+            ##### TEST TEST TEST TEST ###########
+            # get result and return it via ajax
+
+            # just apply the stylesheet if a complete url has been posted
+            if 'url' in request.POST:
+                htmlcode = str(applyStylesheet(request.POST['url'], xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
+            else:    
+                postvars = QUERY(request.POST)
+                
+                if postvars.url:
+                    if  postvars.format=='xsams':
+                        htmlcode = str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
+                    elif  postvars.format=='rad3d':
+                        htmlcode = "<pre>" + str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + "/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
+                    elif postvars.format=='png':
+                        htmlcode = "<img class='full' width='100%' src="+postvars.url+" alt='Stick Spectrum'>"
+                    else:
+                        htmlcode = "<pre>" + str(geturl(postvars.url)) + "</pre>"
+                else:
+                    htmlcode = "<p> Invalid request </p>"
+        
+            response_dict.update({'QUERY': "QUERY", 'htmlcode' : htmlcode, 'message' : " Statistics "})
+            
         elif request.POST['function'] == 'getNodeStatistic':
             # get url of the node which should have been posted
             nodeurl = request.POST.get('nodeurl',"")
             inchikey = request.POST.get('inchikey',"")
+            
+            postvars = QUERY(request.POST, baseurl = nodeurl, qformat='XSAMS')
 
             # fetch statistic for this node
             if nodeurl:
-                htmlcode = getNodeStatistic(nodeurl, inchikey)
+                htmlcode = getNodeStatistic(nodeurl, inchikey, url = postvars.url)
             else:
                 htmlcode = ""
             
             response_dict.update({'htmlcode' : htmlcode, 'message' : " Statistics "})
         else:
-            response_dict.update({'QUERY' : QUERY, 'htmlcode' : "<p> HALLO </p>", 'message' : " Tach "})
+            response_dict.update({'QUERY' : QUERYs, 'htmlcode' : "<p> HALLO </p>", 'message' : " Tach "})
     else:
         response_dict.update({'QUERY' : "", 'htmlcode' : "Error: No function name posted! ", 'message' : "Error: No function name posted! "})
        
     return HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
+
+
+def specieslist(request):
+    """
+    Create the species selection - page for the admin-site from the species (model) stored in the database
+    """
+    if not request.user.is_authenticated():
+        return HttpResponseRedirect('/DjCDMS/cdms/login/?next=%s' % request.path)
+
+    species_list = getSpeciesList()
+    c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
+    return render_to_response('cdmsadmin/selectSpecies.html', c)
+
+
+def molecule(request):
+
+    if request.method == 'GET':
+        try:
+            molecule = Molecules.objects.get(pk=request.GET.get("id",0))
+            form = MoleculeForm(instance=molecule)
+        except Molecules.DoesNotExist:
+            form = MoleculeForm()
+            
+    elif request.method == 'POST':
+        molecule = Molecules.objects.get(pk=request.POST.get("id",0))        
+        form = MoleculeForm(request.POST,instance=molecule)
+        if form.is_valid():
+            form.save()
+        
+    else:
+        form = MoleculeForm()
+
+    return render_to_response('cdmsadmin/molecules.html', {
+        'form': form,
+        })
+
+
+def specie(request,id=None):
+
+    if not request.user.is_authenticated():
+        return HttpResponseRedirect('/DjCDMS/cdms/login/?next=%s' % request.path)
+    
+    specie=None
+    if id: #request.method == 'GET':
+        try:
+            specie = Species.objects.get(pk=id)
+            form = SpecieForm(instance=specie)
+        except Species.DoesNotExist:
+            form = SpecieForm()
+            
+    elif request.method == 'POST':
+        specie = Species.objects.get(pk=request.POST.get("id",0))        
+        form = SpecieForm(request.POST,instance=specie)
+        if form.is_valid():
+            form.save()
+        
+    else:
+        form = SpecieForm()
+
+    if specie and specie.id:
+        datasets = Datasets.objects.filter(species = specie.id)
+        files = Files.objects.filter(specie = specie.id)
+        atoms = AtomArray.objects.filter(eId = specie.id)
+        bonds = BondArray.objects.filter(eId = specie.id)
+        referenceids = SourcesIDRefs.objects.filter(eId = specie.id).values('referenceid')
+        references = Sources.objects.filter(pk__in=referenceids)
+        filters = QuantumNumbersFilter.objects.filter(species = specie.id)
+
+        # query parameters from database
+        rotationalConstants = Parameter.objects.filter(specie = specie.id, type = "Rotational Constant").order_by('parameter')
+        dipoleMoments = Parameter.objects.filter(specie = specie.id, type =  "Dipole Moment").order_by('parameter')
+        partitionFunctions = Parameter.objects.filter(specie = specie.id, type =  "Partition function").order_by('parameter')
+        otherParameters = Parameter.objects.filter(specie = specie.id, type =  "Other").order_by('parameter')
+
+    else:
+        datasets = None
+        files = None
+        atoms = None
+        bonds = None
+        references = None
+        filters = None
+        rotationalConstants = None
+        dipoleMoments = None
+        partitionFunctions = None
+        otherParameters = None
+        
+    return render_to_response('cdmsadmin/species.html', {
+        'form': form,
+        'dataset_list': datasets,
+        'file_list': files,
+        'atom_list': atoms,
+        'bond_list': bonds,
+        'reference_list': references,
+        'filter_list': filters,
+        'rotconstant_list': rotationalConstants,
+        'dipolemoment_list': dipoleMoments,
+        'otherparameter_list': otherParameters,
+        'partitionfunction_list': partitionFunctions,
+        })
+
+
+def filters(request,id = None):
+    FilterFormSet = modelformset_factory(QuantumNumbersFilter, form=FilterForm, can_delete=True, extra=1)
+
+    if id: #request.method == 'GET':
+        #specieid = request.GET.get("specieid",0)
+        
+        try:
+            #filters = QuantumNumbersFilter.objects.filter(species=specieid)
+            filters = QuantumNumbersFilter.objects.filter(species=id)
+            formset = FilterFormSet(queryset = filters)
+        except Species.DoesNotExist:
+            formset = FilterFormSet()
+            
+    elif request.method == 'POST':
+        formset = FilterFormSet(request.POST, request.FILES)
+        if formset.is_valid():
+            # do something with the formset.cleaned_data
+            pass
+    else:
+        formset = FilterFormSet()
+    return render_to_response('cdmsadmin/filters.html', {'formset': formset})
 
 
 
