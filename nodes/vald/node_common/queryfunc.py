@@ -15,7 +15,7 @@ if hasattr(settings,'TRANSLIM'):
     TRANSLIM = settings.TRANSLIM
 else: TRANSLIM = 5000
 
-def addStates(transs,species,StateModel):
+def attachStates(transs,species,StateModel):
     nstates=0
     for specie in species:
         subtranss = transs.filter(species=specie)
@@ -34,7 +34,7 @@ def getSpeciesWithStates(transs,SpeciesModel,StateModel,addStates):
     nspecies = species.count()
     nstates = 0
     if addStates:
-        species,ns = addStates(transs,species,StateModel)
+        species,ns = attachStates(transs,species,StateModel)
         nstates += ns
 
     return species,nspecies,nstates

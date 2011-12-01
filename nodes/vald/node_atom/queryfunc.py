@@ -30,9 +30,8 @@ def setupResults(sql):
 
     headerinfo={\
             'TRUNCATED':percentage,
-            'COUNT-ATOMS':atoms.count(),
-            'COUNT-MOLECULES':molecules.count(),
-            'COUNT-SPECIES':atoms.count() + molecules.count(),
+            'COUNT-ATOMS':nspecies,
+            'COUNT-SPECIES':nspecies,
             'COUNT-STATES':nstates,
             'CoUNT-RADIATIVE':ntranss,
             'APPROX-SIZE':size_estimate,
@@ -41,7 +40,6 @@ def setupResults(sql):
     log.debug('Returning from setupResults()')
     return {'RadTrans':transs,
             'Atoms':atoms,
-            'Molecules':molecules,
             'Sources':sources,
             'HeaderInfo':headerinfo,
             'Environments':Environments, #this is set up statically in models.py
