@@ -91,12 +91,12 @@ def GetValue(name, **kwargs):
         return ''
 
     # strip all the prefixes, keep only last part
-    name = name.split('.')[-1]
+    lastname = name.split('.')[-1]
 
     #get the current structure, throw away its name
     bla,obj = kwargs.popitem()
 
-    value = getattr(obj,name,name)
+    value = getattr(obj,lastname,name)
 
     if value == None:
         # the database returned NULL
