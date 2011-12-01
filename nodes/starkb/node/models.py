@@ -8,12 +8,17 @@
 # into your database.
 
 from django.db import models
+from xml.sax.saxutils import escape
 import logging
 log=logging.getLogger('vamdc.tap')
 
 class Journal(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=225)
+    
+    def encoded_name(self):
+        return escape(self.name)
+    
     class Meta:
         db_table = u't_journals'    
         
@@ -88,10 +93,15 @@ class Article(models.Model):
     ads_reference = models.TextField(blank=True)
     doi_reference = models.TextField(blank=True)
     other_reference = models.TextField(blank=True)
+    
+    def encoded_title(self):
+        return escape(self.title)
+        
     class Meta:
         db_table = u't_articles'
 
 class ArticleDataset(models.Model):
+    id = models.IntegerField(primary_key=True)
     article = models.ForeignKey(Article, db_column='id_article')
     dataset = models.ForeignKey(Dataset, db_column='id_dataset')
     class Meta:

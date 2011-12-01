@@ -48,6 +48,16 @@ RETURNABLES = ({\
 
 'ParticleSpeciesID' : 'Particle.particle_ion_id()',
 'ParticleName' : 'Particle.particle_ion_name()',
+
+'SourceTitle':'Source.encoded_title()',
+'SourceCategory':'journal',
+'SourceName' : 'Source.journal.encoded_name()',
+'SourceVolume' : 'Source.volume',
+'SourceYear' : 'Source.publication_year',
+'SourceURI': 'Source.ads_reference',
+'SourceVolume' : 'Source.volume',
+'SourceID' : 'Source.id',
+
 #'ParticleMass' : 'Particle.mass',
 #'ParticleMassUnit' : 'Particle.massunit.value',
 #'ParticleCharge' : 'Particle.charge',

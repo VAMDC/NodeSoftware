@@ -13,14 +13,28 @@
 import sys
 from itertools import chain
 from django.conf import settings
-from vamdctap.sqlparse import where2q
+from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 import logging
 log=logging.getLogger('vamdc.tap')
+from django.db import connection
+
 
 import dictionaries
 import models # this imports models.py from the same directory as this file
+
+def getSources(transs):
+    sources = []
+    datasets = transs.values_list('dataset', flat=True).distinct()    
+    articledatasets = models.ArticleDataset.objects.filter(dataset__pk__in = datasets)
+    
+    for article in articledatasets :
+        sources.append(article.article)
+    log.debug(sources[0].ads_reference)
+    return sources
+
+
 
 def getSpeciesWithStates(transs):
     """
@@ -168,6 +182,15 @@ def getValidity(value, nvalue):
         else : 
             return 'the impact approximation reachs its limit of validity, 0.1 < NV ≤ 0.5'
             
+def truncateTransitions(transitions, request, maxTransitionNumber):
+    """
+    Limit the number of transitions when it is too high
+    """
+    percentage='%.1f' % (float(maxTransitionNumber) / transitions.count() * 100)
+    transitions = transitions.order_by('wavelength')
+    newmax = transitions[maxTransitionNumber].wavelength
+    return models.Transition.objects.filter(request,Q(wavelength__lt=newmax)), percentage
+            
  
 
 def setupResults(sql, limit=1000):
@@ -177,35 +200,25 @@ def setupResults(sql, limit=1000):
     # convert the incoming sql to a correct django query syntax object 
     # based on the RESTRICTABLES dictionary in dictionaries.py
     # (where2q is a helper function to do this for us).
-    q = where2q(sql.where, dictionaries.RESTRICTABLES)    
-    try:         
-        q = eval(q) # test queryset syntax validity        
-    except Exception as e: 
-        return {}
-
-    # We build a queryset of database matches on the Transision model
-    # since through this model (in our example) we are be able to
-    # reach all other models.
-    transs = models.Transition.objects.filter(q)
+    q = sql2Q(sql)    
     
-    # count the number of matches, make a simple trunkation if there are
-    # too many (record the coverage in the returned header)
-    ntranss=transs.count()       
+    transs = models.Transition.objects.filter(q)
+    ntranss=transs.count()
+
     if limit < ntranss :
-        transs = transs[:limit]
-        percentage='%.1f' % (float(limit) / ntranss * 100)
-    else: 
-        percentage=None
+        transs, percentage = truncateTransitions(transs, q, limit)
+    else:
+        percentage=None  
+
         
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     #sources = getRefs(transs)
-    #nsources = sources.count()
-    
-    #if ntranss > 0 :
+    #nsources = sources.count()    
     species, nspecies, nstates = getSpeciesWithStates(transs)           
     environments = getEnvironments(transs)    
     particles = getParticles(ntranss) 
+    sources =  getSources(transs)
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
@@ -222,7 +235,7 @@ def setupResults(sql, limit=1000):
             'Atoms':species,
             'Environments':environments,
             'Particles' : particles,
-            #'Sources':sources,
+            'Sources':sources,
             'HeaderInfo':headerinfo,
             #'Methods':methods
             #'Functions':functions
