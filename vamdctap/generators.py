@@ -90,19 +90,14 @@ def GetValue(name, **kwargs):
         # the key was in the dict, but the value was empty or None.
         return ''
 
-    for key in kwargs:
-        # assign the dict-value to a local variable named as the dict-key
-        exec('%s=kwargs["%s"]' % (key, key))
+    # strip all the prefixes, keep only last part
+    lastname = name.split('.')[-1]
 
-    try:
-        # here, the RHS of the RETURNABLES dict is executed.
-        #log.debug(" try eval : " + name)
-        value = eval(name) # this works, if the dict-value is named
-                           # correctly as the query-set attribute
-    except Exception, e:
-         # this catches the case where the dict-value is a string or mistyped.
-        #log.debug('Exception in generators.py: GetValue()')
-        value = name
+    #get the current structure, throw away its name
+    bla,obj = kwargs.popitem()
+
+    value = getattr(obj,lastname,name)
+
     if value == None:
         # the database returned NULL
         return ''

@@ -7,7 +7,7 @@ RETURNABLES = ({\
 'AtomSymbol':'Atom.ion.symbol',
 'AtomNuclearCharge':'Atom.ion.nuclear_charge',
 'AtomSpeciesID':'Atom.particle_ion_id()',
-'AtomIonCharge':'Atom.ion.ion_charge()',
+'AtomIonCharge':'Atom.ion.ion_charge',
 
 
 'AtomStateConfigurationLabel':'AtomState.config',
@@ -16,7 +16,7 @@ RETURNABLES = ({\
 'AtomStateTotalAngMom' : 'AtomState.j_asFloat()',
 
 'RadTransBroadeningPressure':'RadTran',
-'RadTransBroadeningPressureComment':'stark effect',
+#'RadTransBroadeningPressureComment':'stark effect',
 'RadTransBroadeningPressureLineshapeName':'Lorentzian',
 'RadTransBroadeningPressureLineshapeParameterName':'gammaL',
 'RadTransBroadeningPressureLineshapeParameterComment':'Broadening.comment',
@@ -48,11 +48,25 @@ RETURNABLES = ({\
 
 'ParticleSpeciesID' : 'Particle.particle_ion_id()',
 'ParticleName' : 'Particle.particle_ion_name()',
+
+'SourceTitle':'Source.encoded_title()',
+'SourceCategory':'journal',
+'SourceName' : 'Source.journal.encoded_name()',
+'SourceVolume' : 'Source.volume',
+'SourceYear' : 'Source.publication_year',
+'SourceURI': 'Source.ads_reference',
+'SourceVolume' : 'Source.volume',
+'SourceID' : 'Source.id',
+
 #'ParticleMass' : 'Particle.mass',
 #'ParticleMassUnit' : 'Particle.massunit.value',
 #'ParticleCharge' : 'Particle.charge',
 })
 
 RESTRICTABLES = ({\
-'RadTransWavelength':'wavelength'
+'RadTransWavelength':'wavelength',
+'AtomSymbol':'target__ion__symbol',
+'IonCharge':'target__ion__ion_charge',
+'EnvironmentTemperature' : 'temperature',
+'EnvironmentTotalNumberDensity':'density'
 })
