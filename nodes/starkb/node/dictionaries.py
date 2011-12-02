@@ -3,20 +3,19 @@ from vamdctap.caselessdict import CaselessDict
 RETURNABLES = ({\
 'NodeID':'starkb',
 
+#atomstate 
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'Atom.ion.symbol',
 'AtomNuclearCharge':'Atom.ion.nuclear_charge',
 'AtomSpeciesID':'Atom.particle_ion_id()',
 'AtomIonCharge':'Atom.ion.ion_charge',
-
-
 'AtomStateConfigurationLabel':'AtomState.config',
 'AtomStateTermLabel':'AtomState.term',
-#'AtomStateID':'AtomState.id',
 'AtomStateTotalAngMom' : 'AtomState.j_asFloat()',
+'AtomStateRef':'AtomState.Sources',
 
+#radiative transition
 'RadTransBroadeningPressure':'RadTran',
-#'RadTransBroadeningPressureComment':'stark effect',
 'RadTransBroadeningPressureLineshapeName':'Lorentzian',
 'RadTransBroadeningPressureLineshapeParameterName':'gammaL',
 'RadTransBroadeningPressureLineshapeParameterComment':'Broadening.comment',
@@ -33,11 +32,11 @@ RETURNABLES = ({\
 
 'RadTransFinalStateRef':'RadTran.upper_level.id',
 'RadTransInitialStateRef':'RadTran.lower_level.id',
-
 'RadTransWavelength':'RadTran.wavelength',
 'RadTransWavelengthUnit':'A',
+'RadTransRefs':'RadTran.Sources',
 
-
+# environments
 'EnvironmentID': 'Environment.id',
 'EnvironmentTemperature' : 'Environment.temperature.temperature',
 'EnvironmentTemperatureUnit' : 'K',
@@ -46,9 +45,7 @@ RETURNABLES = ({\
 'EnvironmentSpeciesName':'EnvSpecies.particle_ion_name()',
 'EnvironmentSpeciesRef': 'EnvSpecies.particle_ion_id()',
 
-'ParticleSpeciesID' : 'Particle.particle_ion_id()',
-'ParticleName' : 'Particle.particle_ion_name()',
-
+#source
 'SourceTitle':'Source.encoded_title()',
 'SourceCategory':'journal',
 'SourceName' : 'Source.journal.encoded_name()',
@@ -58,6 +55,9 @@ RETURNABLES = ({\
 'SourceVolume' : 'Source.volume',
 'SourceID' : 'Source.id',
 
+# particle
+'ParticleSpeciesID' : 'Particle.particle_ion_id()',
+'ParticleName' : 'Particle.particle_ion_name()',
 #'ParticleMass' : 'Particle.mass',
 #'ParticleMassUnit' : 'Particle.massunit.value',
 #'ParticleCharge' : 'Particle.charge',
