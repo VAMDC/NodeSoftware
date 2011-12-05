@@ -178,8 +178,9 @@ def setupResults(sql):
     and compiles everything together for the vamdctap.generator function
     which is used to generate XSAMS - output.
     """
-
+    LOG(sql)
     q = sql2Q(sql)
+    LOG(q)
     # Query the database and get calculated transitions (TransitionsCalc)
     transs = TransitionsCalc.objects.filter(q,species__origin=5,
                                             species__archiveflag=0,
@@ -246,13 +247,14 @@ def returnResults(tap, LIMIT=None):
     
 
     q = sql2Q(tap.parsedSQL)
-
+    LOG(q)
     # use tap.parsedSQL.columns instead of tap.requestables
     # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
 
     transs = TransitionsCalc.objects.filter(q,species__origin=5,species__archiveflag=0,dataset__archiveflag=0) 
     ntrans = transs.count()
+    LOG(ntrans)
     if LIMIT is not None and ntrans > LIMIT:
         # we need to filter transs again later, so can't take a slice
         #transs = transs[:LIMIT]
@@ -263,30 +265,6 @@ def returnResults(tap, LIMIT=None):
     else:
         percentage = '100'
 #    print 'Truncated to %s %%' % percentage
-    transs = TransitionsCalc.objects.filter(q,species__origin=5,species__archiveflag=0,dataset__archiveflag=0).order_by('frequency') 
-    ntrans = transs.count()
-    if LIMIT is not None and ntrans > LIMIT:
-        # we need to filter transs again later, so can't take a slice
-        #transs = transs[:LIMIT]
-        # so do this:
-        numax = transs[LIMIT].nu
-        transs = TransitionsCalc.objects.filter(q, Q(nu__lte=numax))
-        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
-    else:
-        percentage = '100'
-#    print 'Truncated to %s %%' % percentage
-#    print 'ntrans =',ntrans
-
-
-#    if 'radiativetransitions' in col:
-#        cat_generator = Cat(transs)
-#    else:
-#        LOG(col[0])
-#        cat_generator = Cat(transs)
-#        states = States.objects.filter(q,species__origin=5,dataset__archiveflag=0)
-#        egy_generator = gener(transs, states)
-#        cat_generator=egy_generator
-#        cat_generator = ''
 
 
     
