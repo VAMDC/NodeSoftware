@@ -106,7 +106,7 @@ def getSpeciesWithStates(transs):
     return species, nspecies, nstates  
         
 def getTransitionsData(transs):
-    """
+	"""
 		Returns all the data  corresponding to the list of transitions : broadening, source, shifting
 		@type  transs: list
 		@param transs: a list of Transition
@@ -142,7 +142,7 @@ def getTransitionsData(transs):
 			uniquetransitions[trans.id] = trans
 		else :
 			uniquetransitions[trans.id] .Broadenings.extend(trans.Broadenings)
-
+	
 	transitions = uniquetransitions.values()
 	return transitions, allenvironments
 
