@@ -105,35 +105,46 @@ def getSpeciesWithStates(transs):
     nspecies = len(species) # get some statistics 
     return species, nspecies, nstates  
         
-def getEnvironments(transs):
+def getTransitionsData(transs):
     """
-        Returns all the environments corresponding to the list of transitions
-        @type  transs: list
-        @param transs: a list of Transition
-        @rtype:   list
-        @return:  a list of TemperatureCollider
-    """
-    allenvironments = []
-    for trans in transs :
-        broadenings = []
-        shiftings = []
-        environments = models.TemperatureCollider.objects.filter(temperature__pk = trans.temperatureid)
-       
-        for environment in environments : 
-            collider = environment.species
-            environment.Species = []             
-            environment.Species.append(collider)       
-            # note : 
-            # generators.py do not create broadening element when broadening.value is empty
-            broadenings.append(getBroadening(environment))            
-            # shifting to be added later
-            #shiftings.append(getShifting(environment))
-            allenvironments.append(environment)
-        trans.Broadenings = broadenings
-        trans.Sources = getDatasetSources(trans.dataset.pk)
-        #trans.ShiftingParams = shiftings        
-    
-    return allenvironments
+		Returns all the data  corresponding to the list of transitions : broadening, source, shifting
+		@type  transs: list
+		@param transs: a list of Transition
+		@rtype:   list
+		@return:  a list of TemperatureCollider
+		@rtype:   list
+		@return:  a list of Transitions
+	"""
+	allenvironments = []
+	#dictionnary of transition, key is transition id
+	uniquetransitions = {}
+	for trans in transs :
+		broadenings = []
+		shiftings = []
+		environments = models.TemperatureCollider.objects.filter(temperature__pk = trans.temperatureid)
+	   
+		for environment in environments : 
+			collider = environment.species
+			environment.Species = []             
+			environment.Species.append(collider)       
+			# note : 
+			# generators.py do not create broadening element when broadening.value is empty
+			broadenings.append(getBroadening(environment))            
+			# shifting to be added later
+			#shiftings.append(getShifting(environment))
+			allenvironments.append(environment)
+		trans.Broadenings = broadenings
+		trans.Sources = getDatasetSources(trans.dataset.pk)
+		#trans.ShiftingParams = shiftings  
+		
+		# check if this transitions already exists and extract informations if it is the case
+		if trans.id not in uniquetransitions :
+			uniquetransitions[trans.id] = trans
+		else :
+			uniquetransitions[trans.id] .Broadenings.extend(trans.Broadenings)
+
+	transitions = uniquetransitions.values()
+	return transitions, allenvironments
 
 def getIonCollidersByTransitions(transs): 
     """
@@ -217,7 +228,6 @@ def truncateTransitions(transitions, request, maxTransitionNumber):
     newmax = transitions[maxTransitionNumber].wavelength
     return models.Transition.objects.filter(request,Q(wavelength__lt=newmax)), percentage
             
- 
 
 def setupResults(sql, limit=1000):
     """
@@ -241,33 +251,33 @@ def setupResults(sql, limit=1000):
     # all the relevant database data for our query. 
     #sources = getRefs(transs)
     log.debug(ntranss)
-    if ntranss > 0 :
-        species, nspecies, nstates = getSpeciesWithStates(transs)           
-        environments = getEnvironments(transs)    
-        particles = getParticles(ntranss) 
-        sources =  getSources(transs)
-        nsources = len(sources)
-    
-        # Create the header with some useful info. The key names here are
-        # standardized and shouldn't be changed.
-        headerinfo={\
-                'Truncated':percentage,
-                #'count-sources':nsources,
-                'count-species':nspecies,
-                'count-states':nstates,
-                'count-radiative':ntranss
-                }
-                
-        # Return the data. The keynames are standardized. 
-        return {'RadTrans':transs,
-                'Atoms':species,
-                'Environments':environments,
-                'Particles' : particles,
-                'Sources':sources,
-                'HeaderInfo':headerinfo,
-                #'Methods':methods
-                #'Functions':functions
-               }   
+    if ntranss > 0 :		
+		species, nspecies, nstates = getSpeciesWithStates(transs)           
+		transitions, environments = getTransitionsData(transs)    
+		particles = getParticles(ntranss) 
+		sources =  getSources(transs)
+		nsources = len(sources)
+
+		# Create the header with some useful info. The key names here are
+		# standardized and shouldn't be changed.
+		headerinfo={\
+				'Truncated':percentage,
+				#'count-sources':nsources,
+				'count-species':nspecies,
+				'count-states':nstates,
+				'count-radiative':len(transitions)
+				}
+				
+		# Return the data. The keynames are standardized. 
+		return {'RadTrans':transitions,
+				'Atoms':species,
+				'Environments':environments,
+				'Particles' : particles,
+				'Sources':sources,
+				'HeaderInfo':headerinfo,
+				#'Methods':methods
+				#'Functions':functions
+			   }   
     else :
         headerinfo={\
                 'Truncated':percentage,
