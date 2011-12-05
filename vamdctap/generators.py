@@ -20,11 +20,11 @@ except:
 try:
     XSAMS_VERSION = RETURNABLES['XSAMSVersion']
 except:
-    XSAMS_VERSION = '0.2'
+    XSAMS_VERSION = '0.3'
 try:
     SCHEMA_LOCATION = RETURNABLES['SchemaLocation']
 except:
-    SCHEMA_LOCATION = 'xsams.xsd'
+    SCHEMA_LOCATION = 'http://vamdc.org/xml/xsams/%s'%XSAMS_VERSION
 
 import logging
 log = logging.getLogger('vamdc.tap.generator')
@@ -120,13 +120,13 @@ def makeSourceRefs(refs):
     """
     Create a SourceRef tag entry
     """
-    s = ''
+    s = []
     if refs:
         if isiterable(refs):
             for ref in refs:
-                s += '<SourceRef>B%s-%s</SourceRef>' % (NODEID, ref)
-        else: s += '<SourceRef>B%s-%s</SourceRef>' % (NODEID, refs)
-    return s
+                s.append( '<SourceRef>B%s-%s</SourceRef>' % (NODEID, ref) )
+        else: s.append( '<SourceRef>B%s-%s</SourceRef>' % (NODEID, refs) )
+    return ''.join(s)
 
 def makePartitionfunc(keyword, G):
     """
@@ -309,15 +309,10 @@ def XsamsSources(Sources):
             continue
         G = lambda name: GetValue(name, Source=Source)
         yield '<Source sourceID="B%s-%s"><Authors>\n' % (NODEID, G('SourceID'))
-        authornames = G('SourceAuthorName')
-        try:
-            authornames = eval(authornames)
-        except:
-            pass
-        if not isiterable(authornames):
-            authornames = [authornames]
-        for author in authornames:
-            yield '<Author><Name>%s</Name></Author>\n' % author
+        authornames = makeiter( G('SourceAuthorName') )
+        for authorname in authornames:
+            if authorname:
+                yield '<Author><Name>%s</Name></Author>\n' % authorname
 
         yield """</Authors>
 <Title>%s</Title>
@@ -1605,22 +1600,9 @@ def XsamsMethods(Methods):
         G = lambda name: GetValue(name, Method=Method)
         yield """<Method methodID="M%s-%s">\n""" % (NODEID, G('MethodID'))
 
-        methodsourcerefs = G('MethodSourceRef')
-        if methodsourcerefs != '':
-            # make it always into a list to be looped over, even if
-            # only single entry
-            try:
-                methodsourcerefs = eval(methodsourcerefs)
-            except:
-                pass
-            if not isiterable(methodsourcerefs):
-                methodsourcerefs = [methodsourcerefs]
-            for sourceref in methodsourcerefs:
-                yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
-
+        yield makeSourceRefs( G('MethodSourceRef') )
         yield """<Category>%s</Category>\n<Description>%s</Description>\n"""\
              % (G('MethodCategory'), G('MethodDescription'))
-
         yield '</Method>\n'
     yield '</Methods>\n'
 
