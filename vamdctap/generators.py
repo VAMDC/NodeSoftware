@@ -20,11 +20,11 @@ except:
 try:
     XSAMS_VERSION = RETURNABLES['XSAMSVersion']
 except:
-    XSAMS_VERSION = '0.2'
+    XSAMS_VERSION = '0.3'
 try:
     SCHEMA_LOCATION = RETURNABLES['SchemaLocation']
 except:
-    SCHEMA_LOCATION = 'xsams.xsd'
+    SCHEMA_LOCATION = 'http://vamdc.org/xml/xsams/%s'%XSAMS_VERSION
 
 import logging
 log = logging.getLogger('vamdc.tap.generator')
