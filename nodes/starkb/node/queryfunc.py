@@ -25,13 +25,36 @@ import dictionaries
 import models # this imports models.py from the same directory as this file
 
 def getSources(transs):
+    """
+        Get sources for a list of transitions
+        @type  transs: list
+        @param transs: a list of Transition
+        @rtype:   list
+        @return:  list of Article
+        
+    """
     sources = []
     datasets = transs.values_list('dataset', flat=True).distinct()    
-    articledatasets = models.ArticleDataset.objects.filter(dataset__pk__in = datasets)
-    
+    articledatasets = models.ArticleDataset.objects.filter(dataset__pk__in = datasets)    
     for article in articledatasets :
         sources.append(article.article)
-    log.debug(sources[0].ads_reference)
+        
+    return sources
+    
+def getDatasetSources(datasetid):
+    """
+        Get sources for a dataset
+        @type  datasetid: int
+        @param datasetid: id of a dataset
+        @rtype:   list
+        @return:  list of Article
+        
+    """    
+    sources = []    
+    articledatasets = models.ArticleDataset.objects.filter(dataset__pk = datasetid)    
+    for article in articledatasets :
+        sources.append(article.article.pk)
+
     return sources
 
 
@@ -71,14 +94,16 @@ def getSpeciesWithStates(transs):
             lo = spec_transitions.values_list('lower_level',flat=True)
             sids = set(chain(up, lo))
 
-            specie.States = models.Level.objects.filter( pk__in = sids ) 
+            specie.States = models.Level.objects.filter( pk__in = sids )
+            for i in range(len(specie.States)):
+                specie.States[i].Sources = getDatasetSources(specie.States[i].dataset.pk)
+
             nstates += specie.States.count() 
         except ObjectDoesNotExist as e:
             log.debug(str(e)) # this species is a collider
 
     nspecies = len(species) # get some statistics 
-    return species, nspecies, nstates
-    
+    return species, nspecies, nstates  
         
 def getEnvironments(transs):
     """
@@ -105,6 +130,7 @@ def getEnvironments(transs):
             #shiftings.append(getShifting(environment))
             allenvironments.append(environment)
         trans.Broadenings = broadenings
+        trans.Sources = getDatasetSources(trans.dataset.pk)
         #trans.ShiftingParams = shiftings        
     
     return allenvironments
@@ -214,31 +240,42 @@ def setupResults(sql, limit=1000):
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     #sources = getRefs(transs)
-    #nsources = sources.count()    
-    species, nspecies, nstates = getSpeciesWithStates(transs)           
-    environments = getEnvironments(transs)    
-    particles = getParticles(ntranss) 
-    sources =  getSources(transs)
-
-    # Create the header with some useful info. The key names here are
-    # standardized and shouldn't be changed.
-    headerinfo={\
-            'Truncated':percentage,
-            #'COUNT-SOURCES':nsources,
-            'COUNT-species':nspecies,
-            'count-states':nstates,
-            'count-radiative':ntranss
-            }
-            
-    # Return the data. The keynames are standardized. 
-    return {'RadTrans':transs,
-            'Atoms':species,
-            'Environments':environments,
-            'Particles' : particles,
-            'Sources':sources,
-            'HeaderInfo':headerinfo,
-            #'Methods':methods
-            #'Functions':functions
-           }   
+    log.debug(ntranss)
+    if ntranss > 0 :
+        species, nspecies, nstates = getSpeciesWithStates(transs)           
+        environments = getEnvironments(transs)    
+        particles = getParticles(ntranss) 
+        sources =  getSources(transs)
+        nsources = len(sources)
+    
+        # Create the header with some useful info. The key names here are
+        # standardized and shouldn't be changed.
+        headerinfo={\
+                'Truncated':percentage,
+                #'count-sources':nsources,
+                'count-species':nspecies,
+                'count-states':nstates,
+                'count-radiative':ntranss
+                }
+                
+        # Return the data. The keynames are standardized. 
+        return {'RadTrans':transs,
+                'Atoms':species,
+                'Environments':environments,
+                'Particles' : particles,
+                'Sources':sources,
+                'HeaderInfo':headerinfo,
+                #'Methods':methods
+                #'Functions':functions
+               }   
+    else :
+        headerinfo={\
+                'Truncated':percentage,
+                'count-states':0,
+                'count-radiative':0
+                }
+                
+        # Return the data. The keynames are standardized. 
+        return {'HeaderInfo':headerinfo}           
     
 
