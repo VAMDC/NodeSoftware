@@ -54,12 +54,12 @@ def getDatasetSources(datasetid):
 	articledatasets = models.ArticleDataset.objects.filter(dataset__pk = datasetid)    
 	for article in articledatasets :
 		sources.append(article.article.pk)
-
+	
 	return sources
 
 
 
-	def getSpeciesWithStates(transs):
+def getSpeciesWithStates(transs):
 	"""
 		Use the Transition matches to obtain the related Species (only atoms in this example)
 		and the states related to each transition.         
