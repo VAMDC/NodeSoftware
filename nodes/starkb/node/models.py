@@ -143,8 +143,8 @@ class Transition(models.Model):
     density = models.FloatField()
     class Meta:
         db_table = u'v_transitionsvamdc'    
-        
-        
+
+  
 class Transitiondata(models.Model):
     id = models.IntegerField(primary_key=True)
     transition = models.ForeignKey(Transition, db_column='id_transition')
