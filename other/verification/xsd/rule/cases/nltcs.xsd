@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+	<xs:include schemaLocation="../rule.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Schema for checking the quantum numbers of closed-shell non-linear triatomic molecules</xs:documentation>
+	</xs:annotation>
+
+	<xs:group name="nltcsStateRules">
+		<xs:sequence>
+			<xs:element name="nltcsRuleS01" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule>
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<or/>
+									<apply>
+										<eq/>
+										<apply>
+											<plus/>
+											<ci>nltcs:Ka</ci>
+											<ci>nltcs:Kc</ci>
+										</apply>
+										<ci>nltcs:J</ci>
+									</apply>
+									<apply>
+										<eq/>
+										<apply>
+											<plus/>
+											<ci>nltcs:Ka</ci>
+											<ci>nltcs:Kc</ci>
+										</apply>
+										<apply>
+											<plus/>
+											<ci>nltcs:J</ci>
+											<cn>1</cn>
+										</apply>
+									</apply>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+
+		</xs:sequence>
+	</xs:group>
+
+	<xs:group name="nltcsTransitionRules">
+		<xs:sequence>
+			<xs:element name="nltcsRuleT01" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule>
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<or/>
+									<apply>
+										<eq/>
+										<apply>
+											<abs/>
+											<apply>
+												<minus/>
+												<ci>nltcs:J#InitialStateRef</ci>
+												<ci>nltcs:J#FinalStateRef</ci>
+											</apply>
+										</apply>
+										<cn>1</cn>
+									</apply>
+									<apply>
+										<eq/>
+										<ci>nltcs:J#InitialStateRef</ci>
+										<ci>nltcs:J#FinalStateRef</ci>
+									</apply>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="nltcsRuleT02" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/H2O/h1H2'.*'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<eq/>
+									<apply>
+										<rem/>
+										<apply>
+											<abs/>
+											<apply>
+												<minus/>
+												<ci>nltcs:Kc#InitialStateRef</ci>
+												<ci>nltcs:Kc#FinalStateRef</ci>
+											</apply>
+										</apply>
+										<cn>2</cn>
+									</apply>
+									<cn>1</cn>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="nltcsRuleT03" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo><!-- 1S/H2O/h1H2 or 1S/H2O/h1H2/i/hD2 or 1S/H2O/h1H2/i1+2 or 1S/H2O/h1H2/i1+2/hT2-->
+						<rule forInChIList="InChI=1S/H2O/h1H2'($|\/i(1\+\d)?($|\/h[HDT]2))'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<eq/>
+									<apply>
+										<rem/>
+										<apply>
+											<plus/>
+											<ci>nltcs:v3#InitialStateRef</ci>
+											<ci>nltcs:v3#FinalStateRef</ci>
+											<ci>nltcs:Ka#InitialStateRef</ci>
+											<ci>nltcs:Ka#FinalStateRef</ci>
+										</apply>
+										<cn>2</cn>
+									</apply>
+									<cn>1</cn>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+
+		</xs:sequence>
+	</xs:group>
+
+</xs:schema>

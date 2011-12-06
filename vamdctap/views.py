@@ -13,7 +13,6 @@ randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
 import logging
 log=logging.getLogger('vamdc.tap')
-log.debug('test log start')
 
 # Get the node-specific package!
 from django.conf import settings
@@ -94,7 +93,10 @@ class TAPQUERY(object):
             #    self.errormsg += 'Currently, only FORMAT=XSAMS is supported.\n'
 
         try: self.parsedSQL=SQL.parseString(self.query)
-        except: self.errormsg += 'Could not parse the SQL query string.\n'
+        except: # if this fails, we're done
+            self.errormsg += 'Could not parse the SQL query string.\n'
+            self.isvalid=False
+            return
 
         self.requestables = set()
         self.where = self.parsedSQL.where
@@ -166,10 +168,16 @@ def sync(request):
         return tapServerError(status=400,errmsg=emsg)
 
     # if the requested format is not XSAMS, hand over to the node QUERYFUNC
-    if tap.format != 'xsams':
+    if tap.format != 'xsams' and hasattr(QUERYFUNC,'returnResults'):
         return QUERYFUNC.returnResults(tap)
     # otherwise, setup the results and build the XSAMS response here
-    results=QUERYFUNC.setupResults(tap)
+
+    try: results=QUERYFUNC.setupResults(tap)
+    except Exception, err:
+        emsg = 'Query processing in setupResults() failed: %s'%err
+        log.debug(emsg)
+        return tapServerError(status=400,errmsg=emsg)
+
     if not results:
         log.info('setupResults() gave something empty. Returning 204.')
         return HttpResponse('', status=204)

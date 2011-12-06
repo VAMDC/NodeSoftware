@@ -41,17 +41,9 @@ def Hz2MHz(op, Hz):
 def valdObstype(op,obstype):
     obstype=obstype.strip().strip('\'"')
     ourMap = {'experiment':'0',
+              'semiempirical':'1',
+              'derived':'2',
               'theory':'3',
-              #'ritz':'None',
-              #'recommended':'None',
-              #'evaluated':'None',
-              'empirical':'2',
-              #'scalingLaw':'None',
-              #'semiempirical':'None',
-              'compilation':'5',
-              'derived':'4',
-              'observed':'1',}
-    if not obstype in ourMap:
-        return [op, 'None']
-    else:
-        return [op, ourMap[obstype]]
+              #'semiempirical':'4',
+              'compilation':'5'}             
+    return [op, ourMap.get(obstype, 'None')]

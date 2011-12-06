@@ -25,6 +25,9 @@ def get_species(transitions):
                                  .distinct())
     nspecies = species.count()
     for iso in species:
+        if iso.molecule.molecID == 36:
+            # XXX for now, hard-code the molecular charge for NO+
+            iso.molecule.charge = 1
         # all the transitions for this species:
         sptransitions = transitions.filter(iso=iso)
         # sids is all the stateIDs involved in these transitions:
@@ -36,13 +39,55 @@ def get_species(transitions):
         nstates += len(sids)
     return species, nspecies, nstates
 
+def bad_ref(refID):
+    """
+    Create a 'virtual' reference indicating that the database returned a
+    reference object that couldn't be turned into valid XSAMS.
+
+    """
+
+    return Ref(refID=refID, ref_type='private communication',
+               authors='C. Hill, M.-L. Dubernet', note='The reference'
+               ' identified by %s cannot be resolved into valid XSAMS'
+                    % refID, year=2011)
+
 def get_sources(transitions):
-    return None
+    #return None
     refIDs = set()
+    refs = []
     for trans in transitions:
-        refIDs.add(trans.nu.ref)
-        refIDs.add(trans.A.ref)
-    return Ref.objects.filter(pk__in=refIDs)
+        # get the (string) reference IDs for each parameter of the transition 
+        for prm_name in ('nu', 'A', 'gamma_air', 'n_air', 'gamma_self',
+                         'delta_air'):
+            try:
+                exec('refID = trans.%s.ref' % prm_name)
+            except AttributeError:
+                continue
+            # have we seen it already?
+            if refID in refIDs:
+                continue
+            # get the corresponding Ref object
+            try:
+                ref = Ref.objects.get(refID=refID)
+            except Ref.DoesNotExist:
+                continue
+            # filter out references we can't represent in XSAMS, and rename
+            # 'article' as 'journal' and 'thesis' and 'theses' (sic)
+            if ref.ref_type == 'article':
+                ref.ref_type = 'journal'
+            elif ref.ref_type == 'thesis':
+                ref.ref_type = 'theses'
+            elif ref.ref_type not in ('private communication', 'proceedings',
+                                      'database'):
+                # this ref won't resolve to valid XSAMS
+                ref = bad_ref(refID)
+            # <Year> is compulsory in XSAMS, so if it's missing in the
+            # database, return a bad_ref:
+            if ref.year is None:
+                ref = bad_ref(refID)
+            refIDs.add(refID)
+            refs.append(ref)
+    return refs
 
 def attach_prms(transitions):
     """
@@ -162,7 +207,7 @@ def Wavelength2Wavenumber(op, foo):
     q = ['RadTransWavenumber', opp, str(foop)]
     return q
         
-def setupResults(sql, LIMIT=1000):
+def setupResults(sql, LIMIT=None):
     # rather than use the sql2Q method:
     #q = sqlparse.sql2Q(sql)
     # we parse the query into its restrictables and logic:
@@ -207,14 +252,18 @@ def setupResults(sql, LIMIT=1000):
     LOG('%s states retrieved from HITRAN database' % nstates)
     LOG('%s species retrieved from HITRAN database' % nspecies)
 
+    nsources = 0
+    if sources is not None:
+        # sources is a Python list, not a queryset, so we can't use count()
+        nsources = len(sources)
+    print 'nsources =', nsources
     print 'nspecies =', nspecies
     print 'nstates =', nstates
     print 'ntrans =', ntrans
-    if sources is not None:
-        print 'nsources =', len(sources)
 
     headerinfo = {
         'Truncated': '%s %%' % percentage,
+        'count-sources': nsources,
         'count-species': nspecies,
         'count-molecules': nspecies,
         'count-states': nstates,
