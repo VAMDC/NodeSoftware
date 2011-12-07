@@ -86,15 +86,21 @@ def GetValue(name, **kwargs):
         #log.debug(e)
         return ''
 
-    if not name:
-        # the key was in the dict, but the value was empty or None.
-        return ''
+    # whenever the right-hand-side is not a string, treat
+    # it as if the node has prepared the thing beforehand
+    # for example a list of constant strings
+    if type(name) != str:
+        return name
 
+
+    # now ew get the current object
+    # from which to get the attributes.
+    # we throw away its name.
+    bla,obj = kwargs.popitem()
+
+    # now we assume name is something like "RadTran.wave"
     # strip all the prefixes, keep only last part
     lastname = name.split('.')[-1]
-
-    #get the current structure, throw away its name
-    bla,obj = kwargs.popitem()
 
     if lastname.endswith('()'):
         lastname = lastname[:-2]
