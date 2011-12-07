@@ -47,7 +47,7 @@ def attach_partionfunc(molecules):
          
 
 
-def get_species_and_states(transs):
+def get_species_and_states(transs, addStates=True):
     """
     Returns list of species including all states which occur in the list
     of transitions.
@@ -68,18 +68,19 @@ def get_species_and_states(transs):
     # Intialize state-counter
     nstates = 0
 
-    # Loop through list of species and attach states
-    for specie in chain(atoms , molecules):
-        # Get distinct list of States which
-        # occur as lower or upper state in transitions
-        subtranss = transs.filter(species=specie)
-        up=subtranss.values_list('upperstateref',flat=True)
-        lo=subtranss.values_list('lowerstateref',flat=True)
-        sids = set(chain(up,lo))
-        # Attach states to species object
-        specie.States = States.objects.filter( pk__in = sids)
-        # Add number of attached states to state-counter
-        nstates += specie.States.count()
+    if addStates:
+        # Loop through list of species and attach states
+        for specie in chain(atoms , molecules):
+            # Get distinct list of States which
+            # occur as lower or upper state in transitions
+            subtranss = transs.filter(species=specie)
+            up=subtranss.values_list('upperstateref',flat=True)
+            lo=subtranss.values_list('lowerstateref',flat=True)
+            sids = set(chain(up,lo))
+            # Attach states to species object
+            specie.States = States.objects.filter( pk__in = sids)
+            # Add number of attached states to state-counter
+            nstates += specie.States.count()
 
     return atoms,molecules,nspecies,nstates
 
@@ -181,6 +182,8 @@ def setupResults(sql):
     LOG(sql)
     q = sql2Q(sql)
     LOG(q)
+    addStates = (not sql.requestables or 'atomstates' in sql.requestables or 'moleculestates' in sql.requestables)
+    addTrans = (not sql.requestables or 'RadiativeTransitions' in sql.requestables)
     # Query the database and get calculated transitions (TransitionsCalc)
     transs = TransitionsCalc.objects.filter(q,species__origin=5,
                                             species__archiveflag=0,
@@ -188,14 +191,20 @@ def setupResults(sql):
 
     # Attach experimental transitions (TransitionsExp) to transitions
     # and obtain their methods
-    transs, methods = attach_exp_frequencies(transs)
-    
+    if addTrans:
+        transs, methods = attach_exp_frequencies(transs)
+    else:
+        methods=[]
+        
     # get sources and methods which have been used
     # to derive predicted transitions
-    sources, methods = get_sources(transs, methods)
+    if addTrans:
+        sources, methods = get_sources(transs, methods)
+    else:
+        sources=Sources.objects.none()
 
     # get atoms and molecules with states which occur in transition-block
-    atoms, molecules,nspecies,nstates = get_species_and_states(transs)
+    atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates)
 
     # attach partition functions to each specie
     attach_partionfunc(molecules)
