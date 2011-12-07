@@ -20,7 +20,7 @@ except:
 try:
     XSAMS_VERSION = RETURNABLES['XSAMSVersion']
 except:
-    XSAMS_VERSION = '0.3'
+    XSAMS_VERSION = '0.2'
 try:
     SCHEMA_LOCATION = RETURNABLES['SchemaLocation']
 except:
@@ -96,7 +96,11 @@ def GetValue(name, **kwargs):
     #get the current structure, throw away its name
     bla,obj = kwargs.popitem()
 
-    value = getattr(obj,lastname,name)
+    if lastname.endswith('()'):
+        lastname = lastname[:-2]
+        value = getattr(obj,lastname)()
+    else:
+        value = getattr(obj,lastname,name)
 
     if value == None:
         # the database returned NULL
@@ -287,12 +291,10 @@ def checkXML(obj,methodName='XML'):
     If the queryset has an XML method, use that and
     skip the hard-coded implementation.
     """
-    if hasattr(obj,methodName):
-        try:
-            return True, eval('obj.%s()' % methodName)
-        except Exception:
-            pass
-    return False, None
+    try:
+        return True, getattr(obj,methodName, None)() #This calls the method!
+    except:
+        return False, None
 
 def XsamsSources(Sources):
     """
