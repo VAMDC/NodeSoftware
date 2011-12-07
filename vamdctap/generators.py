@@ -24,7 +24,7 @@ except:
 try:
     SCHEMA_LOCATION = RETURNABLES['SchemaLocation']
 except:
-    SCHEMA_LOCATION = 'xsams.xsd'
+    SCHEMA_LOCATION = 'http://vamdc.org/xml/xsams/%s'%XSAMS_VERSION
 
 import logging
 log = logging.getLogger('vamdc.tap.generator')
@@ -86,23 +86,28 @@ def GetValue(name, **kwargs):
         #log.debug(e)
         return ''
 
-    if not name:
-        # the key was in the dict, but the value was empty or None.
-        return ''
+    # whenever the right-hand-side is not a string, treat
+    # it as if the node has prepared the thing beforehand
+    # for example a list of constant strings
+    if type(name) != str:
+        return name
 
-    for key in kwargs:
-        # assign the dict-value to a local variable named as the dict-key
-        exec('%s=kwargs["%s"]' % (key, key))
 
-    try:
-        # here, the RHS of the RETURNABLES dict is executed.
-        #log.debug(" try eval : " + name)
-        value = eval(name) # this works, if the dict-value is named
-                           # correctly as the query-set attribute
-    except Exception, e:
-         # this catches the case where the dict-value is a string or mistyped.
-        #log.debug('Exception in generators.py: GetValue()')
-        value = name
+    # now ew get the current object
+    # from which to get the attributes.
+    # we throw away its name.
+    bla,obj = kwargs.popitem()
+
+    # now we assume name is something like "RadTran.wave"
+    # strip all the prefixes, keep only last part
+    lastname = name.split('.')[-1]
+
+    if lastname.endswith('()'):
+        lastname = lastname[:-2]
+        value = getattr(obj,lastname)()
+    else:
+        value = getattr(obj,lastname,name)
+
     if value == None:
         # the database returned NULL
         return ''
@@ -125,13 +130,13 @@ def makeSourceRefs(refs):
     """
     Create a SourceRef tag entry
     """
-    s = ''
+    s = []
     if refs:
         if isiterable(refs):
             for ref in refs:
-                s += '<SourceRef>B%s-%s</SourceRef>' % (NODEID, ref)
-        else: s += '<SourceRef>B%s-%s</SourceRef>' % (NODEID, refs)
-    return s
+                s.append( '<SourceRef>B%s-%s</SourceRef>' % (NODEID, ref) )
+        else: s.append( '<SourceRef>B%s-%s</SourceRef>' % (NODEID, refs) )
+    return ''.join(s)
 
 def makePartitionfunc(keyword, G):
     """
@@ -292,12 +297,10 @@ def checkXML(obj,methodName='XML'):
     If the queryset has an XML method, use that and
     skip the hard-coded implementation.
     """
-    if hasattr(obj,methodName):
-        try:
-            return True, eval('obj.%s()' % methodName)
-        except Exception:
-            pass
-    return False, None
+    try:
+        return True, getattr(obj,methodName, None)() #This calls the method!
+    except:
+        return False, None
 
 def XsamsSources(Sources):
     """
@@ -314,15 +317,10 @@ def XsamsSources(Sources):
             continue
         G = lambda name: GetValue(name, Source=Source)
         yield '<Source sourceID="B%s-%s"><Authors>\n' % (NODEID, G('SourceID'))
-        authornames = G('SourceAuthorName')
-        try:
-            authornames = eval(authornames)
-        except:
-            pass
-        if not isiterable(authornames):
-            authornames = [authornames]
-        for author in authornames:
-            yield '<Author><Name>%s</Name></Author>\n' % author
+        authornames = makeiter( G('SourceAuthorName') )
+        for authorname in authornames:
+            if authorname:
+                yield '<Author><Name>%s</Name></Author>\n' % authorname
 
         yield """</Authors>
 <Title>%s</Title>
@@ -1610,22 +1608,9 @@ def XsamsMethods(Methods):
         G = lambda name: GetValue(name, Method=Method)
         yield """<Method methodID="M%s-%s">\n""" % (NODEID, G('MethodID'))
 
-        methodsourcerefs = G('MethodSourceRef')
-        if methodsourcerefs != '':
-            # make it always into a list to be looped over, even if
-            # only single entry
-            try:
-                methodsourcerefs = eval(methodsourcerefs)
-            except:
-                pass
-            if not isiterable(methodsourcerefs):
-                methodsourcerefs = [methodsourcerefs]
-            for sourceref in methodsourcerefs:
-                yield '<SourceRef>B%s-%s</SourceRef>\n'% (NODEID, sourceref)
-
+        yield makeSourceRefs( G('MethodSourceRef') )
         yield """<Category>%s</Category>\n<Description>%s</Description>\n"""\
              % (G('MethodCategory'), G('MethodDescription'))
-
         yield '</Method>\n'
     yield '</Methods>\n'
 
