@@ -15,6 +15,7 @@ urlpatterns = patterns('',
 #    (r'^cdms/', include('cdms.urls')),
     (r'^cdms/', include('nodes.cdms.node.urls')),
 #    (r'^cdms/static', include('nodes.cdms.node.urls')),
+    (r'^mycdmsadmin/', include('nodes.cdms.mycdmsadmin.urls')),
 )
 
 if settings.SERVE_STATIC:
@@ -23,5 +24,8 @@ if settings.SERVE_STATIC:
                     (r'^cdms/static/(?P<path>.*)$',
                     django.views.static.serve,
                     {'document_root': settings.BASE_PATH+'/nodes/cdms/static'}),
+                    (r'mycdmsadmin/static/(?P<path>.*)$',
+                    django.views.static.serve,
+                    {'document_root': settings.BASE_PATH+'/nodes/cdms/mycdmsadmin/static'}),                    
                     )
 

@@ -95,18 +95,17 @@ def GetValue(name, **kwargs):
 
     # now ew get the current object
     # from which to get the attributes.
-    # we throw away its name.
-    bla,obj = kwargs.popitem()
-
-    # now we assume name is something like "RadTran.wave"
-    # strip all the prefixes, keep only last part
-    lastname = name.split('.')[-1]
-
-    if lastname.endswith('()'):
-        lastname = lastname[:-2]
-        value = getattr(obj,lastname)()
-    else:
-        value = getattr(obj,lastname,name)
+    objname,obj = kwargs.popitem()
+    exec('%s=obj'%objname)
+    try:
+        # here, the RHS of the RETURNABLES dict is executed.
+        #log.debug(" try eval : " + name)
+        value = eval(name) # this works, if the dict-value is named
+                           # correctly as the query-set attribute
+    except Exception, e:
+        # this catches the case where the dict-value is a string or mistyped.
+        #log.debug('Exception in generators.py: GetValue()')
+        value = name
 
     if value == None:
         # the database returned NULL
