@@ -62,6 +62,7 @@ print "		ChiantiRadTransType CHAR(1), \n";
 print "		AtomSymbol CHAR(8), \n";
 print "		ChiantiRadTransFinalStateIndex INTEGER, \n";
 print "		ChiantiRadTransInitialStateIndex INTEGER, \n";
+print "         wavelength DOUBLE, \n";
 print "		wavelengthexperimental DOUBLE, \n";
 print "		wavelengththeoretical DOUBLE, \n";
 print "		RadTransProbabilityWeightedOscillatorStrength DOUBLE, \n";
@@ -93,11 +94,12 @@ while(<TRANSITIONS>) {
 
     $index = $index + 1;
 	print 'INSERT INTO transitions VALUES(';
-    print $index, ', '; # the primary key
+	print $index, ', '; # the primary key
 	print '"', $transTypeCode, '", '; 
 	print '"', $atomSymbol, '", ';
   	print $finalStateIndex, ', ';
 	print $initialStateIndex, ', ';
+	print bestWavelength($experimentalWavelength, $theoreticalWavelength), ', ';
 	print $experimentalWavelength, ', ';
 	print $theoreticalWavelength, ', ';
 	print $weightedOscilatorStrength, ', ';
@@ -108,6 +110,9 @@ while(<TRANSITIONS>) {
 # In the input, unknowns are denoted by -1. Change these to proper nulls.
 print "UPDATE transitions SET RadTransProbabilityWeightedOscillatorStrength = NULL WHERE RadTransProbabilityWeightedOscillatorStrength < 0.0;\n";
 print "UPDATE transitions SET RadTransProbabilityTransitionProbabilityA = NULL WHERE RadTransProbabilityTransitionProbabilityA < 0.0;\n";
+print "UPDATE transitions SET wavelength = NULL WHERE wavelength <= 0.0;\n";
+print "UPDATE transitions SET wavelengthexperimental = NULL WHERE wavelengthexperimental <= 0.0;\n";
+print "UPDATE transitions SET wavelengththeoretical = NULL WHERE wavelengththeoretical <= 0.0;\n";
 
 
 # Set the foreign key pointing from the states table into the species table.
@@ -132,4 +137,13 @@ sub firstWord {
 	my $sentence = shift;
 	my @words = split /\s+/, $sentence;
         return shift @words;
+}
+
+
+sub bestWavelength {
+	my $experimental = shift @_;
+	my $theoretical = shift @_;
+        return $experimental if $experimental > 0.0;
+	return $theoretical if $theoretical > 0.0;
+	return -1.0;
 }
