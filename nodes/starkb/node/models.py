@@ -73,7 +73,7 @@ class Species(models.Model):
 
 class Dataset(models.Model):
     id = models.IntegerField(primary_key=True)
-    target = models.ForeignKey(Species, db_column='id')
+    target = models.ForeignKey(Species, db_column='id_target')
     has_proton = models.IntegerField()
     filename = models.TextField()
     creation_date = models.DateField()
