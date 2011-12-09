@@ -160,9 +160,7 @@ class Temperature(models.Model):
     temperature = models.IntegerField(unique=True)
     a = models.FloatField(null=True, blank=True)
     class Meta:
-        db_table = u't_temperatures'
-
-        
+        db_table = u't_temperatures'       
 
 
 class TemperatureCollider(models.Model):
@@ -175,23 +173,3 @@ class TemperatureCollider(models.Model):
     d = models.FloatField(null=True, blank=True)
     class Meta:
         db_table = u't_temperatures_colliders'
-        
-class Parameter():
-    def __init__(self):
-        self.environment = None
-        self.value = None
-        self.accurracy = None
-        self.name = None
-        self.comment = None
-        
-class ShiftingParameter(Parameter):
-    def __init__(self):
-        Parameter.__init__(self)
-        
-class LineshapeParameter(Parameter):
-    def __init__(self):
-        Parameter.__init__(self)
-
-
-
-
