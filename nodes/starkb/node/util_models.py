@@ -15,7 +15,9 @@ class Result:
 							'Particles' : None,
 							'Sources':None,
 							'Methods':None,
-							'Functions':None
+							'Functions':None,
+							'CollTrans':None,
+                            'RadCross':None
 							}
 		
 	def addHeaderField(self, key, value):
