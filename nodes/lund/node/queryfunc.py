@@ -41,7 +41,7 @@ def getLifetimeMethods():
         def __init__(self, mid, category):
             self.id = mid
             self.category = category
-    return (Method("MtauEXP", "experiment"), Method("MtauTHEO", "compilation"))
+    return (Method("exp","experiment"),Method("MtauEXP", "experiment"), Method("MtauTHEO", "compilation"))
 
 def setupResults(sql,limit=1000):
     LOG(sql)
@@ -64,14 +64,13 @@ def setupResults(sql,limit=1000):
     methods = getLifetimeMethods()
     #print "atoms:", atoms
     #print "state_filter:", atoms.States.filter(pk="4101-LS-4-1G-14790.790")
-    headerinfo=CaselessDict({\
+    headerinfo={\
             'Truncated':percentage,
             'COUNT-SOURCES':nsources,
             'COUNT-species':nspecies,
             'count-states':nstates,
             'count-radiative':ntranss
-            })
-            
+            }
 
     return {'RadTrans':transs,
             'Atoms':atoms,

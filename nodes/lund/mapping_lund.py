@@ -28,13 +28,14 @@ def bySepNr(linedata, number):
         
 # Setting up filenames
 base = "/home/vamdc/NodeSoftware/nodes/lund/"
+outbase = base + "db_indata/"
 species_list_file = base + 'species.dat'
 publications_file = base + "references.dat"
 transitions_file = base + 'transitions.dat'
-species_out = base + 'species.in'
-publications_out = base + 'references.in'
-states_out = base + 'states.in'
-transitions_out = base + 'transitions.in'
+species_out = outbase + 'species.in'
+publications_out = outbase + 'references.in'
+states_out = outbase + 'states.in'
+transitions_out = outbase + 'transitions.in'
 
 # The mapping itself
 mapping = [

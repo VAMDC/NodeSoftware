@@ -1,0 +1,201 @@
+# This is an auto-generated Django model module.
+# You'll have to do the following manually to clean this up:
+#     * Rearrange models' order
+#     * Make sure each model has one field with primary_key=True
+# Feel free to rename the models, but don't rename db_table values or field names.
+#
+# Also note: You'll have to insert the output of 'django-admin.py sqlcustom [appname]'
+# into your database.
+
+from django.db import models
+
+class TAtomiccomponent(models.Model):
+    id = models.IntegerField(primary_key=True)
+    atomicstateid = models.ForeignKey(TAtomicstate, db_column='atomicstateid')
+    mixingcoefficient = models.FloatField()
+    mixingclassid = models.ForeignKey(TMixingclass, db_column='mixingclassid')
+    termlabel = models.CharField(max_length=30)
+    configuration = models.CharField(max_length=60)
+    class Meta:
+        db_table = u't_atomiccomponent'
+
+class TAtomicion(models.Model):
+    id = models.IntegerField(primary_key=True)
+    isotopeid = models.ForeignKey(TIsotope, db_column='isotopeid')
+    ioncharge = models.IntegerField()
+    inchi = models.CharField(max_length=30)
+    inchikey = models.CharField(max_length=30)
+    isoelectronicsequence = models.CharField(max_length=30)
+    class Meta:
+        db_table = u't_atomicion'
+
+class TAtomicstate(models.Model):
+    id = models.IntegerField(primary_key=True)
+    versionid = models.ForeignKey(TVersion, db_column='versionid')
+    sourcefileid = models.IntegerField()
+    totalangularmomentum = models.FloatField()
+    lifetime = models.FloatField()
+    lifetimeunitid = models.ForeignKey(TUnit, db_column='lifetimeunitid')
+    stateenergy = models.FloatField()
+    stateenergyunitid = models.ForeignKey(TUnit, db_column='stateenergyunitid')
+    ionizationenergy = models.FloatField(null=True, blank=True)
+    ionizationenergyunitid = models.ForeignKey(TUnit, db_column='ionizationenergyunitid')
+    statisticalweight = models.IntegerField()
+    statisticalweightunitid = models.ForeignKey(TUnit, db_column='statisticalweightunitid')
+    parityid = models.ForeignKey(TParity, db_column='parityid')
+    xdata = models.TextField()
+    ydata = models.TextField()
+    crosssectionunitid = models.ForeignKey(TUnit, db_column='crosssectionunitid')
+    class Meta:
+        db_table = u't_atomicstate'
+
+class TAuthor(models.Model):
+    id = models.IntegerField(primary_key=True)
+    firstname = models.CharField(unique=True, max_length=60)
+    lastname = models.CharField(unique=True, max_length=60)
+    class Meta:
+        db_table = u't_author'
+
+class TAuthorsource(models.Model):
+    authorid = models.ForeignKey(TAuthor, db_column='authorid')
+    sourceid = models.ForeignKey(TSource, db_column='sourceid')
+    rank = models.IntegerField()
+    class Meta:
+        db_table = u't_authorsource'
+
+class TChemicalelement(models.Model):
+    id = models.IntegerField(primary_key=True)
+    elementsymbol = models.CharField(unique=True, max_length=9)
+    nuclearcharge = models.IntegerField(unique=True)
+    class Meta:
+        db_table = u't_chemicalelement'
+
+class TCrosssectioncoordinate(models.Model):
+    id = models.IntegerField(primary_key=True)
+    atomicstateid = models.ForeignKey(TAtomicstate, db_column='atomicstateid')
+    x = models.FloatField(unique=True)
+    xunitid = models.ForeignKey(TUnit, db_column='xunitid')
+    y = models.FloatField(unique=True)
+    yunitid = models.ForeignKey(TUnit, db_column='yunitid')
+    class Meta:
+        db_table = u't_crosssectioncoordinate'
+
+class TDataset(models.Model):
+    id = models.IntegerField(primary_key=True)
+    creationdate = models.DateField()
+    isrecommended = models.IntegerField()
+    class Meta:
+        db_table = u't_dataset'
+
+class TDatasetversion(models.Model):
+    datasetid = models.ForeignKey(TDataset, db_column='datasetid')
+    versionid = models.ForeignKey(TVersion, db_column='versionid')
+    class Meta:
+        db_table = u't_datasetversion'
+
+class TIsotope(models.Model):
+    id = models.IntegerField(primary_key=True)
+    chemicalelementid = models.ForeignKey(TChemicalelement, db_column='chemicalelementid')
+    massnumber = models.IntegerField(unique=True)
+    mass = models.FloatField()
+    massunitid = models.ForeignKey(TUnit, db_column='massunitid')
+    class Meta:
+        db_table = u't_isotope'
+
+class TLscoupling(models.Model):
+    id = models.IntegerField(primary_key=True)
+    atomiccomponentid = models.ForeignKey(TAtomiccomponent, db_column='atomiccomponentid')
+    l = models.IntegerField()
+    s = models.FloatField()
+    multiplicity = models.IntegerField()
+    class Meta:
+        db_table = u't_lscoupling'
+
+class TMixingclass(models.Model):
+    id = models.IntegerField(primary_key=True)
+    value = models.CharField(unique=True, max_length=30)
+    class Meta:
+        db_table = u't_mixingclass'
+
+class TParity(models.Model):
+    id = models.IntegerField(primary_key=True)
+    value = models.CharField(unique=True, max_length=30)
+    class Meta:
+        db_table = u't_parity'
+
+class TRadiativetransition(models.Model):
+    id = models.IntegerField(primary_key=True)
+    versionid = models.ForeignKey(TVersion, db_column='versionid')
+    weightedoscillatorstrength = models.FloatField()
+    transitionprobability = models.IntegerField()
+    wavelength = models.FloatField()
+    wavelengthunitid = models.ForeignKey(TUnit, db_column='wavelengthunitid')
+    initialatomicstateid = models.ForeignKey(TAtomicstate, db_column='initialatomicstateid')
+    finalatomicstateid = models.ForeignKey(TAtomicstate, db_column='finalatomicstateid')
+    class Meta:
+        db_table = u't_radiativetransition'
+
+class TSource(models.Model):
+    id = models.IntegerField(primary_key=True)
+    sourcecategoryid = models.ForeignKey(TSourcecategory, db_column='sourcecategoryid')
+    title = models.CharField(max_length=450)
+    year = models.IntegerField()
+    url = models.CharField(max_length=450, blank=True)
+    class Meta:
+        db_table = u't_source'
+
+class TSourcecategory(models.Model):
+    id = models.IntegerField(primary_key=True)
+    value = models.CharField(unique=True, max_length=45)
+    class Meta:
+        db_table = u't_sourcecategory'
+
+class TUnit(models.Model):
+    id = models.IntegerField(primary_key=True)
+    value = models.CharField(unique=True, max_length=60)
+    class Meta:
+        db_table = u't_unit'
+
+class TVersion(models.Model):
+    id = models.IntegerField(primary_key=True)
+    atomicionid = models.ForeignKey(TAtomicion, db_column='atomicionid')
+    radiativetransitionsourceid = models.ForeignKey(TSource, null=True, db_column='radiativetransitionsourceid', blank=True)
+    crosssectionsourceid = models.ForeignKey(TSource, null=True, db_column='crosssectionsourceid', blank=True)
+    ionversion = models.IntegerField(unique=True)
+    creationdate = models.DateField()
+    class Meta:
+        db_table = u't_version'
+
+class VAtomicion(models.Model):
+    id = models.IntegerField()
+    elementsymbol = models.CharField(max_length=9)
+    nuclearcharge = models.IntegerField()
+    massnumber = models.IntegerField()
+    mass = models.FloatField()
+    massunit = models.CharField(max_length=60)
+    ioncharge = models.IntegerField()
+    inchi = models.CharField(max_length=30)
+    inchikey = models.CharField(max_length=30)
+    isoelectronicsequence = models.CharField(max_length=30)
+    class Meta:
+        db_table = u'v_atomicion'
+
+class VVersion(models.Model):
+    id = models.IntegerField()
+    radiativetransitionsourceid = models.IntegerField(null=True, blank=True)
+    crosssectionsourceid = models.IntegerField(null=True, blank=True)
+    ionversion = models.IntegerField()
+    creationdate = models.DateField()
+    elementsymbol = models.CharField(max_length=9)
+    nuclearcharge = models.IntegerField()
+    massnumber = models.IntegerField()
+    mass = models.FloatField()
+    massunit = models.CharField(max_length=60)
+    ioncharge = models.IntegerField()
+    inchi = models.CharField(max_length=30)
+    inchikey = models.CharField(max_length=30)
+    isoelectronicsequence = models.CharField(max_length=30)
+    atomicionid = models.IntegerField()
+    class Meta:
+        db_table = u'v_version'
+

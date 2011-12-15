@@ -15,15 +15,16 @@ To start the node, both gunicorn and nginx needs to be started.
 
 From nodes/lund, run
 
-gunicorn_django -c gunicorn.conf
+gunicorn_django -c gunicorn.conf node
 
 followed by 
 
-sudo /etc/init.d nginx start
+sudo /etc/init.d/nginx start
 
 - Updating the node software
 ----------------------------
 
+If you did changes, first: 
 git commit -a
 <write commit message>
 
@@ -48,8 +49,14 @@ cd ../nodes/lund
 
 mysql -D lund -u lund -p < load.sql
 
-Restart the server: 
+Start/Restart the server: 
+-------------------------
+
+Run ./restart_server.
+
+Or manually: 
 
 killall gunicorn 
-
-gunicorn -c gunicorn.conf
+gunicorn_django -c gunicorn.conf
+sudo /etc/init.d/nginx restart (probably not necessary)
+sudo /etc/init.d/nginx restart

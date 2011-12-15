@@ -14,6 +14,7 @@ import sys
 from itertools import chain
 from django.conf import settings
 from vamdctap.sqlparse import where2q
+from django.db.models import Q
 
 import dictionaries
 import models # this imports models.py from the same directory as this file
@@ -182,13 +183,13 @@ def setupResults(sql, limit=1000):
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
-    headerinfo=CaselessDict({\
+    headerinfo={\
             'Truncated':percentage,
             'COUNT-SOURCES':nsources,
             'COUNT-species':nspecies,
             'count-states':nstates,
             'count-radiative':ntranss
-            })
+            }
             
     # Return the data. The keynames are standardized. 
     return {'RadTrans':transs,

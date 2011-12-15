@@ -1,3 +1,17 @@
+
+This document covers the **relase 11.10beta** of the NodeSoftware.
+
+Links to HTML-versions:
+
+* Last release: http://readthedocs.org/docs/vamdc-nodesoftware/en/release/
+* Latest development: http://readthedocs.org/docs/vamdc-nodesoftware/en/latest/
+
+Links to PDF-versions:
+
+* Last release: http://media.readthedocs.org/pdf/vamdc-nodesoftware/release/vamdc-nodesoftware.pdf 
+* Latest development: http://media.readthedocs.org/pdf/vamdc-nodesoftware/latest/vamdc-nodesoftware.pdf
+
+
 .. _intro:
 
 Introduction
@@ -13,9 +27,10 @@ infrastructure project and you can read all about it on http://vamdc.eu/
 VAMDC nodes
 -------------
 
-A "node" within VAMDC is a data service that offers its data using the 
-standards and protocols defined by the VAMDC. They are RESTful HTTP 
-services, the specification of which can be found in the documentation for the VAMDC standards: http://vamdc.org/documents/standards/ 
+A "node" within VAMDC is a data service that offers its data using the
+standards and protocols defined by the VAMDC. They are web services with a
+simple API, the specification of which can be found in the documentation for
+the VAMDC standards: http://vamdc.org/documents/standards/ 
 
 The scope of this document is to serve as documentation for the 
 reference implementation of such a service. The goal of this 
