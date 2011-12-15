@@ -394,7 +394,7 @@ def makeTermType(tag, keyword, G):
 
     l = G("%sLSL" % keyword)
     lsym = G("%sLSLSymbol" % keyword)
-    s = G("%sS" % keyword)
+    s = G("%sLSS" % keyword)
     mult = G("%sLSMultiplicity" % keyword)
     senior = G("%sLSSeniority" % keyword)
 
