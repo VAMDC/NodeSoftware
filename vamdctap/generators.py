@@ -1209,7 +1209,7 @@ def XsamsRadCross(RadCross):
         group = G("CrossSectionGroup")
         if group:
             dic["groupLabel"] = "%s" % group
-        yield makePrimaryType("CrossSection", "CrossSection", G, extraAttr=dic)
+        yield makePrimaryType("AbsorptionCrossSection", "CrossSection", G, extraAttr=dic)
         yield "<Description>%s</Description>" % G("CrossSectionDescription")
 
         yield makeDataSeriesType("X", "CrossSectionX", G)
