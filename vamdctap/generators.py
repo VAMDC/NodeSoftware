@@ -121,9 +121,15 @@ def GetValue(name, **kwargs):
 
 def makeOptionalTag(tagname, keyword, G):
     content = G(keyword)
-    if content:
+    if not content:
+        return ''
+    elif isiterable(content):
+        s = []
+        for c in content:
+            s.append( '<%s>%s</%s>'%(tagname,content,tagname) )
+        return ''.join(s)
+    else:
         return '<%s>%s</%s>'%(tagname,content,tagname)
-    else: return ''
 
 def makeSourceRefs(refs):
     """
@@ -1286,15 +1292,9 @@ def XsamsCollTrans(CollTrans):
         yield makePrimaryType("CollisionalTransition", "Collision", G)
 
         yield "<ProcessClass>"
-        udef = G("CollisionUserDefinition")
-        code = G("CollisionCode")
-        iaea = G("CollisionIAEACode")
-        if udef:
-            yield "<UserDefinition>%s</UserDefinition>" % udef
-        if code:
-            yield "<Code>%s</Code>" % code
-        if iaea:
-            yield "<IAEACode>%s</IAEACode>" % iaea
+        makeOptionalTag('UserDefinition', 'CollisionUserDefinition',G)
+        makeOptionalTag('Code','CollisionCode',G)
+        makeOptionalTag('IAEACode','CollisionIAEACode',G)
         yield "</ProcessClass>"
 
         if hasattr(CollTran, "Reactants"):
