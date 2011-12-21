@@ -939,7 +939,7 @@ def XsamsParticles(Particles):
             yield "<ParticleCharge>%s</ParticleCharge>" % charge
         yield makeDataType("ParticleMass", "ParticleMass", G)
         spin = G("ParticleSpin")
-        if spin : 
+        if spin:
             yield "<ParticleSpin>%s</ParticleSpin>" % spin
         polarization = G("ParticlePolarization")
         if polarization  :
@@ -957,7 +957,7 @@ def makeBroadeningType(G, name='Natural'):
     """
     Create the Broadening tag
     """
-    
+
     lsparams = makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter' % name, G)
     if not lsparams:
         return ''
@@ -1078,10 +1078,13 @@ def XsamsRadTrans(RadTrans):
             continue
 
         G = lambda name: GetValue(name, RadTran=RadTran)
-        yield '<RadiativeTransition>'
-        comm = G('RadTransComment')
-        if comm:
-            yield '<Comments>%s</Comments>' % comm
+        group = G('RadTransGroup')
+        proc = G('RadTransProcess')
+        attrs=''
+        if group: attrs += ' groupLabel="%s"'%group
+        if proc: attrs += ' process="%s"'%proc
+        yield '<RadiativeTransition id="%s"%s>'%(G('RadTransID'),attrs)
+        makeOptionalTag('Comments','RadTransComment',G)
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
         yield makeDataType('Wavelength', 'RadTransWavelength', G)
@@ -1199,13 +1202,13 @@ def XsamsRadCross(RadCross):
         # create header
 
         G = lambda name: GetValue(name, RadCros=RadCros)
-        dic = {}
+        dic = {'id':"%s-%s" % (NODEID, G("CrossSectionID")) }
         envRef = G("CrossSectionEnvironment")
         if envRef:
             dic["envRef"] = "E%s-%s" % (NODEID, envRef)
-        ID = G("CrossSectionID")
-        if ID:
-            dic["id": "%s-%s" % (NODEID, ID)]
+        group = G("CrossSectionGroup")
+        if group:
+            dic["groupLabel"] = "%s" % group
         yield makePrimaryType("CrossSection", "CrossSection", G, extraAttr=dic)
         yield "<Description>%s</Description>" % G("CrossSectionDescription")
 
@@ -1289,7 +1292,11 @@ def XsamsCollTrans(CollTrans):
 
         # create header
         G = lambda name: GetValue(name, CollTran=CollTran)
-        yield makePrimaryType("CollisionalTransition", "Collision", G)
+        dic = {'id':"%s-%s" % (NODEID, G("CollisionID")) }
+        group = G("CollisionGroup")
+        if group:
+            dic["groupLabel"] = "%s" % group
+        yield makePrimaryType("CollisionalTransition", "Collision", G, extraAttr=dic)
 
         yield "<ProcessClass>"
         makeOptionalTag('UserDefinition', 'CollisionUserDefinition',G)
@@ -1353,7 +1360,6 @@ def XsamsCollTrans(CollTrans):
                 yield "</Product>"
 
         yield makeDataType("Threshold", "CollisionThreshold", G)
-        
 
         if hasattr(CollTran, "DataSets"):
             yield "<DataSets>"
@@ -1504,7 +1510,14 @@ def XsamsNonRadTrans(NonRadTrans):
             continue
 
         G = lambda name: GetValue(name, NonRadTran=NonRadTran)
-        yield makePrimaryType("NonRadiativeTransition", "NonRadTran", G)
+        dic = {'id':"%s-%s" % (NODEID, G("NonRadTranID")) }
+        group = G("NonRadTranGroup")
+        if group:
+            dic["groupLabel"] = "%s" % group
+        proc = G("NonRadTranProcess")
+        if proc:
+            dic["process"] = "%s" % proc
+        yield makePrimaryType("NonRadiativeTransition", "NonRadTran", G, extraAttr=dic)
 
         yield "<InitialStateRef>S%s-%s</InitialStateRef>" % (NODEID, G("NonRadTranInitialState"))
         fstate = G("NonRadTranFinalState")
