@@ -20,7 +20,7 @@ except:
 try:
     XSAMS_VERSION = RETURNABLES['XSAMSVersion']
 except:
-    XSAMS_VERSION = '0.2'
+    XSAMS_VERSION = '0.3'
 try:
     SCHEMA_LOCATION = RETURNABLES['SchemaLocation']
 except:
@@ -165,7 +165,7 @@ def makePartitionfunc(keyword, G):
 
     return string
 
-def makePrimaryType(tagname, keyword, G, extraAttr=None):
+def makePrimaryType(tagname, keyword, G, extraAttr={}):
     """
     Build the Primary-type base tags. Note that this method does NOT
     close the tag, </tagname> must be added manually by the calling function.
@@ -179,9 +179,8 @@ def makePrimaryType(tagname, keyword, G, extraAttr=None):
     string = "\n<%s" % tagname
     if method:
         string += ' methodRef="M%s-%s"' % (NODEID, method)
-    if extraAttr:
-        for k, v in extraAttr.items():
-            string += ' %s="%s"'% (k, G(v))
+    for k, v in extraAttr.items():
+        string += ' %s="%s"'% (k, G(v))
     string += '>'
     if comment:
         string += '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1]
@@ -189,7 +188,7 @@ def makePrimaryType(tagname, keyword, G, extraAttr=None):
 
     return string
 
-def makeRepeatedDataType(tagname, keyword, G):
+def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     """
     Similar to makeDataType above, but allows the result of G()
     to be iterable and adds the name-attribute. If the
@@ -214,9 +213,15 @@ def makeRepeatedDataType(tagname, keyword, G):
     l = len(value)
     value, unit, method, comment, acc, refs, name = [ x*l if len(x)<l else x for x in [value, unit, method, comment, acc, refs, name]]
 
+    for k, v in extraAttr.items():
+        if not isiterable(v): v=[v]*l
+        elif len(v)<l: v*=l
+
     string = ''
     for i, val in enumerate(value):
         string += '\n<%s' % tagname
+        for k, v in extraAttr.items():
+            if v[i]: string += ' %s="%s"'%(k,v[i])
         if name[i]:
             string += ' name="%s"' % name[i]
         if method[i]:
@@ -235,7 +240,7 @@ def makeRepeatedDataType(tagname, keyword, G):
 # an alias for compatibility reasons
 makeNamedDataType = makeRepeatedDataType
 
-def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
+def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     """
     This is for treating the case where a keyword corresponds to a
     DataType in the schema which can have units, comment, sources etc.
@@ -259,9 +264,8 @@ def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
     result = ['\n<%s' % tagname]
     if method:
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
-    if extraAttr:
-        for k, v in extraAttr.items():
-            result.append( ' %s="%s"'% (k, G(v)) )
+    for k, v in extraAttr.items():
+        result.append( ' %s="%s"'% (k, G(v)) )
     result.append( '>' )
 
     if comment:
@@ -272,9 +276,8 @@ def makeDataType(tagname, keyword, G, extraAttr=None, extraElem=None):
         result.append( '<Accuracy><Statistical>%s</Statistical></Accuracy>' % acc )
     result.append( '</%s>' % tagname )
 
-    if extraElem:
-        for k, v in extraElem. items():
-            result.append( '<%s>%s</%s>' % (k, G(v), k) )
+    for k, v in extraElem.items():
+        result.append( '<%s>%s</%s>' % (k, G(v), k) )
 
     return ''.join(result)
 
@@ -586,10 +589,7 @@ def XsamsAtoms(Atoms):
             yield makeDataType('IonizationEnergy', 'AtomStateIonizationEnergy', G)
             yield makeDataType('LandeFactor', 'AtomStateLandeFactor', G)
             yield makeDataType('QuantumDefect', 'AtomStateQuantumDefect', G)
-            if G('AtomStateLifeTime'):
-                # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
-                # the decay attr is a string, either: 'total', 'totalRadiative' or 'totalNonRadiative'
-                yield makeDataType('LifeTime', 'AtomStateLifeTime', G, extraAttr={"decay":"AtomStateLifeTimeDecay"})
+            yield makeRepeatedDataType('LifeTime', 'AtomStateLifeTime', G, extraAttr={"decay":"AtomStateLifeTimeDecay"})
             yield makeDataType('Polarizability', 'AtomStatePolarizability', G)
             statweig = G('AtomStateStatisticalWeight')
             if statweig:
