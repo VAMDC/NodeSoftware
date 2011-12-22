@@ -333,10 +333,10 @@ def XsamsSources(Sources):
         yield """</Authors>
 <Title>%s</Title>
 <Category>%s</Category>
-<Year>%s</Year>
-<SourceName>%s</SourceName>""" % ( G('SourceTitle'), G('SourceCategory'),
-                                   G('SourceYear'), G('SourceName') )
+<Year>%s</Year>""" % ( G('SourceTitle'), G('SourceCategory'),
+                       G('SourceYear') )
 
+        yield makeOptionalTag('SourceName','SourceName',G)
         yield makeOptionalTag('Volume','SourceVolume',G)
         yield makeOptionalTag('PageBegin','SourcePageBegin',G)
         yield makeOptionalTag('PageEnd','SourcePageEnd',G)
@@ -1093,12 +1093,12 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('Energy', 'RadTransEnergy', G)
         yield '</EnergyWavelength>'
 
-        initial = G('RadTransInitialStateRef')
-        if initial:
-            yield '<InitialStateRef>S%s-%s</InitialStateRef>\n' % (NODEID, initial)
-        final = G('RadTransFinalStateRef')
-        if final:
-            yield '<FinalStateRef>S%s-%s</FinalStateRef>\n' % (NODEID, final)
+        lower = G('RadTransLowerStateRef')
+        if lower:
+            yield '<LowerStateRef>S%s-%s</LowerStateRef>\n' % (NODEID, lower)
+        upper = G('RadTransUpperStateRef')
+        if upper:
+            yield '<UpperStateRef>S%s-%s</UpperStateRef>\n' % (NODEID, upper)
         species = G('RadTransSpeciesRef')
         if species:
             yield '<SpeciesRef>X%s-%s</SpeciesRef>\n' % (NODEID, species)
@@ -1145,13 +1145,13 @@ def makeDataSeriesType(tagname, keyword, G):
 
     dlist = makeiter(G("%s" % keyword))
     if dlist:
-        result.append("<DataList n='%s' units='%s'>%s</DataList>" % (G("%sN" % keyword), G("%sUnits" % keyword), " ".join(dlist)))
+        result.append("<DataList count='%s' units='%s'>%s</DataList>" % (G("%sN" % keyword), G("%sUnits" % keyword), " ".join(dlist)))
     csec = G("%sLinearA0" % keyword) and G("%sLinearA1" % keyword)
     if csec:
-        dic = {"a0":G("%sLinearA0" % keyword), "a1":G("%sLinearA1" % keyword)}
-        nx = G("%sLinearN" % keyword)
+        dic = {"initial":G("%sLinearInitial" % keyword), "increment":G("%sLinearIncrement" % keyword)}
+        nx = G("%sLinearCount" % keyword)
         if nx:
-            dic["n"] = nx
+            dic["count"] = nx
         xunits = G("%sLinearUnits" % keyword)
         if xunits:
             dic["units"] = xunits
@@ -1455,7 +1455,7 @@ def XsamsCollTrans(CollTrans):
                         xparameters=GDT("CollisionTabulatedDataXParameter")
 
                         yield "<X units='%s' parameter='%s'>" % (xunits, xparameters)
-                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
+                        yield "<DataList count='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
                         yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXError"))))
                         yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXNegativeError"))))
                         yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXPositiveError"))))
@@ -1468,7 +1468,7 @@ def XsamsCollTrans(CollTrans):
                         yparameters=GDT("CollisionTabulatedDataYParameter")
 
                         yield "<Y units='%s' parameter='%s'>" % (yunits, yparameters)
-                        yield "<DataList n='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
+                        yield "<DataList count='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
                         yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYError"))))
                         yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYNegativeError"))))
                         yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYPositiveError"))))
