@@ -212,10 +212,10 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     refs = G(keyword + 'Ref')
     name = G(keyword + 'Name')
 
-# make everything iterable
+    # make everything iterable
     value, unit, method, comment, acc, refs, name = [[x] if not isiterable(x) else x  for x in [value, unit, method, comment, acc, refs, name]]
 
-# if some are shorter than the value list, replicate them
+    # if some are shorter than the value list, replicate them
     l = len(value)
     value, unit, method, comment, acc, refs, name = [ x*l if len(x)<l else x for x in [value, unit, method, comment, acc, refs, name]]
 
@@ -246,6 +246,51 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
 # an alias for compatibility reasons
 makeNamedDataType = makeRepeatedDataType
 
+def makeAccuracy(keyword, G):
+    """
+    build the elements for accuracy that belong
+    to DataType.
+    """
+    acc = G(keyword + 'Accuracy')
+    if not acc: return ''
+    acc_conf = makeiter( G(keyword + 'AccuracyConfidence') )
+    acc_rel = makeiter( G(keyword + 'AccuracyRelative') )
+    acc_typ = makeiter( G(keyword + 'AccuracyType') )
+
+    result = []
+    for i,ac in enumerate( makeiter(acc) ):
+        result.append('<Accuracy')
+        if acc_conf[i]: result.append( ' confidenceInterval="%s"'%acc_conf )
+        if acc_typ[i]: result.append( ' type="%s"'%acc_typ )
+        if acc_rel[i]: result.append( ' relative="true"')
+        result.append( '>%s</Accuracy>'%ac )
+
+    return ''.join(result)
+
+def makeEvaluation(keyword, G):
+    """
+    build the elements for evaluation that belong
+    to DataType.
+    """
+    evs = G(keyword + 'Eval')
+    if not evs: return ''
+    ev_meth = makeiter( G(keyword + 'EvalMethod') )
+    ev_reco = makeiter( G(keyword + 'EvalRecommended') )
+    ev_refs = G(keyword + 'EvalRefs')
+    ev_comm = G(keyword + 'EvalComment')
+
+    result = []
+    for i,ev in enumerate( makeiter(evs) ):
+        result.append('<Evaluation')
+        if ev_meth[i]: result.append( ' methodRef="%s"'%ev_meth )
+        if ev_reco[i]: result.append( ' recommended="true"' )
+        result.append( '>' )
+        result.append( makeSourceRefs(ev_refs) )
+        if ev_comm: result.append('<Comments>%s</Comments>'%ev_comm)
+        result.append('<Quality>%s</Quality></Evaluation>'%ev)
+
+    return ''.join(result)
+
 def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     """
     This is for treating the case where a keyword corresponds to a
@@ -264,7 +309,6 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     unit = G(keyword + 'Unit')
     method = G(keyword + 'Method')
     comment = G(keyword + 'Comment')
-    acc = G(keyword + 'Accuracy')
     refs = G(keyword + 'Ref')
 
     result = ['\n<%s' % tagname]
@@ -278,8 +322,9 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
         result.append( '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1] )
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
-    if acc:
-        result.append( '<Accuracy><Statistical>%s</Statistical></Accuracy>' % acc )
+
+    result.append( makeAccuracy( tagname, G) )
+    result.append( makeEvaluation( tagname, G) )
     result.append( '</%s>' % tagname )
 
     for k, v in extraElem.items():
@@ -340,6 +385,7 @@ def XsamsSources(Sources):
         yield makeOptionalTag('Volume','SourceVolume',G)
         yield makeOptionalTag('PageBegin','SourcePageBegin',G)
         yield makeOptionalTag('PageEnd','SourcePageEnd',G)
+        yield makeOptionalTag('ArticleNumber','SourceArticleNumber',G)
         yield makeOptionalTag('UniformResourceIdentifier','SourceURI',G)
         yield makeOptionalTag('DigitalObjectIdentifier','SourceDOI',G)
         yield makeOptionalTag('Comments','SourceComments',G)
@@ -1110,9 +1156,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('WeightedOscillatorStrength', 'RadTransProbabilityWeightedOscillatorStrength', G)
         yield makeDataType('Log10WeightedOscillatorStrength', 'RadTransProbabilityLog10WeightedOscillatorStrength', G)
         yield makeDataType('IdealisedIntensity', 'RadTransProbabilityIdealisedIntensity', G)
-        multipole = G('RadTransProbabilityMultipole')
-        if multipole:
-            yield '<Multipole>%s</Multipole>' % multipole
+        makeOptionalTag('TransitionKind','RadTransProbabilityKind',G)
         yield makeDataType('EffectiveLandeFactor', 'RadTransEffectiveLandeFactor', G)
         yield '</Probability>\n'
 
