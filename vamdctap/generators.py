@@ -276,7 +276,7 @@ def makeEvaluation(keyword, G):
     if not evs: return ''
     ev_meth = makeiter( G(keyword + 'EvalMethod') )
     ev_reco = makeiter( G(keyword + 'EvalRecommended') )
-    ev_refs = G(keyword + 'EvalRefs')
+    ev_refs = G(keyword + 'EvalRef')
     ev_comm = G(keyword + 'EvalComment')
 
     result = []
@@ -1027,7 +1027,7 @@ def makeBroadeningType(G, name='Natural'):
     s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
     s += lsparams
     s += '</Lineshape>'
-    s += '</Broadening>'
+    s += '</Broadening>\n'
     return s
 
 def XsamsRadTranBroadening(G):
@@ -1038,15 +1038,15 @@ def XsamsRadTranBroadening(G):
     """
     s=[]
     broadenings = ['Natural', 'Instrument', 'Doppler', 'Pressure']
-    for broadening in broadenings : 
+    for broadening in broadenings :
         if hasattr(G('RadTransBroadening'+broadening), "Broadenings"):
             for Broadening in  makeiter(G('RadTransBroadening'+broadening).Broadenings):
                 GB = lambda name: GetValue(name, Broadening=Broadening)
                 s.append( makeBroadeningType(GB, name=broadening) )
         else:
             s.append( makeBroadeningType(G, name=broadening) )
-    return '\n'.join(s)
-    
+    return ''.join(s)
+
 
 def XsamsRadTranShifting(RadTran, G):
     """
@@ -1129,7 +1129,7 @@ def XsamsRadTrans(RadTrans):
         attrs=''
         if group: attrs += ' groupLabel="%s"'%group
         if proc: attrs += ' process="%s"'%proc
-        yield '<RadiativeTransition id="%s"%s>'%(G('RadTransID'),attrs)
+        yield '<RadiativeTransition id="P%s-%s"%s>'%(NODEID,G('RadTransID'),attrs)
         makeOptionalTag('Comments','RadTransComment',G)
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
@@ -1139,12 +1139,12 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('Energy', 'RadTransEnergy', G)
         yield '</EnergyWavelength>'
 
-        lower = G('RadTransLowerStateRef')
-        if lower:
-            yield '<LowerStateRef>S%s-%s</LowerStateRef>\n' % (NODEID, lower)
         upper = G('RadTransUpperStateRef')
         if upper:
             yield '<UpperStateRef>S%s-%s</UpperStateRef>\n' % (NODEID, upper)
+        lower = G('RadTransLowerStateRef')
+        if lower:
+            yield '<LowerStateRef>S%s-%s</LowerStateRef>\n' % (NODEID, lower)
         species = G('RadTransSpeciesRef')
         if species:
             yield '<SpeciesRef>X%s-%s</SpeciesRef>\n' % (NODEID, species)
