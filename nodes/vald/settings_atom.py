@@ -18,9 +18,14 @@ DATABASES = {
   },
 }
 
+EXAMPLE_QUERIES = [\
+    "SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4000.01",
+    "SELECT ALL WHERE AtomSymbol = 'U'",
+    "SELECT ALL WHERE ( AtomSymbol = 'Mg' ) AND (RadTransWavelength >= 5100 AND RadTransWavelength <= 5200)",
+    "SELECT SPECIES",
+    ]
+
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
-EXAMPLE_QUERIES = ['SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4005',
-                   'SELECT ALL WHERE AtomSymbol = U']
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
 
 LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode.log'

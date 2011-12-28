@@ -128,8 +128,12 @@ def checkQuery(postvars):
         except ValueError:
             Error = "Lower Frequency is not a number "
             freqfrom = 0
-            
-        tapxsams += " AND RadTransFrequency > %lf " % freqfrom
+
+        if (freqfrom>0):
+            angstromupper =  2.99792458E12 / freqfrom
+            tapxsams += " AND RadTransWavelength < %lf " % angstromupper
+
+        #tapxsams += " AND RadTransFrequency > %lf " % freqfrom
 
     if 'T_SEARCH_FREQ_TO' in postvars :
         try:
@@ -138,15 +142,20 @@ def checkQuery(postvars):
             Error = "Lower Frequency is not a number "
             freqto = 0
 
-        tapxsams += " AND RadTransFrequency < %s " % freqto
+        if (freqto>0):
+            angstromlower = 2.99792458E12 / freqto            
+            tapxsams += " AND RadTransWavelength > %lf " % angstromlower
+
+        #tapxsams += " AND RadTransFrequency < %s " % freqto
 
     if ('T_SEARCH_FREQ_FROM' not in postvars) & ('T_SEARCH_FREQ_TO' not in postvars):
         htmlcode += "<a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">"
         htmlcode += "<p style='background-color:#FFFF99' class='important'>FREQUENCY RANGE: not specified => no restrictions</p></a>"
                                                                                                                                                                            
     # CHECK Intensity
-    if 'T_SEARCH_INT' in postvars:
+    if ('T_SEARCH_INT' in postvars) & (postvars['T_SEARCH_INT']>-10):
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Intensity (lg-units) > %s </a></li>" % postvars['T_SEARCH_INT']
+       # tapxsams += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
     else:
         htmlcode += """<a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\"> 
                        <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
@@ -200,9 +209,12 @@ def applyStylesheet(inurl, xsl = None):
     # from django.http import HttpResponseRedirect, HttpResponse
     # from django.forms import Form,FileField,URLField,TextInput
     # from django.core.exceptions import ValidationError
-    
+    from django.conf import settings
     from lxml import etree as e
-    xsl=e.XSLT(e.parse(open('/home/endres/Projects/vamdc/nodes/cdms/node/convertXSAMS2html.xslt')))
+    if xsl:
+        xsl=e.XSLT(e.parse(open(xsl)))
+    else:
+        xsl=e.XSLT(e.parse(open('/home/endres/Projects/vamdc/nodes/cdms/node/convertXSAMS2html.xslt')))
 
     from urllib2 import urlopen
 
@@ -210,8 +222,26 @@ def applyStylesheet(inurl, xsl = None):
 
     except Exception,err:
         raise ValidationError('Could not open given URL: %s'%err)
+
+    # Save XML-File to temporary directory
+    filename = settings.TMPDIR+"/xsams_download.xsams"
+
+    for row in data.info().headers:
+      p = row.find("filename=")
+      if p>-1:
+        filename = settings.TMPDIR+"/"+row[p+9:].rstrip()
+
+    local_file = open(filename, "w")
+#    for row in data.info().headers:
+#        local_file.write(row)
+#    local_file.write(str(data.info().headers))
+
+
+
+    local_file.write(data.read())
+    local_file.close()
     
-    try: xml=e.parse(data)
+    try: xml=e.parse(filename)
     except Exception,err:
         raise ValidationError('Could not parse XML file: %s'%err)
 
@@ -274,20 +304,28 @@ def doHeadRequest(url, timeout = 20):
 
     return vamdccounts
     
-def getNodeStatistic(baseurl, inchikey):
+def getNodeStatistic(baseurl, inchikey, url = None):
     """
     Queries the VAMDC databases via the given baseurl and the inchikey.
     Via a HEAD request statistics is obtained from the result
 
     Returns: VAMDC statistic as htmlcode (for ajax Requests)
     """
-    query = "sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT+All+WHERE++MoleculeInchiKey='%s'" % inchikey
-    vamdccounts = doHeadRequest(baseurl.rstrip()+query)
+    if not url:
+        query = "sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT+All+WHERE++MoleculeInchiKey='%s'" % inchikey
+        url = baseurl.rstrip()+query
+
+    vamdccounts = doHeadRequest(url)
 
     response = "<ul>"
     if len(vamdccounts)>0:
+        #response += "<a href='"+url+"'>"
         for item in vamdccounts:
             response += "<li>%s: %s " % item
+            #response += "</a>"
+        #response += "<a onclick=\"$('#queryresult').html('Processing ...');docShowSubpage('form_result');ajaxQuery('ajaxQuery','"+url+"')\"> Show Data </a>"
+        response += "<li><INPUT TYPE=\"button\" NAME=\"T_SHOW\" ONCLICK=\"$('#queryresult').html('Processing ...');docShowSubpage('form_result');ajaxQuery('ajaxQuery','"+url+"')\" VALUE = \"Show Data\" >"
+        response += "<INPUT TYPE=\"button\" NAME=\"T_SHOW\" ONCLICK=\""+url+"\" VALUE = \"Download Data\" ></li>"
     else:
         response += "<li>Nothing found"
 
