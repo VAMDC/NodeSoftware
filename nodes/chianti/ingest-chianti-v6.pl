@@ -13,6 +13,7 @@ print "		AtomStateL FLOAT, \n";
 print "		AtomStateTotalAngMom FLOAT, \n";
 print "		AtomStateEnergyExperimental DOUBLE, \n";
 print "		AtomStateEnergyTheoretical DOUBLE, \n";
+print "		AtomStateEnergy DOUBLE, \n";
 print "         id INTEGER, \n";
 print "		PRIMARY KEY (id) \n";
 print ");\n";
@@ -33,7 +34,7 @@ while(<STATES>) {
 
         my $atomSymbol = firstWord($ionName);
 	my $index = (1000000 * $stateIndex) + (1000 * $ionCharge) + $nuclearCharge;
-        my $energy = best($energyExperimental, $energyTheorectical);
+        my $energy = bestEnergy($energyExperimental, $energyTheoretical);
 
 	print 'INSERT INTO states VALUES(';
 	print '"', $chiantiIonType, '", ';
@@ -48,6 +49,7 @@ while(<STATES>) {
 	print $totalAngMom, ', ';
 	print $energyExperimental, ', '; 
 	print $energyTheoretical, ', ';
+	print $energy, ', ';
 	print $index; # id - primary key
         print ");\n";
 }
@@ -103,7 +105,7 @@ while(<TRANSITIONS>) {
 	print '"', $atomSymbol, '", ';
   	print $finalStateIndex, ', ';
 	print $initialStateIndex, ', ';
-	print best($experimentalWavelength, $theoreticalWavelength), ', ';
+	print bestWavelength($experimentalWavelength, $theoreticalWavelength), ', ';
 	print $experimentalWavelength, ', ';
 	print $theoreticalWavelength, ', ';
 	print $weightedOscilatorStrength, ', ';
@@ -135,6 +137,9 @@ print ");\n";
 print "INSERT INTO species(id,AtomSymbol,AtomNuclearCharge,AtomIonCharge) SELECT DISTINCT ((1000*AtomIonCharge) + AtomNuclearCharge),AtomSymbol,AtomNuclearCharge,AtomIonCharge FROM states;\n";
 
 
+print "CREATE INDEX energy ON states(AtomStateEnergy);\n";
+print "CREATE INDEX wavelength ON transitions(wavelength);\n";
+
 # Returns the first word of a given sentence in which words are 
 # separated by one or more characters of white space.
 sub firstWord {
@@ -144,10 +149,19 @@ sub firstWord {
 }
 
 
-sub best {
+sub bestWavelength {
 	my $experimental = shift @_;
 	my $theoretical = shift @_;
         return $experimental if $experimental > 0.0;
 	return $theoretical if $theoretical > 0.0;
 	return -1.0;
 }
+
+sub bestEnergy {
+	my $experimental = shift @_;
+	my $theoretical = shift @_;
+        return $experimental if $experimental >= 0.0;
+	return $theoretical if $theoretical >= 0.0;
+	return -1.0;
+}
+
