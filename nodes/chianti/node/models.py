@@ -28,8 +28,26 @@ class States(models.Model):
     atomstates = models.FloatField(null=True, db_column='AtomStateS', blank=True)
     atomstatel = models.FloatField(null=True, db_column='AtomStateL', blank=True)
     atomstatetotalangmom = models.FloatField(null=True, db_column='AtomStateTotalAngMom', blank=True)
-    atomstateenergyexperimentalvalue = models.FloatField(null=True, db_column='AtomStateEnergyExperimental', blank=True)
-    atomstateenergytheoreticalvalue = models.FloatField(null=True, db_column='AtomStateEnergyTheoretical', blank=True)
+    energyexperimental = models.FloatField(null=True, db_column='AtomStateEnergyExperimental', blank=True)
+    energytheoretical = models.FloatField(null=True, db_column='AtomStateEnergyTheoretical', blank=True)
+
+    def allEnergies(self):
+        energies = []
+        if self.energyexperimental:
+            energies.append(self.energyexperimental)
+        if self.energytheoretical:
+            energies.append(self.energytheoretical)
+        return energies
+
+    def allEnergyMethods(self):
+        methods = []
+        if self.energyexperimental:
+            methods.append("EXP")
+        if self.energytheoretical:
+            methods.append("THEO")
+        return methods
+
+
     class Meta:
         db_table = u'states'
 
@@ -40,10 +58,26 @@ class Transitions(models.Model):
     finalstateindex = models.ForeignKey(States, related_name='+', db_column='chiantiradtransfinalstateindex')
     initialstateindex = models.ForeignKey(States, related_name='+', db_column='chiantiradtransinitialstateindex')
     wavelengthexperimental = models.FloatField(null=True, db_column='wavelengthexperimental', blank=True)
-    wavelengthexperimental = models.FloatField(null=True, db_column='wavelengthexperimental', blank=True)
+    wavelengththeoretical = models.FloatField(null=True, db_column='wavelengththeoretical', blank=True)
     wavelength = models.FloatField(null=True, db_column='wavelength', blank=True)
     weightedoscillatorstrength = models.FloatField(null=True, db_column='RadTransProbabilityWeightedOscillatorStrength', blank=True)
     probabilitya = models.FloatField(null=True, db_column='RadTransProbabilityTransitionProbabilityA', blank=True)
+
+    def allWavelengths(self):
+        wavelengths = []
+        if self.wavelengthexperimental:
+            wavelengths.append(self.wavelengthexperimental)
+        if self.wavelengththeoretical:
+            wavelengths.append(self.wavelengththeoretical)
+        return wavelengths
+
+    def allWavelengthMethods(self):
+        methods = []
+        if self.wavelengthexperimental:
+            methods.append("EXP")
+        if self.wavelengththeoretical:
+            methods.append("THEO")
+        return methods
 
     class Meta:
         db_table = u'transitions'
