@@ -21,7 +21,8 @@ RESTRICTABLES = {\
 'AtomSymbol':'finalstateindex__species__atomsymbol',
 'AtomNuclearCharge':'finalstateindex__species__atomnuclearcharge',
 'AtomIonCharge':'finalstateindex__species__atomioncharge',
-'AtomStateEnergy':'finalstateindex__energyexperimental',
+'AtomStateEnergy':'finalstateindex__energy',
+'AtomStateConfigurationLabel':'finalstateindex__atomstateconfigurationlabel',
 'RadTransWavelength':'wavelength'
 }
 
@@ -54,7 +55,10 @@ RETURNABLES = {\
 'RadTransProbabilityAUnits':u'1/s',
 'RadTransInitialStateRef':'RadTran.initialstateindex.id',
 'RadTransFinalStateRef':'RadTran.finalstateindex.id',
-'RadTransSpeciesRef':'RadTran.initialstateindex.species.id'
+'RadTransSpeciesRef':'RadTran.initialstateindex.species.id',
+'RadTransUpperStateRef':'RadTran.finalstateindex.id',
+'RadTransLowerStateRef':'RadTran.initialstateindex.id',
+'RadTransID':'RadTran.id'
 }
 
 
