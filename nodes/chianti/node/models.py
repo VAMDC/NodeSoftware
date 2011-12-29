@@ -40,7 +40,8 @@ class Transitions(models.Model):
     finalstateindex = models.ForeignKey(States, related_name='+', db_column='chiantiradtransfinalstateindex')
     initialstateindex = models.ForeignKey(States, related_name='+', db_column='chiantiradtransinitialstateindex')
     wavelengthexperimental = models.FloatField(null=True, db_column='wavelengthexperimental', blank=True)
-    wavelengththeoretical = models.FloatField(null=True, db_column='wavelengththeoretical', blank=True)
+    wavelengthexperimental = models.FloatField(null=True, db_column='wavelengthexperimental', blank=True)
+    wavelength = models.FloatField(null=True, db_column='wavelength', blank=True)
     weightedoscillatorstrength = models.FloatField(null=True, db_column='RadTransProbabilityWeightedOscillatorStrength', blank=True)
     probabilitya = models.FloatField(null=True, db_column='RadTransProbabilityTransitionProbabilityA', blank=True)
 
