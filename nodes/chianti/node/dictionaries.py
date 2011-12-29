@@ -21,7 +21,7 @@ RESTRICTABLES = {\
 'AtomSymbol':'finalstateindex__species__atomsymbol',
 'AtomNuclearCharge':'finalstateindex__species__atomnuclearcharge',
 'AtomIonCharge':'finalstateindex__species__atomioncharge',
-'AtomStateEnergy':'finalstateindex__atomstateenergyexperimentalvalue',
+'AtomStateEnergy':'finalstateindex__energyexperimental',
 'RadTransWavelength':'wavelength'
 }
 
@@ -40,13 +40,14 @@ RETURNABLES = {\
 'AtomStateS':'AtomState.atomstates',
 'AtomStateL':'AtomState.atomstatel',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
-'AtomStateEnergy':'[AtomState.atomstateenergyexperimentalvalue, AtomState.atomstateenergytheoreticalvalue]',
-'AtomStateEnergyMethod':'["EXP", "THEO"]',
+'AtomStateEnergy':'AtomState.allEnergies()',
+'AtomStateEnergyMethod':'AtomState.allEnergyMethods()',
 'AtomStateEnergyUnit':u'1/cm',
 'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
 
-'RadTransWavelength':'[RadTran.wavelengthexperimental, RadTran.wavelengththeoretical]',
-'RadTransWavelengthMethod':'["EXP", "THEO"]',
+#'RadTransWavelength':'[RadTran.wavelengthexperimental, RadTran.wavelengththeoretical]',
+'RadTransWavelength':'RadTran.allWavelengths()',
+'RadTransWavelengthMethod':'RadTran.allWavelengthMethods()',
 'RadTransWavelengthUnit':u'A', # Constant: Angstroms
 'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
 'RadTransProbabilityA':'RadTran.probabilitya',
@@ -55,3 +56,8 @@ RETURNABLES = {\
 'RadTransFinalStateRef':'RadTran.finalstateindex.id',
 'RadTransSpeciesRef':'RadTran.initialstateindex.species.id'
 }
+
+
+def radTransWavelength(r):
+  return [r.wavelengthexperimental, r.wavelengththeoretical]
+
