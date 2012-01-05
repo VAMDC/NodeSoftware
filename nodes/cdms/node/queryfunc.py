@@ -58,7 +58,7 @@ def get_species_and_states(transs, addStates=True):
     - Number of states
     """
 
-    spids = set( transs.values_list('species_id',flat=True) )
+    spids = set( transs.values_list('species_id',flat=True).distinct() )
     # Species object for CDMS includes Atoms AND Molecules. Both can only
     # be distinguished through numberofatoms-field
     atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic')
@@ -179,19 +179,20 @@ def setupResults(sql):
     and compiles everything together for the vamdctap.generator function
     which is used to generate XSAMS - output.
     """
-    LOG(sql)
     q = sql2Q(sql)
-    LOG(q)
+
     addStates = (not sql.requestables or 'atomstates' in sql.requestables or 'moleculestates' in sql.requestables)
     addTrans = (not sql.requestables or 'RadiativeTransitions' in sql.requestables)
+
     # Query the database and get calculated transitions (TransitionsCalc)
     transs = TransitionsCalc.objects.filter(q,species__origin=5,
                                             species__archiveflag=0,
-                                            dataset__archiveflag=0).order_by('frequency')
+                                            dataset__archiveflag=0) #.order_by('frequency')
 
     # Attach experimental transitions (TransitionsExp) to transitions
-    # and obtain their methods
+    # and obtain their methods. Do it only if transitions will be returned
     if addTrans:
+        transs = transs.order_by('frequency')
         transs, methods = attach_exp_frequencies(transs)
     else:
         methods=[]
