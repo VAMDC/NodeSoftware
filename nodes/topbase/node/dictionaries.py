@@ -55,7 +55,7 @@ RETURNABLES = {\
 'AtomStateTotalAngMom' : 'AtomState.totalangularmomentum',
 'AtomStateTermLabel' : 'AtomState.Component.termlabel',
 'AtomStateTermLSL' : 'AtomState.Component.Lscoupling.l',
-'AtomStateTermS' : 'AtomState.Component.Lscoupling.s',
+'AtomStateTermLSS' : 'AtomState.Component.Lscoupling.s',
 'AtomStateTermLSMultiplicity' : 'AtomState.Component.Lscoupling.multiplicity',
 
 'RadTransWavelength':'RadTran.wavelength',

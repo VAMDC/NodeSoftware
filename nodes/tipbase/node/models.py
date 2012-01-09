@@ -201,21 +201,3 @@ class Lscoupling(models.Model):
     multiplicity = models.IntegerField()
     class Meta:
         db_table = u't_lscoupling'
-        
-class Dataset(object):
-    """ Utility class, no table in DB """
-    def __init__(self):
-        self.TabData = None
-        self.Description = None
-
-
-
-
-
-
-
-
-
-
-
-

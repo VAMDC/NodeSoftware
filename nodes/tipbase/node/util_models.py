@@ -17,7 +17,8 @@ class Result:
 							'Sources':None,
 							'Methods':None,
 							'Functions':None,
-							'CollTrans':None
+							'CollTrans':None,
+                            'RadCross':None
 							}
 		
 	def addHeaderField(self, key, value):
