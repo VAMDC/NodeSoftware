@@ -1,5 +1,7 @@
 Dependencies:
  http://mathdom.sourceforge.net/
+ python-lxml
+ python-parsing
 
 1. python check.py
 Read from test/transition3OK.IN.xml

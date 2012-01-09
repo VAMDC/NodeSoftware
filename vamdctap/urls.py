@@ -1,5 +1,5 @@
-from django.conf.urls.defaults import *
 from django.conf import settings
+from django.conf.urls.defaults import *
 import django.views.static
 
 urlpatterns = patterns('vamdctap.views',
@@ -18,3 +18,4 @@ if settings.SERVE_STATIC:
                     django.views.static.serve,
                     {'document_root': settings.BASE_PATH+'/static'}),
                     )
+

@@ -325,3 +325,4 @@ def getValidity(value, nvalue):
 		else : 
 			return 'the impact approximation reachs its limit of validity, 0.1 < NV ≤ 0.5'
             
+

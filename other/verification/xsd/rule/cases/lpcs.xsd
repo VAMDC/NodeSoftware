@@ -75,26 +75,26 @@
 												<and/>
 												<apply>
 													<eq/>
-													<ci>lpcs:kronigParity</ci>
-													<ci>'e'</ci>
+													<ci>lpcs:parity?</ci>
+													<ci>'+'</ci>
 												</apply>
 												<apply>
 													<neq/>
-													<ci>lpcs:parity</ci>
-													<ci>'+'</ci>
+													<ci>lpcs:kronigParity</ci>
+													<ci>'e'</ci>
 												</apply>
 											</apply>
 											<apply>
 												<and/>
 												<apply>
 													<eq/>
-													<ci>lpcs:kronigParity</ci>
-													<ci>'f'</ci>
+													<ci>lpcs:parity?</ci>
+													<ci>'-'</ci>
 												</apply>
 												<apply>
 													<neq/>
-													<ci>lpcs:parity</ci>
-													<ci>'-'</ci>
+													<ci>lpcs:kronigParity</ci>
+													<ci>'f'</ci>
 												</apply>
 											</apply>
 										</apply>

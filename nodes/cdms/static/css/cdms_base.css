@@ -16,12 +16,12 @@
 
 
 /* import core styles | Basis-Stylesheets einbinden */
-@import url(../yaml/core/base.css);
+@import url(/yaml/core/base.css);
 
 
 /* import screen layout | Screen-Layout einbinden */
-@import url(../yaml/navigation/nav_shinybuttons.css);
-@import url(../yaml/navigation/nav_vlist.css);
+@import url(/yaml/navigation/nav_shinybuttons.css);
+@import url(/yaml/navigation/nav_vlist.css);
 @import url(./screen/forms.css);
 
 @import url(./screen/basemod.css);
@@ -29,7 +29,7 @@
 @import url(./screen/content.css); 
 
 /* import print layout | Druck-Layout einbinden */
-@import url(../yaml/print/print_003_draft.css); 
+@import url(/yaml/print/print_003_draft.css); 
 
 /* import styles for accessible tabs plugin */
-@import url(../yaml/add-ons/accessible-tabs/tabs.css);
+@import url(/yaml/add-ons/accessible-tabs/tabs.css);

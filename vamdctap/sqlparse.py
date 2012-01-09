@@ -5,7 +5,7 @@ from pyparsing import *
 def setupSQLparser():
     selectStmt = Forward()
     selectToken = Keyword("select", caseless=True)
-    ident = Word( alphas, alphanums ).setName("identifier")
+    ident = Word( alphas, alphanums+'.' ).setName("identifier")
     columnName     = delimitedList( ident, ",", )#combine=True )
     columnNameList = Group( delimitedList( columnName ) )
     whereExpression = Forward()
