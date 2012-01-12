@@ -22,12 +22,12 @@
       <li><a href="#" onclick="docShowSubpage('form_output')">Output</a></li>
 
      </ul>
-     <h6 class="vlist"> VAMDC </h6>
+<!--     <h6 class="vlist"> VAMDC </h6>
      <ul class="vlist">
       <li><a href="#" id="a_form_vamdcnodes" onclick="ajaxGetNodeList();docShowSubpage('form_vamdcnodes');ajaxQueryNodeContent();">VAMDC Nodes</a></li> 
       <li><a href="#" id="a_form_result" onclick="docShowSubpage('form_result')">Query - Result</a></li>
      </ul>
-    </div>
+-->    </div>
   </div>
   <div id="col3" role="main">
     <div id="col3_content" class="clearfix">
@@ -53,6 +53,17 @@
   <div id="form_queryTrans" class="subpage" style="">
     <h3><Strong>QUERY</strong>&nbsp;<i>TRANSITIONS</i></h3>
     <p>&nbsp;</p>
+
+    <fieldset>
+      <div class="legend">Database</div>
+      <div class="type-select">
+        <SELECT class="log" NAME="database" id="database" onchange="showQueryRefinements();">
+         <OPTION VALUE="cdms"> CDMS </OPTION>
+         <OPTION VALUE="vamdc"> VAMDC-network </OPTION>
+        </SELECT>
+      </div> 
+    </fieldset> 
+
     <fieldset>
       <div class="legend">Current Query:Refinements</div>
       <div id="refinements">
@@ -71,7 +82,7 @@
 
     <INPUT TYPE="HIDDEN" VALUE="SELECT ALL WHERE  ( {% for specie in species_list %} {% if not forloop.first %} OR {% endif %} MoleculeInchiKey = '{{specie.inchikey}}' {% endfor %} )" NAME="QUERY" ID="QUERY">
 
-    <fieldset>
+    <fieldset style="display:none">
       <div class="legend">Current Query:TAP-XSAMS</div>
       <div id="TAPxsams">SELECT ALL WHERE  ( {% for specie in species_list %} {% if not forloop.first %} OR {% endif %} MoleculeInchiKey = '{{specie.inchikey}}' {% endfor %} )</div>
     </fieldset> 
@@ -97,8 +108,8 @@
     </fieldset>
 
     <div class="type-button float_right">
-      <INPUT id="vamdcbutton" TYPE="button" NAME="T_SEARCH2" onclick="$('#queryresult').html('Processing ...');docShowSubpage('form_result');ajaxQuery('ajaxQuery','')" VALUE="vamdcQUERY" >
-      <INPUT id="button1" TYPE="submit" NAME="T_SEARCH" onclick='submitOutputURL()' VALUE="QUERY" >
+      <!--<INPUT id="vamdcbutton" TYPE="button" NAME="T_SEARCH2" onclick="$('#queryresult').html('Processing ...');docShowSubpage('form_result');ajaxQuery('ajaxQuery','')" VALUE="vamdcQUERY" >
+-->      <INPUT id="button1" TYPE="submit" NAME="T_SEARCH" onclick='submitOutputURL()' VALUE="QUERY" >
     </div>
   </div> <!-- DIV FORM QUERY TRANSITIONS (FIRST PAGE) -->
 

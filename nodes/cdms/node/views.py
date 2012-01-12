@@ -38,6 +38,9 @@ class QUERY(object ):
         if self.isvalid: self.validate()
 
     def validate(self):
+
+        try: self.database = self.data.get('database','cdms')
+        except: self.database='cdms'
         
         try: self.freqfrom = self.data.get('T_SEARCH_FREQ_FROM',0)
         except: self.freqfrom = 0
@@ -50,14 +53,20 @@ class QUERY(object ):
             try: self.format = self.data.get('T_TYPE','XSAMS')
             except: self.format = 'XSAMS'
 
-        try:
-            self.query = self.data.get('QUERY',"").rstrip()
-            self.url = self.baseurl + self.requeststring + QueryDict(self.query).urlencode()
-            
-        except:
-            self.query = ""
-            self.url = None
+        try: self.url = self.data.get('queryURL','')
+        except: self.url = ''
+
+        print >> sys.stderr, "queryURL = " + self.url
         
+        if len(self.url)==0:
+            try:
+                self.query = self.data.get('QUERY',"").rstrip()
+                self.url = self.baseurl + self.requeststring + QueryDict(self.query).urlencode()
+            
+            except:
+                self.query = ""
+                self.url = None
+            
         try:
             self.speciesIDs = self.data.getlist('speciesIDs')
         except:
@@ -75,6 +84,7 @@ class QUERY(object ):
 
         print >> sys.stderr, self.format
         print >> sys.stderr, self.url
+        print >> sys.stderr, self.database
 
 
 
@@ -134,9 +144,12 @@ def catalog(request):
     # query parameters from database
     rotationalConstants = getParameters4specie(id, "Rotational Constant")
     dipoleMoments = getParameters4specie(id, "Dipole Moment")
-    partitionFunctions = getParameters4specie(id, "Partition function")
+    #partitionFunctions = getParameters4specie(id, "Partition function")
     otherParameters = getParameters4specie(id, "Other")
+
+    pfhtml = getPartitionf4specie(id)
     
+            
     # query files from database
     files = getFiles4specie(id)
         
@@ -146,13 +159,13 @@ def catalog(request):
                               "files" : files,
                               "rotationalconstants" : rotationalConstants,
                               "dipolemoments" : dipoleMoments,
-                              "partitionfunctions" : partitionFunctions,
+                              "pfhtml" : pfhtml,
                               "otherparameters" : otherParameters  })
     
     return render_to_response('cdmsportal/showDocumentation.html', c)
 
 
-def showResults(request):
+def showResultsOld(request):
     """
     """
 
@@ -160,7 +173,10 @@ def showResults(request):
 
     if postvars.url:
         if  postvars.format=='xsams':
-            result = applyStylesheet(postvars.url, xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt')
+            try:
+                result = applyStylesheet(postvars.url, xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt')
+            except Exception,err:
+                result = err
         elif  postvars.format=='rad3d':
             result = "<pre>" + str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + "/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
         elif postvars.format=='png':
@@ -169,9 +185,57 @@ def showResults(request):
             result = "<pre>" + geturl(postvars.url) + "</pre>"
     else:
         result = "<p> Invalid request </p>"
+
+    try:
+        c=RequestContext(request,{"postvars": postvars, "result" : result})
+    except UnicodeError, e:
+        c=RequestContext(request,{"postvars": postvars, "result" : result.decode('utf-8')})
+        return render_to_response('cdmsportal/showResults.html', c)
+
+    except Exception, err:
+        c=RequestContext(request,{"postvars": postvars, "result" : err})
+
+    try:
+        return render_to_response('cdmsportal/showResults.html', c)
+    except UnicodeError, e:
+        c=RequestContext(request,{"postvars": postvars, "result" : result.decode('utf-8')})
+        return render_to_response('cdmsportal/showResults.html', c)
+    except Exception, err:
+        c=RequestContext(request,{"postvars": postvars, "result" : err})
+        return render_to_response('cdmsportal/showResults.html', c)
+
+
+
+
+def showResults(request):
+    """
+    """
+
+    postvars = QUERY(request.POST)
+
+    result=""
+    if postvars.database == 'vamdc':
+        readyfunc='ajaxGetNodeList();ajaxQueryNodeContent();'
+    else:
+        readyfunc='ajaxQueryNodeContent();'
     
-    c=RequestContext(request,{"postvars": postvars, "result" : result})
-    return render_to_response('cdmsportal/showResults.html', c)
+    try:
+        c=RequestContext(request,{"postvars": postvars, "result" : result, "readyfunc":readyfunc})
+    except UnicodeError, e:
+        c=RequestContext(request,{"postvars": postvars, "result" : result.decode('utf-8')})
+        return render_to_response('cdmsportal/showResults2.html', c)
+
+    except Exception, err:
+        c=RequestContext(request,{"postvars": postvars, "result" : err})
+
+    try:
+        return render_to_response('cdmsportal/showResults2.html', c)
+    except UnicodeError, e:
+        c=RequestContext(request,{"postvars": postvars, "result" : result.decode('utf-8')})
+        return render_to_response('cdmsportal/showResults2.html', c)
+    except Exception, err:
+        c=RequestContext(request,{"postvars": postvars, "result" : err})
+        return render_to_response('cdmsportal/showResults2.html', c)
 
 
 
@@ -191,15 +255,18 @@ def ajaxRequest(request):
         elif request.POST['function'] == 'ajaxQuery':
             ##### TEST TEST TEST TEST ###########
             # get result and return it via ajax
-
+            #print >> sys.stderr, "url = " +request.POST['url']
             # just apply the stylesheet if a complete url has been posted
-            if 'url' in request.POST:
-                htmlcode = str(applyStylesheet(request.POST['url'], xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
+
+            baseurl = request.POST.get('nodeurl','http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/')
+            
+            if 'url2' in request.POST:
+                htmlcode = str(applyStylesheet(request.POST['url2'], xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
             else:    
-                postvars = QUERY(request.POST)
-                
+                postvars = QUERY(request.POST,baseurl = baseurl)
+                print >> sys.stderr, "postvars.url = " +postvars.url
                 if postvars.url:
-                    if  postvars.format=='xsams':
+                    if  postvars.format.lower()=='xsams':
                         htmlcode = str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
                     elif  postvars.format=='rad3d':
                         htmlcode = "<pre>" + str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + "/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
@@ -209,23 +276,52 @@ def ajaxRequest(request):
                         htmlcode = "<pre>" + str(geturl(postvars.url)) + "</pre>"
                 else:
                     htmlcode = "<p> Invalid request </p>"
-        
+
             response_dict.update({'QUERY': "QUERY", 'htmlcode' : htmlcode, 'message' : " Statistics "})
             
         elif request.POST['function'] == 'getNodeStatistic':
             # get url of the node which should have been posted
             nodeurl = request.POST.get('nodeurl',"")
             inchikey = request.POST.get('inchikey',"")
-            
-            postvars = QUERY(request.POST, baseurl = nodeurl, qformat='XSAMS')
 
+    
+            postvars = QUERY(request.POST, baseurl = nodeurl, qformat='XSAMS')
+            #postvars.url=postvars.url.replace('png','XSAMS').replace('spcat','XSAMS').replace('rad3d','XSAMS').replace('xspcat','XSAMS')
+
+            print >> sys.stderr," NODESTATURL: "+ postvars.url
             # fetch statistic for this node
             if nodeurl:
-                htmlcode = getNodeStatistic(nodeurl, inchikey, url = postvars.url)
+                htmlcode, vc = getNodeStatistic(nodeurl, inchikey, url = postvars.url)
             else:
                 htmlcode = ""
+                vc={}
+
+            try:
+                numspecies = vc['vamdccountspecies']
+            except:
+                numspecies = '0'
             
-            response_dict.update({'htmlcode' : htmlcode, 'message' : " Statistics "})
+            response_dict.update({'htmlcode' : htmlcode, 'message' : " Statistics ",})
+            response_dict.update(vc)
+        elif request.POST['function'] == 'queryspecies':
+            nodeurl = request.POST.get('nodeurl',"")
+            inchikey = request.POST.get('inchikey',"")
+            
+            postvars = QUERY(request.POST, baseurl = nodeurl, qformat='XSAMS')
+            
+            url = postvars.url.replace('ALL','SPECIES').replace('RadiativeTransitions','SPECIES')
+            url=url.replace('rad3d','XSAMS')
+            url=url.replace('xspcat','XSAMS')
+            url=url.replace('spcat','XSAMS')
+            url=url.replace('png','XSAMS')
+            url=url.replace('comfort','XSAMS')
+            print >> sys.stderr, "SPECQUERY: "+url
+            try:
+                result =  getspecies(url)
+            except:
+                result = "<p> Invalid request </p>"
+        
+            response_dict.update({'htmlcode' : result, 'message' : " Species ",})
         else:
             response_dict.update({'QUERY' : QUERYs, 'htmlcode' : "<p> HALLO </p>", 'message' : " Tach "})
     else:
@@ -246,6 +342,21 @@ def specieslist(request):
     return render_to_response('cdmsadmin/selectSpecies.html', c)
 
 
+def queryspecies(request, baseurl = "http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/"):
+    
+    requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+SPECIES"
+    url = baseurl + requeststring
+    
+    try:
+        #result = "<pre>" + getspecies(url) + "</pre>"
+        result =  getspecies(url)
+    except:
+        result = "<p> Invalid request </p>"
+    
+    c=RequestContext(request,{"result" : result})
+    return render_to_response('cdmsportal/showResults.html', c)
+
+        
 def molecule(request):
 
     if request.method == 'GET':

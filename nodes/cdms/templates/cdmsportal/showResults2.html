@@ -1,0 +1,103 @@
+{% extends "cdmsportal/portalBase.html" %}	  
+
+{% block content %}
+
+{% autoescape off %}
+<script>
+$(document).ready(function() {
+  {{readyfunc}}
+   ajaxQuery('ajaxQuery','{{postvars.url}}');
+});
+</script>
+{% endautoescape %}
+
+<form name="form_result" id="form_result" action="index.php" class="yform full" method="post">
+ {% for id in postvars.speciesIDs %}
+ <INPUT TYPE="HIDDEN" NAME="speciesIDs" VALUE="{{id}}">
+ {% endfor %}
+
+ <INPUT TYPE='HIDDEN' NAME='filterTag' VALUE=''>
+ <INPUT TYPE='HIDDEN' NAME='T_OrderBy' VALUE='E_TAG%2525252525252BASC'>
+ <INPUT TYPE='HIDDEN' NAME='B_Query' VALUE='Confirm%2525252525252BSelection'>
+
+ <INPUT TYPE='HIDDEN' NAME='database' VALUE='{{postvars.database}}'>
+ <INPUT TYPE='HIDDEN' NAME='T_ReturnPage' VALUE='Query'>
+ <INPUT TYPE='HIDDEN' NAME='QUERY' VALUE='{{postvars.query}}'>
+ <INPUT TYPE='HIDDEN' NAME='T_TYPE' VALUE='{{postvars.format}}'>
+ <INPUT TYPE='HIDDEN' NAME='T_SHOWEXPLINES' VALUE='no'>
+ <INPUT TYPE='HIDDEN' NAME='T_SEARCH' VALUE='QUERY'>
+ <INPUT TYPE='HIDDEN' NAME='T_SEARCH_FREQ_FROM' VALUE='{{postvars.freqfrom}}'>
+ <INPUT TYPE='HIDDEN' NAME='T_SEARCH_FREQ_TO' VALUE='{{postvars.freqto}}'>
+ <INPUT TYPE='HIDDEN' NAME='UnitNu' VALUE='GHz'>
+ <INPUT TYPE='HIDDEN' NAME='T_SEARCH_INT' VALUE='-10'>
+ <INPUT TYPE='HIDDEN' NAME='IntUnit' VALUE='T300'>
+ <INPUT TYPE='HIDDEN' NAME='T_TEMPERATURE' VALUE='{{postvars.T_TEMPERATURE}}'>
+ <INPUT TYPE='HIDDEN' NAME='T_SORT' VALUE='Frequency'>
+ <INPUT TYPE="HIDDEN" NAME="T_PAGE" VALUE="ShowResults">
+ <fieldset>
+   <div class="type-button float_left">
+     <INPUT TYPE="BUTTON" VALUE="RETURN" NAME="B_Change_TAG" onclick="load_page('queryPage');">
+   </div>
+{% autoescape off %}
+{% if postvars.database == "cdms" %}
+<input type='hidden' name='queryURL' id='queryURL' value='{{postvars.url}}'>
+{% endif %}
+
+   <div class="type-button float_right">
+<!--     <INPUT id="button1" TYPE="BUTTON" NAME="T_Download" onclick="startDownload();" VALUE="DOWNLOAD" > -->
+<!--     <INPUT id="button1" TYPE="BUTTON" NAME="T_Download" onclick="startDownload('{{postvars.url}}')" VALUE="DOWNLOAD" > -->
+	  <INPUT id="button1" TYPE="BUTTON" NAME="T_Download" onclick="location.href='{{postvars.url}}'" VALUE="DOWNLOAD" > 
+   </div>
+ </fieldset>
+
+<div class="hlist">
+  <ul>
+    <li><a href="#" onclick="docShowSubpage('querystring')">Your Query</a></li>
+    <li><a href="#" onclick="docShowSubpage('nodelist')">Nodes</a></li>
+    <li><a href="#" onclick="docShowSubpage('queryresult')">Result</a></li>
+  </ul>
+</div>
+
+ <fieldset id="querystring" class="important subpage" style="display:none;background-color:#9cf;">
+	<div class="legend">Your TAP-XSAMS QUERY</div>
+	<p class = 'important'> {{postvars.query}} </p>
+ </fieldset>
+{% endautoescape %}
+    <div id="nodelist" class="subpage" style="clear:both">{% if postvars.database == "cdms" %}
+      <div class='vlist'><ul>
+        <li id='nodehead' class='' style='border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
+	  <div class='' style='background-color:blue;'>
+            <div class='nodename float_left' style='font-weight:bold;width:20em;background-color2:grey'>Database</div>                                                         
+            <div class='status float_left' style='width:8em'>Status</div>
+            <div class='numspecies float_left' style='width:8em'># Species</div>
+            <div class='nummols float_left' style='width:8em'># Molecules</div>
+            <div class='numstates float_left' style='width:8em'># States</div>
+            <div class='numradtrans float_left' style='width:8em'># Trans</div>
+            <div class='numtrunc float_left' style='width:8em'>% Trunc.</div>
+          </div>
+        </li>
+
+        <li id='nodeCDMS' class='vamdcnode' style='width:98%;border-width:1px;border-style:solid;border-color:black;padding:0.5em;margin:5px;background-color:#fafaff'>
+          <div class='nodeurl' style='display:none' id='CDMS'>http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/</div>
+          <div class='url' style='display:none'></div>
+          <div class='' style=''>
+            <div class='nodename float_left' style='font-weight:bold;width:20em;background-color2:grey'>CDMS</div>                                                         
+            <div class='status float_left' style='width:8em'></div>
+            <div class='numspecies float_left' style='width:8em'>0</div>
+            <div class='nummols float_left' style='width:8em'>0</div>
+            <div class='numstates float_left' style='width:8em'> 0</div>
+            <div class='numradtrans float_left' style='width:8em'> 0</div>
+            <div class='numtrunc float_left' style='width:8em'> 0</div>
+          </div>
+          <div class='species' style='clear:both'></div> 
+        </li>
+
+        </ul>
+      </div>
+    {% else %}Processing ...{% endif %}</div> 
+
+<div id ="queryresult" style="display:none;clear:both;" class="subpage"> No query submitted yet. </div>
+
+</form>
+
+{% endblock %}

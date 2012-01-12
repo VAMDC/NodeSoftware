@@ -29,32 +29,59 @@
 
 <body ONLOAD="setFocus('SearchPrediction');">
 
-<div class="page_margins">
-  <div class="page">
-    <div id="header"  role="banner">
-   <a href="./" title="Home" rel="home" id="logo"><img src="https://cdms.ph1.uni-koeln.de/sites/all/themes/cdms/logo.png" alt="Home" /></a><br>
+  <div class="page_margins" style="-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);">
+    <div class="page">
+      <div id="header"  role="banner">
+        <a href="./" title="Home" rel="home" id="logo">
+          <img src="https://cdms.ph1.uni-koeln.de/sites/all/themes/cdms/logo.png" alt="Home" />
+        </a><br>
         <span>(beta - Version)</span>
+      </div>  <!-- header -->
 
-    </div>  <!-- header -->
-
-	{% block mainNavigationBar %}
-    <!-- begin: main navigation #nav -->
-<!--    <div id="nav" role="navigation"> -->
-        <div class="hlist" style="-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);">
-           <ul>
-             <li ><a href="."  style="font-weight:400;"><div style="font-weight:bold">HOME</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">First page</div>
-             <li><a href="#" style="font-weight:400;"><div style="font-weight:bold">GENERAL</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Description of the Catalog</div></a></li>
-             <li><a href="./selectSpecie"  style="font-weight:400;"><div style="font-weight:bold">SPECIES</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Description of the Catalog Species</div></a></li>
-             <li><a href="./queryForm"  style="font-weight:400;"><div style="font-weight:bold">QUERY</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Query the Catalog</div></a></li>
-             <li><a href="./partitionf"  style="font-weight:400;"><div style="font-weight:bold">PARTITION FUNCTIONS</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Listing of Partition functions</div></a></li>
-
-             <li><a href="./contact"  style="font-weight:400;"><div style="font-weight:bold">CONTACT</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Get in contact with real people</div></a></li>
-<!--             </font> -->
-           </ul>
-        </div>
-<!--    </div> -->
-    <!-- end: main navigation -->
-	{% endblock %}
+{% block mainNavigationBar %}
+      <!-- begin: main navigation #nav -->
+      <!--    <div id="nav" role="navigation"> -->
+      <div class="hlist" style="-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);">
+        <ul>
+          <li>
+            <a href="."  style="font-weight:400;">
+              <div style="font-weight:bold">HOME</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">First page</div>
+            </a>
+          </li>
+          <li>
+            <a href="#" style="font-weight:400;">
+              <div style="font-weight:bold">GENERAL</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Description of the Catalog</div>
+            </a>
+          </li>
+          <li>
+            <a href="./selectSpecie"  style="font-weight:400;">
+              <div style="font-weight:bold">SPECIES</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Description of the Catalog Species</div>
+            </a>
+          </li>
+          <li>
+            <a href="./queryForm"  style="font-weight:400;">
+              <div style="font-weight:bold">QUERY</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Query the Catalog</div>
+            </a>
+          </li>
+          <li>
+            <a href="./partitionf"  style="font-weight:400;">
+              <div style="font-weight:bold">PARTITION FUNCTIONS</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Listing of Partition functions</div>
+            </a>
+          </li>
+          <li>
+            <a href="./contact"  style="font-weight:400;">
+              <div style="font-weight:bold">CONTACT</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Get in contact with real people</div>
+            </a>
+          </li>
+        </ul>
+      </div>
+{% endblock %}
   
 
 {% block content %}
@@ -65,7 +92,6 @@
 {% block footer %}
 <div id="footer" role="contentinfo">
 &copy; I. Physikalisches Institut der Universität zu Köln
-</a>
 </div>
 {% endblock %}
 

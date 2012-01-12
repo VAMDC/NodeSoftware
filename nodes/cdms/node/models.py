@@ -439,21 +439,37 @@ class SourcesIDRefs( Model):
 
 
 
+##class Partitionfunctions( Model):
+##     """
+##     This class contains partition function (mysql-table: Partitionfunctions) for each specie.
+##     """
+##     id  =  IntegerField(primary_key=True, db_column='PF_ID')
+##     mid =  IntegerField(db_column='PF_M_ID')
+##     eid =  ForeignKey(Molecules, db_column='PF_E_ID')
+##     temperature = FloatField(db_column='PF_Temperature')
+##     partitionfunc = FloatField(db_column='PF_Partitionfunction')
+##     comment = CharField(max_length=150, db_column='PF_Comment')
+    
+##     class Meta:
+##          db_table = u'Partitionfunctions' 
+                     
 class Partitionfunctions( Model):
      """
      This class contains partition function (mysql-table: Partitionfunctions) for each specie.
      """
-     id  =  IntegerField(primary_key=True, db_column='PF_ID')
-     mid =  IntegerField(db_column='PF_M_ID')
-     eid =  ForeignKey(Molecules, db_column='PF_E_ID')
+     id  =  AutoField(primary_key=True, db_column='PF_ID')
+     molecule =  ForeignKey(Molecules, db_column='PF_M_ID', blank=True, null = True)
+     specie =  ForeignKey(Species, db_column='PF_E_ID')
+     dataset =  ForeignKey(Datasets, db_column='PF_DAT_ID', blank=True, null = True)
      temperature = FloatField(db_column='PF_Temperature')
      partitionfunc = FloatField(db_column='PF_Partitionfunction')
+     state = CharField(max_length=100, db_column = 'PF_State')
      comment = CharField(max_length=150, db_column='PF_Comment')
     
      class Meta:
           db_table = u'Partitionfunctions' 
                      
-                                    
+                         
 
 
 class Method:

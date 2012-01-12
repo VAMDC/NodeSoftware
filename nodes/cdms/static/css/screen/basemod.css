@@ -37,7 +37,9 @@
 
   /* (en) Marginal areas & page background */
   /* (de) Randbereiche & Seitenhintergrund */
-  body { background:#4d87c7 url("./images/bg_blue.png") repeat-x top left fixed; padding:10px 0; }
+
+  /* body { background:#4d87c7 url("./images/bg_blue.png") repeat-x top left fixed; padding:10px 0;} */
+  body { background:#FFF ; padding:10px 0;}
 
   /* (en) Centering layout in old IE-versions */
   /* (de) Zentrierung des Layouts in alten IE-versionen */
@@ -52,7 +54,7 @@
   #header {
     color:#000;
     background:#fff repeat-x top left;
-    padding:45px 2em 1em 20px;
+    padding:5px 2em 1em 20px;
 	position:relative;
   }
 

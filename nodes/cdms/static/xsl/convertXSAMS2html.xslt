@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" xmlns:xsams="http://vamdc.org/xml/xsams/0.2">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" xmlns:xsams="http://vamdc.org/xml/xsams/0.3">
 
   <xsl:output method="html"/>
 
@@ -144,8 +144,8 @@
 	<div style="float:left;width:5ex">
 	<xsl:text>I.S.: </xsl:text>
 	</div>
-<!--        <xsl:value-of select="xsams:InitialStateRef"/><xsl:text>:</xsl:text> -->
-	<xsl:for-each select="/xsams:XSAMSData/xsams:Species/xsams:Molecules/xsams:Molecule/xsams:MolecularState[@stateID=current()/xsams:InitialStateRef]">
+<!--        <xsl:value-of select="xsams:LowerStateRef"/><xsl:text>:</xsl:text> -->
+	<xsl:for-each select="/xsams:XSAMSData/xsams:Species/xsams:Molecules/xsams:Molecule/xsams:MolecularState[@stateID=current()/xsams:LowerStateRef]">
 	  <div style="float:left;min-width:17ex">
               <xsl:value-of select="format-number(current()/xsams:MolecularStateCharacterisation/xsams:TotalStatisticalWeight,' 0000', 'example')"/>
               <xsl:text>  </xsl:text>
@@ -160,8 +160,8 @@
 	<div style="float:left;width:5ex">
 	<xsl:text>F.S.: </xsl:text>
 	</div>
-<!--        <xsl:value-of select="xsams:FinalStateRef"/><xsl:text>:</xsl:text> -->
-	<xsl:for-each select="/xsams:XSAMSData/xsams:Species/xsams:Molecules/xsams:Molecule/xsams:MolecularState[@stateID=current()/xsams:FinalStateRef]">
+<!--        <xsl:value-of select="xsams:UpperStateRef"/><xsl:text>:</xsl:text> -->
+	<xsl:for-each select="/xsams:XSAMSData/xsams:Species/xsams:Molecules/xsams:Molecule/xsams:MolecularState[@stateID=current()/xsams:UpperStateRef]">
 	   <div style="float:left;min-width:17ex">
               <xsl:value-of select="format-number(current()/xsams:MolecularStateCharacterisation/xsams:TotalStatisticalWeight,' 0000')"/>
               <xsl:text>  </xsl:text>
@@ -177,9 +177,9 @@
 	</div>
 	
 	<div style="float:right">
-          <xsl:value-of select="/xsams:XSAMSData/xsams:Species/xsams:Molecules/xsams:Molecule[xsams:MolecularState/@stateID=current()/xsams:FinalStateRef]/@speciesID"/>
+          <xsl:value-of select="/xsams:XSAMSData/xsams:Species/xsams:Molecules/xsams:Molecule[xsams:MolecularState/@stateID=current()/xsams:UpperStateRef]/@speciesID"/>
           <xsl:text>:</xsl:text>
-	  <xsl:value-of select="/xsams:XSAMSData/xsams:Species/xsams:Molecules/xsams:Molecule[xsams:MolecularState/@stateID=current()/xsams:FinalStateRef]/xsams:MolecularChemicalSpecies/xsams:OrdinaryStructuralFormula" />	
+	  <xsl:value-of select="/xsams:XSAMSData/xsams:Species/xsams:Molecules/xsams:Molecule[xsams:MolecularState/@stateID=current()/xsams:UpperStateRef]/xsams:MolecularChemicalSpecies/xsams:OrdinaryStructuralFormula" />	
 	</div>
 	</li>
 
