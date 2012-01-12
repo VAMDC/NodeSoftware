@@ -185,8 +185,13 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
     string = "\n<%s" % tagname
     if method:
         string += ' methodRef="M%s-%s"' % (NODEID, method)
+    
     for k, v in extraAttr.items():
-        string += ' %s="%s"'% (k, G(v))
+        if "-" in v : #v has already been evaluated before being passed to this function
+            string += ' %s="%s"'% (k, v)
+        else : # v has not been evaluated yet
+            string += ' %s="%s"'% (k, G(v))
+            
     string += '>'
     if comment:
         string += '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1]
@@ -1246,13 +1251,15 @@ def XsamsRadCross(RadCross):
         # create header
 
         G = lambda name: GetValue(name, RadCros=RadCros)
-        dic = {'id':"%s-%s" % (NODEID, G("CrossSectionID")) }
+        dic = {'id':"P%s-%s" % (NODEID, G("CrossSectionID")) }
+        
         envRef = G("CrossSectionEnvironment")
         if envRef:
             dic["envRef"] = "E%s-%s" % (NODEID, envRef)
         group = G("CrossSectionGroup")
         if group:
             dic["groupLabel"] = "%s" % group
+        
         yield makePrimaryType("AbsorptionCrossSection", "CrossSection", G, extraAttr=dic)
         yield "<Description>%s</Description>" % G("CrossSectionDescription")
 
@@ -1295,7 +1302,7 @@ def XsamsRadCross(RadCross):
                         yield "<DeltaV>%s</DeltaV>" % deltav
                 yield "</Modes>"
         yield "</BandAssignment>"
-        yield "</CrossSection>"
+        yield "</AbsorptionCrossSection>"
 
 
 def XsamsCollTrans(CollTrans):
@@ -1336,7 +1343,7 @@ def XsamsCollTrans(CollTrans):
 
         # create header
         G = lambda name: GetValue(name, CollTran=CollTran)
-        dic = {'id':"%s-%s" % (NODEID, G("CollisionID")) }
+        dic = {'id':"P%s-%s" % (NODEID, G("CollisionID")) }
         group = G("CollisionGroup")
         if group:
             dic["groupLabel"] = "%s" % group
