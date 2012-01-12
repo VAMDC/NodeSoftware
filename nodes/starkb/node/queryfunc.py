@@ -58,50 +58,51 @@ def setupSpecies():
 	return result
 	
 def setupVssRequest(sql, limit=1000):
-	"""		
-		Execute a vss request
-		@type  sql: string
-		@param sql: vss request
-		@rtype:   util_models.Result
-		@return:  Result object		
-	"""
-	result = util_models.Result()
-	q = sql2Q(sql)    
+    """		
+        Execute a vss request
+        @type  sql: string
+        @param sql: vss request
+        @rtype:   util_models.Result
+        @return:  Result object		
+    """
+    result = util_models.Result()
+    q = sql2Q(sql)    
 
-	transs = django_models.Transition.objects.filter(q)
-	ntranss=transs.count()
+    transs = django_models.Transition.objects.filter(q)
+    ntranss=transs.count()
 
-	if limit < ntranss :
-		transs, percentage = truncateTransitions(transs, q, limit)
-	else:
-		percentage=None 
-				
-	# Through the transition-matches, use our helper functions to extract 
-	# all the relevant database data for our query. 
-	if ntranss > 0 :		
-		species, nspecies, nstates = getSpeciesWithStates(transs)           
-		transitions, environments = getTransitionsData(transs)    
-		particles = getParticles(ntranss) 
-		sources =  getSources(transs)
-		nsources = len(sources)
+    if limit < ntranss :
+        transs, percentage = truncateTransitions(transs, q, limit)
+    else:
+        percentage=None 
+                
+    # Through the transition-matches, use our helper functions to extract 
+    # all the relevant database data for our query. 
+    if ntranss > 0 :		
+        species, nspecies, nstates = getSpeciesWithStates(transs)           
+        transitions, environments = getTransitionsData(transs)    
+        particles = getParticles(ntranss) 
+        sources =  getSources(transs)
+        nsources = len(sources)
 
-		# Create the header with some useful info. The key names here are
-		# standardized and shouldn't be changed.
-		result.addHeaderField('Truncated',percentage)
-		result.addHeaderField('count-species',nspecies)
-		result.addHeaderField('count-states',nstates)
-		result.addHeaderField('count-radiative',len(transitions))			
-		
-		result.addDataField('RadTrans',transitions)
-		result.addDataField('Atoms',species)
-		result.addDataField('Environments',environments)
-		result.addDataField('Particles',particles)
-		
-	else : # only fill header
-		result.addHeaderField('Truncated',percentage)
-		result.addHeaderField('count-states',0)
-		result.addHeaderField('count-radiative',0)
-	return result	
+        # Create the header with some useful info. The key names here are
+        # standardized and shouldn't be changed.
+        result.addHeaderField('Truncated',percentage)
+        result.addHeaderField('count-species',nspecies)
+        result.addHeaderField('count-states',nstates)
+        result.addHeaderField('count-radiative',len(transitions))			
+        
+        result.addDataField('RadTrans',transitions)        
+        result.addDataField('Atoms',species)
+        result.addDataField('Environments',environments)
+        result.addDataField('Particles',particles)
+        result.addDataField('Sources',sources)
+        
+    else : # only fill header
+        result.addHeaderField('Truncated',percentage)
+        result.addHeaderField('count-states',0)
+        result.addHeaderField('count-radiative',0)
+    return result	
 	
 def truncateTransitions(transitions, request, maxTransitionNumber):
 	"""		
@@ -151,8 +152,6 @@ def getDatasetSources(datasetid):
 		sources.append(article.article.pk)
 
 	return sources
-
-
 
 def getSpeciesWithStates(transs):
 	"""
@@ -326,3 +325,4 @@ def getValidity(value, nvalue):
 		else : 
 			return 'the impact approximation reachs its limit of validity, 0.1 < NV ≤ 0.5'
             
+

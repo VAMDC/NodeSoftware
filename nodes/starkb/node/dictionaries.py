@@ -54,6 +54,7 @@ RETURNABLES = ({\
 
 #source
 'SourceTitle':'Source.encoded_title()',
+'SourceAuthorName':'Source.authors_list()',
 'SourceCategory':'journal',
 'SourceName' : 'Source.journal.encoded_name()',
 'SourceVolume' : 'Source.volume',
