@@ -128,7 +128,7 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
     r, op, foo = rs[0], rs[1], rs[2:]
     if r not in restrictables:
         log.debug('Restrictable "%s" not supported!'%r)
-        return Q(False)
+        return Q(pk__isnull=True)
     if type(restrictables[r]) == tuple:
         rest_rhs = restrictables[r][0]
     else: rest_rhs = restrictables[r]
