@@ -79,16 +79,19 @@ function showFitDetails(subpage,k) {
 
 }
 
+function open_help2(topic) {
+  alert("<p> "+topic+" </p> ");
+}
 
 function open_help(topic) {
-     msg=window.open("","msg","height=200,width=200,left=80,top=80");
-     msg.document.write("<html><title> Help </title>");
-     msg.document.write("<body bgcolor='white' onblur=window.close()>");
-     msg.document.write("<center>")
-     msg.document.write("<h1> HELP - Topic "+topic+"</h1> ");
-     msg.document.write("<p> "+topic+" </p> ");
-     mwg.document.write("</center>");
-     msg.document.write("</body></html><p>");
+  msg=window.open("","msg","height=300,width=250"); //,left=80,top=80");
+  msg.document.write("<html><title> Help </title>");
+  msg.document.write("<body bgcolor='white' onblur=window.close()>");
+  //msg.document.write("<center>")
+  msg.document.write("<h2> HELP - Topic </h2> ");
+  msg.document.write("<p> "+topic+" </p> ");
+  //mwg.document.write("</center>");
+  msg.document.write("</body></html><p>");
 }
 
 function setFocus(page) {
@@ -425,10 +428,12 @@ function ajaxQuery(func,urlstr, nodeurl) {
     dataToSend.push(datum);
   }
 
-//   if (urlstr.length>0) {
+   if (urlstr.length>0) {
+	js = "location.href='"+urlstr+"'";
+
 //     var datum = {"name" : "url", "value" : urlstr};
 //     dataToSend.push(datum);
-//   }
+   } 
 
   var datum = {"name" : "function", "value" : func}; 
   dataToSend.push(datum);
@@ -446,6 +451,9 @@ function ajaxQuery(func,urlstr, nodeurl) {
  	  // Überprüfen, ob ein JS Objekt da ist.
 
 	$("#queryresult").html( data.htmlcode );
+	if (urlstr.length>0) {
+	  $("#B_Download").attr("onclick", js);
+	}
 	//if(ajax!=false) {
  	    // Die von PHP generierte Meldung dem Benutzer darstellen
 	//  $("#queryresult").html( data.htmlcode );
@@ -853,3 +861,39 @@ function startDownload(url) {
 
 
 }
+
+
+
+this.tooltip = function(){	
+	/* CONFIG */		
+		xOffset = 10;
+		yOffset = 20;		
+		// these 2 variable determine popup's distance from the cursor
+		// you might want to adjust to get the right result		
+	/* END CONFIG */		
+	$("a.tooltip").hover(function(e){											  
+		this.t = this.title;
+		this.title = "";									  
+		$("body").append("<div id='tooltip'>"+ this.t +"</div>");
+		$("#tooltip")
+			.css("top",(e.pageY - xOffset) + "px")
+			.css("left",(e.pageX + yOffset) + "px")
+			.fadeIn("fast");		
+    },
+	function(){
+		this.title = this.t;		
+		$("#tooltip").remove();
+    });	
+	$("a.tooltip").mousemove(function(e){
+		$("#tooltip")
+			.css("top",(e.pageY - xOffset) + "px")
+			.css("left",(e.pageX + yOffset) + "px");
+	});			
+};
+
+
+
+// starting the script on page load
+$(document).ready(function(){
+	tooltip();
+});

@@ -97,7 +97,15 @@ def index(request):
 def contact(request):
     c=RequestContext(request,{})
     return render_to_response('cdmsportal/contact.html', c)
-        
+
+def general(request):
+    c=RequestContext(request,{})
+    return render_to_response('cdmsportal/general.html', c)
+
+def help(request):
+    c=RequestContext(request,{})
+    return render_to_response('cdmsportal/help.html', c)
+
         
 def queryPage(request):
     test = request.POST
