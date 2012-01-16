@@ -45,5 +45,5 @@ def valdObstype(op,obstype):
               'derived':'2',
               'theory':'3',
               #'semiempirical':'4',
-              'compilation':'5'}             
+              'compilation':'5'}
     return [op, ourMap.get(obstype, 'None')]

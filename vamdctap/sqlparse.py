@@ -54,6 +54,7 @@ from caselessdict import CaselessDict
 RESTRICTABLES=CaselessDict(DICTS.RESTRICTABLES)
 
 from types import TupleType, FunctionType
+from django.db.models.query_utils import Q as QType
 from string import strip
 import logging
 log = logging.getLogger('vamdc.tap.sql')
@@ -87,11 +88,10 @@ def splitWhere(ws, counter=0):
     return logic,rests,counter
 
 def applyRestrictFu(rs,restrictables=RESTRICTABLES):
-    log.debug('%s'%rs)
     r, op, foo = rs[0], rs[1], rs[2:]
     if r not in restrictables: return rs
     if isinstance(restrictables[r], FunctionType):
-        return restrictables[r]() # this runs the function!
+        return restrictables[r](*rs) # this runs the function!
 
     if not isinstance(restrictables[r], TupleType): return rs
     if len(foo) != 1:
@@ -125,6 +125,9 @@ def checkLen1(x):
         return x[0].strip('\'"')
 
 def restriction2Q(rs, restrictables=RESTRICTABLES):
+    if isinstance(rs,QType): # we are done because it is already a Q-object
+        return rs
+
     r, op, foo = rs[0], rs[1], rs[2:]
     if r not in restrictables:
         log.debug('Restrictable "%s" not supported!'%r)
