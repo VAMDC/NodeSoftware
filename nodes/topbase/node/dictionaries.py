@@ -55,18 +55,20 @@ RETURNABLES = {\
 'AtomStateTotalAngMom' : 'AtomState.totalangularmomentum',
 'AtomStateTermLabel' : 'AtomState.Component.termlabel',
 'AtomStateTermLSL' : 'AtomState.Component.Lscoupling.l',
-'AtomStateTermS' : 'AtomState.Component.Lscoupling.s',
+'AtomStateTermLSS' : 'AtomState.Component.Lscoupling.s',
 'AtomStateTermLSMultiplicity' : 'AtomState.Component.Lscoupling.multiplicity',
 
+'RadTransID':'RadTran.id',
 'RadTransWavelength':'RadTran.wavelength',
 'RadTransWavelengthUnit':u'A',
 'RadTransProbabilityWeightedOscillatorStrength' : 'RadTran.weightedoscillatorstrength',
-
 'RadTransFinalStateRef':'RadTran.finalatomicstate.id',
 'RadTransInitialStateRef':'RadTran.initialatomicstate.id',
 'RadTransProbabilityA' : 'RadTran.transitionprobability',
+'RadTransProbabilityAUnit' : '1/s',
 
-'CrossSectionState' : 'RadCros.id',
+
+#'CrossSectionState' : 'RadCros.id',
 'CrossSectionID' : 'RadCros.id',
 'CrossSectionX' : 'RadCros.xdata',
 'CrossSectionXUnits' : 'RadCros.crosssectionunit.value',

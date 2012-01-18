@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 RETURNABLES = {\
+'BaseURL':'http://vald.astro.uu.se/atoms/tap/',
 'NodeID':'vald',
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.author',
@@ -40,16 +41,17 @@ RETURNABLES = {\
 'AtomStateTermJKS':'AtomState.s2',
 'AtomStateTermK':'AtomState.k',
 #############################################################
+'RadTransID':'RadTran.id',
 'RadTransSpeciesRef':'RadTran.species_id',
-'RadTransComments':'Wavelength is for vacuum.',
 'RadTransWavelength':'RadTran.wave',
 'RadTransWavelengthUnit':u'A',
+'RadTransWavelengthComment':'Wavelength is for vacuum.',
 'RadTransWavelengthRef':'RadTran.wave_ref_id',
-'RadTransFinalStateRef':'RadTran.upstate_id',
-'RadTransInitialStateRef':'RadTran.lostate_id',
+'RadTransUpperStateRef':'RadTran.upstate_id',
+'RadTransLowerStateRef':'RadTran.lostate_id',
 'RadTransMethod':'RadTran.method_return',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
-#'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.accur',
+#'RadTransProbabilityLog10WeightedOscillatorStrengthEval':'RadTran.accur',
 'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
 'RadTransProbabilityLog10WeightedOscillatorStrengthRef':'RadTran.loggf_ref_id',
 'RadTransBroadeningNaturalLineshapeParameter':'RadTran.gammarad',
@@ -74,13 +76,34 @@ RETURNABLES = {\
 # import the unit converter functions
 from vamdctap.unitconv import *
 
+# custom function
+from django.db.models import Q
+OPTRANS= {
+    '<':  '__lt',
+    '>':  '__gt',
+    '=':  '__exact',
+    '<=': '__lte',
+    '>=': '__gte'}
+def bothStates(r,op,rhs):
+    try:
+        op = OPTRANS[op]
+        float(rhs)
+    except:
+        return Q(pk__isnull=True)
+    return Q(**{'upstate__energy'+op:rhs}) & Q(**{'lostate__energy'+op:rhs})
+
+def const_test(r,op,*rhs):
+    try:                                                                                op = OPTRANS[op]
+    except:
+        return Q(pk__isnull=True)
+
 RESTRICTABLES = {\
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
-'AtomIonCharge':'species__ion',
-'AtomStateEnergy':'lostate__energy',
-'Lower.AtomStateEnergy':'lostate__energy',
-'Upper.AtomStateEnergy':'upstate__energy',
+'IonCharge':'species__ion',
+'StateEnergy':bothStates,
+'Lower.StateEnergy':'lostate__energy',
+'Upper.StateEnergy':'upstate__energy',
 'RadTransWavelength':'wave',
 'RadTransWavenumber':('wave',invcm2Angstr),
 'RadTransFrequency':('wave',Hz2Angstr),

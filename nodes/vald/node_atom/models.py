@@ -36,13 +36,6 @@ class State(Model):
         if self.j1 and self.j2:
             return (self.j1,self.j2)
 
-    #def getRefs(self,which):
-    #    try:
-    #        id = eval('self.'+which+'_ref_id')
-    #        return refcache[id]
-    #    except:
-    #        return None
-
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
     class Meta:
