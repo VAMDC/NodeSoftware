@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<VerificationData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.2" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd">
+<VerificationData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.3" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../verification.xsd">
 	<VerificationResult>
 		<NumberOfRadiativeTransitions correct="0" incorrect="1" total="3" unidentified="2"/>
 		<NumberOfVerificationByRule name="atomRuleT01" correct="1" incorrect="2" unidentified="0"/>
@@ -351,7 +351,7 @@
 		</Species>
 		<Processes>
 			<Radiative>
-				<RadiativeTransition>
+				<RadiativeTransition id="P1">
 					<Comments>Wavelength is for vacuum.</Comments>
 					<EnergyWavelength>
 						<Wavelength>
@@ -360,8 +360,8 @@
 							<Value units="A">5999.05214976</Value>
 						</Wavelength>
 					</EnergyWavelength>
-					<InitialStateRef>Svald-5308</InitialStateRef>
-					<FinalStateRef>Svald-5329</FinalStateRef>
+					<UpperStateRef>Svald-5308</UpperStateRef>
+					<LowerStateRef>Svald-5329</LowerStateRef>
 					<SpeciesRef>Xvald-277</SpeciesRef>
 					<Probability>
 						<Log10WeightedOscillatorStrength>
@@ -374,7 +374,7 @@
 						<atomRuleT02 xsi:nil="true"/>
 					</Verification>
 				</RadiativeTransition>
-				<RadiativeTransition>
+				<RadiativeTransition id="P2">
 					<Comments>Wavelength is for vacuum.</Comments>
 					<EnergyWavelength>
 						<Wavelength>
@@ -383,8 +383,8 @@
 							<Value units="A">5999.25477257</Value>
 						</Wavelength>
 					</EnergyWavelength>
-					<InitialStateRef>Svald-7002</InitialStateRef>
-					<FinalStateRef>Svald-6993</FinalStateRef>
+					<UpperStateRef>Svald-7002</UpperStateRef>
+					<LowerStateRef>Svald-6993</LowerStateRef>
 					<SpeciesRef>Xvald-326</SpeciesRef>
 					<Probability>
 						<Log10WeightedOscillatorStrength>
@@ -398,7 +398,7 @@
 						<atomRuleT02 xsi:nil="true"/>
 					</Verification>
 				</RadiativeTransition>
-				<RadiativeTransition>
+				<RadiativeTransition id="P3">
 					<Comments>Wavelength is for vacuum.</Comments>
 					<EnergyWavelength>
 						<Wavelength>
@@ -406,8 +406,8 @@
 							<Value units="A">5999.99556000</Value>
 						</Wavelength>
 					</EnergyWavelength>
-					<InitialStateRef>Svald-8450</InitialStateRef>
-					<FinalStateRef>Svald-8396</FinalStateRef>
+					<UpperStateRef>Svald-8450</UpperStateRef>
+					<LowerStateRef>Svald-8396</LowerStateRef>
 					<SpeciesRef>Xvald-329</SpeciesRef>
 					<Probability>
 						<Log10WeightedOscillatorStrength>
