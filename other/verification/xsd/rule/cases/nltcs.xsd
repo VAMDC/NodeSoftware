@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.3" targetNamespace="http://vamdc.org/xml/xsams/0.3" elementFormDefault="qualified">
 	<xs:include schemaLocation="../rule.xsd"/>
 	<xs:annotation>
 		<xs:documentation>Schema for checking the quantum numbers of closed-shell non-linear triatomic molecules</xs:documentation>
@@ -61,16 +61,16 @@
 											<abs/>
 											<apply>
 												<minus/>
-												<ci>nltcs:J#InitialStateRef</ci>
-												<ci>nltcs:J#FinalStateRef</ci>
+												<ci>nltcs:J#UpperStateRef</ci>
+												<ci>nltcs:J#LowerStateRef</ci>
 											</apply>
 										</apply>
 										<cn>1</cn>
 									</apply>
 									<apply>
 										<eq/>
-										<ci>nltcs:J#InitialStateRef</ci>
-										<ci>nltcs:J#FinalStateRef</ci>
+										<ci>nltcs:J#UpperStateRef</ci>
+										<ci>nltcs:J#LowerStateRef</ci>
 									</apply>
 								</apply>
 							</math>
@@ -91,8 +91,8 @@
 											<abs/>
 											<apply>
 												<minus/>
-												<ci>nltcs:Kc#InitialStateRef</ci>
-												<ci>nltcs:Kc#FinalStateRef</ci>
+												<ci>nltcs:Kc#UpperStateRef</ci>
+												<ci>nltcs:Kc#LowerStateRef</ci>
 											</apply>
 										</apply>
 										<cn>2</cn>
@@ -115,10 +115,10 @@
 										<rem/>
 										<apply>
 											<plus/>
-											<ci>nltcs:v3#InitialStateRef</ci>
-											<ci>nltcs:v3#FinalStateRef</ci>
-											<ci>nltcs:Ka#InitialStateRef</ci>
-											<ci>nltcs:Ka#FinalStateRef</ci>
+											<ci>nltcs:v3#UpperStateRef</ci>
+											<ci>nltcs:v3#LowerStateRef</ci>
+											<ci>nltcs:Ka#UpperStateRef</ci>
+											<ci>nltcs:Ka#LowerStateRef</ci>
 										</apply>
 										<cn>2</cn>
 									</apply>

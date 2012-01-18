@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.3" targetNamespace="http://vamdc.org/xml/xsams/0.3" elementFormDefault="qualified">
 	<xs:include schemaLocation="../rule.xsd"/>
 	<xs:annotation>
 		<xs:documentation>Schema for checking the quantum numbers of atoms</xs:documentation>
@@ -27,16 +27,16 @@
 											<abs/>
 											<apply>
 												<minus/>
-												<ci>TotalAngularMomentum#InitialStateRef</ci>
-												<ci>TotalAngularMomentum#FinalStateRef</ci>
+												<ci>TotalAngularMomentum#UpperStateRef</ci>
+												<ci>TotalAngularMomentum#LowerStateRef</ci>
 											</apply>
 										</apply>
 										<cn>1</cn>
 									</apply>
 									<apply>
 										<eq/>
-										<ci>TotalAngularMomentum#InitialStateRef</ci>
-										<ci>TotalAngularMomentum#FinalStateRef</ci>
+										<ci>TotalAngularMomentum#UpperStateRef</ci>
+										<ci>TotalAngularMomentum#LowerStateRef</ci>
 									</apply>
 								</apply>
 							</math>
@@ -51,8 +51,8 @@
 							<math xmlns="http://www.w3.org/1998/Math/MathML">
 								<apply>
 									<neq/>
-									<ci>Parity#InitialStateRef</ci>
-									<ci>Parity#FinalStateRef</ci>
+									<ci>Parity#UpperStateRef</ci>
+									<ci>Parity#LowerStateRef</ci>
 								</apply>
 							</math>
 						</rule>

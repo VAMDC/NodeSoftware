@@ -14,7 +14,7 @@ from mathml.utils import pyterm # register Python term builder
 
 XSI_NS = "http://www.w3.org/2001/XMLSchema-instance" 
 XSD_NS = "http://www.w3.org/2001/XMLSchema"
-XSAMS_NS = "http://vamdc.org/xml/xsams/0.2"
+XSAMS_NS = "http://vamdc.org/xml/xsams/0.3"
 MATHML_NS = "http://www.w3.org/1998/Math/MathML"
 
 class NoMathMLException(Exception):
@@ -61,7 +61,7 @@ class Verification:
 		self.whiteListOfRefs = {}
 		parentsOfNodesWithVerification = {}
 
-		nodesWithVerification = self.tree.xpath('//child::Verification[contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil]', namespaces={"xsams": XSAMS_NS, 'xsi': XSI_NS})
+		nodesWithVerification = self.tree.xpath('//child::xsams:Verification[contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil]', namespaces={"xsams": XSAMS_NS, 'xsi': XSI_NS})
 		if nodesWithVerification:
 			for nodeWithVerification in nodesWithVerification:
 				if not nodeWithVerification.xpath('./child::*[contains(self::node(),  "false") or contains(self::node(),  "true")]'):
@@ -112,7 +112,7 @@ class Verification:
 							isRedundantNode = True
 							idNodes = {}
 							if childNode.tag == '{%s}Processes' % XSAMS_NS:
-								if not childNode.xpath('.//child::Verification[contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil]', namespaces={"xsams": XSAMS_NS, 'xsi': XSI_NS}):
+								if not childNode.xpath('.//child::xsams:Verification[contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil]', namespaces={"xsams": XSAMS_NS, 'xsi': XSI_NS}):
 									usefulParentNode.getparent().remove(childNode)
 									flag = True
 									break
@@ -269,14 +269,14 @@ class Verification:
 			verificationDataElement.append(rootNode)
 			rootNode = verificationDataElement
 
-			verificationResultNodes = rootNode.xpath('./VerificationResult', namespaces = {"xsams":XSAMS_NS})
+			verificationResultNodes = rootNode.xpath('./xsams:VerificationResult', namespaces = {"xsams":XSAMS_NS})
 			if verificationResultNodes:
 				for childNode in verificationResultNodes[:]:
 					verificationResultNodes[0].getparent().remove(childNode)
 
-			verificationResultElement = etree.Element('VerificationResult')
+			verificationResultElement = etree.Element('{%s}VerificationResult' % XSAMS_NS, nsmap=rootNode.nsmap)
 
-			nodesWithVerification = self.tree.xpath('//child::Verification', namespaces = {"xsams":XSAMS_NS})
+			nodesWithVerification = self.tree.xpath('//child::xsams:Verification', namespaces = {"xsams":XSAMS_NS})
 			if nodesWithVerification:
 				domainNumbers = {'AtomicState' : None, 'MolecularState' : None, 'RadiativeTransition' : None, 'NonRadiativeTransition' : None}
 
@@ -315,9 +315,9 @@ class Verification:
 					if ruleName.find('Rule') == -1:
 						if domainNumbers[ruleName]['total'] == 0:
 							continue
-						numberElement = etree.Element('NumberOf' + ruleName + 's')
+						numberElement = etree.Element(('{%s}NumberOf' + ruleName + 's') % XSAMS_NS, nsmap=rootNode.nsmap)
 					else:
-						numberElement = etree.Element('NumberOfVerificationByRule')
+						numberElement = etree.Element('{%s}NumberOfVerificationByRule' % XSAMS_NS, nsmap=rootNode.nsmap)
 						numberElement.set('name', ruleName)
 					for numberName in sorted(domainNumbers[ruleName]):
 						numberElement.set(numberName, str(domainNumbers[ruleName][numberName]))
@@ -408,7 +408,7 @@ class Verification:
 							return False
 					else:
 						return None
-					namespaces[caseID] = 'http://vamdc.org/xml/xsams/0.2/cases/' + caseID
+					namespaces[caseID] = 'http://vamdc.org/xml/xsams/0.3/cases/' + caseID
 				else:
 					return None
 
@@ -430,22 +430,22 @@ class Verification:
 
 
 	def _addRuleNode(self, element, ruleItem):
-		ruleElement = etree.Element(ruleItem[0])
+		ruleElement = etree.Element(('{%s}' + ruleItem[0]) % XSAMS_NS, nsmap=element.nsmap)
 		if ruleItem[1] is None:
 			ruleElement.set('{%s}nil' % XSI_NS, "true")
 		else:
 			ruleElement.text = ruleItem[1]
 
-		verificationNodes = element.xpath('.//Verification', namespaces={"xsams":XSAMS_NS})
+		verificationNodes = element.xpath('.//xsams:Verification', namespaces={"xsams":XSAMS_NS})
 		if verificationNodes:
 			verificationElement = verificationNodes[0]
-			ruleNodes = verificationElement.xpath('.//' + ruleItem[0], namespaces={"xsams":XSAMS_NS})
+			ruleNodes = verificationElement.xpath('.//xsams:' + ruleItem[0], namespaces={"xsams":XSAMS_NS})
 			if ruleNodes:
 				verificationElement.replace(ruleElement, ruleNodes[0])
 			else:
 				verificationElement.append(ruleElement)
 		else:
-			verificationElement = etree.Element('Verification')
+			verificationElement = etree.Element('{%s}Verification' % XSAMS_NS, nsmap=element.nsmap)
 			verificationElement.append(ruleElement)
 			element.append(verificationElement)
 
@@ -513,7 +513,7 @@ class RulesParser:
 		if not only: only = {}
 		if not without: without = {}
 		if not self.rules:
-			tree = self._makeOneSchema("verification.xsd")
+			tree = XSDTree.makeOne("verification.xsd")
 
 			if not tree:
 				return self.rules
@@ -560,7 +560,9 @@ class RulesParser:
 		return rules
 
 
-	def _makeOneSchema(self, fileName):
+class XSDTree:
+
+	def makeOne(fileName):
 		file = open(fileName)
 		if not file:
 			return None
@@ -607,7 +609,7 @@ class RulesParser:
 				for elem in redefines:
 					parent.append(elem)
 
-				innerTree = self._makeOneSchema(location)
+				innerTree = XSDTree.makeOne(location)
 				if not innerTree:
 					return None
 
@@ -629,6 +631,7 @@ class RulesParser:
 					parent.append(innerChild)
 		return tree
 
+	makeOne = staticmethod(makeOne)
 
 if __name__ == '__main__':
 	if len(sys.argv) > 1 and sys.argv[1]:

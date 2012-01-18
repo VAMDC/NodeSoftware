@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../xsd/xsams/0.2/xsams.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../xsd/xsams/0.3/xsams.xsd" xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<Sources>
 		<Source sourceID="Bvald-K03">
 			<Authors>
@@ -345,7 +345,7 @@
 	</Species>
 	<Processes>
 		<Radiative>
-			<RadiativeTransition>
+			<RadiativeTransition id="P1">
 				<Comments>Wavelength is for vacuum.</Comments>
 				<EnergyWavelength>
 					<Wavelength>
@@ -354,8 +354,8 @@
 						<Value units="A">5999.05214976</Value>
 					</Wavelength>
 				</EnergyWavelength>
-				<InitialStateRef>Svald-5308</InitialStateRef>
-				<FinalStateRef>Svald-5329</FinalStateRef>
+				<UpperStateRef>Svald-5308</UpperStateRef>
+				<LowerStateRef>Svald-5329</LowerStateRef>
 				<SpeciesRef>Xvald-277</SpeciesRef>
 				<Probability>
 					<Log10WeightedOscillatorStrength>
@@ -364,7 +364,7 @@
 					</Log10WeightedOscillatorStrength>
 				</Probability>
 			</RadiativeTransition>
-			<RadiativeTransition>
+			<RadiativeTransition id="P2">
 				<Comments>Wavelength is for vacuum.</Comments>
 				<EnergyWavelength>
 					<Wavelength>
@@ -373,8 +373,8 @@
 						<Value units="A">5999.25477257</Value>
 					</Wavelength>
 				</EnergyWavelength>
-				<InitialStateRef>Svald-7002</InitialStateRef>
-				<FinalStateRef>Svald-6993</FinalStateRef>
+				<UpperStateRef>Svald-7002</UpperStateRef>
+				<LowerStateRef>Svald-6993</LowerStateRef>
 				<SpeciesRef>Xvald-326</SpeciesRef>
 				<Probability>
 					<Log10WeightedOscillatorStrength>
@@ -384,7 +384,7 @@
 					</Log10WeightedOscillatorStrength>
 				</Probability>
 			</RadiativeTransition>
-			<RadiativeTransition>
+			<RadiativeTransition id="P3">
 				<Comments>Wavelength is for vacuum.</Comments>
 				<EnergyWavelength>
 					<Wavelength>
@@ -392,8 +392,8 @@
 						<Value units="A">5999.99556000</Value>
 					</Wavelength>
 				</EnergyWavelength>
-				<InitialStateRef>Svald-8450</InitialStateRef>
-				<FinalStateRef>Svald-8396</FinalStateRef>
+				<UpperStateRef>Svald-8450</UpperStateRef>
+				<LowerStateRef>Svald-8396</LowerStateRef>
 				<SpeciesRef>Xvald-329</SpeciesRef>
 				<Probability>
 					<Log10WeightedOscillatorStrength>
