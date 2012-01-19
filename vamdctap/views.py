@@ -2,7 +2,6 @@
 from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse
-from django.db.models import Q
 
 from datetime import datetime
 from string import lower
@@ -88,9 +87,6 @@ class TAPQUERY(object):
 
         try: self.format=lower(self.data['FORMAT'])
         except: self.errormsg += 'Cannot find FORMAT in request.\n'
-        #else:
-            #if self.format != 'xsams':
-            #    self.errormsg += 'Currently, only FORMAT=XSAMS is supported.\n'
 
         try: self.parsedSQL=SQL.parseString(self.query)
         except: # if this fails, we're done
@@ -138,7 +134,8 @@ class TAPQUERY(object):
         return '%s'%self.query
 
 def getBaseURL(request):
-    return 'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
+    return CaselessDict(DICTS.RETURNABLES).get('BaseURL') or \
+        'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
 
 def addHeaders(headers,response):
     HEADS=['COUNT-SOURCES',

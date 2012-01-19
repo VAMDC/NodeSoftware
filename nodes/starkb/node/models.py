@@ -97,6 +97,9 @@ class Article(models.Model):
     def encoded_title(self):
         return escape(self.title)
         
+    def authors_list(self):
+        return self.authors.rsplit(',')
+        
     class Meta:
         db_table = u't_articles'
 
@@ -119,12 +122,17 @@ class Level(models.Model):
     dataset = models.ForeignKey(Dataset, db_column='id_dataset')
     config = models.CharField(unique=True, max_length=60)
     term = models.CharField(unique=True, max_length=36)
-    j = models.CharField(unique=True, max_length=15, blank=True)    
+    J = models.CharField(unique=True, max_length=15, blank=True)       
+    L = models.IntegerField(null=True)    
+    S = models.FloatField(null=True)    
+    LS_multiplicity = models.IntegerField(null=True)    
+    K = models.FloatField(null=True)    
+    J1 = models.FloatField(null=True)    
     
     def j_asFloat(self):
         #add .0 to "1/2" or "3/2" to get float value
-        if(self.j is not None) :
-            return eval(self.j+".0")
+        if(self.J is not None) :
+            return eval(self.J+".0")
         return None
         
     class Meta:
@@ -160,9 +168,7 @@ class Temperature(models.Model):
     temperature = models.IntegerField(unique=True)
     a = models.FloatField(null=True, blank=True)
     class Meta:
-        db_table = u't_temperatures'
-
-        
+        db_table = u't_temperatures'       
 
 
 class TemperatureCollider(models.Model):
@@ -175,23 +181,3 @@ class TemperatureCollider(models.Model):
     d = models.FloatField(null=True, blank=True)
     class Meta:
         db_table = u't_temperatures_colliders'
-        
-class Parameter():
-    def __init__(self):
-        self.environment = None
-        self.value = None
-        self.accurracy = None
-        self.name = None
-        self.comment = None
-        
-class ShiftingParameter(Parameter):
-    def __init__(self):
-        Parameter.__init__(self)
-        
-class LineshapeParameter(Parameter):
-    def __init__(self):
-        Parameter.__init__(self)
-
-
-
-

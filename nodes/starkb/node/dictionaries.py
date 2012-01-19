@@ -12,7 +12,14 @@ RETURNABLES = ({\
 'AtomStateConfigurationLabel':'AtomState.config',
 'AtomStateTermLabel':'AtomState.term',
 'AtomStateTotalAngMom' : 'AtomState.j_asFloat()',
+'AtomStateTermLSL':'AtomState.L',
+'AtomStateTermLSS':'AtomState.S',
+'AtomStateTermLSMultiplicity':'AtomState.LS_multiplicity',
 'AtomStateRef':'AtomState.Sources',
+'AtomStateTermJKK':'AtomState.K',
+'AtomStateTermJKJ':'AtomState.J1',
+'AtomStateEnergy' : '0',
+
 
 #radiative transition
 'RadTransBroadeningPressure':'RadTran',
@@ -47,6 +54,7 @@ RETURNABLES = ({\
 
 #source
 'SourceTitle':'Source.encoded_title()',
+'SourceAuthorName':'Source.authors_list()',
 'SourceCategory':'journal',
 'SourceName' : 'Source.journal.encoded_name()',
 'SourceVolume' : 'Source.volume',
