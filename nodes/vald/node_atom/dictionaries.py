@@ -48,6 +48,7 @@ RETURNABLES = {\
 'RadTransFinalStateRef':'RadTran.upstate_id',
 'RadTransInitialStateRef':'RadTran.lostate_id',
 'RadTransMethod':'RadTran.method_return',
+'RadTransProbabilityA':'RadTran.einsteina',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
 #'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.accur',
 'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
@@ -88,6 +89,6 @@ RESTRICTABLES = {\
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 'RadTransBroadeningNatural':'gammarad',
 'RadTransBroadeningPressure':'gammastark',
-'MethodCategory':('method_restrict',valdObstype)
+'MethodCategory':('method_restrict',valdObstype),
+'RadTransProbabilityA':'einsteina'
 }
-

@@ -58,6 +58,7 @@ class Transition(Model):
 
     species = ForeignKey(Species, db_index=True)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
+    einsteina = DecimalField(max_digits=4, decimal_places=3, db_index=True, null=True)
     gammarad = DecimalField(max_digits=6, decimal_places=2,null=True)
     gammastark = DecimalField(max_digits=7, decimal_places=3,null=True)
     gammawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
@@ -93,6 +94,11 @@ class Transition(Model):
         if self.gammawaals: return self.gammawaals
         elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
         else: return None
+
+# Don't calculate here, but directly using sql
+#    def getEinsteinA(self):
+#        "Calculate the einstein A"        
+#        return (0.667025e16 * 10**self.loggf) / ((2 * self.upstate.j + 1.0) * self.wave**2)
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.wave)
