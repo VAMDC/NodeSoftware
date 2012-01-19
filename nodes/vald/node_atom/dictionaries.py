@@ -39,7 +39,7 @@ RETURNABLES = {\
 'AtomStateTermJ1J2':'AtomState.j1j2()',
 'AtomStateTermJKJ':'AtomState.jc',
 'AtomStateTermJKS':'AtomState.s2',
-'AtomStateTermK':'AtomState.k',
+'AtomStateKappa':'AtomState.k',
 #############################################################
 'RadTransID':'RadTran.id',
 'RadTransSpeciesRef':'RadTran.species_id',
