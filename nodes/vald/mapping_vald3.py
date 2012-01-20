@@ -140,7 +140,7 @@ mapping = [
 
 
     # State model read 2 lines at a time from vald3 main file term
-    # files are grouped with 3 lines (lower,upper,transition_inf) for
+    # files are grouped with 3 lines (lower,upper,transition_info) for
     # every 2 lines (lower, upper) in the vald file
 
     # States output file appended with lower states
