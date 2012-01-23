@@ -1098,10 +1098,10 @@ def XsamsRadTranShifting(RadTran, G):
         for ShiftingParam in RadTran.ShiftingParams:
             GS = lambda name: GetValue(name, ShiftingParam=ShiftingParam)
             string += makePrimaryType("ShiftingParameter", "RadTransShiftingParam", GS, extraAttr={"name":GS("RadTransShiftingParamName")})
-            val = GS("RadTransShiftingParamValueUnits")
+            val = GS("RadTransShiftingParamUnits")
 
             if val:
-                string += "<Value units=%s>%s</Value>" % (GS("RadTransShiftingParamValueUnits"), GS("RadTransShiftingParamValue" ))
+                string += "<Value units='%s'>%s</Value>" % (GS("RadTransShiftingParamUnits"), GS("RadTransShiftingParam" ))
                 string += makePrimaryType("Accuracy", "RadTransShiftingParamAcc" , GS, extraAttr={"calibration":GS("RadTransShiftingParamAccCalib" ), "quality":GS("RadTransShiftingParamAccQuality")})
                 systerr = GS("RadTransShiftingParamAccSystematic")
                 if systerr:
@@ -1115,7 +1115,6 @@ def XsamsRadTranShifting(RadTran, G):
                     string += "<StatHigh confidence=%s relative=%s>%s</StatHigh>" % (GS("RadTransShiftingParamAccStatHighConfidence"), GS("RadTransShiftingParamAccStatHighRelative"), systerr)
                     string += "<StatLow confidence=%s relative=%s>%s</StatLow>" % (GS("RadTransShiftingParamAccStatLowConfidence"), GS("RadTransShiftingParamAccStatLowRelative"), systerr)
                 string += "</Accuracy>"
-                string += "</Value>"
 
             if hasattr(ShiftingParam, "Fit"):
                 for Fit in makeiter(ShiftingParam.Fits):
