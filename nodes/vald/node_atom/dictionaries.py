@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 RETURNABLES = {\
-'BaseURL':'http://vald.astro.uu.se/atoms/tap/',
 'NodeID':'vald',
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.author',
