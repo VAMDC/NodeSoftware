@@ -46,7 +46,7 @@ SQL=setupSQLparser()
 
 ############ SQL PARSER FINISHED; SOME HELPER THINGS BELOW
 
-from django.db.models import Q
+from django.db.models import Q, F
 from django.conf import settings
 from django.utils.importlib import import_module
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
@@ -58,6 +58,10 @@ from django.db.models.query_utils import Q as QType
 from string import strip
 import logging
 log = logging.getLogger('vamdc.tap.sql')
+
+# Q-objects for always True / False
+QTrue = Q(pk=F('pk'))
+QFalse = ~QTrue
 
 OPTRANS= { # transfer SQL operators to django-style
     '<':  '__lt',
@@ -131,7 +135,7 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
     r, op, foo = rs[0], rs[1], rs[2:]
     if r not in restrictables:
         log.debug('Restrictable "%s" not supported!'%r)
-        return Q(pk__isnull=True)
+        return QFalse
     if type(restrictables[r]) == tuple:
         rest_rhs = restrictables[r][0]
     else: rest_rhs = restrictables[r]
