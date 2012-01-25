@@ -7,67 +7,18 @@ There are a few more bits and pieces that are both good to know
 and maybe necessary for a particular node setup.
 
 
-.. _unitconv:
+.. _deployurl:
 
-Unit conversions for Restrictables
----------------------------------------------
+Setting the deployment URL
+-----------------------------
 
-It is possible in ``dictionaries.py`` to apply a function to the values that
-come in the WHERE-clause of a query together with the Restrictables::
+The NodeSoftware tries to automatically find out the URL with which it is
+accessed and uses this to fill the URL-information in */tap/capabilities*,
+among other things. However, this does not always work (e.g. if you deploy
+behind a proxy) so there is a manual override. Simply set *DEPLOY_URL* in
+``settings.py``, ending with */tap/* like this::
 
-    from vamdctap.unitconv import *
-    RESTRICTABLES = {\
-    'RadTransWavelength':'wave',
-    'RadTransWavenumber':('wave',invcm2Angstr),
-
-Here we give a two-tuple as the right-hand-side of the Restrictable *RadTransWavenumber* where the first element is the name of the model field (as usual) and the second is the function that is to be applied.
-
-.. note::
-    The second part of the tuple needs to be the function itself, not its name as a string. This allows you to write custom functions in the same file, just above where you use them.
-
-.. note::
-    The common functions for unit conversion reside in ``vamdctap/unitconv.py``. This set is far from complete and you are welcome to ask for additions that you need.
-
-.. _specialrestr:
-
-Treating a Restrictable as a special case
----------------------------------------------
-
-Perhaps a unit conversion (see above) is not enough to handle a Restrictable, e. g. because you do not have the quantity available in your database but know it anyway. Suppose a database has information on one atom only, say iron. For the output one would simply hardcode the information on iron in the Returnables as constant strings. For the query on the other hand, you would like to support AtomSymbol but have no field in your database to check against - after all it would be useles to have a database column that is the same everywhere.
-
-The solution here is to manipulate the set of restrictions by hand instead of letting *sql2Q()* handle it automatically. *sql2Q()* is a shorthand function that does these steps after each other:
-
-1. Use *splitWhere(sql.where)* to split the WHERE statement in two:
-
-* a structure that represents the logical structure of the query.
-* a dictionary with numbers as keys and a list as values that each contain the Restrictable, the operator and the arument(s).
-* For example, the query *SELECT ALL WHERE RadTranswavelenth > 3000 and RadTranswavelenth < 3100 and (AtomSymbol = 'Fe' OR AtomSymbol = 'Mg')* would return the two variables like 
-
- * *['r0', 'and', 'r1', 'and', '(', 'r2', 'or', 'r3', ')']*
- * *{'1': [u'RadTranswavelength', '<', u'3100'], '0': [u'RadTranswavelength', '>', u'3000'], '3': [u'AtomSymbol', '=', u"'Mg'"], '2': [u'AtomSymbol', '=', u"'Fe'"]}*
-
-2. Go through the Restrictables and apply the unit conversion functions that were specified with the mechanism above.
-
-3. Make use of the information in ``dictionaries.py`` to rewrite the restrictions into the native format.
-
-4. Merge the individual restrictions together with their logic connection again and evaluate the whole shebang.
-
-So, in summary, the call *q=sql2Q(sql)* at the start of the query function can be replaced by::
-
-    logic,rs,count = splitWhere(sql.where)
-    rs = applyRestrictFus(rs)
-    qdict = restriction2Q(rs)
-    q = mergeQwithLogic(qdict,logic)
-
-Now, depending on what you want to do, you can manipulate the variables at any intermediate step. To continue the example, we insert the following right after the call to *splitWhere()*::
-
-    ids = [r for r in rs if rs[r][0]=='AtomSymbol'] # find the numbers where the Restrictable is AtomSymbol
-    for id in ids:
-        #to be continued.        
-        
-    
-.. note::
-    We are aware that this is not very comfortable yet and are thinking of a better solution. Suggestions are welcome. :)
+    DEPLOY_URL = 'http://your.server/some/path/tap'
 
 
 
@@ -164,19 +115,25 @@ And correspondingly in your RETURNABLES in ``dictionaries.py``::
 Handling the Requestables better
 ----------------------------------
 
-The XML generator is aware of the Requestables and it only returns the parts of the schema that are wanted. Therefore the nodes need in principle not care about this. However, there are two issues that can interfere:
+The XML generator is aware of the Requestables and it only returns the parts of
+the schema that are wanted. Therefore the nodes need in principle not care
+about this. However, there are two issues that can interfere:
 
 * If a node imposes volume limitations, this can lead to false results. For
-  example, when a client asks for "SELECT SPECIES" without any restriction and a
-  node's query function usually finds out the species for a set of transitions,
-  which gets truncated, then only the species for the first few transitions in
-  the database are returned.
+  example in a transition database, when a client asks for "SELECT SPECIES"
+  without any restriction then a node's query function usually finds out the
+  species for a set of transitions, which gets truncated to the volume limit,
+  then only the species for the first few transitions in the database are
+  returned.
 * Again taking "SELECT SPECIES" as example, this can lead to performance issues
-  if a node's query stategy is to impose the restrictions onto the most numerous
-  model fist, since this query then corresponds to selecting everything and
-  afterwards throwing everything away except the species information.
+  if a node's query stategy is to impose the restrictions onto the most
+  numerous model fist, since this query then corresponds to selecting
+  everything and afterwards throwing everything away except the species
+  information.
 
-The solution is to make the queryfunction aware of the Returnables. The are attached to the object **sql** that comes as input. For example, one can test if the setup of atomic states is needed like this::
+The solution is to make the queryfunction aware of the Returnables. These are
+attached to the object **sql** that comes as input. For example, one can test
+if the setup of atomic states is needed like this::
 
     needAtomStates = not sql.requestables or 'atomstates' in sql.requestables
 
@@ -186,7 +143,8 @@ all (otherwise "ALL" is default) and then whether 'atomstates' is one
 of them.
 
 .. note::
-    The query parser tries to be smart and adds the Requestables that are implied by another
+    The query parser tries to be smart and adds the Requestables that are
+    implied by another
     one. For example it adds 'atomstates' and 'moleculestates' when the client asks for
     'states'. Therefore it is enough to test for the most explicit one in the query functions.
 
@@ -237,6 +195,37 @@ of `.XML()` which means that this needs to be coded as a function/method in
 your model, not as an attribute.
 
 
+Debugging and testing
+---------------------------
+
+Sometimes it is necessary to go manually go though the steps that happen when a query comes in in order to find out where omething goes wrong. A good tool for this is in interactive python session which you start from within your node directory with::
+
+    ./manage.py shell
+
+From within the Python shell, you can run::
+
+    # import the relevant part of the NodeSoftware
+    from vamdctap import views as V
+    # import your queryfunction
+    from node import queryfunc as Q
+    # set up a query
+    foo = {'LANG':'VSS2','FORMAT':'XSAMS',
+        'QUERY':'select all where radtranswavelength < 1000 and radtranswavelength > 900'}
+    # run the parser
+    foo = V.TAPQUERY(foo)
+    # check basic validity
+    print foo.isvalid
+    ...
+    # look at the parsed where clause
+    print foo.where
+    # put it into your query function and see what happens
+    Q.setupResults(foo)
+
+You can also manually run the first step from the queryfunction::
+
+    from vamdctap import sqlparse as S
+    q = S.sql2Q(foo)
+    print q
 
 .. _returnresult:
 
@@ -255,6 +244,81 @@ Whenever *FORMAT* is something else than *XSAMS*, the NodeSoftware checks whethe
     know a little more about Django views. In addition you are on your own
     to assembe your custom data format.
 
+.. _unitconv:
+
+Unit conversions for Restrictables
+---------------------------------------------
+
+It is possible in ``dictionaries.py`` to apply a function to the values that
+come in the WHERE-clause of a query together with the Restrictables::
+
+    from vamdctap.unitconv import *
+    RESTRICTABLES = {\
+    'RadTransWavelength':'wave',
+    'RadTransWavenumber':('wave',invcm2Angstr),
+
+Here we give a two-tuple as the right-hand-side of the Restrictable *RadTransWavenumber* where the first element is the name of the model field (as usual) and the second is the function that is to be applied.
+
+.. note::
+    The second part of the tuple needs to be the function itself, not its name as a string. This allows you to write custom functions in the same file, just above where you use them.
+
+.. note::
+    The common functions for unit conversion reside in ``vamdctap/unitconv.py``. This set is far from complete and you are welcome to ask for additions that you need.
+
+.. _specialrestr:
+
+Treating a Restrictable as a special case
+---------------------------------------------
+
+Perhaps a unit conversion (see above) is not enough to handle a Restrictable,
+e. g. because you do not have the quantity available in your database but know
+it anyway. Suppose a database has information on one atom only, say iron. For
+the output one would simply hardcode the information on iron in the Returnables
+as constant strings. For the query on the other hand, you would like to support
+AtomSymbol but have no field in your database to check against - after all it
+would be wasteful to have a database column that is the same everywhere.
+
+Custom restrictable function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+One way of 
+
+Manipulating the query
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Another solution is to manipulate the set of restrictions by hand instead of letting *sql2Q()* handle it automatically. *sql2Q()* is a shorthand function that does these steps after each other:
+
+1. Use *splitWhere(sql.where)* to split the WHERE statement in two:
+
+* a structure that represents the logical structure of the query.
+* a dictionary with numbers as keys and a list as values that each contain the Restrictable, the operator and the arument(s).
+* For example, the query *SELECT ALL WHERE RadTranswavelenth > 3000 and RadTranswavelenth < 3100 and (AtomSymbol = 'Fe' OR AtomSymbol = 'Mg')* would return the two variables like 
+
+ * *['r0', 'and', 'r1', 'and', '(', 'r2', 'or', 'r3', ')']*
+ * *{'1': [u'RadTranswavelength', '<', u'3100'], '0': [u'RadTranswavelength', '>', u'3000'], '3': [u'AtomSymbol', '=', u"'Mg'"], '2': [u'AtomSymbol', '=', u"'Fe'"]}*
+
+2. Go through the Restrictables and apply the unit conversion functions that were specified with the mechanism above.
+
+3. Make use of the information in ``dictionaries.py`` to rewrite the restrictions into the native field names, in the form of Django Q-objects.
+
+4. Merge the individual restrictions together with their logic connection again and evaluate the whole shebang.
+
+So, in summary, the call *q=sql2Q(sql)* at the start of the query function can be replaced by::
+
+    logic,restrictions,count = splitWhere(sql.where)
+    q_dict = {}
+    for i,restriction in restrictions.items():
+        restriction = applyRestrictFu(restriction)
+        q_dict[i] = restriction2Q(restriction)
+    q = mergeQwithLogic(q_dict, logic)
+
+Now, depending on what you want to do, you can manipulate this process at any intermediate step. To continue the example with iron only, we could insert the following at the start of the loop over the restrictions::
+
+    if restriction[0].lower() == 'atomsymbol':
+        
+
+        
+    
 .. _moredjango:
 
 Making more use of Django
