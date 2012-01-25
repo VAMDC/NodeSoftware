@@ -657,10 +657,7 @@ def XsamsAtoms(Atoms):
         
             p, j, k, hfm, mqn = G('AtomStateParity'), G('AtomStateTotalAngMom'), \
                                 G('AtomStateKappa'), G('AtomStateHyperfineMomentum'), \
-                                G('AtomStateMagneticQuantumNumber')
-            print "energy:", G('AtomStateEnergy'),
-            print "quantum numbers:", p,j,k,hfm
- 
+                                G('AtomStateMagneticQuantumNumber') 
             if p:
                 yield '<Parity>%s</Parity>' % parityLabel(p)
             if j:
