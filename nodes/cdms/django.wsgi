@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append('/home/endres/Projects/vamdc/')
+sys.path.append('/var/www/vamdcdev/')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.cdms.settings'
 

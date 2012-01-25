@@ -57,10 +57,6 @@ class Atomicion(models.Model):
     inchi = models.CharField(max_length=30)
     inchikey = models.CharField(max_length=30)
     isoelectronicsequence = models.CharField(max_length=30)  
-    #elementsymbol = models.CharField(unique=True, max_length=9)
-    #nuclearcharge = models.IntegerField(unique=True)    
-    #massnumber = models.IntegerField(unique=True)
-    #mass = models.FloatField()
     class Meta:
         db_table = u't_atomicion'
  
@@ -68,19 +64,12 @@ class Atomicion(models.Model):
 
 class Version(models.Model):
     id = models.IntegerField(primary_key=True)
-    #ioncharge = models.IntegerField()
-    #inchi = models.CharField(max_length=30)
-    #inchikey = models.CharField(max_length=30)
-    #isoelectronicsequence = models.CharField(max_length=30)  
-    #elementsymbol = models.CharField(unique=True, max_length=9)
-    #nuclearcharge = models.IntegerField(unique=True)    
-    #massnumber = models.IntegerField(unique=True)
-    #mass = models.FloatField()    
     atomicion = models.ForeignKey(Atomicion, null=True, db_column='atomicionid', blank=True)
     radiativetransitionsource = models.ForeignKey(Source, null=True, db_column='radiativetransitionsourceid', blank=True, related_name='+')
     crosssectionsource = models.ForeignKey(Source, null=True, db_column='crosssectionsourceid', blank=True)
     ionversion = models.IntegerField(unique=True)
-    creationdate = models.DateField()
+    creationdate = models.DateField()  
+        
     class Meta:
         db_table = u't_version'
         managed = False
@@ -112,11 +101,31 @@ class Atomicstate(models.Model):
     statisticalweight = models.IntegerField()
     statisticalweightunit = models.ForeignKey(Unit, db_column='statisticalweightunitid', related_name='+')
     parity = models.ForeignKey(Parity, db_column='parityid')
-    xdata = models.TextField(null=True)
-    ydata = models.TextField(null=True)
-    crosssectionunit = models.ForeignKey(Unit, db_column='crosssectionunitid', related_name='+', null=True)
+    
+    def state_id(self):
+        return self.id
+        
+    def species_id(self):
+        return None
+        
     class Meta:
         db_table = u't_atomicstate'
+        
+class Particle(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(unique=True, max_length=30)
+    mass = models.FloatField()
+    massunit = models.ForeignKey(Unit, db_column='massunitid', related_name='+')
+    charge = models.FloatField()
+   
+    def species_id(self):
+        return 'P%s'%self.id
+        
+    def state_id(self):
+        return None
+        
+    class Meta:
+        db_table = u't_particle'
  
 class Collisionaltransition(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -124,13 +133,27 @@ class Collisionaltransition(models.Model):
     elementsymbol = models.CharField(max_length=9)
     nuclearcharge =  models.IntegerField()
     ioncharge =  models.IntegerField()
-    xdata = models.TextField()
-    ydata = models.TextField()
-    iseffective = models.BooleanField()
     initialatomicstate = models.ForeignKey(Atomicstate, db_column='initialatomicstateid', related_name='+')
     finalatomicstate = models.ForeignKey(Atomicstate, db_column='finalatomicstateid', related_name='+')
-    class Meta:
+    collider = models.ForeignKey(Particle, db_column='colliderid', related_name='+')
+    class Meta:        
         db_table = u'v_recommendedcollisionaltransition'
+        
+class Datadescription(models.Model):
+    id = models.IntegerField(primary_key=True)
+    value = models.CharField(unique=True, max_length=30)
+    class Meta:
+        db_table = u't_datadescription'
+        
+class Tabulateddata(models.Model):
+    id = models.IntegerField(primary_key=True)
+    collisionaltransition = models.ForeignKey(Collisionaltransition, db_column='collisionaltransitionid', related_name='+')
+    datadescription = models.ForeignKey(Datadescription, db_column='datadescriptionid', related_name='+')
+    xdata = models.TextField(null=True)
+    ydata = models.TextField(null=True) 
+    class Meta:
+        db_table = u't_tabulateddata'   
+
 
 class Atomiccomponent(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -157,10 +180,6 @@ class Authorsource(models.Model):
     class Meta:
         db_table = u't_authorsource'
 
-
-
-
-
 class Dataset(models.Model):
     id = models.IntegerField(primary_key=True)
     creationdate = models.DateField()
@@ -174,8 +193,6 @@ class DataseVersion(models.Model):
     class Meta:
         db_table = u't_dataseVersion'
 
-
-
 class Lscoupling(models.Model):
     id = models.IntegerField(primary_key=True)
     atomiccomponent = models.ForeignKey(Atomiccomponent, db_column='atomiccomponentid')
@@ -184,15 +201,3 @@ class Lscoupling(models.Model):
     multiplicity = models.IntegerField()
     class Meta:
         db_table = u't_lscoupling'
-
-
-
-
-
-
-
-
-
-
-
-

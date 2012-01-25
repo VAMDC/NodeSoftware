@@ -2,7 +2,6 @@
 from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse
-from django.db.models import Q
 
 from datetime import datetime
 from string import lower
@@ -13,7 +12,6 @@ randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 
 import logging
 log=logging.getLogger('vamdc.tap')
-log.debug('test log start')
 
 # Get the node-specific package!
 from django.conf import settings
@@ -89,9 +87,6 @@ class TAPQUERY(object):
 
         try: self.format=lower(self.data['FORMAT'])
         except: self.errormsg += 'Cannot find FORMAT in request.\n'
-        #else:
-            #if self.format != 'xsams':
-            #    self.errormsg += 'Currently, only FORMAT=XSAMS is supported.\n'
 
         try: self.parsedSQL=SQL.parseString(self.query)
         except: # if this fails, we're done
@@ -139,7 +134,8 @@ class TAPQUERY(object):
         return '%s'%self.query
 
 def getBaseURL(request):
-    return 'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
+    return getattr(settings, 'DEPLOY_URL', None) or \
+        'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
 
 def addHeaders(headers,response):
     HEADS=['COUNT-SOURCES',
@@ -169,7 +165,7 @@ def sync(request):
         return tapServerError(status=400,errmsg=emsg)
 
     # if the requested format is not XSAMS, hand over to the node QUERYFUNC
-    if tap.format != 'xsams' and QUERYFUNC.hasattr('returnResults'):
+    if tap.format != 'xsams' and hasattr(QUERYFUNC,'returnResults'):
         return QUERYFUNC.returnResults(tap)
     # otherwise, setup the results and build the XSAMS response here
 

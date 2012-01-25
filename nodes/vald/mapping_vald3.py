@@ -66,9 +66,9 @@ LINELIST_DICT = parse_linelist_file(base + "VALD3linelists.txt")
 # pred - transitions between predicted energy levels
 # calc - relativistic Hartree-Fock calculations of lifetimes and transition probabilities
 # mix - mixture of observation times
-OBSTYPE_DICT = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
+METHOD_DICT = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
 
-def get_obstype(linedata):
+def get_method_type(linedata):
     """
     Extract linedata and compare with pre-cached dictionary of linelists.
     """
@@ -76,14 +76,14 @@ def get_obstype(linedata):
     file_ref = get_srcfile_ref(linedata, 0, 3)
     entry = LINELIST_DICT.get(file_ref, None)
     if entry:
-        return OBSTYPE_DICT.get(entry[1], 'X') # the type
+        return METHOD_DICT.get(entry[1], 'X') # the type
     else:
         return 'X'
 
 def charrange_atom(linedata, molid, ia, ib):
     """
-    This method is to be used to read species data. 
-    It returns data only if the species currently worked on 
+    This method is to be used to read species data.
+    It returns data only if the species currently worked on
     is an atom and not a molecule. Otherwise return 'X'
      molid - minimum species id for species to be a molecule
      ia,ib - index1, index2
@@ -121,10 +121,10 @@ mapping = [
             {'cname':'dissen',
              'cbyte':(charrange, 110, 119)},
             {'cname':'ncomp',
-             'cbyte':(charrange, 194, 195)},            
+             'cbyte':(charrange, 194, 195)},
             {'cname':'atomic',
              'cbyte':(charrange_atom, 5000, 196, 198),
-             'cnull':'X'},                       
+             'cnull':'X'},
             {'cname':'isotope',
              'cbyte':(charrange_atom, 5000, 199, 202),
              'cnull':'X'},
@@ -157,10 +157,10 @@ mapping = [
             {'cname':'lande',
              'cbyte':(charrange, 84,90),
              'cnull':'99.00'},
-            {'cname':'coupling',
-             'cbyte':(charrange, 124,126)},
-            {'cname':'term',
-             'cbyte':(charrange, 126,212)},
+            #{'cname':'coupling',
+            # 'cbyte':(charrange, 124,126)},
+            #{'cname':'term',
+            # 'cbyte':(charrange, 126,212)},
 
             # read from 2nd open vald file (2nd line per record)
             {'filenum':1,
@@ -174,12 +174,12 @@ mapping = [
              'cbyte':(charrange, 65,73)},
 
             ## this links to linelists rather than refs directly
-            {'cname':'energy_linelist',
-             'cbyte':(charrange, 342,346)},
-            {'cname':'lande_linelist',
-             'cbyte':(charrange, 350,354)},
-            {'cname':'level_linelist',
-             'cbyte':(charrange, 366,370)},
+            #{'cname':'energy_linelist',
+            # 'cbyte':(charrange, 342,346)},
+            #{'cname':'lande_linelist',
+            # 'cbyte':(charrange, 350,354)},
+            #{'cname':'level_linelist',
+            # 'cbyte':(charrange, 366,370)},
 
             # these are read from 1st open term file
             {'filenum':2, # use term file
@@ -224,14 +224,14 @@ mapping = [
              'cnull':'X',},
 
             # read extra info from 2nd open term file
-            {'filenum':3, # use 2nd open term file
-             'cname':'transition_type',
-             'cbyte':(get_term_transtype,'ttype'),
-             'cnull':'X',},
-            {'filenum':3, # use 2nd open term file
-             'cname':'autoionized',
-             'cbyte':(get_term_transtype,'autoio'),
-             'cnull':'X',},
+            #{'filenum':3, # use 2nd open term file
+            # 'cname':'transition_type',
+            # 'cbyte':(get_term_transtype,'ttype'),
+            # 'cnull':'X',},
+            #{'filenum':3, # use 2nd open term file
+            # 'cname':'autoionized',
+            # 'cbyte':(get_term_transtype,'autoio'),
+            # 'cnull':'X',},
             ]
      }, # end of State model creation - lower states
 
@@ -251,15 +251,13 @@ mapping = [
              'cbyte':(charrange, 30,36)},
             {'cname':'energy',
              'cbyte':(charrange, 64,78)},
-            #{'cname':'j',
-            # 'cbyte':(charrange, 77,82),},
             {'cname':'lande',
              'cbyte':(charrange, 90,96),
              'cnull':'99.00'},
-            {'cname':'coupling',
-             'cbyte':(charrange, 212,214)},
-            {'cname':'term',
-             'cbyte':(charrange, 214,300)},
+            #{'cname':'coupling',
+            # 'cbyte':(charrange, 212,214)},
+            #{'cname':'term',
+            # 'cbyte':(charrange, 214,300)},
 
             # read from 2nd open vald file (2nd line per record)
             {'filenum':1,
@@ -275,12 +273,12 @@ mapping = [
              'cbyte':(charrange, 65,73)},
 
             ## links to linelist rather than reference directly
-            {'cname':'energy_linelist',
-             'cbyte':(charrange, 346,350)},
-            {'cname':'lande_linelist',
-             'cbyte':(charrange, 350,354)},
-            {'cname':'level_linelist',
-             'cbyte':(charrange, 366,370)},
+            #{'cname':'energy_linelist',
+            # 'cbyte':(charrange, 346,350)},
+            #{'cname':'lande_linelist',
+            # 'cbyte':(charrange, 350,354)},
+            #{'cname':'level_linelist',
+            # 'cbyte':(charrange, 366,370)},
 
             # these are read from term file
             {'cname':'j',
@@ -324,14 +322,14 @@ mapping = [
              'cbyte':(get_term_val,'seniority'),
              'cnull':'X',},
             # read extra info from every third line in term file
-            {'filenum':3, # use 2nd open term file
-             'cname':'transition_type',
-             'cbyte':(get_term_transtype,'ttype'),
-             'cnull':'X',},
-            {'filenum':3, # use 2nd open term file
-             'cname':'autoionized',
-             'cbyte':(get_term_transtype,'autoio'),
-             'cnull':'X',},
+            #{'filenum':3, # use 2nd open term file
+            # 'cname':'transition_type',
+            # 'cbyte':(get_term_transtype,'ttype'),
+            # 'cnull':'X',},
+            #{'filenum':3, # use 2nd open term file
+            # 'cname':'autoionized',
+            # 'cbyte':(get_term_transtype,'autoio'),
+            # 'cnull':'X',},
             ]
      }, # end of upper states
 
@@ -354,18 +352,14 @@ mapping = [
              'cbyte':(merge_cols,
                       (30,36), (124,126), (58,64), (126,212), (44,58))},
                       #(30,36), (122,124), (58,63), (124,170), (44,58))},
-            {'cname':'ritzwave',
-             'cbyte':(charrange, 0,15)},
+            #{'cname':'ritzwave',
+            # 'cbyte':(charrange, 0,15)},
             {'cname':'wave',
              'cbyte':(charrange, 15,30)},
             {'cname':'species',
              'cbyte':(charrange, 30,36)},
             {'cname':'loggf',
              'cbyte':(charrange, 36,44)},
-            # removed since it can be reconstructed from upper/lower state anyway
-            #{'cname':'landeff',
-            # 'cbyte':(charrange, 96,102), # lande combined for upper/lower level
-            # 'cnull':'99.00'},
             {'cname':'gammarad',
              'cbyte':(charrange, 102,109),
              'cnull':'0.0'},
@@ -384,14 +378,14 @@ mapping = [
              'cbyte':(get_alphawaals, 116,124),
              'cnull':'0.000',
              "debug":False},
-            {'cname':'accur',
-             'cbyte':(get_accur, (307,308), (308,314)),
-             'debug':False},
-            {'cname':'comment',
-             'cbyte':(charrange, 318,334)},
-            {'cname':'srctag',
-             'cbyte':(charrange, 300,307),
-             'skiperror':True},
+            #{'cname':'accur',
+            # 'cbyte':(get_accur, (307,308), (308,314)),
+            # 'debug':False},
+            #{'cname':'comment',
+            # 'cbyte':(charrange, 318,334)},
+            #{'cname':'srctag',
+            # 'cbyte':(charrange, 300,307),
+            # 'skiperror':True},
 
             # read from every second line of the vald file
             {'filenum':1,
@@ -400,10 +394,6 @@ mapping = [
             {'filenum':1,
              'cname':'loggf_ref',
              'cbyte':(charrange, 9,17)},
-            # removed - see comment about lande factor above
-            #{'filenum':1,
-            # 'cname':'lande_ref',
-            # 'cbyte':(charrange, 33,41)},
             {'filenum':1,
              'cname':'gammarad_ref',
              'cbyte':(charrange, 41,49)},
@@ -412,25 +402,31 @@ mapping = [
              'cbyte':(charrange, 49,57)},
             {'filenum':1,
              'cname':'waals_ref',
-             'cbyte':(charrange, 57,65)},
-            ## These are the old connections to linelists rather than refs directly
+             'cbyte':(charrange, 57,65)},            
             {'cname':'wave_linelist',
              'cbyte':(charrange, 334,338)},
-            {'cname':'loggf_linelist',
-             'cbyte':(charrange, 338,342)},
-            {'cname':'lande_linelist',
-             'cbyte':(charrange, 350,354)},
-            {'cname':'gammarad_linelist',
-             'cbyte':(charrange, 354,358)},
-            {'cname':'gammastark_linelist',
-             'cbyte':(charrange, 358,362)},
-            {'cname':'waals_linelist',
-             'cbyte':(charrange, 362,366)},
-            # obstype is parsed from wave_linelist in post-processing
+            ## These are the old connections to linelists rather than refs directly
+            #{'cname':'loggf_linelist',
+            # 'cbyte':(charrange, 338,342)},
+            #{'cname':'lande_linelist',
+            # 'cbyte':(charrange, 350,354)},
+            #{'cname':'gammarad_linelist',
+            # 'cbyte':(charrange, 354,358)},
+            #{'cname':'gammastark_linelist',
+            # 'cbyte':(charrange, 358,362)},
+            #{'cname':'waals_linelist',
+            # 'cbyte':(charrange, 362,366)},
+            # 
+            # methods are parsed from wave_linelist in post-processing
             # but we need to insert NULLs to make the DB accept the file.
-            {'cname':'id',
+            {'cname':'method_return',
              'cbyte':(constant, 'NULL'),
              'cnull':'NULL'},
+            {'cname':'method_restrict',
+             'cbyte':(constant, 'NULL'),
+             'cnull':'NULL'},
+
+
             ],
     }, # end of transitions
 
@@ -467,8 +463,8 @@ mapping = [
              'cbyte':(bySepNr, 3)},
             {'cname':'listtype',
              'cbyte':(bySepNr, 4)},
-            {'cname':'obstype',
-             'cbyte':(get_obstype, ),
+            {'cname':'method',
+             'cbyte':(get_method_type, ),
              'cnull':'X'},
             {'cname':'r1',
              'cbyte':(bySepNr, 5)},
@@ -505,18 +501,18 @@ mapping = [
 
 def species_component(species_file, outfile):
     """
-    This is a stand-alone function for creating 
+    This is a stand-alone function for creating
     a species-to-component mapping file representing
-    the many2many relationship. 
+    the many2many relationship.
     """
     outstring = ""
     f = open(species_file, 'r')
     for line in f:
         if line.strip() and (line.strip().startswith('#') or line.strip().startswith('@')):
-            continue        
-        sid = line[:7].strip()  
+            continue
+        sid = line[:7].strip()
         if int(sid) < 5000:
-            continue         
+            continue
         #import pdb;pdb.set_trace()
         # we have a molecule
         ncomp = int(line[194:195])
@@ -529,11 +525,11 @@ def species_component(species_file, outfile):
     f.close()
     print "... Created file %s." % outfile
 
-# create many2many tables 
+# create many2many tables
 
 print "Running species_component ..."
 species_component(species_list_file, outbase + "species_components.dat")
 
-import linelists_references 
+import linelists_references
 print "Running linelists_references ..."
 linelists_references.linelists_references(vald_cfg_file, linelist_file, outfile=outbase + "linelists_references.dat")

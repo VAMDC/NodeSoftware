@@ -1,0 +1,245 @@
+<?xml version="1.0" ?>
+<XSAMSData xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../xsd/xsams/0.3/xsams.xsd">
+	<Sources>
+		<Source sourceID="BHIT-C2H2-nu-2">
+			<Authors>
+				<Author>
+					<Name>R. Farrenq</Name>
+				</Author>
+				<Author>
+					<Name>G. Guelachvili</Name>
+				</Author>
+				<Author>
+					<Name>A.J. Sauval</Name>
+				</Author>
+				<Author>
+					<Name>N. Grevesse</Name>
+				</Author>
+				<Author>
+					<Name>C.B. Farmer</Name>
+				</Author>
+			</Authors>
+			<Title>Improved Dunham coefficients for C2H2 from infrared solar lines of high rotational excitation</Title>
+			<Category>journal</Category>
+			<Year>1991</Year>
+			<SourceName>Journal of Molecular Spectroscopy</SourceName>
+			<Volume>149</Volume>
+			<PageBegin>375</PageBegin>
+			<PageEnd>390</PageEnd>
+		</Source>
+	</Sources>
+	<Species>
+		<Molecules>
+			<Molecule speciesID="XHSFWRNGVRCDJHI-VSCNDXRLSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>C2H2</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>C2H2</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Acetylene</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/C2H2/c1-2/h1-2H/i1+0H,2+0H</InChI>
+					<InChIKey>HSFWRNGVRCDJHI-VSCNDXRLSA-N</InChIKey>
+					<MoleculeStructure>
+						<cml:atomArray>
+							<cml:atom id="H1" elementType="H" isotopeNumber="1"/>
+							<cml:atom id="H2" elementType="H" isotopeNumber="1"/>
+							<cml:atom id="C1" elementType="C" isotopeNumber="12"/>
+							<cml:atom id="C2" elementType="C" isotopeNumber="12"/>
+						</cml:atomArray>
+						<cml:bondArray>
+							<cml:bond atomRefs2="H1 C1" id="H1_C1" order="S"/>
+							<cml:bond atomRefs2="C1 C2" id="C1_C2" order="T"/>
+							<cml:bond atomRefs2="H2 C2" id="H2_C2" order="S"/>
+						</cml:bondArray>
+					</MoleculeStructure>
+					<StableMolecularProperties/>
+					<Comment>C2H2</Comment>
+				</MolecularChemicalSpecies>
+				<MolecularState stateID="SHIT-6957">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">6823.468</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>74</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
+						<lpcs:QNs>
+							<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
+							<lpcs:vi mode="1">0</lpcs:vi>
+							<lpcs:vi mode="2">0</lpcs:vi>
+							<lpcs:vi mode="3">0</lpcs:vi>
+							<lpcs:vi mode="4">0</lpcs:vi>
+							<lpcs:vi mode="5">1</lpcs:vi>
+							<lpcs:l>1</lpcs:l>
+							<lpcs:vibInv>u</lpcs:vibInv>
+							<lpcs:J>47</lpcs:J>
+							<lpcs:parity>+</lpcs:parity>
+							<lpcs:kronigParity>e</lpcs:kronigParity>
+						</lpcs:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="SHIT-6958">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">561.8958</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>70</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
+						<lpcs:QNs>
+							<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
+							<lpcs:vi mode="1">0</lpcs:vi>
+							<lpcs:vi mode="2">0</lpcs:vi>
+							<lpcs:vi mode="3">0</lpcs:vi>
+							<lpcs:vi mode="4">0</lpcs:vi>
+							<lpcs:vi mode="5">0</lpcs:vi>
+							<lpcs:l>0</lpcs:l>
+							<lpcs:vibInv>g</lpcs:vibInv>
+							<lpcs:J>49</lpcs:J>
+							<lpcs:parity>+</lpcs:parity>
+							<lpcs:kronigParity>e</lpcs:kronigParity>
+						</lpcs:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="SHIT-6959">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">9891.4191</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>182</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
+						<lpcs:QNs>
+							<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
+							<lpcs:vi mode="1">0</lpcs:vi>
+							<lpcs:vi mode="2">0</lpcs:vi>
+							<lpcs:vi mode="3">0</lpcs:vi>
+							<lpcs:vi mode="4">1</lpcs:vi>
+							<lpcs:vi mode="5">1</lpcs:vi>
+							<lpcs:l>0</lpcs:l>
+							<lpcs:vibInv>g</lpcs:vibInv>
+							<lpcs:J>0</lpcs:J>
+							<lpcs:r name="Fermi resonance rank">1</lpcs:r>
+							<lpcs:parity>+</lpcs:parity>
+							<lpcs:kronigParity>f</lpcs:kronigParity>
+						</lpcs:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="SHIT-6960">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">3947.6008</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>186</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
+						<lpcs:QNs>
+							<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
+							<lpcs:vi mode="1">0</lpcs:vi>
+							<lpcs:vi mode="2">0</lpcs:vi>
+							<lpcs:vi mode="3">1</lpcs:vi>
+							<lpcs:vi mode="4">0</lpcs:vi>
+							<lpcs:vi mode="5">0</lpcs:vi>
+							<lpcs:l>2</lpcs:l>
+							<lpcs:vibInv>u</lpcs:vibInv>
+							<lpcs:J>1</lpcs:J>
+							<lpcs:r name="Fermi resonance rank">1</lpcs:r>
+							<lpcs:parity>+</lpcs:parity>
+							<lpcs:kronigParity>e</lpcs:kronigParity>
+						</lpcs:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="SHIT-6961">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">6525.5205</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>198</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
+						<lpcs:QNs>
+							<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
+							<lpcs:vi mode="1">0</lpcs:vi>
+							<lpcs:vi mode="2">0</lpcs:vi>
+							<lpcs:vi mode="3">0</lpcs:vi>
+							<lpcs:vi mode="4">0</lpcs:vi>
+							<lpcs:vi mode="5">0</lpcs:vi>
+							<lpcs:l>0</lpcs:l>
+							<lpcs:vibInv>g</lpcs:vibInv>
+							<lpcs:J>26</lpcs:J>
+							<lpcs:r name="Fermi resonance rank">1</lpcs:r>
+							<lpcs:parity>+</lpcs:parity>
+							<lpcs:kronigParity>e</lpcs:kronigParity>
+						</lpcs:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="SHIT-6962">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">4650.5399</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>202</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
+						<lpcs:QNs>
+							<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
+							<lpcs:vi mode="1">0</lpcs:vi>
+							<lpcs:vi mode="2">0</lpcs:vi>
+							<lpcs:vi mode="3">1</lpcs:vi>
+							<lpcs:vi mode="4">0</lpcs:vi>
+							<lpcs:vi mode="5">0</lpcs:vi>
+							<lpcs:l>0</lpcs:l>
+							<lpcs:vibInv>u</lpcs:vibInv>
+							<lpcs:J>27</lpcs:J>
+							<lpcs:r name="Fermi resonance rank">1</lpcs:r>
+							<lpcs:kronigParity>e</lpcs:kronigParity>
+						</lpcs:QNs>
+					</Case>
+				</MolecularState>
+			</Molecule>
+		</Molecules>
+	</Species>
+	<Processes>
+		<Radiative>
+			<RadiativeTransition id="P1">
+				<EnergyWavelength>
+					<Wavenumber>
+						<SourceRef>BHIT-C2H2-nu-2</SourceRef>
+						<Value units="1/cm">6261.5722</Value>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>SHIT-6958</UpperStateRef>
+				<LowerStateRef>SHIT-6957</LowerStateRef>
+			</RadiativeTransition>
+			<RadiativeTransition id="P2">
+				<EnergyWavelength>
+					<Wavenumber>
+						<SourceRef>BHIT-C2H2-nu-2</SourceRef>
+						<Value units="1/cm">5943.8183</Value>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>SHIT-6960</UpperStateRef>
+				<LowerStateRef>SHIT-6959</LowerStateRef>
+			</RadiativeTransition>
+			<RadiativeTransition id="P3">
+				<EnergyWavelength>
+					<Wavenumber>
+						<SourceRef>BHIT-C2H2-nu-2</SourceRef>
+						<Value units="1/cm">1874.9806</Value>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>SHIT-6962</UpperStateRef>
+				<LowerStateRef>SHIT-6961</LowerStateRef>
+			</RadiativeTransition>
+		</Radiative>
+	</Processes>
+</XSAMSData>

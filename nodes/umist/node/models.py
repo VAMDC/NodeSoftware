@@ -68,9 +68,11 @@ class Reaction(models.Model):
     #create or replace view reaction_products (reaction_id, species_id) as select distinct r.reaction_id,s.species_id from new_reaction r, new_species s where r.p1_species = s.species_id OR r.p2_species = s.species_id OR r.p3_species = s.species_id OR r.p4_species = s.species_id;
     #create or replace view reaction_reactants (reaction_id, species_id) as select distinct r.reaction_id,s.species_id from new_reaction r, new_species s where r.r1_species = s.species_id OR r.r1_species = s.species_id OR r.r2_species = s.species_id OR r.r3_species = s.species_id;
     #create or replace view reaction_species (reaction_id, species_id) as select distinct r.reaction_id,s.species_id from new_reaction r, new_species s where r.r1_species = s.species_id OR r.r1_species = s.species_id OR r.r2_species = s.species_id OR r.r3_species = s.species_id OR r.p1_species = s.species_id OR r.p2_species = s.species_id OR r.p3_species = s.species_id OR r.p4_species = s.species_id;
-    species = models.ManyToManyField(Species, db_table='reaction_species', related_name='reactspecies')
-    reactants = models.ManyToManyField(Species, db_table='reaction_reactants', related_name='reactreactants')
-    products = models.ManyToManyField(Species, db_table='reaction_products', related_name='reactproducts')
+    # 2011-06-28 KWS Created "materialised views" of the reaction_species, reaction_reactants and reaction_products views.
+    #                This should vastly speed up the queries.
+    species = models.ManyToManyField(Species, db_table='reaction_species_mat_view', related_name='reactspecies')
+    reactants = models.ManyToManyField(Species, db_table='reaction_reactants_mat_view', related_name='reactreactants')
+    products = models.ManyToManyField(Species, db_table='reaction_products_mat_view', related_name='reactproducts')
     class Meta:
         db_table = u'new_reaction'
 

@@ -1,0 +1,48 @@
+{% extends "cdmsportal/portalBase.html" %}	  
+
+
+{% block content %}
+<form name="form_result" id="form_result" action="index.php" class="yform full" method="post">
+ {% for id in postvars.speciesIDs %}
+ <INPUT TYPE="HIDDEN" NAME="speciesIDs" VALUE="{{id}}">
+ {% endfor %}
+ <INPUT TYPE='HIDDEN' NAME='filterTag' VALUE=''>
+ <INPUT TYPE='HIDDEN' NAME='T_OrderBy' VALUE='E_TAG%2525252525252BASC'>
+ <INPUT TYPE='HIDDEN' NAME='B_Query' VALUE='Confirm%2525252525252BSelection'>
+
+ <INPUT TYPE='HIDDEN' NAME='T_ReturnPage' VALUE='Query'>
+ <INPUT TYPE='HIDDEN' NAME='QUERY' VALUE='{{query}}'>
+ <INPUT TYPE='HIDDEN' NAME='T_TYPE' VALUE='comfort'>
+ <INPUT TYPE='HIDDEN' NAME='T_SHOWEXPLINES' VALUE='no'>
+ <INPUT TYPE='HIDDEN' NAME='T_SEARCH' VALUE='QUERY'>
+ <INPUT TYPE='HIDDEN' NAME='T_SEARCH_FREQ_FROM' VALUE='{{postvars.freqfrom}}'>
+ <INPUT TYPE='HIDDEN' NAME='T_SEARCH_FREQ_TO' VALUE='{{postvars.freqto}}'>
+ <INPUT TYPE='HIDDEN' NAME='UnitNu' VALUE='GHz'>
+ <INPUT TYPE='HIDDEN' NAME='T_SEARCH_INT' VALUE='-10'>
+ <INPUT TYPE='HIDDEN' NAME='IntUnit' VALUE='T300'>
+ <INPUT TYPE='HIDDEN' NAME='T_TEMPERATURE' VALUE='{{postvars.T_TEMPERATURE}}'>
+ <INPUT TYPE='HIDDEN' NAME='T_SORT' VALUE='Frequency'>
+ <INPUT TYPE="HIDDEN" NAME="T_PAGE" VALUE="ShowResults">
+ <fieldset>
+   <div class="type-button float_left">
+     <INPUT TYPE="BUTTON" VALUE="RETURN" NAME="B_Change_TAG" onclick="load_page('queryPage');">
+   </div>
+{% autoescape off %}
+   <div class="type-button float_right">
+<!--     <INPUT id="button1" TYPE="BUTTON" NAME="T_Download" onclick="startDownload();" VALUE="DOWNLOAD" > -->
+<!--     <INPUT id="button1" TYPE="BUTTON" NAME="T_Download" onclick="startDownload('{{postvars.url}}')" VALUE="DOWNLOAD" > -->
+	  <INPUT id="button1" TYPE="BUTTON" NAME="T_Download" onclick="location.href='{{postvars.url}}'" VALUE="DOWNLOAD" > 
+   </div>
+ </fieldset>
+
+ <fieldset class="important" style="background-color:#9cf;">
+	<div class="legend">Your TAP-XSAMS QUERY</div>
+	<p class = 'important'> {{postvars.query}} </p>
+ </fieldset>
+
+ {{result}}
+{% endautoescape %}
+
+</form>
+
+{% endblock %}

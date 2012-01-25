@@ -1,7 +1,7 @@
 #
 # Default config for a node. When creating your own node, run 'manage.py' to
 # build your own settings.py file in the node, then copy&paste variables you need to
-# change from this file. Don't edit this file directly. 
+# change from this file. Don't edit this file directly.
 #
 
 import sys, os
@@ -9,11 +9,11 @@ import sys, os
 ###################################################
 # Software and standards version
 ###################################################
-VAMDC_STDS_VERSION = '11.7'
-NODESOFTWARE_VERSION = '11.7beta-vss2'
+VAMDC_STDS_VERSION = '11.12'
+NODESOFTWARE_VERSION = '11.12-rc1'
 
 ###################################################
-# Basic node setup 
+# Basic node setup
 ###################################################
 # root path of the VAMDC install on your system (should be automatically set)
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,12 +22,12 @@ sys.path.append(BASE_PATH+'/nodes')
 NODENAME = os.path.basename(os.path.dirname(__file__))
 NODEPKG= NODENAME+'.node'
 
-# Where to load url info from 
+# Where to load url info from
 ROOT_URLCONF = NODENAME+'.urls'
 
-# Tuple of auto-created admin info for database. Admins are added as tuples (name, email). 
+# Tuple of auto-created admin info for database. Admins are added as tuples (name, email).
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
-ADMINS = (('yourname', 'name@mail.net'),) 
+ADMINS = (('yourname', 'name@mail.net'),)
 MANAGERS = ADMINS
 
 EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
@@ -93,7 +93,7 @@ TIME_ZONE = 'Europe/Berlin'
 LANGUAGE_CODE = 'en-us'
 # Give debug messages
 DEBUG = False
-# For web templates, use Python traceback instead of Server Error message. 
+# For web templates, use Python traceback instead of Server Error message.
 TEMPLATE_DEBUG = DEBUG
 # site id number (you shouldn't have to change this)
 SITE_ID = 1

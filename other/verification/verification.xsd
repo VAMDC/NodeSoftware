@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://vamdc.org/xml/xsams/0.3" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.3">
+	<xs:include schemaLocation="xsd/rule/include.xsd"/>
+	<xs:redefine schemaLocation="http://vamdc.org/xml/xsams/0.3/">
+		<xs:complexType name="AtomicStateType">
+			<xs:complexContent>
+				<xs:extension base="AtomicStateType">
+					<xs:sequence>
+						<xs:element name="Verification" type="atomicStateVerification" minOccurs="0" nillable="true"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="MolecularStateType">
+			<xs:complexContent>
+				<xs:extension base="MolecularStateType">
+					<xs:sequence>
+						<xs:element name="Verification" type="molecularStateVerification" minOccurs="0" nillable="true"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="RadiativeTransitionType">
+			<xs:complexContent>
+				<xs:extension base="RadiativeTransitionType">
+					<xs:sequence>
+						<xs:element name="Verification" type="radiativeTransitionVerification" minOccurs="0" nillable="true"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+		<xs:complexType name="NonRadiativeTransitionType">
+			<xs:complexContent>
+				<xs:extension base="NonRadiativeTransitionType">
+					<xs:sequence>
+						<xs:element name="Verification" type="nonRadiativeTransitionVerification" minOccurs="0" nillable="true"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:redefine>
+
+	<xs:element name="VerificationData" type="verificationDataType"/>
+	<xs:complexType name="verificationDataType">
+		<xs:complexContent>
+			<xs:restriction base="xs:anyType">
+				<xs:sequence>
+					<xs:element name="VerificationResult" type="verificationResult" minOccurs="0" maxOccurs="1" nillable="true"/>
+					<xs:element ref="XSAMSData" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="verificationResult">
+		<xs:sequence>
+			<xs:element name="NumberOfAtomicStates" minOccurs="0" maxOccurs="1" type="totalNumberOfVerification"/>
+			<xs:element name="NumberOfMolecularStates" minOccurs="0" maxOccurs="1" type="totalNumberOfVerification"/>
+			<xs:element name="NumberOfNonRadiativeTransitions" minOccurs="0" maxOccurs="1" type="totalNumberOfVerification"/>
+			<xs:element name="NumberOfRadiativeTransitions" minOccurs="0" maxOccurs="1" type="totalNumberOfVerification"/>
+			<xs:element name="NumberOfVerificationByRule" minOccurs="0" maxOccurs="unbounded" type="numberOfVerificationByRule"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="totalNumberOfVerification">
+		<xs:complexContent>
+			<xs:extension base="xs:anyType">
+				<xs:attribute name="total" type="xs:nonNegativeInteger" use="required"/>
+				<xs:attribute name="correct" type="xs:nonNegativeInteger" use="required"/>
+				<xs:attribute name="incorrect" type="xs:nonNegativeInteger" use="required"/>
+				<xs:attribute name="unidentified" type="xs:nonNegativeInteger" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="numberOfVerificationByRule">
+		<xs:complexContent>
+			<xs:extension base="xs:anyType">
+				<xs:attribute name="name" type="nameOfRuleType" use="required"/>
+				<xs:attribute name="correct" type="xs:nonNegativeInteger" use="required"/>
+				<xs:attribute name="incorrect" type="xs:nonNegativeInteger" use="required"/>
+				<xs:attribute name="unidentified" type="xs:nonNegativeInteger" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="nameOfRuleType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-z]*Rule[ST][0-9][0-9]"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:complexType name="atomicStateVerification">
+		<xs:sequence>
+			<xs:group ref="atomStateRules"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="molecularStateVerification">
+		<xs:sequence>
+			<xs:group ref="asymcsStateRules"/>
+			<xs:group ref="asymosStateRules"/>
+			<xs:group ref="dcsStateRules"/>
+			<xs:group ref="genStateRules"/>
+			<xs:group ref="hundaStateRules"/>
+			<xs:group ref="hundbStateRules"/>
+			<xs:group ref="lpcsStateRules"/>
+			<xs:group ref="lposStateRules"/>
+			<xs:group ref="ltcsStateRules"/>
+			<xs:group ref="ltosStateRules"/>
+			<xs:group ref="nltcsStateRules"/>
+			<xs:group ref="nltosStateRules"/>
+			<xs:group ref="sphcsStateRules"/>
+			<xs:group ref="sphosStateRules"/>
+			<xs:group ref="stcsStateRules"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="radiativeTransitionVerification">
+		<xs:sequence>
+			<xs:group ref="TransitionRules"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="nonRadiativeTransitionVerification">
+		<xs:sequence>
+			<xs:group ref="TransitionRules"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:group name="TransitionRules">
+		<xs:sequence>
+			<xs:group ref="asymcsTransitionRules"/>
+			<xs:group ref="asymosTransitionRules"/>
+			<xs:group ref="atomTransitionRules"/>
+			<xs:group ref="dcsTransitionRules"/>
+			<xs:group ref="genTransitionRules"/>
+			<xs:group ref="hundaTransitionRules"/>
+			<xs:group ref="hundbTransitionRules"/>
+			<xs:group ref="lpcsTransitionRules"/>
+			<xs:group ref="lposTransitionRules"/>
+			<xs:group ref="ltcsTransitionRules"/>
+			<xs:group ref="ltosTransitionRules"/>
+			<xs:group ref="nltcsTransitionRules"/>
+			<xs:group ref="nltosTransitionRules"/>
+			<xs:group ref="sphcsTransitionRules"/>
+			<xs:group ref="sphosTransitionRules"/>
+			<xs:group ref="stcsTransitionRules"/>
+		</xs:sequence>
+	</xs:group>
+</xs:schema>

@@ -1,0 +1,166 @@
+<?xml version="1.0" ?>
+<VerificationData xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.3" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../verification.xsd" >
+	<VerificationResult>
+		<NumberOfRadiativeTransitions correct="1" incorrect="2" total="3" unidentified="0"/>
+		<NumberOfVerificationByRule name="dcsRuleT01" correct="2" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="dcsRuleT02" correct="2" incorrect="1" unidentified="0"/>
+		<NumberOfVerificationByRule name="dcsRuleT03" correct="2" incorrect="1" unidentified="0"/>
+	</VerificationResult>
+	<XSAMSData>
+		<Sources>
+			<Source sourceID="BHIT-CO-nu-2">
+				<Authors>
+					<Author>
+						<Name>R. Farrenq</Name>
+					</Author>
+					<Author>
+						<Name>G. Guelachvili</Name>
+					</Author>
+					<Author>
+						<Name>A.J. Sauval</Name>
+					</Author>
+					<Author>
+						<Name>N. Grevesse</Name>
+					</Author>
+					<Author>
+						<Name>C.B. Farmer</Name>
+					</Author>
+				</Authors>
+				<Title>Improved Dunham coefficients for CO from infrared solar lines of high rotational excitation</Title>
+				<Category>journal</Category>
+				<Year>1991</Year>
+				<SourceName>Journal of Molecular Spectroscopy</SourceName>
+				<Volume>149</Volume>
+				<PageBegin>375</PageBegin>
+				<PageEnd>390</PageEnd>
+			</Source>
+		</Sources>
+		<Species>
+			<Molecules>
+				<Molecule speciesID="XHIT-UGFAIRIUMAVXCW-OUBTZVSYSA-N">
+					<MolecularChemicalSpecies>
+						<OrdinaryStructuralFormula>
+							<Value>CO</Value>
+						</OrdinaryStructuralFormula>
+						<StoichiometricFormula>CO</StoichiometricFormula>
+						<IonCharge>0</IonCharge>
+						<ChemicalName>
+							<Value>Carbon Monoxide</Value>
+						</ChemicalName>
+						<InChI>InChI=1S/CO/c1-2/i1+1</InChI>
+						<InChIKey>UGFAIRIUMAVXCW-OUBTZVSYSA-N</InChIKey>
+						<MoleculeStructure>
+							<cml:atomArray>
+								<cml:atom elementType="C" id="C1" isotopeNumber="13"/>
+								<cml:atom elementType="O" id="O1"/>
+							</cml:atomArray>
+							<cml:bondArray>
+								<cml:bond atomRefs2="C1 O1" id="C1_O1" order="T"/>
+							</cml:bondArray>
+						</MoleculeStructure>
+						<StableMolecularProperties/>
+						<Comment>(13C)(16O)</Comment>
+					</MolecularChemicalSpecies>
+					<MolecularState stateID="SHIT-6959">
+						<Description/>
+						<MolecularStateCharacterisation>
+							<StateEnergy energyOrigin="Zero-point energy">
+								<Value units="1/cm">9891.4191</Value>
+							</StateEnergy>
+							<TotalStatisticalWeight>182</TotalStatisticalWeight>
+						</MolecularStateCharacterisation>
+						<Case caseID="dcs" xmlns:dcs="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="dcs:Case">
+							<dcs:QNs>
+								<dcs:ElecStateLabel>X</dcs:ElecStateLabel>
+								<dcs:v>8</dcs:v>
+								<dcs:J>46</dcs:J>
+							</dcs:QNs>
+						</Case>
+					</MolecularState>
+					<MolecularState stateID="SHIT-6960">
+						<Description/>
+						<MolecularStateCharacterisation>
+							<StateEnergy energyOrigin="Zero-point energy">
+								<Value units="1/cm">3947.6008</Value>
+							</StateEnergy>
+							<TotalStatisticalWeight>186</TotalStatisticalWeight>
+						</MolecularStateCharacterisation>
+						<Case caseID="dcs" xmlns:dcs="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="dcs:Case">
+							<dcs:QNs>
+								<dcs:ElecStateLabel>X</dcs:ElecStateLabel>
+								<dcs:v>0</dcs:v>
+								<dcs:J>46</dcs:J>
+							</dcs:QNs>
+						</Case>
+					</MolecularState>
+					<MolecularState stateID="SHIT-6961">
+						<Description/>
+						<MolecularStateCharacterisation>
+							<StateEnergy energyOrigin="Zero-point energy">
+								<Value units="1/cm">6525.5205</Value>
+							</StateEnergy>
+							<TotalStatisticalWeight>198</TotalStatisticalWeight>
+						</MolecularStateCharacterisation>
+						<Case caseID="dcs" xmlns:dcs="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="dcs:Case">
+							<dcs:QNs>
+								<dcs:ElecStateLabel>X</dcs:ElecStateLabel>
+								<dcs:v>1</dcs:v>
+								<dcs:J>51</dcs:J>
+							</dcs:QNs>
+						</Case>
+					</MolecularState>
+					<MolecularState stateID="SHIT-6962">
+						<Description/>
+						<MolecularStateCharacterisation>
+							<StateEnergy energyOrigin="Zero-point energy">
+								<Value units="1/cm">4650.5399</Value>
+							</StateEnergy>
+							<TotalStatisticalWeight>202</TotalStatisticalWeight>
+						</MolecularStateCharacterisation>
+						<Case caseID="dcs" xmlns:dcs="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="dcs:Case">
+							<dcs:QNs>
+								<dcs:ElecStateLabel>X</dcs:ElecStateLabel>
+								<dcs:v>1</dcs:v>
+								<dcs:J>50</dcs:J>
+							</dcs:QNs>
+						</Case>
+					</MolecularState>
+				</Molecule>
+			</Molecules>
+		</Species>
+		<Processes>
+			<Radiative>
+				<RadiativeTransition id="P2">
+					<EnergyWavelength>
+						<Wavenumber>
+							<SourceRef>BHIT-CO-nu-2</SourceRef>
+							<Value units="1/cm">5943.8183</Value>
+						</Wavenumber>
+					</EnergyWavelength>
+					<UpperStateRef>SHIT-6960</UpperStateRef>
+					<LowerStateRef>SHIT-6959</LowerStateRef>
+					<Verification>
+						<dcsRuleT01>false</dcsRuleT01>
+						<dcsRuleT02>true</dcsRuleT02>
+						<dcsRuleT03>false</dcsRuleT03>
+					</Verification>
+				</RadiativeTransition>
+				<RadiativeTransition id="P3">
+					<EnergyWavelength>
+						<Wavenumber>
+							<SourceRef>BHIT-CO-nu-2</SourceRef>
+							<Value units="1/cm">1874.9806</Value>
+						</Wavenumber>
+					</EnergyWavelength>
+					<UpperStateRef>SHIT-6962</UpperStateRef>
+					<LowerStateRef>SHIT-6961</LowerStateRef>
+					<Verification>
+						<dcsRuleT01>true</dcsRuleT01>
+						<dcsRuleT02>false</dcsRuleT02>
+						<dcsRuleT03>true</dcsRuleT03>
+					</Verification>
+				</RadiativeTransition>
+			</Radiative>
+		</Processes>
+	</XSAMSData>
+</VerificationData>

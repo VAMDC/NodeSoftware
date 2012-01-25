@@ -145,9 +145,12 @@ Where these messages end up is configured in ``settings_default.py`` and you can
 
     Critical errors (using `log.critical()`) are sent to the configured
     admin email address. You need to supply a valid address and make
-    sure your server can send emails.
+    sure your server can send emails. The email address that these messages
+    are sent from can bet set with ``SERVER_EMAIL='vamdcnode@your.server'``.
 
-In the future, messages issued with `log.debug()` will not be logged, when the
-global flag `DEBUG=False`.
+If you want to turn off the logging of debug messages, you can add the following for turning them on or off, depending on your global DEBUG setting::
 
-For more information see https://docs.djangoproject.com/en/1.3/topics/logging/
+    if not DEBUG:
+        LOGGING['handlers']['logfile']['level'] = 'INFO'
+
+For further information see https://docs.djangoproject.com/en/1.3/topics/logging/

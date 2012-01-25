@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.3" targetNamespace="http://vamdc.org/xml/xsams/0.3" elementFormDefault="qualified">
+	<xs:include schemaLocation="../rule.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Schema for checking the quantum numbers of open-shell non-linear triatomic molecules</xs:documentation>
+	</xs:annotation>
+
+	<xs:group name="nltosStateRules">
+		<xs:sequence>
+
+		</xs:sequence>
+	</xs:group>
+
+	<xs:group name="nltosTransitionRules">
+		<xs:sequence>
+
+		</xs:sequence>
+	</xs:group>
+
+</xs:schema>

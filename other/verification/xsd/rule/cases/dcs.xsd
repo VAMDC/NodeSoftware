@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.3" targetNamespace="http://vamdc.org/xml/xsams/0.3" elementFormDefault="qualified">
+	<xs:include schemaLocation="../rule.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Schema for checking the quantum numbers of closed-shell, diatomic molecules</xs:documentation>
+	</xs:annotation>
+
+
+	<xs:group name="dcsStateRules">
+		<xs:sequence>
+
+		</xs:sequence>
+	</xs:group>
+
+	<xs:group name="dcsTransitionRules">
+		<xs:sequence>
+			<xs:element name="dcsRuleT01" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/CO/c1-2'.*'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<eq/>
+									<apply>
+										<abs/>
+										<apply>
+											<minus/>
+											<ci>dcs:J#UpperStateRef</ci>
+											<ci>dcs:J#LowerStateRef</ci>
+										</apply>
+									</apply>
+									<cn>1</cn>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dcsRuleT02" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/CO/c1-2'.*'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<not/>
+									<apply>
+										<and/>
+										<apply>
+											<eq/>
+											<apply>
+												<abs/>
+												<apply>
+													<minus/>
+													<ci>dcs:v#UpperStateRef</ci>
+													<ci>dcs:v#LowerStateRef</ci>
+												</apply>
+											</apply>
+											<cn>0</cn>
+										</apply>
+										<apply>
+											<neq/>
+											<apply>
+												<minus/>
+												<ci>dcs:J#UpperStateRef</ci>
+												<ci>dcs:J#LowerStateRef</ci>
+											</apply>
+											<cn>1</cn>
+										</apply>
+									</apply>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dcsRuleT03" type="xs:boolean" nillable="true" minOccurs="0">
+				<xs:annotation>
+					<xs:appinfo>
+						<rule forInChIList="InChI=1S/CO/c1-2'.*'">
+							<math xmlns="http://www.w3.org/1998/Math/MathML">
+								<apply>
+									<leq/>
+									<apply>
+										<abs/>
+										<apply>
+											<minus/>
+											<ci>dcs:v#UpperStateRef</ci>
+											<ci>dcs:v#LowerStateRef</ci>
+										</apply>
+									</apply>
+									<cn>5</cn>
+								</apply>
+							</math>
+						</rule>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+
+		</xs:sequence>
+	</xs:group>
+
+</xs:schema>

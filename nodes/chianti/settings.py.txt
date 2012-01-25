@@ -24,7 +24,7 @@ DATABASES = {
     'NAME'     : 'chianti',   # the path to the db file for sqlite3, the DB-name for other engines
     'USER'     : 'vamdc',             # Not used with sqlite3.
     'PASSWORD' : '',         # Not used with sqlite3.
-    'HOST'     : '',             # Set to empty string for localhost. Not used with sqlite3
+    'HOST'     : 'localhost',             # Set to empty string for localhost. Not used with sqlite3
     'PORT'     : ''             # Set to empty string for default. Not used with sqlite3
   }
 }
@@ -36,3 +36,4 @@ ADMINS = (            ('Admin 1 Name', 'name1@mail.net'),
             ('Admin 2 Name', 'name2@mail.net'),
         )
 
+EXAMPLE_QUERIES = ['SELECT ALL WHERE RadTransWavelength > 5000 AND RadTransWavelength < 5010']

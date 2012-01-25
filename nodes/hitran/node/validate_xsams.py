@@ -13,7 +13,8 @@ import urllib
 from subprocess import call
 
 HOME = os.getenv('HOME')
-xsd_file = os.path.join(HOME, 'research/VAMDC/XSAMS/release-0.2/xsams.xsd')
+#xsd_file = os.path.join(HOME, 'research/VAMDC/XSAMS/release-0.2/xsams.xsd')
+xsd_file = os.path.join(HOME, 'research/VAMDC/XSAMS/vamdc-working/xsams.xsd')
 
 # command line arguments:
 parser = argparse.ArgumentParser(description='Validate the XSAMS produced'
