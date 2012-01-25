@@ -306,9 +306,10 @@ Passed into generator Loop variable Object looped over                          
 ===================== ============= ================================================ =================
 Atoms                 Atom                                                           
 ..                                  Atom.States                                      AtomState
-..                                  Atom.SuperShells                                 AtomSuperShell
-..                                  Atom.Shells                                      AtomShell 
-..                                  Atom.ShellPairs                                  AtomShellPair
+..                                  Atom.Components                                  Component
+..                                  Atom.Component.SuperShells                       AtomSuperShell
+..                                  Atom.Component.Shells                            AtomShell 
+..                                  Atom.Component.ShellPairs                        AtomShellPair
 Molecules             Molecule                                                       
 ..                                  Molecule.States                                  MoleculeState
 ..                                  Molecule.States.Parameters                       Parameter

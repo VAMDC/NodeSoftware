@@ -557,73 +557,79 @@ def makeShellType(tag, keyword, G):
     return string
 
 
-def makeAtomComponent(Atom, G):
+def makeAtomComponent(Atom):
     """
     This constructs the Atomic Component structure.
 
     Atom - the current Atom queryset
-    G - the shortcut to the GetValue function
     """
 
-    string = "<Component>"
+    string = ""
 
-    if hasattr(Atom, "SuperShells"):
-        string += "<SuperConfiguration>"
-        for SuperShell in makeiter(Atom.SuperShells):
-            GA = lambda name: GetValue(name, SuperShell=SuperShell)
-            string += "<SuperShell>"
-            string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % GA("AtomStateSuperShellPrincipalQN")
-            string += "<NumberOfElectrons>%s</NumberOfElectrons>" % GA("AtomStateSuperShellNumberOfElectrons")
-            string += "</SuperShell>"
-        string += "</SuperConfiguration>"
+    if hasattr(Atom, "Components"):
+        for Component in makeiter(Atom.Components):
+            G = lambda name: GetValue(name, Component=Component) 
 
-    string += "<Configuration>"
-    string += "<AtomicCore>"
-    ecore = G("AtomStateElementCore")
-    if ecore:
-        string += "<ElementCore>%s</ElementCore>" % ecore
-    conf = G("AtomStateConfiguration")
-    if conf:
-        # TODO: The format of the Configuration tab is not yet
-        # finalized in XSAMS!
-        string += "<Configuration>%s</Configuration>" % conf
-    string += makeTermType("Term", "AtomStateCoreTerm", G)
-    tangmom = G("AtomStateCoreTotalAngMom")
-    if tangmom:
-        string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % tangmom
-    string += "</AtomicCore>"
+            string += "<Component>"
 
-    if hasattr(Atom, "Shells"):
-        string += "<Shells>"
-        for AtomShell in makeiter(Atom.Shells):
-            GS = lambda name: GetValue(name, AtomShell=AtomShell)
-            string += makeShellType("Shell", "AtomStateShell", GS)
+            if hasattr(Component, "SuperShells"):
+                string += "<SuperConfiguration>"
+                for SuperShell in makeiter(Atom.SuperShells):
+                    GA = lambda name: GetValue(name, SuperShell=SuperShell)
+                    string += "<SuperShell>"
+                    string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % GA("AtomStateSuperShellPrincipalQN")
+                    string += "<NumberOfElectrons>%s</NumberOfElectrons>" % GA("AtomStateSuperShellNumberOfElectrons")
+                    string += "</SuperShell>"
+                string += "</SuperConfiguration>"
 
-        if hasattr(Atom, "ShellPair"):
-            for AtomShellPair in makeiter(Atom.ShellPairs):
-                GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
-                string += '<ShellPair shellPairID="%s-%s">' % (NODEID, GS("AtomStateShellPairID"))
-                string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
-                string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
-                string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
-            string += "</ShellPair>"
+            string += "<Configuration>"
+            string += "<AtomicCore>"
+            ecore = G("AtomStateElementCore")
+            if ecore:
+                string += "<ElementCore>%s</ElementCore>" % ecore
+            conf = G("AtomStateConfiguration")
+            if conf:
+                # TODO: The format of the Configuration tab is not yet
+                # finalized in XSAMS!
+                string += "<Configuration>%s</Configuration>" % conf
+            string += makeTermType("Term", "AtomStateCoreTerm", G)
+            tangmom = G("AtomStateCoreTotalAngMom")
+            if tangmom:
+                string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % tangmom
+            string += "</AtomicCore>"
 
-        string += "</Shells>"
+            if hasattr(Component, "Shells"):
+                string += "<Shells>"
+                for AtomShell in makeiter(Component.Shells):
+                    GS = lambda name: GetValue(name, AtomShell=AtomShell)
+                    string += makeShellType("Shell", "AtomStateShell", GS)
 
-    clabel = G("AtomStateConfigurationLabel")
-    if clabel:
-        string += "<ConfigurationLabel>%s</ConfigurationLabel>" % clabel
-    string += "</Configuration>"
+                if hasattr(Component, "ShellPair"):
+                    for AtomShellPair in makeiter(Component.ShellPairs):
+                        GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
+                        string += '<ShellPair shellPairID="%s-%s">' % (NODEID, GS("AtomStateShellPairID"))
+                        string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
+                        string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
+                        string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
+                    string += "</ShellPair>"
 
-    string += makeTermType("Term", "AtomStateTerm", G)
-    mixCoe = G("AtomStateMixingCoeff")
-    if mixCoe:
-        string += '<MixingCoefficient mixingClass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
-    coms = G("AtomStateComponentComment")
-    if coms:
-        string += "<Comments>%s</Comments>" % coms
+                string += "</Shells>"
 
-    string += "</Component>"
+            clabel = G("AtomStateConfigurationLabel")
+            if clabel:
+                string += "<ConfigurationLabel>%s</ConfigurationLabel>" % clabel
+            string += "</Configuration>"
+
+            string += makeTermType("Term", "AtomStateTerm", G)
+            mixCoe = G("AtomStateMixingCoeff")
+            if mixCoe:
+                string += '<MixingCoefficient mixingClass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
+            coms = G("AtomStateComponentComment")
+            if coms:
+                string += "<Comments>%s</Comments>" % coms
+
+            string += "</Component>"
+
     return string
 
 def XsamsAtoms(Atoms):
@@ -701,8 +707,9 @@ def XsamsAtoms(Atoms):
             cont, ret = checkXML(AtomState,'CompositionXML')
             if cont:
                 yield ret
-            else:
+            else:                
                 yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
+                
                 yield makeAtomComponent(Atom, G)
                 yield '</AtomicComposition>'
 
@@ -1082,11 +1089,11 @@ def XsamsRadTranBroadening(G):
     return ''.join(s)
 
 
-def XsamsRadTranShifting(RadTran, G):
+def XsamsRadTranShifting(RadTran):
     """
     Shifting type
     """
-
+    string = ""
     if hasattr(RadTran, "Shiftings"):    
         for Shifting in makeiter(RadTran.Shiftings):
             G = lambda name: GetValue(name, Shifting=Shifting)
@@ -1099,9 +1106,9 @@ def XsamsRadTranShifting(RadTran, G):
                 continue
             if eref:
                 dic["envRef"] = "E%s-%s"  % (NODEID, eref)
-            string = makePrimaryType("Shifting", "RadTransShifting", G, extraAttr=dic)
-            if hasattr(RadTran, "ShiftingParams"):
-                for ShiftingParam in RadTran.ShiftingParams:
+            string += makePrimaryType("Shifting", "RadTransShifting", G, extraAttr=dic)
+            if hasattr(Shifting, "ShiftingParams"):
+                for ShiftingParam in Shifting.ShiftingParams:
                     GS = lambda name: GetValue(name, ShiftingParam=ShiftingParam)
                     string += makePrimaryType("ShiftingParameter", "RadTransShiftingParam", GS, extraAttr={"name":GS("RadTransShiftingParamName")})
                     val = GS("RadTransShiftingParamUnits")
@@ -1205,7 +1212,7 @@ def XsamsRadTrans(RadTrans):
         if hasattr(RadTran, 'XML_Shifting'):
             yield RadTran.XML_Shifting()
         else:
-            yield XsamsRadTranShifting(RadTran, G)
+            yield XsamsRadTranShifting(RadTran)
         yield '</RadiativeTransition>\n'
 
 def makeDataSeriesType(tagname, keyword, G):
