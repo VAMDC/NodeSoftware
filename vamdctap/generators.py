@@ -222,12 +222,12 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     # if some are shorter than the value list, replicate them
     l = len(value)
     value, unit, method, comment, acc, refs, name = [ x*l if len(x)<l else x for x in [value, unit, method, comment, acc, refs, name]]
-    
+
     for k, v in extraAttr.items():
         if not isiterable(v): v=[v]*l
         elif len(v)<l: v*=l
         extraAttr[k] = v
-    
+
     string = ''
     for i, val in enumerate(value):
         string += '\n<%s' % tagname
@@ -568,7 +568,7 @@ def makeAtomComponent(Atom):
 
     if hasattr(Atom, "Components"):
         for Component in makeiter(Atom.Components):
-            G = lambda name: GetValue(name, Component=Component) 
+            G = lambda name: GetValue(name, Component=Component)
 
             string += "<Component>"
 
@@ -688,10 +688,10 @@ def XsamsAtoms(Atoms):
             yield makeDataType('HyperfineConstantA', 'AtomStateHyperfineConstantA', G)
             yield makeDataType('HyperfineConstantB', 'AtomStateHyperfineConstantB', G)
             yield '</AtomicNumericalData><AtomicQuantumNumbers>'
-        
+
             p, j, k, hfm, mqn = G('AtomStateParity'), G('AtomStateTotalAngMom'), \
                                 G('AtomStateKappa'), G('AtomStateHyperfineMomentum'), \
-                                G('AtomStateMagneticQuantumNumber') 
+                                G('AtomStateMagneticQuantumNumber')
             if p:
                 yield '<Parity>%s</Parity>' % parityLabel(p)
             if j:
@@ -707,8 +707,8 @@ def XsamsAtoms(Atoms):
             cont, ret = checkXML(AtomState,'CompositionXML')
             if cont:
                 yield ret
-            else:                
-                yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)                
+            else:
+                yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
                 yield makeAtomComponent(Atom)
                 yield '</AtomicComposition>'
 
@@ -724,6 +724,51 @@ def XsamsAtoms(Atoms):
 # ATOMS END
 #
 # MOLECULES START
+def makeNormalMode(G):
+    elstate = G('MoleculeNormalModeElectronicState')
+    pointgr = G('MoleculeNormalModePointGroupSymmetry')
+    id = G('MoleculeNormalModeID')
+    extraAttr = {}
+    if elstate: extraAttr['electronicStateRef'] = elstate
+    if pointgr: extraAttr['pointGroupSymmetry'] = pointgr
+    if id: extraAttr['id'] = id
+    result = [ makePrimaryType('NormalMode', 'MoleculeNormalMode', G, extraAttr=extraAttr) ]
+    result.append( makeDataType('HarmonicFrequency','MoleculeNormalModeHarmonicFrequency',G) )
+    result.append( makeDataType('Intensity','MoleculeNormalModeIntensity',G) )
+
+    vsrefs = G('MoleculeNormalModeDisplacementVectorSourceRef')
+    vrefs = G('MoleculeNormalModeDisplacementVectorRef')
+    comms = G('MoleculeNormalModeDisplacementVectorComment')
+    meths = G('MoleculeNormalModeDisplacementVectorMethod')
+    x3s = G('MoleculeNormalModeDisplacementVectorX3')
+    y3s = G('MoleculeNormalModeDisplacementVectorY3')
+    z3s = G('MoleculeNormalModeDisplacementVectorZ3')
+    vsrefs, vrefs, comms, meths, x3s, y3s, z3s = \
+        map(makeiter, [vsrefs, vrefs, comms, meths, x3s, y3s, z3s])
+
+    for i,x3 in enumerate(x3s):
+        result.append('<Vector')
+        try: result.append(' methodRef="%s"'%meths[i])
+        except: pass
+        try: result.append(' ref="%s"'%refs[i])
+        except: pass
+        try: result.append(' x3="%s"'%x3)
+        except: pass
+        try: result.append(' y3="%s"'%y3s[i])
+        except: pass
+        try: result.append(' z3="%s"'%z3s[i])
+        except: pass
+        try: result.append(' ref="%s"'%vrefs[i])
+        except: pass
+        result.append('>')
+        try: result.append('<Comments>"%s"</Comments>'%comms[i])
+        except: pass
+        try: result.append('<SourceRef>"%s"</SourceRef>'%vsrefs[i])
+        except: pass
+        result.append('</Vector>')
+
+    result.append('</NormalMode>')
+    return ''.join(result)
 
 def XsamsMCSBuild(Molecule):
     """
@@ -757,6 +802,12 @@ def XsamsMCSBuild(Molecule):
     if cont:
         yield '<NormalModes>\n'
         yield ret
+        yield '</NormalModes>\n'
+    elif hasattr(Molecule, 'NormalModes'):
+        yield '<NormalModes>\n'
+        for NormalMode in NormalModes:
+            GN = lambda name: GetValue(name, NormalMode=NormalMode)
+            yield makeNormalMode(GN)
         yield '</NormalModes>\n'
 
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
@@ -1093,7 +1144,7 @@ def XsamsRadTranShifting(RadTran):
     Shifting type
     """
     string = ""
-    if hasattr(RadTran, "Shiftings"):    
+    if hasattr(RadTran, "Shiftings"):
         for Shifting in makeiter(RadTran.Shiftings):
             G = lambda name: GetValue(name, Shifting=Shifting)
             dic = {}
@@ -1819,7 +1870,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     log.debug('Working on Processes.')
     yield '<Processes>\n'
     yield '<Radiative>\n'
-    
+
     if not requestables or 'radiativecrossections' in requestables:
         try:
             for RadCros in XsamsRadCross(RadCross):
