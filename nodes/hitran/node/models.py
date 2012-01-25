@@ -158,7 +158,7 @@ class State(models.Model):
         xml = []
         case_prefix = self.iso.case.case_prefix
         xml.append('<Case xsi:type="%s:Case" caseID="%s" xmlns:%s='
-              '"http://vamdc.org/xml/xsams/0.2/cases/%s">'
+              '"http://vamdc.org/xml/xsams/0.3/cases/%s">'
             % (case_prefix, case_prefix, case_prefix, case_prefix))
         xml.append(self.qns_xml)
         xml.append('</Case>')
@@ -217,8 +217,8 @@ class Trans(models.Model):
             lineshape_xml.append('            <Value units="1/cm">%s</Value>\n'
                                  % self.gamma_air.val)
             if self.gamma_air.err is not None:
-                lineshape_xml.append('            <Accuracy><Statistical>'
-                     '%s</Statistical></Accuracy>\n' % str(self.gamma_air.err))
+                lineshape_xml.append('            <Accuracy type="statistical"'
+                     '>%s</Accuracy>\n' % str(self.gamma_air.err))
             lineshape_xml.append('          </FitParameter>\n')
             if 'n_air' in self.__dict__:
                 lineshape_xml.append('          <FitParameter name="n">\n')
@@ -228,8 +228,8 @@ class Trans(models.Model):
                 lineshape_xml.append('            <Value units="unitless">%s'
                                      '</Value>\n' % self.n_air.val)
                 if self.n_air.err is not None:
-                    lineshape_xml.append('            <Accuracy><Statistical>'
-                      '%s</Statistical></Accuracy>\n' % str(self.n_air.err))
+                    lineshape_xml.append('            <Accuracy type="'
+                      'statistical">%s</Accuracy>\n' % str(self.n_air.err))
                 lineshape_xml.append('          </FitParameter>\n')
             lineshape_xml.append('        </FitParameters>\n'\
                                  '      </LineshapeParameter>\n</Lineshape>\n')
@@ -246,8 +246,8 @@ class Trans(models.Model):
             lineshape_xml.append('          <Value units="1/cm">%s</Value>\n'
                       % self.gamma_self.val)
             if self.gamma_self.err is not None:
-                lineshape_xml.append('          <Accuracy><Statistical>'\
-                    '%s</Statistical></Accuracy>\n' % str(self.gamma_self.err))
+                lineshape_xml.append('          <Accuracy type="statistical">'\
+                    '%s</Accuracy>\n' % str(self.gamma_self.err))
             lineshape_xml.append('        </LineshapeParameter>\n'\
                                  '      </Lineshape>\n')
             broadening_xml.append('    <Broadening'\
@@ -278,8 +278,8 @@ class Trans(models.Model):
             shifting_xml.append('            <Value units="unitless">%s'
                                 '</Value>\n' % self.delta_air.val)
             if self.delta_air.err is not None:
-                shifting_xml.append('            <Accuracy><Statistical>'\
-                    '%s</Statistical></Accuracy>\n' % str(self.delta_air.err))
+                shifting_xml.append('            <Accuracy type="statistical">'
+                    '%s</Accuracy>\n' % str(self.delta_air.err))
             shifting_xml.append('          </FitParameter>\n'\
                                 '        </FitParameters>\n'\
                                 '      </ShiftingParameter>\n'\

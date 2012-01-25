@@ -1732,7 +1732,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
             if HeaderInfo['Truncated'] != None: # note: allow 0 percent
                 yield """
 <!--
-   ATTENTION: The amount of data returned has been truncated by the node.
+   ATTENTION: The amount of data returned may have been truncated by the node.
    The data below represent %s percent of all available data at this node that
    matched the query.
 -->

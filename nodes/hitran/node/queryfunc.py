@@ -52,40 +52,26 @@ def bad_ref(refID):
                ' identified by %s cannot be resolved into valid XSAMS'
                     % refID, year=2011)
 
-def get_sources(transitions):
-    #return None
-    refIDs = set()
+def get_sources(ref_ids):
     refs = []
-    for trans in transitions:
-        # get the (string) reference IDs for each parameter of the transition 
-        for prm_name in ('nu', 'A', 'gamma_air', 'n_air', 'gamma_self',
-                         'delta_air'):
-            try:
-                exec('refID = trans.%s.ref' % prm_name)
-            except AttributeError:
-                continue
-            # have we seen it already?
-            if refID in refIDs:
-                continue
-            # get the corresponding Ref object
-            try:
-                ref = Ref.objects.get(refID=refID)
-            except Ref.DoesNotExist:
-                continue
-            # filter out references we can't represent in XSAMS, and rename
-            # 'article' as 'journal' and 'thesis' and 'theses' (sic)
-            if ref.ref_type == 'article':
-                ref.ref_type = 'journal'
-            elif ref.ref_type not in ('private communication', 'proceedings',
-                                      'database'):
-                # this ref won't resolve to valid XSAMS
-                ref = bad_ref(refID)
-            # <Year> is compulsory in XSAMS, so if it's missing in the
-            # database, return a bad_ref:
-            if ref.year is None:
-                ref = bad_ref(refID)
-            refIDs.add(refID)
-            refs.append(ref)
+    for ref_id in ref_ids:
+        try:
+            ref = Ref.objects.get(pk=ref_id)
+        except Ref.DoesNotExist:
+            continue
+        # filter out references we can't represent in XSAMS, and rename
+        # 'article' as 'journal' and 'thesis' and 'theses' (sic)
+        if ref.ref_type == 'article':
+            ref.ref_type = 'journal'
+        elif ref.ref_type not in ('private communication', 'proceedings',
+                                  'database'):
+            # this ref won't resolve to valid XSAMS
+            ref = bad_ref(ref.refID)
+        # <Year> is compulsory in XSAMS, so if it's missing in the
+        # database, return a bad_ref:
+        if ref.year is None:
+            ref = bad_ref(ref.refID)
+        refs.append(ref)
     return refs
 
 def attach_prms(transitions):
@@ -94,9 +80,12 @@ def attach_prms(transitions):
     prm.val, prm.err, and prm.ref
 
     """
+    ref_ids = set()
     for trans in transitions:
         for prm in trans.prm_set.all():
             exec('trans.%s = prm' % prm.name)
+            ref_ids.add(prm.ref_id)
+    return ref_ids
 
 def ChemicalName2MoleculeInchiKey(op, foo):
     """
@@ -251,11 +240,20 @@ def setupResults(sql, LIMIT=None):
     print 'LIMIT is', LIMIT
     print 'ntrans =',ntrans
 
-    attach_prms(transitions)
+    ts = time.time()
+    ref_ids = attach_prms(transitions)
+    te = time.time()
+    print 'time to attach parameters = %.1f secs' % (te-ts)
 
-    sources = get_sources(transitions)
+    ts = time.time()
+    sources = get_sources(ref_ids)
+    te = time.time()
+    print 'time to get sources = %.1f secs' % (te-ts)
     # extract the state quantum numbers in a form that generators.py can use:
+    ts = time.time()
     species, nspecies, nstates = get_species(transitions)
+    te = time.time()
+    print 'time to get species = %.1f secs' % (te-ts)
     LOG('%s transitions retrieved from HITRAN database' % ntrans)
     LOG('%s states retrieved from HITRAN database' % nstates)
     LOG('%s species retrieved from HITRAN database' % nspecies)

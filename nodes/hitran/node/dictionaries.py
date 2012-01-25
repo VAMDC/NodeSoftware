@@ -2,9 +2,11 @@
 
 RETURNABLES={\
 'NodeID': 'HIT',    # unique identifier for the HITRAN node
-'XSAMSVersion': '0.2',
-#'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/release-0.2/sams.xsd',
-'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/vamdc-working/xsams.xsd',
+'XSAMSVersion': '0.3',
+#'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/'\
+#                  'release-0.2/xsams.xsd',
+'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/'\
+                  'release-0.3/xsams.xsd',
 
 'SourceID': 'Source.refID',
 'SourceAuthorName': 'Source.author_list()',
@@ -22,6 +24,7 @@ RETURNABLES={\
 'MethodDescription': 'Method.category',
 
 # the node software refers to my Trans objects as RadTran
+'RadTransID': 'RadTran.id',
 'RadTransComments': '',
 'RadTransMethodRef': 'EXP',
 'RadTransFinalStateRef': 'RadTran.statep.id',
