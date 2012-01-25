@@ -12,19 +12,39 @@ Changelog
 January 22, 2012
 ----------------------
 
-**Version**. This is for *NodeSoftware 11.12* which implements the VAMDC standards 11.12. (Make sure to also read the changes for the beta release below.)
+**Version**. This is for *NodeSoftware 11.12* which implements the VAMDC
+standards 11.12. (Please make sure to also read the changes for the beta
+release below.)
 
-Since the beta-release (11.10beta), there are no major changes of the internal workings which means that you most likely do not need to change the query-function if it works with that. However, please test your node after an upgrade anyway.
+Since the beta-release (11.10beta), there are no major changes of the internal
+workings, which means that you most likely do not need to change the
+query-function if it worked with that. However, please test your node after an
+upgrade anyway.
 
-**Dictionary**. Some keywords have changed, both Restrictables and Returnables (due to the changes in the schema), so please check the node's ``dictionaries.py`` against http://dictionary.vamdc.org/.
+**Dictionary**. Some keywords have changed, both Restrictables and Returnables
+(due to the changes in the schema), so please double-check the node's
+``dictionaries.py`` against http://dictionary.vamdc.org/.
 
-**DEPLOY_URL**. You can now override the automatic determination of the URL at which a node is deployed, see :ref:`deployurl`.
+**DEPLOY_URL**. You can now override the automatic determination of the URL at
+which a node is deployed, see :ref:`deployurl`.
 
 **New IDs**. The XSAMS standard now makes mandatory several IDs in an XSAMS
 document, for example each process must have an ID now. Please read
 :ref:`fillingids` on how to do this.
 
+**Advanced treatment of Restrictables**. If a node wants to support a
+Restrictable that does not match a field in the database, this can now be
+handled with some custom code. See :ref:`specialrestr`.
 
+**Finding the bug**. For debugging purposes, it may help to manually go through
+the steps that happen when a query comes to a node. See :ref:`debugntest` for
+information on how to do this.
+
+**Self-referencing <Source>**. In the bibliographical part of the XSAMS schema,
+i.e. the <Source> elements, the xml-generator now automatically adds such an
+element in order to describe the document itself. It contains a timestamp and
+the full query URL, among other things. Please check the output if this works
+correctly for your node.
 
 Last, but not least, since we often are asked how to test a node, we'd like to
 mention that there is a very convenient software called **TAPvalidator** (see
