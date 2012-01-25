@@ -307,22 +307,22 @@ Passed into generator Loop variable Object looped over                          
 Atoms                 Atom                                                           
 ..                                  Atom.States                                       AtomState
 ..                                  Atom.Components                                   Component
-..                                  Atom.Components.SuperShells                       AtomSuperShell
-..                                  Atom.Components.Shells                            AtomShell 
-..                                  Atom.Components.ShellPairs                        AtomShellPair
+..                                  Atom.Component.SuperShells                        AtomSuperShell
+..                                  Atom.Component.Shells                             AtomShell 
+..                                  Atom.Component.ShellPairs                         AtomShellPair
 Molecules             Molecule                                                       
 ..                                  Molecule.States                                   MoleculeState
-..                                  Molecule.States.Parameters                        Parameter
-..                                  Molecule.States.Parameters.Vector                 VectorValueOA
+..                                  Molecule.State.Parameters                         Parameter
+..                                  Molecule.State.Parameter.Vector                   VectorValueOA
 Solids                Solid                                                           
 ..                                  Solid.Layers                                      Layer
-..                                  Solid.Layers.Components                           Component
+..                                  Solid.Layer.Components                            Component
 Particles             Particle                                                       
 RadTrans              RadTran                                                        
 ..                                  RadTran.Shiftings                                 Shifting
-..                                  RadTran.Shiftings.ShiftingParams                  ShiftingParam
-..                                  RadTran.Shiftings.ShiftingParams.Fits             Fit
-..                                  RadTran.Shiftings.ShiftingParams.Fits.Parameters  Parameter
+..                                  RadTran.Shifting.ShiftingParams                   ShiftingParam
+..                                  RadTran.Shifting.ShiftingParam.Fits               Fit
+..                                  RadTran.Shifting.ShiftingParam.Fit.Parameters     Parameter
 RadCross              RadCros       
 ..                                  RadCros.BandModes                                 BandMode                                    
 CollTrans             CollTran                                                       
@@ -330,10 +330,10 @@ CollTrans             CollTran
 ..                                  CollTran.IntermediateStates                       IntermediateState
 ..                                  CollTran.Products                                 Product
 ..                                  CollTran.DataSets                                 DataSet
-..                                  CollTran.DataSets.FitData                         FitData
-..                                  CollTran.DataSets.FitData.Arguments               Argument
-..                                  CollTran.DataSets.FitData.Parameters              Parameter                                    
-..                                  CollTran.DataSets.TabData                         TabData
+..                                  CollTran.DataSet.FitData                          FitData
+..                                  CollTran.DataSet.FitData.Arguments                Argument
+..                                  CollTran.DataSet.FitData.Parameters               Parameter                                    
+..                                  CollTran.DataSet.TabData                          TabData
 NonRadTrans           NonRadTran                                                     
 Environments          Environment                                                    
 ..                                  Environment.Species                               EnvSpecies

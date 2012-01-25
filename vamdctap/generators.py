@@ -574,7 +574,7 @@ def makeAtomComponent(Atom):
 
             if hasattr(Component, "SuperShells"):
                 string += "<SuperConfiguration>"
-                for SuperShell in makeiter(Atom.SuperShells):
+                for SuperShell in makeiter(Component.SuperShells):
                     GA = lambda name: GetValue(name, SuperShell=SuperShell)
                     string += "<SuperShell>"
                     string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % GA("AtomStateSuperShellPrincipalQN")
