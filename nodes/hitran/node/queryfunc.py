@@ -75,8 +75,6 @@ def get_sources(transitions):
             # 'article' as 'journal' and 'thesis' and 'theses' (sic)
             if ref.ref_type == 'article':
                 ref.ref_type = 'journal'
-            elif ref.ref_type == 'thesis':
-                ref.ref_type = 'theses'
             elif ref.ref_type not in ('private communication', 'proceedings',
                                       'database'):
                 # this ref won't resolve to valid XSAMS
