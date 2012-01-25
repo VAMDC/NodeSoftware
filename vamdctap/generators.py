@@ -661,6 +661,7 @@ def XsamsAtoms(Atoms):
             Atom.States = []
         for AtomState in Atom.States:
             cont, ret = checkXML(AtomState)
+
             if cont:
                 yield ret
                 continue
@@ -681,9 +682,10 @@ def XsamsAtoms(Atoms):
             yield makeDataType('HyperfineConstantA', 'AtomStateHyperfineConstantA', G)
             yield makeDataType('HyperfineConstantB', 'AtomStateHyperfineConstantB', G)
             yield '</AtomicNumericalData><AtomicQuantumNumbers>'
+        
             p, j, k, hfm, mqn = G('AtomStateParity'), G('AtomStateTotalAngMom'), \
                                 G('AtomStateKappa'), G('AtomStateHyperfineMomentum'), \
-                                G('AtomStateMagneticQuantumNumber')
+                                G('AtomStateMagneticQuantumNumber') 
             if p:
                 yield '<Parity>%s</Parity>' % parityLabel(p)
             if j:
