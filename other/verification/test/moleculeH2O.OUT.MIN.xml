@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema">
+<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../verification.xsd" xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema">
 	<Sources>
 		<Source sourceID="BHIT-H2O-nu-40">
 			<Authors>
@@ -53,7 +53,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>1</nltcs:v1>
@@ -76,7 +76,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>0</nltcs:v1>
@@ -126,7 +126,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>1</nltcs:v1>
@@ -149,7 +149,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>0</nltcs:v1>
@@ -199,7 +199,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>1</nltcs:v1>
@@ -222,7 +222,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>45</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.2/cases/nltcs">
+					<Case xsi:type="nltcs:Case" caseID="nltcs" xmlns:nltcs="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<nltcs:QNs>
 							<nltcs:ElecStateLabel>X</nltcs:ElecStateLabel>
 							<nltcs:v1>0</nltcs:v1>
@@ -242,53 +242,44 @@
 	</Species>
 	<Processes>
 		<Radiative>
-			<RadiativeTransition>
+			<RadiativeTransition id="P2">
 				<EnergyWavelength>
 					<Wavenumber>
 						<SourceRef>BHIT-H2O-nu-40</SourceRef>
 						<Value units="1/cm">9030.8699</Value>
-						<Accuracy>
-							<Statistical>0.001</Statistical>
-						</Accuracy>
 					</Wavenumber>
 				</EnergyWavelength>
-				<InitialStateRef>SHIT-5100</InitialStateRef>
-				<FinalStateRef>SHIT-5099</FinalStateRef>
+				<UpperStateRef>SHIT-5100</UpperStateRef>
+				<LowerStateRef>SHIT-5099</LowerStateRef>
 				<Verification>
 					<nltcsRuleT01>true</nltcsRuleT01>
 					<nltcsRuleT02>false</nltcsRuleT02>
 				</Verification>
 			</RadiativeTransition>
-			<RadiativeTransition>
+			<RadiativeTransition id="P3">
 				<EnergyWavelength>
 					<Wavenumber>
 						<SourceRef>BHIT-H2O-nu-40</SourceRef>
 						<Value units="1/cm">11964.0248</Value>
-						<Accuracy>
-							<Statistical>0.001</Statistical>
-						</Accuracy>
 					</Wavenumber>
 				</EnergyWavelength>
-				<InitialStateRef>SHIT-5102</InitialStateRef>
-				<FinalStateRef>SHIT-5101</FinalStateRef>
+				<UpperStateRef>SHIT-5102</UpperStateRef>
+				<LowerStateRef>SHIT-5101</LowerStateRef>
 				<Verification>
 					<nltcsRuleT01>false</nltcsRuleT01>
 					<nltcsRuleT02>true</nltcsRuleT02>
 					<nltcsRuleT03>false</nltcsRuleT03>
 				</Verification>
 			</RadiativeTransition>
-			<RadiativeTransition>
+			<RadiativeTransition id="P4">
 				<EnergyWavelength>
 					<Wavenumber>
 						<SourceRef>BHIT-H2O-nu-40</SourceRef>
 						<Value units="1/cm">11964.0248</Value>
-						<Accuracy>
-							<Statistical>0.001</Statistical>
-						</Accuracy>
 					</Wavenumber>
 				</EnergyWavelength>
-				<InitialStateRef>SHIT-5103</InitialStateRef>
-				<FinalStateRef>SHIT-5104</FinalStateRef>
+				<UpperStateRef>SHIT-5103</UpperStateRef>
+				<LowerStateRef>SHIT-5104</LowerStateRef>
 				<Verification>
 					<nltcsRuleT01>true</nltcsRuleT01>
 					<nltcsRuleT02>false</nltcsRuleT02>
