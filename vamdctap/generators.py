@@ -630,7 +630,6 @@ def XsamsAtoms(Atoms):
         yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' % (NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
         if not hasattr(Atom,'States'):
             Atom.States = []
-        #print "Atom:", G('AtomSymbol')
         for AtomState in Atom.States:
             cont, ret = checkXML(AtomState)
 
@@ -658,8 +657,9 @@ def XsamsAtoms(Atoms):
             p, j, k, hfm, mqn = G('AtomStateParity'), G('AtomStateTotalAngMom'), \
                                 G('AtomStateKappa'), G('AtomStateHyperfineMomentum'), \
                                 G('AtomStateMagneticQuantumNumber')
-            #print "quantum numbers p:%s j:%s k:%s hfm:%s" % (p,j,k,hfm)
-            #log.debug("quantum numbers: p:%s j:%s k:%s hfm:%s" % (p,j,k,hfm))
+            print "energy:", G('StateEnergy'),
+            print "quantum numbers:", p,j,k,hfm
+ 
             if p:
                 yield '<Parity>%s</Parity>' % parityLabel(p)
             if j:
