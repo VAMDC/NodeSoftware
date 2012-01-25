@@ -9,16 +9,25 @@ Changelog
     for returning readers, especially the maintainer of VAMDC nodes.
 
 
-October XX, 2011
+January 22, 2012
 ----------------------
 
-**Version**. This is for *NodeSoftware 11.10* which implements the VAMDC standards 11.10. (Make sure to also read the changes for the beta release below.)
+**Version**. This is for *NodeSoftware 11.12* which implements the VAMDC standards 11.12. (Make sure to also read the changes for the beta release below.)
 
-The standard now makes mandatory several IDs in an XSAMS document. Please read
+Since the beta-release (11.10beta), there are no major changes of the internal workings which means that you most likely do not need to change the query-function if it works with that. However, please test your node after an upgrade anyway.
+
+**Dictionary**. Some keywords have changed, both Restrictables and Returnables (due to the changes in the schema), so please check the node's ``dictionaries.py`` against http://dictionary.vamdc.org/.
+
+**DEPLOY_URL**. You can now override the automatic determination of the URL at which a node is deployed, see :ref:`deployurl`.
+
+**New IDs**. The XSAMS standard now makes mandatory several IDs in an XSAMS
+document, for example each process must have an ID now. Please read
 :ref:`fillingids` on how to do this.
 
-Since we often are asked how to test a node, we'd like to mention that
-is a very convenient software called **TAPvalidator** (see
+
+
+Last, but not least, since we often are asked how to test a node, we'd like to
+mention that there is a very convenient software called **TAPvalidator** (see
 http://www.vamdc.org/software) which can be used to query a node, browse the
 output and check that it is valid with respect to the xsams standard.
 
