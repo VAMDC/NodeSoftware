@@ -182,6 +182,9 @@ ForeignKeys to something like *'transitions_with_this_upstate'* and
 *s* the transitions that have *s* as upper state can be retrieved by 
 *s.transitions_with_this_upstate*.
 
+
+
+
 Inserting custom XML into the generator
 ------------------------------------------
 
@@ -195,7 +198,9 @@ of `.XML()` which means that this needs to be coded as a function/method in
 your model, not as an attribute.
 
 
-Debugging and testing
+.. _debugntest:
+
+Quick debugging and testing
 ---------------------------
 
 Sometimes it is necessary to go manually go though the steps that happen when a query comes in in order to find out where omething goes wrong. A good tool for this is in interactive python session which you start from within your node directory with::
@@ -227,23 +232,6 @@ You can also manually run the first step from the queryfunction::
     q = S.sql2Q(foo)
     print q
 
-.. _returnresult:
-
-How to skip the XSAMS generator and return a custom format
-----------------------------------------------------------
-
-Currently, only queries with *FORMAT=XSAMS* are officially supported. Since
-some nodes wanted to be able to return other formats (that are only useful for
-their community, for example to inculde binary data like an image of a
-molecule) there is a mechanism to to do this. 
-
-Whenever *FORMAT* is something else than *XSAMS*, the NodeSoftware checks whether there is a function called *returnResults()* in a node's ``queryfunc.py``. If so, it completely hands the responsibility to assemble the output to this function.
-
-.. note::
-    This means that you have to return a HttpResponse object from it and
-    know a little more about Django views. In addition you are on your own
-    to assembe your custom data format.
-
 .. _unitconv:
 
 Unit conversions for Restrictables
@@ -256,6 +244,7 @@ come in the WHERE-clause of a query together with the Restrictables::
     RESTRICTABLES = {\
     'RadTransWavelength':'wave',
     'RadTransWavenumber':('wave',invcm2Angstr),
+    ...
 
 Here we give a two-tuple as the right-hand-side of the Restrictable *RadTransWavenumber* where the first element is the name of the model field (as usual) and the second is the function that is to be applied.
 
@@ -281,9 +270,29 @@ would be wasteful to have a database column that is the same everywhere.
 Custom restrictable function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One way of 
+One way of handling this is to use a custom function as the value of the Restrictable in ``dictionaries.py``::
 
-Manipulating the query
+    'AtomSymbol':checkIron,
+
+where *checkIron* would be a function, e.g. defined in the same file (before referencing it, of course) as::
+
+    def checkIron(restrictable,operator,value):
+        value = string.strip('\'"')
+        if value == 'Fe' and operator in ('=','=='):
+            return return Q(pk=F('pk'))
+        else:
+            return ~Q(pk=F('pk'))
+
+.. note::
+    *Q(pk=F('pk'))* is a restriction that is always true and should be fast. The operator *~* negates it.
+
+.. note::
+    This (and the alternative below) do not cover all possible query cases, for example the operators LIKE or IN. In practice, some more lines of code will therefore be needed to manually handle a Restrictable.
+
+.. note::
+    If this topic is relevant for you, please also have a look into ``vamdctap/unitconv.py`` where there are some examples.
+
+Manipulatine the query
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Another solution is to manipulate the set of restrictions by hand instead of letting *sql2Q()* handle it automatically. *sql2Q()* is a shorthand function that does these steps after each other:
@@ -315,7 +324,28 @@ So, in summary, the call *q=sql2Q(sql)* at the start of the query function can b
 Now, depending on what you want to do, you can manipulate this process at any intermediate step. To continue the example with iron only, we could insert the following at the start of the loop over the restrictions::
 
     if restriction[0].lower() == 'atomsymbol':
-        
+        if restriction[1] in ('=','==):
+            if restriction[3] == 'Fe':
+                q_dict[i] = Q(pk=F('pk'))
+                continue
+
+
+.. _returnresult:
+
+How to skip the XSAMS generator and return a custom format
+----------------------------------------------------------
+
+Currently, only queries with *FORMAT=XSAMS* are officially supported. Since
+some nodes wanted to be able to return other formats (that are only useful for
+their community, for example to inculde binary data like an image of a
+molecule) there is a mechanism to to do this. 
+
+Whenever *FORMAT* is something else than *XSAMS*, the NodeSoftware checks whether there is a function called *returnResults()* in a node's ``queryfunc.py``. If so, it completely hands the responsibility to assemble the output to this function.
+
+.. note::
+    This means that you have to return a HttpResponse object from it and
+    know a little more about Django views. In addition you are on your own
+    to assembe your custom data format.
 
         
     
