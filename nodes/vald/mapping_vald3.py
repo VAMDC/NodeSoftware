@@ -15,7 +15,8 @@ from imptools.linefuncs import *
 base = "/vald/vamdc/raw_vald_data/"
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'VALD3.cfg'
-vald_file = base + 'vald3_atoms.dat.gz' # change to vald3_molec.dat.gz for molecules
+vald_file = base + 'vald3_atoms_1000.dat' # change to vald3_molec.dat.gz for molecules
+#vald_file = base + 'vald3_atoms.dat.gz' # change to vald3_molec.dat.gz for molecules
 terms_file = base + 'term_atoms.dat.gz'
 ref_file = base + "VALD3_ref.bib"
 linelist_file = base + "VALD3linelists.txt"
