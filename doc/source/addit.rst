@@ -18,7 +18,7 @@ among other things. However, this does not always work (e.g. if you deploy
 behind a proxy) so there is a manual override. Simply set *DEPLOY_URL* in
 ``settings.py``, ending with */tap/* like this::
 
-    DEPLOY_URL = 'http://your.server/some/path/tap'
+    DEPLOY_URL = 'http://your.server/some/path/tap/'
 
 
 

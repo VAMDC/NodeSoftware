@@ -13,12 +13,12 @@ January 22, 2012
 ----------------------
 
 **Version**. This is for *NodeSoftware 11.12* which implements the VAMDC
-standards 11.12. (Make sure to also read the changes for the beta release
-below.)
+standards 11.12. (Please make sure to also read the changes for the beta
+release below.)
 
 Since the beta-release (11.10beta), there are no major changes of the internal
-workings which means that you most likely do not need to change the
-query-function if it works with that. However, please test your node after an
+workings, which means that you most likely do not need to change the
+query-function if it worked with that. However, please test your node after an
 upgrade anyway.
 
 **Dictionary**. Some keywords have changed, both Restrictables and Returnables
