@@ -708,9 +708,8 @@ def XsamsAtoms(Atoms):
             if cont:
                 yield ret
             else:                
-                yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
-                
-                yield makeAtomComponent(Atom, G)
+                yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)                
+                yield makeAtomComponent(Atom)
                 yield '</AtomicComposition>'
 
             yield '</AtomicState>'
