@@ -1086,62 +1086,67 @@ def XsamsRadTranShifting(RadTran, G):
     """
     Shifting type
     """
-    dic = {}
-    nam = G("RadTransShiftingName")
-    eref = G("RadTransShiftingEnv")
-    if nam:
-        dic["name"] = nam
-    else:
-        return ''
-    if eref:
-        dic["envRef"] = "E%s-%s"  % (NODEID, eref)
-    string = makePrimaryType("Shifting", "RadTransShifting", G, extraAttr=dic)
-    if hasattr(RadTran, "ShiftingParams"):
-        for ShiftingParam in RadTran.ShiftingParams:
-            GS = lambda name: GetValue(name, ShiftingParam=ShiftingParam)
-            string += makePrimaryType("ShiftingParameter", "RadTransShiftingParam", GS, extraAttr={"name":GS("RadTransShiftingParamName")})
-            val = GS("RadTransShiftingParamValueUnits")
+    if hasattr(RadTran, "Shiftings"):    
+        for Shifting in makeiter(RadTran.Shiftings):
+            G = lambda name: GetValue(name, Shifting=Shifting)
+                        
+            dic = {}
+            nam = G("RadTransShiftingName")
+            eref = G("RadTransShiftingEnv")
+            if nam:
+                dic["name"] = nam
+            else:
+                continue
+            if eref:
+                dic["envRef"] = "E%s-%s"  % (NODEID, eref)
+            string = makePrimaryType("Shifting", "RadTransShifting", G, extraAttr=dic)
 
-            if val:
-                string += "<Value units=%s>%s</Value>" % (GS("RadTransShiftingParamValueUnits"), GS("RadTransShiftingParamValue" ))
-                string += makePrimaryType("Accuracy", "RadTransShiftingParamAcc" , GS, extraAttr={"calibration":GS("RadTransShiftingParamAccCalib" ), "quality":GS("RadTransShiftingParamAccQuality")})
-                systerr = GS("RadTransShiftingParamAccSystematic")
-                if systerr:
-                    string += "<Systematic confidence=%s relative=%s>%s</Systematic>" % (GS("RadTransShiftingParamAccSystematicConfidence"), GS("RadTransShiftingParamAccSystematicRelative"), systerr)
-                staterr = GS("RadTransShiftingParamAccStatistical")
-                if staterr:
-                    string += "<Statistical confidence=%s relative=%s>%s</Statistical>" % (GS("RadTransShiftingParamAccStatisticalConfidence"), GS("RadTransShiftingParamAccStatisticalRelative"), staterr)
-                stathigh = GS("RadTransShiftingParamAccStatHigh")
-                statlow = GS("RadTransShiftingParamAccStatLow")
-                if stathigh and statlow:
-                    string += "<StatHigh confidence=%s relative=%s>%s</StatHigh>" % (GS("RadTransShiftingParamAccStatHighConfidence"), GS("RadTransShiftingParamAccStatHighRelative"), systerr)
-                    string += "<StatLow confidence=%s relative=%s>%s</StatLow>" % (GS("RadTransShiftingParamAccStatLowConfidence"), GS("RadTransShiftingParamAccStatLowRelative"), systerr)
-                string += "</Accuracy>"
-                string += "</Value>"
+            if hasattr(RadTran, "ShiftingParams"):
+                for ShiftingParam in makeiter(RadTran.ShiftingParams):
+                    GS = lambda name: GetValue(name, ShiftingParam=ShiftingParam)
+                    string += makePrimaryType("ShiftingParameter", "RadTransShiftingParam", GS, extraAttr={"name":GS("RadTransShiftingParamName")})
+                    val = GS("RadTransShiftingParamValueUnits")
 
-            if hasattr(ShiftingParam, "Fit"):
-                for Fit in makeiter(ShiftingParam.Fits):
-                    GSF = lambda name: GetValue(name, Fit=Fit)
-                    string += "<FitParameters functionRef=F%s-%s>" % (NODEID, GSF("RadTransShiftingParamFitFunction"))
+                    if val:
+                        string += "<Value units=%s>%s</Value>" % (GS("RadTransShiftingParamValueUnits"), GS("RadTransShiftingParamValue" ))
+                        string += makePrimaryType("Accuracy", "RadTransShiftingParamAcc" , GS, extraAttr={"calibration":GS("RadTransShiftingParamAccCalib" ), "quality":GS("RadTransShiftingParamAccQuality")})
+                        systerr = GS("RadTransShiftingParamAccSystematic")
+                        if systerr:
+                            string += "<Systematic confidence=%s relative=%s>%s</Systematic>" % (GS("RadTransShiftingParamAccSystematicConfidence"), GS("RadTransShiftingParamAccSystematicRelative"), systerr)
+                        staterr = GS("RadTransShiftingParamAccStatistical")
+                        if staterr:
+                            string += "<Statistical confidence=%s relative=%s>%s</Statistical>" % (GS("RadTransShiftingParamAccStatisticalConfidence"), GS("RadTransShiftingParamAccStatisticalRelative"), staterr)
+                        stathigh = GS("RadTransShiftingParamAccStatHigh")
+                        statlow = GS("RadTransShiftingParamAccStatLow")
+                        if stathigh and statlow:
+                            string += "<StatHigh confidence=%s relative=%s>%s</StatHigh>" % (GS("RadTransShiftingParamAccStatHighConfidence"), GS("RadTransShiftingParamAccStatHighRelative"), systerr)
+                            string += "<StatLow confidence=%s relative=%s>%s</StatLow>" % (GS("RadTransShiftingParamAccStatLowConfidence"), GS("RadTransShiftingParamAccStatLowRelative"), systerr)
+                        string += "</Accuracy>"
+                        string += "</Value>"
 
-                    # hard-code to avoid yet anoter named loop variable
-                    for name, units, desc, llim, ulim in makeloop("RadTransShiftingParamFitArgument", GSF, "Name", "Units", "Description", "LowerLimit", "UpperLimit"):
-                        string += "<FitArgument name='%s' units='%s'>" % (name, units)
-                        string += "<Description>%s</Description>" % desc
-                        string += "<LowerLimit>%s</LowerLimit>" % llim
-                        string += "<UpperLimit>%s</UpperLimit>" % ulim
-                        string += "</FitArgument>"
-                        return string
+                    if hasattr(ShiftingParam, "Fit"):
+                        for Fit in makeiter(ShiftingParam.Fits):
+                            GSF = lambda name: GetValue(name, Fit=Fit)
+                            string += "<FitParameters functionRef=F%s-%s>" % (NODEID, GSF("RadTransShiftingParamFitFunction"))
 
-                    if hasattr(Fit, "Parameters"):
-                        for Parameter in makeiter(Fit.Parameters):
-                            GSFP = lambda name: GetValue(name, Parameter=Parameter)
-                            string += makeNamedDataType("FitParameter", "RadTransShiftingParamFitParameter", GSFP)
-                    string += "</FitParameters>"
+                            # hard-code to avoid yet anoter named loop variable
+                            for name, units, desc, llim, ulim in makeloop("RadTransShiftingParamFitArgument", GSF, "Name", "Units", "Description", "LowerLimit", "UpperLimit"):
+                                string += "<FitArgument name='%s' units='%s'>" % (name, units)
+                                string += "<Description>%s</Description>" % desc
+                                string += "<LowerLimit>%s</LowerLimit>" % llim
+                                string += "<UpperLimit>%s</UpperLimit>" % ulim
+                                string += "</FitArgument>"
+                                return string
 
-            string += "</ShiftingParameter>"
+                            if hasattr(Fit, "Parameters"):
+                                for Parameter in makeiter(Fit.Parameters):
+                                    GSFP = lambda name: GetValue(name, Parameter=Parameter)
+                                    string += makeNamedDataType("FitParameter", "RadTransShiftingParamFitParameter", GSFP)
+                            string += "</FitParameters>"
 
-    string += "</Shifting>"
+                    string += "</ShiftingParameter>"
+
+            string += "</Shifting>"
     return string
 
 def XsamsRadTrans(RadTrans):
