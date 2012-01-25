@@ -36,13 +36,6 @@ class State(Model):
         if self.j1 and self.j2:
             return (self.j1,self.j2)
 
-    #def getRefs(self,which):
-    #    try:
-    #        id = eval('self.'+which+'_ref_id')
-    #        return refcache[id]
-    #    except:
-    #        return None
-
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
     class Meta:
@@ -58,6 +51,7 @@ class Transition(Model):
 
     species = ForeignKey(Species, db_index=True)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
+    einsteina = DecimalField(max_digits=20, decimal_places=3, db_index=True, null=True)
     gammarad = DecimalField(max_digits=6, decimal_places=2,null=True)
     gammastark = DecimalField(max_digits=7, decimal_places=3,null=True)
     gammawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
@@ -86,13 +80,18 @@ class Transition(Model):
     # vald->xsams mapping = {0:'experiment', 1:'semiempirical', 2:'derived', 3:'theory',4:'semiempirical',5:'compilation'}
     # mapping between method_return and method_restrict = {0:0, 1:1, 2:2, 3:3, 4:1, 5:5} (i.e. xsams=semiempirical is represented in vald by both obs and calc (1 and 4)).
 
-    method_return = PositiveSmallIntegerField(null=True, db_index=True) # this is the method category, populated in post-processing by parsing wave_linelist field
+    method_return = PositiveSmallIntegerField(null=True, db_index=False) # this is the method category, populated in post-processing by parsing wave_linelist field
     method_restrict = PositiveSmallIntegerField(null=True, db_index=True) # this is the method category to restrict on, populated in post-processing.
 
     def getWaals(self):
         if self.gammawaals: return self.gammawaals
         elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
         else: return None
+
+# Don't calculate here, but directly using sql
+#    def getEinsteinA(self):
+#        "Calculate the einstein A"        
+#        return (0.667025e16 * 10**self.loggf) / ((2 * self.upstate.j + 1.0) * self.wave**2)
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.wave)

@@ -22,6 +22,11 @@
       <li><a href="#" onclick="docShowSubpage('form_output')">Output</a></li>
 
      </ul>
+     <h6 class="vlist"> VAMDC </h6>
+     <ul class="vlist">
+      <li><a href="#" id="a_form_vamdcnodes" onclick="ajaxGetNodeList();docShowSubpage('form_vamdcnodes');ajaxQueryNodeContent();">VAMDC Nodes</a></li> 
+      <li><a href="#" id="a_form_result" onclick="docShowSubpage('form_result')">Query - Result</a></li>
+     </ul>
     </div>
   </div>
   <div id="col3" role="main">
@@ -48,7 +53,6 @@
   <div id="form_queryTrans" class="subpage" style="">
     <h3><Strong>QUERY</strong>&nbsp;<i>TRANSITIONS</i></h3>
     <p>&nbsp;</p>
-
     <fieldset>
       <div class="legend">Current Query:Refinements</div>
       <div id="refinements">
@@ -79,6 +83,7 @@
          <OPTION VALUE="spcat"> SPCAT </OPTION>
 
          <OPTION VALUE="xsams"> XSAMS (File) </OPTION>
+         <OPTION VALUE="rad3d"> Rad3d (XSAMS) </OPTION>
          <OPTION VALUE="png"> Stick Spectrum (png) </OPTION>
         </SELECT>
       </div> 
@@ -92,6 +97,7 @@
     </fieldset>
 
     <div class="type-button float_right">
+      <INPUT id="vamdcbutton" TYPE="button" NAME="T_SEARCH2" onclick="$('#queryresult').html('Processing ...');docShowSubpage('form_result');ajaxQuery('ajaxQuery','')" VALUE="vamdcQUERY" >
       <INPUT id="button1" TYPE="submit" NAME="T_SEARCH" onclick='submitOutputURL()' VALUE="QUERY" >
     </div>
   </div> <!-- DIV FORM QUERY TRANSITIONS (FIRST PAGE) -->
@@ -177,6 +183,8 @@
       <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
    </div>
   </div>
+
+<!-- SUBPAGE OUTPUT-FORMAT -->
 <div id="form_output" class="subpage" style="display:none">
     <h3><strong>SELECT</strong>&nbsp;<i>OUTPUT.FORMAT</i></h3>
 
@@ -223,6 +231,32 @@
   <div class="type-button float_left">
     <INPUT TYPE="BUTTON" VALUE="CHANGE" NAME="B_Change_TAG" onclick="load_page('queryForm');">
   </div>
+  <div class="type-button float_right">
+    <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+  </div>
+</div>
+
+
+<!-- SUBPAGE VAMDC nodes -->
+<div id="form_vamdcnodes" class="subpage" style="display:none">
+  <h3><strong>VAMDC</strong>&nbsp;<i>NODES</i></h3>
+  <p>&nbsp;</p>
+  <fieldset>
+    <!-- <div class="legend">Databases</div> -->
+    <div id="nodelist">Processing ...</div>   
+  </fieldset>
+  <div class="type-button float_right">
+    <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+  </div>
+</div>
+
+<!-- SUBPAGE Result -->
+<div id="form_result" class="subpage" style="display:none">
+  <h3><strong>QUERY</strong>&nbsp;<i>RESULT</i></h3>
+  <p>&nbsp;</p>
+
+  <div id ="queryresult"> No query submitted yet. </div>
+
   <div class="type-button float_right">
     <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
   </div>

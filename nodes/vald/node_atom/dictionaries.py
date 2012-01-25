@@ -38,18 +38,20 @@ RETURNABLES = {\
 'AtomStateTermJ1J2':'AtomState.j1j2()',
 'AtomStateTermJKJ':'AtomState.jc',
 'AtomStateTermJKS':'AtomState.s2',
-'AtomStateTermK':'AtomState.k',
+'AtomStateKappa':'AtomState.k',
 #############################################################
+'RadTransID':'RadTran.id',
 'RadTransSpeciesRef':'RadTran.species_id',
-'RadTransComments':'Wavelength is for vacuum.',
 'RadTransWavelength':'RadTran.wave',
 'RadTransWavelengthUnit':u'A',
+'RadTransWavelengthComment':'Wavelength is for vacuum.',
 'RadTransWavelengthRef':'RadTran.wave_ref_id',
-'RadTransFinalStateRef':'RadTran.upstate_id',
-'RadTransInitialStateRef':'RadTran.lostate_id',
+'RadTransUpperStateRef':'RadTran.upstate_id',
+'RadTransLowerStateRef':'RadTran.lostate_id',
 'RadTransMethod':'RadTran.method_return',
+#'RadTransProbabilityA':'RadTran.einsteina',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
-#'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.accur',
+#'RadTransProbabilityLog10WeightedOscillatorStrengthEval':'RadTran.accur',
 'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
 'RadTransProbabilityLog10WeightedOscillatorStrengthRef':'RadTran.loggf_ref_id',
 'RadTransBroadeningNaturalLineshapeParameter':'RadTran.gammarad',
@@ -71,16 +73,20 @@ RETURNABLES = {\
 #'RadTransBroadeningPressureRef':'RadTran.waals_ref_id',
 }
 
-# import the unit converter functions
+# import the converter functions
 from vamdctap.unitconv import *
 
+# custom function
+from django.db.models import Q
+
 RESTRICTABLES = {\
+'ConstantTest':test_constant_factory('"U"'),
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
-'AtomIonCharge':'species__ion',
-'AtomStateEnergy':'lostate__energy',
-'Initial.AtomStateEnergy':'lostate__energy',
-'Final.AtomStateEnergy':'upstate__energy',
+'IonCharge':'species__ion',
+'StateEnergy':bothStates,
+'Lower.StateEnergy':'lostate__energy',
+'Upper.StateEnergy':'upstate__energy',
 'RadTransWavelength':'wave',
 'RadTransWavenumber':('wave',invcm2Angstr),
 'RadTransFrequency':('wave',Hz2Angstr),
@@ -88,6 +94,6 @@ RESTRICTABLES = {\
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 'RadTransBroadeningNatural':'gammarad',
 'RadTransBroadeningPressure':'gammastark',
-'MethodCategory':('method_restrict',valdObstype)
+'MethodCategory':('method_restrict',valdObstype),
+#'RadTransProbabilityA':'einsteina'
 }
-

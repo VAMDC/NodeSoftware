@@ -13,6 +13,7 @@ print "		AtomStateL FLOAT, \n";
 print "		AtomStateTotalAngMom FLOAT, \n";
 print "		AtomStateEnergyExperimental DOUBLE, \n";
 print "		AtomStateEnergyTheoretical DOUBLE, \n";
+print "		AtomStateEnergy DOUBLE, \n";
 print "         id INTEGER, \n";
 print "		PRIMARY KEY (id) \n";
 print ");\n";
@@ -25,25 +26,30 @@ $discard = <STATES>;
 
 $index = 0;
 while(<STATES>) {
-	#print $_;
 	$line = $_;
 	chomp $line;
 	@fields = split(/\s*\|\s*/, $line);
-	#print join ":", @fields, "\n";
+	my ($chiantiIonType, $ionName, $nuclearCharge, $ionCharge, $stateIndex, $configurationLabel, 
+           $atomStateS, $atomStateL, $totalAngMom, $energyExperimental, $energyTheoretical) = @fields;
+
+        my $atomSymbol = firstWord($ionName);
+	my $index = (1000000 * $stateIndex) + (1000 * $ionCharge) + $nuclearCharge;
+        my $energy = bestEnergy($energyExperimental, $energyTheoretical);
+
 	print 'INSERT INTO states VALUES(';
-	print '"', shift @fields, '", '; # ChiantiIonType
+	print '"', $chiantiIonType, '", ';
         print '0, '; # species reference - filled in later
-	print '"', firstWord(shift @fields), '", '; # AtomSymbol
-	$nuclearCharge = shift @fields; print $nuclearCharge, ', '; # AtomNuclearCharge
-	$ionCharge     = shift @fields; print $ionCharge, ', '; # AtomIonCharge
-	$stateIndex    = shift @fields; print $stateIndex, ', '; # ChiantiAtomStateIndex
-	print '"', shift @fields, '", '; # AtomStateConfigurationLabel
-	print shift @fields, ', '; # AtomStateS
-	print shift @fields, ', '; # AtomStateL
-	print shift @fields, ', '; # AtomStateTotalAngMom
-	print shift @fields, ', '; # AtomStateEnergyExperimentalValue
-	print shift @fields, ', '; # AtomStateEnergyTheoreticalValue
-	$index = (1000000 * $stateIndex) + (1000 * $ionCharge) + $nuclearCharge;
+	print '"', $atomSymbol, '", ';
+	print $nuclearCharge, ', ';
+	print $ionCharge, ', ';
+	print $stateIndex, ', ';
+	print '"', $configurationLabel, '", ';
+	print $atomStateS, ', '; 
+	print $atomStateL, ', ';
+	print $totalAngMom, ', ';
+	print $energyExperimental, ', '; 
+	print $energyTheoretical, ', ';
+	print $energy, ', ';
 	print $index; # id - primary key
         print ");\n";
 }
@@ -131,6 +137,9 @@ print ");\n";
 print "INSERT INTO species(id,AtomSymbol,AtomNuclearCharge,AtomIonCharge) SELECT DISTINCT ((1000*AtomIonCharge) + AtomNuclearCharge),AtomSymbol,AtomNuclearCharge,AtomIonCharge FROM states;\n";
 
 
+print "CREATE INDEX energy ON states(AtomStateEnergy);\n";
+print "CREATE INDEX wavelength ON transitions(wavelength);\n";
+
 # Returns the first word of a given sentence in which words are 
 # separated by one or more characters of white space.
 sub firstWord {
@@ -147,3 +156,12 @@ sub bestWavelength {
 	return $theoretical if $theoretical > 0.0;
 	return -1.0;
 }
+
+sub bestEnergy {
+	my $experimental = shift @_;
+	my $theoretical = shift @_;
+        return $experimental if $experimental >= 0.0;
+	return $theoretical if $theoretical >= 0.0;
+	return -1.0;
+}
+

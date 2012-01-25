@@ -412,6 +412,181 @@ function orderByState() {
 
 
 
+function ajaxQuery(func,urlstr) {
+
+  var dataToSend =  $("form").serializeArray();
+
+  if (typeof func=="undefined")
+    var func="";
+  
+  if (urlstr.length>0) {
+    var datum = {"name" : "url", "value" : urlstr};
+    dataToSend.push(datum);
+  }
+
+  var datum = {"name" : "function", "value" : func}; 
+  dataToSend.push(datum);
+
+  // call ajax
+  $.ajax({
+
+    url: './ajaxRequest',
+	data: dataToSend,
+	type: "POST",
+	// Wird ausgeführt, wenn die Datei erfolgreich requestet wurde
+	async: true,
+	dataType: "json",
+	success: function(data) {
+ 	  // Überprüfen, ob ein JS Objekt da ist.
+ 	  if(ajax!=false) {
+ 	    // Die von PHP generierte Meldung dem Benutzer darstellen
+ 	    $("#queryresult").html( data.htmlcode );
+           }
+      },
+
+    error: function(xhr, ajaxOptions, thrownError){
+                    alert(xhr.statusText);
+                    alert(xhr.responseText);
+		    jsonValue = jQuery.parseJSON( xhr.responseText );
+		    alert("JSON");
+		    alert(jsonValue);
+      },
+	complete: function(data) {
+	//	alert(data.getAllResponseHeaders());
+      }
+
+    });
+  
+}
+
+function ajaxGetNodeList() {
+  // Perform query only once 
+  if ($("#nodelist").html() == "Processing ...") {
+    
+    // Set Please wait message
+    $("#nodelist").html("Processing ...");
+    
+    // Set POST - Items
+    var dataToSend = new Array();
+    var datum = {"name" : "function", "value" : "getVAMDCstats"}; 
+    dataToSend.push(datum);
+    
+    // Do Ajax - Request
+
+    $.ajax({
+
+          url: './ajaxRequest',
+	  data: dataToSend,
+	  type: "POST",
+	  // Wird ausgeführt, wenn die Datei erfolgreich requestet wurde
+	  async: true,
+	  dataType: "json",
+	  success: function(data) {
+   	    // Überprüfen, ob ein JS Objekt da ist.
+ 	    if(ajax!=false) {
+ 	      // Die von PHP generierte Meldung dem Benutzer darstellen
+ 	      //$("#queryresult").html( data.htmlcode );
+	      // $("#nodelist").html("<h3 id='results'>VAMDC.database:query</h3>");
+	      $("#nodelist").html(data.htmlcode);//append(data.htmlcode);
+	    }
+	  },
+
+	  error: function(xhr, ajaxOptions, thrownError){
+	    alert(xhr.statusText);
+	    alert(xhr.responseText);
+	    jsonValue = jQuery.parseJSON( xhr.responseText );
+	    alert("JSON");
+	    alert(jsonValue);
+	  },
+	  complete: function(data) {
+	    //	alert(data.getAllResponseHeaders());
+	  }
+
+    });
+
+
+
+  }
+  
+}
+
+
+function ajaxQueryNodeContent() {
+
+  var inchikey = 'XLYOFNOQVPJJNP-GGAQIHGBSA-N';
+
+  // Query each node
+  $(".vamdcnode").each(function(index,value) {
+			 // alert($(this).attr("id"));
+			 if ($(this).find('.nodestatistic').html()) {
+			   $(this).find('.nodestatistic').html("Fetching statistics for this database!")
+			 } else {
+			   $("<p class='nodestatistic'>Fetching statistics for this database! </p>").appendTo($(this));
+			 }
+			 nodeurl = $(this).find('.nodeurl').text();
+			 //var dataToSend = new Array();
+			 var dataToSend =  $("form").serializeArray();
+			 dataToSend.push({"name" : "inchikey", "value" : inchikey});
+			 dataToSend.push({"name": "nodeurl", "value" : nodeurl});
+			 dataToSend.push({"name" : "function", "value" : "getNodeStatistic"}); 
+ 
+			 //			 alert($(this).find('.nodeurl').text());
+			 //alert(index);
+			 //var nodeindex = index;
+			 // Do Ajax - Request
+			 var node = $(this);
+
+			 $.ajax({
+
+			   url: './ajaxRequest',
+			       data: dataToSend,
+			       type: "POST",
+			       // Wird ausgeführt, wenn die Datei erfolgreich requestet wurde
+			       async: true,
+			       dataType: "json",
+			       ajaxI: 5,
+			       ajaxNode: $(this),
+			       context: $(this),
+			       success: function(data) {
+			       //  alert("success");
+			       //			       alert(ajaxNode);
+			       // Überprüfen, ob ein JS Objekt da ist.
+			       if(ajax!=false) {
+				 //				 anode = this.ajaxI;
+				 //				 node = this.ajaxNode;
+				 // alert(anode);
+				 //  alert(node.find('.nodeurl').text());
+
+				 // Die von PHP generierte Meldung dem Benutzer darstellen
+				 //$("#queryresult").html( data.htmlcode );
+				 // $("#nodelist").html("<h3 id='results'>VAMDC.database:query</h3>");
+				 node.find('.nodestatistic').html(data.htmlcode);
+			       } else {
+				 node.find('.nodestatistic').html("Error fetching statistics for this database!");
+			       }
+			       
+			     },
+
+			       error: function(xhr, ajaxOptions, thrownError){
+			       alert(xhr.statusText);
+			       alert(xhr.responseText);
+			       jsonValue = jQuery.parseJSON( xhr.responseText );
+			       alert("JSON");
+			       alert(jsonValue);
+			     },
+			       complete: function(data) {
+			       //	alert(data.getAllResponseHeaders());
+			     }
+			     
+			   });
+
+		       });
+  
+}
+
+
+
+
 function ajaxControlForm(func, data) {
   if (data) {
     //  var dataToSend = new Array();

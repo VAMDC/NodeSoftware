@@ -5,7 +5,7 @@ from pyparsing import *
 def setupSQLparser():
     selectStmt = Forward()
     selectToken = Keyword("select", caseless=True)
-    ident = Word( alphas, alphanums ).setName("identifier")
+    ident = Word( alphas, alphanums+'.' ).setName("identifier")
     columnName     = delimitedList( ident, ",", )#combine=True )
     columnNameList = Group( delimitedList( columnName ) )
     whereExpression = Forward()
@@ -46,16 +46,22 @@ SQL=setupSQLparser()
 
 ############ SQL PARSER FINISHED; SOME HELPER THINGS BELOW
 
-from django.db.models import Q
+from django.db.models import Q, F
 from django.conf import settings
 from django.utils.importlib import import_module
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
 from caselessdict import CaselessDict
 RESTRICTABLES=CaselessDict(DICTS.RESTRICTABLES)
 
+from types import TupleType, FunctionType
+from django.db.models.query_utils import Q as QType
 from string import strip
 import logging
 log = logging.getLogger('vamdc.tap.sql')
+
+# Q-objects for always True / False
+QTrue = Q(pk=F('pk'))
+QFalse = ~QTrue
 
 OPTRANS= { # transfer SQL operators to django-style
     '<':  '__lt',
@@ -85,19 +91,22 @@ def splitWhere(ws, counter=0):
 
     return logic,rests,counter
 
-def applyRestrictFus(rs,restrictables=RESTRICTABLES):
-    for i in rs:
-        r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
-        if r not in restrictables: continue
-        if type(restrictables[r]) != tuple: continue
-        if len(foo) != 1:
-            log.dedug('Applying a function to a Restrictable works only on a sngle value')
-            continue
-        try:
-            bla, fu = restrictables[r]
-            rs[i] = [r] + fu(op,foo[0])
-        except Exception,e:
-            log.error('Could not apply function %s to Restrictable %s. Errormsg: %s'%(fu,r,e))
+def applyRestrictFu(rs,restrictables=RESTRICTABLES):
+    r, op, foo = rs[0], rs[1], rs[2:]
+    if r not in restrictables: return rs
+    if isinstance(restrictables[r], FunctionType):
+        return restrictables[r](*rs) # this runs the function!
+
+    if not isinstance(restrictables[r], TupleType): return rs
+    if len(foo) != 1:
+        log.dedug('Applying a function to a Restrictable works only on a single value')
+        return rs
+    try:
+        bla, fu = restrictables[r]
+        rs = [r] + fu(op,foo[0])
+    except Exception,e:
+        log.error('Could not apply function %s to Restrictable %s. Errormsg: %s'%(fu,r,e))
+        return QFalse
 
     return rs
 
@@ -121,45 +130,41 @@ def checkLen1(x):
         return x[0].strip('\'"')
 
 def restriction2Q(rs, restrictables=RESTRICTABLES):
-    qdict = {}
-    for i in rs:
-        r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
-        if r not in restrictables:
-            log.debug('Restrictable "%s" not supported!'%r)
-        if type(restrictables[r]) == tuple:
-            rest_rhs = restrictables[r][0]
-        else: rest_rhs = restrictables[r]
-        if op=='in':
-            if not (foo[0]=='(' and foo[-1]==')'):
-                log.error('Values for IN not bracketed: %s'%foo)
-            else: foo=foo[1:-1]
-            ins = map(strip,foo,('\'"',)*len(foo))
-            qstr = 'Q(%s=ins)'% (rest_rhs+'__in')
-        elif op=='like':
-            foo=checkLen1(foo)
-            if foo.startswith('%') and foo.endswith('%'): o='__contains'
-            elif foo.startswith('%'): o='__endswith'
-            elif foo.endswith('%'): o='__startswith'
-            else:
-                o='__exact'
-                log.warning('LIKE operator used without percent signs. Treating as __exact. (Underscore and [] are unsupported)')
-            qstr = 'Q(%s="%s")'% (rest_rhs+o, foo.strip('%'))
-        elif op=='<>' or op=='!=':
-            foo = checkLen1(foo)
-            if foo.lower() == 'null':
-                qstr = '~Q(%s=None)'% rest_rhs
-            else:
-                qstr = '~Q(%s="%s")'% (rest_rhs, foo)
-        else:
-            foo = checkLen1(foo)
-            qstr = 'Q(%s="%s")'% (rest_rhs+OPTRANS[op], foo)
-        try:
-            log.debug('Q-string: %s'%qstr)
-            qdict[i] = eval(qstr)
-        except Exception,e:
-            log.error('Could not evaluate Q-string "%s": %s'%(qstr,e))
+    if isinstance(rs,QType): # we are done because it is already a Q-object
+        return rs
 
-    return qdict
+    r, op, foo = rs[0], rs[1], rs[2:]
+    if r not in restrictables:
+        log.debug('Restrictable "%s" not supported!'%r)
+        return QFalse
+    if type(restrictables[r]) == tuple:
+        rest_rhs = restrictables[r][0]
+    else: rest_rhs = restrictables[r]
+
+    if op=='in':
+        if not (foo[0]=='(' and foo[-1]==')'):
+            log.error('Values for IN not bracketed: %s'%foo)
+        else: foo=foo[1:-1]
+        ins = map(strip,foo,('\'"',)*len(foo))
+        return Q(**{rest_rhs+'__in':ins})
+    if op=='like':
+        foo=checkLen1(foo)
+        if foo.startswith('%') and foo.endswith('%'): o='__contains'
+        elif foo.startswith('%'): o='__endswith'
+        elif foo.endswith('%'): o='__startswith'
+        else:
+            o='__exact'
+            log.warning('LIKE operator used without percent signs. Treating as __exact. (Underscore and [] are unsupported)')
+        return Q(**{rest_rhs+o:foo.strip('%')})
+    if op=='<>' or op=='!=':
+        foo = checkLen1(foo)
+        if foo.lower() == 'null':
+            return Q(**{rest_rhs+'__isnull':False})
+        else:
+            return ~Q(**{rest_rhs: foo})
+
+    foo = checkLen1(foo)
+    return Q(**{rest_rhs+OPTRANS[op]: foo})
 
 def sql2Q(sql):
     if not sql.where:
@@ -167,11 +172,19 @@ def sql2Q(sql):
     log.debug('Starting sql2Q.')
     logic,rs,count = splitWhere(sql.where)
     log.debug('splitWhere() returned: logic: %s\nrs: %s\ncount: %s'%(logic,rs,count))
-    rs = applyRestrictFus(rs)
-    log.debug('Restrictables after applyRestrictFus(): %s'%rs)
-    qdict = restriction2Q(rs)
-    log.debug('qdict after restriction2Q(rs): %s'%qdict)
+    qdict = {}
+    for i,r in rs.items(): # loop over restrictions
+        r = applyRestrictFu(r)
+        log.debug('after applyRestrictFu(): %s'%r)
+        q = restriction2Q(r)
+        log.debug('after restriction2Q(rs): %s'%q)
+        qdict[i] = q
+
     return mergeQwithLogic(qdict,logic)
+
+
+
+
 
 
 # OLD HELPER FUNCTIONS BELOW HERE
@@ -204,7 +217,7 @@ def where2q(ws,restrictables):
         log.debug('w: %s'%w)
         if w=='and': q+=' & '
         elif w=='or': q+=' | '
-        elif w[0]=='(' and w[-1]==')': 
+        elif w[0]=='(' and w[-1]==')':
             q+=' ( '
             q+=where2q(w[1:-1],restrictables)
             q+=' ) '

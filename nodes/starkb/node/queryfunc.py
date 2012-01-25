@@ -9,182 +9,320 @@
 #
 
 # library imports 
-
 import sys
 from itertools import chain
 from django.conf import settings
-from vamdctap.sqlparse import where2q
+from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 import logging
 log=logging.getLogger('vamdc.tap')
-
+from django.db import connection
 import dictionaries
-import models # this imports models.py from the same directory as this file
+import models as django_models
+import util_models as util_models # utility classes
 
-def getSpeciesWithStates(transs):
+def setupResults(sql):
+	"""		
+		Return results for request
+		@type  sql: string
+		@param sql: vss request
+		@type  limit: int
+		@param limit: maximum number of results
+		@rtype:   dict
+		@return:  dictionnary containig data		
+	"""
+	result = None
+	# return all species
+	if str(sql) == 'select species': 
+		result = setupSpecies()
+	# all other requests
+	else:		
+		result = setupVssRequest(sql)			
+
+	if isinstance(result, util_models.Result) :
+		return result.getResult()
+	else:
+		raise Exception('error while generating result')
+		
+def setupSpecies():
+	"""		
+		Return all target species
+		@rtype:   util_models.Result
+		@return:  Result object		
+	"""
+	result = util_models.Result()
+	species = getSpecies()
+	result.addHeaderField('count-species',len(species))
+	result.addDataField('Atoms',species)	
+	return result
+	
+def setupVssRequest(sql, limit=1000):
+    """		
+        Execute a vss request
+        @type  sql: string
+        @param sql: vss request
+        @rtype:   util_models.Result
+        @return:  Result object		
     """
-    Use the Transition matches to obtain the related Species (only atoms in this example)
-    and the states related to each transition. 
-    
-    We also return some statistics of the result 
-    """
-    # get ions according to selected transitions    
+    result = util_models.Result()
+    q = sql2Q(sql)    
 
-    targetids = transs.values_list('target', flat=True).distinct()
-    targets = models.Species.objects.filter(pk__in=targetids)   
-    colliders = getIonCollidersByTransitions(transs)    
-    
-    species = targets | colliders  
-    # get all states.    
-    nstates = 0
-    
-    for specie in species:
-        try :
-            target = targets.get(id = specie.pk)# if ion is a target, look for states      
-            # get all transitions in linked to this particular species 
-            spec_transitions = transs.filter(target__pk = target.pk)   
+    transs = django_models.Transition.objects.filter(q)
+    ntranss=transs.count()
 
-            # extract reference ids for the states from the transion, combining both
-            # upper and lower unique states together
-            up = spec_transitions.values_list('upper_level',flat=True)
-            lo = spec_transitions.values_list('lower_level',flat=True)
-            sids = set(chain(up, lo))
-
-            specie.States = models.Level.objects.filter( pk__in = sids ) 
-            nstates += specie.States.count() 
-        except ObjectDoesNotExist as e:
-            log.debug(str(e)) # this species is a collider
-
-    nspecies = len(species) # get some statistics 
-    return species, nspecies, nstates
-    
-        
-def getEnvironments(transs):
-    allenvironments = None
-    sids = None
-    
-    for trans in transs :
-        broadenings = []
-        shiftings = []
-        transitiondata = models.Transitiondata.objects.filter(transition=trans.pk)        
-        ids = transitiondata.values_list('id',flat=True)
-        sids = set(chain(ids)) 
-        temperatures = models.Temperature.objects.filter( transitiondata__in = sids ).values_list('id', flat=True)    
-        environments = models.TemperatureCollider.objects.filter(temperature__in = temperatures)
-        
-        if allenvironments is None :
-            allenvironments = environments
-        else : 
-            allenvironments = allenvironments | environments
-        
-        for environment in environments : 
-            collider = environment.species
-            environment.Species = []
-            #if collider.ion is not None :                   
-            environment.Species.append(collider)       
-            #elif collider.particle is not None : 
-            #    environment.Species.append(collider.particle)   
-            # note : 
-            # generators.py do not create broadening element when broadening.value is empty
-            broadenings.append(getBroadening(environment))            
-            # shifting to be added later
-            #shiftings.append(getShifting(environment))
-        trans.Broadenings = broadenings
-        #trans.ShiftingParams = shiftings
-    return allenvironments
-
-def getIonCollidersByTransitions(transs): 
-    datasets = transs.values_list('dataset', flat=True).distinct()
-    datasetcolliders = models.DatasetCollider.objects.filter(dataset__in = datasets)
-    colliderids = datasetcolliders.values_list('species', flat=True).distinct()
-    return models.Species.objects.filter(pk__in = colliderids).filter(particle = None)
-    
-def getBroadening(environment):
-    param = models.LineshapeParameter()
-    param.environment = environment.id
-    param.value = environment.w
-    param.accurracy = 0
-    param.comment = getValidity(environment.w, environment.n_w)
-    return param
-    
-def getShifting(environment):
-    param = models.ShiftingParameter()
-    param.environment = environment.id
-    param.value = environment.d
-    param.accurracy = 0
-    param.comment = getValidity(environment.d, environment.n_d)
-    return param
-    
-def getParticles():
-    return models.Species.objects.filter(particle__isnull=False)
-    
-def getValidity(value, nvalue):
-    if nvalue is None : 
-        return None
-        
-    if nvalue == '*':
-        if value is None :
-            return 'the impact approximation is not valid, because NV > 0.5'
-        else : 
-            return 'the impact approximation reachs its limit of validity, 0.1 < NV ≤ 0.5'
-       
-
-
-def setupResults(sql, limit=1000):
-    """
-    This function is always called by the software.
-    """
-    # convert the incoming sql to a correct django query syntax object 
-    # based on the RESTRICTABLES dictionary in dictionaries.py
-    # (where2q is a helper function to do this for us).
-    q = where2q(sql.where, dictionaries.RESTRICTABLES)    
-    try:         
-        q = eval(q) # test queryset syntax validity        
-    except Exception as e: 
-        return {}
-
-    # We build a queryset of database matches on the Transision model
-    # since through this model (in our example) we are be able to
-    # reach all other models.
-    transs = models.Transition.objects.filter(q)
-    # count the number of matches, make a simple trunkation if there are
-    # too many (record the coverage in the returned header)
-    ntranss=transs.count()    
     if limit < ntranss :
-        transs = transs[:limit]
-        percentage='%.1f' % (float(limit) / ntranss * 100)
-    else: 
-        percentage=None
+        transs, percentage = truncateTransitions(transs, q, limit)
+    else:
+        percentage=None 
+                
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
-    #sources = getRefs(transs)
-    #nsources = sources.count()
-    species, nspecies, nstates = getSpeciesWithStates(transs)
-    environments = getEnvironments(transs)
-    particles = getParticles()
+    if ntranss > 0 :		
+        species, nspecies, nstates = getSpeciesWithStates(transs)           
+        transitions, environments = getTransitionsData(transs)    
+        particles = getParticles(ntranss) 
+        sources =  getSources(transs)
+        nsources = len(sources)
+
+        # Create the header with some useful info. The key names here are
+        # standardized and shouldn't be changed.
+        result.addHeaderField('Truncated',percentage)
+        result.addHeaderField('count-species',nspecies)
+        result.addHeaderField('count-states',nstates)
+        result.addHeaderField('count-radiative',len(transitions))			
+        
+        result.addDataField('RadTrans',transitions)        
+        result.addDataField('Atoms',species)
+        result.addDataField('Environments',environments)
+        result.addDataField('Particles',particles)
+        result.addDataField('Sources',sources)
+        
+    else : # only fill header
+        result.addHeaderField('Truncated',percentage)
+        result.addHeaderField('count-states',0)
+        result.addHeaderField('count-radiative',0)
+    return result	
+	
+def truncateTransitions(transitions, request, maxTransitionNumber):
+	"""		
+		limit the number of transitions
+		@type  transitions: list
+		@param transitions: a list of Transition
+		@type  request: Q()
+		@param request: sql query
+		@type  maxTransitionNumber: int
+		@param maxTransitionNumber: max number of transitions
+		@rtype:   list
+		@return:  truncated list of transitions		
+	"""
+	percentage='%.1f' % (float(maxTransitionNumber) / transitions.count() * 100)
+	transitions = transitions.order_by('wavelength')
+	newmax = transitions[maxTransitionNumber].wavelength
+	return django_models.Transition.objects.filter(request,Q(wavelength__lt=newmax)), percentage
+
+def getSources(transs):
+	"""		
+		Get sources for a list of transitions
+		@type  transs: list
+		@param transs: a list of Transition
+		@rtype:   list
+		@return:  list of Article		
+	"""
+	sources = []
+	datasets = transs.values_list('dataset', flat=True).distinct()    
+	articledatasets = django_models.ArticleDataset.objects.filter(dataset__pk__in = datasets)    
+	for article in articledatasets :
+		sources.append(article.article)
+		
+	return sources
     
-    # Create the header with some useful info. The key names here are
-    # standardized and shouldn't be changed.
-    headerinfo={\
-            'Truncated':percentage,
-            #'COUNT-SOURCES':nsources,
-            #'COUNT-species':nspecies,
-            #'count-states':nstates,
-            'count-radiative':ntranss
-            }
+def getDatasetSources(datasetid):
+	"""
+		Get sources for a dataset
+		@type  datasetid: int
+		@param datasetid: id of a dataset
+		@rtype:   list
+		@return:  list of Article
+		
+	"""    
+	sources = []    
+	articledatasets = django_models.ArticleDataset.objects.filter(dataset__pk = datasetid)    
+	for article in articledatasets :
+		sources.append(article.article.pk)
+
+	return sources
+
+def getSpeciesWithStates(transs):
+	"""
+		Use the Transition matches to obtain the related Species (only atoms in this example)
+		and the states related to each transition.         
+		We also return some statistics of the result 
+		@type  transs: list
+		@param transs: a list of Transition
+		@rtype:   list
+		@return:  a list of Species
+		@rtype:   int
+		@return:  number of species
+		@rtype:   int
+		@return:  number of states
+		
+	"""
+	# get ions according to selected transitions    
+	targetids = transs.values_list('target', flat=True).distinct()
+	targets = django_models.Species.objects.filter(pk__in=targetids)   
+	colliders = getIonCollidersByTransitions(transs)        
+	species = targets | colliders  
+	# get all states.    
+	nstates = 0
+
+	for specie in species:
+		try :            
+			target = targets.get(id = specie.pk)# if ion is a target, look for states      
+			# get all transitions in linked to this particular species 
+			spec_transitions = transs.filter(target__pk = target.pk)   
+
+			# extract reference ids for the states from the transion, combining both
+			# upper and lower unique states together
+			up = spec_transitions.values_list('upper_level',flat=True)
+			lo = spec_transitions.values_list('lower_level',flat=True)
+			sids = set(chain(up, lo))
+
+			specie.States = django_models.Level.objects.filter( pk__in = sids )
+			for i in range(len(specie.States)):
+				specie.States[i].Sources = getDatasetSources(specie.States[i].dataset.pk)
+
+			nstates += specie.States.count() 
+		except ObjectDoesNotExist as e:
+			log.debug(str(e)) # this species is a collider
+
+	nspecies = len(species) # get some statistics 
+	return species, nspecies, nstates  
+        
+def getTransitionsData(transs):
+	"""
+		Returns all the data  corresponding to the list of transitions : broadening, source, shifting
+		@type  transs: list
+		@param transs: a list of Transition
+		@rtype:   list
+		@return:  a list of TemperatureCollider
+		@rtype:   list
+		@return:  a list of Transitions
+	"""
+	allenvironments = []
+	#dictionnary of transition, key is transition id
+	uniquetransitions = {}
+	for trans in transs :
+		broadenings = []
+		shiftings = []
+		environments = django_models.TemperatureCollider.objects.filter(temperature__pk = trans.temperatureid)
+	   
+		for environment in environments : 
+			collider = environment.species
+			environment.Species = []             
+			environment.Species.append(collider)       
+			# note : 
+			# generators.py do not create broadening element when broadening.value is empty
+			broadenings.append(getBroadening(environment))            
+			# shifting to be added later
+			#shiftings.append(getShifting(environment))
+			allenvironments.append(environment)
+		trans.Broadenings = broadenings
+		trans.Sources = getDatasetSources(trans.dataset.pk)
+		#trans.ShiftingParams = shiftings  
+		
+		# check if this transitions already exists and extract informations if it is the case
+		if trans.id not in uniquetransitions :
+			uniquetransitions[trans.id] = trans
+		else :
+			uniquetransitions[trans.id] .Broadenings.extend(trans.Broadenings)
+
+	transitions = uniquetransitions.values()
+	return transitions, allenvironments
+
+def getIonCollidersByTransitions(transs): 
+	"""
+		Returns the available perturbers for a list of transitions
+		@type  transs: list
+		@param transs: a list of Transition
+		@rtype:   list
+		@return:  a list of Species
+	"""
+	datasets = transs.values_list('dataset', flat=True).distinct()
+	datasetcolliders = django_models.DatasetCollider.objects.filter(dataset__in = datasets)
+	colliderids = datasetcolliders.values_list('species', flat=True).distinct()
+	return django_models.Species.objects.filter(pk__in = colliderids).filter(particle = None)
+    
+def getBroadening(environment):
+	"""
+		extract broadening data from environment
+		@type  environment: TemperatureCollider
+		@param environment: broadening data container
+		@rtype: LineshapeParameter
+		@return:  LineshapeParameter
+	"""
+	param = util_models.LineshapeParameter()
+	param.environment = environment.id
+	param.value = environment.w
+	param.accurracy = 0
+	param.comment = getValidity(environment.w, environment.n_w)
+	return param
+    
+def getShifting(environment):
+	"""
+		extract shifting data from environment
+		@type  environment: TemperatureCollider
+		@param environment: shifting data container
+		@rtype: ShiftingParameter
+		@return:  ShiftingParameter
+	"""
+	param = util_models.ShiftingParameter()
+	param.environment = environment.id
+	param.value = environment.d
+	param.accurracy = 0
+	param.comment = getValidity(environment.d, environment.n_d)
+	return param
+    
+def getParticles(ntranss):
+	"""
+		returns list of particle perturbers (only electron for now)
+		@type  ntranss: int
+		@param transs: number of transitions found
+		@rtype: list
+		@return:  list of Species        
+	"""
+	if ntranss > 0 :
+		return django_models.Species.objects.filter(particle__isnull=False)
+	return []
+	
+def getSpecies():
+	"""
+		returns list of particle perturbers (only electron for now)
+		@type  ntranss: int
+		@param transs: number of transitions found
+		@rtype: list
+		@return:  list of Species        
+	"""
+	ids = django_models.Dataset.objects.values_list('target', flat = True).distinct()
+	species = django_models.Species.objects.filter(pk__in = ids)
+	return species
+	    
+def getValidity(value, nvalue):
+	"""
+		get validity condition for broadening and shifting
+		@type  value: float
+		@param value: shifting or broadening value
+		@type  nvalue: string
+		@param nvalue: validity indicator in starkb
+		@rtype: string
+		@return:  validity condition
+	"""
+	if nvalue is None : 
+		return None        
+	if nvalue == '*':
+		if value is None :
+			return 'the impact approximation is not valid, because NV > 0.5'
+		else : 
+			return 'the impact approximation reachs its limit of validity, 0.1 < NV ≤ 0.5'
             
-    # Return the data. The keynames are standardized. 
-    return {'RadTrans':transs,
-            'Atoms':species,
-            'Environments':environments,
-            'Particles' : particles,
-            #'RadCross' : states,
-            #'Sources':sources,
-            'HeaderInfo':headerinfo,
-            #'Methods':methods
-            #'Functions':functions
-           }
-    
-    
 

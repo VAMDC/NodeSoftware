@@ -8,12 +8,17 @@
 # into your database.
 
 from django.db import models
+from xml.sax.saxutils import escape
 import logging
 log=logging.getLogger('vamdc.tap')
 
 class Journal(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=225)
+    
+    def encoded_name(self):
+        return escape(self.name)
+    
     class Meta:
         db_table = u't_journals'    
         
@@ -22,11 +27,12 @@ class Ion(models.Model):
     name = models.CharField(unique=True, max_length=30, blank=True)
     symbol = models.CharField(unique=True, max_length=10)
     ionization = models.CharField(max_length=6, null=True)
-    ionization_decimal = models.IntegerField(null=True)
-    nuclear_charge = models.IntegerField()
+    ionization_decimal = models.IntegerField(null=False)
+    ion_charge = models.IntegerField(null=False)
+    nuclear_charge = models.IntegerField()    
     
-    def ion_charge(self):
-        return self.ionization_decimal - 1
+    '''def ion_charge(self):
+        return self.ionization_decimal - 1'''
     
     def species_id(self):
         return self.id
@@ -67,7 +73,7 @@ class Species(models.Model):
 
 class Dataset(models.Model):
     id = models.IntegerField(primary_key=True)
-    target = models.ForeignKey(Species, db_column='id')
+    target = models.ForeignKey(Species, db_column='id_target')
     has_proton = models.IntegerField()
     filename = models.TextField()
     creation_date = models.DateField()
@@ -87,10 +93,18 @@ class Article(models.Model):
     ads_reference = models.TextField(blank=True)
     doi_reference = models.TextField(blank=True)
     other_reference = models.TextField(blank=True)
+    
+    def encoded_title(self):
+        return escape(self.title)
+        
+    def authors_list(self):
+        return self.authors.rsplit(',')
+        
     class Meta:
         db_table = u't_articles'
 
 class ArticleDataset(models.Model):
+    id = models.IntegerField(primary_key=True)
     article = models.ForeignKey(Article, db_column='id_article')
     dataset = models.ForeignKey(Dataset, db_column='id_dataset')
     class Meta:
@@ -108,29 +122,37 @@ class Level(models.Model):
     dataset = models.ForeignKey(Dataset, db_column='id_dataset')
     config = models.CharField(unique=True, max_length=60)
     term = models.CharField(unique=True, max_length=36)
-    j = models.CharField(unique=True, max_length=15, blank=True)    
+    J = models.CharField(unique=True, max_length=15, blank=True)       
+    L = models.IntegerField(null=True)    
+    S = models.FloatField(null=True)    
+    LS_multiplicity = models.IntegerField(null=True)    
+    K = models.FloatField(null=True)    
+    J1 = models.FloatField(null=True)    
     
     def j_asFloat(self):
         #add .0 to "1/2" or "3/2" to get float value
-        if(self.j is not None) :
-            return eval(self.j+".0")
+        if(self.J is not None) :
+            return eval(self.J+".0")
         return None
         
     class Meta:
-        db_table = u't_levels'
-
+        db_table = u't_levels'  
+        
+        
 class Transition(models.Model):
     id = models.IntegerField(primary_key=True)
     dataset = models.ForeignKey(Dataset, db_column='id_dataset')
-    target = models.ForeignKey(Ion, db_column='id_species')
-    #targetspecies = models.ForeignKey(Species, db_column='id_species', related_name='species')
+    target = models.ForeignKey(Species, db_column='id_species')
     lower_level = models.ForeignKey(Level, db_column='lower_level', related_name='lower_level')
     upper_level = models.ForeignKey(Level, db_column='upper_level', related_name='upper_level')
-    #multiplet = models.CharField(max_length=24, blank=True)
     wavelength = models.FloatField()
+    temperature = models.FloatField()
+    temperatureid = models.IntegerField(db_column='id_temperature')
+    density = models.FloatField()
     class Meta:
-        db_table = u'v_transitionsvamdc'
+        db_table = u'v_transitionsvamdc'    
 
+  
 class Transitiondata(models.Model):
     id = models.IntegerField(primary_key=True)
     transition = models.ForeignKey(Transition, db_column='id_transition')
@@ -139,21 +161,15 @@ class Transitiondata(models.Model):
     class Meta:
         db_table = u't_transitiondata'
 
+        
 class Temperature(models.Model):
     id = models.IntegerField(primary_key=True)
     transitiondata = models.ForeignKey(Transitiondata, db_column='id_transitiondata')
     temperature = models.IntegerField(unique=True)
     a = models.FloatField(null=True, blank=True)
-    n_we = models.CharField(max_length=24)
-    we = models.FloatField(null=True, blank=True)
-    n_de = models.CharField(max_length=24)
-    de = models.FloatField(null=True, blank=True)
-    n_wp = models.CharField(max_length=24, blank=True)
-    wp = models.FloatField(null=True, blank=True)
-    n_dp = models.CharField(max_length=24, blank=True)
-    dp = models.FloatField(null=True, blank=True)
     class Meta:
-        db_table = u't_temperatures'
+        db_table = u't_temperatures'       
+
 
 class TemperatureCollider(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -165,23 +181,3 @@ class TemperatureCollider(models.Model):
     d = models.FloatField(null=True, blank=True)
     class Meta:
         db_table = u't_temperatures_colliders'
-        
-class Parameter():
-    def __init__(self):
-        self.environment = None
-        self.value = None
-        self.accurracy = None
-        self.name = None
-        self.comment = None
-        
-class ShiftingParameter(Parameter):
-    def __init__(self):
-        Parameter.__init__(self)
-        
-class LineshapeParameter(Parameter):
-    def __init__(self):
-        Parameter.__init__(self)
-
-
-
-

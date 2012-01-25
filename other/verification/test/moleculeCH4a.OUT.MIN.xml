@@ -1,7 +1,84 @@
-<?xml version="1.0" ?>
 <XSAMSData xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../xsd/xsams/0.3/xsams.xsd">
 	<Sources>
 		<Source sourceID="BHIT-CH4-nu-2">
+			<Authors>
+				<Author>
+					<Name>R. Farrenq</Name>
+				</Author>
+				<Author>
+					<Name>G. Guelachvili</Name>
+				</Author>
+				<Author>
+					<Name>A.J. Sauval</Name>
+				</Author>
+				<Author>
+					<Name>N. Grevesse</Name>
+				</Author>
+				<Author>
+					<Name>C.B. Farmer</Name>
+				</Author>
+			</Authors>
+			<Title>Improved Dunham coefficients for CH4 from infrared solar lines of high rotational excitation</Title>
+			<Category>journal</Category>
+			<Year>1991</Year>
+			<SourceName>Journal of Molecular Spectroscopy</SourceName>
+			<Volume>149</Volume>
+			<PageBegin>375</PageBegin>
+			<PageEnd>390</PageEnd>
+		</Source>
+		<Source sourceID="BHIT-CH4-nu-2a">
+			<Authors>
+				<Author>
+					<Name>R. Farrenq</Name>
+				</Author>
+				<Author>
+					<Name>G. Guelachvili</Name>
+				</Author>
+				<Author>
+					<Name>A.J. Sauval</Name>
+				</Author>
+				<Author>
+					<Name>N. Grevesse</Name>
+				</Author>
+				<Author>
+					<Name>C.B. Farmer</Name>
+				</Author>
+			</Authors>
+			<Title>Improved Dunham coefficients for CH4 from infrared solar lines of high rotational excitation</Title>
+			<Category>journal</Category>
+			<Year>1991</Year>
+			<SourceName>Journal of Molecular Spectroscopy</SourceName>
+			<Volume>149</Volume>
+			<PageBegin>375</PageBegin>
+			<PageEnd>390</PageEnd>
+		</Source>
+		<Source sourceID="BHIT-CH4-nu-2b">
+			<Authors>
+				<Author>
+					<Name>R. Farrenq</Name>
+				</Author>
+				<Author>
+					<Name>G. Guelachvili</Name>
+				</Author>
+				<Author>
+					<Name>A.J. Sauval</Name>
+				</Author>
+				<Author>
+					<Name>N. Grevesse</Name>
+				</Author>
+				<Author>
+					<Name>C.B. Farmer</Name>
+				</Author>
+			</Authors>
+			<Title>Improved Dunham coefficients for CH4 from infrared solar lines of high rotational excitation</Title>
+			<Category>journal</Category>
+			<Year>1991</Year>
+			<SourceName>Journal of Molecular Spectroscopy</SourceName>
+			<Volume>149</Volume>
+			<PageBegin>375</PageBegin>
+			<PageEnd>390</PageEnd>
+		</Source>
+		<Source sourceID="BHIT-CH4-nu-2c">
 			<Authors>
 				<Author>
 					<Name>R. Farrenq</Name>
@@ -68,7 +145,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>74</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="sphcs:Case" caseID="sphcs" xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs">
+					<Case xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs" xsi:type="sphcs:Case" caseID="sphcs">
 						<sphcs:QNs>
 							<sphcs:ElecStateLabel>X</sphcs:ElecStateLabel>
 							<sphcs:vi mode="1">0</sphcs:vi>
@@ -87,7 +164,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>70</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="sphcs:Case" caseID="sphcs" xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs">
+					<Case xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs" xsi:type="sphcs:Case" caseID="sphcs">
 						<sphcs:QNs>
 							<sphcs:ElecStateLabel>X</sphcs:ElecStateLabel>
 							<sphcs:vi mode="1">0</sphcs:vi>
@@ -106,7 +183,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>182</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="sphcs:Case" caseID="sphcs" xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs">
+					<Case xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs" xsi:type="sphcs:Case" caseID="sphcs">
 						<sphcs:QNs>
 							<sphcs:ElecStateLabel>X</sphcs:ElecStateLabel>
 							<sphcs:vi mode="1">0</sphcs:vi>
@@ -125,14 +202,14 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>186</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="sphcs:Case" caseID="sphcs" xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs">
+					<Case xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs" xsi:type="sphcs:Case" caseID="sphcs">
 						<sphcs:QNs>
 							<sphcs:ElecStateLabel>X</sphcs:ElecStateLabel>
 							<sphcs:vi mode="1">0</sphcs:vi>
 							<sphcs:vi mode="2">0</sphcs:vi>
 							<sphcs:vi mode="3">1</sphcs:vi>
 							<sphcs:vi mode="4">0</sphcs:vi>
-							<sphcs:J>0</sphcs:J>
+							<sphcs:J>1</sphcs:J>
 						</sphcs:QNs>
 					</Case>
 				</MolecularState>
@@ -144,7 +221,7 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>198</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="sphcs:Case" caseID="sphcs" xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs">
+					<Case xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs" xsi:type="sphcs:Case" caseID="sphcs">
 						<sphcs:QNs>
 							<sphcs:ElecStateLabel>X</sphcs:ElecStateLabel>
 							<sphcs:vi mode="1">0</sphcs:vi>
@@ -163,7 +240,64 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>202</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case xsi:type="sphcs:Case" caseID="sphcs" xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs">
+					<Case xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs" xsi:type="sphcs:Case" caseID="sphcs">
+						<sphcs:QNs>
+							<sphcs:ElecStateLabel>X</sphcs:ElecStateLabel>
+							<sphcs:vi mode="1">0</sphcs:vi>
+							<sphcs:vi mode="2">0</sphcs:vi>
+							<sphcs:vi mode="3">1</sphcs:vi>
+							<sphcs:vi mode="4">0</sphcs:vi>
+							<sphcs:J>27</sphcs:J>
+						</sphcs:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="SHIT-6963">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">6525.5205</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>198</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs" xsi:type="sphcs:Case" caseID="sphcs">
+						<sphcs:QNs>
+							<sphcs:ElecStateLabel>X</sphcs:ElecStateLabel>
+							<sphcs:vi mode="1">0</sphcs:vi>
+							<sphcs:vi mode="2">0</sphcs:vi>
+							<sphcs:vi mode="3">0</sphcs:vi>
+							<sphcs:vi mode="4">0</sphcs:vi>
+							<sphcs:J>26</sphcs:J>
+						</sphcs:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="SHIT-6964">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">4650.5399</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>202</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs" xsi:type="sphcs:Case" caseID="sphcs">
+						<sphcs:QNs>
+							<sphcs:ElecStateLabel>X</sphcs:ElecStateLabel>
+							<sphcs:vi mode="1">0</sphcs:vi>
+							<sphcs:vi mode="2">0</sphcs:vi>
+							<sphcs:vi mode="3">1</sphcs:vi>
+							<sphcs:vi mode="4">0</sphcs:vi>
+							<sphcs:J>27</sphcs:J>
+						</sphcs:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="SHIT-6965">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy energyOrigin="Zero-point energy">
+							<Value units="1/cm">4650.5399</Value>
+						</StateEnergy>
+						<TotalStatisticalWeight>202</TotalStatisticalWeight>
+					</MolecularStateCharacterisation>
+					<Case xmlns:sphcs="http://vamdc.org/xml/xsams/0.3/cases/sphcs" xsi:type="sphcs:Case" caseID="sphcs">
 						<sphcs:QNs>
 							<sphcs:ElecStateLabel>X</sphcs:ElecStateLabel>
 							<sphcs:vi mode="1">0</sphcs:vi>
@@ -208,6 +342,16 @@
 				</EnergyWavelength>
 				<UpperStateRef>SHIT-6962</UpperStateRef>
 				<LowerStateRef>SHIT-6961</LowerStateRef>
+			</RadiativeTransition>
+			<RadiativeTransition id="P4">
+				<EnergyWavelength>
+					<Wavenumber>
+						<SourceRef>BHIT-CH4-nu-2</SourceRef>
+						<Value units="1/cm">1874.9806</Value>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>SHIT-6964</UpperStateRef>
+				<LowerStateRef>SHIT-6963</LowerStateRef>
 			</RadiativeTransition>
 		</Radiative>
 	</Processes>

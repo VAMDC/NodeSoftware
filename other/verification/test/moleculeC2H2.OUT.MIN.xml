@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<VerificationData xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.2" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.2 ../verification.xsd" >
+<VerificationData xmlns:cml="http://www.xml-cml.org/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.3" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../verification.xsd" >
 	<VerificationResult>
 		<NumberOfMolecularStates correct="4" incorrect="2" total="6" unidentified="0"/>
 		<NumberOfRadiativeTransitions correct="1" incorrect="2" total="3" unidentified="0"/>
@@ -78,7 +78,7 @@
 							</StateEnergy>
 							<TotalStatisticalWeight>74</TotalStatisticalWeight>
 						</MolecularStateCharacterisation>
-						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
+						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
 							<lpcs:QNs>
 								<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
 								<lpcs:vi mode="1">0</lpcs:vi>
@@ -108,7 +108,7 @@
 							</StateEnergy>
 							<TotalStatisticalWeight>70</TotalStatisticalWeight>
 						</MolecularStateCharacterisation>
-						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
+						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
 							<lpcs:QNs>
 								<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
 								<lpcs:vi mode="1">0</lpcs:vi>
@@ -138,7 +138,7 @@
 							</StateEnergy>
 							<TotalStatisticalWeight>182</TotalStatisticalWeight>
 						</MolecularStateCharacterisation>
-						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
+						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
 							<lpcs:QNs>
 								<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
 								<lpcs:vi mode="1">0</lpcs:vi>
@@ -169,7 +169,7 @@
 							</StateEnergy>
 							<TotalStatisticalWeight>186</TotalStatisticalWeight>
 						</MolecularStateCharacterisation>
-						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.2/cases/lpcs">
+						<Case xsi:type="lpcs:Case" caseID="lpcs" xmlns:lpcs="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
 							<lpcs:QNs>
 								<lpcs:ElecStateLabel>X</lpcs:ElecStateLabel>
 								<lpcs:vi mode="1">0</lpcs:vi>
@@ -197,36 +197,30 @@
 		</Species>
 		<Processes>
 			<Radiative>
-				<RadiativeTransition>
+				<RadiativeTransition id="P1">
 					<EnergyWavelength>
 						<Wavenumber>
 							<SourceRef>BHIT-C2H2-nu-2</SourceRef>
 							<Value units="1/cm">6261.5722</Value>
-							<Accuracy>
-								<Statistical>0.001</Statistical>
-							</Accuracy>
 						</Wavenumber>
 					</EnergyWavelength>
-					<InitialStateRef>SHIT-6958</InitialStateRef>
-					<FinalStateRef>SHIT-6957</FinalStateRef>
+					<UpperStateRef>SHIT-6958</UpperStateRef>
+					<LowerStateRef>SHIT-6957</LowerStateRef>
 					<Verification>
 						<lpcsRuleT01>false</lpcsRuleT01>
 						<lpcsRuleT02>false</lpcsRuleT02>
 						<lpcsRuleT03>true</lpcsRuleT03>
 					</Verification>
 				</RadiativeTransition>
-				<RadiativeTransition>
+				<RadiativeTransition id="P2">
 					<EnergyWavelength>
 						<Wavenumber>
 							<SourceRef>BHIT-C2H2-nu-2</SourceRef>
 							<Value units="1/cm">5943.8183</Value>
-							<Accuracy>
-								<Statistical>0.001</Statistical>
-							</Accuracy>
 						</Wavenumber>
 					</EnergyWavelength>
-					<InitialStateRef>SHIT-6960</InitialStateRef>
-					<FinalStateRef>SHIT-6959</FinalStateRef>
+					<UpperStateRef>SHIT-6960</UpperStateRef>
+					<LowerStateRef>SHIT-6959</LowerStateRef>
 					<Verification>
 						<lpcsRuleT01>true</lpcsRuleT01>
 						<lpcsRuleT02>false</lpcsRuleT02>
