@@ -51,7 +51,7 @@ class Transition(Model):
 
     species = ForeignKey(Species, db_index=True)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
-    einsteina = DecimalField(max_digits=4, decimal_places=3, db_index=True, null=True)
+    einsteina = DecimalField(max_digits=20, decimal_places=3, db_index=True, null=True)
     gammarad = DecimalField(max_digits=6, decimal_places=2,null=True)
     gammastark = DecimalField(max_digits=7, decimal_places=3,null=True)
     gammawaals = DecimalField(max_digits=6, decimal_places=3,null=True)

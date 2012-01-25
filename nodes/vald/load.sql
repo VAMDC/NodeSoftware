@@ -30,6 +30,6 @@ update transitions t set t.method_restrict='3' where t.method_return='3';
 update transitions t set t.method_restrict='1' where t.method_return='4'; # not one-to-one match
 update transitions t set t.method_restrict='5' where t.method_return='5';
 
-
+update transitions t, states s set t.einsteina=(0.667025*POWER(10,16) * POWER(10,t.loggf)) / ((2.0 * s.j + 1.0) * POWER(t.wave,2)) where t.upstate=s.id;
 
 create index speciesid_wave on transitions (species_id,wave);
