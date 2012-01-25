@@ -314,6 +314,7 @@ Molecules             Molecule
 ..                                  Molecule.States                                   MoleculeState
 ..                                  Molecule.State.Parameters                         Parameter
 ..                                  Molecule.State.Parameter.Vector                   VectorValueOA
+..                                  Molecule.NormalModes                              NormalMode  
 Solids                Solid                                                           
 ..                                  Solid.Layers                                      Layer
 ..                                  Solid.Layer.Components                            Component
