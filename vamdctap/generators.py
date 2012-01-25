@@ -2,6 +2,7 @@
 
 import re
 import sys
+from datetime import datetime
 from xml.sax.saxutils import quoteattr
 
 # Get the node-specific parts
@@ -359,14 +360,41 @@ def checkXML(obj,methodName='XML'):
     except:
         return False, None
 
-def XsamsSources(Sources):
+def SelfSource(tap):
+    now = datetime.now()
+    stamp = now.date().isoformat() + '-%s-%s-%s'%(now.hour,now.minute,now.second)
+    result = ['<Source sourceID="B%s-%s">'%(NODEID,stamp)]
+    result.append("""
+    <Comments>
+    This Source is a self-reference.
+    It represents the database and the query that produced the xml document.
+    The sourceID contains a timestamp.
+    The full URL is given in the tag <UniformResourceIdentifier> but you need
+    to unescape ampersands and angle brackets to re-use it.
+    Query was: %s
+    </Comments>"""%tap.query)
+    result.append('<Year>%s</Year>'%now.year)
+    result.append('<Category>database</Category>')
+    result.append('<UniformResourceIdentifier>')
+    result.append(quoteattr(tap.fullurl)[1:-1])
+    result.append('</UniformResourceIdentifier>')
+    result.append('<ProductionDate>%s</ProductionDate>'%now.date().isoformat())
+    result.append('<Authors><Author><Name>N.N.</Name></Author></Authors>')
+    result.append('</Source>')
+    return ''.join(result)
+
+def XsamsSources(Sources, tap):
     """
     Create the Source tag structure (a bibtex entry)
     """
 
-    if not Sources:
-        return
     yield '<Sources>'
+    yield SelfSource(tap)
+
+    if not Sources:
+        yield '</Sources>'
+        return
+
     for Source in Sources:
         cont, ret = checkXML(Source)
         if cont:
@@ -1682,7 +1710,7 @@ def generatorError(where):
     log.warn('Generator error in%s!' % where, exc_info=sys.exc_info())
     return where
 
-def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
+def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
           Environments=None, Atoms=None, Molecules=None, Solids=None, Particles=None,
           CollTrans=None, RadTrans=None, RadCross=None, NonRadTrans=None):
     """
@@ -1713,7 +1741,7 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
 
     errs=''
 
-    # this might be a cheap hack, but should work
+    requestables = tap.requestables
     if requestables and Atoms and ('atomstates' not in requestables):
         for Atom in Atoms:
             Atom.States = []
@@ -1724,7 +1752,7 @@ def Xsams(requestables, HeaderInfo=None, Sources=None, Methods=None, Functions=N
     if not requestables or 'sources' in requestables:
         log.debug('Working on Sources.')
         try:
-            for Source in XsamsSources(Sources):
+            for Source in XsamsSources(Sources, tap):
                 yield Source
         except: errs+=generatorError(' Sources')
 
