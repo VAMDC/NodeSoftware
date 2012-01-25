@@ -70,7 +70,7 @@ RETURNABLES={\
 RESTRICTABLES = {\
 'MoleculeChemicalName': 'dummy',
 'MoleculeStoichiometricFormula': 'dummy',
-'MoleculeInchiKey': 'iso__InChIKey_explicit',
+'MoleculeInchiKey': 'iso__InChIKey',
 'RadTransWavenumber': 'nu',
 'RadTransWavelength': 'dummy', 
 'RadTransProbabilityA': 'A',

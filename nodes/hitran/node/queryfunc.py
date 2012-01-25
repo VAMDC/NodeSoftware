@@ -9,6 +9,7 @@ from itertools import chain
 from HITRANfuncsenvs import * 
 import formula_parser
 import sys
+import time
 
 def LOG(s):
     print >> sys.stderr, s
@@ -208,14 +209,16 @@ def Wavelength2Wavenumber(op, foo):
 def setupResults(sql, LIMIT=None):
     # rather than use the sql2Q method:
     #q = sqlparse.sql2Q(sql)
-    # we parse the query into its restrictables and logic:
+
+    start_time = time.time()
+
+    # ... we parse the query into its restrictables and logic:
     if not sql.where:
         return {}
     logic, rs, count = sqlparse.splitWhere(sql.where)
     # and replace any restrictions on ChemicalName or StoichiometricFormula
     # with the equivalent on MoleculeInchiKey. Also convert wavelength
-    # (in A) to wavenumber:
-    #print 'rs was',rs
+    # (in Angstroms) to wavenumber:
     for i in rs:
         r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
         if r == 'MoleculeChemicalName':
@@ -224,8 +227,12 @@ def setupResults(sql, LIMIT=None):
             rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
         if r == 'RadTransWavelength':
             rs[i] = Wavelength2Wavenumber(op, foo)
-    print 'rs is',rs
-    qdict = sqlparse.restriction2Q(rs)
+    # now rebuild the query as a dictionary of QTypes ...
+    qdict = {}
+    for i, r in rs.items():
+        q = sqlparse.restriction2Q(r)
+        qdict[i] = q
+    # ... and merge them to a single query object
     q = sqlparse.mergeQwithLogic(qdict, logic)
     
     transitions = Trans.objects.filter(q) 
@@ -237,9 +244,12 @@ def setupResults(sql, LIMIT=None):
         numax = transitions[LIMIT].nu
         transitions = Trans.objects.filter(q, Q(nu__lte=numax))
         percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+        print 'Results truncated to %s %%' % percentage
     else:
         percentage = '100'
-    print 'Truncated to %s %%' % percentage
+        print 'Results not truncated'
+    print 'LIMIT is', LIMIT
+    print 'ntrans =',ntrans
 
     attach_prms(transitions)
 
@@ -270,6 +280,9 @@ def setupResults(sql, LIMIT=None):
 
     methods = [Method('MEXP', 'experiment', 'experiment'),
                Method('MTHEORY', 'theory', 'theory')]
+
+    end_time = time.time()
+    print 'timed at %.1f secs', (end_time - start_time)
 
    # return the dictionary as described above
     return {'HeaderInfo': headerinfo,
@@ -312,9 +325,11 @@ def returnResults(tap, LIMIT=None):
         numax = transitions[LIMIT].nu
         transitions = Trans.objects.filter(q, Q(nu__lte=numax))
         percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+        print 'Results truncated to %s %%' % percentage
     else:
         percentage = '100'
-    print 'Truncated to %s %%' % percentage
+        print 'Results not truncated'
+    print 'LIMIT is', LIMIT
     print 'ntrans =',ntrans
     
     par_generator = Par(transitions)
