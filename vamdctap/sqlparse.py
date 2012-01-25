@@ -106,6 +106,7 @@ def applyRestrictFu(rs,restrictables=RESTRICTABLES):
         rs = [r] + fu(op,foo[0])
     except Exception,e:
         log.error('Could not apply function %s to Restrictable %s. Errormsg: %s'%(fu,r,e))
+        return QFalse
 
     return rs
 

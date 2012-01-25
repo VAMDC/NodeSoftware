@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 RETURNABLES = {\
-'BaseURL':'http://vald.astro.uu.se/atoms/tap/',
 'NodeID':'vald',
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.author',
@@ -74,32 +73,14 @@ RETURNABLES = {\
 #'RadTransBroadeningPressureRef':'RadTran.waals_ref_id',
 }
 
-# import the unit converter functions
+# import the converter functions
 from vamdctap.unitconv import *
 
 # custom function
 from django.db.models import Q
-OPTRANS= {
-    '<':  '__lt',
-    '>':  '__gt',
-    '=':  '__exact',
-    '<=': '__lte',
-    '>=': '__gte'}
-def bothStates(r,op,rhs):
-    try:
-        op = OPTRANS[op]
-        float(rhs)
-    except:
-        return Q(pk__isnull=True)
-    return Q(**{'upstate__energy'+op:rhs}) & Q(**{'lostate__energy'+op:rhs})
-
-def const_test(r,op,*rhs):
-    try:                                                                                
-        op = OPTRANS[op]
-    except:
-        return Q(pk__isnull=True)
 
 RESTRICTABLES = {\
+'ConstantTest':test_constant_factory('"U"'),
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'IonCharge':'species__ion',

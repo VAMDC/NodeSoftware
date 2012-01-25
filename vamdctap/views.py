@@ -134,7 +134,7 @@ class TAPQUERY(object):
         return '%s'%self.query
 
 def getBaseURL(request):
-    return CaselessDict(DICTS.RETURNABLES).get('BaseURL') or \
+    return getattr(settings, 'DEPLOY_URL', None) or \
         'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
 
 def addHeaders(headers,response):
