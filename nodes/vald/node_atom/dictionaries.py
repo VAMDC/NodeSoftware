@@ -94,7 +94,8 @@ def bothStates(r,op,rhs):
     return Q(**{'upstate__energy'+op:rhs}) & Q(**{'lostate__energy'+op:rhs})
 
 def const_test(r,op,*rhs):
-    try:                                                                                op = OPTRANS[op]
+    try:                                                                                
+        op = OPTRANS[op]
     except:
         return Q(pk__isnull=True)
 
