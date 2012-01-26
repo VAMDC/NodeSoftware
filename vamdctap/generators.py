@@ -369,7 +369,7 @@ def SelfSource(tap):
     This Source is a self-reference.
     It represents the database and the query that produced the xml document.
     The sourceID contains a timestamp.
-    The full URL is given in the tag <UniformResourceIdentifier> but you need
+    The full URL is given in the tag UniformResourceIdentifier but you need
     to unescape ampersands and angle brackets to re-use it.
     Query was: %s
     </Comments>"""%tap.query)
