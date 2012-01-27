@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 RETURNABLES={\
-'NodeID': 'HIT',    # unique identifier for the HITRAN node
+'NodeID': 'HSHD',    # unique identifier for the HITRAN node
 'XSAMSVersion': '0.3',
 #'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/'\
 #                  'release-0.2/xsams.xsd',

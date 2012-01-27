@@ -4,6 +4,7 @@ import re
 import sys
 from datetime import datetime
 from xml.sax.saxutils import quoteattr
+from xml.sax.saxutils import escape
 
 # Get the node-specific parts
 from django.conf import settings
@@ -372,7 +373,7 @@ def SelfSource(tap):
     The full URL is given in the tag UniformResourceIdentifier but you need
     to unescape ampersands and angle brackets to re-use it.
     Query was: %s
-    </Comments>"""%tap.query)
+    </Comments>"""%escape(tap.query))
     result.append('<Year>%s</Year>'%now.year)
     result.append('<Category>database</Category>')
     result.append('<UniformResourceIdentifier>')
