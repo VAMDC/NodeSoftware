@@ -301,46 +301,49 @@ below. Just read the previous paragraph again after that.
 
 Here is a table that lists the variables names that you can pass into the generator and the loop variables that you use in the Returnables. The one is simply the plural of the other.
 
-===================== ============= ======================================= =================
-Passed into generator Loop variable Object looped over                      Loop variable
-===================== ============= ======================================= =================
-Atoms                 Atom          
-..                                  Atom.States                             AtomState
-..                                  Atom.SuperShells                        AtomSuperShell
-..                                  Atom.Shells                             AtomShell 
-..                                  Atom.ShellPairs                         AtomShellPair
-Molecules             Molecule      
-..                                  Molecule.States                         MoleculeState
-..                                  Molecule.States.Parameters              Parameter
-..                                  Molecule.States.Parameters.Vector       VectorValueOA
-Solids                Solid         
-..                                  Solid.Layers                            Layer
-..                                  Solid.Layers.Components                 Component
-Particles             Particle      
-RadTrans              RadTran
-..                                  RadTran.ShiftingParams                  ShiftingParam
-..                                  RadTran.ShiftingParams.Fits             Fit
-..                                  RadTran.ShiftingParams.Fits.Parameters  Parameter
+===================== ============= ================================================= =================
+Passed into generator Loop variable Object looped over                                Loop variable
+===================== ============= ================================================= =================
+Atoms                 Atom                                                           
+..                                  Atom.States                                       AtomState
+..                                  Atom.Components                                   Component
+..                                  Atom.Component.SuperShells                        AtomSuperShell
+..                                  Atom.Component.Shells                             AtomShell 
+..                                  Atom.Component.ShellPairs                         AtomShellPair
+Molecules             Molecule                                                       
+..                                  Molecule.States                                   MoleculeState
+..                                  Molecule.State.Parameters                         Parameter
+..                                  Molecule.State.Parameter.Vector                   VectorValueOA
+..                                  Molecule.NormalModes                              NormalMode  
+Solids                Solid                                                           
+..                                  Solid.Layers                                      Layer
+..                                  Solid.Layer.Components                            Component
+Particles             Particle                                                       
+RadTrans              RadTran                                                        
+..                                  RadTran.Shiftings                                 Shifting
+..                                  RadTran.Shifting.ShiftingParams                   ShiftingParam
+..                                  RadTran.Shifting.ShiftingParam.Fits               Fit
+..                                  RadTran.Shifting.ShiftingParam.Fit.Parameters     Parameter
 RadCross              RadCros       
-..                                  RadCros.BandModes                       BandMode                                    
-CollTrans             CollTran      
-..                                  CollTran.Reactants                      Reactant                              
-..                                  CollTran.IntermediateStates             IntermediateState
-..                                  CollTran.Products                       Product
-..                                  CollTran.DataSet                        DataSet
-..                                  CollTran.DataSet.FitData                FitData
-..                                  CollTran.DataSet.FitData.Arguments      Argument
-..                                  CollTran.DataSet.FitData.Parameters     Parameter                                    
-..                                  CollTran.DataSet.TabData                TabData
-NonRadTrans           NonRadTran
-Environments          Environment   
-..                                  Environment.Species                     EnvSpecies
-Particles             Particle
-Sources               Source
-Methods               Method
-Functions             Function      
-..                                  Function.Parameters                     Parameter                              
-===================== ============= ======================================= =================
+..                                  RadCros.BandModes                                 BandMode                                    
+CollTrans             CollTran                                                       
+..                                  CollTran.Reactants                                Reactant                              
+..                                  CollTran.IntermediateStates                       IntermediateState
+..                                  CollTran.Products                                 Product
+..                                  CollTran.DataSets                                 DataSet
+..                                  CollTran.DataSet.FitData                          FitData
+..                                  CollTran.DataSet.FitData.Arguments                Argument
+..                                  CollTran.DataSet.FitData.Parameters               Parameter                                    
+..                                  CollTran.DataSet.TabData                          TabData
+NonRadTrans           NonRadTran                                                     
+Environments          Environment                                                    
+..                                  Environment.Species                               EnvSpecies
+Particles             Particle                                                       
+Sources               Source                                                         
+Methods               Method                                                         
+Functions             Function                                                       
+..                                  Function.Parameters                               Parameter                              
+===================== ============= ================================================= =================
 
 
 The third and fourth columns are for an inner loop. So for example the

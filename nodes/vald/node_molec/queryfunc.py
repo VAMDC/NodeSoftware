@@ -96,7 +96,7 @@ def setupResults(sql):
             'COUNT-ATOMS':atoms.count(),
             'COUNT-MOLECULES':molecules.count(),
             'COUNT-STATES':nstates,
-            'CoUNT-RADIATIVE':ntranss,
+            'COUNT-RADIATIVE':ntranss,
             'APPROX-SIZE':size_estimate,
             }
 

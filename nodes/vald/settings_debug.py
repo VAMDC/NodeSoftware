@@ -2,9 +2,20 @@ from settings_default import *
 
 DEBUG = True
 TRANSLIM = 6000
+print "BASE_PATH:",BASE_PATH
+INSTALLED_APPS.remove(NODEPKG)
+INSTALLED_APPS.append(NODENAME+'.node_common')
+NODEPKG=NODENAME+'.node_atom'
+INSTALLED_APPS.append(NODEPKG)
 
 DATABASES = {
-  'default': {
+  'default': {    
+    'ENGINE': 'django.db.backends.mysql',
+    'NAME': 'vald_atom_test',
+    'USER': 'vald',
+    'PASSWORD': 'V@ld',
+  },	
+  'valdx-innodb': {
     'ENGINE': 'django.db.backends.mysql',
     'NAME': 'valdx',
     'USER': 'vald',
@@ -40,6 +51,8 @@ DATABASES = {
   }
 
 }
+
+LOGGING['handlers']['logfile']['filename'] = '/tmp/node_debug.log'
 
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
 #LOGGING['handlers']['logfile']['filename'] = '/tmp/mylog.log'

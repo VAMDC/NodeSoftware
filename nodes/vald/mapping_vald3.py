@@ -85,6 +85,7 @@ def charrange_atom(linedata, molid, ia, ib):
     This method is to be used to read species data.
     It returns data only if the species currently worked on
     is an atom and not a molecule. Otherwise return 'X'
+    
      molid - minimum species id for species to be a molecule
      ia,ib - index1, index2
     """
@@ -122,19 +123,28 @@ mapping = [
              'cbyte':(charrange, 110, 119)},
             {'cname':'ncomp',
              'cbyte':(charrange, 194, 195)},
+            # these fields are only filled in the case of atoms.  for
+            # molecules, these are X, and the 'components' field is
+            # used instead to link to component species. This is
+            # filled by the species_component() function at the end of
+            # this module.
             {'cname':'atomic',
              'cbyte':(charrange_atom, 5000, 196, 198),
              'cnull':'X'},
             {'cname':'isotope',
              'cbyte':(charrange_atom, 5000, 199, 202),
              'cnull':'X'},
+            # components field is eventually filled below
             ],
      }, # end of definition for species file
 
 
-    # State model read 2 lines at a time from vald3 main file term
-    # files are grouped with 3 lines (lower,upper,transition_inf) for
-    # every 2 lines (lower, upper) in the vald file
+    # State model read 2 lines at a time from vald3 main file. the term
+    # file is grouped with 3 lines (lower,upper,transition_info) for
+    # every 2 lines (the first line of which contains both lower,
+    # upper info, the second which contains refs) in the vald file. We
+    # loop over the files twice; first to retrieve the lower states,
+    # then the upper (see next block).
 
     # States output file appended with lower states
     {'outfile':outbase + 'lowstates.dat',
@@ -235,7 +245,7 @@ mapping = [
             ]
      }, # end of State model creation - lower states
 
-    # upper states
+    # re-importing upper states
     {'outfile':outbase + 'upstates.dat',
      'infiles': (vald_file, vald_file, terms_file, terms_file),
      'headlines':(2, 2, 0, 0),
@@ -360,6 +370,8 @@ mapping = [
              'cbyte':(charrange, 30,36)},
             {'cname':'loggf',
              'cbyte':(charrange, 36,44)},
+            {'cname':'einsteina',
+             'cbyte':(constant, 'NULL')},
             {'cname':'gammarad',
              'cbyte':(charrange, 102,109),
              'cnull':'0.0'},
@@ -378,6 +390,9 @@ mapping = [
              'cbyte':(get_alphawaals, 116,124),
              'cnull':'0.000',
              "debug":False},
+            #{'cname':'einstein_a',
+            # 'cbyte':(get_einstein_a, 36,44, 0,0, 15,30),
+            # 'cnull':'0.000'},            
             #{'cname':'accur',
             # 'cbyte':(get_accur, (307,308), (308,314)),
             # 'debug':False},
