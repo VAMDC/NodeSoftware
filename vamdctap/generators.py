@@ -707,10 +707,11 @@ def XsamsAtoms(Atoms):
             cont, ret = checkXML(AtomState,'CompositionXML')
             if cont:
                 yield ret
-            else:
-                yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
-                yield makeAtomComponent(Atom)
-                yield '</AtomicComposition>'
+            else:                
+                if hasattr(Atom, "Components"):
+                    yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
+                    yield makeAtomComponent(Atom)
+                    yield '</AtomicComposition>'
 
             yield '</AtomicState>'
         G = lambda name: GetValue(name, Atom=Atom) # reset G() to Atoms, not AtomStates
@@ -1152,8 +1153,8 @@ def XsamsRadTranShifting(RadTran):
             eref = G("RadTransShiftingEnv")
             if nam:
                 dic["name"] = nam
-            else:
-                continue
+            #else:
+            #    continue
             if eref:
                 dic["envRef"] = "E%s-%s"  % (NODEID, eref)
             string += makePrimaryType("Shifting", "RadTransShifting", G, extraAttr=dic)
