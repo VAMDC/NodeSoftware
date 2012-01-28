@@ -3,7 +3,6 @@
 import re
 import sys
 from datetime import datetime
-from xml.sax.saxutils import quoteattr
 from xml.sax.saxutils import escape
 
 # Get the node-specific parts
@@ -33,7 +32,6 @@ log = logging.getLogger('vamdc.tap.generator')
 
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
-escape = lambda s: quoteattr(s)[1:-1]
 
 def makeiter(obj):
     """
@@ -116,9 +114,6 @@ def GetValue(name, **kwargs):
         if isinstance(value, float): return '0.0'
         else: return '0'
 
-    # turn it into a string, quote it, but skip the quotation marks
-    # edit - no, we need to have the object itself sometimes to loop over
-    #return quoteattr('%s'%value)[1:-1] # re
     return value
 
 def makeOptionalTag(tagname, keyword, G):
@@ -193,8 +188,7 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
 
     result.append( '>' )
     if comment:
-        result.append( '<Comments>%s</Comments>' %
-                quoteattr('%s' % comment)[1:-1] )
+        result.append( '<Comments>%s</Comments>' % escape(comment)
     result.append( makeSourceRefs(refs) )
 
     return ''.join(result)
@@ -325,7 +319,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( '>' )
 
     if comment:
-        result.append( '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1] )
+        result.append( '<Comments>%s</Comments>' % escape(comment)
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
 
@@ -377,7 +371,7 @@ def SelfSource(tap):
     result.append('<Year>%s</Year>'%now.year)
     result.append('<Category>database</Category>')
     result.append('<UniformResourceIdentifier>')
-    result.append(quoteattr(tap.fullurl)[1:-1])
+    result.append(escape(tap.fullurl))
     result.append('</UniformResourceIdentifier>')
     result.append('<ProductionDate>%s</ProductionDate>'%now.date().isoformat())
     result.append('<Authors><Author><Name>N.N.</Name></Author></Authors>')
@@ -1966,14 +1960,6 @@ def transitions2votable(transs, count):
                                                                                                                                    trans.gammawaals , trans.upstateid, trans.lostateid)
     yield """</TABLEDATA></DATA></TABLE>"""
 
-
-# DO NOT USE THIS, but quoteattr() as imported above
-# Returns an XML-escaped version of a given string. The &, < and > characters are escaped.
-#def xmlEscape(s):
-#    if s:
-#        return s.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
-#    else:
-#        return None
 
 
 def votable(transitions, states, sources, totalcount=None):
