@@ -188,7 +188,7 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
 
     result.append( '>' )
     if comment:
-        result.append( '<Comments>%s</Comments>' % escape(comment)
+        result.append( '<Comments>%s</Comments>' % escape(comment))
     result.append( makeSourceRefs(refs) )
 
     return ''.join(result)
@@ -319,7 +319,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( '>' )
 
     if comment:
-        result.append( '<Comments>%s</Comments>' % escape(comment)
+        result.append( '<Comments>%s</Comments>' % escape(comment))
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
 
