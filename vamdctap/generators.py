@@ -703,9 +703,11 @@ def XsamsAtoms(Atoms):
             if cont:
                 yield ret
             else:
-                yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
-                yield makeAtomComponent(Atom)
-                yield '</AtomicComposition>'
+                components=makeAtomComponent(Atom)
+                if components:
+                    yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
+                    yield components
+                    yield '</AtomicComposition>'
 
             yield '</AtomicState>'
         G = lambda name: GetValue(name, Atom=Atom) # reset G() to Atoms, not AtomStates
