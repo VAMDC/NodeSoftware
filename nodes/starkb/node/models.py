@@ -97,6 +97,9 @@ class Article(models.Model):
     def encoded_title(self):
         return escape(self.title)
         
+    def authors_list(self):
+        return self.authors.rsplit(',')
+        
     class Meta:
         db_table = u't_articles'
 

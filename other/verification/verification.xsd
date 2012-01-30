@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://vamdc.org/xml/xsams/0.2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2">
+<xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://vamdc.org/xml/xsams/0.3" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.3">
 	<xs:include schemaLocation="xsd/rule/include.xsd"/>
-	<xs:redefine schemaLocation="http://vamdc.org/xml/xsams/0.2/">
+	<xs:redefine schemaLocation="http://vamdc.org/xml/xsams/0.3/">
 		<xs:complexType name="AtomicStateType">
 			<xs:complexContent>
 				<xs:extension base="AtomicStateType">

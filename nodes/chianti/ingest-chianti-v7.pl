@@ -11,9 +11,8 @@ print "		AtomStateConfigurationLabel VARCHAR(32), \n";
 print "		AtomStateS FLOAT, \n";
 print "		AtomStateL FLOAT, \n";
 print "		AtomStateTotalAngMom FLOAT, \n";
-print "		AtomStateEnergyExperimental DOUBLE, \n";
-print "		AtomStateEnergyTheoretical DOUBLE, \n";
 print "		AtomStateEnergy DOUBLE, \n";
+print "		AtomStateEnergyMethod CHAR(4), \n";
 print "         id INTEGER, \n";
 print "		PRIMARY KEY (id) \n";
 print ");\n";
@@ -34,11 +33,11 @@ while(<STATES>) {
 
         my $atomSymbol = firstWord($ionName);
 	my $index = (1000000 * $stateIndex) + (1000 * $ionCharge) + $nuclearCharge;
-        my $energy = bestEnergy($energyExperimental, $energyTheoretical);
+        my ($energy, $energyMethod)  = bestEnergy($energyExperimental, $energyTheoretical);
 
 	print 'INSERT INTO states VALUES(';
 	print '"', $chiantiIonType, '", ';
-        print '0, '; # species reference - filled in later
+	print '0, '; # species reference - filled in later
 	print '"', $atomSymbol, '", ';
 	print $nuclearCharge, ', ';
 	print $ionCharge, ', ';
@@ -47,11 +46,12 @@ while(<STATES>) {
 	print $atomStateS, ', '; 
 	print $atomStateL, ', ';
 	print $totalAngMom, ', ';
-	print $energyExperimental, ', '; 
-	print $energyTheoretical, ', ';
 	print $energy, ', ';
+	print '"', $energyMethod, '", ';
 	print $index; # id - primary key
-        print ");\n";
+	print ");\n";
+	
+
 }
 
 close STATES;

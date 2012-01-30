@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.3" targetNamespace="http://vamdc.org/xml/xsams/0.3" elementFormDefault="qualified">
 	<xs:include schemaLocation="../rule.xsd"/>
 	<xs:annotation>
 		<xs:documentation>Schema for checking the quantum numbers of closed-shell linear polyatomic molecules</xs:documentation>
@@ -177,8 +177,8 @@
 										<abs/>
 										<apply>
 											<minus/>
-											<ci>lpcs:J#InitialStateRef</ci>
-											<ci>lpcs:J#FinalStateRef</ci>
+											<ci>lpcs:J#UpperStateRef</ci>
+											<ci>lpcs:J#LowerStateRef</ci>
 										</apply>
 									</apply>
 									<cn>1</cn>
@@ -199,8 +199,8 @@
 										<and/>
 										<apply>
 											<eq/>
-											<ci>lpcs:kronigParity#InitialStateRef</ci>
-											<ci>lpcs:kronigParity#FinalStateRef</ci>
+											<ci>lpcs:kronigParity#UpperStateRef</ci>
+											<ci>lpcs:kronigParity#LowerStateRef</ci>
 										</apply>
 										<apply>
 											<eq/>
@@ -208,8 +208,8 @@
 												<abs/>
 												<apply>
 													<minus/>
-													<ci>lpcs:J#InitialStateRef</ci>
-													<ci>lpcs:J#FinalStateRef</ci>
+													<ci>lpcs:J#UpperStateRef</ci>
+													<ci>lpcs:J#LowerStateRef</ci>
 												</apply>
 											</apply>
 											<cn>1</cn>
@@ -219,8 +219,8 @@
 										<and/>
 										<apply>
 											<neq/>
-											<ci>lpcs:kronigParity#InitialStateRef</ci>
-											<ci>lpcs:kronigParity#FinalStateRef</ci>
+											<ci>lpcs:kronigParity#UpperStateRef</ci>
+											<ci>lpcs:kronigParity#LowerStateRef</ci>
 										</apply>
 										<apply>
 											<eq/>
@@ -228,8 +228,8 @@
 												<abs/>
 												<apply>
 													<minus/>
-													<ci>lpcs:J#InitialStateRef</ci>
-													<ci>lpcs:J#FinalStateRef</ci>
+													<ci>lpcs:J#UpperStateRef</ci>
+													<ci>lpcs:J#LowerStateRef</ci>
 												</apply>
 											</apply>
 											<cn>0</cn>
@@ -256,8 +256,8 @@
 												<rem/>
 												<apply>
 													<minus/>
-													<ci>lpcs:vi[@mode=5]#InitialStateRef</ci>
-													<ci>lpcs:vi[@mode=5]#FinalStateRef</ci>
+													<ci>lpcs:vi[@mode=5]#UpperStateRef</ci>
+													<ci>lpcs:vi[@mode=5]#LowerStateRef</ci>
 												</apply>
 												<cn>2</cn>
 											</apply>
@@ -269,8 +269,8 @@
 												<rem/>
 												<apply>
 													<minus/>
-													<ci>lpcs:vi[@mode=3]#InitialStateRef</ci>
-													<ci>lpcs:vi[@mode=3]#FinalStateRef</ci>
+													<ci>lpcs:vi[@mode=3]#UpperStateRef</ci>
+													<ci>lpcs:vi[@mode=3]#LowerStateRef</ci>
 												</apply>
 												<cn>2</cn>
 											</apply>
@@ -285,8 +285,8 @@
 												<rem/>
 												<apply>
 													<minus/>
-													<ci>lpcs:vi[@mode=5]#InitialStateRef</ci>
-													<ci>lpcs:vi[@mode=5]#FinalStateRef</ci>
+													<ci>lpcs:vi[@mode=5]#UpperStateRef</ci>
+													<ci>lpcs:vi[@mode=5]#LowerStateRef</ci>
 												</apply>
 												<cn>2</cn>
 											</apply>
@@ -298,8 +298,8 @@
 												<rem/>
 												<apply>
 													<minus/>
-													<ci>lpcs:vi[@mode=3]#InitialStateRef</ci>
-													<ci>lpcs:vi[@mode=3]#FinalStateRef</ci>
+													<ci>lpcs:vi[@mode=3]#UpperStateRef</ci>
+													<ci>lpcs:vi[@mode=3]#LowerStateRef</ci>
 												</apply>
 												<cn>2</cn>
 											</apply>

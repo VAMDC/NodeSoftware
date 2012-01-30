@@ -28,8 +28,8 @@ class States(models.Model):
     atomstates = models.FloatField(null=True, db_column='AtomStateS', blank=True)
     atomstatel = models.FloatField(null=True, db_column='AtomStateL', blank=True)
     atomstatetotalangmom = models.FloatField(null=True, db_column='AtomStateTotalAngMom', blank=True)
-    energyexperimental = models.FloatField(null=True, db_column='AtomStateEnergyExperimental', blank=True)
-    energytheoretical = models.FloatField(null=True, db_column='AtomStateEnergyTheoretical', blank=True)
+    energy = models.FloatField(null=True, db_column='AtomStateEnergy', blank=True)
+    energyMethod = models.CharField(max_length=4, db_column='AtomStateEnergyMethod', null=False, blank='False')
 
     def allEnergies(self):
         energies = []

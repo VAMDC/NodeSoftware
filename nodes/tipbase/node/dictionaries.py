@@ -30,7 +30,7 @@ RETURNABLES = {\
 'AtomStateTermLSS' : 'AtomState.Component.Lscoupling.s',
 'AtomStateTermLSMultiplicity' : 'AtomState.Component.Lscoupling.multiplicity',
 
-                                                                         
+                                                                    
 'CollisionTabulatedDataX' : 'TabData.xdata',
 'CollisionTabulatedDataXUnits' : 'undef',
 'CollisionTabulatedDataXN' : 'len(TabData.xdata.split(" "))',
@@ -39,10 +39,12 @@ RETURNABLES = {\
 'CollisionTabulatedDataYUnits' : 'undef',
 'CollisionTabulatedDataYN' : 'len(TabData.ydata.split(" "))',
 'CollisionTabulatedDataYParameter' : 'undef',
+
 'CollisionDataSetDescription' : 'DataSet.Description',
 'CollisionReactantState' : 'Reactant.state_id()',
 'CollisionReactantSpecies' : 'Reactant.species_id()',
 'CollisionProductState' : 'Product.state_id()',
+'CollisionID' : 'CollTran.id',
 
 'ParticleSpeciesID' : 'Particle.species_id()',
 'ParticleName' : 'Particle.name',

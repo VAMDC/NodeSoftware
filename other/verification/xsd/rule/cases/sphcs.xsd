@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.3" targetNamespace="http://vamdc.org/xml/xsams/0.3" elementFormDefault="qualified">
 	<xs:include schemaLocation="../rule.xsd"/>
 	<xs:annotation>
 		<xs:documentation>Schema for checking the quantum numbers of closed-shell spherical top molecules</xs:documentation>
@@ -24,8 +24,8 @@
 										<abs/>
 										<apply>
 											<minus/>
-											<ci>sphcs:J#InitialStateRef</ci>
-											<ci>sphcs:J#FinalStateRef</ci>
+											<ci>sphcs:J#UpperStateRef</ci>
+											<ci>sphcs:J#LowerStateRef</ci>
 										</apply>
 									</apply>
 									<cn>1</cn>
@@ -49,12 +49,12 @@
 											<or/>
 											<apply>
 												<eq/>
-												<ci>sphcs:J#InitialStateRef</ci>
+												<ci>sphcs:J#UpperStateRef</ci>
 												<cn>0</cn>
 											</apply>
 											<apply>
 												<eq/>
-												<ci>sphcs:J#FinalStateRef</ci>
+												<ci>sphcs:J#LowerStateRef</ci>
 												<cn>0</cn>
 											</apply>
 										</apply>
@@ -64,8 +64,8 @@
 												<abs/>
 												<apply>
 													<minus/>
-													<ci>sphcs:J#InitialStateRef</ci>
-													<ci>sphcs:J#FinalStateRef</ci>
+													<ci>sphcs:J#UpperStateRef</ci>
+													<ci>sphcs:J#LowerStateRef</ci>
 												</apply>
 											</apply>
 											<cn>1</cn>
@@ -88,12 +88,12 @@
 										<and/>
 										<apply>
 											<eq/>
-											<ci>sphcs:S#InitialStateRef?</ci>
+											<ci>sphcs:S#UpperStateRef?</ci>
 											<ci>'A1'</ci>
 										</apply>
 										<apply>
 											<neq/>
-											<ci>sphcs:S#FinalStateRef?</ci>
+											<ci>sphcs:S#LowerStateRef?</ci>
 											<ci>'A2'</ci>
 										</apply>
 									</apply>
@@ -101,12 +101,12 @@
 										<and/>
 										<apply>
 											<eq/>
-											<ci>sphcs:S#InitialStateRef?</ci>
+											<ci>sphcs:S#UpperStateRef?</ci>
 											<ci>'A2'</ci>
 										</apply>
 										<apply>
 											<neq/>
-											<ci>sphcs:S#FinalStateRef?</ci>
+											<ci>sphcs:S#LowerStateRef?</ci>
 											<ci>'A1'</ci>
 										</apply>
 									</apply>
@@ -114,12 +114,12 @@
 										<and/>
 										<apply>
 											<eq/>
-											<ci>sphcs:S#InitialStateRef?</ci>
+											<ci>sphcs:S#UpperStateRef?</ci>
 											<ci>'E'</ci>
 										</apply>
 										<apply>
 											<neq/>
-											<ci>sphcs:S#FinalStateRef?</ci>
+											<ci>sphcs:S#LowerStateRef?</ci>
 											<ci>'E'</ci>
 										</apply>
 									</apply>
@@ -127,12 +127,12 @@
 										<and/>
 										<apply>
 											<eq/>
-											<ci>sphcs:S#InitialStateRef?</ci>
+											<ci>sphcs:S#UpperStateRef?</ci>
 											<ci>'F1'</ci>
 										</apply>
 										<apply>
 											<neq/>
-											<ci>sphcs:S#FinalStateRef?</ci>
+											<ci>sphcs:S#LowerStateRef?</ci>
 											<ci>'F2'</ci>
 										</apply>
 									</apply>
@@ -140,12 +140,12 @@
 										<and/>
 										<apply>
 											<eq/>
-											<ci>sphcs:S#InitialStateRef?</ci>
+											<ci>sphcs:S#UpperStateRef?</ci>
 											<ci>'F2'</ci>
 										</apply>
 										<apply>
 											<neq/>
-											<ci>sphcs:S#FinalStateRef?</ci>
+											<ci>sphcs:S#LowerStateRef?</ci>
 											<ci>'F1'</ci>
 										</apply>
 									</apply>
