@@ -78,7 +78,6 @@ class TAPQUERY(object):
             log.error(self.errormsg)
 
         if self.isvalid: self.validate()
-        log.debug('%s'%request.META)
         self.fullurl = getBaseURL(request) + 'sync?' + request.META.get('QUERY_STRING')
 
     def validate(self):
