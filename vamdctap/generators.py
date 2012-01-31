@@ -1262,9 +1262,9 @@ def makeDataSeriesType(tagname, keyword, G):
     xpara = G("%sParameter" % keyword)
     if xpara:
         dic["parameter"] = "%sParameter" % keyword
-    xunits = G("%sUnits" % keyword)
+    xunits = G("%sUnit" % keyword)
     if xunits:
-        dic["units"] = "%sUnits" % keyword
+        dic["units"] = xunits
     xid = G("%sID" % keyword)
     if xid:
         dic["id"] = "%s-%s" % (NODEID, xid)
@@ -1272,7 +1272,8 @@ def makeDataSeriesType(tagname, keyword, G):
 
     dlist = makeiter(G("%s" % keyword))
     if dlist:
-        result.append("<DataList count='%s' units='%s'>%s</DataList>" % (G("%sN" % keyword), G("%sUnits" % keyword), " ".join(dlist)))
+        result.append("<DataList count='%s'>%s</DataList>" % (G("%sN" % keyword), " ".join(dlist)))
+
     csec = G("%sLinearA0" % keyword) and G("%sLinearA1" % keyword)
     if csec:
         dic = {"initial":G("%sLinearInitial" % keyword), "increment":G("%sLinearIncrement" % keyword)}
