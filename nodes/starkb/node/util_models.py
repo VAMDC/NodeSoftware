@@ -45,18 +45,22 @@ class Result:
 		return result
 
 
-class Parameter():
+class Shifting():
+    def __init__(self):
+        self.environment = None
+        self.name = None
+        self.ShiftingParams = list()
+
+class ShiftingParameter():
+    def __init__(self):
+        self.value = None
+        self.accurracy = None        
+        self.comment = None
+        
+class LineshapeParameter():
     def __init__(self):
         self.environment = None
         self.value = None
         self.accurracy = None
         self.name = None
         self.comment = None
-        
-class ShiftingParameter(Parameter):
-    def __init__(self):
-        Parameter.__init__(self)
-        
-class LineshapeParameter(Parameter):
-    def __init__(self):
-        Parameter.__init__(self)
