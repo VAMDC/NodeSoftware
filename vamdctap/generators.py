@@ -3,7 +3,7 @@
 import re
 import sys
 from datetime import datetime
-from xml.sax.saxutils import quoteattr
+from xml.sax.saxutils import escape
 
 # Get the node-specific parts
 from django.conf import settings
@@ -32,7 +32,6 @@ log = logging.getLogger('vamdc.tap.generator')
 
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
-escape = lambda s: quoteattr(s)[1:-1]
 
 def makeiter(obj):
     """
@@ -115,9 +114,6 @@ def GetValue(name, **kwargs):
         if isinstance(value, float): return '0.0'
         else: return '0'
 
-    # turn it into a string, quote it, but skip the quotation marks
-    # edit - no, we need to have the object itself sometimes to loop over
-    #return quoteattr('%s'%value)[1:-1] # re
     return value
 
 def makeOptionalTag(tagname, keyword, G):
@@ -192,8 +188,7 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
 
     result.append( '>' )
     if comment:
-        result.append( '<Comments>%s</Comments>' %
-                quoteattr('%s' % comment)[1:-1] )
+        result.append( '<Comments>%s</Comments>' % escape(comment))
     result.append( makeSourceRefs(refs) )
 
     return ''.join(result)
@@ -324,7 +319,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( '>' )
 
     if comment:
-        result.append( '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1] )
+        result.append( '<Comments>%s</Comments>' % escape(comment))
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
 
@@ -372,11 +367,11 @@ def SelfSource(tap):
     The full URL is given in the tag UniformResourceIdentifier but you need
     to unescape ampersands and angle brackets to re-use it.
     Query was: %s
-    </Comments>"""%tap.query)
+    </Comments>"""%escape(tap.query))
     result.append('<Year>%s</Year>'%now.year)
     result.append('<Category>database</Category>')
     result.append('<UniformResourceIdentifier>')
-    result.append(quoteattr(tap.fullurl)[1:-1])
+    result.append(escape(tap.fullurl))
     result.append('</UniformResourceIdentifier>')
     result.append('<ProductionDate>%s</ProductionDate>'%now.date().isoformat())
     result.append('<Authors><Author><Name>N.N.</Name></Author></Authors>')
@@ -707,10 +702,11 @@ def XsamsAtoms(Atoms):
             cont, ret = checkXML(AtomState,'CompositionXML')
             if cont:
                 yield ret
-            else:                
-                if hasattr(Atom, "Components"):
+            else:
+                components=makeAtomComponent(Atom)
+                if components:
                     yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
-                    yield makeAtomComponent(Atom)
+                    yield components
                     yield '</AtomicComposition>'
 
             yield '</AtomicState>'
@@ -1578,35 +1574,39 @@ def XsamsCollTrans(CollTrans):
 
                         yield makePrimaryType("TabulatedData", "CollisionTabulatedData", GDT)
 
-                        yield "<DataXY>"
+                        #yield "<DataXY>"
 
                         # handle X components of XY
                         Nx = GDT("CollisionTabulatedDataXN")
                         xunits = GDT("CollisionTabulatedDataXUnits")
                         xparameters=GDT("CollisionTabulatedDataXParameter")
+                        xdescription = GDT("CollisionTabulatedDataXDescription")
 
                         yield "<X units='%s' parameter='%s'>" % (xunits, xparameters)
-                        yield "<DataList count='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
-                        yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXError"))))
-                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXNegativeError"))))
-                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXPositiveError"))))
-                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
+                        yield "<DataList count='%s'>%s</DataList>" % (Nx, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
+                        #yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXError"))))
+                        #yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXNegativeError"))))
+                        #yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXPositiveError"))))
+                        if xdescription : 
+                            yield "<DataDescription>%s</DataDescription>" % xdescription
                         yield "</X>"
 
                         # handle Y components of XY
                         Ny = GDT("CollisionTabulatedDataYN")
                         yunits = GDT("CollisionTabulatedDataYUnits")
                         yparameters=GDT("CollisionTabulatedDataYParameter")
+                        ydescription = GDT("CollisionTabulatedDataYDescription")
 
                         yield "<Y units='%s' parameter='%s'>" % (yunits, yparameters)
-                        yield "<DataList count='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
-                        yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYError"))))
-                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYNegativeError"))))
-                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYPositiveError"))))
-                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
+                        yield "<DataList count='%s'>%s</DataList>" % (Ny, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
+                        #yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYError"))))
+                        #yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYNegativeError"))))
+                        #yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYPositiveError"))))
+                        if ydescription : 
+                            yield "<DataDescription>%s</DataDescription>" % ydescription
                         yield "</Y>"
 
-                        yield "</DataXY>"
+                        #yield "</DataXY>"
 
                         tabref = GDT("CollisionTabulatedDataReferenceFrame")
                         if tabref:
@@ -1955,14 +1955,6 @@ def transitions2votable(transs, count):
                                                                                                                                    trans.gammawaals , trans.upstateid, trans.lostateid)
     yield """</TABLEDATA></DATA></TABLE>"""
 
-
-# DO NOT USE THIS, but quoteattr() as imported above
-# Returns an XML-escaped version of a given string. The &, < and > characters are escaped.
-#def xmlEscape(s):
-#    if s:
-#        return s.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
-#    else:
-#        return None
 
 
 def votable(transitions, states, sources, totalcount=None):
