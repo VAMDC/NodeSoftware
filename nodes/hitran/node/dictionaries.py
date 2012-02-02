@@ -65,6 +65,14 @@ RETURNABLES={\
 'MoleculeQnValue': 'Qns.qn_val',
 'MoleculeQnAttribute': 'Qns.qn_attr',
 'MoleculeQnXML': 'Qns.xml',
+
+'EnvironmentID': 'Environment.id',
+'EnvironmentTemperature': 'Environment.T',
+'EnvironmentTemperatureUnits': 'K',
+'EnvironmentTotalPressure': 'Environment.p',
+'EnvironmentTotalPressureUnits': 'Torr',
+'EnvironmentSpecies': 'Environment.species',
+'EnvironmentSpeciesName': 'EnvSpecies.species_name',
 }
 
 # MoleculeChemicalName and MoleculeStoichiometricFormula are associated with
@@ -77,4 +85,15 @@ RESTRICTABLES = {\
 'RadTransWavenumber': 'nu',
 'RadTransWavelength': 'dummy', 
 'RadTransProbabilityA': 'A',
+
+# for absorption cross sections:
+'Temperature': 'T',
+'Pressure': 'p',
+
+}
+
+REQUESTABLES = {
+# NB Official dictionary mis-spells this keyword!
+'Environments': 'Environments',
+'RadiativeCrossections': 'RadCros',
 }

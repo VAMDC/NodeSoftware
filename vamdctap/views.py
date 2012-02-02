@@ -26,6 +26,7 @@ from generators import *
 from sqlparse import SQL
 
 REQUESTABLES = map(lower, [\
+ 'Environments',
  'AtomStates',
  'Atoms',
  'Collisions',

@@ -194,6 +194,17 @@ def Wavelength2Wavenumber(op, foo):
         foop = 1.e20
     q = ['RadTransWavenumber', opp, str(foop)]
     return q
+
+def Pascals2Torr(op, foo):
+    """ Replace foo in Pascals with foo in Torr """
+    try:
+        foop = float(foo[0])
+    except (ValueError, TypeError):
+        print 'failed to convert %s to float' % foo
+        return None
+    foop = foop * 0.007500616827041697
+    q = ['Pressure', op, str(foop)]
+    return q
         
 def setupResults(sql, LIMIT=None):
     # rather than use the sql2Q method:
@@ -216,6 +227,8 @@ def setupResults(sql, LIMIT=None):
             rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
         if r == 'RadTransWavelength':
             rs[i] = Wavelength2Wavenumber(op, foo)
+        if r == 'Pressure':
+            rs[i] = Pascals2Torr(op, foo)
     # now rebuild the query as a dictionary of QTypes ...
     qdict = {}
     for i, r in rs.items():
@@ -223,6 +236,9 @@ def setupResults(sql, LIMIT=None):
         qdict[i] = q
     # ... and merge them to a single query object
     q = sqlparse.mergeQwithLogic(qdict, logic)
+
+    if 'radiativecrossections' in sql.requestables:
+        return setupXsecResults(q)
     
     transitions = Trans.objects.filter(q) 
     ntrans = transitions.count()
@@ -290,6 +306,55 @@ def setupResults(sql, LIMIT=None):
             'Molecules': species,
             'Environments': HITRANenvs,
             'Functions': HITRANfuncs}
+
+def get_xsec_envs(xsecs):
+    xsec_envs = []
+    for xsec in xsecs:
+        xsec_envs.append(Environment(xsec.id, xsec.T, xsec.p,
+                                     [EnvSpecies(xsec.broadener),]))
+    return xsec_envs
+
+def setupXsecResults(q):
+    xsecs = Xsc.objects.filter(q)
+    nxsecs = xsecs.count()
+
+    # XXX
+    nsources = 0; sources = None;
+
+    # hack this: the generator expects Species to be Isos (since the dictionary
+    # resolves them this way (appropriate for the line-by-line transitions);       # however, for cross sections, Species are Molecules...
+    species = []
+    for m in Molecule.objects.filter(pk__in=xsecs.values_list('molecule')
+                .distinct()):
+        xsec_species = Iso(molecule=m)
+        xsec_species.InChIKey = m.InChIKey
+        xsec_species.InChI = m.InChI
+        xsec_species.iso_name = m.ordinary_formula
+        #xsec_species.XML() = m.XML()
+        species.append(xsec_species)
+    nspecies = len(species)
+
+    xsec_envs = get_xsec_envs(xsecs)
+
+    headerinfo = {
+        'Truncated': '100 %',
+        'count-sources': nsources,
+        'count-species': nspecies,
+        'count-molecules': nspecies,
+        'count-radiative': nxsecs
+    }
+
+    methods = [Method('MEXP', 'experiment', 'experiment'),
+              ]
+
+   # return the dictionary as described above
+    return {'HeaderInfo': headerinfo,
+            'Methods': methods,
+            'RadCross': xsecs,
+            'Sources': sources,
+            'Molecules': species,
+            'Environments': xsec_envs,
+           }
 
 def returnResults(tap, LIMIT=None):
     """

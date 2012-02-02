@@ -440,13 +440,17 @@ def XsamsEnvironments(Environments):
             yield '<Composition>'
             for EnvSpecies in makeiter(Environment.Species):
                 GS = lambda name: GetValue(name, EnvSpecies=EnvSpecies)
-                yield '<Species name="%s" speciesRef="X%s-%s">' % (GS('EnvironmentSpeciesName'), NODEID, GS('EnvironmentSpeciesRef'))
+                speciesRef = GS('EnvironmentSpeciesRef')
+                if speciesRef:
+                    yield '<Species name="%s" speciesRef="X%s-%s">' % (GS('EnvironmentSpeciesName'), NODEID, speciesRef)
+                else:
+                    yield '<Species name="%s">' % (GS('EnvironmentSpeciesName'))
                 yield makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', GS)
                 yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', GS)
                 yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', GS)
                 yield '</Species>'
             yield '</Composition>'
-        yield '</Environment>'
+        yield '</Environment>\n'
     yield '</Environments>\n'
 
 def parityLabel(parity):
