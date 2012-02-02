@@ -702,11 +702,11 @@ def XsamsAtoms(Atoms):
             cont, ret = checkXML(AtomState,'CompositionXML')
             if cont:
                 yield ret
-            else:
-                components=makeAtomComponent(Atom)
-                if components:
+
+            else:                
+                if hasattr(Atom, "Components"):
                     yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
-                    yield components
+                    yield makeAtomComponent(Atom)
                     yield '</AtomicComposition>'
 
             yield '</AtomicState>'
@@ -726,9 +726,9 @@ def makeNormalMode(G):
     pointgr = G('MoleculeNormalModePointGroupSymmetry')
     id = G('MoleculeNormalModeID')
     extraAttr = {}
-    if elstate: extraAttr['electronicStateRef'] = elstate
+    if elstate: extraAttr['electronicStateRef'] = "S%s-%s" % (NODEID, elstate)
     if pointgr: extraAttr['pointGroupSymmetry'] = pointgr
-    if id: extraAttr['id'] = id
+    if id: extraAttr['id'] = "V%s-%s" % (NODEID, id)
     result = [ makePrimaryType('NormalMode', 'MoleculeNormalMode', G, extraAttr=extraAttr) ]
     result.append( makeDataType('HarmonicFrequency','MoleculeNormalModeHarmonicFrequency',G) )
     result.append( makeDataType('Intensity','MoleculeNormalModeIntensity',G) )
@@ -802,7 +802,7 @@ def XsamsMCSBuild(Molecule):
         yield '</NormalModes>\n'
     elif hasattr(Molecule, 'NormalModes'):
         yield '<NormalModes>\n'
-        for NormalMode in NormalModes:
+        for NormalMode in Molecule.NormalModes:
             GN = lambda name: GetValue(name, NormalMode=NormalMode)
             yield makeNormalMode(GN)
         yield '</NormalModes>\n'

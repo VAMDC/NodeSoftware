@@ -2,16 +2,6 @@
 
 RETURNABLES = {\
 'NodeID':'vald',
-'SourceID':'Source.id',
-'SourceAuthorName':'Source.author',
-'SourceCategory':'Source.category',
-'SourcePageBegin':'Source.pages',
-'SourcePageEnd':'Source.pages',
-'SourceName':'Source.journal',
-'SourceTitle':'Source.title',
-'SourceURI':'Source.url',
-'SourceVolume':'Source.volume',
-'SourceYear':'Source.year',
 #############################################################
 'MethodID':'Method.id',
 'MethodCategory':'Method.category',
