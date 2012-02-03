@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.2" targetNamespace="http://vamdc.org/xml/xsams/0.2" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://vamdc.org/xml/xsams/0.3" targetNamespace="http://vamdc.org/xml/xsams/0.3" elementFormDefault="qualified">
 	<xs:include schemaLocation="../rule.xsd"/>
 	<xs:annotation>
 		<xs:documentation>Schema for checking the quantum numbers of closed-shell linear triatomic molecules</xs:documentation>
@@ -252,8 +252,8 @@
 										<abs/>
 										<apply>
 											<minus/>
-											<ci>ltcs:J#InitialStateRef</ci>
-											<ci>ltcs:J#FinalStateRef</ci>
+											<ci>ltcs:J#UpperStateRef</ci>
+											<ci>ltcs:J#LowerStateRef</ci>
 										</apply>
 									</apply>
 									<cn>1</cn>
@@ -274,8 +274,8 @@
 										<and/>
 										<apply>
 											<eq/>
-											<ci>ltcs:kronigParity#InitialStateRef</ci>
-											<ci>ltcs:kronigParity#FinalStateRef</ci>
+											<ci>ltcs:kronigParity#UpperStateRef</ci>
+											<ci>ltcs:kronigParity#LowerStateRef</ci>
 										</apply>
 										<apply>
 											<eq/>
@@ -283,8 +283,8 @@
 												<abs/>
 												<apply>
 													<minus/>
-													<ci>ltcs:J#InitialStateRef</ci>
-													<ci>ltcs:J#FinalStateRef</ci>
+													<ci>ltcs:J#UpperStateRef</ci>
+													<ci>ltcs:J#LowerStateRef</ci>
 												</apply>
 											</apply>
 											<cn>1</cn>
@@ -294,8 +294,8 @@
 										<and/>
 										<apply>
 											<neq/>
-											<ci>ltcs:kronigParity#InitialStateRef</ci>
-											<ci>ltcs:kronigParity#FinalStateRef</ci>
+											<ci>ltcs:kronigParity#UpperStateRef</ci>
+											<ci>ltcs:kronigParity#LowerStateRef</ci>
 										</apply>
 										<apply>
 											<eq/>
@@ -303,8 +303,8 @@
 												<abs/>
 												<apply>
 													<minus/>
-													<ci>ltcs:J#InitialStateRef</ci>
-													<ci>ltcs:J#FinalStateRef</ci>
+													<ci>ltcs:J#UpperStateRef</ci>
+													<ci>ltcs:J#LowerStateRef</ci>
 												</apply>
 											</apply>
 											<cn>0</cn>
@@ -327,12 +327,12 @@
 										<and/>
 										<apply>
 											<eq/>
-											<ci>ltcs:l2#InitialStateRef</ci>
+											<ci>ltcs:l2#UpperStateRef</ci>
 											<cn>0</cn>
 										</apply>
 										<apply>
 											<eq/>
-											<ci>ltcs:l2#FinalStateRef</ci>
+											<ci>ltcs:l2#LowerStateRef</ci>
 											<cn>0</cn>
 										</apply>
 										<apply>
@@ -341,8 +341,8 @@
 												<abs/>
 												<apply>
 													<minus/>
-													<ci>ltcs:J#InitialStateRef</ci>
-													<ci>ltcs:J#FinalStateRef</ci>
+													<ci>ltcs:J#UpperStateRef</ci>
+													<ci>ltcs:J#LowerStateRef</ci>
 												</apply>
 											</apply>
 											<cn>1</cn>
@@ -369,16 +369,16 @@
 												<abs/>
 												<apply>
 													<minus/>
-													<ci>ltcs:v2#InitialStateRef</ci>
-													<ci>ltcs:v2#FinalStateRef</ci>
+													<ci>ltcs:v2#UpperStateRef</ci>
+													<ci>ltcs:v2#LowerStateRef</ci>
 												</apply>
 											</apply>
 											<apply>
 												<abs/>
 												<apply>
 													<minus/>
-													<ci>ltcs:v3#InitialStateRef</ci>
-													<ci>ltcs:v3#FinalStateRef</ci>
+													<ci>ltcs:v3#UpperStateRef</ci>
+													<ci>ltcs:v3#LowerStateRef</ci>
 												</apply>
 											</apply>
 										</apply>
@@ -402,8 +402,8 @@
 										<abs/>
 										<apply>
 											<minus/>
-											<ci>ltcs:v1#InitialStateRef</ci>
-											<ci>ltcs:v1#FinalStateRef</ci>
+											<ci>ltcs:v1#UpperStateRef</ci>
+											<ci>ltcs:v1#LowerStateRef</ci>
 										</apply>
 									</apply>
 									<cn>10</cn>
@@ -424,8 +424,8 @@
 										<abs/>
 										<apply>
 											<minus/>
-											<ci>ltcs:v2#InitialStateRef</ci>
-											<ci>ltcs:v2#FinalStateRef</ci>
+											<ci>ltcs:v2#UpperStateRef</ci>
+											<ci>ltcs:v2#LowerStateRef</ci>
 										</apply>
 									</apply>
 									<cn>20</cn>
@@ -446,8 +446,8 @@
 										<abs/>
 										<apply>
 											<minus/>
-											<ci>ltcs:v3#InitialStateRef</ci>
-											<ci>ltcs:v3#FinalStateRef</ci>
+											<ci>ltcs:v3#UpperStateRef</ci>
+											<ci>ltcs:v3#LowerStateRef</ci>
 										</apply>
 									</apply>
 									<cn>10</cn>
@@ -468,8 +468,8 @@
 										<abs/>
 										<apply>
 											<minus/>
-											<ci>ltcs:l2#InitialStateRef</ci>
-											<ci>ltcs:l2#FinalStateRef</ci>
+											<ci>ltcs:l2#UpperStateRef</ci>
+											<ci>ltcs:l2#LowerStateRef</ci>
 										</apply>
 									</apply>
 									<cn>3</cn>

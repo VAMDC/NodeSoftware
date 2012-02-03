@@ -18,10 +18,9 @@ def getEntryFromString(s):
     parser = bibtex.Parser()
     try:
         parser.parse_stream(StringIO(s))
-        key,entry = parser.data.entries.items()[0]        
+        key,entry = parser.data.entries.items()[0]
     except Exception:
-        raise 
-        bib = parser.parse_stream(StringIO(DUMMY))
+        parser.parse_stream(StringIO(DUMMY))
         key,entry = parser.data.entries.items()[0]
     return entry
 

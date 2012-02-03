@@ -12,7 +12,9 @@ To do:
 * Double-check changes in the standards.
 * Write Changelog in Documentation!
 * Update the bits in documentation that need updating!
-* Edit the version in settings_default.py
+* Edit the version number in settings_default.py
+* Check the version number in documentation, grep for uses of the old one.
+* Update tex-template for docs, both version number and date
 * merge into release branch
 * push release branch to vamdc-repo
 * make the tag

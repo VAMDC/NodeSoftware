@@ -9,6 +9,7 @@ from itertools import chain
 from HITRANfuncsenvs import * 
 import formula_parser
 import sys
+import time
 
 def LOG(s):
     print >> sys.stderr, s
@@ -51,42 +52,26 @@ def bad_ref(refID):
                ' identified by %s cannot be resolved into valid XSAMS'
                     % refID, year=2011)
 
-def get_sources(transitions):
-    #return None
-    refIDs = set()
+def get_sources(ref_ids):
     refs = []
-    for trans in transitions:
-        # get the (string) reference IDs for each parameter of the transition 
-        for prm_name in ('nu', 'A', 'gamma_air', 'n_air', 'gamma_self',
-                         'delta_air'):
-            try:
-                exec('refID = trans.%s.ref' % prm_name)
-            except AttributeError:
-                continue
-            # have we seen it already?
-            if refID in refIDs:
-                continue
-            # get the corresponding Ref object
-            try:
-                ref = Ref.objects.get(refID=refID)
-            except Ref.DoesNotExist:
-                continue
-            # filter out references we can't represent in XSAMS, and rename
-            # 'article' as 'journal' and 'thesis' and 'theses' (sic)
-            if ref.ref_type == 'article':
-                ref.ref_type = 'journal'
-            elif ref.ref_type == 'thesis':
-                ref.ref_type = 'theses'
-            elif ref.ref_type not in ('private communication', 'proceedings',
-                                      'database'):
-                # this ref won't resolve to valid XSAMS
-                ref = bad_ref(refID)
-            # <Year> is compulsory in XSAMS, so if it's missing in the
-            # database, return a bad_ref:
-            if ref.year is None:
-                ref = bad_ref(refID)
-            refIDs.add(refID)
-            refs.append(ref)
+    for ref_id in ref_ids:
+        try:
+            ref = Ref.objects.get(pk=ref_id)
+        except Ref.DoesNotExist:
+            continue
+        # filter out references we can't represent in XSAMS, and rename
+        # 'article' as 'journal' and 'thesis' and 'theses' (sic)
+        if ref.ref_type == 'article':
+            ref.ref_type = 'journal'
+        elif ref.ref_type not in ('private communication', 'proceedings',
+                                  'database'):
+            # this ref won't resolve to valid XSAMS
+            ref = bad_ref(ref.refID)
+        # <Year> is compulsory in XSAMS, so if it's missing in the
+        # database, return a bad_ref:
+        if ref.year is None:
+            ref = bad_ref(ref.refID)
+        refs.append(ref)
     return refs
 
 def attach_prms(transitions):
@@ -95,9 +80,12 @@ def attach_prms(transitions):
     prm.val, prm.err, and prm.ref
 
     """
+    ref_ids = set()
     for trans in transitions:
         for prm in trans.prm_set.all():
             exec('trans.%s = prm' % prm.name)
+            ref_ids.add(prm.ref_id)
+    return ref_ids
 
 def ChemicalName2MoleculeInchiKey(op, foo):
     """
@@ -210,14 +198,16 @@ def Wavelength2Wavenumber(op, foo):
 def setupResults(sql, LIMIT=None):
     # rather than use the sql2Q method:
     #q = sqlparse.sql2Q(sql)
-    # we parse the query into its restrictables and logic:
+
+    start_time = time.time()
+
+    # ... we parse the query into its restrictables and logic:
     if not sql.where:
         return {}
     logic, rs, count = sqlparse.splitWhere(sql.where)
     # and replace any restrictions on ChemicalName or StoichiometricFormula
     # with the equivalent on MoleculeInchiKey. Also convert wavelength
-    # (in A) to wavenumber:
-    #print 'rs was',rs
+    # (in Angstroms) to wavenumber:
     for i in rs:
         r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
         if r == 'MoleculeChemicalName':
@@ -226,8 +216,12 @@ def setupResults(sql, LIMIT=None):
             rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
         if r == 'RadTransWavelength':
             rs[i] = Wavelength2Wavenumber(op, foo)
-    print 'rs is',rs
-    qdict = sqlparse.restriction2Q(rs)
+    # now rebuild the query as a dictionary of QTypes ...
+    qdict = {}
+    for i, r in rs.items():
+        q = sqlparse.restriction2Q(r)
+        qdict[i] = q
+    # ... and merge them to a single query object
     q = sqlparse.mergeQwithLogic(qdict, logic)
     
     transitions = Trans.objects.filter(q) 
@@ -239,15 +233,27 @@ def setupResults(sql, LIMIT=None):
         numax = transitions[LIMIT].nu
         transitions = Trans.objects.filter(q, Q(nu__lte=numax))
         percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+        print 'Results truncated to %s %%' % percentage
     else:
         percentage = '100'
-    print 'Truncated to %s %%' % percentage
+        print 'Results not truncated'
+    print 'LIMIT is', LIMIT
+    print 'ntrans =',ntrans
 
-    attach_prms(transitions)
+    ts = time.time()
+    ref_ids = attach_prms(transitions)
+    te = time.time()
+    print 'time to attach parameters = %.1f secs' % (te-ts)
 
-    sources = get_sources(transitions)
+    ts = time.time()
+    sources = get_sources(ref_ids)
+    te = time.time()
+    print 'time to get sources = %.1f secs' % (te-ts)
     # extract the state quantum numbers in a form that generators.py can use:
+    ts = time.time()
     species, nspecies, nstates = get_species(transitions)
+    te = time.time()
+    print 'time to get species = %.1f secs' % (te-ts)
     LOG('%s transitions retrieved from HITRAN database' % ntrans)
     LOG('%s states retrieved from HITRAN database' % nstates)
     LOG('%s species retrieved from HITRAN database' % nspecies)
@@ -272,6 +278,9 @@ def setupResults(sql, LIMIT=None):
 
     methods = [Method('MEXP', 'experiment', 'experiment'),
                Method('MTHEORY', 'theory', 'theory')]
+
+    end_time = time.time()
+    print 'timed at %.1f secs', (end_time - start_time)
 
    # return the dictionary as described above
     return {'HeaderInfo': headerinfo,
@@ -314,9 +323,11 @@ def returnResults(tap, LIMIT=None):
         numax = transitions[LIMIT].nu
         transitions = Trans.objects.filter(q, Q(nu__lte=numax))
         percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+        print 'Results truncated to %s %%' % percentage
     else:
         percentage = '100'
-    print 'Truncated to %s %%' % percentage
+        print 'Results not truncated'
+    print 'LIMIT is', LIMIT
     print 'ntrans =',ntrans
     
     par_generator = Par(transitions)
