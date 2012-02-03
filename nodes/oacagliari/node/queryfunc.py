@@ -15,6 +15,7 @@ from itertools import chain
 from django.conf import settings
 from vamdctap.sqlparse import where2q
 
+
 import dictionaries
 
 import models # this imports models.py from the same directory as this file
@@ -46,8 +47,6 @@ def setupResults(sql, limit=1000):
     """
     This function is always called by the software.
     """
-    try: NODEID = dictionaries.RETURNABLES['NodeID']
-    except: NODEID = 'PleaseFillTheNodeID'
     # log the incoming query
     LOG(sql)
     result_sources = [] #Sources related to results
@@ -66,13 +65,10 @@ def setupResults(sql, limit=1000):
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
-    #transs = models.Transition.objects.select_related(depth=2).filter(q)
-    #molecular_species = models.MolecularSpecies.objects.select_related(depth=1).filter(q)
     molecularspecies = models.MolecularSpecies.objects.filter(q).distinct()
 
     # count the number of matches, make a simple trunkation if there are
-    # too many (record the coverage in the returned header)
-    #ntranss=transs.count()    
+    # too many (record the coverage in the returned header) 
     nmolecularspecies=molecularspecies.count()
     if limit < nmolecularspecies :
         nmolecularspecies = molecularspecies[:limit]
@@ -80,12 +76,6 @@ def setupResults(sql, limit=1000):
     else: 
         percentage=None
     
-    #electronic_states = molecular_species.electronicstates_set.all()
-    #if len(molecular_species) > 0:
-    #    electronic_states = molecular_species[0].electronicstates_set.all()
-    #else:
-    #    electronic_states = None
-    #print electronic_states
     nspecies = molecularspecies.count()
     nstates = 0
     
@@ -93,7 +83,6 @@ def setupResults(sql, limit=1000):
         molecular_specie.States = molecular_specie.electronicstates_set.all()
         min_energy = 0
         min_energy = min
-        #normalmodes = ""
         normalmodelist = []
         NormalModeSourceRef = []
         MoleculeStructureSourceRef = []
@@ -115,7 +104,7 @@ def setupResults(sql, limit=1000):
                 #we need to list all molecule structure
                 MoleculeStructureMethod = state.energymethod
                 MoleculeStructureSourceRef = state.StateEnergySourceRef                
-                MoleculeStructure = state.geom.returncmlstructure(MoleculeStructureSourceRef, NODEID)
+                MoleculeStructure = state.geom.returncmlstructure(MoleculeStructureSourceRef)
             vibration_analyses_armonic = state.vibrationalanalysesarmonic_set.all()
             elementlist = state.geom.returnelementslist()
             
@@ -134,26 +123,16 @@ def setupResults(sql, limit=1000):
                 for tab in vibration_analyses_armonic[0].tabulatedvibrations_set.all():
                     normalmode = models.NormalMode(tab.pk, tab.frequency, tab.ir_intensity, tab.sym_type, tab.eigenvectors, state.state_id, elementlist, nmMethod, NormalModeSourceRef)
                     normalmodelist.append(normalmode)
-                    #normalmodes += normalmode.returnXML(elementlist, nmMethod, NormalModeSourceRef, NODEID)
-        #NormalModes = normalmodes
-        #'NormalModes = normalmodelist
-        #NormalModesMethod = nmMethod
-        molecular_specie.molecularchemicalspecies = models.MolecularChemicalSpecies(MoleculeStructure, MoleculeStructureMethod, MoleculeStructureSourceRef, None, nmMethod, NormalModeSourceRef, NODEID)
+
+        molecular_specie.molecularchemicalspecies = models.MolecularChemicalSpecies(MoleculeStructure, MoleculeStructureMethod, MoleculeStructureSourceRef, None, nmMethod, NormalModeSourceRef)
         if normalmodelist:
             molecular_specie.NormalModes = normalmodelist
         nstates += molecular_specie.States.count()
         molecular_specie.comments = str(molecular_specie.comments) 
 
-        #molecular_specie.NormalModes
-    #electronic_state = molecular_species[0].electronicstates_set.all()[0]
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
-    #sources = getRefs(transs)
-    #nsources = sources.count()
-    #elements, nelements = getElementsWithMolecularSpecies(molecular_species)
-    
-    #methods = getLifetimeMethods()
-    #sources.append(models.BibRef("MethodRefID", "book", "SourceName", "2011", ["Nome1", "Nome2"], "Title"))
+
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
     nsources = len(result_sources)

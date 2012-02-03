@@ -11,16 +11,20 @@ from django.db import models
 from decimal import *
 import re
 
-from vamdctap.bibtextools import *
+import dictionaries
 
-def returnXMLSource(SourcesIDs, NodeName):
-    SourceTypePrefix = u"B"
-    CompletePrefix = SourceTypePrefix + NodeName + u"-"
-    result = u""
-    for s in SourcesIDs:
-        result += u"<SourceRef>" + CompletePrefix + str(s) + u"</SourceRef>"
-    if len(result)>0: result += u"\n"
-    return result
+from vamdctap.bibtextools import *
+from vamdctap.generators import makeSourceRefs
+
+
+#def returnXMLSource(SourcesIDs, NodeName):
+#    SourceTypePrefix = u"B"
+#    CompletePrefix = SourceTypePrefix + NodeName + u"-"
+#    result = u""
+#    for s in SourcesIDs:
+#        result += u"<SourceRef>" + CompletePrefix + str(s) + u"</SourceRef>"
+#    if len(result)>0: result += u"\n"
+#    return result
 
 
 
@@ -77,8 +81,8 @@ class NormalMode(models.Model):
         else:
             self.displacementvectors = None
     def returnXML(self, elements, method, RefSource, NodeName): 
-        result = ""
-        result += '<NormalMode id="V' + NodeName + "-" + str(self.normalmodeidtype) + '"'
+
+        result = '<NormalMode id="V' + NodeName + "-" + str(self.normalmodeidtype) + '"'
         if self.pointgroupsymmetry:
             result += ' pointGroupSymmetry="' + self.pointgroupsymmetry + '"'
         if method:
@@ -105,7 +109,7 @@ class NormalMode(models.Model):
         return result
         
 class MolecularChemicalSpecies():
-    def __init__(self, moleculestructure, MoleculeStructureMethod, MoleculeStructureSourceRef, normalmodes, NormalModesMethod, NormalModesSourceRef, NodeName):
+    def __init__(self, moleculestructure, MoleculeStructureMethod, MoleculeStructureSourceRef, normalmodes, NormalModesMethod, NormalModesSourceRef):
         #self.moleculestructure = moleculestructure.replace("<molecule>", '<cml xmlns="http://www.xml-cml.org/schema" xsi:schemaLocation="http://www.xml-cml.org/schema ../../schema.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">').replace("</molecule>", "</cml>")
         self.moleculestructure = moleculestructure
         self.MoleculeStructureMethod = MoleculeStructureMethod
@@ -146,12 +150,23 @@ class Bibliography(models.Model):
     def __unicode__(self):
         return self.title + str(self.authors.all())
     def XML(self):
-        NODEID = u"OACagliari"
+        """
+        This function replace the source ID with the database ID Bibliography record
+        and return the hard XML code by the function BibTeX2XML
+        """
+        try: NODEID = dictionaries.RETURNABLES['NodeID']
+        except: NODEID = 'PleaseFillTheNodeID'
         if self.bibtex:
             r = r"sourceID=\"B"+ NODEID + r"-.*\""
             newidvalue = u'sourceID="B'+ NODEID + u"-" + str(self.bib_id) + u'"'
             result = re.sub(r, newidvalue,  BibTeX2XML( self.bibtex ))
             return unicode(result)
+    #def XML(self):
+    #    """
+    #    This function return the hard XML code by the function BibTeX2XML
+    #    """
+    #    if self.bibtex:
+    #        return BibTeX2XML( self.bibtex )
     def bibtextoref(self):
         if self.bibtex:
             from pybtex.database.input import bibtex
@@ -168,19 +183,6 @@ class Bibliography(models.Model):
             if "doi" in bib_data.entries[bib_data.entries.keys(0)].fields:
                 tmp_doi = bib_data.entries[bib_data.entries.keys(0)].fields['doi']
             return BibRef(self.bib_id, "book", "SourceName", "2011", [Author("Author01", None), Author("Author02", None)], tmp_title)
-        
-#journal = "Computer Physics Communications",
-
-#number = "9",
-
-#year = "2010",
-
-#issn = "0010-4655",
-
-#url = "http://www.sciencedirect.com/science/article/pii/S0010465510001438",
-
-#author = "M. Valiev and E.J. Bylaska and N. Govind and K. Kowalski and T.P. Straatsma and H.J.J. Van Dam and D. Wang and J. Nieplocha and E. Apra and T.L. Windus and W.A. de Jong",
-
 
 
 
@@ -561,9 +563,10 @@ class Geometries(models.Model):
         db_table = u'geometries'
     def __unicode__(self):
         return str(self.geometry)
-    def returncmlstructure(self, SourceRefIDs, NodeName):
+    def returncmlstructure(self, SourceRefIDs):
         #this function return the geometry stored in self.geometry (cml format)
-        return returnXMLSource(SourceRefIDs, NodeName) + self.geometry 
+        #return returnXMLSource(SourceRefIDs, NodeName) + self.geometry 
+        return makeSourceRefs(SourceRefIDs) + self.geometry 
     def returnelementslist(self):
         #this function return the list of elements
         result = []
@@ -658,10 +661,6 @@ class MolecularSpecies(models.Model):
             for e in elements_species:
                 weight += e.element.standard_atomic_weight
         return weight
-    #def NormalModes(self):
-    #    return self.normalmodes
-    #def XML(self):
-    #    return self.normalmodes
         
         
 class ElementSpecies(models.Model):
