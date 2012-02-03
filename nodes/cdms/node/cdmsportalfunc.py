@@ -7,7 +7,7 @@ from models import *
 def getSpeciesList(spids = None):
     """
     """
-    molecules = Species.objects.filter(origin=5,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic')
+    molecules = Species.objects.filter(origin=5,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
 
     if spids:
         molecules = molecules.filter(pk__in=spids)
@@ -27,8 +27,8 @@ def getSources4specie(id):
     """
 
     # get Source-Ids (rId's)
-    slist = SourcesIDRefs.objects.filter(eId=id).distinct()
-    sourceids = slist.values_list('rId',flat=True)
+    slist = SourcesIDRefs.objects.filter(specie=id).distinct()
+    sourceids = slist.values_list('source',flat=True)
 
     # get Sources
     sources = Sources.objects.filter(pk__in=sourceids)
@@ -40,7 +40,7 @@ def getDatasets4specie(id):
     """
 
     # get Datasets
-    datasets = Datasets.objects.filter(species=id)
+    datasets = Datasets.objects.filter(specie=id)
     return datasets
 
 
@@ -197,6 +197,7 @@ def checkQuery(postvars):
     if ('T_SEARCH_INT' in postvars) & (postvars['T_SEARCH_INT']>-10):
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Intensity (lg-units) > %s </a></li>" % postvars['T_SEARCH_INT']
        # tapxsams += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
+        tapcdms += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
     else:
         htmlcode += """<a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\"> 
                        <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
@@ -252,11 +253,6 @@ def applyStylesheet(inurl, xsl = None):
     """
     Applies a xslt-stylesheet to the given url
     """
-    # from django.shortcuts import render_to_response
-    # from django.template import RequestContext
-    # from django.http import HttpResponseRedirect, HttpResponse
-    # from django.forms import Form,FileField,URLField,TextInput
-    # from django.core.exceptions import ValidationError
     from django.conf import settings
     from lxml import etree as e
     if xsl:
@@ -280,12 +276,6 @@ def applyStylesheet(inurl, xsl = None):
         filename = settings.TMPDIR+"/"+row[p+9:].rstrip()
 
     local_file = open(filename, "w")
-#    for row in data.info().headers:
-#        local_file.write(row)
-#    local_file.write(str(data.info().headers))
-
-
-
     local_file.write(data.read())
     local_file.close()
 
@@ -315,18 +305,6 @@ def getHtmlNodeList():
         nodes = []
 
 
-#    for node in nodes:
-#        response += """<fieldset> <div class='vamdcnode'>
-#                     <h4> %s </h4>
-#                     <div class='nodeurl' id='%s'>%s </div>
-#                     </div></fieldset>""" % (node["name"], node["name"], node["url"])
-#    response += "<table class='full'>"
-#    response += """<thead><tr>
-#                    <th> Status </th><th> # Species </th><th> # Molecules </th><th> # States </th><th> # Trans. </th><th> % Truncation </th>
-#                   </tr></thead>
-#                   """ 
-
-#    response += "<tbody>"
     response += "<div class='vlist'><ul>"
 
     response += """<li id='nodehead' class='' style='border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
@@ -342,16 +320,7 @@ def getHtmlNodeList():
                       </li>""" % ("Database","# Species","# Molecules","# States","# Trans","% Trunc.")
 
     for node in nodes:
-#        response += """<tr>
-#                     <th colspan='6'> <strong>%s</strong>  </th>
-#                       </tr>
-#                    """ % (node["name"])
 
-#        response += """<div id='node%s' class='vamdcnode'><tr id='tr%s' class='nothing'><td class='nodeurl' style='display:none' id='%s'>%s </td><td class='status'></td>
-#                     <td class='numspecies'> %s</td><td class='nummols'> %s</td><td class='numstates'> %s</td><td class='numradtrans'> %s</td><td class='numtrunc'> %s</td> <td class='species'></td> 
-#                      </tr></div>""" % (node["name"],node["name"],node["name"], node["url"],"0","0","0","0","0")
-#        response += """<strong>%s</strong>
-#                    """ % (node["name"])
         response += """<li id='node%s' class='vamdcnode' style='width:%s;border-width:1px;border-style:solid;border-color:black;padding:0.5em;margin:5px;background-color:#fafaff'>
                            <div class='nodeurl' style='display:none' id='%s'>%s </div>
                            <div class='url' style='display:none'></div>
@@ -367,8 +336,6 @@ def getHtmlNodeList():
                            <div class='species' style='clear:both'></div> 
                       </li>""" % (node["name"],u'98%',node["name"], node["url"],node["name"],"0","0","0","0","0")
 
-#    response += "</tbody>"
-#    response += "</table>"
     response += "</ul></div>"
     return response
 
@@ -386,7 +353,6 @@ def doHeadRequest(url, timeout = 20):
     try:
         conn = HTTPConnection(urlobj.netloc, timeout = timeout)
         conn.request("HEAD", urlobj.path+"?"+urlobj.query)
-        # conn.request("HEAD", "/DjCDMS/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT+All+WHERE++MoleculeInchiKey='QGZKDVFQNNGYKY-HNQPUXNCSA-N'")
         res = conn.getresponse()
     except:
         # error handling has to be included
@@ -414,6 +380,7 @@ def getNodeStatistic(baseurl, inchikey, url = None):
     url=url.replace('xspcat','XSAMS')
     url=url.replace('comfort','XSAMS')
     url=url.replace('spcat','XSAMS')
+    url=url.replace('mrg','XSAMS')
     
     
     if not url:
@@ -426,12 +393,11 @@ def getNodeStatistic(baseurl, inchikey, url = None):
     
     response = "<ul>"
     if len(vamdccounts)>0:
-        #response += "<a href='"+url+"'>"
+
         for item in vamdccounts:
             response += "<li>%s: %s " % item
             vc[item[0].replace('-','')]=item[1]
-            #response += "</a>"
-        #response += "<a onclick=\"$('#queryresult').html('Processing ...');docShowSubpage('form_result');ajaxQuery('ajaxQuery','"+url+"')\"> Show Data </a>"
+
         response += "<li><INPUT TYPE=\"button\" NAME=\"T_SHOW\" ONCLICK=\"$('#queryresult').html('Processing ...');docShowSubpage('form_result');ajaxQuery('ajaxQuery','"+url+"')\" VALUE = \"Show Data\" >"
         response += "<INPUT TYPE=\"button\" NAME=\"T_SHOW\" ONCLICK=\""+url+"\" VALUE = \"Download Data\" ></li>"
     else:
@@ -439,10 +405,7 @@ def getNodeStatistic(baseurl, inchikey, url = None):
 
     response += "</ul>"
     
-    # response += "<br><br>"+ baseurl + query
     return response, vc
-    # return "Fetching Data for url %s and inchikey %s " % (baseurl, inchikey)
-
 
 
 def getspecies(url):
@@ -450,10 +413,6 @@ def getspecies(url):
     from lxml import etree
     from urllib2 import urlopen
 
-    #url = "http://batz.lpma.jussieu.fr:8080/tapservice_11_10/TAP/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT+ALL+WHERE+%28%28+reactant1.MoleculeInchiKey%3D%27UGFAIRIUMAVXCW-ZCWHFVSRSA-N%27+OR++reactant1.MoleculeInchiKey%3D%27UGFAIRIUMAVXCW-CRWWGTSDSA-N%27+OR++reactant1.MoleculeInchiKey%3D%27UGFAIRIUMAVXCW-FNPQUGRCSA-N%27+OR++reactant1.MoleculeInchiKey%3D%27UGFAIRIUMAVXCW-DZEMCFCNSA-N%27+OR++reactant1.MoleculeInchiKey%3D%27UGFAIRIUMAVXCW-RGIGPVFXSA-N%27+OR++reactant1.MoleculeInchiKey%3D%27UGFAIRIUMAVXCW-ZDOIIHCHSA-N%27%29%29"
-
-    #url = "http://batz.lpma.jussieu.fr:8080/tapservice_11_10/TAP/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT+SPECIES+WHERE+moleculestoichiometricformula+%3D+''"
-    #url = "http://batz.lpma.jussieu.fr:8080/tapservice_11_10/TAP/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT+SPECIES+WHERE+moleculestateenergy>0"
     url=url.replace('rad3d','XSAMS')
     url=url.replace('png','XSAMS')
     url=url.replace('xspcat','XSAMS')

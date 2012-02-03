@@ -49,6 +49,12 @@ class QUERY(object ):
         try: self.minint = self.data.get('T_SEARCH_INT',-10)
         except: self.freqto = -10
 
+        try: self.orderby = self.data.get('T_SORT','')
+        except: self.orderby = ''
+
+        try: self.explines = self.data.get('T_SHOWEXPLINES','merge')
+        except: self.explines = 'merge'
+
         if not self.format:
             try: self.format = self.data.get('T_TYPE','XSAMS')
             except: self.format = 'XSAMS'
@@ -66,6 +72,9 @@ class QUERY(object ):
             except:
                 self.query = ""
                 self.url = None
+
+        if len(self.orderby)>0 and 'ORDERBY' not in self.url:
+            self.url += '&ORDERBY=%s' % self.orderby
             
         try:
             self.speciesIDs = self.data.getlist('speciesIDs')
@@ -73,7 +82,10 @@ class QUERY(object ):
             self.speciesIDs = []
 
         if self.format == 'spcat':
-            self.url = self.url.replace('XSAMS','spcat').replace("ALL","RadiativeTransitions")
+            if self.explines == 'merge':
+                self.url = self.url.replace('XSAMS','mrg').replace("ALL","RadiativeTransitions")
+            else:
+                self.url = self.url.replace('XSAMS','spcat').replace("ALL","RadiativeTransitions")
 
         # this is slightly different to spcat and uses correct qn labels
         if self.format == 'comfort':
@@ -132,13 +144,18 @@ def selectSpecie(request):
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
     return render_to_response('cdmsportal/selectSpecies.html', c)
 
-def catalog(request):
+def catalog(request, id=None):
     """
     Creates the documentation page for a specie
     """
 
-    # get the species id from posted values
-    id = request.POST.get("T_EID",0)
+    if id == None:
+        # get the species id from posted values
+        id = request.POST.get("T_EID",0)
+        # if nothing has been posted, get the first specie by tag-number
+        if id == 0:
+            specie = Species.objects.all().order_by('speciestag')[0]
+            id = specie.id
 
     # query specie from database
     specie = getSpecie(id)
@@ -321,6 +338,7 @@ def ajaxRequest(request):
             url=url.replace('rad3d','XSAMS')
             url=url.replace('xspcat','XSAMS')
             url=url.replace('spcat','XSAMS')
+            url=url.replace('mrg','XSAMS')
             url=url.replace('png','XSAMS')
             url=url.replace('comfort','XSAMS')
             print >> sys.stderr, "SPECQUERY: "+url
@@ -411,13 +429,13 @@ def specie(request,id=None):
         form = SpecieForm()
 
     if specie and specie.id:
-        datasets = Datasets.objects.filter(species = specie.id)
+        datasets = Datasets.objects.filter(specie = specie.id)
         files = Files.objects.filter(specie = specie.id)
-        atoms = AtomArray.objects.filter(eId = specie.id)
-        bonds = BondArray.objects.filter(eId = specie.id)
-        referenceids = SourcesIDRefs.objects.filter(eId = specie.id).values('referenceid')
+        atoms = AtomArray.objects.filter(specie = specie.id)
+        bonds = BondArray.objects.filter(specie = specie.id)
+        referenceids = SourcesIDRefs.objects.filter(specie = specie.id).values('referenceid')
         references = Sources.objects.filter(pk__in=referenceids)
-        filters = QuantumNumbersFilter.objects.filter(species = specie.id)
+        filters = QuantumNumbersFilter.objects.filter(specie = specie.id)
 
         # query parameters from database
         rotationalConstants = Parameter.objects.filter(specie = specie.id, type = "Rotational Constant").order_by('parameter')
@@ -460,7 +478,7 @@ def filters(request,id = None):
         
         try:
             #filters = QuantumNumbersFilter.objects.filter(species=specieid)
-            filters = QuantumNumbersFilter.objects.filter(species=id)
+            filters = QuantumNumbersFilter.objects.filter(specie=id)
             formset = FilterFormSet(queryset = filters)
         except Species.DoesNotExist:
             formset = FilterFormSet()

@@ -33,3 +33,10 @@
 
 /* import styles for accessible tabs plugin */
 @import url(/yaml/add-ons/accessible-tabs/tabs.css);
+
+/* YAML 4.0 */
+/* @import url(/yaml40/core/base.css); */
+/* @import url(/yaml40/forms/gray-theme.css); */
+
+/* @import url(/yaml40/navigation/vlist.css); */
+/* @import url(/yaml40/navigation/hlist.css); */

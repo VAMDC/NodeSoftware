@@ -59,7 +59,7 @@ def get_species_and_states(transs, addStates=True):
     - Number of states
     """
 
-    spids = set( transs.values_list('species_id',flat=True).distinct() )
+    spids = set( transs.values_list('specie_id',flat=True).distinct() )
     # Species object for CDMS includes Atoms AND Molecules. Both can only
     # be distinguished through numberofatoms-field
     atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic')
@@ -74,7 +74,7 @@ def get_species_and_states(transs, addStates=True):
         for specie in chain(atoms , molecules):
             # Get distinct list of States which
             # occur as lower or upper state in transitions
-            subtranss = transs.filter(species=specie)
+            subtranss = transs.filter(specie=specie)
             up=subtranss.values_list('upperstateref',flat=True)
             lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
@@ -96,16 +96,23 @@ def get_sources(transs, methods = []):
     """
 
     # Get the list of species (entries). One method is generated for each specie
-    ids = set( transs.values_list('species_id',flat=True) )
-    slist = SourcesIDRefs.objects.filter(eId__in=ids).distinct()
+    ids = set( transs.values_list('specie_id',flat=True) )
+    slist = SourcesIDRefs.objects.filter(specie__in=ids).distinct()
+
+    sexplist = slist.filter(transitionexp__gt=0)
 
     # Loop over species list and get sources
-    for src in slist.values_list('eId',flat=True):
-        mesrc=SourcesIDRefs.objects.filter(Q(eId=src)).distinct().values_list('rId',flat=True)
+    for src in slist.values_list('specie',flat=True):
+        mesrc=SourcesIDRefs.objects.filter(Q(specie=src)).distinct().values_list('source',flat=True)
         this_method = Method(src,src,'derived','derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data',mesrc)
         methods.append(this_method)
+
+    # Loop over species list and get sources
+    for src in sexplist.values_list('source',flat=True):
+        this_method =  Method('EXP'+str(src),src,'experimental','experimental',src)
+        methods.append(this_method)
         
-    sourceids = slist.values_list('rId',flat=True)
+    sourceids = slist.values_list('source',flat=True)
 
     return Sources.objects.filter(pk__in = sourceids), methods
     
@@ -125,7 +132,7 @@ def attach_exp_frequencies(transs):
     """
     methodrefs = []
     methods = []
-
+    
     # Loop over calculated transitions (Predictions)
     # and attach Experimental Frequencies
     for trans in transs:
@@ -135,7 +142,7 @@ def attach_exp_frequencies(transs):
         trans.units=[trans.unit]
         trans.uncertainties=[trans.uncertainty]
         trans.refs=[""]
-        trans.methods=[trans.species.id]
+        trans.methods=[trans.specie.id]
         
         exptranss = TransitionsExp.objects.filter(species=trans.species,
                                                   qnup1=trans.qnup1,
@@ -156,7 +163,7 @@ def attach_exp_frequencies(transs):
             trans.units.append(exptrans.unit)
             trans.uncertainties.append(exptrans.uncertainty)
             # get sources
-            s= exptrans.sources.all().values_list('rId',flat=True)
+            s= exptrans.sources.all().values_list('source',flat=True)
             trans.refs.append(s)
 
             method = "EXP" + "-".join(str(source) for source in s)
@@ -174,6 +181,8 @@ def attach_exp_frequencies(transs):
 
 
 
+
+
 def setupResults(sql):
     """
     This method queries the database with respect to the sql-query
@@ -186,15 +195,16 @@ def setupResults(sql):
     addTrans = (not sql.requestables or 'RadiativeTransitions' in sql.requestables)
 
     # Query the database and get calculated transitions (TransitionsCalc)
-    transs = TransitionsCalc.objects.filter(q,species__origin=5,
-                                            species__archiveflag=0,
+    transs = TransitionsCalc.objects.filter(q,specie__origin=5,
+                                            specie__archiveflag=0,
                                             dataset__archiveflag=0) #.order_by('frequency')
 
     # Attach experimental transitions (TransitionsExp) to transitions
     # and obtain their methods. Do it only if transitions will be returned
     if addTrans:
         transs = transs.order_by('frequency')
-        transs, methods = attach_exp_frequencies(transs)
+        #transs, methods = attach_exp_frequencies(transs)
+        methods=[]
     else:
         methods=[]
         
@@ -244,10 +254,11 @@ def returnResults(tap, LIMIT=None):
 
     # ADD additional restricables for this output method which are
     # only meaningful for CDMS
-    #RESTRICTABLES['dataset']='dataset'
     RESTRICTABLES.update(CDMSONLYRESTRICTABLES)
 
-    if tap.format != 'spcat' and tap.format!='png' and tap.format!='list' and tap.format!='xspcat':
+    SUPPORTED_FORMATS=['spcat','png','list','xspcat','mrg']
+
+    if tap.format not in SUPPORTED_FORMATS:
         emsg = 'Currently, only FORMATs PNG, SPCAT and XSAMS are supported.\n'
         return tapServerError(status=400, errmsg=emsg)
 
@@ -255,17 +266,29 @@ def returnResults(tap, LIMIT=None):
         speclist=specieslist()
         response = HttpResponse(speclist, mimetype='text/plain')
         return response
-    
+    LOG('And now some logs:')
+    LOG(tap.data)
+        
+    LOG(tap.parsedSQL)
+
+#    for i in tap.parsedSQL:
+#        if 'getonlycalc' in i:
+#            LOG(i)
+#        else:
+#            psql.append(i)
+#            LOG(i)
+#        c+=1
 
     q = sql2Q(tap.parsedSQL)
     LOG(q)
+
     # use tap.parsedSQL.columns instead of tap.requestables
     # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
-
-    transs = TransitionsCalc.objects.filter(q,species__origin=5,species__archiveflag=0,dataset__archiveflag=0) 
+    
+    transs = TransitionsCalc.objects.filter(q,specie__origin=5,specie__archiveflag=0,dataset__archiveflag=0) 
     ntrans = transs.count()
-    LOG(ntrans)
+
     if LIMIT is not None and ntrans > LIMIT:
         # we need to filter transs again later, so can't take a slice
         #transs = transs[:LIMIT]
@@ -278,26 +301,32 @@ def returnResults(tap, LIMIT=None):
 #    print 'Truncated to %s %%' % percentage
 
 
-    
+    # Prepare Transitions
     if (col=='ALL' or 'radiativetransitions' in [x.lower() for x in col]):
-#    if ('radiativetransitions' in tap.requestables):
         LOG('TRANSITIONS')
-        transitions = transs
+        orderby = tap.data.get('ORDERBY','frequency')
+        if ',' in orderby:
+            orderby=orderby.split(',')
+            transitions = transs.order_by(*orderby) 
+        else:            
+            transitions = transs.order_by(orderby)
+            
     else:
         LOG('NO TRANSITIONS')
         transitions = []
 
-        
+
+    # Prepare States if requested
     if (col=='ALL' or 'states' in [x.lower() for x in col] ):
-#    if ('states' in tap.requestables ):
         LOG('STATES')
-        states = States.objects.filter(q,species__origin=5,dataset__archiveflag=0)
+        orderby = tap.data.get('ORDERBY','energy')
+        states = States.objects.filter(q,specie__origin=5,dataset__archiveflag=0).order_by(orderby)
     else:
         LOG('NO STATES')
         states = []
 
 
-    if tap.format=='spcat' or tap.format=='xspcat':
+    if tap.format in ('spcat','xspcat','mrg'):
         generator = gener(transitions, states, format=tap.format)
         response = HttpResponse(generator, mimetype='text/plain')
     else:
@@ -307,6 +336,7 @@ def returnResults(tap, LIMIT=None):
             response = plotStickSpec(transitions)
         
     return response
+
 
 def GetStringValue(value):
     if value == None: 
@@ -320,11 +350,23 @@ def GetNumericValue(value):
     else:
         return value
     
+def formatqn(value):
+    if value == None:
+        return ''
+    elif value > 99 and value < 360:
+        return chr(55+value/10)+ "%01d" % ( value % 10)
+    elif value < -9 and value > -260:
+        return chr(95-(value-1)/10)+ "%01d" % -( value % -10)
+    else:
+        return str(value)
 
 def gener(transs=None, states=None, format='spcat'):
 
     if format=='xspcat':
         for trans in xCat(transs):
+            yield trans
+    elif format == 'mrg':
+        for trans in Mrg(transs):
             yield trans
     else:
         for trans in Cat(transs):
@@ -345,30 +387,77 @@ def Cat(transs):
         yield '%7d' % trans.speciestag
         
         yield '%4d' % trans.qntag
-        yield '%2s' % GetStringValue(trans.qnup1)
-        yield '%2s' % GetStringValue(trans.qnup2)
-        yield '%2s' % GetStringValue(trans.qnup3)
-        yield '%2s' % GetStringValue(trans.qnup4)
-        yield '%2s' % GetStringValue(trans.qnup5)
-        yield '%2s' % GetStringValue(trans.qnup6)
+        yield '%2s' % formatqn(trans.qnup1)
+        yield '%2s' % formatqn(trans.qnup2)
+        yield '%2s' % formatqn(trans.qnup3)
+        yield '%2s' % formatqn(trans.qnup4)
+        yield '%2s' % formatqn(trans.qnup5)
+        yield '%2s' % formatqn(trans.qnup6)
 
-        yield '%2s' % GetStringValue(trans.qnlow1)
-        yield '%2s' % GetStringValue(trans.qnlow2)
-        yield '%2s' % GetStringValue(trans.qnlow3)
-        yield '%2s' % GetStringValue(trans.qnlow4)
-        yield '%2s' % GetStringValue(trans.qnlow5)
-        yield '%2s' % GetStringValue(trans.qnlow6)
+        yield '%2s' % formatqn(trans.qnlow1)
+        yield '%2s' % formatqn(trans.qnlow2)
+        yield '%2s' % formatqn(trans.qnlow3)
+        yield '%2s' % formatqn(trans.qnlow4)
+        yield '%2s' % formatqn(trans.qnlow5)
+        yield '%2s' % formatqn(trans.qnlow6)
 
-        yield '%s' % trans.species.name
+        yield '%s' % trans.specie.name
         yield '\n'
+
+
+def Mrg(transs):
+    """
+    """
+    
+    for trans in transs:
+        trans.attach_exp_frequencies()
+
+        speciestag = trans.speciestag
+
+        if len(trans.frequencies)>1:
+            speciestag=-speciestag
+            frequency = trans.frequencies[1]
+            uncertainty = trans.uncertainties[1]
+        else:
+            frequency = trans.frequency
+            uncertainty = trans.uncertainty
+            
+        yield '%13.4lf' % frequency
+        yield '%8.4lf' % uncertainty
+        yield '%8.4lf' % trans.intensity
+        
+        yield '%2d' % trans.degreeoffreedom
+        yield '%10.4lf' % trans.energylower
+
+        yield '%3d' % trans.upperstatedegeneracy
+        yield '%7d' % speciestag
+        
+        yield '%4d' % trans.qntag
+        yield '%2s' % formatqn(trans.qnup1)
+        yield '%2s' % formatqn(trans.qnup2)
+        yield '%2s' % formatqn(trans.qnup3)
+        yield '%2s' % formatqn(trans.qnup4)
+        yield '%2s' % formatqn(trans.qnup5)
+        yield '%2s' % formatqn(trans.qnup6)
+
+        yield '%2s' % formatqn(trans.qnlow1)
+        yield '%2s' % formatqn(trans.qnlow2)
+        yield '%2s' % formatqn(trans.qnlow3)
+        yield '%2s' % formatqn(trans.qnlow4)
+        yield '%2s' % formatqn(trans.qnlow5)
+        yield '%2s' % formatqn(trans.qnlow6)
+
+        yield '%s' % trans.specie.name
+        yield '\n'
+
 
 
 def xCat(transs):
     # qnlabels = ["J","N","Ka","Kc","v"]
     qnlabels = []
-    tagarray = transs.values_list('species','qntag').distinct()
+    tagarray = transs.values_list('specie','qntag').distinct()
     for specie, qntag in tagarray:
-        filter = QuantumNumbersFilter.objects.filter(species = specie, qntag=qntag).order_by('order')
+        filter = QuantumNumbersFilter.objects.filter(specie= specie, qntag=qntag).order_by('order')
         qnlabels = chain(qnlabels, filter.values_list('label','order'))
     
 #    qnlabels = set(qnlabels)
@@ -463,7 +552,7 @@ def xCat(transs):
         yield '\n'
 
         # QUERY and Display Experimental values
-        exptranss = TransitionsExp.objects.filter(species=trans.species,
+        exptranss = TransitionsExp.objects.filter(specie=trans.specie,
                                             qnup1=trans.qnup1,
                                             qnlow1=trans.qnlow1,
                                             qnup2=trans.qnup2,
@@ -480,9 +569,9 @@ def xCat(transs):
 #            yield '    %20s' % (exptrans.comment if exptrans.comment else "")
 
             yield '   '
-            sources = SourcesIDRefs.objects.filter(fId=exptrans.id)
+            sources = SourcesIDRefs.objects.filter(transitionexp=exptrans.id)
             for source in sources:
-                yield '[%s] ' % source.referenceid.rId
+                yield '[%s] ' % source.referenceid.id
 
             yield '</small>\n'
             
@@ -504,7 +593,7 @@ def Egy(states):
         yield '%3s' % GetStringValue(state.qn5)
         yield '%3s' % GetStringValue(state.qn6)
 
-        yield '%s' % GetStringValue(state.species.name)
+        yield '%s' % GetStringValue(state.specie.name)
         yield '%3s' % GetStringValue(state.degeneracy)          
         yield '%4s' % GetStringValue(state.nuclearspinisomer)
         yield '%7s' % GetStringValue(state.nuclearstatisticalweight)
@@ -528,7 +617,7 @@ def plotStickSpec(transs):
     # bx=fig.add_subplot(2,1,1)
 
 
-    spids = set( transs.values_list('species_id',flat=True) )
+    spids = set( transs.values_list('specie_id',flat=True) )
 
     if (len(spids)>0): 
             
@@ -538,7 +627,7 @@ def plotStickSpec(transs):
         bars=[]
         for specie in species:
             spidsname.append(specie.name)
-            subtranss = transs.filter(species=specie)
+            subtranss = transs.filter(specie=specie)
             intensities = [10.0**trans.intensity for trans in subtranss]
             frequencies = [trans.frequency for trans in subtranss]
             #bars.append( ax.bar(frequencies, intensities, color=cm.jet(1.*i/len(spids)))[0] )
@@ -587,14 +676,14 @@ def plotLevelDiagram(states):
     ax.set_ylabel("Energy [cm-1]")
 
 
-    spids = set( states.values_list('species_id',flat=True) )
+    spids = set( states.values_list('specie_id',flat=True) )
     spidsname = []
     species = Species.objects.filter(pk__in=spids) #,ncomp__gt=1)
     i=0
     plots=[]
     for specie in species:
         spidsname.append(specie.name)
-        substates = states.filter(species=specie)
+        substates = states.filter(specie=specie)
 
         for state in states:
             pl = ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color=matplotlib.cm.jet(1.*i/len(spids)))

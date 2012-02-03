@@ -115,7 +115,8 @@ RETURNABLES = {
 'RadTransUpperStateRef':'RadTran.upperstateref_id',
 'RadTransLowerStateRef':'RadTran.lowerstateref_id',
 #'RadTransFrequency':'RadTran.get_exp_transitions()', #frequencyArray',
-'RadTransFrequency':'RadTran.frequencies',
+'RadTransFrequency':'RadTran.attach_exp_frequencies()',
+#'RadTransFrequency':'RadTran.frequencies',
 'RadTransFrequencyUnit':'RadTran.units',
 'RadTransFrequencyAccuracy':'RadTran.uncertainties',
 'RadTransFrequencyRef':'RadTran.refs',
@@ -137,7 +138,7 @@ RETURNABLES = {
 
 'SourceAuthorName':'Source.getAuthorList()',
 'SourceCategory':'Source.category',
-'SourceID':'Source.rId',
+'SourceID':'Source.id',
 'SourceName':'Source.name',
 'SourcePageBegin':'Source.pageBegin',
 'SourcePageEnd':'Source.pageEnd',
@@ -208,11 +209,14 @@ RESTRICTABLES = {
 'RadTransWavenumber':('frequency',invcm2MHz),
 #'SourceCategory':'',
 #'SourceYear':'',
-'MoleculeSpeciesID':'species',
+'MoleculeSpeciesID':'specie',
 }
 
 CDMSONLYRESTRICTABLES = {
-# 'MoleculeSpeciesID':'species',
- 'dataset':'dataset',
- 'hfsflag':'hfsflag',
+    # 'MoleculeSpeciesID':'species',
+    'dataset':'dataset',
+    'hfsflag':'hfsflag',
+    'getonlycalc':'getonlycalc',
+    'geteinsteina':'geteinsteina',
+
 }
