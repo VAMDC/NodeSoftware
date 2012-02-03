@@ -722,13 +722,13 @@ def XsamsAtoms(Atoms):
 # MOLECULES START
 def makeNormalMode(G):
     
-    elstate = "S%s-%s" % (NODEID, G('MoleculeNormalModeElectronicState'))
+    elstate = G('MoleculeNormalModeElectronicState')
     pointgr = G('MoleculeNormalModePointGroupSymmetry')
-    id = "V%s-%s" % (NODEID, G('MoleculeNormalModeID'))
+    id = G('MoleculeNormalModeID')
     extraAttr = {}
-    if elstate: extraAttr['electronicStateRef'] = elstate
+    if elstate: extraAttr['electronicStateRef'] = "S%s-%s" % (NODEID, elstate)
     if pointgr: extraAttr['pointGroupSymmetry'] = pointgr
-    if id: extraAttr['id'] = id
+    if id: extraAttr['id'] = "V%s-%s" % (NODEID, id)
     result = [ makePrimaryType('NormalMode', 'MoleculeNormalMode', G, extraAttr=extraAttr) ]
     result.append( makeDataType('HarmonicFrequency','MoleculeNormalModeHarmonicFrequency',G) )
     result.append( makeDataType('Intensity','MoleculeNormalModeIntensity',G) )
