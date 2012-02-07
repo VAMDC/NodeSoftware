@@ -160,8 +160,8 @@ sub bestWavelength {
 sub bestEnergy {
 	my $experimental = shift @_;
 	my $theoretical = shift @_;
-        return $experimental if $experimental >= 0.0;
-	return $theoretical if $theoretical >= 0.0;
+        return ($experimental, 'EXP') if $experimental >= 0.0;
+	return ($theoretical, 'THEO') if $theoretical >= 0.0;
 	return -1.0;
 }
 
