@@ -38,7 +38,7 @@ REQUESTABLES = map(lower, [\
  'NonRadiativeTransitions',
  'Particles',
  'Processes',
- 'RadiativeCrossections',
+ 'RadiativeCrossSections',
  'RadiativeTransitions',
  'Solids',
  'Sources',

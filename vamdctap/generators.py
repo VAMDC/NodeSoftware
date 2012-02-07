@@ -1857,7 +1857,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     yield '<Processes>\n'
     yield '<Radiative>\n'
 
-    if not requestables or 'radiativecrossections' in requestables:
+    if not requestables or 'radiativecrosssections' in requestables:
         try:
             for RadCros in XsamsRadCross(RadCross):
                 yield RadCros
