@@ -1,7 +1,9 @@
 from django.db import models
+from django.conf import settings
 from dictionaries import RETURNABLES
 import datetime
 import re
+import os
 
 NODEID = RETURNABLES['NodeID']
 source_prefix = 'B%s-' % NODEID
@@ -352,7 +354,14 @@ class Xsc(models.Model):
         sigma_name = sigma_name.replace('.xsc', '.sigma')
         #output_files.append({'filename': sigma_name, 'desc': 'absorption'\
         #                        ' cross section list'})
-        xsec_xml.append('    <DataFile>%s</DataFile>' % sigma_name)
+        #xsec_xml.append('    <DataFile>%s</DataFile>' % sigma_name)
+
+        xsec_xml.append('    <DataList count="%d">' % self.n)
+        fi = open(os.path.join(settings.RESULTSPATH, sigma_name), 'r')
+        xsec_xml.extend([x.rstrip() for x in fi.readlines()])
+        fi.close()
+        xsec_xml.append('    </DataList>')
+
         xsec_xml.append('    </Y>')
         xsec_xml.append('    <Species>')
         xsec_xml.append('    <SpeciesRef>XHSHD-%s</SpeciesRef>'

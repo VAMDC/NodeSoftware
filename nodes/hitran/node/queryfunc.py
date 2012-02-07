@@ -111,8 +111,8 @@ def ChemicalName2MoleculeInchiKey(op, foo):
         return None
     molecules = Molecule.objects.filter(pk__in=moleculename_ids)
     isos = Iso.objects.filter(molecule__in=molecules)
-    inchikeys = isos.values_list('InChIKey_explicit', flat=True)
-    q = ['MoleculeInchiKey', 'in', '(']
+    inchikeys = isos.values_list('InChIKey', flat=True)
+    q = ['InchiKey', 'in', '(']
     for inchikey in inchikeys:
         q.append(inchikey)
     q.append(')')
@@ -206,7 +206,7 @@ def Pascals2Torr(op, foo):
     q = ['Pressure', op, str(foop)]
     return q
         
-def setupResults(sql, LIMIT=None):
+def setupResults(sql):
     # rather than use the sql2Q method:
     #q = sqlparse.sql2Q(sql)
 
@@ -240,20 +240,21 @@ def setupResults(sql, LIMIT=None):
     if 'radiativecrossections' in sql.requestables:
         return setupXsecResults(q)
     
-    transitions = Trans.objects.filter(q) 
+    transitions = Trans.objects.filter(q).order_by('nu')
     ntrans = transitions.count()
-    if LIMIT is not None and ntrans > LIMIT:
+    if settings.TRANSLIM is not None and ntrans > settings.TRANSLIM:
         # we need to filter transitions again later, so can't take a slice
-        #transitions = transitions[:LIMIT]
+        #transitions = transitions[:settings.TRANSLIM]
         # so do this:
-        numax = transitions[LIMIT].nu
+        numax = transitions[settings.TRANSLIM].nu
         transitions = Trans.objects.filter(q, Q(nu__lte=numax))
-        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+        percentage = '%.1f' % (float(settings.TRANSLIM)/ntrans * 100)
+        ntrans = transitions.count()
         print 'Results truncated to %s %%' % percentage
     else:
         percentage = '100'
         print 'Results not truncated'
-    print 'LIMIT is', LIMIT
+    print 'TRANSLIM is', settings.TRANSLIM
     print 'ntrans =',ntrans
 
     ts = time.time()
@@ -356,7 +357,7 @@ def setupXsecResults(q):
             'Environments': xsec_envs,
            }
 
-def returnResults(tap, LIMIT=None):
+def returnResults(tap):
     """
     Return this node's response to the TAP query, tap, where
     the requested return format is something other than XSAMS.
@@ -381,18 +382,18 @@ def returnResults(tap, LIMIT=None):
 
     transitions = Trans.objects.filter(q) 
     ntrans = transitions.count()
-    if LIMIT is not None and ntrans > LIMIT:
+    if settings.TRANSLIM is not None and ntrans > settings.TRANSLIM:
         # we need to filter transitions again later, so can't take a slice
-        #transitions = transitions[:LIMIT]
+        #transitions = transitions[:settings.TRANSLIM]
         # so do this:
-        numax = transitions[LIMIT].nu
+        numax = transitions[settings.TRANSLIM].nu
         transitions = Trans.objects.filter(q, Q(nu__lte=numax))
-        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+        percentage = '%.1f' % (float(settings.TRANSLIM)/ntrans * 100)
         print 'Results truncated to %s %%' % percentage
     else:
         percentage = '100'
         print 'Results not truncated'
-    print 'LIMIT is', LIMIT
+    print 'settings.TRANSLIM is', settings.TRANSLIM
     print 'ntrans =',ntrans
     
     par_generator = Par(transitions)
