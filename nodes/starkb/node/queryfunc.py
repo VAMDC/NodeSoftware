@@ -53,7 +53,7 @@ def setupSpecies():
 	"""
 	result = util_models.Result()
 	species = getSpecies()
-	result.addHeaderField('count-species',len(species))
+	result.addHeaderField('COUNT-SPECIES',len(species))
 	result.addDataField('Atoms',species)	
 	return result
 	
@@ -88,10 +88,10 @@ def setupVssRequest(sql, limit=1000):
 
         # Create the header with some useful info. The key names here are
         # standardized and shouldn't be changed.
-        result.addHeaderField('Truncated',percentage)
-        result.addHeaderField('count-species',nspecies)
-        result.addHeaderField('count-states',nstates)
-        result.addHeaderField('count-radiative',len(transitions))			
+        result.addHeaderField('TRUNCATED',percentage)
+        result.addHeaderField('COUNT-SPECIES',nspecies)
+        result.addHeaderField('COUNT-STATES',nstates)
+        result.addHeaderField('COUNT-RADIATIVE',len(transitions))			
         
         result.addDataField('RadTrans',transitions)        
         result.addDataField('Atoms',species)
@@ -100,9 +100,9 @@ def setupVssRequest(sql, limit=1000):
         result.addDataField('Sources',sources)
         
     else : # only fill header
-        result.addHeaderField('Truncated',percentage)
-        result.addHeaderField('count-states',0)
-        result.addHeaderField('count-radiative',0)
+        result.addHeaderField('TRUNCATED',percentage)
+        result.addHeaderField('COUNT-STATES',0)
+        result.addHeaderField('COUNT-RADIATIVE',0)
     return result	
 	
 def truncateTransitions(transitions, request, maxTransitionNumber):

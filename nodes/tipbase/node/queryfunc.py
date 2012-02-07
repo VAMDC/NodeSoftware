@@ -75,12 +75,14 @@ def setupVssRequest(sql, limit=1000):
     states = []
     for specie in species:
         states.extend(specie.States)
+    nspecies = species.count()
 
     # Create the result object
     result = util_models.Result()
-    result.addHeaderField('Truncated', percentage)
-    result.addHeaderField('count-states',nstates)
-    result.addHeaderField('count-collisions',ncoll)
+    result.addHeaderField('TRUNCATED', percentage)
+    result.addHeaderField('COUNT-STATES',nstates)
+    result.addHeaderField('COUNT-COLLISIONS',ncoll)
+    result.addHeaderField('COUNT-SPECIES',nspecies)
 
     if ncoll > 0 :
         result.addDataField('CollTrans',transs)

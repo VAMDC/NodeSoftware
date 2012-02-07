@@ -163,6 +163,7 @@ def setupVssRequest(sql, limit=1000):
 
     # cross sections
     states = []
+    nspecies = species.count()
     for specie in species:        
         for state in specie.States : 
             if state.xdata is not None : # do not add state without xdata/ydata
@@ -171,9 +172,10 @@ def setupVssRequest(sql, limit=1000):
 
     # Create the result object
     result = util_models.Result()
-    result.addHeaderField('Truncated', percentage)
-    result.addHeaderField('count-states',nstates)
-    result.addHeaderField('count-radiative',ntranss)
+    result.addHeaderField('TRUNCATED', percentage)
+    result.addHeaderField('COUNT-STATES',nstates)
+    result.addHeaderField('COUNT-RADIATIVE',ntranss)
+    result.addHeaderField('COUNT-SPECIES',nspecies)
 
     result.addDataField('RadTrans',transs)
     result.addDataField('Atoms',species)
@@ -190,7 +192,7 @@ def setupSpecies():
 	result = util_models.Result()
 	ids = django_models.Radiativetransition.objects.all().values_list('version', flat=True)
 	versions = django_models.Version.objects.filter(pk__in = ids)
-	result.addHeaderField('count-species',len(versions))
+	result.addHeaderField('COUNT-SPECIES',len(versions))
 	result.addDataField('Atoms',versions)	
 	return result
 	
