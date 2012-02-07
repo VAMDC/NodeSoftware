@@ -237,7 +237,7 @@ def setupResults(sql):
     # ... and merge them to a single query object
     q = sqlparse.mergeQwithLogic(qdict, logic)
 
-    if 'radiativecrossections' in sql.requestables:
+    if 'radiativecrosssections' in sql.requestables:
         return setupXsecResults(q)
     
     transitions = Trans.objects.filter(q).order_by('nu')
@@ -297,7 +297,7 @@ def setupResults(sql):
                Method('MTHEORY', 'theory', 'theory')]
 
     end_time = time.time()
-    print 'timed at %.1f secs', (end_time - start_time)
+    print 'timed at %.1f secs' % (end_time - start_time)
 
    # return the dictionary as described above
     return {'HeaderInfo': headerinfo,

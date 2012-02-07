@@ -82,6 +82,7 @@ RESTRICTABLES = {\
 'MoleculeChemicalName': 'dummy',
 'MoleculeStoichiometricFormula': 'dummy',
 'MoleculeInchiKey': 'iso__InChIKey',
+'InchiKey': 'iso__InChIKey',
 'RadTransWavenumber': 'nu',
 'RadTransWavelength': 'dummy', 
 'RadTransProbabilityA': 'A',
@@ -93,7 +94,7 @@ RESTRICTABLES = {\
 }
 
 REQUESTABLES = {
-# NB Official dictionary mis-spells this keyword!
 'Environments': 'Environments',
-'RadiativeCrossections': 'RadCros',
+# NB Official dictionary mis-spells this keyword!
+'RadiativeCrossSections': 'RadCros',
 }
