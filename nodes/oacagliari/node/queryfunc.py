@@ -13,7 +13,7 @@
 import sys
 from itertools import chain
 from django.conf import settings
-from vamdctap.sqlparse import where2q
+from vamdctap.sqlparse import where2q, splitWhere, mergeQwithLogic, restriction2Q
 
 
 import dictionaries
@@ -30,7 +30,26 @@ def LOG(s):
 #------------------------------------------------------------
 # Helper functions (called from setupResults)
 #------------------------------------------------------------
+def MoleculeNormalModeHarmonicFrequency_MHz2cm(op, foo):
+    """
+    Making the conversion from MHz to cm-1.
+    """
 
+    opp = op
+
+    try:
+        foop = float(foo[0].replace("'", "").replace('"', ''))
+    except (ValueError, TypeError):
+        print 'failed to convert %s to float' % foo
+        return None
+    except (IndexError):
+        print 'no argument to MoleculeNormalModeHarmonicFrequency restrictable'
+        return None
+    if foop != 0.:
+        # MHz -> cm-1
+        foop =  foop / 29979.2458
+    q = ['MoleculeNormalModeHarmonicFrequency', opp, str(foop)]
+    return q
 
 #------------------------------------------------------------
 # Main function 
@@ -60,7 +79,23 @@ def setupResults(sql, limit=1000):
         q = eval(q) # test queryset syntax validity
     except Exception,e:
         return {}
-
+    # ... we parse the query into its restrictables and logic:
+    if not sql.where:
+        return {}
+    logic, rs, count = splitWhere(sql.where)
+    #Convert MoleculeNormalModeHarmonicFrequency
+    # from MHz to cm-1:
+    for i in rs:
+        r, op, foo = rs[i][0], rs[i][1], rs[i][2:]
+        if r == 'MoleculeNormalModeHarmonicFrequency':
+            rs[i] = MoleculeNormalModeHarmonicFrequency_MHz2cm(op, foo)
+    # now rebuild the query as a dictionary of QTypes ...
+    qdict = {}
+    for i, r in rs.items():
+        q = restriction2Q(r)
+        qdict[i] = q
+    # ... and merge them to a single query object
+    q = mergeQwithLogic(qdict, logic)
     # We build a queryset of database matches on the Transision model
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
