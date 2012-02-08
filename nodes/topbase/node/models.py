@@ -114,7 +114,8 @@ class Atomicstate(models.Model):
     parity = models.ForeignKey(Parity, db_column='parityid')
     xdata = models.TextField(null=True)
     ydata = models.TextField(null=True)
-    crosssectionunit = models.ForeignKey(Unit, db_column='crosssectionunitid', related_name='+', null=True)
+    xdataunit = models.ForeignKey(Unit, db_column='xdataunitid', related_name='+', null=True)
+    ydataunit = models.ForeignKey(Unit, db_column='ydataunitid', related_name='+', null=True)
     class Meta:
         db_table = u't_atomicstate'
  
@@ -129,7 +130,11 @@ class Radiativetransition(models.Model):
     wavelength = models.FloatField()
     wavelengthunit = models.ForeignKey(Unit, db_column='wavelengthunitid')
     initialatomicstate = models.ForeignKey(Atomicstate, db_column='initialatomicstateid', related_name='+')
-    finalatomicstate = models.ForeignKey(Atomicstate, db_column='finalatomicstateid', related_name='+')
+    finalatomicstate = models.ForeignKey(Atomicstate, db_column='finalatomicstateid', related_name='+')    
+    
+    def abs_weightedoscillatorstrength(self):
+        return abs(self.weightedoscillatorstrength)
+   
     class Meta:
         db_table = u'v_recommendedradiativetransition'
 
@@ -157,10 +162,6 @@ class Authorsource(models.Model):
     rank = models.IntegerField()
     class Meta:
         db_table = u't_authorsource'
-
-
-
-
 
 class Dataset(models.Model):
     id = models.IntegerField(primary_key=True)

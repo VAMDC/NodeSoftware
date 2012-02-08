@@ -440,13 +440,17 @@ def XsamsEnvironments(Environments):
             yield '<Composition>'
             for EnvSpecies in makeiter(Environment.Species):
                 GS = lambda name: GetValue(name, EnvSpecies=EnvSpecies)
-                yield '<Species name="%s" speciesRef="X%s-%s">' % (GS('EnvironmentSpeciesName'), NODEID, GS('EnvironmentSpeciesRef'))
+                speciesRef = GS('EnvironmentSpeciesRef')
+                if speciesRef:
+                    yield '<Species name="%s" speciesRef="X%s-%s">' % (GS('EnvironmentSpeciesName'), NODEID, speciesRef)
+                else:
+                    yield '<Species name="%s">' % (GS('EnvironmentSpeciesName'))
                 yield makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', GS)
                 yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', GS)
                 yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', GS)
                 yield '</Species>'
             yield '</Composition>'
-        yield '</Environment>'
+        yield '</Environment>\n'
     yield '</Environments>\n'
 
 def parityLabel(parity):
@@ -721,6 +725,7 @@ def XsamsAtoms(Atoms):
 #
 # MOLECULES START
 def makeNormalMode(G):
+    
     elstate = G('MoleculeNormalModeElectronicState')
     pointgr = G('MoleculeNormalModePointGroupSymmetry')
     id = G('MoleculeNormalModeID')
@@ -731,38 +736,34 @@ def makeNormalMode(G):
     result = [ makePrimaryType('NormalMode', 'MoleculeNormalMode', G, extraAttr=extraAttr) ]
     result.append( makeDataType('HarmonicFrequency','MoleculeNormalModeHarmonicFrequency',G) )
     result.append( makeDataType('Intensity','MoleculeNormalModeIntensity',G) )
-
+    
     vsrefs = G('MoleculeNormalModeDisplacementVectorSourceRef')
-    vrefs = G('MoleculeNormalModeDisplacementVectorRef')
-    comms = G('MoleculeNormalModeDisplacementVectorComment')
-    meths = G('MoleculeNormalModeDisplacementVectorMethod')
+    unit = G('MoleculeNormalModeDisplacementVectorsUnit')
     x3s = G('MoleculeNormalModeDisplacementVectorX3')
     y3s = G('MoleculeNormalModeDisplacementVectorY3')
     z3s = G('MoleculeNormalModeDisplacementVectorZ3')
-    vsrefs, vrefs, comms, meths, x3s, y3s, z3s = \
-        map(makeiter, [vsrefs, vrefs, comms, meths, x3s, y3s, z3s])
-
-    for i,x3 in enumerate(x3s):
-        result.append('<Vector')
-        try: result.append(' methodRef="%s"'%meths[i])
-        except: pass
-        try: result.append(' ref="%s"'%refs[i])
-        except: pass
-        try: result.append(' x3="%s"'%x3)
-        except: pass
-        try: result.append(' y3="%s"'%y3s[i])
-        except: pass
-        try: result.append(' z3="%s"'%z3s[i])
-        except: pass
-        try: result.append(' ref="%s"'%vrefs[i])
-        except: pass
-        result.append('>')
-        try: result.append('<Comments>"%s"</Comments>'%comms[i])
-        except: pass
-        try: result.append('<SourceRef>"%s"</SourceRef>'%vsrefs[i])
-        except: pass
-        result.append('</Vector>')
-
+    extraAttr = {}
+    if unit: extraAttr['units'] = unit
+    vsrefs, x3s, y3s, z3s = \
+        map(makeiter, [vsrefs, x3s, y3s, z3s])
+        
+    if len(x3s)>0:
+        result.append( makePrimaryType('DisplacementVectors','MoleculeNormalModeDisplacementVectors',G, extraAttr=extraAttr) )
+        
+        for i,x3 in enumerate(x3s):
+            result.append('<Vector')
+            try: result.append(' ref="%s"'%vsrefs[i])
+            except: pass
+            try: result.append(' x3="%s"'%x3)
+            except: pass
+            try: result.append(' y3="%s"'%y3s[i])
+            except: pass
+            try: result.append(' z3="%s"'%z3s[i])
+            except: pass
+            result.append('></Vector>')
+               
+        result.append('</DisplacementVectors>')
+    
     result.append('</NormalMode>')
     return ''.join(result)
 
@@ -1258,9 +1259,9 @@ def makeDataSeriesType(tagname, keyword, G):
     xpara = G("%sParameter" % keyword)
     if xpara:
         dic["parameter"] = "%sParameter" % keyword
-    xunits = G("%sUnits" % keyword)
+    xunits = G("%sUnit" % keyword)
     if xunits:
-        dic["units"] = "%sUnits" % keyword
+        dic["units"] = xunits
     xid = G("%sID" % keyword)
     if xid:
         dic["id"] = "%s-%s" % (NODEID, xid)
@@ -1268,7 +1269,8 @@ def makeDataSeriesType(tagname, keyword, G):
 
     dlist = makeiter(G("%s" % keyword))
     if dlist:
-        result.append("<DataList count='%s' units='%s'>%s</DataList>" % (G("%sN" % keyword), G("%sUnits" % keyword), " ".join(dlist)))
+        result.append("<DataList count='%s'>%s</DataList>" % (G("%sN" % keyword), " ".join(dlist)))
+
     csec = G("%sLinearA0" % keyword) and G("%sLinearA1" % keyword)
     if csec:
         dic = {"initial":G("%sLinearInitial" % keyword), "increment":G("%sLinearIncrement" % keyword)}
@@ -1855,7 +1857,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     yield '<Processes>\n'
     yield '<Radiative>\n'
 
-    if not requestables or 'radiativecrossections' in requestables:
+    if not requestables or 'radiativecrosssections' in requestables:
         try:
             for RadCros in XsamsRadCross(RadCross):
                 yield RadCros

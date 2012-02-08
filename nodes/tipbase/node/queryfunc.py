@@ -47,46 +47,48 @@ def setupResults(sql):
 		
 		
 def setupVssRequest(sql, limit=1000):
-	"""		
-		Execute a vss request
-		@type  sql: string
-		@param sql: vss request
-		@rtype:   util_models.Result
-		@return:  Result object		
-	"""
-	# convert the incoming sql to a correct django query syntax object 
-	# based on the RESTRICTABLES dictionary in dictionaries.py
-	q = sql2Q(sql)   
+    """		
+        Execute a vss request
+        @type  sql: string
+        @param sql: vss request
+        @rtype:   util_models.Result
+        @return:  Result object		
+    """
+    # convert the incoming sql to a correct django query syntax object 
+    # based on the RESTRICTABLES dictionary in dictionaries.py
+    q = sql2Q(sql)   
 
-	transs = django_models.Collisionaltransition.objects.filter(q)
-	# count the number of matches, make a simple trunkation if there are
-	# too many (record the coverage in the returned header)
-	ncoll=transs.count()
-	if limit < ncoll :
-		transs, percentage = truncateTransitions(transs, q, limit)
-	else:
-		percentage=None
+    transs = django_models.Collisionaltransition.objects.filter(q)
+    # count the number of matches, make a simple trunkation if there are
+    # too many (record the coverage in the returned header)
+    ncoll=transs.count()
+    if limit < ncoll :
+        transs, percentage = truncateTransitions(transs, q, limit)
+    else:
+        percentage=None
 
-	species, nstates = getSpeciesWithStates(transs)
-	# electron collider
-	particles = getParticles()
+    species, nstates = getSpeciesWithStates(transs)
+    # electron collider
+    particles = getParticles()
 
-	# cross sections
-	states = []
-	for specie in species:
-		states.extend(specie.States)
+    # cross sections
+    states = []
+    for specie in species:
+        states.extend(specie.States)
 
-	# Create the result object
-	result = util_models.Result()
-	result.addHeaderField('Truncated', percentage)
-	result.addHeaderField('count-states',nstates)
-	result.addHeaderField('count-collisions',ncoll)
+    # Create the result object
+    result = util_models.Result()
+    result.addHeaderField('Truncated', percentage)
+    result.addHeaderField('count-states',nstates)
+    result.addHeaderField('count-collisions',ncoll)
 
-	result.addDataField('CollTrans',transs)
-	result.addDataField('Atoms',species)
-	result.addDataField('Particles',particles)
+    if ncoll > 0 :
+        result.addDataField('CollTrans',transs)
+        result.addDataField('Particles',particles)
+    result.addDataField('Atoms',species)
+    
 
-	return result
+    return result
     
 def setupSpecies():
 	"""		
