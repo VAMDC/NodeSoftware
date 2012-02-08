@@ -267,7 +267,7 @@ def returnResults(tap, LIMIT=None):
         response = HttpResponse(speclist, mimetype='text/plain')
         return response
     LOG('And now some logs:')
-    LOG(tap.data)
+    #LOG(tap.data)
         
     LOG(tap.parsedSQL)
 
@@ -304,7 +304,7 @@ def returnResults(tap, LIMIT=None):
     # Prepare Transitions
     if (col=='ALL' or 'radiativetransitions' in [x.lower() for x in col]):
         LOG('TRANSITIONS')
-        orderby = tap.data.get('ORDERBY','frequency')
+        orderby = tap.request.get('ORDERBY','frequency')
         if ',' in orderby:
             orderby=orderby.split(',')
             transitions = transs.order_by(*orderby) 
@@ -319,7 +319,7 @@ def returnResults(tap, LIMIT=None):
     # Prepare States if requested
     if (col=='ALL' or 'states' in [x.lower() for x in col] ):
         LOG('STATES')
-        orderby = tap.data.get('ORDERBY','energy')
+        orderby = tap.request.get('ORDERBY','energy')
         states = States.objects.filter(q,specie__origin=5,dataset__archiveflag=0).order_by(orderby)
     else:
         LOG('NO STATES')
@@ -546,7 +546,7 @@ def xCat(transs):
             yield '<div class="qn %s">%4s</div>' % (label[0], val)
             
 
-        yield ' %s' % trans.species.name
+        yield ' %s' % trans.specie.name
 
         
         yield '\n'
