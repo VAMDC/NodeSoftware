@@ -127,7 +127,7 @@ class Level(models.Model):
     S = models.FloatField(null=True)    
     LS_multiplicity = models.IntegerField(null=True)    
     K = models.FloatField(null=True)    
-    J1 = models.FloatField(null=True)    
+    J1 = models.FloatField(null=True)   
     
     def j_asFloat(self):
         #add .0 to "1/2" or "3/2" to get float value
