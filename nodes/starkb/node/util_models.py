@@ -49,12 +49,19 @@ class Result:
 			
 		return result
 
+class State():
+    def __init__(self):
+        self.Components = []
+        self.Sources = []
+        self.id = None
+        self.totalAngularMomentum = None
+
 
 class Shifting():
     def __init__(self):
         self.environment = None
         self.name = None
-        self.ShiftingParams = list()
+        self.ShiftingParams = list()   
 
 class ShiftingParameter():
     def __init__(self):
