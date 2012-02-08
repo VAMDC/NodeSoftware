@@ -661,7 +661,9 @@ def XsamsAtoms(Atoms):
             yield makeOptionalTag('NuclearSpin','AtomNuclearSpin',G)
             yield '</IsotopeParameters>'
 
-        yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' % (NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
+        yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' \
+                % (NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
+        yield makeOptionalTag('IsoelectronicSequence','AtomIsoelectronicSequence',G)
         if not hasattr(Atom,'States'):
             Atom.States = []
         for AtomState in Atom.States:
