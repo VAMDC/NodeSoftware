@@ -68,9 +68,9 @@ RETURNABLES={\
 
 'EnvironmentID': 'Environment.id',
 'EnvironmentTemperature': 'Environment.T',
-'EnvironmentTemperatureUnits': 'K',
+'EnvironmentTemperatureUnit': 'K',
 'EnvironmentTotalPressure': 'Environment.p',
-'EnvironmentTotalPressureUnits': 'Torr',
+'EnvironmentTotalPressureUnit': 'Torr',
 'EnvironmentSpecies': 'Environment.species',
 'EnvironmentSpeciesName': 'EnvSpecies.species_name',
 }

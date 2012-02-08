@@ -311,7 +311,10 @@ def setupResults(sql):
 def get_xsec_envs(xsecs):
     xsec_envs = []
     for xsec in xsecs:
-        xsec_envs.append(Environment(xsec.id, xsec.T, xsec.p,
+        p = xsec.p
+        if not p:
+            p = None
+        xsec_envs.append(Environment(xsec.id, xsec.T, p,
                                      [EnvSpecies(xsec.broadener),]))
     return xsec_envs
 
@@ -321,8 +324,17 @@ def setupXsecResults(q):
     # molecule_InChIKey__<relation> in the query, appropriate for cross
     # section search (yuk yuk yuk):
     for i, children in enumerate(q.children):
+        print children
         if children[0].startswith('iso'):
             new_restrictable = children[0].replace('iso', 'molecule', 1)
+            new_child = (new_restrictable, children[1])
+            q.children[i] = new_child
+        if children[0].startswith('nu__gt'):
+            new_restrictable = children[0].replace('nu__gt', 'numax__gt', 1)
+            new_child = (new_restrictable, children[1])
+            q.children[i] = new_child
+        if children[0].startswith('nu__lt'):
+            new_restrictable = children[0].replace('nu__lt', 'numin__lt', 1)
             new_child = (new_restrictable, children[1])
             q.children[i] = new_child
 
@@ -341,7 +353,7 @@ def setupXsecResults(q):
         xsec_species.InChIKey = m.InChIKey
         xsec_species.InChI = m.InChI
         xsec_species.iso_name = m.ordinary_formula
-        #xsec_species.XML() = m.XML()
+        #xsec_species.XML = m.cml
         species.append(xsec_species)
     nspecies = len(species)
 

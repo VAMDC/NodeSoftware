@@ -357,7 +357,7 @@ class Xsc(models.Model):
         #xsec_xml.append('    <DataFile>%s</DataFile>' % sigma_name)
 
         xsec_xml.append('    <DataList count="%d">' % self.n)
-        fi = open(os.path.join(settings.RESULTSPATH, sigma_name), 'r')
+        fi = open(os.path.join(settings.RESULTSPATH, 'xsc', sigma_name), 'r')
         xsec_xml.extend([x.rstrip() for x in fi.readlines()])
         fi.close()
         xsec_xml.append('    </DataList>')
