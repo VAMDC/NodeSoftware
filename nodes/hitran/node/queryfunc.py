@@ -316,6 +316,16 @@ def get_xsec_envs(xsecs):
     return xsec_envs
 
 def setupXsecResults(q):
+
+    # quick and dirty hack to replace the iso__InChIKey__<relation> with
+    # molecule_InChIKey__<relation> in the query, appropriate for cross
+    # section search (yuk yuk yuk):
+    for i, children in enumerate(q.children):
+        if children[0].startswith('iso'):
+            new_restrictable = children[0].replace('iso', 'molecule', 1)
+            new_child = (new_restrictable, children[1])
+            q.children[i] = new_child
+
     xsecs = Xsc.objects.filter(q)
     nxsecs = xsecs.count()
 
