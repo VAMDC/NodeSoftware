@@ -172,6 +172,7 @@ def setupVssRequest(sql, limit=1000):
 
     # Create the result object
     result = util_models.Result()
+
     result.addHeaderField('TRUNCATED', percentage)
     result.addHeaderField('COUNT-STATES',nstates)
     result.addHeaderField('COUNT-RADIATIVE',ntranss)

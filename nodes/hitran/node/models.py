@@ -1,7 +1,9 @@
 from django.db import models
+from django.conf import settings
 from dictionaries import RETURNABLES
 import datetime
 import re
+import os
 
 NODEID = RETURNABLES['NodeID']
 source_prefix = 'B%s-' % NODEID
@@ -302,3 +304,69 @@ class Method(object):
         self.id = id
         self.category = category
         self.description = description
+
+class EnvSpecies(object):
+    def __init__(self, species_name):
+        self.species_name = species_name
+class Environment(object):
+    def __init__(self, id, T, p, species):
+        self.id = id
+        self.T = T
+        self.p = p
+        self.Species = species
+
+class Xsc(models.Model):
+    molecule = models.ForeignKey('Molecule')
+    numin = models.FloatField()
+    numax = models.FloatField()
+    n = models.IntegerField()
+    T = models.FloatField()
+    p = models.FloatField()
+    sigmax = models.FloatField()
+    res = models.FloatField(blank=True, null=True)
+    res_units = models.CharField(max_length=10) # cm-1 or mA for milliAngstroms
+    broadener = models.CharField(max_length=10, blank=True, null=True)
+    ref = models.ForeignKey('Ref', blank=True, null=True)
+    desc = models.TextField(blank=True, null=True)
+    valid_from = models.DateField()
+    # the default is for this data 'never' to expire:
+    valid_to = models.DateField(default=datetime.date(
+            year=3000, month=1, day=1))
+    filename = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'hitranxsc_xsc'
+
+    def XML(self):
+        xsec_xml = []
+        xsec_xml.append('<AbsorptionCrossSection envRef="EHSHD-%d"'\
+                ' id="PHSHD-XSC-%d">' % (self.id, self.id))
+        xsec_xml.append('    <Description>The absorption cross'\
+              ' section for %s at %.1f K, %.1f Torr</Description>'\
+                    % (self.molecule.ordinary_formula, self.T, self.p))
+        xsec_xml.append('    <X parameter="nu" units="1/cm">')
+        dnu = (self.numax - self.numin) / (self.n - 1)
+        xsec_xml.append('        <LinearSequence count="%d" initial="%f"'\
+                    ' increment="%f"/>' % (self.n, self.numin, dnu))
+        xsec_xml.append('    </X>')
+        xsec_xml.append('    <Y parameter="sigma" units="cm2">')
+        sigma_name = self.filename
+        sigma_name = sigma_name.replace('.xsc', '.sigma')
+        #output_files.append({'filename': sigma_name, 'desc': 'absorption'\
+        #                        ' cross section list'})
+        #xsec_xml.append('    <DataFile>%s</DataFile>' % sigma_name)
+
+        xsec_xml.append('    <DataList count="%d">' % self.n)
+        fi = open(os.path.join(settings.RESULTSPATH, sigma_name), 'r')
+        xsec_xml.extend([x.rstrip() for x in fi.readlines()])
+        fi.close()
+        xsec_xml.append('    </DataList>')
+
+        xsec_xml.append('    </Y>')
+        xsec_xml.append('    <Species>')
+        xsec_xml.append('    <SpeciesRef>XHSHD-%s</SpeciesRef>'
+                    % self.molecule.InChIKey)
+        xsec_xml.append('    </Species>')
+        xsec_xml.append('</AbsorptionCrossSection>')
+
+        return '\n'.join(xsec_xml)
