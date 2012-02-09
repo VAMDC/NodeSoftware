@@ -103,7 +103,7 @@ def setupSpecies():
 	result = util_models.Result()
 	ids = django_models.Collisionaltransition.objects.all().values_list('version', flat=True)
 	versions = django_models.Version.objects.filter(pk__in = ids)
-	result.addHeaderField('count-species',len(versions))
+	result.addHeaderField('COUNT-SPECIES',len(versions))
 	result.addDataField('Atoms',versions)	
 	return result
 	
@@ -155,7 +155,8 @@ def getSpeciesWithStates(transs):
         # use the found reference ids to search the State database table
         specie.States = django_models.Atomicstate.objects.filter( pk__in = sids )
         for state in specie.States :
-            state.Component = getCoupling(state)
+            state.Components = []
+            state.Components.append(getCoupling(state))
         nstates += specie.States.count()
     return species, nstates
 
