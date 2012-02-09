@@ -65,8 +65,6 @@ class Atomicion(models.Model):
 class Version(models.Model):
     id = models.IntegerField(primary_key=True)
     atomicion = models.ForeignKey(Atomicion, null=True, db_column='atomicionid', blank=True)
-    radiativetransitionsource = models.ForeignKey(Source, null=True, db_column='radiativetransitionsourceid', blank=True, related_name='+')
-    crosssectionsource = models.ForeignKey(Source, null=True, db_column='crosssectionsourceid', blank=True)
     ionversion = models.IntegerField(unique=True)
     creationdate = models.DateField()  
         

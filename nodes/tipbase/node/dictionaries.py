@@ -15,8 +15,8 @@ RETURNABLES = {\
 'AtomStateEnergyUnit':'AtomState.stateenergyunit.value',
 
 'AtomStateParity' : 'AtomState.parity.value',
-'AtomStateMixingCoeff':'AtomState.Component.mixingcoefficient',
-'AtomStateMixingCoeffClass' : 'AtomState.Component.mixingclass.value',
+'AtomStateMixingCoeff':'Component.mixingcoefficient',
+'AtomStateMixingCoeffClass' : 'Component.mixingclass.value',
 'AtomStateLifeTime': 'AtomState.lifetime',
 'AtomStateStatisticalWeight' : 'AtomState.statisticalweight',
 'AtomStateStatisticalWeightUnit' : 'AtomState.statisticalweightunit.value',
@@ -25,10 +25,10 @@ RETURNABLES = {\
 'AtomStateIonizationEnergy' : 'AtomState.ionizationenergy',
 'AtomStateIonizationEnergyUnit' : 'AtomState.ionizationenergyunit.value',
 'AtomStateTotalAngMom' : 'AtomState.totalangularmomentum',
-'AtomStateTermLabel' : 'AtomState.Component.termlabel',
-'AtomStateTermLSL' : 'AtomState.Component.Lscoupling.l',
-'AtomStateTermLSS' : 'AtomState.Component.Lscoupling.s',
-'AtomStateTermLSMultiplicity' : 'AtomState.Component.Lscoupling.multiplicity',
+'AtomStateTermLabel' : 'Component.termlabel',
+'AtomStateTermLSL' : 'Component.Lscoupling.l',
+'AtomStateTermLSS' : 'Component.Lscoupling.s',
+'AtomStateTermLSMultiplicity' : 'Component.Lscoupling.multiplicity',
 
                                                                     
 'CollisionTabulatedDataX' : 'TabData.xdata',
