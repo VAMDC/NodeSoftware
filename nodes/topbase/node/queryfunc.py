@@ -75,7 +75,8 @@ def getSpeciesWithStates(transs):
         specie.States = django_models.Atomicstate.objects.filter( pk__in = sids )
         
         for state in specie.States :
-            state.Component = getCoupling(state)
+            state.Components = []
+            state.Components.append(getCoupling(state))
         nstates += specie.States.count()
         
         

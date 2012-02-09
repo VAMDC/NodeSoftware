@@ -57,10 +57,6 @@ class Atomicion(models.Model):
     inchi = models.CharField(max_length=30, null=True)
     inchikey = models.CharField(max_length=30, null=True)
     isoelectronicsequence = models.CharField(max_length=30)  
-    #elementsymbol = models.CharField(unique=True, max_length=9)
-    #nuclearcharge = models.IntegerField(unique=True)    
-    #massnumber = models.IntegerField(unique=True)
-    #mass = models.FloatField()
     class Meta:
         db_table = u't_atomicion'
  
@@ -68,17 +64,7 @@ class Atomicion(models.Model):
 
 class Version(models.Model):
     id = models.IntegerField(primary_key=True)
-    #ioncharge = models.IntegerField()
-    #inchi = models.CharField(max_length=30)
-    #inchikey = models.CharField(max_length=30)
-    #isoelectronicsequence = models.CharField(max_length=30)  
-    #elementsymbol = models.CharField(unique=True, max_length=9)
-    #nuclearcharge = models.IntegerField(unique=True)    
-    #massnumber = models.IntegerField(unique=True)
-    #mass = models.FloatField()    
     atomicion = models.ForeignKey(Atomicion, null=True, db_column='atomicionid', blank=True)
-    radiativetransitionsource = models.ForeignKey(Source, null=True, db_column='radiativetransitionsourceid', blank=True, related_name='+')
-    crosssectionsource = models.ForeignKey(Source, null=True, db_column='crosssectionsourceid', blank=True)
     ionversion = models.IntegerField(unique=True)
     creationdate = models.DateField()
     class Meta:
@@ -101,7 +87,6 @@ class Mixingclass(models.Model):
 class Atomicstate(models.Model):
     id = models.IntegerField(primary_key=True)
     version = models.ForeignKey(Version, db_column='versionid')
-    sourcefileid = models.IntegerField()    
     totalangularmomentum = models.FloatField()
     lifetime = models.FloatField()
     lifetimeunit = models.ForeignKey(Unit, db_column='lifetimeunitid', related_name='+')
