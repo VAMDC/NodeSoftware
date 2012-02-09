@@ -36,7 +36,7 @@ RETURNABLES = {\
 'CollisionTabulatedDataXN' : 'len(TabData.xdata.split(" "))',
 'CollisionTabulatedDataXParameter' : 'undef',
 'CollisionTabulatedDataY' : 'TabData.ydata',
-#'CollisionTabulatedDataYUnits' : 'TabData.ydataunit.value',
+'CollisionTabulatedDataYUnits' : 'TabData.ydataunit.value',
 'CollisionTabulatedDataYN' : 'len(TabData.ydata.split(" "))',
 'CollisionTabulatedDataYParameter' : 'undef',
 
