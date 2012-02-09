@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 RETURNABLES={\
-'NodeID': 'HIT',    # unique identifier for the HITRAN node
+'NodeID': 'HSHD',    # unique identifier for the HITRAN node
 'XSAMSVersion': '0.3',
 #'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/'\
 #                  'release-0.2/xsams.xsd',
@@ -65,6 +65,14 @@ RETURNABLES={\
 'MoleculeQnValue': 'Qns.qn_val',
 'MoleculeQnAttribute': 'Qns.qn_attr',
 'MoleculeQnXML': 'Qns.xml',
+
+'EnvironmentID': 'Environment.id',
+'EnvironmentTemperature': 'Environment.T',
+'EnvironmentTemperatureUnit': 'K',
+'EnvironmentTotalPressure': 'Environment.p',
+'EnvironmentTotalPressureUnit': 'Torr',
+'EnvironmentSpecies': 'Environment.species',
+'EnvironmentSpeciesName': 'EnvSpecies.species_name',
 }
 
 # MoleculeChemicalName and MoleculeStoichiometricFormula are associated with
@@ -74,7 +82,19 @@ RESTRICTABLES = {\
 'MoleculeChemicalName': 'dummy',
 'MoleculeStoichiometricFormula': 'dummy',
 'MoleculeInchiKey': 'iso__InChIKey',
+'InchiKey': 'iso__InChIKey',
 'RadTransWavenumber': 'nu',
 'RadTransWavelength': 'dummy', 
 'RadTransProbabilityA': 'A',
+
+# for absorption cross sections:
+'Temperature': 'T',
+'Pressure': 'p',
+
+}
+
+REQUESTABLES = {
+'Environments': 'Environments',
+# NB Official dictionary mis-spells this keyword!
+'RadiativeCrossSections': 'RadCros',
 }

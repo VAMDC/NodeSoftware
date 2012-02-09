@@ -3,7 +3,7 @@
 import re
 import sys
 from datetime import datetime
-from xml.sax.saxutils import quoteattr
+from xml.sax.saxutils import escape
 
 # Get the node-specific parts
 from django.conf import settings
@@ -32,7 +32,6 @@ log = logging.getLogger('vamdc.tap.generator')
 
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
-escape = lambda s: quoteattr(s)[1:-1]
 
 def makeiter(obj):
     """
@@ -115,9 +114,6 @@ def GetValue(name, **kwargs):
         if isinstance(value, float): return '0.0'
         else: return '0'
 
-    # turn it into a string, quote it, but skip the quotation marks
-    # edit - no, we need to have the object itself sometimes to loop over
-    #return quoteattr('%s'%value)[1:-1] # re
     return value
 
 def makeOptionalTag(tagname, keyword, G):
@@ -192,8 +188,7 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
 
     result.append( '>' )
     if comment:
-        result.append( '<Comments>%s</Comments>' %
-                quoteattr('%s' % comment)[1:-1] )
+        result.append( '<Comments>%s</Comments>' % escape(comment))
     result.append( makeSourceRefs(refs) )
 
     return ''.join(result)
@@ -222,12 +217,12 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     # if some are shorter than the value list, replicate them
     l = len(value)
     value, unit, method, comment, acc, refs, name = [ x*l if len(x)<l else x for x in [value, unit, method, comment, acc, refs, name]]
-    
+
     for k, v in extraAttr.items():
         if not isiterable(v): v=[v]*l
         elif len(v)<l: v*=l
         extraAttr[k] = v
-    
+
     string = ''
     for i, val in enumerate(value):
         string += '\n<%s' % tagname
@@ -324,7 +319,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( '>' )
 
     if comment:
-        result.append( '<Comments>%s</Comments>' % quoteattr('%s' % comment)[1:-1] )
+        result.append( '<Comments>%s</Comments>' % escape(comment))
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
 
@@ -369,14 +364,14 @@ def SelfSource(tap):
     This Source is a self-reference.
     It represents the database and the query that produced the xml document.
     The sourceID contains a timestamp.
-    The full URL is given in the tag <UniformResourceIdentifier> but you need
+    The full URL is given in the tag UniformResourceIdentifier but you need
     to unescape ampersands and angle brackets to re-use it.
     Query was: %s
-    </Comments>"""%tap.query)
+    </Comments>"""%escape(tap.query))
     result.append('<Year>%s</Year>'%now.year)
     result.append('<Category>database</Category>')
     result.append('<UniformResourceIdentifier>')
-    result.append(quoteattr(tap.fullurl)[1:-1])
+    result.append(escape(tap.fullurl))
     result.append('</UniformResourceIdentifier>')
     result.append('<ProductionDate>%s</ProductionDate>'%now.date().isoformat())
     result.append('<Authors><Author><Name>N.N.</Name></Author></Authors>')
@@ -445,13 +440,17 @@ def XsamsEnvironments(Environments):
             yield '<Composition>'
             for EnvSpecies in makeiter(Environment.Species):
                 GS = lambda name: GetValue(name, EnvSpecies=EnvSpecies)
-                yield '<Species name="%s" speciesRef="X%s-%s">' % (GS('EnvironmentSpeciesName'), NODEID, GS('EnvironmentSpeciesRef'))
+                speciesRef = GS('EnvironmentSpeciesRef')
+                if speciesRef:
+                    yield '<Species name="%s" speciesRef="X%s-%s">' % (GS('EnvironmentSpeciesName'), NODEID, speciesRef)
+                else:
+                    yield '<Species name="%s">' % (GS('EnvironmentSpeciesName'))
                 yield makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', GS)
                 yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', GS)
                 yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', GS)
                 yield '</Species>'
             yield '</Composition>'
-        yield '</Environment>'
+        yield '</Environment>\n'
     yield '</Environments>\n'
 
 def parityLabel(parity):
@@ -557,78 +556,78 @@ def makeShellType(tag, keyword, G):
     return string
 
 
-def makeAtomComponent(Atom):
+def makeAtomStateComponents(AtomState):
     """
     This constructs the Atomic Component structure.
 
     Atom - the current Atom queryset
     """
+    if not hasattr(AtomState,'Components'):
+        return ''
 
     string = ""
+    for Component in makeiter(AtomState.Components):
+        G = lambda name: GetValue(name, Component=Component)
 
-    if hasattr(Atom, "Components"):
-        for Component in makeiter(Atom.Components):
-            G = lambda name: GetValue(name, Component=Component) 
+        string += "<Component>"
 
-            string += "<Component>"
+        if hasattr(Component, "SuperShells"):
+            string += "<SuperConfiguration>"
+            for SuperShell in makeiter(Component.SuperShells):
+                GA = lambda name: GetValue(name, SuperShell=SuperShell)
+                string += "<SuperShell>"
+                string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % GA("AtomStateSuperShellPrincipalQN")
+                string += "<NumberOfElectrons>%s</NumberOfElectrons>" % GA("AtomStateSuperShellNumberOfElectrons")
+                string += "</SuperShell>"
+            string += "</SuperConfiguration>"
 
-            if hasattr(Component, "SuperShells"):
-                string += "<SuperConfiguration>"
-                for SuperShell in makeiter(Component.SuperShells):
-                    GA = lambda name: GetValue(name, SuperShell=SuperShell)
-                    string += "<SuperShell>"
-                    string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % GA("AtomStateSuperShellPrincipalQN")
-                    string += "<NumberOfElectrons>%s</NumberOfElectrons>" % GA("AtomStateSuperShellNumberOfElectrons")
-                    string += "</SuperShell>"
-                string += "</SuperConfiguration>"
+        string += "<Configuration>"
+        string += "<AtomicCore>"
+        ecore = G("AtomStateElementCore")
+        if ecore:
+            string += "<ElementCore>%s</ElementCore>" % ecore
+        conf = G("AtomStateConfiguration")
+        if conf:
+            # TODO: The format of the Configuration tab is not yet
+            # finalized in XSAMS!
+            string += "<Configuration>%s</Configuration>" % conf
+        string += makeTermType("Term", "AtomStateCoreTerm", G)
+        tangmom = G("AtomStateCoreTotalAngMom")
+        if tangmom:
+            string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % tangmom
+        string += "</AtomicCore>"
 
-            string += "<Configuration>"
-            string += "<AtomicCore>"
-            ecore = G("AtomStateElementCore")
-            if ecore:
-                string += "<ElementCore>%s</ElementCore>" % ecore
-            conf = G("AtomStateConfiguration")
-            if conf:
-                # TODO: The format of the Configuration tab is not yet
-                # finalized in XSAMS!
-                string += "<Configuration>%s</Configuration>" % conf
-            string += makeTermType("Term", "AtomStateCoreTerm", G)
-            tangmom = G("AtomStateCoreTotalAngMom")
-            if tangmom:
-                string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % tangmom
-            string += "</AtomicCore>"
+        if hasattr(Component, "Shells"):
+            string += "<Shells>"
+            for AtomShell in makeiter(Component.Shells):
+                GS = lambda name: GetValue(name, AtomShell=AtomShell)
+                string += makeShellType("Shell", "AtomStateShell", GS)
 
-            if hasattr(Component, "Shells"):
-                string += "<Shells>"
-                for AtomShell in makeiter(Component.Shells):
-                    GS = lambda name: GetValue(name, AtomShell=AtomShell)
-                    string += makeShellType("Shell", "AtomStateShell", GS)
+            if hasattr(Component, "ShellPair"):
+                for AtomShellPair in makeiter(Component.ShellPairs):
+                    GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
+                    string += '<ShellPair shellPairID="%s-%s">' % (NODEID, GS("AtomStateShellPairID"))
+                    string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
+                    string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
+                    string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
+                string += "</ShellPair>"
 
-                if hasattr(Component, "ShellPair"):
-                    for AtomShellPair in makeiter(Component.ShellPairs):
-                        GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
-                        string += '<ShellPair shellPairID="%s-%s">' % (NODEID, GS("AtomStateShellPairID"))
-                        string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
-                        string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
-                        string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
-                    string += "</ShellPair>"
+            string += "</Shells>"
 
-                string += "</Shells>"
+        clabel = G("AtomStateConfigurationLabel")
+        if clabel:
+            string += "<ConfigurationLabel>%s</ConfigurationLabel>" % clabel
+        string += "</Configuration>"
 
-            clabel = G("AtomStateConfigurationLabel")
-            if clabel:
-                string += "<ConfigurationLabel>%s</ConfigurationLabel>" % clabel
-            string += "</Configuration>"
+        string += makeTermType("Term", "AtomStateTerm", G)
+        mixCoe = G("AtomStateMixingCoeff")
+        if mixCoe:
+            string += '<MixingCoefficient mixingClass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
+        coms = G("AtomStateComponentComment")
+        if coms:
+            string += "<Comments>%s</Comments>" % coms
 
-            string += makeTermType("Term", "AtomStateTerm", G)
-            mixCoe = G("AtomStateMixingCoeff")
-            if mixCoe:
-                string += '<MixingCoefficient mixingClass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
-            coms = G("AtomStateComponentComment")
-            if coms:
-                string += "<Comments>%s</Comments>" % coms
-
-            string += "</Component>"
+        string += "</Component>"
 
     return string
 
@@ -662,7 +661,9 @@ def XsamsAtoms(Atoms):
             yield makeOptionalTag('NuclearSpin','AtomNuclearSpin',G)
             yield '</IsotopeParameters>'
 
-        yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' % (NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
+        yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' \
+                % (NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
+        yield makeOptionalTag('IsoelectronicSequence','AtomIsoelectronicSequence',G)
         if not hasattr(Atom,'States'):
             Atom.States = []
         for AtomState in Atom.States:
@@ -688,10 +689,10 @@ def XsamsAtoms(Atoms):
             yield makeDataType('HyperfineConstantA', 'AtomStateHyperfineConstantA', G)
             yield makeDataType('HyperfineConstantB', 'AtomStateHyperfineConstantB', G)
             yield '</AtomicNumericalData><AtomicQuantumNumbers>'
-        
+
             p, j, k, hfm, mqn = G('AtomStateParity'), G('AtomStateTotalAngMom'), \
                                 G('AtomStateKappa'), G('AtomStateHyperfineMomentum'), \
-                                G('AtomStateMagneticQuantumNumber') 
+                                G('AtomStateMagneticQuantumNumber')
             if p:
                 yield '<Parity>%s</Parity>' % parityLabel(p)
             if j:
@@ -707,10 +708,11 @@ def XsamsAtoms(Atoms):
             cont, ret = checkXML(AtomState,'CompositionXML')
             if cont:
                 yield ret
-            else:                
-                yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)                
-                yield makeAtomComponent(Atom)
-                yield '</AtomicComposition>'
+            else:
+                if hasattr(AtomState, "Components"):
+                    yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
+                    yield makeAtomStateComponents(AtomState)
+                    yield '</AtomicComposition>'
 
             yield '</AtomicState>'
         G = lambda name: GetValue(name, Atom=Atom) # reset G() to Atoms, not AtomStates
@@ -724,6 +726,48 @@ def XsamsAtoms(Atoms):
 # ATOMS END
 #
 # MOLECULES START
+def makeNormalMode(G):
+
+    elstate = G('MoleculeNormalModeElectronicState')
+    pointgr = G('MoleculeNormalModePointGroupSymmetry')
+    id = G('MoleculeNormalModeID')
+    extraAttr = {}
+    if elstate: extraAttr['electronicStateRef'] = "S%s-%s" % (NODEID, elstate)
+    if pointgr: extraAttr['pointGroupSymmetry'] = pointgr
+    if id: extraAttr['id'] = "V%s-%s" % (NODEID, id)
+    result = [ makePrimaryType('NormalMode', 'MoleculeNormalMode', G, extraAttr=extraAttr) ]
+    result.append( makeDataType('HarmonicFrequency','MoleculeNormalModeHarmonicFrequency',G) )
+    result.append( makeDataType('Intensity','MoleculeNormalModeIntensity',G) )
+
+    vsrefs = G('MoleculeNormalModeDisplacementVectorSourceRef')
+    unit = G('MoleculeNormalModeDisplacementVectorsUnit')
+    x3s = G('MoleculeNormalModeDisplacementVectorX3')
+    y3s = G('MoleculeNormalModeDisplacementVectorY3')
+    z3s = G('MoleculeNormalModeDisplacementVectorZ3')
+    extraAttr = {}
+    if unit: extraAttr['units'] = unit
+    vsrefs, x3s, y3s, z3s = \
+        map(makeiter, [vsrefs, x3s, y3s, z3s])
+
+    if len(x3s)>0:
+        result.append( makePrimaryType('DisplacementVectors','MoleculeNormalModeDisplacementVectors',G, extraAttr=extraAttr) )
+
+        for i,x3 in enumerate(x3s):
+            result.append('<Vector')
+            try: result.append(' ref="%s"'%vsrefs[i])
+            except: pass
+            try: result.append(' x3="%s"'%x3)
+            except: pass
+            try: result.append(' y3="%s"'%y3s[i])
+            except: pass
+            try: result.append(' z3="%s"'%z3s[i])
+            except: pass
+            result.append('></Vector>')
+
+        result.append('</DisplacementVectors>')
+
+    result.append('</NormalMode>')
+    return ''.join(result)
 
 def XsamsMCSBuild(Molecule):
     """
@@ -757,6 +801,12 @@ def XsamsMCSBuild(Molecule):
     if cont:
         yield '<NormalModes>\n'
         yield ret
+        yield '</NormalModes>\n'
+    elif hasattr(Molecule, 'NormalModes'):
+        yield '<NormalModes>\n'
+        for NormalMode in Molecule.NormalModes:
+            GN = lambda name: GetValue(name, NormalMode=NormalMode)
+            yield makeNormalMode(GN)
         yield '</NormalModes>\n'
 
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
@@ -1088,12 +1138,14 @@ def XsamsRadTranBroadening(G):
     return ''.join(s)
 
 
+
+
 def XsamsRadTranShifting(RadTran):
     """
     Shifting type
     """
     string = ""
-    if hasattr(RadTran, "Shiftings"):    
+    if hasattr(RadTran, "Shiftings"):
         for Shifting in makeiter(RadTran.Shiftings):
             G = lambda name: GetValue(name, Shifting=Shifting)
             dic = {}
@@ -1101,8 +1153,6 @@ def XsamsRadTranShifting(RadTran):
             eref = G("RadTransShiftingEnv")
             if nam:
                 dic["name"] = nam
-            else:
-                continue
             if eref:
                 dic["envRef"] = "E%s-%s"  % (NODEID, eref)
             string += makePrimaryType("Shifting", "RadTransShifting", G, extraAttr=dic)
@@ -1110,23 +1160,11 @@ def XsamsRadTranShifting(RadTran):
                 for ShiftingParam in Shifting.ShiftingParams:
                     GS = lambda name: GetValue(name, ShiftingParam=ShiftingParam)
                     string += makePrimaryType("ShiftingParameter", "RadTransShiftingParam", GS, extraAttr={"name":GS("RadTransShiftingParamName")})
-                    val = GS("RadTransShiftingParamUnits")
-
+                    val = GS("RadTransShiftingParamUnit")
                     if val:
-                        string += "<Value units='%s'>%s</Value>" % (GS("RadTransShiftingParamUnits"), GS("RadTransShiftingParam" ))
-                        string += makePrimaryType("Accuracy", "RadTransShiftingParamAcc" , GS, extraAttr={"calibration":GS("RadTransShiftingParamAccCalib" ), "quality":GS("RadTransShiftingParamAccQuality")})
-                        systerr = GS("RadTransShiftingParamAccSystematic")
-                        if systerr:
-                            string += "<Systematic confidence=%s relative=%s>%s</Systematic>" % (GS("RadTransShiftingParamAccSystematicConfidence"), GS("RadTransShiftingParamAccSystematicRelative"), systerr)
-                        staterr = GS("RadTransShiftingParamAccStatistical")
-                        if staterr:
-                            string += "<Statistical confidence=%s relative=%s>%s</Statistical>" % (GS("RadTransShiftingParamAccStatisticalConfidence"), GS("RadTransShiftingParamAccStatisticalRelative"), staterr)
-                        stathigh = GS("RadTransShiftingParamAccStatHigh")
-                        statlow = GS("RadTransShiftingParamAccStatLow")
-                        if stathigh and statlow:
-                            string += "<StatHigh confidence=%s relative=%s>%s</StatHigh>" % (GS("RadTransShiftingParamAccStatHighConfidence"), GS("RadTransShiftingParamAccStatHighRelative"), systerr)
-                            string += "<StatLow confidence=%s relative=%s>%s</StatLow>" % (GS("RadTransShiftingParamAccStatLowConfidence"), GS("RadTransShiftingParamAccStatLowRelative"), systerr)
-                        string += "</Accuracy>"
+                        string += "<Value units='%s'>%s</Value>" % (val, GS("RadTransShiftingParam" ))
+                    string += makeAccuracy('RadTransShiftingParam', GS)
+
 
                     if hasattr(ShiftingParam, "Fit"):
                         for Fit in makeiter(ShiftingParam.Fits):
@@ -1223,9 +1261,9 @@ def makeDataSeriesType(tagname, keyword, G):
     xpara = G("%sParameter" % keyword)
     if xpara:
         dic["parameter"] = "%sParameter" % keyword
-    xunits = G("%sUnits" % keyword)
+    xunits = G("%sUnit" % keyword)
     if xunits:
-        dic["units"] = "%sUnits" % keyword
+        dic["units"] = xunits
     xid = G("%sID" % keyword)
     if xid:
         dic["id"] = "%s-%s" % (NODEID, xid)
@@ -1233,7 +1271,8 @@ def makeDataSeriesType(tagname, keyword, G):
 
     dlist = makeiter(G("%s" % keyword))
     if dlist:
-        result.append("<DataList count='%s' units='%s'>%s</DataList>" % (G("%sN" % keyword), G("%sUnits" % keyword), " ".join(dlist)))
+        result.append("<DataList count='%s'>%s</DataList>" % (G("%sN" % keyword), " ".join(dlist)))
+
     csec = G("%sLinearA0" % keyword) and G("%sLinearA1" % keyword)
     if csec:
         dic = {"initial":G("%sLinearInitial" % keyword), "increment":G("%sLinearIncrement" % keyword)}
@@ -1819,8 +1858,8 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     log.debug('Working on Processes.')
     yield '<Processes>\n'
     yield '<Radiative>\n'
-    
-    if not requestables or 'radiativecrossections' in requestables:
+
+    if not requestables or 'radiativecrosssections' in requestables:
         try:
             for RadCros in XsamsRadCross(RadCross):
                 yield RadCros
@@ -1915,14 +1954,6 @@ def transitions2votable(transs, count):
     yield """</TABLEDATA></DATA></TABLE>"""
 
 
-# DO NOT USE THIS, but quoteattr() as imported above
-# Returns an XML-escaped version of a given string. The &, < and > characters are escaped.
-#def xmlEscape(s):
-#    if s:
-#        return s.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
-#    else:
-#        return None
-
 
 def votable(transitions, states, sources, totalcount=None):
     """
@@ -2008,4 +2039,3 @@ def embedhtml(transitions,totalcount=None):
 </RESOURCE>
 </VOTABLE>
 """
-
