@@ -150,7 +150,7 @@ class Tabulateddata(models.Model):
     xdata = models.TextField(null=True)    
     ydata = models.TextField(null=True) 
     xdataunit = models.ForeignKey(Unit, db_column='xdataunitid', related_name='+', null=True)
-    #ydataunit = models.ForeignKey(Unit, db_column='ydataunitid', related_name='+', null=True)    
+    ydataunit = models.ForeignKey(Unit, db_column='ydataunitid', related_name='+', null=True)    
     class Meta:
         db_table = u't_tabulateddata'   
 
