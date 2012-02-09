@@ -33,12 +33,13 @@ log = logging.getLogger('vamdc.tap.generator')
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-def makeiter(obj):
+def makeiter(obj, length=0):
     """
     Return an iterable, no matter what
     """
     if not obj:
-        return []
+        # we can specify the length of our default return list
+        return [None] * length
     if not isiterable(obj):
         return [obj]
     return obj
@@ -252,13 +253,16 @@ def makeAccuracy(keyword, G):
     to DataType.
     """
     acc = G(keyword + 'Accuracy')
-    if not acc: return ''
-    acc_conf = makeiter( G(keyword + 'AccuracyConfidence') )
-    acc_rel = makeiter( G(keyword + 'AccuracyRelative') )
-    acc_typ = makeiter( G(keyword + 'AccuracyType') )
+    if not acc:
+        return ''
+    acc_list = makeiter(acc)
+    nacc = len(acc_list)
+    acc_conf = makeiter( G(keyword + 'AccuracyConfidence'), nacc )
+    acc_rel = makeiter( G(keyword + 'AccuracyRelative'), nacc )
+    acc_typ = makeiter( G(keyword + 'AccuracyType'), nacc )
 
     result = []
-    for i,ac in enumerate( makeiter(acc) ):
+    for i,ac in enumerate( acc_list ):
         result.append('<Accuracy')
         if acc_conf[i]: result.append( ' confidenceInterval="%s"'%acc_conf )
         if acc_typ[i]: result.append( ' type="%s"'%acc_typ )
@@ -289,11 +293,14 @@ def makeEvaluation(keyword, G):
     to DataType.
     """
     evs = G(keyword + 'Eval')
-    if not evs: return ''
-    ev_meth = makeiter( G(keyword + 'EvalMethod') )
-    ev_reco = makeiter( G(keyword + 'EvalRecommended') )
-    ev_refs = G(keyword + 'EvalRef')
-    ev_comm = G(keyword + 'EvalComment')
+    if not evs:
+        return ''
+    ev_list = makeiter(evs)
+    nevs = len(ev_list)
+    ev_meth = makeiter( G(keyword + 'EvalMethod'), nevs )
+    ev_reco = makeiter( G(keyword + 'EvalRecommended'), nevs )
+    ev_refs = G(keyword + 'EvalRef', nevs)
+    ev_comm = G(keyword + 'EvalComment', nevs)
 
     result = []
     for i,ev in enumerate( makeiter(evs) ):
@@ -339,8 +346,8 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
 
-    result.append( makeAccuracy( tagname, G) )
-    result.append( makeEvaluation( tagname, G) )
+    result.append( makeAccuracy( keyword, G) )
+    result.append( makeEvaluation( keyword, G) )
     result.append( '</%s>' % tagname )
 
     for k, v in extraElem.items():
