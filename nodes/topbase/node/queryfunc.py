@@ -67,12 +67,13 @@ def getSpeciesWithStates(transs):
         
         # extract reference ids for the states from the transion, combining both
         # upper and lower unique states together
-        up = spec_transitions.values_list('initialatomicstate',flat=True)
-        lo = spec_transitions.values_list('finalatomicstate',flat=True)
-        sids = set(chain(up, lo))
+        ini = spec_transitions.values_list('initialatomicstate',flat=True)
+        fin = spec_transitions.values_list('finalatomicstate',flat=True)
+        sids = set(chain(ini, fin))
 
         # use the found reference ids to search the State database table
         specie.States = django_models.Atomicstate.objects.filter( pk__in = sids )
+        
         for state in specie.States :
             state.Component = getCoupling(state)
         nstates += specie.States.count()
@@ -97,6 +98,17 @@ def truncateTransitions(transitions, request, maxTransitionNumber):
     transitions = transitions.order_by('wavelength')
     newmax = transitions[maxTransitionNumber].wavelength
     return django_models.Radiativetransition.objects.filter(request,Q(wavelength__lt=newmax)), percentage
+    
+def toLowerUpperStates(transitions):
+    for transition in transitions:
+        if(transition.initialatomicstate.stateenergy > transition.finalatomicstate.stateenergy):
+            transition.upperatomicstate = transition.initialatomicstate
+            transition.loweratomicstate = transition.finalatomicstate
+        else:
+            transition.upperatomicstate = transition.finalatomicstate
+            transition.loweratomicstate = transition.initialatomicstate    
+    return transitions
+    
 
 #------------------------------------------------------------
 # Main function
@@ -134,7 +146,7 @@ def setupVssRequest(sql, limit=1000):
 
     # convert the incoming sql to a correct django query syntax object
     q = sql2Q(sql)
-    
+
     transs = django_models.Radiativetransition.objects.filter(q)
     ntranss=transs.count()
 
@@ -151,20 +163,23 @@ def setupVssRequest(sql, limit=1000):
 
     # cross sections
     states = []
+    nspecies = species.count()
     for specie in species:        
         for state in specie.States : 
             if state.xdata is not None : # do not add state without xdata/ydata
                 states.append(state)
-    
-	# Create the result object
-	result = util_models.Result()
-	result.addHeaderField('Truncated', percentage)
-	result.addHeaderField('count-states',nstates)
-	result.addHeaderField('count-radiative',ntranss)
+    transs = toLowerUpperStates(transs)
 
-	result.addDataField('RadTrans',transs)
-	result.addDataField('Atoms',species)
-	result.addDataField('RadCross',states)
+    # Create the result object
+    result = util_models.Result()
+    result.addHeaderField('TRUNCATED', percentage)
+    result.addHeaderField('COUNT-STATES',nstates)
+    result.addHeaderField('COUNT-RADIATIVE',ntranss)
+    result.addHeaderField('COUNT-SPECIES',nspecies)
+
+    result.addDataField('RadTrans',transs)
+    result.addDataField('Atoms',species)
+    result.addDataField('RadCross',states)
     
     return result
     
@@ -177,7 +192,7 @@ def setupSpecies():
 	result = util_models.Result()
 	ids = django_models.Radiativetransition.objects.all().values_list('version', flat=True)
 	versions = django_models.Version.objects.filter(pk__in = ids)
-	result.addHeaderField('count-species',len(versions))
+	result.addHeaderField('COUNT-SPECIES',len(versions))
 	result.addDataField('Atoms',versions)	
 	return result
 	

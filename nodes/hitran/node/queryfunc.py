@@ -111,8 +111,8 @@ def ChemicalName2MoleculeInchiKey(op, foo):
         return None
     molecules = Molecule.objects.filter(pk__in=moleculename_ids)
     isos = Iso.objects.filter(molecule__in=molecules)
-    inchikeys = isos.values_list('InChIKey_explicit', flat=True)
-    q = ['MoleculeInchiKey', 'in', '(']
+    inchikeys = isos.values_list('InChIKey', flat=True)
+    q = ['InchiKey', 'in', '(']
     for inchikey in inchikeys:
         q.append(inchikey)
     q.append(')')
@@ -194,8 +194,19 @@ def Wavelength2Wavenumber(op, foo):
         foop = 1.e20
     q = ['RadTransWavenumber', opp, str(foop)]
     return q
+
+def Pascals2Torr(op, foo):
+    """ Replace foo in Pascals with foo in Torr """
+    try:
+        foop = float(foo[0])
+    except (ValueError, TypeError):
+        print 'failed to convert %s to float' % foo
+        return None
+    foop = foop * 0.007500616827041697
+    q = ['Pressure', op, str(foop)]
+    return q
         
-def setupResults(sql, LIMIT=None):
+def setupResults(sql):
     # rather than use the sql2Q method:
     #q = sqlparse.sql2Q(sql)
 
@@ -216,6 +227,8 @@ def setupResults(sql, LIMIT=None):
             rs[i] = StoichiometricFormula2MoleculeInchiKey(op, foo)
         if r == 'RadTransWavelength':
             rs[i] = Wavelength2Wavenumber(op, foo)
+        if r == 'Pressure':
+            rs[i] = Pascals2Torr(op, foo)
     # now rebuild the query as a dictionary of QTypes ...
     qdict = {}
     for i, r in rs.items():
@@ -223,21 +236,25 @@ def setupResults(sql, LIMIT=None):
         qdict[i] = q
     # ... and merge them to a single query object
     q = sqlparse.mergeQwithLogic(qdict, logic)
+
+    if 'radiativecrosssections' in sql.requestables:
+        return setupXsecResults(q)
     
-    transitions = Trans.objects.filter(q) 
+    transitions = Trans.objects.filter(q).order_by('nu')
     ntrans = transitions.count()
-    if LIMIT is not None and ntrans > LIMIT:
+    if settings.TRANSLIM is not None and ntrans > settings.TRANSLIM:
         # we need to filter transitions again later, so can't take a slice
-        #transitions = transitions[:LIMIT]
+        #transitions = transitions[:settings.TRANSLIM]
         # so do this:
-        numax = transitions[LIMIT].nu
+        numax = transitions[settings.TRANSLIM].nu
         transitions = Trans.objects.filter(q, Q(nu__lte=numax))
-        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+        percentage = '%.1f' % (float(settings.TRANSLIM)/ntrans * 100)
+        ntrans = transitions.count()
         print 'Results truncated to %s %%' % percentage
     else:
         percentage = '100'
         print 'Results not truncated'
-    print 'LIMIT is', LIMIT
+    print 'TRANSLIM is', settings.TRANSLIM
     print 'ntrans =',ntrans
 
     ts = time.time()
@@ -280,7 +297,7 @@ def setupResults(sql, LIMIT=None):
                Method('MTHEORY', 'theory', 'theory')]
 
     end_time = time.time()
-    print 'timed at %.1f secs', (end_time - start_time)
+    print 'timed at %.1f secs' % (end_time - start_time)
 
    # return the dictionary as described above
     return {'HeaderInfo': headerinfo,
@@ -291,7 +308,78 @@ def setupResults(sql, LIMIT=None):
             'Environments': HITRANenvs,
             'Functions': HITRANfuncs}
 
-def returnResults(tap, LIMIT=None):
+def get_xsec_envs(xsecs):
+    xsec_envs = []
+    for xsec in xsecs:
+        p = xsec.p
+        if not p:
+            p = None
+        xsec_envs.append(Environment(xsec.id, xsec.T, p,
+                                     [EnvSpecies(xsec.broadener),]))
+    return xsec_envs
+
+def setupXsecResults(q):
+
+    # quick and dirty hack to replace the iso__InChIKey__<relation> with
+    # molecule_InChIKey__<relation> in the query, appropriate for cross
+    # section search (yuk yuk yuk):
+    for i, children in enumerate(q.children):
+        print children
+        if children[0].startswith('iso'):
+            new_restrictable = children[0].replace('iso', 'molecule', 1)
+            new_child = (new_restrictable, children[1])
+            q.children[i] = new_child
+        if children[0].startswith('nu__gt'):
+            new_restrictable = children[0].replace('nu__gt', 'numax__gt', 1)
+            new_child = (new_restrictable, children[1])
+            q.children[i] = new_child
+        if children[0].startswith('nu__lt'):
+            new_restrictable = children[0].replace('nu__lt', 'numin__lt', 1)
+            new_child = (new_restrictable, children[1])
+            q.children[i] = new_child
+
+    xsecs = Xsc.objects.filter(q)
+    nxsecs = xsecs.count()
+
+    # XXX
+    nsources = 0; sources = None;
+
+    # hack this: the generator expects Species to be Isos (since the dictionary
+    # resolves them this way (appropriate for the line-by-line transitions);       # however, for cross sections, Species are Molecules...
+    species = []
+    for m in Molecule.objects.filter(pk__in=xsecs.values_list('molecule')
+                .distinct()):
+        xsec_species = Iso(molecule=m)
+        xsec_species.InChIKey = m.InChIKey
+        xsec_species.InChI = m.InChI
+        xsec_species.iso_name = m.ordinary_formula
+        #xsec_species.XML = m.cml
+        species.append(xsec_species)
+    nspecies = len(species)
+
+    xsec_envs = get_xsec_envs(xsecs)
+
+    headerinfo = {
+        'Truncated': '100 %',
+        'count-sources': nsources,
+        'count-species': nspecies,
+        'count-molecules': nspecies,
+        'count-radiative': nxsecs
+    }
+
+    methods = [Method('MEXP', 'experiment', 'experiment'),
+              ]
+
+   # return the dictionary as described above
+    return {'HeaderInfo': headerinfo,
+            'Methods': methods,
+            'RadCross': xsecs,
+            'Sources': sources,
+            'Molecules': species,
+            'Environments': xsec_envs,
+           }
+
+def returnResults(tap):
     """
     Return this node's response to the TAP query, tap, where
     the requested return format is something other than XSAMS.
@@ -316,18 +404,18 @@ def returnResults(tap, LIMIT=None):
 
     transitions = Trans.objects.filter(q) 
     ntrans = transitions.count()
-    if LIMIT is not None and ntrans > LIMIT:
+    if settings.TRANSLIM is not None and ntrans > settings.TRANSLIM:
         # we need to filter transitions again later, so can't take a slice
-        #transitions = transitions[:LIMIT]
+        #transitions = transitions[:settings.TRANSLIM]
         # so do this:
-        numax = transitions[LIMIT].nu
+        numax = transitions[settings.TRANSLIM].nu
         transitions = Trans.objects.filter(q, Q(nu__lte=numax))
-        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+        percentage = '%.1f' % (float(settings.TRANSLIM)/ntrans * 100)
         print 'Results truncated to %s %%' % percentage
     else:
         percentage = '100'
         print 'Results not truncated'
-    print 'LIMIT is', LIMIT
+    print 'settings.TRANSLIM is', settings.TRANSLIM
     print 'ntrans =',ntrans
     
     par_generator = Par(transitions)

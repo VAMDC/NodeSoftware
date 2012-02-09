@@ -50,8 +50,6 @@ while(<STATES>) {
 	print '"', $energyMethod, '", ';
 	print $index; # id - primary key
 	print ");\n";
-	
-
 }
 
 close STATES;

@@ -26,6 +26,7 @@ from generators import *
 from sqlparse import SQL
 
 REQUESTABLES = map(lower, [\
+ 'Environments',
  'AtomStates',
  'Atoms',
  'Collisions',
@@ -37,7 +38,7 @@ REQUESTABLES = map(lower, [\
  'NonRadiativeTransitions',
  'Particles',
  'Processes',
- 'RadiativeCrossections',
+ 'RadiativeCrossSections',
  'RadiativeTransitions',
  'Solids',
  'Sources',
@@ -78,7 +79,6 @@ class TAPQUERY(object):
             log.error(self.errormsg)
 
         if self.isvalid: self.validate()
-        log.debug('%s'%request.META)
         self.fullurl = getBaseURL(request) + 'sync?' + request.META.get('QUERY_STRING')
 
     def validate(self):
