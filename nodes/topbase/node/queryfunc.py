@@ -119,7 +119,7 @@ def getSources(ids):
     for source in sources : 
         names=[]
         adresses=[]
-        relatedauthors = django_models.Authorsource.objects.filter(source=source)
+        relatedauthors = django_models.Authorsource.objects.filter(source=source).order_by('rank')
         #build a list of authors
         for relatedauthor in relatedauthors:
             names.append(relatedauthor.author.name)

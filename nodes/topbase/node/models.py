@@ -164,7 +164,7 @@ class Atomiccomponent(models.Model):
     mixingcoefficient = models.FloatField()
     mixingclass = models.ForeignKey(Mixingclass, db_column='mixingclassid')
     termlabel = models.CharField(max_length=30)
-    configuration = models.CharField(max_length=60)
+    configuration = models.CharField(max_length=40)
     class Meta:
         db_table = u't_atomiccomponent'
 
