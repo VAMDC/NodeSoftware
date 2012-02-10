@@ -273,10 +273,10 @@ def makeAccuracy(keyword, G):
 
 def makeDataSeriesAccuracyType(keyword, G):
     """
-    build the elenments for accuracy belonging 
+    build the elenments for accuracy belonging
     to a data series.
     """
-    string = makePrimaryType("Accuracy", keyword + "Accuracy", G, extraAttr={"type":"AccuracyType", 
+    string = makePrimaryType("Accuracy", keyword + "Accuracy", G, extraAttr={"type":"AccuracyType",
                                                                  "relative":"AccuracyRelative"})
     if G(keyword + "ErrorList"):
         string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join([makeiter(G(keyword + "ErrorList"))]))
@@ -285,7 +285,7 @@ def makeDataSeriesAccuracyType(keyword, G):
     elif G(keyword + "ErrorValue"):
         string += "<ErrorValue>%s</ErrorValue" % G(keyword + "ErrorValue")
     string += "</Accuracy>"
-    return string 
+    return string
 
 def makeEvaluation(keyword, G):
     """
@@ -1601,8 +1601,8 @@ def XsamsCollTrans(CollTrans):
 
                         # handle X components
                         yield makePrimaryType("X", "CollisionTabulatedDataX", GDT)
-                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")                        
-                        
+                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
+
                         if GDT("CollisionTabulatedDataXDataList"):
                             yield "<DataList count='%s'>%s</DataList>" % (GDT("CollisionTabulatedDataXDataListN"), " ".join(makeiter(GDT("CollisionTabulatedDataXDataList"))))
                         elif GDT("CollisionTabulatedDataXLinearSequence"):
@@ -1611,13 +1611,13 @@ def XsamsCollTrans(CollTrans):
                                                                                                 GDT("CollisionTabulatedDataXLinearSequenceIncrement"))
                         elif GDT("CollisionTabulatedDataXDataFile"):
                             yield "<DataFile>%s</DataFile>" % GDT("CollisionTabulatedDataXDataFile")
-                        yield makeDataSeriesAccuracyType("CollisionTabulatedDataX", GDT)                                                
+                        yield makeDataSeriesAccuracyType("CollisionTabulatedDataX", GDT)
                         yield "</X>"
 
                         # handle Y components
                         yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT)
-                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")                        
-                        
+                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
+
                         if GDT("CollisionTabulatedDataYDataList"):
                             yield "<DataList count='%s'>%s</DataList>" % (GDT("CollisionTabulatedDataYDataListN"), " ".join(makeiter(GDT("CollisionTabulatedDataYDataList"))))
                         elif GDT("CollisionTabulatedDataYLinearSequence"):
@@ -1626,9 +1626,9 @@ def XsamsCollTrans(CollTrans):
                                                                                                 GDT("CollisionTabulatedDataYLinearSequenceIncrement"))
                         elif GDT("CollisionTabulatedDataYDataFile"):
                             yield "<DataFile>%s</DataFile>" % GDT("CollisionTabulatedDataYDataFile")
-                        yield makeDataSeriesAccuracyType("CollisionTabulatedDataY", GDT)                                                
+                        yield makeDataSeriesAccuracyType("CollisionTabulatedDataY", GDT)
                         yield "</Y>"
-                        
+
 
                         tabref = GDT("CollisionTabulatedDataReferenceFrame")
                         if tabref:
@@ -1708,8 +1708,8 @@ def XsamsFunctions(Functions):
         yield makePrimaryType("Function", "Function", G, extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
         yield "<Name>%s</Name>" % G("FunctionName")
-        yield "<Expression computerLanguage=%s>%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
-        yield "<Y name='%s', units='%s'>" % (G("FunctionYName"), G("FunctionYUnits"))
+        yield "<Expression computerLanguage="%s">%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
+        yield "<Y name='%s' units='%s'>" % (G("FunctionYName"), G("FunctionYUnits"))
         desc = G("FunctionYDescription")
         if desc:
             yield "<Description>%s</Description>" % desc
