@@ -26,6 +26,7 @@ RETURNABLES = {\
 'AtomMassNumber':'Atom.atomicion.isotope.massnumber',
 
 'AtomStateEnergy':'AtomState.stateenergy',
+'AtomStateRef':'AtomState.Sources',
 'AtomStateEnergyUnit':'AtomState.stateenergyunit.value',
 'AtomStateParity' : 'AtomState.parity.value',
 'AtomStateMixingCoeff':'Component.mixingcoefficient',
@@ -44,6 +45,7 @@ RETURNABLES = {\
 'AtomStateTermLSMultiplicity' : 'Component.Lscoupling.multiplicity',
 
 'RadTransID':'RadTran.id',
+'RadTransRefs' : 'RadTran.Sources',
 'RadTransWavelength':'RadTran.wavelength',
 'RadTransWavelengthUnit':u'A',
 'RadTransProbabilityWeightedOscillatorStrength' : 'RadTran.abs_weightedoscillatorstrength()',
@@ -61,6 +63,19 @@ RETURNABLES = {\
 'CrossSectionY' : 'RadCros.ydata',
 'CrossSectionYUnit' : 'RadCros.ydataunit.value',
 'CrossSectionYN' : 'len(RadCros.ydata.split(" "))',
+
+#source
+'SourceTitle':'Source.title',
+'SourceAuthorName':'Source.Authors',
+'SourceCategory':'Source.sourcecategory.value',
+'SourceName' : 'Source.sourcename',
+'SourceYear' : 'Source.year',
+'SourceURI': 'Source.uri',
+'SourceVolume' : 'Source.volume',
+'SourcePageBegin' : 'Source.pagebegin',
+'SourcePageEnd' : 'Source.pageend',
+'SourceDOI' : 'Source.doi',
+'SourceID' : 'Source.id',
 }
 
 # The restrictable dictionary defines limitations to the search. 
