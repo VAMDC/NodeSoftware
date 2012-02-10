@@ -18,6 +18,9 @@ from models import *
 import logging
 log = logging.getLogger('vamdc.node.queryfu')
 
+class EmptyClass:
+    """Empty class to add attributes dynamically to"""
+
 def setupResults(sql):
     """
     This function is always called by the software.
@@ -54,6 +57,25 @@ def setupResults(sql):
     for rea in react_ds:
         rea.Reactants = rea.reaction.reactants.all()
         rea.Products = rea.reaction.products.all()
+
+        # Add the rate coefficient at 10K as a data table
+        if rea.r10kr:
+            data = []
+            rea.DataSets = []
+            dataset = EmptyClass()
+            dataRow = EmptyClass()
+            dataRow.xdata = '10'
+            dataRow.ydata = str(rea.r10kr)
+
+            dataRow.xdataunit = 'K'
+            dataRow.ydataunit = 'cm3/sec'
+            dataRow.datadescription = 'Rate Coefficient at 10K'
+
+            data.append(dataRow)
+            dataset.TabData = data
+            dataset.Description = dataRow.datadescription
+            dataset.Ref = rea.ref.abbr
+            rea.DataSets.append(dataset)
 
     log.debug('done setting up the QuerySets')
     # Create the header with some useful info. The key names here are
