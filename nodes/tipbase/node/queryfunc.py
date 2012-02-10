@@ -75,6 +75,7 @@ def setupVssRequest(sql, limit=1000):
     states = []
     for specie in species:
         states.extend(specie.States)
+    nspecies = species.count()
 
     nspecies = species.count()
     sources = getSources(sourceids)
@@ -87,8 +88,7 @@ def setupVssRequest(sql, limit=1000):
     result.addHeaderField('COUNT-COLLISIONS',ncoll)
     result.addHeaderField('COUNT-SPECIES',nspecies)
     result.addHeaderField('COUNT-SOURCES',nsources)
-
-
+    
     if ncoll > 0 :
         result.addDataField('CollTrans',transs)
         result.addDataField('Particles',particles)

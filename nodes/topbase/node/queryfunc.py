@@ -226,8 +226,7 @@ def setupVssRequest(sql, limit=1000):
     result.addHeaderField('COUNT-STATES',nstates)
     result.addHeaderField('COUNT-RADIATIVE',ntranss)
     result.addHeaderField('COUNT-SPECIES',nspecies)
-    result.addHeaderField('COUNT-SOURCES',nsources)
-    
+    result.addHeaderField('COUNT-SOURCES',nsources)  
 
     result.addDataField('RadTrans',transs)
     result.addDataField('Atoms',species)
