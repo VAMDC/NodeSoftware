@@ -39,7 +39,7 @@ RETURNABLES = {\
 'CollisionTabulatedDataYN' : 'len(TabData.ydata.split(" "))',
 'CollisionTabulatedDataYParameter' : 'undef',
 
-'CollisionDataSetDescription' : 'DataSet.Description',
+'CollisionDataSetDescription' : 'DataSet.dataDescription',
 'CollisionReactantState' : 'Reactant.state_id()',
 'CollisionReactantSpecies' : 'Reactant.species_id()',
 'CollisionProductState' : 'Product.state_id()',

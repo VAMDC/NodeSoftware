@@ -146,7 +146,8 @@ def getSpeciesWithStates(transs):
 
     for trans in transs :
         setSpecies(trans)
-        sourceids.extend(setDataset(trans))        
+        # get tabulated data and their references
+        setDataset(trans, sourceids)
 
     for specie in species:
         # get all transitions in linked to this particular species
@@ -195,7 +196,7 @@ def getSources(ids):
 
 def getTabdataSources(tabdata):
     """
-        get ids of tabdata 
+        get source ids of tabdata 
     """
     sourceids = []
     relatedsources = django_models.Tabulateddatasource.objects.filter(pk=tabdata.pk)    
@@ -203,19 +204,29 @@ def getTabdataSources(tabdata):
         sourceids.append(relatedsource.source.pk)
     return sourceids    
     
-def setDataset(trans):
+def setDataset(trans, sourceids):
     """
      create Dataset with Tabulated data
+     trans : a given transition
+     sourceids : a list of all references for the current request
     """
-    data = django_models.Tabulateddata.objects.filter(collisionaltransition = trans.id)
-    if data[0].xdata is not None : 
-        trans.DataSets = []
-        dataset = django_models.Dataset()
-        dataset.TabData = data
-        dataset.TabData.Sources = getTabdataSources(data[0])
-        dataset.Description = data[0].datadescription.value
-        trans.DataSets.append(dataset)
-        return dataset.TabData.Sources
+    tabulateddata = django_models.Tabulateddata.objects.filter(collisionaltransition = trans.id)
+    sources = []
+    trans.DataSets = []
+    
+    # get tabulated data
+    for data in tabulateddata : 
+        datasources = getTabdataSources(data) 
+        # add reference to list global list of references for this query  
+        for source in datasources : 
+            if source not in sourceids :
+                sourceids.append(source)
+        dataset = util_models.XsamsDataset()
+        dataset.TabData = []
+        dataset.TabData.append(data)
+        data.Sources = datasources
+        dataset.dataDescription = data.datadescription.value
+        trans.DataSets.append(dataset)  
 
 def setSpecies(trans):
     """
@@ -252,11 +263,6 @@ def getCoupling(state):
     return components[0]
     
 def getParticles():    
-    return django_models.Particle.objects.all()
-    
-    
-
-
-    
+    return django_models.Particle.objects.all()   
 
 
