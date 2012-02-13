@@ -2,16 +2,6 @@
 
 RETURNABLES = {\
 'NodeID':'vald',
-'SourceID':'Source.id',
-'SourceAuthorName':'Source.author',
-'SourceCategory':'Source.category',
-'SourcePageBegin':'Source.pages',
-'SourcePageEnd':'Source.pages',
-'SourceName':'Source.journal',
-'SourceTitle':'Source.title',
-'SourceURI':'Source.url',
-'SourceVolume':'Source.volume',
-'SourceYear':'Source.year',
 #############################################################
 'MethodID':'Method.id',
 'MethodCategory':'Method.category',
@@ -38,7 +28,7 @@ RETURNABLES = {\
 'AtomStateTermJ1J2':'AtomState.j1j2()',
 'AtomStateTermJKJ':'AtomState.jc',
 'AtomStateTermJKS':'AtomState.s2',
-'AtomStateTermK':'AtomState.k',
+'AtomStateKappa':'AtomState.k',
 #############################################################
 'RadTransID':'RadTran.id',
 'RadTransSpeciesRef':'RadTran.species_id',
@@ -49,6 +39,7 @@ RETURNABLES = {\
 'RadTransUpperStateRef':'RadTran.upstate_id',
 'RadTransLowerStateRef':'RadTran.lostate_id',
 'RadTransMethod':'RadTran.method_return',
+#'RadTransProbabilityA':'RadTran.einsteina',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
 #'RadTransProbabilityLog10WeightedOscillatorStrengthEval':'RadTran.accur',
 'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
@@ -72,10 +63,12 @@ RETURNABLES = {\
 #'RadTransBroadeningPressureRef':'RadTran.waals_ref_id',
 }
 
-# import the unit converter functions
+# import the converter functions
 from vamdctap.unitconv import *
 
 # custom function
+from django.db.models import Q
+
 RESTRICTABLES = {\
 'ConstantTest':test_constant_factory('"U"'),
 'AtomSymbol':'species__name',
@@ -91,6 +84,6 @@ RESTRICTABLES = {\
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 'RadTransBroadeningNatural':'gammarad',
 'RadTransBroadeningPressure':'gammastark',
-'MethodCategory':('method_restrict',valdObstype)
+'MethodCategory':('method_restrict',valdObstype),
+#'RadTransProbabilityA':'einsteina'
 }
-

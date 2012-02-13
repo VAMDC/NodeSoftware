@@ -131,8 +131,8 @@ def getLifetimeMethods():
             self.category = category
 
     # we will only be needing two methods
-    m1 = Method("EXP", "experimental")
-    m2 = Method("THEO", "theoretical")
+    m1 = Method("EXP", "experiment")
+    m2 = Method("THEO", "theory")
     return m1, m2
 
 
@@ -152,7 +152,7 @@ def statesRequired(sql):
 # Main function 
 #------------------------------------------------------------
 
-def setupResults(sql, limit=1000):
+def setupResults(sql, limit=100000):
     """
     This function is always called by the software.
     """

@@ -1,7 +1,9 @@
 from django.db import models
+from django.conf import settings
 from dictionaries import RETURNABLES
 import datetime
 import re
+import os
 
 NODEID = RETURNABLES['NodeID']
 source_prefix = 'B%s-' % NODEID
@@ -22,7 +24,7 @@ class Molecule(models.Model):
     # CML representation of the species, with no isotope information
     cml = models.TextField(null=True, blank=True)
 
-    # until we put this in the database model, hard-code it here:
+    # XXX until we put this in the database model, hard-code it here:
     charge = 0
 
     class Meta:
@@ -150,6 +152,7 @@ class State(models.Model):
     iso = models.ForeignKey('Iso')
     energy = models.FloatField(blank=True, null=True)
     g = models.IntegerField(blank=True, null=True)
+    nucspin_label = models.CharField(max_length=1, blank=True, null=True)
     s_qns = models.CharField(max_length=500, blank=True, null=True)
     qns_xml = models.TextField(blank=True, null=True)
 
@@ -157,7 +160,7 @@ class State(models.Model):
         xml = []
         case_prefix = self.iso.case.case_prefix
         xml.append('<Case xsi:type="%s:Case" caseID="%s" xmlns:%s='
-              '"http://vamdc.org/xml/xsams/0.2/cases/%s">'
+              '"http://vamdc.org/xml/xsams/0.3/cases/%s">'
             % (case_prefix, case_prefix, case_prefix, case_prefix))
         xml.append(self.qns_xml)
         xml.append('</Case>')
@@ -216,8 +219,8 @@ class Trans(models.Model):
             lineshape_xml.append('            <Value units="1/cm">%s</Value>\n'
                                  % self.gamma_air.val)
             if self.gamma_air.err is not None:
-                lineshape_xml.append('            <Accuracy><Statistical>'
-                     '%s</Statistical></Accuracy>\n' % str(self.gamma_air.err))
+                lineshape_xml.append('            <Accuracy type="statistical"'
+                     '>%s</Accuracy>\n' % str(self.gamma_air.err))
             lineshape_xml.append('          </FitParameter>\n')
             if 'n_air' in self.__dict__:
                 lineshape_xml.append('          <FitParameter name="n">\n')
@@ -227,8 +230,8 @@ class Trans(models.Model):
                 lineshape_xml.append('            <Value units="unitless">%s'
                                      '</Value>\n' % self.n_air.val)
                 if self.n_air.err is not None:
-                    lineshape_xml.append('            <Accuracy><Statistical>'
-                      '%s</Statistical></Accuracy>\n' % str(self.n_air.err))
+                    lineshape_xml.append('            <Accuracy type="'
+                      'statistical">%s</Accuracy>\n' % str(self.n_air.err))
                 lineshape_xml.append('          </FitParameter>\n')
             lineshape_xml.append('        </FitParameters>\n'\
                                  '      </LineshapeParameter>\n</Lineshape>\n')
@@ -245,8 +248,8 @@ class Trans(models.Model):
             lineshape_xml.append('          <Value units="1/cm">%s</Value>\n'
                       % self.gamma_self.val)
             if self.gamma_self.err is not None:
-                lineshape_xml.append('          <Accuracy><Statistical>'\
-                    '%s</Statistical></Accuracy>\n' % str(self.gamma_self.err))
+                lineshape_xml.append('          <Accuracy type="statistical">'\
+                    '%s</Accuracy>\n' % str(self.gamma_self.err))
             lineshape_xml.append('        </LineshapeParameter>\n'\
                                  '      </Lineshape>\n')
             broadening_xml.append('    <Broadening'\
@@ -277,8 +280,8 @@ class Trans(models.Model):
             shifting_xml.append('            <Value units="unitless">%s'
                                 '</Value>\n' % self.delta_air.val)
             if self.delta_air.err is not None:
-                shifting_xml.append('            <Accuracy><Statistical>'\
-                    '%s</Statistical></Accuracy>\n' % str(self.delta_air.err))
+                shifting_xml.append('            <Accuracy type="statistical">'
+                    '%s</Accuracy>\n' % str(self.delta_air.err))
             shifting_xml.append('          </FitParameter>\n'\
                                 '        </FitParameters>\n'\
                                 '      </ShiftingParameter>\n'\
@@ -301,3 +304,69 @@ class Method(object):
         self.id = id
         self.category = category
         self.description = description
+
+class EnvSpecies(object):
+    def __init__(self, species_name):
+        self.species_name = species_name
+class Environment(object):
+    def __init__(self, id, T, p, species):
+        self.id = id
+        self.T = T
+        self.p = p
+        self.Species = species
+
+class Xsc(models.Model):
+    molecule = models.ForeignKey('Molecule')
+    numin = models.FloatField()
+    numax = models.FloatField()
+    n = models.IntegerField()
+    T = models.FloatField()
+    p = models.FloatField()
+    sigmax = models.FloatField()
+    res = models.FloatField(blank=True, null=True)
+    res_units = models.CharField(max_length=10) # cm-1 or mA for milliAngstroms
+    broadener = models.CharField(max_length=10, blank=True, null=True)
+    ref = models.ForeignKey('Ref', blank=True, null=True)
+    desc = models.TextField(blank=True, null=True)
+    valid_from = models.DateField()
+    # the default is for this data 'never' to expire:
+    valid_to = models.DateField(default=datetime.date(
+            year=3000, month=1, day=1))
+    filename = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'hitranxsc_xsc'
+
+    def XML(self):
+        xsec_xml = []
+        xsec_xml.append('<AbsorptionCrossSection envRef="EHSHD-%d"'\
+                ' id="PHSHD-XSC-%d">' % (self.id, self.id))
+        xsec_xml.append('    <Description>The absorption cross'\
+              ' section for %s at %.1f K, %.1f Torr</Description>'\
+                    % (self.molecule.ordinary_formula, self.T, self.p))
+        xsec_xml.append('    <X parameter="nu" units="1/cm">')
+        dnu = (self.numax - self.numin) / (self.n - 1)
+        xsec_xml.append('        <LinearSequence count="%d" initial="%f"'\
+                    ' increment="%f"/>' % (self.n, self.numin, dnu))
+        xsec_xml.append('    </X>')
+        xsec_xml.append('    <Y parameter="sigma" units="cm2">')
+        sigma_name = self.filename
+        sigma_name = sigma_name.replace('.xsc', '.sigma')
+        #output_files.append({'filename': sigma_name, 'desc': 'absorption'\
+        #                        ' cross section list'})
+        #xsec_xml.append('    <DataFile>%s</DataFile>' % sigma_name)
+
+        xsec_xml.append('    <DataList count="%d">' % self.n)
+        fi = open(os.path.join(settings.RESULTSPATH, 'xsc', sigma_name), 'r')
+        xsec_xml.extend([x.rstrip() for x in fi.readlines()])
+        fi.close()
+        xsec_xml.append('    </DataList>')
+
+        xsec_xml.append('    </Y>')
+        xsec_xml.append('    <Species>')
+        xsec_xml.append('    <SpeciesRef>XHSHD-%s</SpeciesRef>'
+                    % self.molecule.InChIKey)
+        xsec_xml.append('    </Species>')
+        xsec_xml.append('</AbsorptionCrossSection>')
+
+        return '\n'.join(xsec_xml)

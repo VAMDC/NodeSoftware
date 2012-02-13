@@ -65,8 +65,6 @@ class Atomicion(models.Model):
 class Version(models.Model):
     id = models.IntegerField(primary_key=True)
     atomicion = models.ForeignKey(Atomicion, null=True, db_column='atomicionid', blank=True)
-    radiativetransitionsource = models.ForeignKey(Source, null=True, db_column='radiativetransitionsourceid', blank=True, related_name='+')
-    crosssectionsource = models.ForeignKey(Source, null=True, db_column='crosssectionsourceid', blank=True)
     ionversion = models.IntegerField(unique=True)
     creationdate = models.DateField()  
         
@@ -149,8 +147,10 @@ class Tabulateddata(models.Model):
     id = models.IntegerField(primary_key=True)
     collisionaltransition = models.ForeignKey(Collisionaltransition, db_column='collisionaltransitionid', related_name='+')
     datadescription = models.ForeignKey(Datadescription, db_column='datadescriptionid', related_name='+')
-    xdata = models.TextField(null=True)
+    xdata = models.TextField(null=True)    
     ydata = models.TextField(null=True) 
+    xdataunit = models.ForeignKey(Unit, db_column='xdataunitid', related_name='+', null=True)
+    ydataunit = models.ForeignKey(Unit, db_column='ydataunitid', related_name='+', null=True)    
     class Meta:
         db_table = u't_tabulateddata'   
 
