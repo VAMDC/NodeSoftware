@@ -77,7 +77,7 @@ def getPartitionf4specie(id, format='html'):
     """
     partitionFunctions = Partitionfunctions.objects.filter(specie=id)
     temps=partitionFunctions.values_list("temperature", flat=True).distinct().order_by("temperature")
-    states=partitionFunctions.values_list("state", flat=True).distinct()
+    states=partitionFunctions.values_list("state", flat=True).distinct().order_by("state")
     pftableHtml = "<table class='full'><thead><tr><th>&nbsp;</th>"
 
     for s in states:

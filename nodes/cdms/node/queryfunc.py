@@ -109,7 +109,7 @@ def get_sources(transs, methods = []):
 
     # Loop over species list and get sources
     for src in sexplist.values_list('source',flat=True):
-        this_method =  Method('EXP'+str(src),src,'experimental','experimental',src)
+        this_method =  Method('EXP'+str(src),src,'experiment','experiment',src)
         methods.append(this_method)
         
     sourceids = slist.values_list('source',flat=True)
@@ -174,7 +174,7 @@ def attach_exp_frequencies(transs):
     methodrefs = list(set(methodrefs))
 
     for ref in methodrefs:
-        this_method =  Method(ref,None,'experimental','experimental',ref[3:].split("-"))
+        this_method =  Method(ref,None,'experiment','experiment',ref[3:].split("-"))
         methods.append(this_method)
         
     return transs, methods

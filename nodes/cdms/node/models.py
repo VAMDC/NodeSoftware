@@ -129,7 +129,7 @@ class States( Model):
 	"""Yield the XML for the state quantum numbers"""
         qns = MolecularQuantumNumbers.objects.filter(state=self.id)
         case = qns[0].case     
-        caseNS = 'http://vamdc.org/xml/xsams/0.2/cases/%s' % case
+        caseNS = 'http://vamdc.org/xml/xsams/0.3/cases/%s' % case
         caseNSloc = '../../cases/%s.xsd' % case
         xml = []
         xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
@@ -273,9 +273,10 @@ class TransitionsCalc( Model):
               # get sources
               s= exptrans.sources.all().values_list('source',flat=True)
               self.refs.append(s)
-              
-              method = "EXP" + "-".join(str(source) for source in s)
-              self.methods.append(method)
+
+              if s.count()>0:
+                   method = "EXP" + "-".join(str(source) for source in s)
+                   self.methods.append(method)
 
          return self.frequencies
 
