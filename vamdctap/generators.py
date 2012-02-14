@@ -1802,6 +1802,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
             % (XSAMS_VERSION, SCHEMA_LOCATION)
 
     if HeaderInfo:
+        HeaderInfo = CaselessDict(HeaderInfo)
         if HeaderInfo.has_key('Truncated'):
             if HeaderInfo['Truncated'] != None: # note: allow 0 percent
                 yield """
