@@ -38,7 +38,7 @@ def setupResults(sql):
         return {}
 
     #react_ds = RxnData.objects.filter(pk__in=(2,4,3862,3863,7975,7976))
-    react_ds = RxnData.objects.filter(q)
+    react_ds = RxnData.objects.filter(q, network_id=3)
 
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
@@ -87,13 +87,17 @@ def setupResults(sql):
             }
 
     # Return the data. The keynames are standardized. 
-    return {\
-            'CollTrans':react_ds,
-            'Atoms':atoms,
-            'Molecules':molecules,
-            #'Particles':particles,
-            'Sources':sources,
-            'HeaderInfo':headerinfo,
-            #'Methods':methods
-            #'Functions':functions
-           }
+    # 2012-02-14 KWS As per Guy's message - return an empty dict if there is no data.
+    if nreacts > 0:
+        return {\
+                'CollTrans':react_ds,
+                'Atoms':atoms,
+                'Molecules':molecules,
+                #'Particles':particles,
+                'Sources':sources,
+                'HeaderInfo':headerinfo,
+                #'Methods':methods
+                #'Functions':functions
+               }
+    else:
+        return {}
