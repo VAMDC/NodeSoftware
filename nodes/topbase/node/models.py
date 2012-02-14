@@ -8,6 +8,8 @@
 # into your database.
 
 from django.db import models
+import logging
+log=logging.getLogger('vamdc.tap')
 
 class Unit(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -21,14 +23,33 @@ class Sourcecategory(models.Model):
     value = models.CharField(unique=True, max_length=45)
     class Meta:
         db_table = u't_sourcecategory'
-
+        
+        
         
 class Source(models.Model):
     id = models.IntegerField(primary_key=True)
-    sourcecategoryid = models.ForeignKey(Sourcecategory, db_column='sourcecategoryid')
-    title = models.CharField(max_length=450)
-    year = models.IntegerField()
-    url = models.CharField(max_length=450, blank=True)
+    sourcecategory = models.ForeignKey(Sourcecategory, db_column='sourcecategoryid')
+    title = models.TextField(null=True)
+    year = models.IntegerField(null=True)
+    volume = models.IntegerField(null=True)    
+    uri = models.CharField(max_length=150, null=True, db_column='url')
+    bibcode = models.CharField(max_length=19, null=True)
+    sourcename = models.CharField(max_length=100)
+    pagebegin = models.IntegerField(null=True)    
+    pageend = models.IntegerField(null=True)    
+    doi = models.CharField(max_length=50, null=True)  
+    
+    def authornames(self):
+        names = []
+        log.debug('test : '+str(self.id))
+        authors = Authorsource.objects.filter(source=self)
+        for author in authors:
+            log.debug('found : ')
+            names.append(author.name)
+        return names
+        
+        
+      
     class Meta:
         db_table = u't_source'
 
@@ -103,6 +124,13 @@ class Atomicstate(models.Model):
     ydataunit = models.ForeignKey(Unit, db_column='ydataunitid', related_name='+', null=True)
     class Meta:
         db_table = u't_atomicstate'
+        
+class Atomicstatesource(models.Model):
+    id = models.IntegerField(primary_key=True)
+    atomicstate = models.ForeignKey(Atomicstate, db_column='atomicstateid')
+    source = models.ForeignKey(Source, db_column='sourceid')
+    class Meta:
+        db_table = u't_atomicstatesource'
  
 class Radiativetransition(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -122,6 +150,13 @@ class Radiativetransition(models.Model):
    
     class Meta:
         db_table = u'v_recommendedradiativetransition'
+        
+class Radiativetransitionsource(models.Model):
+    id = models.IntegerField(primary_key=True)
+    radiativetransition = models.ForeignKey(Atomicstate, db_column='radiativetransitionid')
+    source = models.ForeignKey(Source, db_column='sourceid')
+    class Meta:
+        db_table = u't_radiativetransitionsource'
 
 class Atomiccomponent(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -129,21 +164,22 @@ class Atomiccomponent(models.Model):
     mixingcoefficient = models.FloatField()
     mixingclass = models.ForeignKey(Mixingclass, db_column='mixingclassid')
     termlabel = models.CharField(max_length=30)
-    configuration = models.CharField(max_length=60)
+    configuration = models.CharField(max_length=40)
     class Meta:
         db_table = u't_atomiccomponent'
 
 
 class Author(models.Model):
     id = models.IntegerField(primary_key=True)
-    firstname = models.CharField(unique=True, max_length=60)
-    lastname = models.CharField(unique=True, max_length=60)
+    name = models.CharField(max_length=20)
+    address = models.TextField(null=True)
     class Meta:
         db_table = u't_author'
 
 class Authorsource(models.Model):
-    authorid = models.ForeignKey(Author, db_column='authorid')
-    sourceid = models.ForeignKey(Source, db_column='sourceid')
+    id = models.IntegerField(primary_key=True)
+    author = models.ForeignKey(Author, db_column='authorid')
+    source = models.ForeignKey(Source, db_column='sourceid')
     rank = models.IntegerField()
     class Meta:
         db_table = u't_authorsource'
@@ -155,7 +191,7 @@ class Dataset(models.Model):
     class Meta:
         db_table = u't_dataset'
 
-class DataseVersion(models.Model):
+class DatasetVersion(models.Model):
     datasetid = models.ForeignKey(Dataset, db_column='datasetid')
     versionid = models.ForeignKey(Version, db_column='versionid')
     class Meta:
