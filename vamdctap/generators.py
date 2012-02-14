@@ -1708,8 +1708,8 @@ def XsamsFunctions(Functions):
         yield makePrimaryType("Function", "Function", G, extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
         yield "<Name>%s</Name>" % G("FunctionName")
-        yield "<Expression computerLanguage="%s">%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
-        yield "<Y name='%s' units='%s'>" % (G("FunctionYName"), G("FunctionYUnits"))
+        yield '<Expression computerLanguage="%s">%s</Expression>\n' % (G("FunctionComputerLanguage"), G("FunctionExpression"))
+        yield '<Y name="%s" units="%s">' % (G("FunctionYName"), G("FunctionYUnits"))
         desc = G("FunctionYDescription")
         if desc:
             yield "<Description>%s</Description>" % desc
