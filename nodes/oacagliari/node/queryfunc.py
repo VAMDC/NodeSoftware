@@ -171,27 +171,24 @@ def setupResults(sql, limit=1000):
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
     nsources = len(result_sources)
+    nmolecules = len(molecularspecies)
+    
+
+    if molecularspecies:
+        size_estimate='%.2f'%(nmolecules*0.0014 + 0.01)
+    else: size_estimate='0.00'
 
     headerinfo={\
-            'Truncated':percentage,
-            'COUNT-SOURCES':nsources,
-            'COUNT-species':nspecies,
-            'count-states':nstates,
+            'TRUNCATED':percentage,
+            'COUNT-STATES':nstates,
+            'COUNT-MOLECULES': nmolecules,
+            'APPROX-SIZE':size_estimate,
             }
             
     # Return the data. The keynames are standardized. 
-    
-    return {"HeaderInfo" :headerinfo,
-            "Sources" : result_sources, 
+    return {"Molecules" : molecularspecies,
             "Methods" : methods,
-            #"Functions" =None, 
-            #"Environments" =None, 
-            #"Atoms" =None, 
-            "Molecules" : molecularspecies,
-            #"Solids" =None, 
-            #"Particles" =None, 
-            #"CollTrans" =None, 
-            #"RadTrans" =None,
-            #"RadCross" =None, 
-            #"NonRadTrans" =None
+            'Sources':result_sources,
+            'HeaderInfo':headerinfo,
            }
+
