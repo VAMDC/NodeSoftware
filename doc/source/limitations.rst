@@ -3,7 +3,7 @@
 Known limitations
 ==================
 
-In general, the NodeSoftware tries to be forging with faulty input data from
+In general, the NodeSoftware tries to be forgiving with faulty input data from
 the nodes' databases and will do its best to return a valid and complete XML
 document. However it relies on the content of the connected dabase and the
 connection to the schema via the models and dictionaries. Errors in these
@@ -19,13 +19,5 @@ deliberate limitations include:
 * Treating isotopes and ions of atoms as different species, repeating the element information instead of nesting several ions within each isotope, and nesting the ions within each element.
 * Only allowing one set of quantum numbers per atomic or molecular state. If a node wishes to return several different descriptions of the quantum numbers per state, this needs to be implemented in a custom fashion for this node. 
 * Only one set of line broadening parameters per transtion and per type (instrumental, natural, pressure, doppler) is allowed at this time. The next release of the software will include the possibility to give several pressure-broadenings per transition.
-
-Tools for handling more advanced queries and for treating certain Restrictables
-as special cases in a node's query-function are lacking and will be improved in
-the next version.
-
-The SQL-parser does currently not support advanced nested queries with several
-levels of brackets. Also the IN-operator is as of now unsupported. This will be
-amended in the next release.
 
 A full list of outstanding issues is available at the development repository at https://github.com/VAMDC/NodeSoftware/issues where anybody is welcome to file bugs or wishlist-items.
