@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import re
+
 import sys
 from datetime import datetime
 from xml.sax.saxutils import escape
@@ -33,12 +33,13 @@ log = logging.getLogger('vamdc.tap.generator')
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-def makeiter(obj):
+def makeiter(obj, length=0):
     """
     Return an iterable, no matter what
     """
     if not obj:
-        return []
+        # we can specify the length of our default return list
+        return [None] * length
     if not isiterable(obj):
         return [obj]
     return obj
@@ -252,13 +253,16 @@ def makeAccuracy(keyword, G):
     to DataType.
     """
     acc = G(keyword + 'Accuracy')
-    if not acc: return ''
-    acc_conf = makeiter( G(keyword + 'AccuracyConfidence') )
-    acc_rel = makeiter( G(keyword + 'AccuracyRelative') )
-    acc_typ = makeiter( G(keyword + 'AccuracyType') )
+    if not acc:
+        return ''
+    acc_list = makeiter(acc)
+    nacc = len(acc_list)
+    acc_conf = makeiter( G(keyword + 'AccuracyConfidence'), nacc )
+    acc_rel = makeiter( G(keyword + 'AccuracyRelative'), nacc )
+    acc_typ = makeiter( G(keyword + 'AccuracyType'), nacc )
 
     result = []
-    for i,ac in enumerate( makeiter(acc) ):
+    for i,ac in enumerate( acc_list ):
         result.append('<Accuracy')
         if acc_conf[i]: result.append( ' confidenceInterval="%s"'%acc_conf )
         if acc_typ[i]: result.append( ' type="%s"'%acc_typ )
@@ -267,17 +271,36 @@ def makeAccuracy(keyword, G):
 
     return ''.join(result)
 
+def makeDataSeriesAccuracyType(keyword, G):
+    """
+    build the elenments for accuracy belonging
+    to a data series.
+    """
+    string = makePrimaryType("Accuracy", keyword + "Accuracy", G, extraAttr={"type":"AccuracyType",
+                                                                 "relative":"AccuracyRelative"})
+    if G(keyword + "ErrorList"):
+        string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join([makeiter(G(keyword + "ErrorList"))]))
+    elif G(keyword + "ErrorFile"):
+        string += "<ErrorFile>%s</ErrorFile>" % G(keyword + "ErrorFile")
+    elif G(keyword + "ErrorValue"):
+        string += "<ErrorValue>%s</ErrorValue" % G(keyword + "ErrorValue")
+    string += "</Accuracy>"
+    return string
+
 def makeEvaluation(keyword, G):
     """
     build the elements for evaluation that belong
     to DataType.
     """
     evs = G(keyword + 'Eval')
-    if not evs: return ''
-    ev_meth = makeiter( G(keyword + 'EvalMethod') )
-    ev_reco = makeiter( G(keyword + 'EvalRecommended') )
-    ev_refs = G(keyword + 'EvalRef')
-    ev_comm = G(keyword + 'EvalComment')
+    if not evs:
+        return ''
+    ev_list = makeiter(evs)
+    nevs = len(ev_list)
+    ev_meth = makeiter( G(keyword + 'EvalMethod'), nevs )
+    ev_reco = makeiter( G(keyword + 'EvalRecommended'), nevs )
+    ev_refs = G(keyword + 'EvalRef', nevs)
+    ev_comm = G(keyword + 'EvalComment', nevs)
 
     result = []
     for i,ev in enumerate( makeiter(evs) ):
@@ -323,8 +346,8 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
 
-    result.append( makeAccuracy( tagname, G) )
-    result.append( makeEvaluation( tagname, G) )
+    result.append( makeAccuracy( keyword, G) )
+    result.append( makeEvaluation( keyword, G) )
     result.append( '</%s>' % tagname )
 
     for k, v in extraElem.items():
@@ -1238,7 +1261,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('WeightedOscillatorStrength', 'RadTransProbabilityWeightedOscillatorStrength', G)
         yield makeDataType('Log10WeightedOscillatorStrength', 'RadTransProbabilityLog10WeightedOscillatorStrength', G)
         yield makeDataType('IdealisedIntensity', 'RadTransProbabilityIdealisedIntensity', G)
-        makeOptionalTag('TransitionKind','RadTransProbabilityKind',G)
+        yield makeOptionalTag('TransitionKind','RadTransProbabilityKind',G)
         yield makeDataType('EffectiveLandeFactor', 'RadTransEffectiveLandeFactor', G)
         yield '</Probability>\n'
 
@@ -1576,35 +1599,36 @@ def XsamsCollTrans(CollTrans):
 
                         yield makePrimaryType("TabulatedData", "CollisionTabulatedData", GDT)
 
-                        yield "<DataXY>"
-
-                        # handle X components of XY
-                        Nx = GDT("CollisionTabulatedDataXN")
-                        xunits = GDT("CollisionTabulatedDataXUnits")
-                        xparameters=GDT("CollisionTabulatedDataXParameter")
-
-                        yield "<X units='%s' parameter='%s'>" % (xunits, xparameters)
-                        yield "<DataList count='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
-                        yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXError"))))
-                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXNegativeError"))))
-                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXPositiveError"))))
+                        # handle X components
+                        yield makePrimaryType("X", "CollisionTabulatedDataX", GDT)
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
+
+                        if GDT("CollisionTabulatedDataXDataList"):
+                            yield "<DataList count='%s'>%s</DataList>" % (GDT("CollisionTabulatedDataXDataListN"), " ".join(makeiter(GDT("CollisionTabulatedDataXDataList"))))
+                        elif GDT("CollisionTabulatedDataXLinearSequence"):
+                            yield "<LinearSequence count='%s' initial='%s' increment='%s'/>" % (GDT("CollisionTabulatedDataXLinearSequenceN"),
+                                                                                                GDT("CollisionTabulatedDataXLinearSequenceInitial"),
+                                                                                                GDT("CollisionTabulatedDataXLinearSequenceIncrement"))
+                        elif GDT("CollisionTabulatedDataXDataFile"):
+                            yield "<DataFile>%s</DataFile>" % GDT("CollisionTabulatedDataXDataFile")
+                        yield makeDataSeriesAccuracyType("CollisionTabulatedDataX", GDT)
                         yield "</X>"
 
-                        # handle Y components of XY
-                        Ny = GDT("CollisionTabulatedDataYN")
-                        yunits = GDT("CollisionTabulatedDataYUnits")
-                        yparameters=GDT("CollisionTabulatedDataYParameter")
-
-                        yield "<Y units='%s' parameter='%s'>" % (yunits, yparameters)
-                        yield "<DataList count='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
-                        yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYError"))))
-                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYNegativeError"))))
-                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYPositiveError"))))
+                        # handle Y components
+                        yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT)
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
+
+                        if GDT("CollisionTabulatedDataYDataList"):
+                            yield "<DataList count='%s'>%s</DataList>" % (GDT("CollisionTabulatedDataYDataListN"), " ".join(makeiter(GDT("CollisionTabulatedDataYDataList"))))
+                        elif GDT("CollisionTabulatedDataYLinearSequence"):
+                            yield "<LinearSequence count='%s' initial='%s' increment='%s'/>" % (GDT("CollisionTabulatedDataYLinearSequenceN"),
+                                                                                                GDT("CollisionTabulatedDataYLinearSequenceInitial"),
+                                                                                                GDT("CollisionTabulatedDataYLinearSequenceIncrement"))
+                        elif GDT("CollisionTabulatedDataYDataFile"):
+                            yield "<DataFile>%s</DataFile>" % GDT("CollisionTabulatedDataYDataFile")
+                        yield makeDataSeriesAccuracyType("CollisionTabulatedDataY", GDT)
                         yield "</Y>"
 
-                        yield "</DataXY>"
 
                         tabref = GDT("CollisionTabulatedDataReferenceFrame")
                         if tabref:
@@ -1684,8 +1708,8 @@ def XsamsFunctions(Functions):
         yield makePrimaryType("Function", "Function", G, extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
         yield "<Name>%s</Name>" % G("FunctionName")
-        yield "<Expression computerLanguage=%s>%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
-        yield "<Y name='%s', units='%s'>" % (G("FunctionYName"), G("FunctionYUnits"))
+        yield '<Expression computerLanguage="%s">%s</Expression>\n' % (G("FunctionComputerLanguage"), G("FunctionExpression"))
+        yield '<Y name="%s" units="%s">' % (G("FunctionYName"), G("FunctionYUnits"))
         desc = G("FunctionYDescription")
         if desc:
             yield "<Description>%s</Description>" % desc
@@ -1778,6 +1802,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
             % (XSAMS_VERSION, SCHEMA_LOCATION)
 
     if HeaderInfo:
+        HeaderInfo = CaselessDict(HeaderInfo)
         if HeaderInfo.has_key('Truncated'):
             if HeaderInfo['Truncated'] != None: # note: allow 0 percent
                 yield """
