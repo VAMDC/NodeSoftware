@@ -5,8 +5,8 @@ Changelog
 
 .. note::
     This chapter will be difficult to understand if you have not read the whole
-    document before since terms are used that are introduced later. It is meant
-    for returning readers, especially the maintainer of VAMDC nodes.
+    document before, since terms are used that are introduced later. It is meant
+    for returning readers, especially the maintainers of VAMDC nodes.
 
 February 13, 2012
 ---------------------
