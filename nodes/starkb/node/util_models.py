@@ -2,11 +2,16 @@
 class Result:
 	def __init__(self):
 		self.header = {}
-		self._headerFields = {	'Truncated':None, 
-								'count-sources':None,
-								'count-species':None,
-								'count-states':None,
-								'count-radiative':None
+		self._headerFields = {	'COUNT-SOURCES':None,
+                                'COUNT-ATOMS' : None,
+                                'COUNT-MOLECULES':None,
+								'COUNT-SPECIES':None,
+								'COUNT-STATES':None,
+								'COUNT-RADIATIVE':None,
+								'COUNT-COLLISIONS' : None,
+                                'COUNT-NONRADIATIVE':None,
+                                'TRUNCATED':None,
+                                'APPROX-SIZE':None  
 							}
 		self.data = {}
 		self._dataFields = {'RadTrans':None,
@@ -44,12 +49,19 @@ class Result:
 			
 		return result
 
+class State():
+    def __init__(self):
+        self.Components = []
+        self.Sources = []
+        self.id = None
+        self.totalAngularMomentum = None
+
 
 class Shifting():
     def __init__(self):
         self.environment = None
         self.name = None
-        self.ShiftingParams = list()
+        self.ShiftingParams = list()   
 
 class ShiftingParameter():
     def __init__(self):

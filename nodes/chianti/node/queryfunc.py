@@ -152,7 +152,7 @@ def statesRequired(sql):
 # Main function 
 #------------------------------------------------------------
 
-def setupResults(sql, limit=1000):
+def setupResults(sql, limit=100000):
     """
     This function is always called by the software.
     """

@@ -53,7 +53,7 @@ def setupSpecies():
 	"""
 	result = util_models.Result()
 	species = getSpecies()
-	result.addHeaderField('count-species',len(species))
+	result.addHeaderField('COUNT-SPECIES',len(species))
 	result.addDataField('Atoms',species)	
 	return result
 	
@@ -88,10 +88,10 @@ def setupVssRequest(sql, limit=1000):
 
         # Create the header with some useful info. The key names here are
         # standardized and shouldn't be changed.
-        result.addHeaderField('Truncated',percentage)
-        result.addHeaderField('count-species',nspecies)
-        result.addHeaderField('count-states',nstates)
-        result.addHeaderField('count-radiative',len(transitions))			
+        result.addHeaderField('TRUNCATED',percentage)
+        result.addHeaderField('COUNT-SPECIES',nspecies)
+        result.addHeaderField('COUNT-STATES',nstates)
+        result.addHeaderField('COUNT-RADIATIVE',len(transitions))			
         
         result.addDataField('RadTrans',transitions)        
         result.addDataField('Atoms',species)
@@ -100,9 +100,9 @@ def setupVssRequest(sql, limit=1000):
         result.addDataField('Sources',sources)
         
     else : # only fill header
-        result.addHeaderField('Truncated',percentage)
-        result.addHeaderField('count-states',0)
-        result.addHeaderField('count-radiative',0)
+        result.addHeaderField('TRUNCATED',percentage)
+        result.addHeaderField('COUNT-STATES',0)
+        result.addHeaderField('COUNT-RADIATIVE',0)
     return result	
 	
 def truncateTransitions(transitions, request, maxTransitionNumber):
@@ -155,50 +155,63 @@ def getDatasetSources(datasetid):
 	return sources
 
 def getSpeciesWithStates(transs):
-	"""
-		Use the Transition matches to obtain the related Species (only atoms in this example)
-		and the states related to each transition.         
-		We also return some statistics of the result 
-		@type  transs: list
-		@param transs: a list of Transition
-		@rtype:   list
-		@return:  a list of Species
-		@rtype:   int
-		@return:  number of species
-		@rtype:   int
-		@return:  number of states
-		
-	"""
-	# get ions according to selected transitions    
-	targetids = transs.values_list('target', flat=True).distinct()
-	targets = django_models.Species.objects.filter(pk__in=targetids)   
-	colliders = getIonCollidersByTransitions(transs)        
-	species = targets | colliders  
-	# get all states.    
-	nstates = 0
+    """
+        Use the Transition matches to obtain the related Species (only atoms in this example)
+        and the states related to each transition.         
+        We also return some statistics of the result 
+        @type  transs: list
+        @param transs: a list of Transition
+        @rtype:   list
+        @return:  a list of Species
+        @rtype:   int
+        @return:  number of species
+        @rtype:   int
+        @return:  number of states
+        
+    """
+    # get ions according to selected transitions    
+    targetids = transs.values_list('target', flat=True).distinct()
+    targets = django_models.Species.objects.filter(pk__in=targetids)   
+    colliders = getIonCollidersByTransitions(transs)        
+    species = targets | colliders  
+    # get all states.    
+    nstates = 0
 
-	for specie in species:
-		try :            
-			target = targets.get(id = specie.pk)# if ion is a target, look for states      
-			# get all transitions in linked to this particular species 
-			spec_transitions = transs.filter(target__pk = target.pk)   
+    for specie in species:
+        try :            
+            target = targets.get(id = specie.pk)# if ion is a target, look for states      
+            # get all transitions in linked to this particular species 
+            spec_transitions = transs.filter(target__pk = target.pk)   
 
-			# extract reference ids for the states from the transion, combining both
-			# upper and lower unique states together
-			up = spec_transitions.values_list('upper_level',flat=True)
-			lo = spec_transitions.values_list('lower_level',flat=True)
-			sids = set(chain(up, lo))
+            # extract reference ids for the states from the transion, combining both
+            # upper and lower unique states together
+            up = spec_transitions.values_list('upper_level',flat=True)
+            lo = spec_transitions.values_list('lower_level',flat=True)
+            sids = set(chain(up, lo))
+            getStates(specie, sids)
+            for i in range(len(specie.States)):
+                specie.States[i].Sources = getDatasetSources(specie.States[i].Components[0].dataset.pk)
 
-			specie.States = django_models.Level.objects.filter( pk__in = sids )
-			for i in range(len(specie.States)):
-				specie.States[i].Sources = getDatasetSources(specie.States[i].dataset.pk)
+            nstates += len(specie.States)
+        except ObjectDoesNotExist as e:
+            log.debug(str(e)) # this species is a collider
 
-			nstates += specie.States.count() 
-		except ObjectDoesNotExist as e:
-			log.debug(str(e)) # this species is a collider
+    nspecies = len(species) # get some statistics 
+    return species, nspecies, nstates  
+    
+def getStates(specie, sids):
+    statescomponent = django_models.Level.objects.filter( pk__in = sids )
+    allStates = []
+    for component in statescomponent : 
+        starkState = util_models.State()
+        starkState.id = component.id
+        starkState.totalAngularMomentum = component.j_asFloat()
+        starkState.Components.append(component)
+        allStates.append(starkState)
+    specie.States = allStates
 
-	nspecies = len(species) # get some statistics 
-	return species, nspecies, nstates  
+    return specie
+    
         
 def getTransitionsData(transs):
     """

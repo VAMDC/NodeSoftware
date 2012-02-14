@@ -59,7 +59,12 @@ def getSpeciesWithStates(transs):
     # get ions according to selected transitions
     ionids = transs.values_list('version', flat=True).distinct()
     species = django_models.Version.objects.filter(id__in=ionids)
+    sourceids = []
     nstates = 0
+    
+    for trans in transs:
+        trans.Sources = getTransitionSources(trans)
+        sourceids.extend(trans.Sources)
 
     for specie in species:
         # get all transitions in linked to this particular species
@@ -75,11 +80,53 @@ def getSpeciesWithStates(transs):
         specie.States = django_models.Atomicstate.objects.filter( pk__in = sids )
         
         for state in specie.States :
-            state.Component = getCoupling(state)
+            state.Components = []
+            state.Components.append(getCoupling(state))
+            state.Sources = getStateSources(state)
+            sourceids.extend(state.Sources)
         nstates += specie.States.count()
+                
+    return species, nstates, sourceids
+    
+def getTransitionSources(trans):
+    """
+        get ids of sources related to a transition
+    """
+    sourceids = []
+    relatedsources = django_models.Radiativetransitionsource.objects.filter(radiativetransition=trans)    
+    for relatedsource in relatedsources :
+        sourceids.append(relatedsource.source.pk)
+    return sourceids    
+    
+    
+def getStateSources(state):
+    """
+        get ids of sources related to an atomic state
+    """
+    sourceids = []
+    relatedsources = django_models.Atomicstatesource.objects.filter(atomicstate=state)    
+    for relatedsource in relatedsources :
+        sourceids.append(relatedsource.source.pk)
+    return sourceids
+    
+    
+
+def getSources(ids):
+    """
+        get a list of source objects from their ids    
+    """
+    sources = django_models.Source.objects.filter(pk__in=ids)    
+    for source in sources : 
+        names=[]
+        adresses=[]
+        relatedauthors = django_models.Authorsource.objects.filter(source=source).order_by('rank')
+        #build a list of authors
+        for relatedauthor in relatedauthors:
+            names.append(relatedauthor.author.name)
+        source.Authors = names
+    return sources
         
-        
-    return species, nstates
+    
 
 def getCoupling(state):
     """
@@ -159,26 +206,32 @@ def setupVssRequest(sql, limit=1000):
     #sources = getRefs(transs)
     #nsources = sources.count()
 
-    species, nstates = getSpeciesWithStates(transs)
+    species, nstates, sourceids = getSpeciesWithStates(transs)
 
     # cross sections
     states = []
+    nspecies = species.count()
     for specie in species:        
         for state in specie.States : 
             if state.xdata is not None : # do not add state without xdata/ydata
                 states.append(state)
     transs = toLowerUpperStates(transs)
+    sources = getSources(sourceids)
+    nsources = sources.count()
 
     # Create the result object
     result = util_models.Result()
-    result.addHeaderField('Truncated', percentage)
-    result.addHeaderField('count-states',nstates)
-    result.addHeaderField('count-radiative',ntranss)
+
+    result.addHeaderField('TRUNCATED', percentage)
+    result.addHeaderField('COUNT-STATES',nstates)
+    result.addHeaderField('COUNT-RADIATIVE',ntranss)
+    result.addHeaderField('COUNT-SPECIES',nspecies)
+    result.addHeaderField('COUNT-SOURCES',nsources)  
 
     result.addDataField('RadTrans',transs)
     result.addDataField('Atoms',species)
     result.addDataField('RadCross',states)
-    
+    result.addDataField('Sources', sources)
     return result
     
 def setupSpecies():
@@ -190,7 +243,7 @@ def setupSpecies():
 	result = util_models.Result()
 	ids = django_models.Radiativetransition.objects.all().values_list('version', flat=True)
 	versions = django_models.Version.objects.filter(pk__in = ids)
-	result.addHeaderField('count-species',len(versions))
+	result.addHeaderField('COUNT-SPECIES',len(versions))
 	result.addDataField('Atoms',versions)	
 	return result
 	

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import re
+
 import sys
 from datetime import datetime
 from xml.sax.saxutils import escape
@@ -33,12 +33,13 @@ log = logging.getLogger('vamdc.tap.generator')
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-def makeiter(obj):
+def makeiter(obj, length=0):
     """
     Return an iterable, no matter what
     """
     if not obj:
-        return []
+        # we can specify the length of our default return list
+        return [None] * length
     if not isiterable(obj):
         return [obj]
     return obj
@@ -252,13 +253,16 @@ def makeAccuracy(keyword, G):
     to DataType.
     """
     acc = G(keyword + 'Accuracy')
-    if not acc: return ''
-    acc_conf = makeiter( G(keyword + 'AccuracyConfidence') )
-    acc_rel = makeiter( G(keyword + 'AccuracyRelative') )
-    acc_typ = makeiter( G(keyword + 'AccuracyType') )
+    if not acc:
+        return ''
+    acc_list = makeiter(acc)
+    nacc = len(acc_list)
+    acc_conf = makeiter( G(keyword + 'AccuracyConfidence'), nacc )
+    acc_rel = makeiter( G(keyword + 'AccuracyRelative'), nacc )
+    acc_typ = makeiter( G(keyword + 'AccuracyType'), nacc )
 
     result = []
-    for i,ac in enumerate( makeiter(acc) ):
+    for i,ac in enumerate( acc_list ):
         result.append('<Accuracy')
         if acc_conf[i]: result.append( ' confidenceInterval="%s"'%acc_conf )
         if acc_typ[i]: result.append( ' type="%s"'%acc_typ )
@@ -267,17 +271,36 @@ def makeAccuracy(keyword, G):
 
     return ''.join(result)
 
+def makeDataSeriesAccuracyType(keyword, G):
+    """
+    build the elenments for accuracy belonging
+    to a data series.
+    """
+    string = makePrimaryType("Accuracy", keyword + "Accuracy", G, extraAttr={"type":"AccuracyType",
+                                                                 "relative":"AccuracyRelative"})
+    if G(keyword + "ErrorList"):
+        string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join([makeiter(G(keyword + "ErrorList"))]))
+    elif G(keyword + "ErrorFile"):
+        string += "<ErrorFile>%s</ErrorFile>" % G(keyword + "ErrorFile")
+    elif G(keyword + "ErrorValue"):
+        string += "<ErrorValue>%s</ErrorValue" % G(keyword + "ErrorValue")
+    string += "</Accuracy>"
+    return string
+
 def makeEvaluation(keyword, G):
     """
     build the elements for evaluation that belong
     to DataType.
     """
     evs = G(keyword + 'Eval')
-    if not evs: return ''
-    ev_meth = makeiter( G(keyword + 'EvalMethod') )
-    ev_reco = makeiter( G(keyword + 'EvalRecommended') )
-    ev_refs = G(keyword + 'EvalRef')
-    ev_comm = G(keyword + 'EvalComment')
+    if not evs:
+        return ''
+    ev_list = makeiter(evs)
+    nevs = len(ev_list)
+    ev_meth = makeiter( G(keyword + 'EvalMethod'), nevs )
+    ev_reco = makeiter( G(keyword + 'EvalRecommended'), nevs )
+    ev_refs = G(keyword + 'EvalRef', nevs)
+    ev_comm = G(keyword + 'EvalComment', nevs)
 
     result = []
     for i,ev in enumerate( makeiter(evs) ):
@@ -323,8 +346,8 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
 
-    result.append( makeAccuracy( tagname, G) )
-    result.append( makeEvaluation( tagname, G) )
+    result.append( makeAccuracy( keyword, G) )
+    result.append( makeEvaluation( keyword, G) )
     result.append( '</%s>' % tagname )
 
     for k, v in extraElem.items():
@@ -556,78 +579,78 @@ def makeShellType(tag, keyword, G):
     return string
 
 
-def makeAtomComponent(Atom):
+def makeAtomStateComponents(AtomState):
     """
     This constructs the Atomic Component structure.
 
     Atom - the current Atom queryset
     """
+    if not hasattr(AtomState,'Components'):
+        return ''
 
     string = ""
+    for Component in makeiter(AtomState.Components):
+        G = lambda name: GetValue(name, Component=Component)
 
-    if hasattr(Atom, "Components"):
-        for Component in makeiter(Atom.Components):
-            G = lambda name: GetValue(name, Component=Component)
+        string += "<Component>"
 
-            string += "<Component>"
+        if hasattr(Component, "SuperShells"):
+            string += "<SuperConfiguration>"
+            for SuperShell in makeiter(Component.SuperShells):
+                GA = lambda name: GetValue(name, SuperShell=SuperShell)
+                string += "<SuperShell>"
+                string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % GA("AtomStateSuperShellPrincipalQN")
+                string += "<NumberOfElectrons>%s</NumberOfElectrons>" % GA("AtomStateSuperShellNumberOfElectrons")
+                string += "</SuperShell>"
+            string += "</SuperConfiguration>"
 
-            if hasattr(Component, "SuperShells"):
-                string += "<SuperConfiguration>"
-                for SuperShell in makeiter(Component.SuperShells):
-                    GA = lambda name: GetValue(name, SuperShell=SuperShell)
-                    string += "<SuperShell>"
-                    string += "<PrincipalQuantumNumber>%s</PrincipalQuantumNumber>" % GA("AtomStateSuperShellPrincipalQN")
-                    string += "<NumberOfElectrons>%s</NumberOfElectrons>" % GA("AtomStateSuperShellNumberOfElectrons")
-                    string += "</SuperShell>"
-                string += "</SuperConfiguration>"
+        string += "<Configuration>"
+        string += "<AtomicCore>"
+        ecore = G("AtomStateElementCore")
+        if ecore:
+            string += "<ElementCore>%s</ElementCore>" % ecore
+        conf = G("AtomStateConfiguration")
+        if conf:
+            # TODO: The format of the Configuration tab is not yet
+            # finalized in XSAMS!
+            string += "<Configuration>%s</Configuration>" % conf
+        string += makeTermType("Term", "AtomStateCoreTerm", G)
+        tangmom = G("AtomStateCoreTotalAngMom")
+        if tangmom:
+            string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % tangmom
+        string += "</AtomicCore>"
 
-            string += "<Configuration>"
-            string += "<AtomicCore>"
-            ecore = G("AtomStateElementCore")
-            if ecore:
-                string += "<ElementCore>%s</ElementCore>" % ecore
-            conf = G("AtomStateConfiguration")
-            if conf:
-                # TODO: The format of the Configuration tab is not yet
-                # finalized in XSAMS!
-                string += "<Configuration>%s</Configuration>" % conf
-            string += makeTermType("Term", "AtomStateCoreTerm", G)
-            tangmom = G("AtomStateCoreTotalAngMom")
-            if tangmom:
-                string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % tangmom
-            string += "</AtomicCore>"
+        if hasattr(Component, "Shells"):
+            string += "<Shells>"
+            for AtomShell in makeiter(Component.Shells):
+                GS = lambda name: GetValue(name, AtomShell=AtomShell)
+                string += makeShellType("Shell", "AtomStateShell", GS)
 
-            if hasattr(Component, "Shells"):
-                string += "<Shells>"
-                for AtomShell in makeiter(Component.Shells):
-                    GS = lambda name: GetValue(name, AtomShell=AtomShell)
-                    string += makeShellType("Shell", "AtomStateShell", GS)
+            if hasattr(Component, "ShellPair"):
+                for AtomShellPair in makeiter(Component.ShellPairs):
+                    GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
+                    string += '<ShellPair shellPairID="%s-%s">' % (NODEID, GS("AtomStateShellPairID"))
+                    string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
+                    string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
+                    string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
+                string += "</ShellPair>"
 
-                if hasattr(Component, "ShellPair"):
-                    for AtomShellPair in makeiter(Component.ShellPairs):
-                        GS = lambda name: GetValue(name, AtomShellPair=AtomShellPair)
-                        string += '<ShellPair shellPairID="%s-%s">' % (NODEID, GS("AtomStateShellPairID"))
-                        string += makeShellType("Shell1", "AtomStateShellPairShell1", GS)
-                        string += makeShellType("Shell2", "AtomStateShellPairShell2", GS)
-                        string += makeTermType("ShellPairTerm", "AtomStateShellPairTerm", GS)
-                    string += "</ShellPair>"
+            string += "</Shells>"
 
-                string += "</Shells>"
+        clabel = G("AtomStateConfigurationLabel")
+        if clabel:
+            string += "<ConfigurationLabel>%s</ConfigurationLabel>" % clabel
+        string += "</Configuration>"
 
-            clabel = G("AtomStateConfigurationLabel")
-            if clabel:
-                string += "<ConfigurationLabel>%s</ConfigurationLabel>" % clabel
-            string += "</Configuration>"
+        string += makeTermType("Term", "AtomStateTerm", G)
+        mixCoe = G("AtomStateMixingCoeff")
+        if mixCoe:
+            string += '<MixingCoefficient mixingClass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
+        coms = G("AtomStateComponentComment")
+        if coms:
+            string += "<Comments>%s</Comments>" % coms
 
-            string += makeTermType("Term", "AtomStateTerm", G)
-            mixCoe = G("AtomStateMixingCoeff")
-            if mixCoe:
-                string += '<MixingCoefficient mixingClass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
-            coms = G("AtomStateComponentComment")
-            if coms:
-                string += "<Comments>%s</Comments>" % coms
-
-            string += "</Component>"
+        string += "</Component>"
 
     return string
 
@@ -661,7 +684,9 @@ def XsamsAtoms(Atoms):
             yield makeOptionalTag('NuclearSpin','AtomNuclearSpin',G)
             yield '</IsotopeParameters>'
 
-        yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' % (NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
+        yield '<Ion speciesID="X%s-%s"><IonCharge>%s</IonCharge>' \
+                % (NODEID, G('AtomSpeciesID'), G('AtomIonCharge'))
+        yield makeOptionalTag('IsoelectronicSequence','AtomIsoelectronicSequence',G)
         if not hasattr(Atom,'States'):
             Atom.States = []
         for AtomState in Atom.States:
@@ -706,10 +731,10 @@ def XsamsAtoms(Atoms):
             cont, ret = checkXML(AtomState,'CompositionXML')
             if cont:
                 yield ret
-            else:                
-                if hasattr(Atom, "Components"):
+            else:
+                if hasattr(AtomState, "Components"):
                     yield makePrimaryType("AtomicComposition", "AtomicStateComposition", G)
-                    yield makeAtomComponent(Atom)
+                    yield makeAtomStateComponents(AtomState)
                     yield '</AtomicComposition>'
 
             yield '</AtomicState>'
@@ -725,7 +750,7 @@ def XsamsAtoms(Atoms):
 #
 # MOLECULES START
 def makeNormalMode(G):
-    
+
     elstate = G('MoleculeNormalModeElectronicState')
     pointgr = G('MoleculeNormalModePointGroupSymmetry')
     id = G('MoleculeNormalModeID')
@@ -736,7 +761,7 @@ def makeNormalMode(G):
     result = [ makePrimaryType('NormalMode', 'MoleculeNormalMode', G, extraAttr=extraAttr) ]
     result.append( makeDataType('HarmonicFrequency','MoleculeNormalModeHarmonicFrequency',G) )
     result.append( makeDataType('Intensity','MoleculeNormalModeIntensity',G) )
-    
+
     vsrefs = G('MoleculeNormalModeDisplacementVectorSourceRef')
     unit = G('MoleculeNormalModeDisplacementVectorsUnit')
     x3s = G('MoleculeNormalModeDisplacementVectorX3')
@@ -746,10 +771,10 @@ def makeNormalMode(G):
     if unit: extraAttr['units'] = unit
     vsrefs, x3s, y3s, z3s = \
         map(makeiter, [vsrefs, x3s, y3s, z3s])
-        
+
     if len(x3s)>0:
         result.append( makePrimaryType('DisplacementVectors','MoleculeNormalModeDisplacementVectors',G, extraAttr=extraAttr) )
-        
+
         for i,x3 in enumerate(x3s):
             result.append('<Vector')
             try: result.append(' ref="%s"'%vsrefs[i])
@@ -761,9 +786,9 @@ def makeNormalMode(G):
             try: result.append(' z3="%s"'%z3s[i])
             except: pass
             result.append('></Vector>')
-               
+
         result.append('</DisplacementVectors>')
-    
+
     result.append('</NormalMode>')
     return ''.join(result)
 
@@ -1134,7 +1159,7 @@ def XsamsRadTranBroadening(G):
         else:
             s.append( makeBroadeningType(G, name=broadening) )
     return ''.join(s)
-    
+
 
 
 
@@ -1162,7 +1187,7 @@ def XsamsRadTranShifting(RadTran):
                     if val:
                         string += "<Value units='%s'>%s</Value>" % (val, GS("RadTransShiftingParam" ))
                     string += makeAccuracy('RadTransShiftingParam', GS)
-                    
+
 
                     if hasattr(ShiftingParam, "Fit"):
                         for Fit in makeiter(ShiftingParam.Fits):
@@ -1236,7 +1261,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('WeightedOscillatorStrength', 'RadTransProbabilityWeightedOscillatorStrength', G)
         yield makeDataType('Log10WeightedOscillatorStrength', 'RadTransProbabilityLog10WeightedOscillatorStrength', G)
         yield makeDataType('IdealisedIntensity', 'RadTransProbabilityIdealisedIntensity', G)
-        makeOptionalTag('TransitionKind','RadTransProbabilityKind',G)
+        yield makeOptionalTag('TransitionKind','RadTransProbabilityKind',G)
         yield makeDataType('EffectiveLandeFactor', 'RadTransEffectiveLandeFactor', G)
         yield '</Probability>\n'
 
@@ -1574,35 +1599,36 @@ def XsamsCollTrans(CollTrans):
 
                         yield makePrimaryType("TabulatedData", "CollisionTabulatedData", GDT)
 
-                        yield "<DataXY>"
-
-                        # handle X components of XY
-                        Nx = GDT("CollisionTabulatedDataXN")
-                        xunits = GDT("CollisionTabulatedDataXUnits")
-                        xparameters=GDT("CollisionTabulatedDataXParameter")
-
-                        yield "<X units='%s' parameter='%s'>" % (xunits, xparameters)
-                        yield "<DataList count='%s' units='%s'>%s</DataList>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataX"))))
-                        yield "<Error n='%s' units='%s'>%s</Error>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXError"))))
-                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXNegativeError"))))
-                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Nx, xunits, " ".join(makeiter(GDT("CollisionTabulatedDataXPositiveError"))))
+                        # handle X components
+                        yield makePrimaryType("X", "CollisionTabulatedDataX", GDT)
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
+
+                        if GDT("CollisionTabulatedDataXDataList"):
+                            yield "<DataList count='%s'>%s</DataList>" % (GDT("CollisionTabulatedDataXDataListN"), " ".join(makeiter(GDT("CollisionTabulatedDataXDataList"))))
+                        elif GDT("CollisionTabulatedDataXLinearSequence"):
+                            yield "<LinearSequence count='%s' initial='%s' increment='%s'/>" % (GDT("CollisionTabulatedDataXLinearSequenceN"),
+                                                                                                GDT("CollisionTabulatedDataXLinearSequenceInitial"),
+                                                                                                GDT("CollisionTabulatedDataXLinearSequenceIncrement"))
+                        elif GDT("CollisionTabulatedDataXDataFile"):
+                            yield "<DataFile>%s</DataFile>" % GDT("CollisionTabulatedDataXDataFile")
+                        yield makeDataSeriesAccuracyType("CollisionTabulatedDataX", GDT)
                         yield "</X>"
 
-                        # handle Y components of XY
-                        Ny = GDT("CollisionTabulatedDataYN")
-                        yunits = GDT("CollisionTabulatedDataYUnits")
-                        yparameters=GDT("CollisionTabulatedDataYParameter")
-
-                        yield "<Y units='%s' parameter='%s'>" % (yunits, yparameters)
-                        yield "<DataList count='%s' units='%s'>%s</DataList>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataY"))))
-                        yield "<Error n='%s' units='%s'>%s</Error>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYError"))))
-                        yield "<NegativeError n='%s' units='%s'>%s</NegativeError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYNegativeError"))))
-                        yield "<PositiveError n='%s' units='%s'>%s</PositiveError>" % (Ny, yunits, " ".join(makeiter(GDT("CollisionTabulatedDataYPositiveError"))))
+                        # handle Y components
+                        yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT)
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
+
+                        if GDT("CollisionTabulatedDataYDataList"):
+                            yield "<DataList count='%s'>%s</DataList>" % (GDT("CollisionTabulatedDataYDataListN"), " ".join(makeiter(GDT("CollisionTabulatedDataYDataList"))))
+                        elif GDT("CollisionTabulatedDataYLinearSequence"):
+                            yield "<LinearSequence count='%s' initial='%s' increment='%s'/>" % (GDT("CollisionTabulatedDataYLinearSequenceN"),
+                                                                                                GDT("CollisionTabulatedDataYLinearSequenceInitial"),
+                                                                                                GDT("CollisionTabulatedDataYLinearSequenceIncrement"))
+                        elif GDT("CollisionTabulatedDataYDataFile"):
+                            yield "<DataFile>%s</DataFile>" % GDT("CollisionTabulatedDataYDataFile")
+                        yield makeDataSeriesAccuracyType("CollisionTabulatedDataY", GDT)
                         yield "</Y>"
 
-                        yield "</DataXY>"
 
                         tabref = GDT("CollisionTabulatedDataReferenceFrame")
                         if tabref:
@@ -1682,8 +1708,8 @@ def XsamsFunctions(Functions):
         yield makePrimaryType("Function", "Function", G, extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
         yield "<Name>%s</Name>" % G("FunctionName")
-        yield "<Expression computerLanguage=%s>%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
-        yield "<Y name='%s', units='%s'>" % (G("FunctionYName"), G("FunctionYUnits"))
+        yield '<Expression computerLanguage="%s">%s</Expression>\n' % (G("FunctionComputerLanguage"), G("FunctionExpression"))
+        yield '<Y name="%s" units="%s">' % (G("FunctionYName"), G("FunctionYUnits"))
         desc = G("FunctionYDescription")
         if desc:
             yield "<Description>%s</Description>" % desc
@@ -1776,6 +1802,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
             % (XSAMS_VERSION, SCHEMA_LOCATION)
 
     if HeaderInfo:
+        HeaderInfo = CaselessDict(HeaderInfo)
         if HeaderInfo.has_key('Truncated'):
             if HeaderInfo['Truncated'] != None: # note: allow 0 percent
                 yield """

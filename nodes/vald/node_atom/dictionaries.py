@@ -70,10 +70,12 @@ from vamdctap.unitconv import *
 from django.db.models import Q
 
 RESTRICTABLES = {\
-'ConstantTest':test_constant_factory('"U"'),
+#'ConstantTest':test_constant_factory('"U"'),
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
 'IonCharge':'species__ion',
+'InchiKey':'species__inchi',
+'InchiKey':'species__inchikey',
 'StateEnergy':bothStates,
 'Lower.StateEnergy':'lostate__energy',
 'Upper.StateEnergy':'upstate__energy',
@@ -85,5 +87,5 @@ RESTRICTABLES = {\
 'RadTransBroadeningNatural':'gammarad',
 'RadTransBroadeningPressure':'gammastark',
 'MethodCategory':('method_restrict',valdObstype),
-#'RadTransProbabilityA':'einsteina'
+'RadTransProbabilityA':'einsteina'
 }
