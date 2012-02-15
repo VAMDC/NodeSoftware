@@ -300,13 +300,16 @@ def setupResults(sql):
     print 'timed at %.1f secs' % (end_time - start_time)
 
    # return the dictionary as described above
-    return {'HeaderInfo': headerinfo,
-            'Methods': methods,
-            'RadTrans': transitions,
-            'Sources': sources,
-            'Molecules': species,
-            'Environments': HITRANenvs,
-            'Functions': HITRANfuncs}
+    if (ntrans > 0 or nstates > 0 or nspecies > 0):
+        return {'HeaderInfo': headerinfo,
+                'Methods': methods,
+                'RadTrans': transitions,
+                'Sources': sources,
+                'Molecules': species,
+                'Environments': HITRANenvs,
+                'Functions': HITRANfuncs}
+    # return an empty dictionary to trigger a 204 if there's no data
+    return {}
 
 def get_xsec_envs(xsecs):
     xsec_envs = []
