@@ -155,7 +155,7 @@ def addHeaders(headers,response):
 
     for h in HEADS:
         if headers.has_key(h):
-            if headers[h]: response['VAMDC-'+h] = '%s'%headers[h]
+            response['VAMDC-'+h] = '%s'%headers[h]
     return response
 
 def sync(request):
