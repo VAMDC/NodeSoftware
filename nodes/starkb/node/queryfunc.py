@@ -65,10 +65,10 @@ def setupVssRequest(sql, limit=1000):
         @rtype:   util_models.Result
         @return:  Result object		
     """
-    
+
     result = util_models.Result()
     q = sql2Q(sql)    
-    
+
     transs = django_models.Transition.objects.filter(q)
     ntranss=transs.count()
 
@@ -76,7 +76,7 @@ def setupVssRequest(sql, limit=1000):
         transs, percentage = truncateTransitions(transs, q, limit)
     else:
         percentage=None 
-            
+    log.debug("number of transitions : "+str(ntranss))
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     if ntranss > 0 :	
@@ -91,8 +91,8 @@ def setupVssRequest(sql, limit=1000):
         result.addHeaderField('TRUNCATED',percentage)
         result.addHeaderField('COUNT-SPECIES',nspecies)
         result.addHeaderField('COUNT-STATES',nstates)
-        result.addHeaderField('COUNT-RADIATIVE',len(transitions))			
-        
+        result.addHeaderField('COUNT-RADIATIVE',len(transitions))	
+       
         result.addDataField('RadTrans',transitions)        
         result.addDataField('Atoms',species)
         result.addDataField('Environments',environments)
@@ -100,6 +100,7 @@ def setupVssRequest(sql, limit=1000):
         result.addDataField('Sources',sources)
         
     else : # only fill header
+        result.addHeaderField('APPROX-SIZE', 0)    
         result.addHeaderField('TRUNCATED',percentage)
         result.addHeaderField('COUNT-STATES',0)
         result.addHeaderField('COUNT-RADIATIVE',0)
