@@ -276,16 +276,23 @@ def makeDataSeriesAccuracyType(keyword, G):
     build the elenments for accuracy belonging
     to a data series.
     """
+    hascontent = False
     string = makePrimaryType("Accuracy", keyword + "Accuracy", G, extraAttr={"type":"AccuracyType",
                                                                  "relative":"AccuracyRelative"})
     if G(keyword + "ErrorList"):
         string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join([makeiter(G(keyword + "ErrorList"))]))
+        hascontent = True
     elif G(keyword + "ErrorFile"):
         string += "<ErrorFile>%s</ErrorFile>" % G(keyword + "ErrorFile")
+        hascontent = True
     elif G(keyword + "ErrorValue"):
         string += "<ErrorValue>%s</ErrorValue" % G(keyword + "ErrorValue")
+        hascontent = True
     string += "</Accuracy>"
-    return string
+    if hascontent :
+        return string
+    else :
+        return ''
 
 def makeEvaluation(keyword, G):
     """
@@ -1600,7 +1607,7 @@ def XsamsCollTrans(CollTrans):
                         yield makePrimaryType("TabulatedData", "CollisionTabulatedData", GDT)
 
                         # handle X components
-                        yield makePrimaryType("X", "CollisionTabulatedDataX", GDT)
+                        yield makePrimaryType("X", "CollisionTabulatedDataX", GDT, extraAttr={'units':GDT("CollisionTabulatedDataXUnits")})
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
 
                         if GDT("CollisionTabulatedDataXDataList"):
@@ -1615,7 +1622,7 @@ def XsamsCollTrans(CollTrans):
                         yield "</X>"
 
                         # handle Y components
-                        yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT)
+                        yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT, extraAttr={'units':GDT("CollisionTabulatedDataYUnits")})
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
 
                         if GDT("CollisionTabulatedDataYDataList"):
