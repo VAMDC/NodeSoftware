@@ -172,7 +172,7 @@ def setupResults(sql):
 	"""
 	result = None
 	# return all species
-	if str(sql) == 'select species': 
+	if str(sql).strip() == 'select species': 
 		result = setupSpecies()
 	# all other requests
 	else:		
