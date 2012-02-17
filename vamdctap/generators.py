@@ -276,8 +276,8 @@ def makeDataSeriesAccuracyType(keyword, G):
     build the elenments for accuracy belonging 
     to a data series.
     """
-    string = makePrimaryType("Accuracy", keyword + "Accuracy", G, extraAttr={"type":"AccuracyType", 
-                                                                             "relative":"AccuracyRelative"})
+    string = makePrimaryType("Accuracy", keyword + "Accuracy", G, extraAttr={"type":G(keyword+"AccuracyType"), 
+                                                                             "relative":G(keyword+"AccuracyRelative")})
     if G(keyword + "ErrorList"):
         string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join([makeiter(G(keyword + "ErrorList"))]))
     elif G(keyword + "ErrorFile"):
@@ -1599,8 +1599,11 @@ def XsamsCollTrans(CollTrans):
 
                         yield makePrimaryType("TabulatedData", "CollisionTabulatedData", GDT)
 
+                        yield "<Description>%s</Description>" % GDT("CollisionTabulatedDataDescription")
+
                         # handle X components
-                        yield makePrimaryType("X", "CollisionTabulatedDataX", GDT)
+                        yield makePrimaryType("X", "CollisionTabulatedDataX", GDT, extraAttr={"parameter": GDT("CollisionTabulatedDataXParameter"),
+                                                                                              "units": GDT("CollisionTabulatedDataXUnits")})
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")                        
                         
                         if GDT("CollisionTabulatedDataXDataList"):
@@ -1615,7 +1618,8 @@ def XsamsCollTrans(CollTrans):
                         yield "</X>"
 
                         # handle Y components
-                        yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT)
+                        yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT, extraAttr={"parameter": GDT("CollisionTabulatedDataYParameter"),
+                                                                                              "units": GDT("CollisionTabulatedDataYUnits")})
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")                        
                         
                         if GDT("CollisionTabulatedDataYDataList"):
