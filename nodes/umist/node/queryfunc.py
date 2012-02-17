@@ -18,6 +18,9 @@ from models import *
 import logging
 log = logging.getLogger('vamdc.node.queryfu')
 
+class EmptyClass:
+    """Empty class to add attributes dynamically to"""
+
 def setupResults(sql):
     """
     This function is always called by the software.
@@ -35,7 +38,7 @@ def setupResults(sql):
         return {}
 
     #react_ds = RxnData.objects.filter(pk__in=(2,4,3862,3863,7975,7976))
-    react_ds = RxnData.objects.filter(q)
+    react_ds = RxnData.objects.filter(q, network_id=3)
 
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
@@ -55,6 +58,25 @@ def setupResults(sql):
         rea.Reactants = rea.reaction.reactants.all()
         rea.Products = rea.reaction.products.all()
 
+        # Add the rate coefficient at 10K as a data table
+        if rea.r10kr:
+            data = []
+            rea.DataSets = []
+            dataset = EmptyClass()
+            dataRow = EmptyClass()
+            dataRow.xdata = '10'
+            dataRow.ydata = str(rea.r10kr)
+
+            dataRow.xdataunit = 'K'
+            dataRow.ydataunit = 'cm3/sec'
+            dataRow.datadescription = 'Rate Coefficient at 10K'
+
+            data.append(dataRow)
+            dataset.TabData = data
+            dataset.Description = dataRow.datadescription
+            dataset.Ref = rea.ref.abbr
+            rea.DataSets.append(dataset)
+
     log.debug('done setting up the QuerySets')
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
@@ -65,13 +87,17 @@ def setupResults(sql):
             }
 
     # Return the data. The keynames are standardized. 
-    return {\
-            'CollTrans':react_ds,
-            'Atoms':atoms,
-            'Molecules':molecules,
-            #'Particles':particles,
-            'Sources':sources,
-            'HeaderInfo':headerinfo,
-            #'Methods':methods
-            #'Functions':functions
-           }
+    # 2012-02-14 KWS As per Guy's message - return an empty dict if there is no data.
+    if nreacts > 0:
+        return {\
+                'CollTrans':react_ds,
+                'Atoms':atoms,
+                'Molecules':molecules,
+                #'Particles':particles,
+                'Sources':sources,
+                'HeaderInfo':headerinfo,
+                #'Methods':methods
+                #'Functions':functions
+               }
+    else:
+        return {}

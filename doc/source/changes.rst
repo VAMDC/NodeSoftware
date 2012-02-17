@@ -5,9 +5,17 @@ Changelog
 
 .. note::
     This chapter will be difficult to understand if you have not read the whole
-    document before since terms are used that are introduced later. It is meant
-    for returning readers, especially the maintainer of VAMDC nodes.
+    document before, since terms are used that are introduced later. It is meant
+    for returning readers, especially the maintainers of VAMDC nodes.
 
+February 13, 2012
+---------------------
+
+**Version**. This is for *NodeSoftware 11.12r1* which is the first bugfix-release for version 11.12 released before.
+
+No major internal changes that require updating the code that is specific for each code, except:
+
+**NormalModes**. Previously, the NormalModes in the atomic state composition of XSAMS were wrongly attached to each Atom object, now they need to be handed to the generator as ``AtomState.NormalModes``. This means that nodes which use this part of the schema need to update their query-function.
 
 January 22, 2012
 ----------------------
