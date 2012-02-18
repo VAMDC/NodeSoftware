@@ -26,9 +26,11 @@ open STATES, "/users/guy/desktop/chianti-7/chianti_data_v7_e.txt" or die;
 
 my $inchiConverter = new Chemistry::OpenBabel::OBConversion();
 $inchiConverter->SetInAndOutFormats('smi', 'inchi');
+$inchiConverter->AddOption("X", $Chemistry::OpenBabel::OBConversion::OUTOPTIONS, "DoNotAddH");
 my $inchiKeyConverter = new Chemistry::OpenBabel::OBConversion();
 $inchiKeyConverter->SetInAndOutFormats('smi', 'inchi');
 $inchiKeyConverter->AddOption("K");
+$inchiKeyConverter->AddOption("X", $Chemistry::OpenBabel::OBConversion::OUTOPTIONS, "DoNotAddH");
 
 # Throw away the first line, which is a comment.
 $discard = <STATES>;
