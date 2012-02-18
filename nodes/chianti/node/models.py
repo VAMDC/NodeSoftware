@@ -14,6 +14,9 @@ class Species(models.Model):
     atomsymbol = models.CharField(max_length=6, db_column='AtomSymbol', blank=True)
     atomnuclearcharge = models.IntegerField(null=True, db_column='AtomNuclearCharge', blank=True)
     atomioncharge = models.IntegerField(null=True, db_column='AtomIonCharge', blank=True)
+    inchi = models.CharField(null=False, db_column='inchi', max_length=32, blank=False)
+    inchikey = models.CharField(null=False, db_column='inchikey', max_length=25, blank=False)
+
     class Meta:
         db_table = u'species'
 

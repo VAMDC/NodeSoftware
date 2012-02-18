@@ -35,7 +35,8 @@ RETURNABLES = {\
 'AtomSymbol':'Atom.atomsymbol',
 'AtomNuclearCharge':'Atom.atomnuclearcharge',
 'AtomIonCharge':'Atom.atomioncharge',
-
+'AtomInchi':'Atom.inchi',
+'AtomInchiKey':'Atom.inchikey',
 'AtomStateId':'AtomState.id',
 'AtomStateS':'AtomState.atomstates',
 'AtomStateL':'AtomState.atomstatel',

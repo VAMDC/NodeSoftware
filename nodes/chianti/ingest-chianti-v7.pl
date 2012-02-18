@@ -1,11 +1,15 @@
 #!/usr/bin/perl
 
+use Chemistry::OpenBabel;
+
 print "CREATE TABLE states (\n";
 print "		ChiantiIonType CHAR(1), \n";
 print "         species INTEGER, \n";
 print "		AtomSymbol CHAR(8), \n";
 print "		AtomNuclearCharge INTEGER, \n";
 print "		AtomIonCharge INTEGER, \n";
+print "         inchi VARCHAR(32), \n";
+print "         inchikey CHAR(27), \n";
 print "		ChiantiAtomStateIndex INTEGER NOT NULL, \n";
 print "		AtomStateConfigurationLabel VARCHAR(32), \n";
 print "		AtomStateS FLOAT, \n";
@@ -19,6 +23,12 @@ print ");\n";
 
 
 open STATES, "/users/guy/desktop/chianti-7/chianti_data_v7_e.txt" or die;
+
+my $inchiConverter = new Chemistry::OpenBabel::OBConversion();
+$inchiConverter->SetInAndOutFormats('smi', 'inchi');
+my $inchiKeyConverter = new Chemistry::OpenBabel::OBConversion();
+$inchiKeyConverter->SetInAndOutFormats('smi', 'inchi');
+$inchiKeyConverter->AddOption("K");
 
 # Throw away the first line, which is a comment.
 $discard = <STATES>;
@@ -35,12 +45,29 @@ while(<STATES>) {
 	my $index = (1000000 * $stateIndex) + (1000 * $ionCharge) + $nuclearCharge;
         my ($energy, $energyMethod)  = bestEnergy($energyExperimental, $energyTheoretical);
 
+        my $smiles = "[".$atomSymbol;
+        for (1..$ionCharge) {
+          $smiles .= '+';
+        }
+	$smiles .= ']';
+
+        my $molecule = new Chemistry::OpenBabel::OBMol();
+        $inchiConverter->ReadString($molecule, $smiles);
+	my $inchi = $inchiConverter->WriteString($molecule);
+	chomp $inchi;
+	print ERR $inchi, "\n";
+        $inchiKeyConverter->ReadString($molecule, $smiles);
+	my $inchiKey = $inchiKeyConverter->WriteString($molecule);
+	chomp $inchiKey;
+
 	print 'INSERT INTO states VALUES(';
 	print '"', $chiantiIonType, '", ';
 	print '0, '; # species reference - filled in later
 	print '"', $atomSymbol, '", ';
 	print $nuclearCharge, ', ';
 	print $ionCharge, ', ';
+        print '"', $inchi, '", ';
+	print '"', $inchiKey, '", ';
 	print $stateIndex, ', ';
 	print '"', $configurationLabel, '", ';
 	print $atomStateS, ', '; 
@@ -128,11 +155,13 @@ print "id INTEGER NOT NULL,\n";
 print "AtomSymbol CHAR(2),\n";
 print "AtomNuclearCharge INTEGER,\n";
 print "AtomIonCharge INTEGER,\n";
+print "inchi VARCHAR(32), \n";
+print "inchikey CHAR(27), \n";
 print "PRIMARY KEY(id)\n";
 print ");\n";
 
 
-print "INSERT INTO species(id,AtomSymbol,AtomNuclearCharge,AtomIonCharge) SELECT DISTINCT ((1000*AtomIonCharge) + AtomNuclearCharge),AtomSymbol,AtomNuclearCharge,AtomIonCharge FROM states;\n";
+print "INSERT INTO species(id,AtomSymbol,AtomNuclearCharge,AtomIonCharge,inchi,inchikey) SELECT DISTINCT ((1000*AtomIonCharge) + AtomNuclearCharge),AtomSymbol,AtomNuclearCharge,AtomIonCharge,inchi,inchikey FROM states;\n";
 
 
 print "CREATE INDEX energy ON states(AtomStateEnergy);\n";
