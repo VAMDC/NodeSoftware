@@ -276,8 +276,9 @@ def makeDataSeriesAccuracyType(keyword, G):
     build the elenments for accuracy belonging
     to a data series.
     """
-    string = makePrimaryType("Accuracy", keyword + "Accuracy", G, extraAttr={"type":"AccuracyType",
-                                                                 "relative":"AccuracyRelative"})
+    string = makePrimaryType("Accuracy", keyword + "Accuracy", G,
+                    extraAttr={"type":G(keyword+"AccuracyType"),
+                               "relative":G(keyword+"AccuracyRelative")})
     if G(keyword + "ErrorList"):
         string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join([makeiter(G(keyword + "ErrorList"))]))
     elif G(keyword + "ErrorFile"):
@@ -285,7 +286,10 @@ def makeDataSeriesAccuracyType(keyword, G):
     elif G(keyword + "ErrorValue"):
         string += "<ErrorValue>%s</ErrorValue" % G(keyword + "ErrorValue")
     string += "</Accuracy>"
-    return string
+    if '<Error' in string: # check if there actually is some content
+        return string
+    else:
+        return ''
 
 def makeEvaluation(keyword, G):
     """
@@ -1261,7 +1265,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('WeightedOscillatorStrength', 'RadTransProbabilityWeightedOscillatorStrength', G)
         yield makeDataType('Log10WeightedOscillatorStrength', 'RadTransProbabilityLog10WeightedOscillatorStrength', G)
         yield makeDataType('IdealisedIntensity', 'RadTransProbabilityIdealisedIntensity', G)
-        makeOptionalTag('TransitionKind','RadTransProbabilityKind',G)
+        yield makeOptionalTag('TransitionKind','RadTransProbabilityKind',G)
         yield makeDataType('EffectiveLandeFactor', 'RadTransEffectiveLandeFactor', G)
         yield '</Probability>\n'
 
@@ -1599,8 +1603,11 @@ def XsamsCollTrans(CollTrans):
 
                         yield makePrimaryType("TabulatedData", "CollisionTabulatedData", GDT)
 
+                        yield "<Description>%s</Description>" % GDT("CollisionTabulatedDataDescription")
+
                         # handle X components
-                        yield makePrimaryType("X", "CollisionTabulatedDataX", GDT)
+                        yield makePrimaryType("X", "CollisionTabulatedDataX", GDT, extraAttr={"parameter": GDT("CollisionTabulatedDataXParameter"),
+                                                                                              "units": GDT("CollisionTabulatedDataXUnits")})
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
 
                         if GDT("CollisionTabulatedDataXDataList"):
@@ -1615,7 +1622,8 @@ def XsamsCollTrans(CollTrans):
                         yield "</X>"
 
                         # handle Y components
-                        yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT)
+                        yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT, extraAttr={"parameter": GDT("CollisionTabulatedDataYParameter"),
+                                                                                              "units": GDT("CollisionTabulatedDataYUnits")})
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
 
                         if GDT("CollisionTabulatedDataYDataList"):
@@ -1626,6 +1634,7 @@ def XsamsCollTrans(CollTrans):
                                                                                                 GDT("CollisionTabulatedDataYLinearSequenceIncrement"))
                         elif GDT("CollisionTabulatedDataYDataFile"):
                             yield "<DataFile>%s</DataFile>" % GDT("CollisionTabulatedDataYDataFile")
+
                         yield makeDataSeriesAccuracyType("CollisionTabulatedDataY", GDT)
                         yield "</Y>"
 
@@ -1708,8 +1717,8 @@ def XsamsFunctions(Functions):
         yield makePrimaryType("Function", "Function", G, extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
         yield "<Name>%s</Name>" % G("FunctionName")
-        yield "<Expression computerLanguage="%s">%s</Expression>\n" % (G("FunctionComputerLanguage"), G("FunctionExpression"))
-        yield "<Y name='%s' units='%s'>" % (G("FunctionYName"), G("FunctionYUnits"))
+        yield '<Expression computerLanguage="%s">%s</Expression>\n' % (G("FunctionComputerLanguage"), G("FunctionExpression"))
+        yield '<Y name="%s" units="%s">' % (G("FunctionYName"), G("FunctionYUnits"))
         desc = G("FunctionYDescription")
         if desc:
             yield "<Description>%s</Description>" % desc
@@ -1802,6 +1811,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
             % (XSAMS_VERSION, SCHEMA_LOCATION)
 
     if HeaderInfo:
+        HeaderInfo = CaselessDict(HeaderInfo)
         if HeaderInfo.has_key('Truncated'):
             if HeaderInfo['Truncated'] != None: # note: allow 0 percent
                 yield """

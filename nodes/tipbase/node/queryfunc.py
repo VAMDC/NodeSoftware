@@ -34,7 +34,7 @@ def setupResults(sql):
 	"""
 	result = None
 	# return all species
-	if str(sql) == 'select species': 
+	if str(sql).strip() == 'select species': 
 		result = setupSpecies()
 	# all other requests
 	else:		
@@ -67,7 +67,7 @@ def setupVssRequest(sql, limit=1000):
     else:
         percentage=None
 
-    species, nstates = getSpeciesWithStates(transs)
+    species, nstates, sourceids = getSpeciesWithStates(transs)
     # electron collider
     particles = getParticles()
 
@@ -77,17 +77,27 @@ def setupVssRequest(sql, limit=1000):
         states.extend(specie.States)
     nspecies = species.count()
 
+    nspecies = species.count()
+    sources = getSources(sourceids)
+    nsources = sources.count()
+
     # Create the result object
     result = util_models.Result()
     result.addHeaderField('TRUNCATED', percentage)
     result.addHeaderField('COUNT-STATES',nstates)
     result.addHeaderField('COUNT-COLLISIONS',ncoll)
     result.addHeaderField('COUNT-SPECIES',nspecies)
+    result.addHeaderField('COUNT-SOURCES',nsources)
+    
 
+    if(nstates == 0 and nspecies == 0):
+        result.addHeaderField('APPROX-SIZE', 0)
+    
     if ncoll > 0 :
         result.addDataField('CollTrans',transs)
         result.addDataField('Particles',particles)
     result.addDataField('Atoms',species)
+    result.addDataField('Sources',sources)
     
 
     return result
@@ -136,10 +146,12 @@ def getSpeciesWithStates(transs):
     species = django_models.Version.objects.filter(id__in=ionids)
     # get all states.
     nstates = 0
+    sourceids = []
 
     for trans in transs :
         setSpecies(trans)
-        setDataset(trans)
+        # get tabulated data and their references
+        setDataset(trans, sourceids)
 
     for specie in species:
         # get all transitions in linked to this particular species
@@ -155,21 +167,70 @@ def getSpeciesWithStates(transs):
         for state in specie.States :
             state.Components = []
             state.Components.append(getCoupling(state))
+            state.Sources = getStateSources(state)
+            sourceids.extend(state.Sources)            
         nstates += specie.States.count()
-    return species, nstates
-
+    return species, nstates, sourceids
     
-def setDataset(trans):
+    
+def getStateSources(state):
+    """
+        get ids of sources related to an atomic state
+    """
+    sourceids = []
+    relatedsources = django_models.Atomicstatesource.objects.filter(atomicstate=state)    
+    for relatedsource in relatedsources :
+        sourceids.append(relatedsource.source.pk)
+    return sourceids
+    
+def getSources(ids):
+    """
+        get a list of source objects from their ids    
+    """
+    sources = django_models.Source.objects.filter(pk__in=ids)    
+    for source in sources : 
+        names=[]
+        adresses=[]
+        relatedauthors = django_models.Authorsource.objects.filter(source=source).order_by('rank')
+        #build a list of authors
+        for relatedauthor in relatedauthors:
+            names.append(relatedauthor.author.name)
+        source.Authors = names
+    return sources
+
+def getTabdataSources(tabdata):
+    """
+        get source ids of tabdata 
+    """
+    sourceids = []
+    relatedsources = django_models.Tabulateddatasource.objects.filter(pk=tabdata.pk)    
+    for relatedsource in relatedsources :
+        sourceids.append(relatedsource.source.pk)
+    return sourceids    
+    
+def setDataset(trans, sourceids):
     """
      create Dataset with Tabulated data
+     trans : a given transition
+     sourceids : a list of all references for the current request
     """
-    data = django_models.Tabulateddata.objects.filter(collisionaltransition = trans.id)
-    if data[0].xdata is not None : 
-        trans.DataSets = []
-        dataset = django_models.Dataset()
-        dataset.TabData = data
-        dataset.Description = data[0].datadescription.value
-        trans.DataSets.append(dataset)
+    tabulateddata = django_models.Tabulateddata.objects.filter(collisionaltransition = trans.id)
+    sources = []
+    trans.DataSets = []
+    
+    # get tabulated data
+    for data in tabulateddata : 
+        datasources = getTabdataSources(data) 
+        # add reference to list global list of references for this query  
+        for source in datasources : 
+            if source not in sourceids :
+                sourceids.append(source)
+        dataset = util_models.XsamsDataset()
+        dataset.TabData = []
+        dataset.TabData.append(data)
+        data.Sources = datasources
+        dataset.dataDescription = data.datadescription.value
+        trans.DataSets.append(dataset)  
 
 def setSpecies(trans):
     """
@@ -206,11 +267,6 @@ def getCoupling(state):
     return components[0]
     
 def getParticles():    
-    return django_models.Particle.objects.all()
-    
-    
-
-
-    
+    return django_models.Particle.objects.all()   
 
 

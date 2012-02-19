@@ -10,10 +10,9 @@ RETURNABLES = {\
 'AtomIonCharge':'Atom.atomicion.ioncharge',
 'AtomMassNumber':'Atom.atomicion.isotope.massnumber',
 
-
+'AtomStateRef':'AtomState.Sources',
 'AtomStateEnergy':'AtomState.stateenergy',
 'AtomStateEnergyUnit':'AtomState.stateenergyunit.value',
-
 'AtomStateParity' : 'AtomState.parity.value',
 'AtomStateMixingCoeff':'Component.mixingcoefficient',
 'AtomStateMixingCoeffClass' : 'Component.mixingclass.value',
@@ -30,17 +29,17 @@ RETURNABLES = {\
 'AtomStateTermLSS' : 'Component.Lscoupling.s',
 'AtomStateTermLSMultiplicity' : 'Component.Lscoupling.multiplicity',
 
-                                                                    
-'CollisionTabulatedDataX' : 'TabData.xdata',
+'CollisionTabulatedDataRef' : 'TabData.Sources',
+'CollisionTabulatedDataXDataList' : 'TabData.xdata',
 'CollisionTabulatedDataXUnits' : 'TabData.xdataunit.value',
-'CollisionTabulatedDataXN' : 'len(TabData.xdata.split(" "))',
+'CollisionTabulatedDataXDataListN' : 'len(TabData.xdata.split(" "))',
 'CollisionTabulatedDataXParameter' : 'undef',
-'CollisionTabulatedDataY' : 'TabData.ydata',
+'CollisionTabulatedDataYDataList' : 'TabData.ydata',
 'CollisionTabulatedDataYUnits' : 'TabData.ydataunit.value',
-'CollisionTabulatedDataYN' : 'len(TabData.ydata.split(" "))',
+'CollisionTabulatedDataYDataListN' : 'len(TabData.ydata.split(" "))',
 'CollisionTabulatedDataYParameter' : 'undef',
 
-'CollisionDataSetDescription' : 'DataSet.Description',
+'CollisionDataSetDescription' : 'DataSet.dataDescription',
 'CollisionReactantState' : 'Reactant.state_id()',
 'CollisionReactantSpecies' : 'Reactant.species_id()',
 'CollisionProductState' : 'Product.state_id()',
@@ -51,6 +50,19 @@ RETURNABLES = {\
 'ParticleMass' : 'Particle.mass',
 'ParticleMassUnit' : 'Particle.massunit.value',
 'ParticleCharge' : 'Particle.charge',
+
+#source
+'SourceTitle':'Source.title',
+'SourceAuthorName':'Source.Authors',
+'SourceCategory':'Source.sourcecategory.value',
+'SourceName' : 'Source.sourcename',
+'SourceYear' : 'Source.year',
+'SourceURI': 'Source.uri',
+'SourceVolume' : 'Source.volume',
+'SourcePageBegin' : 'Source.pagebegin',
+'SourcePageEnd' : 'Source.pageend',
+'SourceDOI' : 'Source.doi',
+'SourceID' : 'Source.id',
 }
 
 # The restrictable dictionary defines limitations to the search. 

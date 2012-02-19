@@ -212,10 +212,16 @@ def setupResults(sql, limit=100000):
             }
     LOG(headerinfo)
             
-    # Return the data. The keynames are standardized. 
-    return {'RadTrans':transs,
-            'Atoms':species,
-            'Sources':sources,
-            'HeaderInfo':headerinfo,
-            'Methods':methods
-           }
+    # Return the data. The keynames are standardized.
+    if (nspecies > 0 or nstates > 0 or ntranss > 0):
+        return {'RadTrans':transs,
+                'Atoms':species,
+                'Sources':sources,
+                'HeaderInfo':headerinfo,
+                'Methods':methods
+               }
+
+    # As a special case, if there are no data, return an empty structure.
+    # This causes the node software to send a 204 "No content" response.
+    else:
+        return {}

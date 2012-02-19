@@ -14,7 +14,6 @@ Documentation for the VAMDC node software.
    newnode
    importing
    deploy
-   virtmach
    addit
    limitations
    contact
