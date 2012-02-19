@@ -34,7 +34,7 @@ def setupResults(sql):
 	"""
 	result = None
 	# return all species
-	if str(sql) == 'select species': 
+	if str(sql).strip() == 'select species': 
 		result = setupSpecies()
 	# all other requests
 	else:		
@@ -88,6 +88,10 @@ def setupVssRequest(sql, limit=1000):
     result.addHeaderField('COUNT-COLLISIONS',ncoll)
     result.addHeaderField('COUNT-SPECIES',nspecies)
     result.addHeaderField('COUNT-SOURCES',nsources)
+    
+
+    if(nstates == 0 and nspecies == 0):
+        result.addHeaderField('APPROX-SIZE', 0)
     
     if ncoll > 0 :
         result.addDataField('CollTrans',transs)
