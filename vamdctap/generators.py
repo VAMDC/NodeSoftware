@@ -920,7 +920,8 @@ def XsamsMSBuild(MoleculeState):
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
     yield '<MolecularState stateID="S%s-%s">' % (G('NodeID'),
                                                  G("MoleculeStateID"))
-    yield '  <Description/>'
+
+    yield '  <Description>%s</Description>' % G("MoleculeStateDescription")
     yield '  <MolecularStateCharacterisation>'
     yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G,
                 extraAttr={'energyOrigin':G('MoleculeStateEnergyOrigin')})
