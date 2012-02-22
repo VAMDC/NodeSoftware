@@ -953,18 +953,18 @@ def XsamsMSBuild(MoleculeState):
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
     yield '<MolecularState stateID="S%s-%s">' % (G('NodeID'),
                                                  G("MoleculeStateID"))
-    yield '  <Description/>'
-    yield '  <MolecularStateCharacterisation>'
+    yield makeOptionalTag('Description','MoleculeStateDescription',G)
+    yield '<MolecularStateCharacterisation>'
     yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G,
                 extraAttr={'energyOrigin':G('MoleculeStateEnergyOrigin')})
     if G("MoleculeStateTotalStatisticalWeight"):
-        yield '  <TotalStatisticalWeight>%s</TotalStatisticalWeight>'\
+        yield '<TotalStatisticalWeight>%s</TotalStatisticalWeight>'\
                     % G("MoleculeStateTotalStatisticalWeight")
     if G("MoleculeStateNuclearStatisticalWeight"):
-        yield '  <NuclearStatisticalWeight>%s</NuclearStatisticalWeight>'\
+        yield '<NuclearStatisticalWeight>%s</NuclearStatisticalWeight>'\
                     % G("MoleculeStateNuclearStatisticalWeight")
     if G("MoleculeStateNuclearSpinIsomer"):
-        yield '  <NuclearSpinIsomer>%s</NuclearSpinIsomer>\n'\
+        yield '<NuclearSpinIsomer>%s</NuclearSpinIsomer>\n'\
                     % G("MoleculeStateNuclearSpinIsomer")
     if G("MoleculeStateLifeTime"):
         # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
