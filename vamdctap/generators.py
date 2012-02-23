@@ -276,22 +276,19 @@ def makeDataSeriesAccuracyType(keyword, G):
     build the elenments for accuracy belonging
     to a data series.
     """
-    hascontent = False
-    string = makePrimaryType("Accuracy", keyword + "Accuracy", G, extraAttr={"type":"AccuracyType",
-                                                                 "relative":"AccuracyRelative"})
+    string = makePrimaryType("Accuracy", keyword + "Accuracy", G,
+                    extraAttr={"type":G(keyword+"AccuracyType"),
+                               "relative":G(keyword+"AccuracyRelative")})
     if G(keyword + "ErrorList"):
         string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join([makeiter(G(keyword + "ErrorList"))]))
-        hascontent = True
     elif G(keyword + "ErrorFile"):
         string += "<ErrorFile>%s</ErrorFile>" % G(keyword + "ErrorFile")
-        hascontent = True
     elif G(keyword + "ErrorValue"):
         string += "<ErrorValue>%s</ErrorValue" % G(keyword + "ErrorValue")
-        hascontent = True
     string += "</Accuracy>"
-    if hascontent :
+    if '<Error' in string: # check if there actually is some content
         return string
-    else :
+    else:
         return ''
 
 def makeEvaluation(keyword, G):
@@ -1606,8 +1603,11 @@ def XsamsCollTrans(CollTrans):
 
                         yield makePrimaryType("TabulatedData", "CollisionTabulatedData", GDT)
 
+                        yield "<Description>%s</Description>" % GDT("CollisionTabulatedDataDescription")
+
                         # handle X components
-                        yield makePrimaryType("X", "CollisionTabulatedDataX", GDT, extraAttr={'units':GDT("CollisionTabulatedDataXUnits")})
+                        yield makePrimaryType("X", "CollisionTabulatedDataX", GDT, extraAttr={"parameter": GDT("CollisionTabulatedDataXParameter"),
+                                                                                              "units": GDT("CollisionTabulatedDataXUnits")})
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
 
                         if GDT("CollisionTabulatedDataXDataList"):
@@ -1622,7 +1622,8 @@ def XsamsCollTrans(CollTrans):
                         yield "</X>"
 
                         # handle Y components
-                        yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT, extraAttr={'units':GDT("CollisionTabulatedDataYUnits")})
+                        yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT, extraAttr={"parameter": GDT("CollisionTabulatedDataYParameter"),
+                                                                                              "units": GDT("CollisionTabulatedDataYUnits")})
                         yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
 
                         if GDT("CollisionTabulatedDataYDataList"):
@@ -1633,6 +1634,7 @@ def XsamsCollTrans(CollTrans):
                                                                                                 GDT("CollisionTabulatedDataYLinearSequenceIncrement"))
                         elif GDT("CollisionTabulatedDataYDataFile"):
                             yield "<DataFile>%s</DataFile>" % GDT("CollisionTabulatedDataYDataFile")
+
                         yield makeDataSeriesAccuracyType("CollisionTabulatedDataY", GDT)
                         yield "</Y>"
 

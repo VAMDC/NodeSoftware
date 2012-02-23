@@ -14,6 +14,9 @@ class Species(models.Model):
     atomsymbol = models.CharField(max_length=6, db_column='AtomSymbol', blank=True)
     atomnuclearcharge = models.IntegerField(null=True, db_column='AtomNuclearCharge', blank=True)
     atomioncharge = models.IntegerField(null=True, db_column='AtomIonCharge', blank=True)
+    inchi = models.CharField(null=False, db_column='inchi', max_length=32, blank=False)
+    inchikey = models.CharField(null=False, db_column='inchikey', max_length=25, blank=False)
+
     class Meta:
         db_table = u'species'
 
@@ -28,8 +31,8 @@ class States(models.Model):
     atomstates = models.FloatField(null=True, db_column='AtomStateS', blank=True)
     atomstatel = models.FloatField(null=True, db_column='AtomStateL', blank=True)
     atomstatetotalangmom = models.FloatField(null=True, db_column='AtomStateTotalAngMom', blank=True)
-    energyexperimental = models.FloatField(null=True, db_column='AtomStateEnergyExperimental', blank=True)
-    energytheoretical = models.FloatField(null=True, db_column='AtomStateEnergyTheoretical', blank=True)
+    energy = models.FloatField(null=True, db_column='AtomStateEnergy', blank=True)
+    energyMethod = models.CharField(max_length=4, db_column='AtomStateEnergyMethod', null=False, blank='False')
 
     def allEnergies(self):
         energies = []
