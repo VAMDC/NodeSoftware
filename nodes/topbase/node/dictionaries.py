@@ -55,7 +55,7 @@ RETURNABLES = {\
 'RadTransProbabilityAUnit' : '1/s',
 
 
-#'CrossSectionState' : 'RadCros.id',
+'CrossSectionState' : 'RadCros.id',
 'CrossSectionID' : 'RadCros.id',
 'CrossSectionX' : 'RadCros.xdata',
 'CrossSectionXUnit' : 'RadCros.xdataunit.value',
