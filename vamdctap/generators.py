@@ -767,8 +767,8 @@ def makeNormalMode(G):
     result = [ makePrimaryType('NormalMode', 'MoleculeNormalMode', G, extraAttr=extraAttr) ]
     result.append( makeDataType('HarmonicFrequency','MoleculeNormalModeHarmonicFrequency',G) )
     result.append( makeDataType('Intensity','MoleculeNormalModeIntensity',G) )
-
-    vsrefs = G('MoleculeNormalModeDisplacementVectorSourceRef')
+    
+    vsrefs = G('MoleculeNormalModeDisplacementVectorRef')
     unit = G('MoleculeNormalModeDisplacementVectorsUnit')
     x3s = G('MoleculeNormalModeDisplacementVectorX3')
     y3s = G('MoleculeNormalModeDisplacementVectorY3')

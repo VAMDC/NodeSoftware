@@ -44,7 +44,7 @@ RETURNABLES = {
 'MoleculeNormalModeDisplacementVectorX3' : 'NormalMode.displacementvectorsx',
 'MoleculeNormalModeDisplacementVectorY3' : 'NormalMode.displacementvectorsy',
 'MoleculeNormalModeDisplacementVectorZ3' : 'NormalMode.displacementvectorsz',
-'MoleculeNormalModeDisplacementVectorSourceRef' : 'NormalMode.displacementvectorselementref',
+'MoleculeNormalModeDisplacementVectorRef' : 'NormalMode.displacementvectorselementref',
 'MoleculeNormalModeDisplacementVectorsUnit' : '1/cm',
 
 #'Sources' : 'Source' ,
