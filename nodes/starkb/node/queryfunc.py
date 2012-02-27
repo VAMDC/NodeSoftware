@@ -271,7 +271,8 @@ def getIonCollidersByTransitions(transs):
 	datasets = transs.values_list('dataset', flat=True).distinct()
 	datasetcolliders = django_models.DatasetCollider.objects.filter(dataset__in = datasets)
 	colliderids = datasetcolliders.values_list('species', flat=True).distinct()
-	return django_models.Species.objects.filter(pk__in = colliderids).filter(particle = None)
+    # exclude meanion from list of species
+	return django_models.Species.objects.filter(pk__in = colliderids).filter(particle = None).exclude(ion__name="meanion")
     
 def getBroadening(environment):
     """

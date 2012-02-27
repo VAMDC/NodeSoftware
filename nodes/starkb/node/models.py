@@ -57,7 +57,9 @@ class Species(models.Model):
     particle = models.ForeignKey(Particle,  db_column="id_particle", null=True)    
     
     def particle_ion_id(self):
-        if self.ion is not None :                   
+        if self.ion is not None : 
+            if self.ion.name == "meanion":
+                return None
             return self.ion.species_id()
         elif self.particle is not None : 
             return self.particle.species_id()
