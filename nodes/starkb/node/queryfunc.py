@@ -124,36 +124,35 @@ def truncateTransitions(transitions, request, maxTransitionNumber):
 	return django_models.Transition.objects.filter(request,Q(wavelength__lt=newmax)), percentage
 
 def getSources(transs):
-	"""		
-		Get sources for a list of transitions
-		@type  transs: list
-		@param transs: a list of Transition
-		@rtype:   list
-		@return:  list of Article		
-	"""
-	sources = []
-	datasets = transs.values_list('dataset', flat=True).distinct()    
-	articledatasets = django_models.ArticleDataset.objects.filter(dataset__pk__in = datasets)    
-	for article in articledatasets :
-		sources.append(article.article)
-		
-	return sources
+    """		
+        Get sources for a list of transitions
+        @type  transs: list
+        @param transs: a list of Transition
+        @rtype:   list
+        @return:  list of Article		
+    """
+    sources = []
+    datasets = transs.values_list('dataset', flat=True).distinct()    
+    articledatasets = django_models.ArticleDataset.objects.filter(dataset__pk__in = datasets)    
+    for article in articledatasets :
+        if article.article not in sources : 
+            sources.append(article.article)		
+    return sources
     
 def getDatasetSources(datasetid):
-	"""
-		Get sources for a dataset
-		@type  datasetid: int
-		@param datasetid: id of a dataset
-		@rtype:   list
-		@return:  list of Article
-		
-	"""    
-	sources = []    
-	articledatasets = django_models.ArticleDataset.objects.filter(dataset__pk = datasetid)    
-	for article in articledatasets :
-		sources.append(article.article.pk)
-
-	return sources
+    """
+        Get sources for a dataset
+        @type  datasetid: int
+        @param datasetid: id of a dataset
+        @rtype:   list
+        @return:  list of Article
+        
+    """    
+    sources = []    
+    articledatasets = django_models.ArticleDataset.objects.filter(dataset__pk = datasetid)    
+    for article in articledatasets :
+        sources.append(article.article.pk)
+    return sources
 
 def getSpeciesWithStates(transs):
     """
