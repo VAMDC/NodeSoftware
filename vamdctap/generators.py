@@ -117,8 +117,9 @@ def GetValue(name, **kwargs):
 
     return value
 
-def makeOptionalTag(tagname, keyword, G):
+def makeOptionalTag(tagname, keyword, G, extraAttr={}):
     content = G(keyword)
+    
     if not content:
         return ''
     elif isiterable(content):
@@ -127,7 +128,8 @@ def makeOptionalTag(tagname, keyword, G):
             s.append( '<%s>%s</%s>'%(tagname,content,tagname) )
         return ''.join(s)
     else:
-        return '<%s>%s</%s>'%(tagname,content,tagname)
+        extra = "".join([' %s="%s"'% (k, v) for k, v in extraAttr.items()])
+        return '<%s%s>%s</%s>'%(tagname, extra, content,tagname)
 
 def makeSourceRefs(refs):
     """
@@ -843,129 +845,104 @@ def XsamsMCSBuild(Molecule):
 
 def makeCaseQNs(G):
     """
-    return the Case and the QNs
+    Build the Case tag with the QNs
+
+    Note: order of QNs matters in xsams. 
     """
-    case = G('MoleculeQnCase')
+    case = G('MoleculeQNCase')
     if not case: return ''
-
-    ElecStateLabel = G("MoleculeQNElecStateLabel")
-    elecInv = G("MoleculeQNelecInv")
-    elecRefl = G("MoleculeQNelecRefl")
-    vi = G("MoleculeQNvi")
-    viMode = G("MoleculeQNviMode")
-    vibInv = G("MoleculeQNvibInv")
-    vibSym = G("MoleculeQNvibSym")
-    vibSymGroup = G("MoleculeQNvibSymGroup")
-    J = G("MoleculeQNJ")
-    Ka = G("MoleculeQNKa")
-    Kc = G("MoleculeQNKc")
-    rotSym = G("MoleculeQNrotSym")
-    rotSymGroup = G("MoleculeQNrotSymGroup")
-    I = G("MoleculeQNI")
-    InuclSpin = G("MoleculeQNInuclSpin")
-    Fj = G("MoleculeQNFj")
-    Fjj = G("MoleculeQNFjj")
-    FjnuclSpin = G("MoleculeQNFjnuclSpin")
-    F = G("MoleculeQNF")
-    FnuclSpin = G("MoleculeQNFnuclSpin")
-    r = G("MoleculeQNr")
-    rName = G("MoleculeQNrName")
-    parity = G("MoleculeQNparity")
-    S = G("MoleculeQNS")
-    N = G("MoleculeQNN")
-    v = G("MoleculeQNv")
-    F1 = G("MoleculeQNF1")
-    F1nuclSpin = G("MoleculeQNF1nuclSpin")
-    asSym = G("MoleculeQNasSym")
-    Lambda = G("MoleculeQNLambda")
-    Sigma = G("MoleculeQNSigma")
-    Omega = G("MoleculeQNOmega")
-    kronigParity = G("MoleculeQNkronigParity")
-    SpinComponentLabel = G("MoleculeQNSpinComponentLabel")
-    li = G("MoleculeQNli")
-    liMode = G("MoleculeQNliMode")
-    l = G("MoleculeQNl")
-    vibRefl = G("MoleculeQNvibRefl")
-    v1 = G("MoleculeQNv1")
-    v2 = G("MoleculeQNv2")
-    v3 = G("MoleculeQNv3")
-    l2 = G("MoleculeQNl2")
-    F2 = G("MoleculeQNF2")
-    F2nuclSpin = G("MoleculeQNF2nuclSpin")
-    K = G("MoleculeQNK")
-
-    result = '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/%s/cases/%s">' % (case, XSAMS_VERSION, case)
-    result += '<case:QNs>'
-    if ElecStateLabel: result += '<case:ElecStateLabel>%s</case:ElecStateLabel>'%ElecStateLabel
-    if elecInv: result += '<case:elecInv>%s</case:elecInv>'%elecInv
-    if elecRefl: result += '<case:elecRefl>%s</case:elecRefl>'%elecRefl
-    if Lambda: result += '<case:Lambda>%s</case:Lambda>'%Lambda
-    if Sigma: result += '<case:Sigma>%s</case:Sigma>'%Sigma
-    if Omega: result += '<case:Omega>%s</case:Omega>'%Omega
-    if S: result += '<case:S>%s</case:S>'%S
-    if v: result += '<case:v>%s</case:v>'%v
-    if v1: result += '<case:v1>%s</case:v1>'%v1
-    if v2: result += '<case:v2>%s</case:v2>'%v2
-    if l2: result += '<case:l2>%s</case:l2>'%l2
-    if v3: result += '<case:v3>%s</case:v3>'%v3
-    if vi:
-        for val,i in enumerate(makeiter(vi)):
-            result += '<case:vi mode="%s">%s</case:vi>'%(makeiter(viMode)[i],val)
-    if li:
-        for val,i in enumerate(makeiter(li)):
-            result += '<case:vi mode="%s">%s</case:vi>'%(makeiter(liMode)[i],val)
-    if l: result += '<case:l>%s</case:l>'%l
-    if vibInv: result += '<case:vibInv>%s</case:vibInv>'%vibInv
-    if vibRefl: result += '<case:vibRefl>%s</case:vibRefl>'%vibRefl
+    
+    result = [
+        '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/%s/cases/%s">' % (case, XSAMS_VERSION, case),           
+        '<case:QNs>',
+        makeOptionalTag('case:ElecStateLabel', 'MoleculeQNElecStateLabel', G)]
+    elecSym, elecSymGroup = G("MoleculeQNelecSym"), G("MoleculeQNelecSymGroup")
+    if elecSym:
+        if elecSymGroup: 
+            result.append('<case:elecSym group="%s">%s</case:elecSym>' % (elecSymGroup, elecSym))
+        else: 
+            result.append('<case:elecSym>%s</case:elecSym>' % elecSym)
+    result.extend([       
+            makeOptionalTag('case:elecInv', 'MoleculeQNelecInv', G),
+            makeOptionalTag('case:elecRefl', 'MoleculeQNelecRefl', G),
+            makeOptionalTag('case:Lambda', 'MoleculeQNLambda', G),
+            makeOptionalTag('case:Sigma', 'MoleculeQNSigma', G),        
+            makeOptionalTag('case:Omega', 'MoleculeQNOmega', G),
+            makeOptionalTag('case:S', 'MoleculeQNS', G)])
+    result.extend(['<case:vi mode="%s">%s</case:vi>' % 
+                   (makeiter(G("MoleculeQNviMode"))[i],val) 
+                   for val, i in enumerate(makeiter(G("MoleculeQNvi")))])
+    result.extend(['<case:li mode="%s">%s</case:li>' % 
+                   (makeiter(G("MoleculeQNliMode"))[i],val) 
+                   for val, i in enumerate(makeiter(G("MoleculeQNli")))])
+    result.extend([
+            makeOptionalTag('case:v', 'MoleculeQNv', G),
+            makeOptionalTag('case:l', 'MoleculeQNl', G),    
+            makeOptionalTag('case:vibInv', 'MoleculeQNvibInv', G),                     
+            makeOptionalTag('case:vibRefl', 'MoleculeQNvibRefl', G)])
+    vibSym, vibSymGroup = G("MoleculeQNvibSym"), G("MoleculeQNvibSymGroup")
     if vibSym:
-        if vibSymGroup: result += '<case:vibSym group="%s">%s</case:vibSym>'%(vibSymGroup,vibSym)
-        else: result += '<case:vibSym>%s</case:vibSym>'%vibSym
-    if J: result += '<case:J>%s</case:J>'%J
-    if K: result += '<case:K>%s</case:K>'%K
-    if Ka: result += '<case:Ka>%s</case:Ka>'%Ka
-    if Kc: result += '<case:Kc>%s</case:Kc>'%Kc
+        if vibSymGroup: 
+            result.append('<case:vibSym group="%s">%s</case:vibSym>' % (vibSymGroup,vibSym))
+        else: 
+            result.append('<case:vibSym>%s</case:vibSym>' % vibSym)
+    result.extend([            
+            makeOptionalTag('case:v1', 'MoleculeQNv1', G),
+            makeOptionalTag('case:v2', 'MoleculeQNv2', G),
+            makeOptionalTag('case:l2', 'MoleculeQNl2', G),
+            makeOptionalTag('case:v3', 'MoleculeQNv3', G),
+            makeOptionalTag('case:J', 'MoleculeQNJ', G),            
+            makeOptionalTag('case:K', 'MoleculeQNK', G),
+            makeOptionalTag('case:N', 'MoleculeQNN', G),            
+            makeOptionalTag('case:Ka', 'MoleculeQNKa', G),
+            makeOptionalTag('case:Kc', 'MoleculeQNKc', G)])
+    rotSym, rotSymGroup = G("MoleculeQNrotSym"), G("MoleculeQNrotSymGroup")
     if rotSym:
-        if rotSymGroup:  result += '<case:rotSym group="%s">%s</case:rotSym>'%(rotSymGroup,rotSym)
-        else: result += '<case:rotSym>%s</case:rotSym>'%rotSym
-    if I: result += '<case:I nuclearSpinRef="%s">%s</case:I>'%(InuclSpin,I)
-    if Fj:
-        for val,i in enumerate(makeiter(Fj)):
-            result += '<case:Fj j="%s" nuclearSpinRef="%s">%s</case:Fj>'%(makeiter(Fjj)[i],makeiter(FjnuclSpin)[i],val)
-    if N: result += '<case:N>%s</case:N>'%N
-    if SpinComponentLabel: result += '<case:SpinComponentLabel>%s</case:SpinComponentLabel>'%SpinComponentLabel
-    if F1: result += '<case:F1 nuclearSpinRef="%s">%s</case:F1>'%(F1nuclSpin,F1)
-    if F2: result += '<case:F2 nuclearSpinRef="%s">%s</case:F2>'%(F2nuclSpin,F2)
-    if F: result += '<case:F nuclearSpinRef="%s">%s</case:F>'%(FnuclSpin,F)
-    if r:
-        for val,i in enumerate(makeiter(r)):
-            result += '<case:r name="%s">%s</case:r>'%(makeiter(rName)[i],val)
-    if parity: result += '<case:parity>%s</case:parity>'%parity
-    if kronigParity: result += '<case:kronigParity>%s</case:kronigParity>'%kronigParity
-    if asSym: result += '<case:asSym>%s</case:asSym>'%asSym
-
-    result += '</case:QNs>'
-    return result+'</Case>'
+        if rotSymGroup: 
+            result.append('<case:rotSym group="%s">%s</case:rotSym>' % (rotSymGroup,rotSym))
+        else: 
+            result.append('<case:rotSym>%s</case:rotSym>' % rotSym)
+    rovibSym, rovibSymGroup = G("MoleculeQNrovibSym"), G("MoleculeQNrovibSymGroup")
+    if rovibSym:
+        if rovibSymGroup: 
+            result.append('<case:rovibSym group="%s">%s</case:rovibSym>' % (rovibSymGroup,rovibSym))
+        else: 
+            result.append('<case:rovibSym>%s</case:rovibSym>' % rotSym)
+    result.extend([            
+            makeOptionalTag('case:I', 'MoleculeQNI', G, extraAttr={"nuclearSpinRef":G("MoleculeQNInuclSpin")}),
+            makeOptionalTag('case:SpinComponentLabel', 'MoleculeQNSpinComponentLabel', G)])
+    result.extend(['<case:Fj j="%s" nuclearSpinRef="%s">%s</case:Fj>' % 
+                   (makeiter(G("MoleculeQNFjj"))[i], makeiter(G("MoleculeQNFjnuclSpin"))[i], val)
+                   for i, val in enumerate(makeiter(G("MoleculeQNFj")))])
+    result.extend([
+            makeOptionalTag('case:F1', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF1nuclSpin")}),
+            makeOptionalTag('case:F2', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF2nuclSpin")}),
+            makeOptionalTag('case:F', 'MoleculeQNF', G, extraAttr={"nuclearSpinRef":G("MoleculeQNFnuclSpin")})])
+    result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("MoleculeQNrName"))[i],val)
+                   for i,val in enumerate(makeiter(G("MoleculeQNr")))])
+    result.extend([
+            makeOptionalTag('case:parity', 'MoleculeQNparity', G),            
+            makeOptionalTag('case:kronigParity', 'MoleculeQNkronigParity', G),            
+            makeOptionalTag('case:asSym', 'MoleculeQNasSym', G),
+            "</case:QNs",
+            "</Case>"])
+    return "".join(result)
 
 def XsamsMSBuild(MoleculeState):
     """
     Generator for MolecularState tag
     """
-    G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    yield '<MolecularState stateID="S%s-%s">' % (G('NodeID'),
-                                                 G("MoleculeStateID"))
-    yield makeOptionalTag('Description','MoleculeStateDescription',G)
-    yield '<MolecularStateCharacterisation>'
+    G = lambda name: GetValue(name, MoleculeState=MoleculeState)    
+    makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":'"S%s-%s"' % (G('NodeID'), G('MoleculeStateID')),
+                                                                     "fullyAssigned":G("MoleculeStateFullyAssigned")})
+    yield makeOptionalTag("Description","MoleculeStateDescription",G)
+
+    yield '  <MolecularStateCharacterisation>'
     yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G,
                 extraAttr={'energyOrigin':G('MoleculeStateEnergyOrigin')})
-    if G("MoleculeStateTotalStatisticalWeight"):
-        yield '<TotalStatisticalWeight>%s</TotalStatisticalWeight>'\
-                    % G("MoleculeStateTotalStatisticalWeight")
-    if G("MoleculeStateNuclearStatisticalWeight"):
-        yield '<NuclearStatisticalWeight>%s</NuclearStatisticalWeight>'\
-                    % G("MoleculeStateNuclearStatisticalWeight")
-    if G("MoleculeStateNuclearSpinIsomer"):
-        yield '<NuclearSpinIsomer>%s</NuclearSpinIsomer>\n'\
-                    % G("MoleculeStateNuclearSpinIsomer")
+    yield makeOptionalTag("TotalStatisticalWeight", "MoleculeStateTotalStatisticalWeight", G)
+    yield makeOptionalTag("NuclearStatisticalWeight", "MoleculeStateNuclearStatisticalWeight", G)
+    yield makeOptionalTag("NuclearSpinIsomer", "MoleculeStateNuclearSpinIsomer", G)
     if G("MoleculeStateLifeTime"):
         # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
         # the decay attr is a string, either: 'total', 'totalRadiative' or 'totalNonRadiative'
@@ -1004,17 +981,30 @@ def XsamsMSBuild(MoleculeState):
                 yield "<Matrix>%s</Matrix>" % GP("MoleculeStateParametersMatrixDataMatrix") # space-separated list of strings
                 yield "</MatrixData>"
             yield "</Parameters>"
-
     yield '  </MolecularStateCharacterisation>\n'
-
-
-
-
+    yield makeOptionalTag("Parity", "MoleculeStateParity", G)
+    
     cont, ret = checkXML(G("MoleculeStateQuantumNumbers"))
     if cont:
         yield ret
     else:
         yield makeCaseQNs(G)
+
+    # commented out at the moment, need to confer on names to use, and rework makeCaseQNs(). /SR    
+    #if hasattr(MoleculeState, "StateExpansions"):
+    #    for StateExpansion in makeiter(MoleculeState.StateExpansions):
+    #        cont, ret = checkXML(StateExpansion)
+    #        if cont:
+    #            yield ret
+    #            continue            
+    #        GE = lambda name: GetValue(name, StateExpansion=StateExpansion)            
+    #        yield makePrimaryType("StateExpansion", "MoleculeStateExpansion", GE)
+    #        if hasattr(StateExpansion, "BasisStates"):
+    #            for BasisState in makeiter(StateExpansion.BasisStates):
+    #                GEB = lambda name: GetValue(name, BasisState=BasisState)
+    #                makeCaseQNs(GEB) # this needs to accept a different tag name too ...?
+    #        yield "</StateExpansion>"
+
     yield '</MolecularState>'
 
 def XsamsMolecules(Molecules):
