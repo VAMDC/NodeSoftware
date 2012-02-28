@@ -5,6 +5,8 @@ RETURNABLES = {\
 'AtomStateID':'AtomState.id',
 
 'AtomSymbol':'Atom.atomicion.isotope.chemicalelement.elementsymbol',
+'AtomInchi' : 'Atom.atomicion.inchi',
+'AtomInchiKey' : 'Atom.atomicion.inchikey',
 'AtomSpeciesID':'Atom.atomicion.id',
 'AtomNuclearCharge':'Atom.atomicion.isotope.chemicalelement.nuclearcharge',
 'AtomIonCharge':'Atom.atomicion.ioncharge',
