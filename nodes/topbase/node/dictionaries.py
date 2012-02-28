@@ -18,7 +18,8 @@ RETURNABLES = {\
 #'MethodCategory':'Method.category',
                            
 'AtomStateID':'AtomState.id',
-
+'AtomInchi' : 'Atom.atomicion.inchi',
+'AtomInchiKey' : 'Atom.atomicion.inchikey',
 'AtomSymbol':'Atom.atomicion.isotope.chemicalelement.elementsymbol',
 'AtomSpeciesID':'Atom.atomicion.id',
 'AtomNuclearCharge':'Atom.atomicion.isotope.chemicalelement.nuclearcharge',
