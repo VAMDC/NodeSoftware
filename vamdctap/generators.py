@@ -85,6 +85,7 @@ def GetValue(name, **kwargs):
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
         #log.debug(e)
+        #print 'Not in dictionary: ' + name
         return ''
 
     # whenever the right-hand-side is not a string, treat
@@ -106,6 +107,8 @@ def GetValue(name, **kwargs):
     except Exception, e:
         # this catches the case where the dict-value is a string or mistyped.
         #log.debug('Exception in generators.py: GetValue()')
+        print 'Evaluation failure: ' + name + ' in ' + objname
+        print obj
         value = name
 
     if value == None:
@@ -596,7 +599,7 @@ def makeAtomStateComponents(AtomState):
 
     string = ""
     for Component in makeiter(AtomState.Components):
-        G = lambda name: GetValue(name, Component=Component)
+        G = lambda name: GetValue(name, AtomState=AtomState)
 
         string += "<Component>"
 
