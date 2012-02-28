@@ -20,8 +20,8 @@ from vamdctap.unitconv import invcm2eV
 RESTRICTABLES = {\
 'AtomSymbol':'finalstateindex__species__atomsymbol',
 'AtomNuclearCharge':'finalstateindex__species__atomnuclearcharge',
-'AtomIonCharge':'finalstateindex__species__atomioncharge',
-'AtomStateEnergy':'finalstateindex__energy',
+'IonCharge':'finalstateindex__species__atomioncharge',
+'StateEnergy':'finalstateindex__energy',
 'RadTransWavelength':'wavelength'
 }
 
@@ -38,13 +38,14 @@ RETURNABLES = {\
 'AtomInchi':'Atom.inchi',
 'AtomInchiKey':'Atom.inchikey',
 'AtomStateId':'AtomState.id',
-'AtomStateS':'AtomState.atomstates',
-'AtomStateL':'AtomState.atomstatel',
+'AtomStateTermLSS':'AtomState.atomstates',
+'AtomStateTermLSL':'AtomState.atomstatel',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
 'AtomStateEnergy':'AtomState.energy',
 'AtomStateEnergyMethod':'AtomState.energyMethod',
 'AtomStateEnergyUnit':u'1/cm',
 'AtomStateDescription':'AtomState.atomstateconfigurationlabel',
+'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
 
 #'RadTransWavelength':'[RadTran.wavelengthexperimental, RadTran.wavelengththeoretical]',
 'RadTransWavelength':'RadTran.allWavelengths()',
