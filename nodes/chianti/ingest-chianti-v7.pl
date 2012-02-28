@@ -13,7 +13,7 @@ print "         inchikey CHAR(27), \n";
 print "		ChiantiAtomStateIndex INTEGER NOT NULL, \n";
 print "		AtomStateConfigurationLabel VARCHAR(32), \n";
 print "		AtomStateS FLOAT, \n";
-print "		AtomStateL FLOAT, \n";
+print "		AtomStateL INTEGER, \n";
 print "		AtomStateTotalAngMom FLOAT, \n";
 print "		AtomStateEnergy DOUBLE, \n";
 print "		AtomStateEnergyMethod CHAR(4), \n";
