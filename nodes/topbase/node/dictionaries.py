@@ -86,7 +86,7 @@ RETURNABLES = {\
 
 RESTRICTABLES = {\
 'RadTransWavelength':'wavelength',
-'AtomIonCharge' : 'ioncharge',
+'IonCharge' : 'ioncharge',
 'AtomNuclearCharge' : 'nuclearcharge',
 'AtomSymbol' : 'elementsymbol',
 }
