@@ -263,9 +263,9 @@ def makeAccuracy(keyword, G):
     result = []
     for i,ac in enumerate( makeiter(acc) ):
         result.append('<Accuracy')
-        if acc_conf[i]: result.append( ' confidenceInterval="%s"'%acc_conf )
-        if acc_typ[i]: result.append( ' type="%s"'%acc_typ )
-        if acc_rel[i]: result.append( ' relative="true"')
+        if len(acc_conf) > i and acc_conf[i]: result.append(' confidenceInterval="%s"' % acc_conf[i])
+        if len(acc_typ) > i and acc_typ[i]: result.append(' type="%s"' % acc_typ[i])
+        if len(acc_rel) > i and acc_rel[i]: result.append(' relative="%s"' % acc_rel[i])
         result.append( '>%s</Accuracy>'%ac )
 
     return ''.join(result)
@@ -285,8 +285,8 @@ def makeEvaluation(keyword, G):
     result = []
     for i,ev in enumerate( makeiter(evs) ):
         result.append('<Evaluation')
-        if ev_meth[i]: result.append( ' methodRef="%s"'%ev_meth )
-        if ev_reco[i]: result.append( ' recommended="true"' )
+        if len(ev_meth) > i and ev_meth[i]: result.append(' methodRef="%s"' % ev_meth[i])
+        if len(ev_reco) > i and ev_reco[i]: result.append(' recommended="%s"' % ev_reco[i])
         result.append( '>' )
         result.append( makeSourceRefs(ev_refs) )
         if ev_comm: result.append('<Comments>%s</Comments>'%ev_comm)
@@ -326,8 +326,8 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
 
-    result.append( makeAccuracy( tagname, G) )
-    result.append( makeEvaluation( tagname, G) )
+    result.append( makeAccuracy(keyword, G) )
+    result.append( makeEvaluation(keyword, G) )
     result.append( '</%s>' % tagname )
 
     for k, v in extraElem.items():

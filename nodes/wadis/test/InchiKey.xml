@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XSAMSData xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 http://vamdc.org/xml/xsams/0.3">
+	<Sources>
+		<Source sourceID="Bwadis-1281">
+			<Authors>
+				<Author>
+					<Name>C. Camy-Peyret</Name>
+				</Author>
+				<Author>
+					<Name>J. -M. Flaud</Name>
+				</Author>
+				<Author>
+					<Name>L. Lechuga-Fossat</Name>
+				</Author>
+				<Author>
+					<Name>J. W. C. Johns</Name>
+				</Author>
+			</Authors>
+			<Title>The far-infrared spectrum of deuterated hydrogen sulfide: The ground state rotational constants of D&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;32&lt;/sup&gt;S, D&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;34&lt;/sup&gt;S, HD&lt;sup&gt;32&lt;/sup&gt;S, and HD&lt;sup&gt;34&lt;/sup&gt;S</Title>
+			<Category>journal</Category>
+			<Year>1985</Year>
+			<SourceName>Journal of Molecular Spectroscopy</SourceName>
+			<Volume>109</Volume>
+			<PageBegin>300</PageBegin>
+			<PageEnd>333</PageEnd>
+			<ArticleNumber>2</ArticleNumber>
+			<DigitalObjectIdentifier>10.1016/0022-2852(85)90315-7</DigitalObjectIdentifier>
+			<Comments>&lt;p style="text-align: justify;"&gt;Pure rotation spectra of deuterated samples of hydrogen sulfide have been recorded between 25 and 280 cm&lt;sup&gt;&amp;minus;1&lt;/sup&gt; with a Fourier transform spectrometer at an apodized resolution of 0.004 cm&lt;sup&gt;&amp;minus;1&lt;/sup&gt;. Accurate rotational and centrifugal distortion constants have been derived from the observed line positions for the four isotopic species D&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;32&lt;/sup&gt;S, D&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;34&lt;/sup&gt;S, HD&lt;sup&gt;32&lt;/sup&gt;S, and HD&lt;sup&gt;34&lt;/sup&gt;S. Finally, an extensive list of calculated and observed line positions, together with their calculated intensities is presented.&lt;/p&gt;</Comments>
+		</Source>
+		<Source sourceID="Bwadis-844">
+			<Authors>
+				<Author>
+					<Name>R.A.Toth</Name>
+				</Author>
+			</Authors>
+			<Title>v&lt;sub&gt;2&lt;/sub&gt; band of H&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;16&lt;/sup&gt;O : line strengths and transition frequencies</Title>
+			<Category>journal</Category>
+			<Year>1991</Year>
+			<SourceName>Journal of Optical Society of America, B</SourceName>
+			<Volume>8</Volume>
+			<PageBegin>2236</PageBegin>
+			<PageEnd>2255</PageEnd>
+			<ArticleNumber>11</ArticleNumber>
+			<UniformResourceIdentifier>http://www.opticsinfobase.org/josab/abstract.cfm?URI=josab-8-11-2236</UniformResourceIdentifier>
+			<DigitalObjectIdentifier>10.1364/JOSAB.8.002236</DigitalObjectIdentifier>
+			<Comments>&lt;p&gt;High-resolution spectra of H&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;16&lt;/sup&gt;O were recorded with a Fourier-transform spectrometer covering transitions in the (010)&amp;ndash;(000) band from 1066 to 2582 cm&lt;sup&gt;&amp;minus;1&lt;/sup&gt;. The measured line frequencies were used along with additional data taken from studies at microwave and farinfrared frequencies in an analysis to obtain rotational energies of levels in the (000) and (010) states. Measurements of the line strengths were fitted by least squares to a model in which the dipole moment matrix elements were represented by as many as 19 expansion coefficients. The results produced computed line strength values that are in excellent agreement, on the average, with the 874 experimental transitions included in the analysis. These results provide a more accurate representation of the line positions and strengths for the (010)&amp;ndash;(000) band than are currently available on the HITRAN absorption line parameter compilation.&lt;/p&gt;</Comments>
+		</Source>
+		<Source sourceID="Bwadis-679">
+			<Authors>
+				<Author>
+					<Name>G. Guelachvili</Name>
+				</Author>
+			</Authors>
+			<Title>Experimental Doppler-limited spectra of the v&lt;sub&gt;2&lt;/sub&gt; bands of H&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;16&lt;/sup&gt;0, H&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;17&lt;/sup&gt;O, H&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;18&lt;/sup&gt;O and HDO by Fourier-transform spectroscopy: secondary wave-number standards between 1066</Title>
+			<Category>journal</Category>
+			<Year>1983</Year>
+			<SourceName>Journal of Optical Society of America</SourceName>
+			<Volume>73</Volume>
+			<PageBegin>137</PageBegin>
+			<PageEnd>150</PageEnd>
+			<ArticleNumber>2</ArticleNumber>
+			<UniformResourceIdentifier>http://www.opticsinfobase.org/abstract.cfm?URI=josa-73-2-137</UniformResourceIdentifier>
+			<DigitalObjectIdentifier>10.1364/JOSA.73.000137</DigitalObjectIdentifier>
+			<Comments>&lt;p&gt;More than 2000 absolute wave numbers of 7 vibrational bands of H&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;16&lt;/sup&gt;O, H&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;17&lt;/sup&gt;O, H&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;18&lt;/sup&gt;O, and HDO (natural abundance) measured with a Fourier interferometer between 1066 and 2296 cm&lt;sup&gt;-1&lt;/sup&gt; are provided, with the greatest uncertainty about 50*10&lt;sup&gt;-6&lt;/sup&gt; cm&lt;sup&gt;-1&lt;/sup&gt; (1.5 MHz). These experimental values extracted from 12 different absorption spectra reveal a much greater consistency and are consequently given in inverse centimeters to the sixth decimal place.&lt;br /&gt;
+The spectral range covered corresponds to a large zone for which experimental accurate data were almost nonexistent. &lt;br /&gt;
+The precise knowledge of these strong atmospheric v&lt;sub&gt;2&lt;/sub&gt; bands is of interest for astronomical studies. It will also improve with complementary recent similar work on N&lt;sub&gt;2&lt;/sub&gt;0, the calibration of diode lasers, and Fourier-transform and classical spectrometers and will facilitate the coincidence search with laser radiation. For convenience, the wave numbers of the lines and their absolute uncertainty are given with their rotational and vibrational assignments and their experimental half-widths and intensities.&lt;/p&gt;</Comments>
+		</Source>
+	</Sources>
+	<Methods>
+		<Method methodID="Mwadis-Theory">
+			<Category>theory</Category>
+			<Description>theory</Description>
+		</Method>
+		<Method methodID="Mwadis-Exp">
+			<Category>experiment</Category>
+			<Description>experiment</Description>
+		</Method>
+	</Methods>
+	<Species>
+		<Molecules>
+			<Molecule speciesID="Xwadis-XLYOFNOQVPJJNP-UHFFFAOYSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>$H_2O$</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>H2O</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Water</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/H2O/h1H2</InChI>
+					<InChIKey>XLYOFNOQVPJJNP-UHFFFAOYSA-N</InChIKey>
+					<StableMolecularProperties>
+						<MolecularWeight>
+							<Value units="amu">18.0148</Value>
+						</MolecularWeight>
+					</StableMolecularProperties>
+					<Comment>H2O</Comment>
+				</MolecularChemicalSpecies>
+				<MolecularState stateID="Swadis-21-0.0.0.11.6.5">
+					<Description/>
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+						<case:QNs>
+							<case:v1>0</case:v1>
+							<case:v2>0</case:v2>
+							<case:v3>0</case:v3>
+							<case:J>11</case:J>
+							<case:Ka>6</case:Ka>
+							<case:Kc>5</case:Kc>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="Swadis-21-0.1.0.10.5.6">
+					<Description/>
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+						<case:QNs>
+							<case:v1>0</case:v1>
+							<case:v2>1</case:v2>
+							<case:v3>0</case:v3>
+							<case:J>10</case:J>
+							<case:Ka>5</case:Ka>
+							<case:Kc>6</case:Kc>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+			</Molecule>
+			<Molecule speciesID="Xwadis-RWSOTUBLDIXVET-IQRQJSDFSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>$D_2^{34}S$</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>H2S</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Hydrogen sulphide isotopologue</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/H2S/h1H2/i1+2D2</InChI>
+					<InChIKey>RWSOTUBLDIXVET-IQRQJSDFSA-N</InChIKey>
+					<StableMolecularProperties>
+						<MolecularWeight>
+							<Value units="amu">38.0</Value>
+						</MolecularWeight>
+					</StableMolecularProperties>
+					<Comment>D2_34S</Comment>
+				</MolecularChemicalSpecies>
+				<MolecularState stateID="Swadis-718-0.0.0.5.3.3">
+					<Description/>
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+						<case:QNs>
+							<case:v1>0</case:v1>
+							<case:v2>0</case:v2>
+							<case:v3>0</case:v3>
+							<case:J>5</case:J>
+							<case:Ka>3</case:Ka>
+							<case:Kc>3</case:Kc>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="Swadis-718-0.0.0.6.2.4">
+					<Description/>
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+						<case:QNs>
+							<case:v1>0</case:v1>
+							<case:v2>0</case:v2>
+							<case:v3>0</case:v3>
+							<case:J>6</case:J>
+							<case:Ka>2</case:Ka>
+							<case:Kc>4</case:Kc>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="Swadis-718-0.0.0.7.1.7">
+					<Description/>
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+						<case:QNs>
+							<case:v1>0</case:v1>
+							<case:v2>0</case:v2>
+							<case:v3>0</case:v3>
+							<case:J>7</case:J>
+							<case:Ka>1</case:Ka>
+							<case:Kc>7</case:Kc>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="Swadis-718-0.0.0.8.0.8">
+					<Description/>
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+						<case:QNs>
+							<case:v1>0</case:v1>
+							<case:v2>0</case:v2>
+							<case:v3>0</case:v3>
+							<case:J>8</case:J>
+							<case:Ka>0</case:Ka>
+							<case:Kc>8</case:Kc>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+			</Molecule>
+		</Molecules>
+	</Species>
+	<Processes>
+		<Radiative>
+			<RadiativeTransition id="Pwadis-70001977">
+				<SourceRef>Bwadis-1281</SourceRef>
+				<EnergyWavelength>
+					<Wavenumber methodRef="Mwadis-Exp">
+						<Value units="1/cm">41.071</Value>
+						<Accuracy type="statistical">0.0009</Accuracy>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>Swadis-718-0.0.0.6.2.4</UpperStateRef>
+				<LowerStateRef>Swadis-718-0.0.0.5.3.3</LowerStateRef>
+				<Probability/>
+			</RadiativeTransition>
+			<RadiativeTransition id="Pwadis-70001978">
+				<SourceRef>Bwadis-1281</SourceRef>
+				<EnergyWavelength>
+					<Wavenumber methodRef="Mwadis-Exp">
+						<Value units="1/cm">41.45094</Value>
+						<Accuracy type="statistical">0.0003</Accuracy>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>Swadis-718-0.0.0.8.0.8</UpperStateRef>
+				<LowerStateRef>Swadis-718-0.0.0.7.1.7</LowerStateRef>
+				<Probability/>
+			</RadiativeTransition>
+			<RadiativeTransition id="Pwadis-1760760">
+				<SourceRef>Bwadis-844</SourceRef>
+				<EnergyWavelength>
+					<Wavenumber methodRef="Mwadis-Exp">
+						<Value units="1/cm">1239.2186</Value>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>Swadis-21-0.1.0.10.5.6</UpperStateRef>
+				<LowerStateRef>Swadis-21-0.0.0.11.6.5</LowerStateRef>
+				<Probability/>
+			</RadiativeTransition>
+			<RadiativeTransition id="Pwadis-1501751">
+				<SourceRef>Bwadis-679</SourceRef>
+				<EnergyWavelength>
+					<Wavenumber methodRef="Mwadis-Exp">
+						<Value units="1/cm">1239.219081</Value>
+						<Accuracy type="statistical">5.2e-05</Accuracy>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>Swadis-21-0.1.0.10.5.6</UpperStateRef>
+				<LowerStateRef>Swadis-21-0.0.0.11.6.5</LowerStateRef>
+				<Probability/>
+			</RadiativeTransition>
+			<RadiativeTransition id="Pwadis-1681123">
+				<SourceRef>Bwadis-679</SourceRef>
+				<EnergyWavelength>
+					<Wavenumber methodRef="Mwadis-Exp">
+						<Value units="1/cm">1239.219081</Value>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>Swadis-21-0.1.0.10.5.6</UpperStateRef>
+				<LowerStateRef>Swadis-21-0.0.0.11.6.5</LowerStateRef>
+				<Probability/>
+			</RadiativeTransition>
+		</Radiative>
+	</Processes>
+</XSAMSData>

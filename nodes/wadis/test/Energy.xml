@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 http://vamdc.org/xml/xsams/0.3" xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema">
+	<Sources>
+		<Source sourceID="Bwadis-511">
+			<Authors>
+				<Author>
+					<Name>Chevillard J.P.</Name>
+				</Author>
+				<Author>
+					<Name>J.Y.Mandin</Name>
+				</Author>
+				<Author>
+					<Name>J.M.Flaud</Name>
+				</Author>
+				<Author>
+					<Name>C.Camy-Peyret</Name>
+				</Author>
+			</Authors>
+			<Title>H&lt;sub&gt;2&lt;/sub&gt;&lt;sup&gt;16&lt;/sup&gt;O - Line Positions and Intensities between 9500 and 11500 cm&lt;sup&gt;-1&lt;/sup&gt; - the Interacting Vibrational-States (041), (220), (121), (022), (300), (201), (102), and (003)</Title>
+			<Category>journal</Category>
+			<Year>1989</Year>
+			<SourceName>Canadian Journal of Physics</SourceName>
+			<Volume>67</Volume>
+			<PageBegin>1065 </PageBegin>
+			<PageEnd> 1084</PageEnd>
+			<ArticleNumber>11</ArticleNumber>
+			<DigitalObjectIdentifier>10.1139/p89-186</DigitalObjectIdentifier>
+			<Comments>&lt;p&gt;&lt;b&gt; &lt;/b&gt;Water vapor Fourier-transform spectra (0.015&amp;nbsp;cm&lt;sup&gt;&amp;minus;1&lt;/sup&gt; resolution) were analyzed between 9500 and 11500&amp;nbsp;cm&lt;sup&gt;&amp;minus;1&lt;/sup&gt;. Accurate values of 557 rotational energy levels, belonging to the interacting vibrational states (041), (220), (121), (022), (300), (201), (102), and (003) of the first decad of H&lt;sub&gt;2&lt;/sub&gt;O, were determined. Moreover, 718 line intensities were accurately measured (7% uncertainty). To increase the number of experimental intensities (needed for atmospheric applications), a faster method, using the measured line depths, has made it possible to obtain 1695 additional intensities, with an average uncertainty of about 15%.&lt;/p&gt;</Comments>
+		</Source>
+	</Sources>
+	<Methods>
+		<Method methodID="Mwadis-Theory">
+			<Category>theory</Category>
+			<Description>theory</Description>
+		</Method>
+		<Method methodID="Mwadis-Exp">
+			<Category>experiment</Category>
+			<Description>experiment</Description>
+		</Method>
+	</Methods>
+	<Species>
+		<Molecules>
+			<Molecule speciesID="Xwadis-XLYOFNOQVPJJNP-UHFFFAOYSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>$H_2O$</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>H2O</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Water</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/H2O/h1H2</InChI>
+					<InChIKey>XLYOFNOQVPJJNP-UHFFFAOYSA-N</InChIKey>
+					<StableMolecularProperties>
+						<MolecularWeight>
+							<Value units="amu">18.0148</Value>
+						</MolecularWeight>
+					</StableMolecularProperties>
+					<Comment>H2O</Comment>
+				</MolecularChemicalSpecies>
+				<MolecularState stateID="Swadis-21-00.04.01.01.01.00">
+					<Description/>
+					<MolecularStateCharacterisation>
+						<StateEnergy methodRef="Mwadis-Exp" energyOrigin="Zero-point energy">
+							<Value units="1/cm">9895.327847</Value>
+							<Accuracy type="statistical">0.00044</Accuracy>
+						</StateEnergy>
+					</MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+						<case:QNs>
+							<case:v1>0</case:v1>
+							<case:v2>4</case:v2>
+							<case:v3>1</case:v3>
+							<case:J>1</case:J>
+							<case:Ka>1</case:Ka>
+							<case:Kc>0</case:Kc>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+			</Molecule>
+		</Molecules>
+	</Species>
+	<Processes>
+		<Radiative>
+</Radiative>
+	</Processes>
+</XSAMSData>

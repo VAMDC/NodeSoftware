@@ -3,7 +3,10 @@ import sys
 if __name__ == '__main__':
 	VERIFICATION_SCHEMA_LOCATION = u"../verification.xsd"
 else:
-	import verification
+	try:
+		import verification
+	except ImportError:
+		from .. import verification
 	VERIFICATION_SCHEMA_LOCATION = verification.VERIFICATION_SCHEMA_LOCATION
 
 from lxml import etree
