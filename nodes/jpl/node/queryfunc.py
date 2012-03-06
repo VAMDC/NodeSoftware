@@ -197,7 +197,7 @@ def setupResults(sql):
     datasets = Datasets.objects.filter(archiveflag=0)
 
     # Query the database and get calculated transitions (TransitionsCalc)
-    transs = TransitionsCalc.objects.filter(q,specie__origin=5,
+    transs = TransitionsCalc.objects.filter(q,specie__origin=0,
                                             specie__archiveflag=0,
                                             dataset__in=datasets)
                                             #dataset__archiveflag=0) #.order_by('frequency')
@@ -300,7 +300,7 @@ def returnResults(tap, LIMIT=None):
     # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
     
-    transs = TransitionsCalc.objects.filter(q,specie__origin=5,specie__archiveflag=0,dataset__archiveflag=0) 
+    transs = TransitionsCalc.objects.filter(q,specie__origin=0,specie__archiveflag=0,dataset__archiveflag=0) 
     ntrans = transs.count()
 
     if LIMIT is not None and ntrans > LIMIT:
@@ -334,7 +334,7 @@ def returnResults(tap, LIMIT=None):
     if (col=='ALL' or 'states' in [x.lower() for x in col] ):
         LOG('STATES')
         orderby = tap.request.get('ORDERBY','energy')
-        states = States.objects.filter(q,specie__origin=5,dataset__archiveflag=0).order_by(orderby)
+        states = States.objects.filter(q,specie__origin=0,dataset__archiveflag=0).order_by(orderby)
     else:
         LOG('NO STATES')
         states = []

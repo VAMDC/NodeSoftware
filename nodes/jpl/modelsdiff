@@ -1,0 +1,587 @@
+0a1,2
+> # -*- coding: utf-8 -*-
+> 
+11a14,19
+> def formatstring(value, format, noneformat):
+>      if value is not None:
+>           return format % value
+>      else:
+>           return noneformat % ""
+> 
+17c25,34
+<      id                    = IntegerField(primary_key=True, db_column='M_ID') 
+---
+> 
+>      NUMBEROFATOMS_CHOICES = (
+>           ('Atomic', 'Atomic'),
+>           ('Diatomic', 'Diatomic'),
+>           ('Triatomic', 'Triatomic'),
+>           ('Polyatomic', 'Polyatomic'),
+>           )
+>      
+>      id                    = AutoField(primary_key=True, db_column='M_ID') 
+> #     id                    = IntegerField(primary_key=True, db_column='M_ID') 
+24c41
+<      numberofatoms         = CharField(max_length= 20, db_column='M_NumberOfAtoms', blank=True)
+---
+>      numberofatoms         = CharField(max_length= 20, db_column='M_NumberOfAtoms', blank=True, choices=NUMBEROFATOMS_CHOICES)
+38c55,73
+<      id                    = IntegerField(primary_key=True, db_column='E_ID')
+---
+> 
+>      LINSYMASYM_CHOICES = (
+>           ('Atomic', 'Atomic'),
+>           ('Linear', 'Linear'),
+>           ('Symmetric Top', 'Symmetric Top'),
+>           ('Asymmetric Top', 'Asymmetric Top'),
+>           )
+>      SHELL_CHOICES = (
+>           ('OpenShell', 'Open Shell'),
+>           ('ClosedShell', 'Closed Shell'),
+>           )
+> 
+>      ORIGIN_CHOICES = (
+>           (0, 'JPL'),
+>           (5, 'CDMS'),
+>           )
+>      
+>      id = AutoField(primary_key=True, db_column='E_ID')
+> #     id                    = IntegerField(primary_key=True, db_column='E_ID')
+44,45c79,80
+<      linearsymasym         = CharField(max_length= 20, db_column='E_LinearSymAsym')
+<      shell                 = CharField(max_length= 20, db_column='E_Shell')
+---
+>      linearsymasym         = CharField(max_length= 20, db_column='E_LinearSymAsym', choices=LINSYMASYM_CHOICES)
+>      shell                 = CharField(max_length= 20, db_column='E_Shell', choices=SHELL_CHOICES)
+48c83
+<      origin                = IntegerField(db_column='E_Origin')
+---
+>      origin                = IntegerField(db_column='E_Origin', default=5, choices=ORIGIN_CHOICES)
+54,55c89,90
+<      dateactivated         = DateField(db_column='E_DateActivated')
+<      datearchived          = DateField(db_column='E_DateArchived')
+---
+>      dateactivated         = DateField(db_column='E_DateActivated', blank = True)
+>      datearchived          = DateField(db_column='E_DateArchived', blank = True)
+66c101,104
+<           Use the database function F_GetCML to get the string
+---
+>           Use the database function F_GetCML4XSAMS to get the string.
+>           This methods just returns the content in between the molecule-tag.
+>           If you want to have the complete content for a cml-file then use
+>           getCML instead.     
+71c109
+<      
+---
+> 
+74a113,124
+>      def getCML(self):
+>           """
+>           Return the CML version of the molecular structure.
+>           Use the database function F_GetCML to get the string
+>           """
+>           cursor = connection.cursor()
+>           cursor.execute("SELECT F_GetCML(%s) as cml ", [self.id])
+>           return cursor.fetchone()[0]
+> 
+>      def __unicode__(self):
+>           return u'ID:%s Tag:%s Isotopolog: %s InchiKey: %s '%(self.id,self.speciestag,self.isotopolog, self.inchikey)
+> 
+80,86c130,150
+<      id                    = IntegerField(primary_key=True, db_column='DAT_ID')
+<      species               = ForeignKey(Species, db_column='DAT_E_ID')
+<      userid                = IntegerField(db_column='DAT_U_ID')
+<      fileid                = IntegerField(db_column='DAT_FIL_ID') 
+<      speciestag            = IntegerField(db_column='DAT_E_Tag')
+<      qntag                 = IntegerField(db_column='DAT_QN_Tag') 
+<      comment               = TextField(db_column='DAT_Comment') 
+---
+>      HFS_CHOICES = (
+>           (0, 'No Hyperfine Structure'),
+>           (1, 'With Hyperfine Structure'),
+>           )
+> 
+>      TYPE_CHOICES = (
+>           ('lin', 'LIN (spfit)'),
+>           ('cat', 'CAT (spfit)'),
+>           ('egy', 'EGY (spfit)'),
+>           ('mrg', 'MRG (spfit)'),
+>           ('erhin', 'ERHAM-Input'),
+>           ('erhout', 'ERHAM-Output'),
+>           )
+>      id                    = AutoField(primary_key=True, db_column='DAT_ID')
+> #     id                    = IntegerField(primary_key=True, db_column='DAT_ID')
+>      specie                = ForeignKey(Species, db_column='DAT_E_ID')
+>      userid                = IntegerField(db_column='DAT_U_ID', blank=True)
+>      fileid                = IntegerField(db_column='DAT_FIL_ID', blank=True) 
+>      speciestag            = IntegerField(db_column='DAT_E_Tag', blank=True)
+>      qntag                 = IntegerField(db_column='DAT_QN_Tag', blank=True) 
+>      comment               = TextField(db_column='DAT_Comment', blank=True) 
+89c153
+<      public                = IntegerField(db_column='DAT_Public') 
+---
+>      public                = IntegerField(db_column='DAT_Public', blank=True) 
+91,94c155,158
+<      hfsflag               = IntegerField(db_column='DAT_HFS') 
+<      createdate            = DateField(db_column='DAT_Createdate')
+<      activateddate         = DateField(db_column='DAT_Date_Activated')
+<      archvieddate          = DateField(db_column='DAT_Date_Archived')
+---
+>      hfsflag               = IntegerField(db_column='DAT_HFS', choices=HFS_CHOICES) 
+>      createdate            = DateField(db_column='DAT_Createdate', blank=True)
+>      dateactivated         = DateField(db_column='DAT_Date_Activated', blank=True)
+>      datearchived          = DateField(db_column='DAT_Date_Archived', blank=True)
+104,105c168,169
+<      id                    = IntegerField(primary_key=True, db_column='EGY_ID')
+<      species               = ForeignKey(Species, db_column='EGY_E_ID')
+---
+>      id                    = AutoField(primary_key=True, db_column='EGY_ID')
+>      specie                = ForeignKey(Species, db_column='EGY_E_ID')
+124c188
+<      timestamp             = IntegerField(db_column='EGY_TIMESTAMP')
+---
+>      timestamp             = DateField(db_column='EGY_TIMESTAMP')
+181,182c245,257
+<           
+< 
+---
+>      def spfitstr(self):
+>           return '%s%s%s%s%s%s%s%s%s%s%s'\
+>                  % (formatstring(self.block,'%5d','%5s'),
+>                     formatstring(self.index,'%5d','%5s'),
+>                     formatstring(self.energy,'%18.6lf','%18s'),         
+>                     formatstring(self.mixingcoeff,'%18.6lf','%18s'),         
+>                     formatstring(self.uncertainty,'%18.6lf','%18s'),         
+>                     formatstring(self.qn1,'%3d','%3s'),         
+>                     formatstring(self.qn2,'%3d','%3s'),         
+>                     formatstring(self.qn3,'%3d','%3s'),         
+>                     formatstring(self.qn4,'%3d','%3s'),         
+>                     formatstring(self.qn5,'%3d','%3s'),         
+>                     formatstring(self.qn6,'%3d','%3s'))
+190c265
+<      species               = ForeignKey(Species, db_column='P_E_ID')
+---
+>      specie                = ForeignKey(Species, db_column='P_E_ID')
+195a271
+>      smu2                  =  FloatField(null=True, db_column='P_Smu2')
+228c304
+<      #frequencyArray        
+---
+> #     frequencyArray        = []
+232a309,321
+> #     def get_exp_transitions(self):
+> #          exptranss = TransitionsExp.objects.filter(species=self.species,
+> #                                                    qnup1=self.qnup1,
+> #                                                    qnlow1=self.qnlow1,
+> #                                                    qnup2=self.qnup2,
+> #                                                    qnlow2=self.qnlow2,
+> #                                                    qnup3=self.qnup3,
+> #                                                    qnlow4=self.qnlow4,
+> #                                                    qnup5=self.qnup5,
+> #                                                    qnlow6=self.qnlow6)
+> #          freqs=[]
+> #          for trans in exptranss:
+> #               freqs.append(trans.frequency)
+234,295c323,324
+<      def attach_exp_frequencies(self):
+<          """
+<          Create lists of frequencies, units, sources, ... for each transition.
+<          The calculated frequency is given anyway followed by experimental
+<          frequencies (db-table: Frequencies). In addition a unique list of
+<          methods for the experimental data is created and returned.
+< 
+<          Returns:
+<          - modified transitions (frequencies, ... attached as lists)
+<          - methods for experimental data
+< 
+<          """
+< 
+<          # Attach the calculated frequency first
+<          self.frequencies=[self.frequency]
+<          self.units=[self.unit]
+<          self.uncertainties=[self.uncertainty]
+<          self.refs=[""]
+<          self.methods=[self.species.id]
+< 
+<          exptranss = TransitionsExp.objects.filter(species=self.species,
+<                                                    qnup1=self.qnup1,
+<                                                    qnlow1=self.qnlow1,
+<                                                    qnup2=self.qnup2,
+<                                                    qnlow2=self.qnlow2,
+<                                                    qnup3=self.qnup3,
+<                                                    qnlow3=self.qnlow3,
+<                                                    qnup4=self.qnup4,
+<                                                    qnlow4=self.qnlow4,
+<                                                    qnup5=self.qnup5,
+<                                                    qnlow5=self.qnlow5,
+<                                                    qnup6=self.qnup6,
+<                                                    qnlow6=self.qnlow6)
+< 
+<          for exptrans in exptranss:
+<               self.frequencies.append(exptrans.frequency)
+<               self.units.append(exptrans.unit)
+<               self.uncertainties.append(exptrans.uncertainty)
+<               # get sources
+<               s= exptrans.sources.all().values_list('source',flat=True)
+<               self.refs.append(s)
+<               
+<               method = "EXP" + "-".join(str(source) for source in s)
+<               self.methods.append(method)
+< 
+<          return self.frequencies
+< 
+< 
+< 
+< ##     def get_exp_transitions(self):
+< ##          exptranss = TransitionsExp.objects.filter(species=self.species,
+< ##                                                    qnup1=self.qnup1,
+< ##                                                    qnlow1=self.qnlow1,
+< ##                                                    qnup2=self.qnup2,
+< ##                                                    qnlow2=self.qnlow2,
+< ##                                                    qnup3=self.qnup3,
+< ##                                                    qnlow4=self.qnlow4,
+< ##                                                    qnup5=self.qnup5,
+< ##                                                    qnlow6=self.qnlow6)
+< ##          freqs=[self.frequency]
+< ##          for trans in exptranss:
+< ##               freqs.append(trans.frequency)
+---
+> #          self.frequencyArray = freqs
+> #          return freqs
+297,298d325
+< ##          self.frequencyArray = freqs
+< ##          return freqs
+300,301d326
+< ##     frequencyarray = attach_exp_frequencies
+<      
+303,304d327
+< #          attach_exp_frequencies()
+< #          self.frequenciess = 123,234
+311c334,356
+<         
+---
+> 
+>      def spfitstr(self):
+>         return '%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s'\
+>                % (formatstring(self.frequency,'%13.4lf','%13s'),
+>                   formatstring(self.uncertainty,'%8.4lf','%8s'),
+>                   formatstring(self.intensity,'%8.4lf','%8s'),
+>                   formatstring(self.degreeoffreedom,'%2d','%s'),
+>                   formatstring(self.energylower,'%10.4lf','%10s'),
+>                   formatstring(self.upperstatedegeneracy,'%3d','%3s'),
+>                   formatstring(self.speciestag,'%7d','%7s'),
+>                   formatstring(self.qntag,'%4d','%4s'),
+>                   formatstring(self.qnup1,'%2d','%2s'),
+>                   formatstring(self.qnup2,'%2d','%2s'),
+>                   formatstring(self.qnup3,'%2d','%2s'),
+>                   formatstring(self.qnup4,'%2d','%2s'),
+>                   formatstring(self.qnup5,'%2d','%2s'),
+>                   formatstring(self.qnup6,'%2d','%2s'),
+>                   formatstring(self.qnlow1,'%2d','%2s'),
+>                   formatstring(self.qnlow2,'%2d','%2s'),
+>                   formatstring(self.qnlow3,'%2d','%2s'),
+>                   formatstring(self.qnlow4,'%2d','%2s'),
+>                   formatstring(self.qnlow5,'%2d','%2s'),
+>                   formatstring(self.qnlow6,'%2d','%2s'))
+318c363
+<      species               = ForeignKey(Species, db_column='F_E_ID')
+---
+>      specie                = ForeignKey(Species, db_column='F_E_ID')
+344,350d388
+<        
+<                 
+<                 
+< 
+< 
+< 
+< 
+351a390,420
+>      def spfitstr(self):
+>           """
+>           Renders the current transition in spfit's output format
+>           12I3, freeform: QN, FREQ, ERR, WT
+>           """
+>           qnupstr=""
+>           qnlowstr=""
+>           emptystr=""
+>           for qn in [self.qnup1,self.qnup2,self.qnup3,self.qnup4,self.qnup5,self.qnup6]:
+>                if qn is not None:
+>                     qnupstr+='%3d' % qn
+>                else:
+>                     emptystr += '   '
+>           for qn in [self.qnlow1,self.qnlow2,self.qnlow3,self.qnlow4,self.qnlow5,self.qnlow6]:
+>                if qn is not None:
+>                     qnlowstr+='%3d' % qn
+>                else:
+>                     emptystr += '   '
+>                 
+>           return '%s'\
+>                  '%s %s %s  '\
+>                  '%s'\
+>                  % (qnupstr+qnlowstr+emptystr,
+>                     '%16.4lf' % self.frequency if self.frequency  else "",
+>                     '%10.4lf' % self.uncertainty if self.uncertainty  else "",
+>                     '%8.4lf' % self.weight if self.weight  else "",
+>                     self.comment)
+>      
+>      def __unicode__(self):
+>         return self.spfitstr()
+>                   
+386c455
+<      species = ForeignKey(Species, db_column='SQN_E_ID')
+---
+>      specie = ForeignKey(Species, db_column='SQN_E_ID')
+388,393c457,462
+<      qn1 = IntegerField(db_column='SQN_QN1')
+<      qn2 = IntegerField(db_column='SQN_QN1')
+<      qn3 = IntegerField(db_column='SQN_QN1')
+<      qn4 = IntegerField(db_column='SQN_QN1')
+<      qn5 = IntegerField(db_column='SQN_QN1')
+<      qn6 = IntegerField(db_column='SQN_QN1')
+---
+>      qn1 = IntegerField(db_column='SQN_QN1', blank=True)
+>      qn2 = IntegerField(db_column='SQN_QN2', blank=True)
+>      qn3 = IntegerField(db_column='SQN_QN3', blank=True)
+>      qn4 = IntegerField(db_column='SQN_QN4', blank=True)
+>      qn5 = IntegerField(db_column='SQN_QN5', blank=True)
+>      qn6 = IntegerField(db_column='SQN_QN6', blank=True)
+396,404c465,473
+<      slaplabel = CharField(max_length=100, db_column='SQN_SLAP_Label')
+<      valuefloat = FloatField(db_column='SQN_ValueFloat')
+<      valuestring = CharField(max_length=100, db_column='SQN_ValueString')
+<      columnvalue = IntegerField(db_column='SQN_ColumnValue')
+<      columnvaluefunc = CharField(max_length=10, db_column='SQN_ColumnValueFunction')
+<      spinref= CharField(max_length=10, db_column='SQN_SpinRef')
+<      attribute = CharField(max_length=20, db_column='SQN_Attribute')
+<      order = IntegerField(db_column='SQN_Order')
+<      comment = TextField(db_column='SQN_Comment')
+---
+>      slaplabel = CharField(max_length=100, db_column='SQN_SLAP_Label', blank=True)
+>      valuefloat = FloatField(db_column='SQN_ValueFloat', blank=True)
+>      valuestring = CharField(max_length=100, db_column='SQN_ValueString', blank=True)
+>      columnvalue = IntegerField(db_column='SQN_ColumnValue', blank=True)
+>      columnvaluefunc = CharField(max_length=10, db_column='SQN_ColumnValueFunction', blank=True)
+>      spinref= CharField(max_length=10, db_column='SQN_SpinRef', blank=True)
+>      attribute = CharField(max_length=20, db_column='SQN_Attribute', blank=True)
+>      order = IntegerField(db_column='SQN_Order', blank=True)
+>      comment = TextField(db_column='SQN_Comment', blank=True)
+414a484,491
+> 
+>      BOND_CHOICES = (
+>           ('S', 'Single'),
+>           ('D', 'Double'),
+>           ('T', 'Triple'),
+>           ('A', 'Aromatic'),
+>           )
+>      
+419,420c496,497
+<      order = CharField(max_length=10, db_column='BA_Order')
+<      eId   = ForeignKey(Molecules, db_column='BA_E_ID')
+---
+>      order = CharField(max_length=10, db_column='BA_Order', choices=BOND_CHOICES)
+>      specie   = ForeignKey(Species, db_column='BA_E_ID')
+431c508
+<      inchikey = CharField(max_length=100, db_column='AA_InchiKey')
+---
+>      inchikey = CharField(max_length=100, db_column='AA_InchiKey', blank = True)
+435,436c512,513
+<      formalcharge = CharField(max_length=5, db_column='AA_FormalCharge')
+<      eId = ForeignKey(Molecules, db_column='AA_E_ID')    
+---
+>      formalcharge = CharField(max_length=5, db_column='AA_FormalCharge', blank=True)
+>      specie = ForeignKey(Species, db_column='AA_E_ID')    
+447c524,536
+<      rId       =  IntegerField(primary_key=True, db_column='R_ID')
+---
+> 
+>      CATEGORY_CHOICES = (
+>           ('book', 'Book'),
+>           ('database', 'Database'),
+>           ('journal', 'Journal'),
+>           ('preprint', 'Preprint'),
+>           ('private communication', 'Private communication'),
+>           ('proceedings','Proceedings'),
+>           ('report','Report'),
+>           ('thesis','Thesis'),
+>           )
+> 
+>      id       =   AutoField(primary_key=True, db_column='R_ID')
+449c538
+<      category  =  CharField(max_length=100, db_column='R_Category', blank=True)
+---
+>      category  =  CharField(max_length=100, db_column='R_Category', blank=True, choices=CATEGORY_CHOICES)
+450a540
+>      title     =  CharField(max_length=200, db_column='R_Title', blank=True)
+452a543
+>      issue     =  CharField(max_length=10, db_column='R_Issue', blank=True)
+454,455c545,546
+<      pageBegin =  CharField(max_length=10, db_column='R_PageBegin', blank=True)
+<      pageEnd   =  CharField(max_length=10, db_column='R_PageEnd', blank=True)
+---
+>      pageBegin =  CharField(max_length=20, db_column='R_PageBegin', blank=True)
+>      pageEnd   =  CharField(max_length=20, db_column='R_PageEnd', blank=True)
+461a553
+>      url       =  CharField(max_length=200, db_column='R_URL', blank=True)
+464a557
+>           ordering = ["authors"]
+474a568,591
+>      def __unicode__(self):
+>           authors=self.getAuthorList()
+>           if len(authors)>1:
+>                authstr="%s et al." % authors[0]
+>           elif len(authors)==1:
+>                authstr=authors[0]
+>           else:
+>                authstr=""
+> 
+>           return "%s, %s, %s, %s (%s)" % (authstr, self.name, self.vol, self.pageBegin, self.year)
+> 
+>    
+> class Method:
+>      """
+>      This class wraps the sources for each specie (like a header).
+>      """
+>      def __init__(self, id, speciesid, category, description, sourcesref):
+> 
+>         self.id = id
+>         self.speciesid = speciesid
+>         self.category = category
+>         self.description = description
+>         self.sourcesref = sourcesref
+>         
+476c593,594
+<      id = IntegerField(primary_key=True, db_column='PAR_ID')
+---
+>      id = AutoField(primary_key=True, db_column='PAR_ID')
+> #     id = IntegerField(primary_key=True, db_column='PAR_ID')
+481c599
+<      unit = CharField(max_length=7, db_column='PAR_UNIT')
+---
+>      unit = CharField(max_length=7, db_column='PAR_UNIT',blank=True)
+483c601
+<      rId = ForeignKey(Sources, db_column='PAR_R_ID')
+---
+>      rId = ForeignKey(Sources, db_column='PAR_R_ID', null=True, blank=True)
+485a604
+> 
+492,493c611,612
+<      source =  ForeignKey(Sources, null=True, db_column='RL_R_ID')
+<      specie   =  ForeignKey(Species, null=True, db_column='RL_E_ID')
+---
+>      source =  ForeignKey(Sources, db_column='RL_R_ID')
+>      specie =  ForeignKey(Species, null=True, db_column='RL_E_ID')
+495,496c614,616
+<      transitionexp  =  ForeignKey(TransitionsExp, null=True, db_column='RL_F_ID', related_name='sources', blank=True)
+<      parameter  =  ForeignKey(Parameter, null=True, db_column='RL_F_ID', blank=True)
+---
+>      transitionexp = ForeignKey(TransitionsExp, null=True, db_column='RL_F_ID', related_name='sources', blank=True)
+>      parameter =  ForeignKey(Parameter, null=True, db_column='RL_PAR_ID', blank = True)
+> 
+506,519d625
+< ##class Partitionfunctions( Model):
+< ##     """
+< ##     This class contains partition function (mysql-table: Partitionfunctions) for each specie.
+< ##     """
+< ##     id  =  IntegerField(primary_key=True, db_column='PF_ID')
+< ##     mid =  IntegerField(db_column='PF_M_ID')
+< ##     eid =  ForeignKey(Molecules, db_column='PF_E_ID')
+< ##     temperature = FloatField(db_column='PF_Temperature')
+< ##     partitionfunc = FloatField(db_column='PF_Partitionfunction')
+< ##     comment = CharField(max_length=150, db_column='PF_Comment')
+<     
+< ##     class Meta:
+< ##          db_table = u'Partitionfunctions' 
+<                      
+536c642
+<                          
+---
+>                                     
+539,551d644
+< class Method:
+<      """
+<      This class wraps the sources for each specie (like a header).
+<      """
+<      def __init__(self, id, speciesid, category, description, sourcesref):
+< 
+<         self.id = id
+<         self.speciesid = speciesid
+<         self.category = category
+<         self.description = description
+<         self.sourcesref = sourcesref
+<         
+< 
+553c646,666
+<      id = IntegerField(primary_key=True, db_column='FIL_ID')
+---
+>      TYPE_CHOICES = (
+>           ('lin', 'LIN (spfit)'),
+>           ('cat', 'CAT (spfit)'),
+>           ('egy', 'EGY (spfit)'),
+>           ('mrg', 'MRG (spfit)'),
+>           ('lit', 'xml-file with references'),
+>           ('int', 'INT (spfit)'),
+>           ('par', 'PAR (spfit)'),
+>           ('fit', 'log file of the fit (spfit)'),
+>           ('opt', 'OPT (spfit)'),
+>           ('out', 'OUT (spfit)'),
+>           ('txt', 'ASCII - FILE'),
+>           ('var', 'VAR (spfit)'),
+>           ('erhin', 'ERHAM-Input'),
+>           ('erhout', 'ERHAM-Output'),
+>           ('csv', 'CSV-Data formated as CSV'),
+>           ('doc', 'CDMS-Documentation of a specie'),
+>           )
+>      
+>      id = AutoField(primary_key=True, db_column='FIL_ID')
+> #     id = IntegerField(primary_key=True, db_column='FIL_ID')
+556c669
+<      type = CharField(max_length=10, db_column='FIL_Type')
+---
+>      type = CharField(max_length=10, db_column='FIL_Type', choices = TYPE_CHOICES)
+558,559c671,672
+<      comment = TextField(db_column='FIL_Comment')
+<      createdate = DateField(db_column='FIL_Createdate')
+---
+>      comment = TextField(db_column='FIL_Comment',blank=True)
+>      createdate = DateField(db_column='FIL_Createdate', blank=True)
+561a675,714
+> 
+> 
+> class DictAtoms (Model):
+>      """
+>      This table contains a dictionary with atom-names, symbols, mass, ...
+>      """
+>      id = AutoField(primary_key=True, db_column='DA_ID')
+>      name = CharField(max_length=50, db_column='DA_Name')
+>      symbol = CharField(max_length=10, db_column='DA_Symbol')
+>      element = CharField(max_length=10, db_column='DA_Element')
+>      massnumber = IntegerField(db_column='DA_MassNumber')
+>      mass = FloatField(db_column='DA_Mass', blank=True)
+>      abundance = FloatField(db_column='DA_Abundance', blank=True)
+>      class Meta:
+>           db_table = u'Dict_Atoms'
+> 
+> 
+> class DictQuantumNumbers(Model):
+>      """
+>      Table containing spfit's qtag dictionary.
+>      How does Q map to quantum number labels
+>      """
+>      id = AutoField(primary_key=True, db_column='Q_ID')
+>      qtag = IntegerField(db_column='Q_TAG')
+>      q1 = CharField(max_length=2, db_column='Q_1')
+>      #q1_label = CharField(max_length=30, db_column='Q_1_Name')
+>      q2 = CharField(max_length=2, db_column='Q_2')
+>      #q2_label = CharField(max_length=30, db_column='Q_2_Name')
+>      q3 = CharField(max_length=2, db_column='Q_3')
+>      #q3_label = CharField(max_length=30, db_column='Q_3_Name')
+>      q4 = CharField(max_length=2, db_column='Q_4')
+>      #q4_label = CharField(max_length=30, db_column='Q_4_Name')
+>      q5 = CharField(max_length=2, db_column='Q_5')
+>      #q5_label = CharField(max_length=30, db_column='Q_5_Name')
+>      q6 = CharField(max_length=2, db_column='Q_6')
+>      #q6_label = CharField(max_length=30, db_column='Q_6_Name')
+> 
+>      class Meta:
+>           db_table = u'Quantenzahlen'
+> 

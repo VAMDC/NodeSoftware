@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 def getSpeciesList(spids = None):
     """
     """
-    molecules = Species.objects.filter(origin=5,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
+    molecules = Species.objects.filter(origin=0,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
 
     if spids:
         molecules = molecules.filter(pk__in=spids)

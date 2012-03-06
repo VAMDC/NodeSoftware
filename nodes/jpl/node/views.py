@@ -23,7 +23,7 @@ class QUERY(object ):
      #sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
     requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
 
-    def __init__(self, data, baseurl = "http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/", qformat = None):
+    def __init__(self, data, baseurl = "http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/", qformat = None):
         self.isvalid = True
         self.errormsg = ''
         self.baseurl = baseurl.rstrip()  # remove white spaces from the right side
@@ -39,8 +39,8 @@ class QUERY(object ):
 
     def validate(self):
 
-        try: self.database = self.data.get('database','cdms')
-        except: self.database='cdms'
+        try: self.database = self.data.get('database','jpl')
+        except: self.database='jpl'
         
         try: self.freqfrom = self.data.get('T_SEARCH_FREQ_FROM',0)
         except: self.freqfrom = 0
@@ -309,7 +309,7 @@ def ajaxRequest(request):
             #print >> sys.stderr, "url = " +request.POST['url']
             # just apply the stylesheet if a complete url has been posted
 
-            baseurl = request.POST.get('nodeurl','http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/')
+            baseurl = request.POST.get('nodeurl','http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/')
             
             if 'url2' in request.POST:
                 htmlcode = str(applyStylesheet(request.POST['url2'], xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
@@ -318,9 +318,9 @@ def ajaxRequest(request):
                 print >> sys.stderr, "postvars.url = " +postvars.url
                 if postvars.url:
                     if  postvars.format.lower()=='xsams':
-                        htmlcode = str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
+                        htmlcode = str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + '/nodes/jpl/static/xsl/convertXSAMS2html.xslt'))
                     elif  postvars.format=='rad3d':
-                        htmlcode = "<pre>" + str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + "/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
+                        htmlcode = "<pre>" + str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + "/nodes/jpl/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
                     elif postvars.format=='png':
                         htmlcode = "<img class='full' width='100%' src="+postvars.url+" alt='Stick Spectrum'>"
                     else:
@@ -387,14 +387,14 @@ def specieslist(request):
     Create the species selection - page for the admin-site from the species (model) stored in the database
     """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect('/DjCDMS/cdms/login/?next=%s' % request.path)
+        return HttpResponseRedirect('/DjJPL/cdms/login/?next=%s' % request.path)
 
     species_list = getSpeciesList()
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
     return render_to_response('cdmsadmin/selectSpecies.html', c)
 
 
-def queryspecies(request, baseurl = "http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/"):
+def queryspecies(request, baseurl = "http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/"):
     
     requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+SPECIES"
     url = baseurl + requeststring
@@ -435,7 +435,7 @@ def molecule(request):
 def specie(request,id=None):
 
     if not request.user.is_authenticated():
-        return HttpResponseRedirect('/DjCDMS/cdms/login/?next=%s' % request.path)
+        return HttpResponseRedirect('/DjJPLdev/cdms/login/?next=%s' % request.path)
     
     specie=None
     if id: #request.method == 'GET':

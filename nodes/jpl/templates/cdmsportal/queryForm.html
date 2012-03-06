@@ -1,0 +1,283 @@
+{% extends "cdmsportal/portalBase.html" %}
+
+
+{% block content %}
+<div id="main">
+  <!-- begin: #col1 - first float column -->
+
+  <div id="col1" style="background-color:white;" role="complementary">
+    <div id="col1_content" class="clearfix">
+     <h6 class="vlist"> QUERY </h6>
+     <ul class="vlist">
+      <li><a href="#" id="a_form_queryRefinements" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')">Query Transitions</a></li>
+      <li><a href="#" onclick="docShowSubpage('form_queryStates')">Query States</a></li>
+     </ul>
+
+     <h6 class="vlist"> REFINEMENTS </h6>
+     <ul class="vlist">
+   <!--      <li><a href="#" onclick="docShowSubpage('form_basic')">Basic</a></li> -->
+      <li><a href="#" id="a_form_species" onclick="docShowSubpage('form_species')">Species</a></li> 
+      <li><a href="#" id="a_form_transitions" onclick="docShowSubpage('form_transitions')">Transitions</a></li>
+      <li><a href="#" onclick="docShowSubpage('form_states')">States</a></li>
+      <li><a href="#" onclick="docShowSubpage('form_output')">Output</a></li>
+
+     </ul>
+<!--     <h6 class="vlist"> VAMDC </h6>
+     <ul class="vlist">
+      <li><a href="#" id="a_form_vamdcnodes" onclick="ajaxGetNodeList();docShowSubpage('form_vamdcnodes');ajaxQueryNodeContent();">VAMDC Nodes</a></li> 
+      <li><a href="#" id="a_form_result" onclick="docShowSubpage('form_result')">Query - Result</a></li>
+     </ul>
+-->    </div>
+  </div>
+  <div id="col3" role="main">
+    <div id="col3_content" class="clearfix">
+
+		<script type="text/javascript">
+			$(document).ready(function () {
+				$('#a_form_queryRefinements').click();
+			});
+		</script>
+
+<form name="PARAMETER" aktion="cdms/showResults" class="yform full" method="post">
+
+<INPUT TYPE='HIDDEN' NAME='filterTag' VALUE=''>
+<INPUT TYPE='HIDDEN' NAME='T_OrderBy' VALUE='E_TAG+ASC'>
+<INPUT TYPE='HIDDEN' NAME='B_Query' VALUE='Confirm+Selection'>
+
+<INPUT TYPE="HIDDEN" NAME="T_PAGE" ID="T_PAGE" VALUE="ShowResults">
+<INPUT TYPE="HIDDEN" NAME="T_ReturnPage" ID="returnPage" VALUE="Query">
+
+<DIV id="sectionPage">
+
+<!-- QUERY TRANSITION PAGE -->	    
+  <div id="form_queryTrans" class="subpage" style="">
+    <h3><Strong>QUERY</strong>&nbsp;<i>TRANSITIONS</i></h3>
+    <p>&nbsp;</p>
+
+    <fieldset>
+      <div class="legend">Database</div>
+      <div class="type-select">
+        <SELECT class="log" NAME="database" id="database" onchange="showQueryRefinements();">
+         <OPTION VALUE="jpl"> JPL </OPTION>
+         <OPTION VALUE="cdms"> CDMS </OPTION>
+         <OPTION VALUE="vamdc"> VAMDC-network </OPTION>
+        </SELECT>
+      </div> 
+    </fieldset> 
+
+    <fieldset>
+      <div class="legend">Current Query:Refinements</div>
+      <div id="refinements">
+       <ul class='vlist'>
+        <li><a href='#' onclick="$('#a_form_species').click();$('#a_form_species').addClass('activeLink');">MoleculeSpeciesID in ({% for id in speciesid_list %}XCDMS-{{id}}{% endfor %})</a></li>
+        <a href='#' onclick="$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');">
+          <p style='background-color:#FFFF99' class='important'>FREQUENCY RANGE: not specified => no restrictions</p>
+        </a>
+        <a href='#' onclick="$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');">
+          <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
+        </a>
+       </ul>
+      </div> <!-- DIV - REFINEMENTS -->
+    </fieldset>
+
+
+    <INPUT TYPE="HIDDEN" VALUE="SELECT ALL WHERE  ( {% for specie in species_list %} {% if not forloop.first %} OR {% endif %} MoleculeInchiKey = '{{specie.inchikey}}' {% endfor %} )" NAME="QUERY" ID="QUERY">
+
+    <fieldset style="display:none">
+      <div class="legend">Current Query:TAP-XSAMS</div>
+      <div id="TAPxsams">SELECT ALL WHERE  ( {% for specie in species_list %} {% if not forloop.first %} OR {% endif %} MoleculeInchiKey = '{{specie.inchikey}}' {% endfor %} )</div>
+    </fieldset> 
+
+    <fieldset><div class="legend">Data Format</div>
+      <div class="type-select">
+        <SELECT class="log" NAME="T_TYPE" id="T_TYPE" >
+         <OPTION VALUE="spcat"> SPCAT </OPTION>
+         <OPTION VALUE="comfort"> Full quantum number description </OPTION>
+         <OPTION VALUE="xsams"> XSAMS (File) </OPTION>
+         <OPTION VALUE="rad3d"> Rad3d (XSAMS) </OPTION>
+         <OPTION VALUE="png"> Stick Spectrum (png) </OPTION>
+        </SELECT>
+      </div> 
+      <div class="type-select"> 
+       <SELECT class="log" NAME="T_SHOWEXPLINES" id="T_SHOWEXPLINES">
+        <OPTION VALUE='no'> Show only predicted frequencies  </OPTION> 
+        <OPTION VALUE='merge'> Merge experimental and predicted frequencies  </OPTION> 
+        <OPTION VALUE='all'> Show predicted and all experimental frequencies </OPTION> 
+       </SELECT> 
+      </div> 
+    </fieldset>
+
+    <div class="type-button float_right">
+      <!--<INPUT id="vamdcbutton" TYPE="button" NAME="T_SEARCH2" onclick="$('#queryresult').html('Processing ...');docShowSubpage('form_result');ajaxQuery('ajaxQuery','')" VALUE="vamdcQUERY" >
+-->      <INPUT id="button1" TYPE="submit" NAME="T_SEARCH" onclick='submitOutputURL()' VALUE="QUERY" >
+    </div>
+  </div> <!-- DIV FORM QUERY TRANSITIONS (FIRST PAGE) -->
+
+<!-- SUBPAGE REFINE TRANSITIONS -->
+<div id="form_transitions" class="subpage" style="display:none">
+  <h3><strong>REFINE</strong>&nbsp;<i>TRANSITIONS</i></h3>
+  <p>&nbsp;</p>
+
+  <fieldset class="columnar"> <div class="legend">Frequency</div>
+   <div class="subcolumns">
+
+    <div class="c50l">
+     <div class="subcl type-text">
+       <label class="columnar" for="T_SEARCH_FREQ_FROM">Frequency Range from</label>
+       <input class="log" type="text" name="T_SEARCH_FREQ_FROM" id="T_SEARCH_FREQ_FROM" VALUE="0" />
+     </div>
+    </div>
+
+    <div class="c50r">
+     <div class="subcr type-text">
+       <label class="columnar" for="T_SEARCH_FREQ_TO">Frequency Range To</label>
+       <input class="log" type="text" name="T_SEARCH_FREQ_TO" id="T_SEARCH_FREQ_TO" VALUE="1000" />
+     </div>
+    </div>
+
+   </div> <!-- div-subcolumns -->
+
+   <div class="type-check" id='UnitNu'>
+     <label for="UnitNu" style='padding-right:1em'>Units</label>
+     <input class="log" type="radio" name="UnitNu" id="UnitNu1" value="GHz"  checked="checked">
+     <label for="UnitNu1">GHz</label>
+     <input type="radio" name="UnitNu" id="UnitNu2" value="Wn" >
+     <label for="UnitNu2">cm<sup>&#8211;1</sup></label>
+   </div>
+  </fieldset> 
+
+  <fieldset>
+    <div class="legend">Intensity</div>
+    <div class="type-text"> 
+      <label for="T_SEARCH_INT">Minimum </label>
+      <input class="log" type="text" size="3" name="T_SEARCH_INT" id="T_SEARCH_INT" value="-10"> 
+    </div>
+
+    <div class="type-select">      
+      <label for="IntUnit">Value</label>      
+      <SELECT class="log"  NAME="IntUnit" id="IntUnit" size="1">
+        <OPTION VALUE='T300' selected="selected"> Intensity (300 K) </OPTION> 
+        <OPTION VALUE='T'> Intensity (T) </OPTION> 
+        <OPTION VALUE='A'> Einstein A </OPTION> 
+        <OPTION VALUE='mu2S'> &mu;^<sup>2</sup>S </OPTION> 
+      </SELECT> 
+    </div>
+
+    <div class="type-select">
+      <label for="T_TEMPERATURE">Temperature </label>
+      <SELECT class="log" class="smallSelectWidth" NAME="T_TEMPERATURE" id="T_TEMPERATURE" >
+        <OPTION VALUE='300'> 300 </OPTION> 
+        <OPTION VALUE='225'> 225 </OPTION> 
+        <OPTION VALUE='150'> 150 </OPTION> 
+        <OPTION VALUE='75'> 75 </OPTION> 
+        <OPTION VALUE='37.50'> 37.50 </OPTION> 
+        <OPTION VALUE='18.75'> 18.75 </OPTION> 
+        <OPTION VALUE='9.375'> 9.375 </OPTION> 
+      </SELECT> 
+    </div> 
+
+  </fieldset>
+
+  <div class="type-button float_right">
+    <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+  </div>
+</div>
+
+<!-- SUBPAGE REFINE STATES -->
+<div id="form_states" class="subpage" style="display:none">
+    <h3><strong>REFINE</strong>&nbsp;<i>STATES</i></h3>
+<p>&nbsp;</p>
+ <fieldset><div class="legend">Energy</div>
+
+ <p> Functionality not included yet! </p>   </fieldset>
+    <div class="type-button float_right">
+      <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+   </div>
+  </div>
+
+<!-- SUBPAGE OUTPUT-FORMAT -->
+<div id="form_output" class="subpage" style="display:none">
+    <h3><strong>SELECT</strong>&nbsp;<i>OUTPUT.FORMAT</i></h3>
+
+<p>&nbsp;</p>
+ <fieldset><div class="legend">Sorting</div>
+   <div class="type-select">
+     <label for="T_SORT"> Sort by </label>
+     <SELECT class="log" NAME="T_SORT" id="T_SORT">
+       <OPTION VALUE="frequency"> Frequency </OPTION> 
+       <OPTION VALUE="intensity"> Intensity </OPTION> 
+       <OPTION VALUE="qnup1,qnup2,qnup3,qnup4,qnup5,qnup6,qnlow1,qnlow2,qnlow3,qnlow4,qnlow5,qnlow6"> Quantum Numbers </OPTION> 
+       <OPTION VALUE="specie"> Species </OPTION> 
+     </SELECT>
+
+   </div>
+   </fieldset>
+    <div class="type-button float_right">
+      <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+   </div>
+  </div>
+
+
+<!-- SUBPAGE REFINE STATES -->
+<div id="form_species" class="subpage" style="display:none">
+  <h3><strong>REFINE</strong>&nbsp;<i>SPECIES</i></h3>
+  <p>&nbsp;</p>
+
+  <fieldset>
+    <div class="legend">List of Species</div>
+    <ul class="vlist" type="none" >
+    {% for specie in species_list %}
+      <INPUT class="log" TYPE="HIDDEN" NAME="speciesIDs" VALUE="{{specie.id}}">
+      <li id="{{specie.id}}" class="speciesRow" >
+       <div id="eTag{{specie.speciestag}}" style="font-weight:bold;display:inline;min-width:50px" class="eTag float_left"> {{specie.speciestag}}</div> 
+       <div class="eName float_left" style="font-weight:bold;display:inline; min-width:100px"> {{specie.molecule.name}} </div>
+       <div class="eIso float_left" style="font-weight:bold;display:inline; float:left; min-width:100px">  {{specie.isotopolog}} </div>
+       <div class="eState float_left" style="display:inline; float:left; min-width:120px"> {{specie.state}} </div><br>
+
+       <div class="mTrivName float_left full" style="display:inline; text-align:left;float:left; min-width:250px"> {{specie.molecule.trivialname}} </div>
+       <div style='clear:left'></div>
+      </li>
+    {% endfor %}
+    </ul>
+  </fieldset>
+  <div class="type-button float_left">
+    <INPUT TYPE="BUTTON" VALUE="CHANGE" NAME="B_Change_TAG" onclick="load_page('queryForm');">
+  </div>
+  <div class="type-button float_right">
+    <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+  </div>
+</div>
+
+
+<!-- SUBPAGE VAMDC nodes -->
+<div id="form_vamdcnodes" class="subpage" style="display:none">
+  <h3><strong>VAMDC</strong>&nbsp;<i>NODES</i></h3>
+  <p>&nbsp;</p>
+  <fieldset>
+    <!-- <div class="legend">Databases</div> -->
+    <div id="nodelist">Processing ...</div>   
+  </fieldset>
+  <div class="type-button float_right">
+    <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+  </div>
+</div>
+
+<!-- SUBPAGE Result -->
+<div id="form_result" class="subpage" style="display:none">
+  <h3><strong>QUERY</strong>&nbsp;<i>RESULT</i></h3>
+  <p>&nbsp;</p>
+
+  <div id ="queryresult"> No query submitted yet. </div>
+
+  <div class="type-button float_right">
+    <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+  </div>
+</div>
+
+
+</div>
+</div>
+
+</form>
+</div>
+{% endblock %}
