@@ -181,7 +181,7 @@ B3 = """@article{BKP,
 }"""
 
 try:
-	if settings.PRINT:
+	if not settings.TEST:
 		raise AttributeError
 except AttributeError:
 	print bibtextools.BibTeX2XML(B2)

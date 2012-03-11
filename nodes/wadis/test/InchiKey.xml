@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema" xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 http://vamdc.org/xml/xsams/0.3">
+<!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent 100 percent of all available data at this node that
+   matched the query.
+-->
 	<Sources>
 		<Source sourceID="Bwadis-1281">
 			<Authors>
@@ -98,7 +103,6 @@ The precise knowledge of these strong atmospheric v&lt;sub&gt;2&lt;/sub&gt; band
 					<Comment>H2O</Comment>
 				</MolecularChemicalSpecies>
 				<MolecularState stateID="Swadis-21-0.0.0.11.6.5">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -112,7 +116,6 @@ The precise knowledge of these strong atmospheric v&lt;sub&gt;2&lt;/sub&gt; band
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="Swadis-21-0.1.0.10.5.6">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -146,7 +149,6 @@ The precise knowledge of these strong atmospheric v&lt;sub&gt;2&lt;/sub&gt; band
 					<Comment>D2_34S</Comment>
 				</MolecularChemicalSpecies>
 				<MolecularState stateID="Swadis-718-0.0.0.5.3.3">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -160,7 +162,6 @@ The precise knowledge of these strong atmospheric v&lt;sub&gt;2&lt;/sub&gt; band
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="Swadis-718-0.0.0.6.2.4">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -174,7 +175,6 @@ The precise knowledge of these strong atmospheric v&lt;sub&gt;2&lt;/sub&gt; band
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="Swadis-718-0.0.0.7.1.7">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -188,7 +188,6 @@ The precise knowledge of these strong atmospheric v&lt;sub&gt;2&lt;/sub&gt; band
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="Swadis-718-0.0.0.8.0.8">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>

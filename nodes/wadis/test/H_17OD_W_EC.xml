@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 http://vamdc.org/xml/xsams/0.3" xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema">
+<!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent 100 percent of all available data at this node that
+   matched the query.
+-->
 	<Sources>
 		<Source sourceID="Bwadis-874">
 			<Authors>
@@ -51,7 +56,6 @@
 					<Comment>H_17OD</Comment>
 				</MolecularChemicalSpecies>
 				<MolecularState stateID="Swadis-165-0.0.0.5.4.1">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -65,7 +69,6 @@
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="Swadis-165-0.0.0.5.4.2">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -79,7 +82,6 @@
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="Swadis-165-0.0.0.7.3.5">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -93,7 +95,6 @@
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="Swadis-165-0.1.0.4.3.1">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -107,7 +108,6 @@
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="Swadis-165-0.1.0.4.3.2">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -121,7 +121,6 @@
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="Swadis-165-0.1.0.6.2.4">
-					<Description/>
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>

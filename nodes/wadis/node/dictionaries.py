@@ -62,7 +62,7 @@ RETURNABLES = {#
 	#http://www.vamdc.eu/documents/standards/dictionary/returnables.html
 	#http://dictionary.vamdc.org/returnables/
 	# see return queryfunc.setupResults
-	'NodeID': 'wadis',
+	'NodeID': u'wadis',
 	}
 
 moleculeReturnables = {#
@@ -75,7 +75,7 @@ moleculeReturnables = {#
 	'MoleculeInchi' : 'Molecule.id_inchi',
 	'MoleculeInchiKey' : 'Molecule.id_inchi_key',
 	'MoleculeIonCharge' : 'Molecule.getCharge()',
-	'MoleculeMolecularWeight' : {'Value': 'Molecule.weight', 'Unit': 'amu'},
+	'MoleculeMolecularWeight' : {'Value': 'Molecule.weight', 'Unit': u'amu'},
 	#'MoleculeNormalModeDisplacementVectorComment' : '',
 	#'MoleculeNormalModeDisplacementVectorMethod' : '',
 	#'MoleculeNormalModeDisplacementVectorRef' : '',
@@ -143,8 +143,8 @@ moleculeReturnables = {#
 	'MoleculeSpeciesID' : 'Molecule.id_inchi_key',
 	#'MoleculeStableMolecularProperties' : '',
 	#'MoleculeStateDescription' : '',
-	'MoleculeStateEnergy' : {'Value': 'MoleculeState.energy', 'Unit': '1/cm', 'Accuracy': 'MoleculeState.energy_delta', 'AccuracyType': 'statistical', 'Method':'MoleculeState.id_energy_ds.getMethod()'},
-	'MoleculeStateEnergyOrigin' : 'Zero-point energy',
+	'MoleculeStateEnergy' : {'Value': 'MoleculeState.energy', 'Unit': u'1/cm', 'Accuracy': 'MoleculeState.energy_delta', 'AccuracyType': u'statistical', 'Method':'MoleculeState.id_energy_ds.getMethod()'},
+	'MoleculeStateEnergyOrigin' : u'Zero-point energy',
 	'MoleculeStateID' : 'MoleculeState.id',
 	#'MoleculeStateLifeTime' : {},
 	#'MoleculeStateMixingCoefficient' : '',
@@ -211,9 +211,9 @@ radTransReturnables = {#
 	#'RadTransGroup' : '',
 	'RadTransID': 'RadTran.id_transition',
 	'RadTransLowerStateRef' : 'RadTran.low',
-	'RadTransProbabilityA': {'Value': 'RadTran.einstein_coefficient', 'Unit': '1/s', 'Accuracy': 'RadTran.einstein_coefficient_err', 'AccuracyType': 'statistical', 'Method':'RadTran.id_transition_ds.getMethod()'},
+	'RadTransProbabilityA': {'Value': 'RadTran.einstein_coefficient', 'Unit': u'1/s', 'Accuracy': 'RadTran.einstein_coefficient_err', 'AccuracyType': u'statistical', 'Method':'RadTran.id_transition_ds.getMethod()'},
 	#No cm2molec-1cm-1 or cm-1/(molecule×cm-2) units in XSAMS
-	'RadTransProbabilityIdealisedIntensity' : {'Value': 'RadTran.intensity', 'Comment': u'cm-1/(molecule×cm-2)', 'Unit':'undef', 'Accuracy': 'RadTran.intensity_err', 'AccuracyType': 'statistical', 'Method':'RadTran.id_transition_ds.getMethod()'},
+	'RadTransProbabilityIdealisedIntensity' : {'Value': 'RadTran.intensity', 'Comment': u'cm-1/(molecule×cm-2)', 'Unit':'undef', 'Accuracy': 'RadTran.intensity_err', 'AccuracyType': u'statistical', 'Method':'RadTran.id_transition_ds.getMethod()'},
 	#'RadTransProbabilityKind' : '',
 	#'RadTransProbabilityLineStrength' : {},
 	#'RadTransProbabilityLog' : {},
@@ -240,7 +240,7 @@ radTransReturnables = {#
 	#'RadTransSpeciesRef' : '',
 	'RadTransUpperStateRef' : 'RadTran.up',
 	#'RadTransWavelength' : {},
-	'RadTransWavenumber': {'Value': 'RadTran.wavenumber', 'Unit': '1/cm', 'Accuracy': 'RadTran.wavenumber_err', 'AccuracyType': 'statistical', 'Method':'RadTran.id_transition_ds.getMethod()'},
+	'RadTransWavenumber': {'Value': 'RadTran.wavenumber', 'Unit': u'1/cm', 'Accuracy': 'RadTran.wavenumber_err', 'AccuracyType': u'statistical', 'Method':'RadTran.id_transition_ds.getMethod()'},
 	}
 RETURNABLES.update(radTransReturnables)
 

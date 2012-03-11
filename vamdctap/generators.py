@@ -107,8 +107,9 @@ def GetValue(name, **kwargs):
     except Exception, e:
         # this catches the case where the dict-value is a string or mistyped.
         #log.debug('Exception in generators.py: GetValue()')
-        print 'Evaluation failure: ' + name + ' in ' + objname
-        print obj
+        if type(name) != unicode:
+            print 'Evaluation failure: ' + name + ' in ' + objname
+            print obj
         value = name
 
     if value == None:
@@ -190,7 +191,8 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
 
     for k, v in extraAttr.items():
-        result.append( ' %s="%s"'% (k, v) )
+        if v:
+            result.append( ' %s="%s"'% (k, v) )
 
     result.append( '>' )
     if comment:
@@ -416,7 +418,11 @@ def XsamsSources(Sources, tap):
     """
 
     yield '<Sources>'
-    yield SelfSource(tap)
+    try:
+        if not settings.TEST:
+            raise AttributeError
+    except AttributeError:
+        yield SelfSource(tap)
 
     if not Sources:
         yield '</Sources>'
@@ -927,7 +933,7 @@ def makeCaseQNs(G):
             makeOptionalTag('case:parity', 'MoleculeQNparity', G),
             makeOptionalTag('case:kronigParity', 'MoleculeQNkronigParity', G),
             makeOptionalTag('case:asSym', 'MoleculeQNasSym', G),
-            "</case:QNs",
+            "</case:QNs>",
             "</Case>"])
     return "".join(result)
 
@@ -936,7 +942,7 @@ def XsamsMSBuild(MoleculeState):
     Generator for MolecularState tag
     """
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":'"S%s-%s"' % (G('NodeID'), G('MoleculeStateID')),
+    yield makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":"S%s-%s" % (G('NodeID'), G('MoleculeStateID')),
                                                                      "fullyAssigned":G("MoleculeStateFullyAssigned")})
     yield makeOptionalTag("Description","MoleculeStateDescription",G)
 
@@ -1050,14 +1056,14 @@ def XsamsSolids(Solids):
             yield ret
             continue
         G = lambda name: GetValue(name, Solid=Solid)
-        makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
+        yield makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
         if hasattr(Solid, "Layers"):
             for Layer in makeiter(Solid.Layers):
                 GL = lambda name: GetValue(name, Layer=Layer)
                 yield "<Layer>"
                 yield "<MaterialName>%s</MaterialName>" % GL("SolidLayerName")
                 if hasattr(Solid, "Components"):
-                    makePrimaryType("MaterialComposition", "SolidLayerComponent")
+                    yield makePrimaryType("MaterialComposition", "SolidLayerComponent")
                     for Component in makeiter(Layer.Components):
                         GLC = lambda name: GetValue(name, Component=Component)
                         yield "<ChemicalElement>"

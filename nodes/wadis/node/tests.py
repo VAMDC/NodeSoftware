@@ -53,7 +53,11 @@ class TapSyncTest(TestCase):
 
 	def setUp(self):
 		self.request = HttpRequest()
+		self.request.META["SERVER_NAME"] = 'test'
+		self.request.META["SERVER_PORT"] = '80'
 		self.request.META["REMOTE_ADDR"] = 'localhost'
+		self.request.META["QUERY_STRING"] = self.query
+
 		self.queryDict = toDict(QueryDict(self.query))
 
 
@@ -211,8 +215,8 @@ def suite():
 
 	tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]))
 
-	#from vamdctap import tests as vamdctests
-	#tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(vamdctests))
+	from vamdctap import tests as vamdctests
+	tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(vamdctests))
 
 	return tsuite
 

@@ -41,13 +41,13 @@ class Biblios(models.Model):
 
 	def getSourceName(self):
 		if self.bibliotype == 1:
-			return self.bibliodigest + (". " if self.bibliodigest else "") + self.bibliopublisher + (", "  if self.bibliopublisher else "") + self.bibliolocality
+			return  (self.bibliodigest + ". " if self.bibliodigest else "") + (self.bibliopublisher + ", " if self.bibliopublisher else "") + (self.bibliolocality if self.bibliolocality else "")
 		elif self.bibliotype == 2:
 			return self.bibliojournal
 		elif self.bibliotype == 5:
 			return self.bibliopublisher
 		elif self.bibliotype == 6:
-			return self.bibliodigest + (". " if self.bibliodigest else "") + self.bibliopublisher + (", "  if self.bibliopublisher else "") + self.bibliolocality
+			return  (self.bibliodigest + ". " if self.bibliodigest else "") + (self.bibliopublisher + ", " if self.bibliopublisher else "") + (self.bibliolocality if self.bibliolocality else "")
 		else:
 			return None
 

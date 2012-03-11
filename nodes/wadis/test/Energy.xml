@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 http://vamdc.org/xml/xsams/0.3" xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema">
+<!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent 100 percent of all available data at this node that
+   matched the query.
+-->
 	<Sources>
 		<Source sourceID="Bwadis-511">
 			<Authors>
@@ -60,7 +65,6 @@
 					<Comment>H2O</Comment>
 				</MolecularChemicalSpecies>
 				<MolecularState stateID="Swadis-21-00.04.01.01.01.00">
-					<Description/>
 					<MolecularStateCharacterisation>
 						<StateEnergy methodRef="Mwadis-Exp" energyOrigin="Zero-point energy">
 							<Value units="1/cm">9895.327847</Value>
