@@ -18,7 +18,7 @@ from nodes.wadis.node.model.saga import Substance
 from nodes.wadis.node.transforms import makeQ
 import vamdctap.views
 from vamdctap.sqlparse import sql2Q
-import other.verification.check as check
+import other.verification.http
 from string import lower
 from django.db.models import Q
 import cgi
@@ -70,7 +70,6 @@ def getSources(items):
 		sources.add(biblio)
 
 	return list(sources)
-
 
 
 def getMolecules(items):
@@ -146,16 +145,16 @@ def getTable(q, default):
 #------------------------------------------------------------
 # Main function 
 #------------------------------------------------------------
-
-def setupResults(sql, limit=100000):
+LIMIT = 100000
+def setupResults(tap):
 	"""
 		This function is always called by the software.
 		"""
 	# log the incoming query
-	LOG(sql)
-	if not sql.where:
+	LOG(tap)
+	if not tap.where:
 		return {}
-	q = sql2Q(sql)
+	q = sql2Q(tap)
 
 	table = getTable(q, None)
 	if table is None:
@@ -169,9 +168,9 @@ def setupResults(sql, limit=100000):
 		transitions = rows
 
 	transitionCount = len(transitions)
-	if limit < transitionCount:
-		transitions = transitions[:limit]
-		percentage = '%.1f' % (float(limit) / transitionCount * 100)
+	if LIMIT < transitionCount:
+		transitions = transitions[:LIMIT]
+		percentage = '%.1f' % (float(LIMIT) / transitionCount * 100)
 	else:
 		percentage = '100'
 
@@ -227,35 +226,5 @@ def setupResults(sql, limit=100000):
 
 
 
-def returnResults(tap, LIMIT=None):
-	if tap.format != 'VERIFICATION':
-		emsg = 'Currently, only FORMATs VERIFICATION and XSAMS are supported.\n'
-		return vamdctap.views.tapServerError(status=400, errmsg=emsg)
-
-	LOG(LIMIT)
-
-	request = HttpRequest()
-	request.META["REMOTE_ADDR"] = 'localhost'
-
-	tap.data["FORMAT"] = "XSAMS"
-	request.REQUEST = tap.data
-
-	xsamsResponse = vamdctap.views.sync(request)
-	xml = xsamsResponse.content
-	if xml != '<xsams':
-		return xsamsResponse
-
-	if 'RETURN' in tap.data:
-		action = lower(tap.data['RETURN'])
-	else:
-		action = 'all'
-
-	if action not in ('all', 'good', 'bad'):
-		action = 'all'
-
-	ver = check.Verification("test/moleculeCH4.IN.xml")
-	ver.run(clean=False if (action == 'all') else True)
-
-	response = HttpResponse(ver.getXML(), mimetype='text/xml')
-	response._headers = xsamsResponse._headers
-	return response
+def returnResults(tap):
+	return other.verification.http.getResult(tap)

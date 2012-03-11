@@ -1,7 +1,7 @@
-import sys
+import sys, os
 
 if __name__ == '__main__':
-	VERIFICATION_SCHEMA_LOCATION = u"../verification.xsd"
+	VERIFICATION_SCHEMA_LOCATION = VERIFICATION_FILE_PATH
 else:
 	try:
 		import verification
@@ -10,7 +10,7 @@ else:
 	VERIFICATION_SCHEMA_LOCATION = verification.VERIFICATION_SCHEMA_LOCATION
 
 from lxml import etree
-from StringIO import StringIO
+import cStringIO
 import re
 from mathml.lmathdom import MathDOM
 from mathml.utils import pyterm # register Python term builder
@@ -24,14 +24,14 @@ class NoMathMLException(Exception):
 	pass
 
 
-
 class NoValidException(Exception):
 	pass
 
 
-
 class Verification:
 	def __init__(self, file, rules = None):
+		if file[0] == '<':
+			file = cStringIO.StringIO(file)
 		self.tree = etree.parse(file, parser= etree.XMLParser(remove_blank_text=True))
 		self.rules = RulesParser().getRules() if not rules else rules
 		self.lock = False
@@ -47,24 +47,27 @@ class Verification:
 		root.set('{%s}schemaLocation' % XSI_NS, locations[0] + ' ' + locations[1])
 
 
-	def run(self, report=True, clean=True):
+	def run(self, report=True, bad=None):
 		if not self.lock:
 			self._setSchemaLocation()
 			self._removeVerificationNode()
 			self._addRulesNodes()
 			if report:
 				self._addVerificationResultNode()
-			if clean:
-				self._removeRedundantNodes()
+			if bad is not None:
+				if bad:
+					self._removeRedundantNodes()
+				else:
+					self._removeRedundantNodes(False)
 
 		return self.tree
 
 
-	def _removeRedundantNodes(self):
+	def _removeRedundantNodes(self, bad = True):
 		self.whiteListOfRefs = {}
 		parentsOfNodesWithVerification = {}
 
-		nodesWithVerification = self.tree.xpath('//child::xsams:Verification[contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil]', namespaces={"xsams": XSAMS_NS, 'xsi': XSI_NS})
+		nodesWithVerification = self.tree.xpath('//child::xsams:Verification[' + ('' if bad else 'not(') + 'contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil' + ('' if bad else ')') + ']', namespaces={"xsams": XSAMS_NS, 'xsi': XSI_NS})
 		if nodesWithVerification:
 			for nodeWithVerification in nodesWithVerification:
 				if not nodeWithVerification.xpath('./child::*[contains(self::node(),  "false") or contains(self::node(),  "true")]'):
@@ -76,7 +79,7 @@ class Verification:
 					if refNode.attrib:
 						for attribute in refNode.attrib:
 							if attribute.endswith('Ref'):
-								self.whiteListOfRefs[refNode._attrs[attribute]] = None
+								self.whiteListOfRefs[refNode.attrib[attribute]] = None
 					elif refNode.tag.endswith('Ref'):
 						if refNode.text is not None:
 							self.whiteListOfRefs[refNode.text] = None
@@ -91,10 +94,10 @@ class Verification:
 				if attribute.endswith('ID'):
 					self.whiteListOfRefs[parentOfNodesWithVerification.attrib[attribute]] = None
 
-		self._removeRedundantParentNodes(parentsOfNodesWithVerification, self.tree)
+		self._removeRedundantParentNodes(parentsOfNodesWithVerification, self.tree, bad)
 
 
-	def _removeRedundantParentNodes(self, usefulParentNodes, stopNode):
+	def _removeRedundantParentNodes(self, usefulParentNodes, stopNode, bad = True):
 		if not usefulParentNodes or stopNode in usefulParentNodes:
 			return
 
@@ -115,7 +118,7 @@ class Verification:
 							isRedundantNode = True
 							idNodes = {}
 							if childNode.tag == '{%s}Processes' % XSAMS_NS:
-								if not childNode.xpath('.//child::xsams:Verification[contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil]', namespaces={"xsams": XSAMS_NS, 'xsi': XSI_NS}):
+								if not childNode.xpath('.//child::xsams:Verification[' + ('' if bad else 'not(') + 'contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil' + ('' if bad else ')') + ']', namespaces={"xsams": XSAMS_NS, 'xsi': XSI_NS}):
 									usefulParentNode.getparent().remove(childNode)
 									flag = True
 									break
@@ -135,9 +138,9 @@ class Verification:
 								if hasIDs or not (childNode.tag in singleUseNodeNames):
 									usefulParentNode.getparent().remove(childNode)
 							else:
-								self._removeRedundantParentNodes(idNodes, childNode)
+								self._removeRedundantParentNodes(idNodes, childNode, bad)
 
-		self._removeRedundantParentNodes(parentsOfNodesWithVerification, stopNode)
+		self._removeRedundantParentNodes(parentsOfNodesWithVerification, stopNode, bad)
 
 
 	def _setStateNodes(self):
@@ -190,7 +193,7 @@ class Verification:
 							raise NoValidException("Allowed only 'ci' with the '#' symbol but not " + str(identifiers[identifier]))
 						if not dataNodes[domainFlag]:
 							for domain in self.rules[rule]['domains']:
-								dataNodes[domainFlag].update(dict.fromkeys(self.tree.xpath('//xsams:' + domain + '[./xsams:' + identifiers[identifier][1] + ']', namespaces = {"xsams": XSAMS_NS})))
+								dataNodes[domainFlag].update(dict.fromkeys(self.tree.xpath('//xsams:' + domain + '[./xsams:' + (identifiers[identifier][1][0:-1] if identifier[-1] == '?' else identifiers[identifier][1]) + ']', namespaces = {"xsams": XSAMS_NS})))
 						break
 					else:
 						if domainFlag != 'AtomicState' and domainFlag != 'MolecularState':
@@ -240,7 +243,7 @@ class Verification:
 									if available:
 										self._addRuleNode(dataNode, [rule, None])
 									available = False
-								elif dataNodes[domainFlag][dataNode][identifier]["value"] == False:
+								elif not dataNodes[domainFlag][dataNode][identifier]["value"]:
 									available = False
 								else:
 									available = self._isAvailableNode(self.stateNodes[dataNodes[domainFlag][dataNode][identifier]["stateID"]], self.rules[rule])
@@ -316,7 +319,7 @@ class Verification:
 
 				for ruleName in sorted(domainNumbers):
 					if ruleName.find('Rule') == -1:
-						if domainNumbers[ruleName]['total'] == 0:
+						if not domainNumbers[ruleName]['total']:
 							continue
 						numberElement = etree.Element(('{%s}NumberOf' + ruleName + 's') % XSAMS_NS, nsmap=rootNode.nsmap)
 					else:
@@ -516,7 +519,7 @@ class RulesParser:
 		if not only: only = {}
 		if not without: without = {}
 		if not self.rules:
-			tree = XSDTree.makeOne("verification.xsd")
+			tree = XSDTree.makeOne(verification.VERIFICATION_FILE_PATH)
 
 			if not tree:
 				return self.rules

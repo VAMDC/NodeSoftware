@@ -33,8 +33,10 @@ from other.verification.test import LocalResolver
 parser = etree.XMLParser()
 xsdPath = settings.BASE_PATH + "/other/verification/xsd/xsams/0.3/xsams.xsd"
 parser.resolvers.add(LocalResolver({"http://vamdc.org/xml/xsams/0.3/" : xsdPath}))
-xsd=etree.XMLSchema(etree.parse(xsdPath, parser=parser))
+xsamsXSD=etree.XMLSchema(etree.parse(xsdPath, parser=parser))
 #The libxml2 has a bug 170795 (reported: 2005). XML Schemas doesn't validate IDREF/IDREFS attributes.
+verificationXSD = etree.XMLSchema(etree.parse(settings.BASE_PATH + "/other/verification/verification.xsd", parser = parser))
+
 
 testClient = Client()
 
@@ -46,6 +48,63 @@ def toDict(queryDict):
 	return dict
 
 
+class VerificationTest(TestCase):
+	prefixURL = "/tap/sync?"
+	query = 'LANG=VSS1&FORMAT=VERIFICATION&QUERY=SELECT All WHERE InChI =\'InChI=1S/H2O/h1H2/i/hD\' AND RadTransWavenumber > 1250.846 AND RadTransWavenumber < 1250.847'
+
+
+	def setUp(self):
+		self.request = HttpRequest()
+		self.request.META["SERVER_NAME"] = 'localhost'
+		self.request.META["SERVER_PORT"] = '80'
+		self.request.META["REMOTE_ADDR"] = '127.0.0.1'
+		self.request.META["QUERY_STRING"] = self.query
+
+		self.queryDict = toDict(QueryDict(self.query))
+
+
+	def testALL(self):
+		settings.DEBUG = True
+		self.queryDict["RETURN"] = 'ALL'
+		self.request.REQUEST = self.queryDict
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		actual = etree.tostring(objTree, pretty_print=True)
+		verificationXSD.assertValid(objTree)
+
+		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/verALL.xml").read()), pretty_print=True)
+		self.assertEquals(expected, actual)
+
+
+	def testBAD(self):
+		settings.DEBUG = True
+		self.queryDict["RETURN"] = 'BAD'
+		self.request.REQUEST = self.queryDict
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		actual = etree.tostring(objTree, pretty_print=True)
+		verificationXSD.assertValid(objTree)
+
+		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/verBAD.xml").read()), pretty_print=True)
+		self.assertEquals(expected, actual)
+
+	def testGOOD(self):
+		settings.DEBUG = True
+		self.queryDict["RETURN"] = 'GOOD'
+		self.request.REQUEST = self.queryDict
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		actual = etree.tostring(objTree, pretty_print=True)
+		verificationXSD.assertValid(objTree)
+
+		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/verGOOD.xml").read()), pretty_print=True)
+		self.assertEquals(expected, actual)
+
+	def tearDown(self):
+		pass
+
+
+
 class TapSyncTest(TestCase):
 	prefixURL = "/tap/sync?"
 	query = "LANG=VSS1&FORMAT=XSAMS&QUERY="
@@ -53,9 +112,9 @@ class TapSyncTest(TestCase):
 
 	def setUp(self):
 		self.request = HttpRequest()
-		self.request.META["SERVER_NAME"] = 'test'
+		self.request.META["SERVER_NAME"] = 'localhost'
 		self.request.META["SERVER_PORT"] = '80'
-		self.request.META["REMOTE_ADDR"] = 'localhost'
+		self.request.META["REMOTE_ADDR"] = '127.0.0.1'
 		self.request.META["QUERY_STRING"] = self.query
 
 		self.queryDict = toDict(QueryDict(self.query))
@@ -94,7 +153,7 @@ class TapSyncTest(TestCase):
 		content = views.sync(self.request).content
 		objTree = objectify.fromstring(content)
 		actual = etree.tostring(objTree, pretty_print=True)
-		xsd.assertValid(objTree)
+		xsamsXSD.assertValid(objTree)
 
 		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/Energy.xml").read()), pretty_print=True)
 		self.assertEquals(expected, actual)
@@ -109,7 +168,7 @@ class TapSyncTest(TestCase):
 		content = views.sync(self.request).content
 		objTree = objectify.fromstring(content)
 		actual = etree.tostring(objTree, pretty_print=True)
-		xsd.assertValid(objTree)
+		xsamsXSD.assertValid(objTree)
 
 		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/H_17OD_W_EC.xml").read()), pretty_print=True)
 		self.assertEquals(expected, actual)
@@ -123,7 +182,7 @@ class TapSyncTest(TestCase):
 
 		objTree = objectify.fromstring(views.sync(self.request).content)
 		actual = etree.tostring(objTree, pretty_print=True)
-		xsd.assertValid(objTree)
+		xsamsXSD.assertValid(objTree)
 
 		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/InchiKey.xml").read()), pretty_print=True)
 		self.assertEquals(expected, actual)
@@ -132,13 +191,13 @@ class TapSyncTest(TestCase):
 	def testSelectMoleculeInchiKey(self):
 		sql = "SELECT+All+WHERE+InchiKey='RWSOTUBLDIXVET-IQRQJSDFSA-N'"
 		objTree = objectify.fromstring(testClient.get(self.prefixURL + self.query + sql.strip()).content)
-		xsd.assertValid(objTree)
+		xsamsXSD.assertValid(objTree)
 
 
 	def testSelectRadTransWavenumber(self):
 		sql = "SELECT+All+WHERE+RadTransWavenumber+>+1239+AND+RadTransWavenumber+<+1240"
 		objTree = objectify.fromstring(testClient.get(self.prefixURL + self.query + sql.strip()).content)
-		xsd.assertValid(objTree)
+		xsamsXSD.assertValid(objTree)
 
 
 	def tearDown(self):
@@ -215,8 +274,8 @@ def suite():
 
 	tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]))
 
-	from vamdctap import tests as vamdctests
-	tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(vamdctests))
+	#from vamdctap import tests as vamdctests
+	#tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(vamdctests))
 
 	return tsuite
 
