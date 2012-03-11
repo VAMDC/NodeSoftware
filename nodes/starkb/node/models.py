@@ -57,7 +57,9 @@ class Species(models.Model):
     particle = models.ForeignKey(Particle,  db_column="id_particle", null=True)    
     
     def particle_ion_id(self):
-        if self.ion is not None :                   
+        if self.ion is not None : 
+            if self.ion.name == "meanion":
+                return None
             return self.ion.species_id()
         elif self.particle is not None : 
             return self.particle.species_id()
@@ -127,7 +129,7 @@ class Level(models.Model):
     S = models.FloatField(null=True)    
     LS_multiplicity = models.IntegerField(null=True)    
     K = models.FloatField(null=True)    
-    J1 = models.FloatField(null=True)    
+    J1 = models.FloatField(null=True)   
     
     def j_asFloat(self):
         #add .0 to "1/2" or "3/2" to get float value

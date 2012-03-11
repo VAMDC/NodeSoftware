@@ -37,7 +37,7 @@ def eV2MHz (op, eV):
 def Hz2MHz(op, Hz):
     return [op, str(float(Hz)/1000000.0) ]
 
-#Vald specific but maybe instructive for others.
+# Vald specific but maybe instructive for others.
 def valdObstype(op,obstype):
     obstype=obstype.strip().strip('\'"')
     ourMap = {'experiment':'0',
@@ -47,3 +47,42 @@ def valdObstype(op,obstype):
               #'semiempirical':'4',
               'compilation':'5'}
     return [op, ourMap.get(obstype, 'None')]
+
+
+# Below:
+# functions for handling a restrictable manually
+# again, this is VALD-specific but may be instructive for other nodes
+
+from django.db.models import Q,F
+OPTRANS= { # convert numerical operators to the django-query equivalent
+    '<':  '__lt',
+    '>':  '__gt',
+    '=':  '__exact',
+    '<=': '__lte',
+    '>=': '__gte'}
+
+def bothStates(r,op,rhs):
+    """
+        compares two fields with an incoming restrictable, StateEnergy
+        in this case which restricts both upper and lower states.
+    """
+    try:
+        op = OPTRANS[op]
+        float(rhs)
+        return Q(**{'upstate__energy'+op:rhs}) & Q(**{'lostate__energy'+op:rhs})
+    except:
+        return Q(pk__isnull=True)
+
+def test_constant_factory(const):
+    """ returns a function that allows testing
+        a restrictable against a constant
+    """
+    def fu(r,op,rhs):
+        try:
+            if op not in ('=','=='): raise Exception
+            match = eval('%s == %s'%(rhs,const))
+            if not match: raise Exception
+            return Q(pk=F('pk'))
+        except:
+            return ~Q(pk=F('pk'))
+    return fu

@@ -1,19 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-ExampleNode dictionary definitions. 
-"""
-
-# The returnable dictionary is used internally by the node and defines
-# all the ways the VAMDC standard keywords (left-hand side) maps to
-# the internal database representation queryset (right-hand side)
-#
-# When writing this, it helps to remember that dictionary is applied
-# in a loop to every matching *instance* of the queryset variables
-# returned from queryfunc.py. So in the example below, all 'Sources'
-# will be looped over by the node software, using the name 'Source'
-# (singular). 'Source' will be one single instance of a matching
-# database object, from which we extract everything we need (if you
-# look at queryfuncs.py, you'll see 'Sources' being assigned)
 
 RETURNABLES = {\
 'NodeID':'Topbase',
@@ -41,10 +26,11 @@ RETURNABLES = {\
 'AtomMassNumber':'Atom.atomicion.isotope.massnumber',
 
 'AtomStateEnergy':'AtomState.stateenergy',
+'AtomStateRef':'AtomState.Sources',
 'AtomStateEnergyUnit':'AtomState.stateenergyunit.value',
 'AtomStateParity' : 'AtomState.parity.value',
-'AtomStateMixingCoeff':'AtomState.Component.mixingcoefficient',
-'AtomStateMixingCoeffClass' : 'AtomState.Component.mixingclass.value',
+'AtomStateMixingCoeff':'Component.mixingcoefficient',
+'AtomStateMixingCoeffClass' : 'Component.mixingclass.value',
 'AtomStateLifeTime': 'AtomState.lifetime',
 'AtomStateLifeTimeDecay':'totalRadiative',
 'AtomStateStatisticalWeight' : 'AtomState.statisticalweight',
@@ -53,29 +39,43 @@ RETURNABLES = {\
 'AtomStateIonizationEnergy' : 'AtomState.ionizationenergy',
 'AtomStateIonizationEnergyUnit' : 'AtomState.ionizationenergyunit.value',
 'AtomStateTotalAngMom' : 'AtomState.totalangularmomentum',
-'AtomStateTermLabel' : 'AtomState.Component.termlabel',
-'AtomStateTermLSL' : 'AtomState.Component.Lscoupling.l',
-'AtomStateTermLSS' : 'AtomState.Component.Lscoupling.s',
-'AtomStateTermLSMultiplicity' : 'AtomState.Component.Lscoupling.multiplicity',
+'AtomStateTermLabel' : 'Component.termlabel',
+'AtomStateTermLSL' : 'Component.Lscoupling.l',
+'AtomStateTermLSS' : 'Component.Lscoupling.s',
+'AtomStateTermLSMultiplicity' : 'Component.Lscoupling.multiplicity',
 
 'RadTransID':'RadTran.id',
+'RadTransRefs' : 'RadTran.Sources',
 'RadTransWavelength':'RadTran.wavelength',
 'RadTransWavelengthUnit':u'A',
-'RadTransProbabilityWeightedOscillatorStrength' : 'RadTran.weightedoscillatorstrength',
-'RadTransFinalStateRef':'RadTran.finalatomicstate.id',
-'RadTransInitialStateRef':'RadTran.initialatomicstate.id',
+'RadTransProbabilityWeightedOscillatorStrength' : 'RadTran.abs_weightedoscillatorstrength()',
+'RadTransUpperStateRef':'RadTran.upperatomicstate.id',
+'RadTransLowerStateRef':'RadTran.loweratomicstate.id',
 'RadTransProbabilityA' : 'RadTran.transitionprobability',
 'RadTransProbabilityAUnit' : '1/s',
 
 
-#'CrossSectionState' : 'RadCros.id',
+'CrossSectionState' : 'RadCros.id',
 'CrossSectionID' : 'RadCros.id',
 'CrossSectionX' : 'RadCros.xdata',
-'CrossSectionXUnits' : 'RadCros.crosssectionunit.value',
+'CrossSectionXUnit' : 'RadCros.xdataunit.value',
 'CrossSectionXN' : 'len(RadCros.xdata.split(" "))',
 'CrossSectionY' : 'RadCros.ydata',
-'CrossSectionYUnits' : 'RadCros.crosssectionunit.value',
+'CrossSectionYUnit' : 'RadCros.ydataunit.value',
 'CrossSectionYN' : 'len(RadCros.ydata.split(" "))',
+
+#source
+'SourceTitle':'Source.title',
+'SourceAuthorName':'Source.Authors',
+'SourceCategory':'Source.sourcecategory.value',
+'SourceName' : 'Source.sourcename',
+'SourceYear' : 'Source.year',
+'SourceURI': 'Source.uri',
+'SourceVolume' : 'Source.volume',
+'SourcePageBegin' : 'Source.pagebegin',
+'SourcePageEnd' : 'Source.pageend',
+'SourceDOI' : 'Source.doi',
+'SourceID' : 'Source.id',
 }
 
 # The restrictable dictionary defines limitations to the search. 

@@ -9,11 +9,21 @@
 
 from django.db import models
 
+class Term:
+    l = 0
+    s = 0
+
+class Component:
+    Terms = Term();
+
 class Species(models.Model):
     id = models.IntegerField(null=False, primary_key=True, blank=False)
     atomsymbol = models.CharField(max_length=6, db_column='AtomSymbol', blank=True)
     atomnuclearcharge = models.IntegerField(null=True, db_column='AtomNuclearCharge', blank=True)
     atomioncharge = models.IntegerField(null=True, db_column='AtomIonCharge', blank=True)
+    inchi = models.CharField(null=False, db_column='inchi', max_length=32, blank=False)
+    inchikey = models.CharField(null=False, db_column='inchikey', max_length=25, blank=False)
+
     class Meta:
         db_table = u'species'
 
@@ -26,10 +36,19 @@ class States(models.Model):
     atomioncharge = models.IntegerField(null=True, db_column='AtomIonCharge', blank=True)
     atomstateconfigurationlabel = models.CharField(max_length=96, db_column='AtomStateConfigurationLabel', blank=True)
     atomstates = models.FloatField(null=True, db_column='AtomStateS', blank=True)
-    atomstatel = models.FloatField(null=True, db_column='AtomStateL', blank=True)
+    atomstatel = models.IntegerField(null=True, db_column='AtomStateL', blank=True)
     atomstatetotalangmom = models.FloatField(null=True, db_column='AtomStateTotalAngMom', blank=True)
-    energyexperimental = models.FloatField(null=True, db_column='AtomStateEnergyExperimental', blank=True)
-    energytheoretical = models.FloatField(null=True, db_column='AtomStateEnergyTheoretical', blank=True)
+    energy = models.FloatField(null=True, db_column='AtomStateEnergy', blank=True)
+    energyMethod = models.CharField(max_length=4, db_column='AtomStateEnergyMethod', null=False, blank='False')
+
+    # Each state has one component and each component has one term, describing LS coupling.
+    # The generator relies on direct access to the Components attribute of the state and the Terms
+    # attribute of the component, using those specific names. The values of the attributes may be
+    # either scalars or arrays (the generator is specifically coded to deal with either).
+    Components = Component()
+    Components.Terms.l = atomstatel
+    Components.Terms.s = atomstates
+    print Components.Terms.l
 
     def allEnergies(self):
         energies = []

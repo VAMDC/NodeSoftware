@@ -131,8 +131,8 @@ def getLifetimeMethods():
             self.category = category
 
     # we will only be needing two methods
-    m1 = Method("EXP", "experimental")
-    m2 = Method("THEO", "theoretical")
+    m1 = Method("EXP", "experiment")
+    m2 = Method("THEO", "theory")
     return m1, m2
 
 
@@ -152,7 +152,7 @@ def statesRequired(sql):
 # Main function 
 #------------------------------------------------------------
 
-def setupResults(sql, limit=1000):
+def setupResults(sql, limit=100000):
     """
     This function is always called by the software.
     """
@@ -212,10 +212,16 @@ def setupResults(sql, limit=1000):
             }
     LOG(headerinfo)
             
-    # Return the data. The keynames are standardized. 
-    return {'RadTrans':transs,
-            'Atoms':species,
-            'Sources':sources,
-            'HeaderInfo':headerinfo,
-            'Methods':methods
-           }
+    # Return the data. The keynames are standardized.
+    if (nspecies > 0 or nstates > 0 or ntranss > 0):
+        return {'RadTrans':transs,
+                'Atoms':species,
+                'Sources':sources,
+                'HeaderInfo':headerinfo,
+                'Methods':methods
+               }
+
+    # As a special case, if there are no data, return an empty structure.
+    # This causes the node software to send a 204 "No content" response.
+    else:
+        return {}

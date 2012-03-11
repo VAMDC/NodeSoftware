@@ -26,6 +26,7 @@ from generators import *
 from sqlparse import SQL
 
 REQUESTABLES = map(lower, [\
+ 'Environments',
  'AtomStates',
  'Atoms',
  'Collisions',
@@ -37,7 +38,7 @@ REQUESTABLES = map(lower, [\
  'NonRadiativeTransitions',
  'Particles',
  'Processes',
- 'RadiativeCrossections',
+ 'RadiativeCrossSections',
  'RadiativeTransitions',
  'Solids',
  'Sources',
@@ -57,35 +58,40 @@ def tapServerError(request=None, status=500, errmsg=''):
     document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
     return HttpResponse(document, status=status, mimetype='text/xml');
 
+def getBaseURL(request):
+    return getattr(settings, 'DEPLOY_URL', None) or \
+        'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
+
 
 class TAPQUERY(object):
     """
     This class holds the query, does some validation
     and triggers the SQL parser.
     """
-    def __init__(self,data):
+    def __init__(self,request):
         self.isvalid = True
         self.errormsg = ''
         try:
-            self.data=CaselessDict(dict(data))
+            self.request=CaselessDict(dict(request.REQUEST))
         except Exception,e:
             self.isvalid = False
             self.errormsg = 'Could not read argument dict: %s'%e
             log.error(self.errormsg)
 
         if self.isvalid: self.validate()
+        self.fullurl = getBaseURL(request) + 'sync?' + request.META.get('QUERY_STRING')
 
     def validate(self):
-        try: self.lang = lower(self.data['LANG'])
+        try: self.lang = lower(self.request['LANG'])
         except: self.errormsg = 'Cannot find LANG in request.\n'
         else:
             if self.lang not in ('vss1','vss2'):
                 self.errormsg += 'Only LANG=VSS1 or LANG=VSS2 is supported.\n'
 
-        try: self.query = self.data['QUERY']
+        try: self.query = self.request['QUERY']
         except: self.errormsg += 'Cannot find QUERY in request.\n'
 
-        try: self.format=lower(self.data['FORMAT'])
+        try: self.format=lower(self.request['FORMAT'])
         except: self.errormsg += 'Cannot find FORMAT in request.\n'
 
         try: self.parsedSQL=SQL.parseString(self.query)
@@ -133,10 +139,6 @@ class TAPQUERY(object):
     def __str__(self):
         return '%s'%self.query
 
-def getBaseURL(request):
-    return CaselessDict(DICTS.RETURNABLES).get('BaseURL') or \
-        'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
-
 def addHeaders(headers,response):
     HEADS=['COUNT-SOURCES',
            'COUNT-ATOMS',
@@ -153,12 +155,12 @@ def addHeaders(headers,response):
 
     for h in HEADS:
         if headers.has_key(h):
-            if headers[h]: response['VAMDC-'+h] = '%s'%headers[h]
+            response['VAMDC-'+h] = '%s'%headers[h]
     return response
 
 def sync(request):
     log.info('Request from %s: %s'%(request.META['REMOTE_ADDR'],request.REQUEST))
-    tap=TAPQUERY(request.REQUEST)
+    tap=TAPQUERY(request)
     if not tap.isvalid:
         emsg = 'TAP-Request invalid: %s'%tap.errormsg
         log.error(emsg)
@@ -167,26 +169,26 @@ def sync(request):
     # if the requested format is not XSAMS, hand over to the node QUERYFUNC
     if tap.format != 'xsams' and hasattr(QUERYFUNC,'returnResults'):
         return QUERYFUNC.returnResults(tap)
-    # otherwise, setup the results and build the XSAMS response here
 
-    try: results=QUERYFUNC.setupResults(tap)
+    # otherwise, setup the results and build the XSAMS response here
+    try: querysets = QUERYFUNC.setupResults(tap)
     except Exception, err:
         emsg = 'Query processing in setupResults() failed: %s'%err
         log.debug(emsg)
         return tapServerError(status=400,errmsg=emsg)
 
-    if not results:
+    if not querysets:
         log.info('setupResults() gave something empty. Returning 204.')
         return HttpResponse('', status=204)
 
     log.debug('Requestables: %s'%tap.requestables)
-    generator=Xsams(requestables=tap.requestables,**results)
+    generator=Xsams(tap=tap,**querysets)
     log.debug('Generator set up, handing it to HttpResponse.')
     response=HttpResponse(generator,mimetype='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
 
-    if 'HeaderInfo' in results:
-        response=addHeaders(results['HeaderInfo'],response)
+    if 'HeaderInfo' in querysets:
+        response=addHeaders(querysets['HeaderInfo'],response)
 
         # Override with empty response if result is empty
         if 'VAMDC-APPROX-SIZE' in response:

@@ -1,0 +1,1 @@
+http://vamdc.univ-reims.fr:8080/smpo/tap/sync/?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT+*+WHERE+RadTransWaveNumber+%3E%3D+1000.0+AND+RadTransWaveNumber+%3C%3D+1002.0 AND MoleculeChemicalName='666'

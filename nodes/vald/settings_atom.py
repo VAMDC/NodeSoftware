@@ -12,12 +12,11 @@ INSTALLED_APPS.append(NODEPKG)
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'vald_atom',
+    'NAME': 'vald_atom_alt',
     'USER': 'vald',
     'PASSWORD': 'V@ld',
   },
 }
-
 EXAMPLE_QUERIES = [\
     "SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4000.01",
     "SELECT ALL WHERE AtomSymbol = 'U'",
@@ -27,6 +26,7 @@ EXAMPLE_QUERIES = [\
 
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
+DEPLOY_URL = 'http://vald.astro.uu.se/atoms/tap/'
 
 LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode.log'
 if not DEBUG:
