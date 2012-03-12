@@ -153,25 +153,13 @@ def makePartitionfunc(keyword, G):
     value = G(keyword)
     if not value:
         return ''
-
     temperature = G(keyword + 'T')
-    partitionfunc = G(keyword)
-
-    string = '<PartitionFunction>\n'
-    string += '  <T units="K">\n'
-    string += '     <DataList>\n'
-    for temp in temperature:
-        string += ' %s' % temp
-    string += '\n     </DataList>\n'
-    string += '  </T>\n'
-    string += '  <Q>\n'
-    string += '     <DataList>\n'
-    for q in partitionfunc:
-        string += ' %s' % q
-    string += '\n     </DataList>\n'
-    string += '  </Q>\n'
-    string += '</PartitionFunction>\n'
-
+    partitionfunc = G(keyword)        
+    string = '<PartitionFunction><T units="K"><DataList>'
+    string += " ".join(str(temp) for temp in temperature)
+    string += '</DataList></T><Q><DataList>'
+    string += " ".join(str(q) for q in partitionfunc)
+    string += '</DataList></Q></PartitionFunction>'
     return string
 
 def makePrimaryType(tagname, keyword, G, extraAttr={}):
@@ -185,10 +173,9 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
     comment = G("%sComment" % keyword)
     refs = G(keyword + 'Ref') # Sources
 
-    result = ["\n<%s" % tagname]
+    result = ["<%s" % tagname]
     if method:
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
-
     for k, v in extraAttr.items():
         result.append( ' %s="%s"'% (k, v) )
 
@@ -231,7 +218,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
 
     string = ''
     for i, val in enumerate(value):
-        string += '\n<%s' % tagname
+        string += '<%s' % tagname
         for k, v in extraAttr.items():
             if v[i]: string += ' %s="%s"'%(k,v[i])
         if name[i]:
@@ -242,7 +229,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
         if comment[i]:
             string += '<Comments>%s</Comments>' % escape('%s' % comment[i])
         string += makeSourceRefs(refs[i])
-        string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', value[i])
+        string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
         if acc[i]:
             string += '<Accuracy>%s</Accuracy>' % acc[i]
         string += '</%s>' % tagname
@@ -278,14 +265,13 @@ def makeAccuracy(keyword, G):
 
 def makeDataSeriesAccuracyType(keyword, G):
     """
-    build the elenments for accuracy belonging
-    to a data series.
+    build the elements for accuracy belonging to a data series.
     """
     string = makePrimaryType("Accuracy", keyword + "Accuracy", G,
                     extraAttr={"type":G(keyword+"AccuracyType"),
                                "relative":G(keyword+"AccuracyRelative")})
     if G(keyword + "ErrorList"):
-        string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join([makeiter(G(keyword + "ErrorList"))]))
+        string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join(str(o) for o in makeiter(G(keyword + "ErrorList"))))
     elif G(keyword + "ErrorFile"):
         string += "<ErrorFile>%s</ErrorFile>" % G(keyword + "ErrorFile")
     elif G(keyword + "ErrorValue"):
@@ -308,13 +294,12 @@ def makeEvaluation(keyword, G):
     nevs = len(ev_list)
     ev_meth = makeiter( G(keyword + 'EvalMethod'), nevs )
     ev_reco = makeiter( G(keyword + 'EvalRecommended'), nevs )
-    ev_refs = G(keyword + 'EvalRef', nevs)
-    ev_comm = G(keyword + 'EvalComment', nevs)
-
+    ev_refs = G(keyword + 'EvalRef')
+    ev_comm = G(keyword + 'EvalComment')
     result = []
     for i,ev in enumerate( makeiter(evs) ):
         result.append('<Evaluation')
-        if ev_meth[i]: result.append( ' methodRef="%s"'%ev_meth[i] )
+        if ev_meth[i]: result.append( ' methodRef="%s"' % ev_meth[i] )
         if ev_reco[i]: result.append( ' recommended="true"' )
         result.append( '>' )
         result.append( makeSourceRefs(ev_refs) )
@@ -343,7 +328,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     comment = G(keyword + 'Comment')
     refs = G(keyword + 'Ref')
 
-    result = ['\n<%s' % tagname]
+    result = ['<%s' % tagname]
     if method:
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
     for k, v in extraAttr.items():

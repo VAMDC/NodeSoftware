@@ -17,6 +17,8 @@ output tests - checks so the total output from generator matches what's expected
 """
 
 # safely import test framework (django-version non-specific)
+
+import re
 try:
     from django.utils.unittest import TestCase
 except ImportError:
@@ -30,6 +32,7 @@ from django.utils.importlib import import_module
 from vamdctap import generators, views 
 # node-specific 
 from django.conf import settings 
+
 from caselessdict import CaselessDict
 DICTS = import_module(settings.NODEPKG + ".dictionaries")
 RETURNABLES = CaselessDict(DICTS.RETURNABLES)
@@ -99,6 +102,7 @@ class TestQueryFunc(TapTest):
 # Test suite for individual generator functions
 #------------------------------------------------------------
 
+
 class TestGetValue(TestCase):
     "Test generator.GetValue"
     def test_fail(self):
@@ -115,8 +119,99 @@ class TestGetValue(TestCase):
 # Individual generator function tests
 #  
 
+class TestGen(TestCase):
+    "Base class for testing generator functions"
 
-                         
+    class Test(object):
+        def __init__(self,*args, **kwargs):
+            self.__dict__.update(kwargs)
+    def setUp(self):
+        "init"
+        generators.NODEID = "TestNode"
+        generators.RETURNABLES = {}        
+    def G(self, objdict, returnables):
+        """
+        Create test G function. 
+         objdict - attributes+values to store on the fake Queryobject 'Test'
+         returnables - replaces the RETURNABLES dict, mapping keys to attributes (queries) on Test
+        """
+        Test = self.Test(**objdict)
+        generators.RETURNABLES = returnables
+        return lambda name: generators.GetValue(name, Test=Test) 
+           
+class TestGenHelpers(TestGen):
+    def test_makeiter(self):
+        self.assertEqual(generators.makeiter("Test", length=4), ["Test"])
+        self.assertEqual(generators.makeiter("", length=4), [None, None, None, None])
+    def test_makeloop(self):
+        G = self.G({"test1":("TestValue1a","TestValue1b"), "test2":("TestValue2a","TestValue2b")},
+                   {"Test1":"Test.test1", "Test2":"Test.test2"})
+        self.assertEqual(generators.makeloop("Test", G, "1", "2"), 
+                         [['TestValue1a','TestValue1b'], ['TestValue2a','TestValue2b']])
+class TestTagMakers(TestGen):
+    def test_makeOptionalTag(self):
+        G = self.G({"test1":"TestValue1", "test2":"TestValue2"},
+                   {"Test1":"Test.test1", "Test2":"Test.test2"})
+        self.assertEqual(generators.makeOptionalTag("testtag", "Test1", G, extraAttr={"testattr":G("Test2")}), 
+                         '<testtag testattr="TestValue2">TestValue1</testtag>')
+        G = self.G({},{}) # this should mean OptionalTag returns empty string
+        self.assertEqual(generators.makeOptionalTag("testtag", "Test1", G, extraAttr={"testattr":G("Test2")}), 
+                         '')
+    def test_makeSourceRefs(self):
+        refs = ["TestRef1", "TestRef2", "TestRef3"]
+        self.assertEqual(generators.makeSourceRefs(refs),
+                         '<SourceRef>BTestNode-TestRef1</SourceRef><SourceRef>BTestNode-TestRef2</SourceRef><SourceRef>BTestNode-TestRef3</SourceRef>')
+    def test_makePartitionFunc(self):
+        G = self.G({"temp":[1,2,3], "part":[4,5,6]},
+                   {"PartitionT":"Test.temp", "Partition":"Test.part"})                   
+        self.assertEqual(generators.makePartitionfunc("Partition", G), 
+                         '<PartitionFunction><T units="K"><DataList>1 2 3</DataList></T><Q><DataList>4 5 6</DataList></Q></PartitionFunction>')
+    def test_makePrimaryType(self):
+        G = self.G({"method":"TestMethod", "comment":"TestComment","refs":["ref1","ref2"], "extra":"extraval"}, 
+                   {"TestMethod":"Test.method", "TestComment":"Test.comment", "TestRef":"Test.refs", "Extra":"Text.extra"})
+        self.assertEqual(generators.makePrimaryType("primtest", "Test", G, extraAttr={"extraattr":G("Extra")}), 
+                         '<primtest methodRef="MTestNode-TestMethod" extraattr="Text.extra"><Comments>TestComment</Comments><SourceRef>BTestNode-ref1</SourceRef><SourceRef>BTestNode-ref2</SourceRef>')              
+    def test_makeRepeatableDataType(self):
+        G = self.G({"unit":"K", "method":"ex","comment":"testcomment", "accur":"0.1", "ref":["ref1","ref2"],"name":"TestType","extra":"Extra","values":[1,2,3]},
+                   {"Test":"Test.values","TestUnit":"Test.unit", "TestMethod":"Test.method", "TestComment":"Test.comment",
+                    "TestAccuracy":"Test.accur", "TestRef":"Test.ref", "TestName":"Test.name", "Extra":"Test.extra"})
+        self.assertEqual(generators.makeRepeatedDataType("testtag", "Test", G, extraAttr={"extra":G("Extra")}),
+                         '<testtag extra="Extra" name="TestType" methodRef="MTestNode-ex"><Comments>testcomment</Comments><SourceRef>BTestNode-ref1</SourceRef><Value units="K">1</Value><Accuracy>0.1</Accuracy></testtag><testtag extra="Extra" name="TestType" methodRef="MTestNode-ex"><Comments>testcomment</Comments><SourceRef>BTestNode-ref2</SourceRef><Value units="K">2</Value><Accuracy>0.1</Accuracy></testtag><testtag extra="Extra" name="TestType" methodRef="MTestNode-ex"><Comments>testcomment</Comments><SourceRef>BTestNode-ref1</SourceRef><Value units="K">3</Value><Accuracy>0.1</Accuracy></testtag>')
+    def test_makeAccuracy(self):
+        G = self.G({"accuracy":[1, 2],"confidence":[1,2],"relative":[True, False], "type":[1,2]},
+                   {"TestAccuracy":"Test.accuracy", "TestAccuracyConfidence":"Test.confidence", "TestAccuracyRelative":"Test.relative","TestAccuracyType":"Test.type"})
+        self.assertEqual(generators.makeAccuracy("Test", G), 
+                         '<Accuracy confidenceInterval="1" type="1" relative="true">1</Accuracy><Accuracy confidenceInterval="2" type="2">2</Accuracy>')
+    def test_makeDataSeriesAccuracyType(self):
+        G = self.G({"method":"TestMetod", "comment":"TestComment","refs":["ref1","ref2"], "type":"typ", "relative":"rel",
+                     "errorlist":[1,2], "errorN":2,"errorfile":"file", "errorvalue":0.5},
+                   {"TestAccuracyMethod":"Test.method","TestAccuracyComment":"Test.comment","TestAccuracyRef":"Test.refs",
+                    "TestAccuracyType":"Test.type","TestAccuracyRelative":"Test.relative", "TestErrorList":"Test.errorlist","TestErrorListN":"Test.errorN",
+                    "TestErrorFile":"Test.errorfile", "TestErrorValue":"Test.errorvalue"})
+        self.assertEqual(generators.makeDataSeriesAccuracyType("Test", G),
+                         '<Accuracy methodRef="MTestNode-TestMetod" relative="rel" type="typ"><Comments>TestComment</Comments><SourceRef>BTestNode-ref1</SourceRef><SourceRef>BTestNode-ref2</SourceRef><ErrorList count=\'2\'>1 2</ErrorList></Accuracy>')    
+    def test_makeEvaluation(self):
+        G = self.G({"eval":[1,2], "method":["ex","ex"],"recommended":["true","false"],"refs":["ref1","ref2"], "comment":"Comment"},
+                   {"TestEval":"Test.eval", "TestEvalMethod":"Test.method", "TestEvalRecommended":"Test.recommended", "TestEvalRef":"Test.refs", "TestEvalComment":"Test.comment"})
+        self.assertEqual(generators.makeEvaluation("Test", G),
+                         '<Evaluation methodRef="ex" recommended="true"><SourceRef>BTestNode-ref1</SourceRef><SourceRef>BTestNode-ref2</SourceRef><Comments>Comment</Comments><Quality>1</Quality></Evaluation><Evaluation methodRef="ex" recommended="true"><SourceRef>BTestNode-ref1</SourceRef><SourceRef>BTestNode-ref2</SourceRef><Comments>Comment</Comments><Quality>2</Quality></Evaluation>')
+    def test_MakeDataType(self):
+        G = self.G({"unit":"K","method":"ex","comment":"Comment","refs":["ref1","ref2"],"value":42,
+                    "eval":[1,2], "evalmethod":["ex","ex"],"evalrecommended":["true","false"],"evalrefs":["ref1","ref2"], "evalcomment":"Comment",
+                    "accuracy":[1, 2],"confidence":[1,2],"relative":[True, False], "type":[1,2],"extra":"extra", "value":42},
+                   {"TestUnit":"Test.unit", "TestMethod":"Test.method","TestComment":"Test.comment","TestRef":"Test.refs",
+                    "TestEval":"Test.eval", "TestEvalMethod":"Test.evalmethod", "TestEvalRecommended":"Test.evalrecommended", 
+                    "TestEvalRef":"Test.evalrefs", "TestEvalComment":"Test.evalcomment", "TestExtra":"Test.extra", "Test":"Test.value",
+                    "TestAccuracy":"Test.accuracy", "TestAccuracyConfidence":"Test.confidence", "TestAccuracyRelative":"Test.relative","TestAccuracyType":"Test.type"})
+        self.assertEqual(generators.makeDataType("testtag", "Test", G, extraAttr={"extra":G("TestExtra")}),
+                         '<testtag methodRef="MTestNode-ex" extra="extra"><Comments>Comment</Comments><SourceRef>BTestNode-ref1</SourceRef><SourceRef>BTestNode-ref2</SourceRef><Value units="K">42</Value><Accuracy confidenceInterval="1" type="1" relative="true">1</Accuracy><Accuracy confidenceInterval="2" type="2">2</Accuracy><Evaluation methodRef="ex" recommended="true"><SourceRef>BTestNode-ref1</SourceRef><SourceRef>BTestNode-ref2</SourceRef><Comments>Comment</Comments><Quality>1</Quality></Evaluation><Evaluation methodRef="ex" recommended="true"><SourceRef>BTestNode-ref1</SourceRef><SourceRef>BTestNode-ref2</SourceRef><Comments>Comment</Comments><Quality>2</Quality></Evaluation></testtag>')
+    def test_makeArgumentType(self):
+        G = self.G({"name":"Test", "units":"K", "description":"Desc", "lower":0.1, "upper":1},
+                    {"TestName":"Test.name", "TestUnits":"Test.units", "TestDescription":"Test.description", "TestLowerLimit":"Test.lower", "TestUpperLimit":"Test.upper"})
+        self.assertEqual(generators.makeArgumentType("testtag", "Test", G),
+                         "<testtag name='Test' units='K'><Description>Desc</Description><LowerLimit>0.1</LowerLimit><UpperLimit>1</UpperLimit></testtag>")
+        
+
 #
 # Bibtex perser test suite
 #
@@ -181,8 +276,8 @@ B3 = """@article{BKP,
 }"""
 
 
-print bibtextools.BibTeX2XML(B2)
-print bibtextools.BibTeX2XML(B3)
+#print bibtextools.BibTeX2XML(B2)
+#print bibtextools.BibTeX2XML(B3)
 
 
 if __name__ == "__main__":    
