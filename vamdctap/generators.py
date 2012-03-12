@@ -384,7 +384,7 @@ def SelfSource(tap):
     The full URL is given in the tag UniformResourceIdentifier but you need
     to unescape ampersands and angle brackets to re-use it.
     Query was: %s
-    </Comments>"""%escape(tap.query))
+    </Comments>""" % escape(tap.query))
     result.append('<Year>%s</Year>'%now.year)
     result.append('<Category>database</Category>')
     result.append('<UniformResourceIdentifier>')
@@ -472,7 +472,7 @@ def XsamsEnvironments(Environments):
 
 def parityLabel(parity):
     """
-    XSAMS whats this as strings "odd" or "even", not numerical
+    XSAMS wants this as strings "odd" or "even", not numerical
 
     """
     try:
@@ -567,7 +567,7 @@ def makeShellType(tag, keyword, G):
     string += "<NumberOfElectrons>%s</NumberOfElectrons>" % G("%sNumberOfElectrons" % keyword)
     string += "<Parity>%s</Parity>" % G("%sParity" % keyword)
     string += "<Kappa>%s</Kappa>" % G("%sKappa" % keyword)
-    string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % G("%sTotalAngularMomentum" % keyword)
+    string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % G("%sTotalAngularMomentum" % keyword) #TODO-this is not consistent with name OrbitalAngmom - check dict.
     string += makeTermType("ShellTerm", "%sTerm" % keyword, G)
     string += "</%s>" % keyword
     return string
@@ -767,7 +767,7 @@ def makeNormalMode(G):
         map(makeiter, [vsrefs, x3s, y3s, z3s])
 
     if len(x3s)>0:
-        result.append( makePrimaryType('DisplacementVectors','MoleculeNormalModeDisplacementVectors',G, extraAttr=extraAttr) )
+        result.append( makePrimaryType('DisplacementVectors','MoleculeNormalModeDisplacementVectors',G, extraAttr=extraAttr) ) # TODO-should this be VectorS or Vector?
 
         for i,x3 in enumerate(x3s):
             result.append('<Vector')
@@ -850,6 +850,7 @@ def makeCaseQNs(G):
             result.append('<case:elecSym group="%s">%s</case:elecSym>' % (elecSymGroup, elecSym))
         else:
             result.append('<case:elecSym>%s</case:elecSym>' % elecSym)
+    
     result.extend([
             makeOptionalTag('case:elecInv', 'MoleculeQNelecInv', G),
             makeOptionalTag('case:elecRefl', 'MoleculeQNelecRefl', G),
@@ -904,7 +905,7 @@ def makeCaseQNs(G):
                    for i, val in enumerate(makeiter(G("MoleculeQNFj")))])
     result.extend([
             makeOptionalTag('case:F1', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF1nuclSpin")}),
-            makeOptionalTag('case:F2', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF2nuclSpin")}),
+            makeOptionalTag('case:F2', 'MoleculeQNF2', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF2nuclSpin")}),
             makeOptionalTag('case:F', 'MoleculeQNF', G, extraAttr={"nuclearSpinRef":G("MoleculeQNFnuclSpin")})])
     result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("MoleculeQNrName"))[i],val)
                    for i,val in enumerate(makeiter(G("MoleculeQNr")))])
@@ -1122,7 +1123,7 @@ def makeBroadeningType(G, name='Natural'):
     s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
     s += lsparams
     s += '</Lineshape>'
-    s += '</Broadening>\n'
+    s += '</Broadening>'
     return s
 
 def XsamsRadTranBroadening(G):
@@ -1141,7 +1142,6 @@ def XsamsRadTranBroadening(G):
         else:
             s.append( makeBroadeningType(G, name=broadening) )
     return ''.join(s)
-
 
 
 
@@ -1276,7 +1276,7 @@ def makeDataSeriesType(tagname, keyword, G):
 
     dlist = makeiter(G("%s" % keyword))
     if dlist:
-        result.append("<DataList count='%s'>%s</DataList>" % (G("%sN" % keyword), " ".join(dlist)))
+        result.append("<DataList count='%s'>%s</DataList>" % (G("%sN" % keyword), " ".join(str(d) for d in dlist)))
 
     csec = G("%sLinearA0" % keyword) and G("%sLinearA1" % keyword)
     if csec:
@@ -1294,7 +1294,7 @@ def makeDataSeriesType(tagname, keyword, G):
         result.append("<DataFile>%s</DataFile>" % dfile)
     elist = makeiter(G("%sErrorList" % keyword))
     if elist:
-        result.append("<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), " ".join(elist)))
+        result.append("<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), " ".join(str(e) for e in elist)))
     err = G("%sError" % keyword)
     if err:
         result.append("<Error>%s</Error>" % err)
