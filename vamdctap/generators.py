@@ -106,11 +106,11 @@ def GetValue(name, **kwargs):
                            # correctly as the query-set attribute
     except Exception, e:
         # this catches the case where the dict-value is a string or mistyped.
-        #log.debug('Exception in generators.py: GetValue()')
-        print 'Evaluation failure: ' + name + ' in ' + objname
+        #log.debug('Exception in generators.py: GetValue()')        
+        print 'Evaluation failure (%s:%s): %s in %s' % (e.__class__.__name__, str(e), name, objname)
         print obj
         value = name
-
+        
     if value == None:
         # the database returned NULL
         return ''
