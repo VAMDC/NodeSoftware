@@ -1,5 +1,7 @@
 {% extends "cdmsportal/portalBase.html" %}	  
 
+{% block menu_li_catalog %}class="active" {% endblock %}
+
 {% block content %}
 
 {% autoescape off %}
@@ -32,7 +34,7 @@ $(document).ready(function() {
  <INPUT TYPE='HIDDEN' NAME='T_SEARCH_INT' VALUE='-10'>
  <INPUT TYPE='HIDDEN' NAME='IntUnit' VALUE='T300'>
  <INPUT TYPE='HIDDEN' NAME='T_TEMPERATURE' VALUE='{{postvars.T_TEMPERATURE}}'>
- <INPUT TYPE='HIDDEN' NAME='T_SORT' VALUE='Frequency'>
+ <INPUT TYPE='HIDDEN' NAME='T_SORT' VALUE='frequency'>
  <INPUT TYPE="HIDDEN" NAME="T_PAGE" VALUE="ShowResults">
  <fieldset>
    <div class="type-button float_left">
@@ -40,6 +42,9 @@ $(document).ready(function() {
    </div>
 {% autoescape off %}
 {% if postvars.database == "cdms" %}
+<input type='hidden' name='queryURL' id='queryURL' value='{{postvars.url}}'>
+{% endif %}
+{% if postvars.database == "jpl" %}
 <input type='hidden' name='queryURL' id='queryURL' value='{{postvars.url}}'>
 {% endif %}
 
@@ -94,7 +99,38 @@ $(document).ready(function() {
 
         </ul>
       </div>
-    {% else %}Processing ...{% endif %}</div> 
+    {% else %}{% if postvars.database == "jpl" %}
+      <div class='vlist'><ul>
+        <li id='nodehead' class='' style='border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
+	  <div class='' style='background-color:blue;'>
+            <div class='nodename float_left' style='font-weight:bold;width:20em;background-color2:grey'>Database</div>                                                         
+            <div class='status float_left' style='width:8em'>Status</div>
+            <div class='numspecies float_left' style='width:8em'># Species</div>
+            <div class='nummols float_left' style='width:8em'># Molecules</div>
+            <div class='numstates float_left' style='width:8em'># States</div>
+            <div class='numradtrans float_left' style='width:8em'># Trans</div>
+            <div class='numtrunc float_left' style='width:8em'>% Trunc.</div>
+          </div>
+        </li>
+
+        <li id='nodeJPL' class='vamdcnode' style='width:98%;border-width:1px;border-style:solid;border-color:black;padding:0.5em;margin:5px;background-color:#fafaff'>
+          <div class='nodeurl' style='display:none' id='JPL'>http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/</div>
+          <div class='url' style='display:none'></div>
+          <div class='' style=''>
+            <div class='nodename float_left' style='font-weight:bold;width:20em;background-color2:grey'>JPL</div>                                                         
+            <div class='status float_left' style='width:8em'></div>
+            <div class='numspecies float_left' style='width:8em'>0</div>
+            <div class='nummols float_left' style='width:8em'>0</div>
+            <div class='numstates float_left' style='width:8em'> 0</div>
+            <div class='numradtrans float_left' style='width:8em'> 0</div>
+            <div class='numtrunc float_left' style='width:8em'> 0</div>
+          </div>
+          <div class='species' style='clear:both'></div> 
+        </li>
+
+        </ul>
+      </div>
+    {% else %}Processing ...{% endif %}{% endif %}</div> 
 
 <div id ="queryresult" style="display:none;clear:both;" class="subpage"> No query submitted yet. </div>
 

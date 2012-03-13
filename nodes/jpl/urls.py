@@ -21,11 +21,11 @@ urlpatterns = patterns('',
 if settings.SERVE_STATIC:
     import django.views.static
     urlpatterns += patterns('',
-                    (r'^cdms/static/(?P<path>.*)$',
+                    (r'^jpl/static/(?P<path>.*)$',
                     django.views.static.serve,
-                    {'document_root': settings.BASE_PATH+'/nodes/cdms/static'}),
+                    {'document_root': settings.BASE_PATH+'/nodes/jpl/static'}),
                     (r'mycdmsadmin/static/(?P<path>.*)$',
                     django.views.static.serve,
-                    {'document_root': settings.BASE_PATH+'/nodes/cdms/mycdmsadmin/static'}),                    
+                    {'document_root': settings.BASE_PATH+'/nodes/jpl/mycdmsadmin/static'}),                    
                     )
 

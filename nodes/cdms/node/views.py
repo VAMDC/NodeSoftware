@@ -123,18 +123,28 @@ def queryPage(request):
     test = request.POST
     id_list = request.POST.getlist('speciesIDs')
     
-    species_list = getSpeciesList(id_list)
+    species_list = get_species_list(id_list)
     c=RequestContext(request,{"postvar" : test, "speciesid_list": id_list, "species_list" : species_list})
     return render_to_response('cdmsportal/queryForm.html', c)
 
 
-def queryForm(request):
+def queryFormOld(request):
     """
     Create the species selection - page from the species (model) stored in the database
     """
-    species_list = getSpeciesList()
+    species_list = get_species_list()
     c=RequestContext(request,{"action" : "queryPage", "species_list" : species_list})
     return render_to_response('cdmsportal/querySpecies.html', c)
+
+
+def query_form(request):
+    """
+    Create the species selection - page from the species (model) stored in the database
+    """
+    #species_list = get_species_list()
+    c=RequestContext(request,{"action" : "queryPage", })
+    return render_to_response('cdmsportal/querySpeciesAjax.html', c)
+
 
 def tools(request):
     """
@@ -166,9 +176,48 @@ def selectSpecie(request):
     """
     Create the species selection - page from the species (model) stored in the database
     """
-    species_list = getSpeciesList()
+    species_list = get_species_list()
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
+#    return render_to_response('cdmsportal/selectSpeciesAjax.html', c)
     return render_to_response('cdmsportal/selectSpecies.html', c)
+
+def selectSpecie2(request):
+    """
+    Create the species selection - page from the species (model) stored in the database
+    """
+    #species_list = get_species_list()
+    c=RequestContext(request,{"action" : "catalog"})
+    return render_to_response('cdmsportal/selectSpeciesAjax.html', c)
+
+
+
+def html_list(request, content='species'):
+    """
+    Renders species, molecules, or isotopologs as html_list,
+    which can be included into webpages via ajax request.
+
+    content: string ('species' - default, 'molecules', 'isotopologs'
+             which specifies which information will be returned.
+
+    Returns html_string 
+    """
+    if content == 'molecules':
+        molecules_list = get_molecules_list()
+        c=RequestContext(request,{"action" : "catalog", "species_list" : [], "molecules_list" : molecules_list, "isotopolog_list" : [],})
+        return render_to_response('cdmsportal/species_table.html', c)
+
+    elif content == 'isotopologs':
+        isotopolog_list = get_isotopologs_list()
+        c=RequestContext(request,{"action" : "catalog", "species_list" : [], "molecules_list" : [], "isotopolog_list" : isotopolog_list,})
+        return render_to_response('cdmsportal/species_table.html', c)
+
+    else:
+        species_list = get_species_list()
+    #species_list = []
+        c=RequestContext(request,{"action" : "catalog", "species_list" : species_list, "molecules_list" : [], "isotopolog_list" : [],})
+    
+    return render_to_response('cdmsportal/species_table.html', c)
+
 
 def catalog(request, id=None):
     """
@@ -389,7 +438,7 @@ def specieslist(request):
     if not request.user.is_authenticated():
         return HttpResponseRedirect('/DjCDMS/cdms/login/?next=%s' % request.path)
 
-    species_list = getSpeciesList()
+    species_list = get_species_list()
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
     return render_to_response('cdmsadmin/selectSpecies.html', c)
 
@@ -518,6 +567,16 @@ def filters(request,id = None):
         formset = FilterFormSet()
     return render_to_response('cdmsadmin/filters.html', {'formset': formset})
 
+
+
+def getfile(request,id):
+    
+    f = Files.objects.get(pk=id)
+    response=HttpResponse(f.asciifile,mimetype='text/txt')
+    
+    response['Content-Disposition'] = 'attachment; filename=%s'%(f.name)
+
+    return response
 
 
 from django.shortcuts import render_to_response

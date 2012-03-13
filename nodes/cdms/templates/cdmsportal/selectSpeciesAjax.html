@@ -1,0 +1,89 @@
+{% extends "cdmsportal/portalBase.html" %}	  
+	  
+{% block menu_li_catalog %}class="active" {% endblock %}	  
+	  
+{% block content %}	  
+<div id="main">
+  <form name="PARAMETER" action="./{{action}}" style="background-color:transparent" class="yform full" role="application"  method="post">
+ 
+  <!-- begin: #col1 - first float column -->
+    <div id="col1" style="background-color:white;" role="complementary">
+      <div id="col1_content" class="clearfix">      
+        <INPUT TYPE="HIDDEN" NAME="T_PAGE" VALUE="SearchPrediction">
+        <h6 class="vlist"> FILTER SPECIES LIST</h6>
+        <p id="navFilterInfo" class="info center"> Use 
+          <a href="#" class="tooltip" title="<div style='text-align:left;'>Examples:<br><br>'^H2O$' to find only 'H2O'<br>'^H2' to find all string beginning with 'H2' like 'H2CO'<br>'H2O' to find all strings containing 'H2O' like 'NH2OH'</div>">regular expressions</a>
+        </p>
+      <div class="type-text">
+        <label for="eTagFilter">Tag</label>
+        <input id="eTagFilter" onkeyup="applySpeciesFilter()" onblur="applySpeciesFilter()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+      </div>
+      <div class="type-text">
+        <label for="molNameFilter">Molecule</label>
+        <input id="molNameFilter" onkeyup="applySpeciesFilter()" onblur="applySpeciesFilter()"  type="text" name="filterTag"> 
+      </div>
+      <div class="type-text">
+        <label for="molTrivNameFilter">Trivial&nbsp;Name</label>
+        <input id="molTrivNameFilter" onkeyup="applySpeciesFilter()"  onblur="applySpeciesFilter()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+      </div>
+      <div class="type-text">
+        <label for="isoFilter">Isotopolog</label>
+        <input id="isoFilter" onkeyup="applySpeciesFilter()" onblur="applySpeciesFilter()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+      </div>
+      <div class="type-text">
+        <label for="stateFilter">State</label>
+        <input id="stateFilter" onkeyup="applySpeciesFilter()" onblur="applySpeciesFilter()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+      </div>
+	    
+      {% block moleculesgroup %}
+      {% endblock %}
+    </div>
+  </div>
+  <!-- end: #col1 -->
+  <!-- begin: #col3 static column -->
+  <!--  <div id="col3" style="background-color:#F0F0F0;" role="main"> -->
+
+  <div id="col3" role="main">
+    <div id="col3_content" class="clearfix">
+	      
+    <!--
+      <fieldset>
+        <legend>Select Species</legend>
+    -->
+	      
+      <input id="orderBy" type="hidden" name="T_OrderBy" value="E_TAG ASC">
+      <input id="EID" type="hidden" name="T_EID" value="">
+      <fieldset class="full" >
+    <!--		
+      <h3 class="center"> 
+        <strong>SELECT</strong>&nbsp;<i>SPECIES.MOLECULES.ISOTOPOLOGS</i> 
+      </h3>
+    -->
+        <div class="type-button center">  
+	  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="SPECIES" NAME="B_SPECIESLIST" onclick="ajaxGetList('species')"> 
+	  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="ISOTOPOLOGS" NAME="B_ISOLIST" onclick="ajaxGetList('isotopologs')"> 
+	  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="MOLECULES" NAME="B_MOLLIST" onclick="ajaxGetList('molecules')"> 
+	</div>
+	<br><br>
+	{% block hint %}
+	{% endblock %}
+		
+<script> 
+   $(document).ready(function() {
+   ajaxGetList('species');
+});
+</script>
+
+        <div id="container_list"></div>
+
+	<div class="type-button center">  
+	{% block selectButtons %}
+	{% endblock %}
+	  <INPUT style="width:30%;float:right;" TYPE="SUBMIT"  VALUE="Confirm Selection" NAME="B_Query" onclick="submitSpecies();"> <!-- load_page('SearchPrediction');"> -->
+	</div>
+      </fieldset>
+    </div>
+  </form>
+	    
+</div>
+{% endblock %}

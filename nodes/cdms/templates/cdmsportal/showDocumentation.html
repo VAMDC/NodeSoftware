@@ -1,5 +1,6 @@
 {% extends "cdmsportal/portalBase.html" %}
 
+{% block menu_li_catalog %}class="active" {% endblock %}
 
 {% block content %}
     <div id="main">
@@ -78,7 +79,7 @@
                     </colgroup>
 		    <tbody>
 		      {% for parameter in rotationalconstants %}
-		      <tr><th scope="row" class="sub" > {{parameter.parameter}} </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
+		      <tr><th scope="row" class="sub" > <i>{{parameter.parameter}}</i> </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
 		      {% endfor %}
 		    </tbody>
 		  </table>
@@ -92,7 +93,7 @@
                       <col width="70%">
                     </colgroup>
 		    {% for parameter in dipolemoments %}
-		    <tr><th scope="row" class="sub" > {{parameter.parameter}} </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
+		    <tr><th scope="row" class="sub" ><i>{% autoescape off %}{{parameter.parameter_html}}{% endautoescape %}</i></th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
 		    {% endfor %}
 		  </table>
 		</fieldset>
@@ -150,11 +151,11 @@
 		<div class="legend"> Files </div>
 		<table class="full">
 		  <thead>
-		    <tr><th>Filename</th><th>Type</th><th>Comment</th><th>Createdate</th></tr>
+		    <tr><th>Filename</th><th>Type</th><th>Comment</th><th>Createdate</th><th>&nbsp;</th></tr>
 		  </thead>
 		  <tbody>
 		  {% for file in files %}
-		    <tr><td>{{file.name}}</td><td>{{file.type}}</td><td>{{file.comment}}</td><td>{{file.createdate}}</td></tr>
+		    <tr><td>{{file.name}}</td><td>{{file.type}}</td><td>{{file.comment}}</td><td>{{file.createdate}}</td><td style="background-color:#ccc"><a href="#" onclick="location.href=portal_url+'/getfile/{{file.id}}/'"><img width="30px" src="/static/cdms/img/download.png"></a></td></tr>
 		  {% endfor %}
 		  </tbody>
 		</table> 

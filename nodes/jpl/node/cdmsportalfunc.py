@@ -206,7 +206,7 @@ def checkQuery(postvars):
     htmlcode += "</ul>"
 
     if 'database' in postvars:
-        if postvars['database']=='cdms':
+        if postvars['database'] in ['cdms','jpl']:
             tap=tapcdms
         else:
             tap=tapxsams

@@ -81,7 +81,7 @@ RETURNABLES = {
 'MoleculeQnAttribute': 'MolQN.attribute', # <- new
 #'MoleculeQnXML': 'MolQN.xml',  #
 
-'NodeID':'CDMS',
+'NodeID':'JPL',
 
 #'NonRadTranEnergy':'',
 #'NonRadTranProbability':'',

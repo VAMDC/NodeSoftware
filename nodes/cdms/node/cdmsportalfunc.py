@@ -4,7 +4,7 @@
 from models import *
 from django.core.exceptions import ValidationError
 
-def getSpeciesList(spids = None):
+def get_species_list(spids = None):
     """
     """
     molecules = Species.objects.filter(origin=5,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
@@ -14,7 +14,22 @@ def getSpeciesList(spids = None):
         
     return molecules
 
-
+def get_molecules_list():
+    """
+    returns list of molecules
+    """
+    molecules = Molecules.objects.filter().order_by('stoichiometricformula')
+    return molecules
+    
+def get_isotopologs_list():
+    """
+    Returns list of isotopologues 
+    """
+    species = Species.objects.filter(archiveflag=0)
+    isotopologs = species.values('inchikey','isotopolog','molecule__stoichiometricformula','molecule__trivialname').distinct().order_by('molecule__stoichiometricformula')
+    
+    return isotopologs
+    
 def getSpecie(id = None):
     """
     """
@@ -129,7 +144,7 @@ def checkQuery(postvars):
         htmlcode += "<a href='#' onclick=\"load_page('SelectMolecule');\" ><p class='warning' >SPECIES: nothing selected => Click here to select species!</p></a>"
         idlist = []
     else:
-        mols = getSpeciesList(id_list)
+        mols = get_species_list(id_list)
 
 #        foreach (specie in mols):
         inchikeylist = mols.values_list('inchikey',flat=True)
@@ -206,7 +221,7 @@ def checkQuery(postvars):
     htmlcode += "</ul>"
 
     if 'database' in postvars:
-        if postvars['database']=='cdms':
+        if postvars['database'] in ['cdms','jpl']:
             tap=tapcdms
         else:
             tap=tapxsams

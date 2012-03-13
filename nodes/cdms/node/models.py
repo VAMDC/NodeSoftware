@@ -515,7 +515,17 @@ class Parameter (Model):
      rId = ForeignKey(Sources, db_column='PAR_R_ID')
      class Meta:
           db_table = u'Parameter'
-        
+
+     def parameter_html(self):
+          u_score = self.parameter.find('_')
+          if u_score<0:
+               return self.parameter
+          else:
+               return self.parameter.replace(self.parameter[u_score:u_score+2],'<sub>'+self.parameter[u_score+1:u_score+2]+'</sub>')
+#          else:
+#               return self.parameter
+          
+          
 class SourcesIDRefs( Model):
      """
      This class maps references to classes: species, datasets, frequency

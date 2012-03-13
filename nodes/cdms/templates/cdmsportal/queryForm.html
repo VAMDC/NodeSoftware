@@ -1,5 +1,6 @@
 {% extends "cdmsportal/portalBase.html" %}
 
+{% block menu_li_catalog %}class="active" {% endblock %}
 
 {% block content %}
 <div id="main">
@@ -59,6 +60,7 @@
       <div class="type-select">
         <SELECT class="log" NAME="database" id="database" onchange="showQueryRefinements();">
          <OPTION VALUE="cdms"> CDMS </OPTION>
+         <OPTION VALUE="jpl"> JPL </OPTION>
          <OPTION VALUE="vamdc"> VAMDC-network </OPTION>
         </SELECT>
       </div> 
