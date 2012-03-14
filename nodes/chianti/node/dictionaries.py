@@ -53,7 +53,7 @@ RETURNABLES = {\
 'RadTransWavelengthUnit':u'A', # Constant: Angstroms
 'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
 'RadTransProbabilityA':'RadTran.probabilitya',
-'RadTransProbabilityAUnits':u'1/s',
+'RadTransProbabilityAUnit':u'1/s',
 'RadTransInitialStateRef':'RadTran.initialstateindex.id',
 'RadTransFinalStateRef':'RadTran.finalstateindex.id',
 'RadTransSpeciesRef':'RadTran.initialstateindex.species.id',
