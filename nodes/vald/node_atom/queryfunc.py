@@ -14,9 +14,14 @@ def setupResults(sql):
         log.debug('Truncated results to %s, i.e %s A.'%(TRANSLIM,newmax))
     else: percentage=None
     log.debug('Transitions QuerySet set up. References next.')
-    #refIDs = set( transs.values_list('wave_ref_id','loggf_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref') )
-    #sources = Reference.objects.filter(pk__in=refIDs)
-    sources = Reference.objects.all()
+
+    refIDs = set(list(transs.values_list('wave_ref_id', flat=True)) + 
+                 list(transs.values_list('loggf_ref_id', flat=True)) +
+                 list(transs.values_list('gammarad_ref_id', flat=True)) +
+                 list(transs.values_list('gammastark_ref_id', flat=True)) + 
+                 list(transs.values_list('waals_ref', flat=True)))
+    sources = Reference.objects.filter(pk__in=refIDs)
+
     log.debug('Sources QuerySet set up. References next.')
 
     addStates = (not sql.requestables or 'atomstates' in sql.requestables)

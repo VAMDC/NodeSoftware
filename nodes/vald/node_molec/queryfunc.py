@@ -81,6 +81,13 @@ def setupResults(sql):
     sources = Reference.objects.all()
     log.debug('Sources QuerySet set up. References next.')
 
+    refIDs = set(list(transs.values_list('wave_ref_id', flat=True)) + 
+                 list(transs.values_list('loggf_ref_id', flat=True)) +
+                 list(transs.values_list('gammarad_ref_id', flat=True)) +
+                 list(transs.values_list('gammastark_ref_id', flat=True)) + 
+                 list(transs.values_list('waals_ref', flat=True)))
+    sources = Reference.objects.filter(pk__in=refIDs)
+
     addAtomStates = (not sql.requestables or 'atomstates' in sql.requestables)
     addMoleStates = (not sql.requestables or 'moleculestates' in sql.requestables)
     atoms,molecules,nspecies,nstates = getSpeciesWithStates(transs,addAtomStates,addMoleStates)
