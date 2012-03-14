@@ -82,6 +82,20 @@ class Transitions(models.Model):
     weightedoscillatorstrength = models.FloatField(null=True, db_column='RadTransProbabilityWeightedOscillatorStrength', blank=True)
     probabilitya = models.FloatField(null=True, db_column='RadTransProbabilityTransitionProbabilityA', blank=True)
 
+    def upperStateRef(self):
+        if self.finalstateindex.energy > self.initialstateindex.energy:
+            return self.finalstateindex.id
+        else:
+            return self.initialstateindex.id
+
+    def lowerStateRef(self):
+        if self.finalstateindex.energy < self.initialstateindex.energy:
+            return self.finalstateindex.id
+        else:
+            return self.initialstateindex.id
+
+
+
     def allWavelengths(self):
         wavelengths = []
         if self.wavelengthexperimental:
