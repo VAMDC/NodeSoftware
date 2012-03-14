@@ -505,9 +505,6 @@ data model to the names from the dictionary, like this::
     dictionary definition. These are examples of the "loop variables" mentioned
     in the table above and act as shortcuts to the nested data you are storing.
 
-    There are tools for getting started with writing these and for
-    validiation once you are done at http://vamdc.tmy.se/dict/
-
 About the RESTRICTABLES
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -561,11 +558,8 @@ an XSAMS document. By including the NodeID, we make these keys globally unique
 within VAMDC which will facilitate the merging of data that come from different
 nodes.
 
-It was mentioned before, but now is the time to point you once more to
-http://vamdc.tmy.se/dict/ where you first of all can browse all the available
-keywords. By selecting the ones that match your data, you can download a raw
-version of your ``dictionaries.py`` which you then fill in. The website also can
-perform some tests on your Returnables and Restrictables for finding errors.
+http://dictionary.vamdc.org/returnables/ is where you can browse all the available keywords.
+
 
 .. note::
     Again, at least the keys of the RETURNABLES should be filled (even 
