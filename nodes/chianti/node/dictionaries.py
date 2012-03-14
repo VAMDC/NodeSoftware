@@ -47,18 +47,15 @@ RETURNABLES = {\
 'AtomStateDescription':'AtomState.atomstateconfigurationlabel',
 'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
 
-#'RadTransWavelength':'[RadTran.wavelengthexperimental, RadTran.wavelengththeoretical]',
 'RadTransWavelength':'RadTran.allWavelengths()',
 'RadTransWavelengthMethod':'RadTran.allWavelengthMethods()',
 'RadTransWavelengthUnit':u'A', # Constant: Angstroms
 'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
 'RadTransProbabilityA':'RadTran.probabilitya',
 'RadTransProbabilityAUnit':u'1/s',
-'RadTransInitialStateRef':'RadTran.initialstateindex.id',
-'RadTransFinalStateRef':'RadTran.finalstateindex.id',
 'RadTransSpeciesRef':'RadTran.initialstateindex.species.id',
-'RadTransUpperStateRef':'RadTran.finalstateindex.id',
-'RadTransLowerStateRef':'RadTran.initialstateindex.id',
+'RadTransUpperStateRef':'RadTran.upperStateRef()',
+'RadTransLowerStateRef':'RadTran.lowerStateRef()',
 'RadTransID':'RadTran.id'
 }
 
