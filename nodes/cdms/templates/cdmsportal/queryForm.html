@@ -34,6 +34,8 @@
     <div id="col3_content" class="clearfix">
 
 		<script type="text/javascript">
+                        isotopologs = [{% for inchikey in inchikey_list %}'{{inchikey}}',{% endfor %}] 
+                        molecules = [{% for molecule in molecule_list %}'{{molecule}}',{% endfor %}] 
 			$(document).ready(function () {
 				$('#a_form_queryRefinements').click();
 			});
@@ -110,7 +112,7 @@
 
     <div class="type-button float_right">
       <!--<INPUT id="vamdcbutton" TYPE="button" NAME="T_SEARCH2" onclick="$('#queryresult').html('Processing ...');docShowSubpage('form_result');ajaxQuery('ajaxQuery','')" VALUE="vamdcQUERY" >
--->      <INPUT id="button1" TYPE="submit" NAME="T_SEARCH" onclick='submitOutputURL()' VALUE="QUERY" >
+-->      <INPUT id="button1" TYPE="submit" NAME="T_SEARCH" onclick='attachSpeciesIds();submitOutputURL()' VALUE="QUERY" >
     </div>
   </div> <!-- DIV FORM QUERY TRANSITIONS (FIRST PAGE) -->
 

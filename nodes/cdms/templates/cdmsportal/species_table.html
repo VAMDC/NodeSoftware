@@ -45,7 +45,7 @@
 
 <ul class="selectMolsHead vlist full" style="height:300px;overflow-y:scroll;">
 {% for mol in molecules_list %}
-  <li id="m_{{mol.id}}" class="molRow molecule" onclick="selectSpecie('m_{{mol.id}}');" ondblclick="selectSpecie('m_{{mol.id}}');">
+  <li id="{{mol.stoichiometricformula}}" class="molRow molecule" onclick="selectSpecie('{{mol.stoichiometricformula}}');" ondblclick="selectSpecie('{{mol.stoichiometricformula}}');">
     <a>
       <!-- <div class="molecule name float_left">{{mol.name}}</div> -->
       <div class="molecule stoichio float_left" style="min-width:10ex"><b>{{mol.stoichiometricformula}}</b></div>
@@ -71,7 +71,7 @@
     <a>
       <!-- <div class="isotopolog stoichio float_left" style="min-width:10ex"><b>{{iso.inchikey}}</b></div> -->
       <div class="molecule stoichio float_left" style="min-width:10ex">&nbsp;{{iso.molecule__stoichiometricformula}}</div>
-      <div class="isotopolog symbol float_left" style="min-width:10ex"><b>&nbsp;{{iso.isotopolog}}</b></div>
+      <div class="isotopolog iso float_left" style="min-width:10ex"><b>&nbsp;{{iso.isotopolog}}</b></div>
       <!-- <div class="molecule struct float_left2" >   {{mol.structuralformula}} </div> -->
       <div class="molecule trivname"><i>&nbsp;{{iso.molecule__trivialname}}</i></div>
     </a>

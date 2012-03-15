@@ -1,4 +1,4 @@
-{% extends "cdmsportal/portalBase.html" %}	  
+<basefont size={% extends "cdmsportal/portalBase.html" %}	  
 
 {% block menu_li_catalog %}class="active" {% endblock %}
 
@@ -16,6 +16,12 @@ $(document).ready(function() {
 <form name="form_result" id="form_result" action="index.php" class="yform full" method="post">
  {% for id in postvars.speciesIDs %}
  <INPUT TYPE="HIDDEN" NAME="speciesIDs" VALUE="{{id}}">
+ {% endfor %}
+ {% for id in postvars.inchikey %}
+ <INPUT TYPE="HIDDEN" NAME="inchikey" VALUE="{{id}}">
+ {% endfor %}
+ {% for id in postvars.molecule %}
+ <INPUT TYPE="HIDDEN" NAME="molecule" VALUE="{{id}}">
  {% endfor %}
 
  <INPUT TYPE='HIDDEN' NAME='filterTag' VALUE=''>
