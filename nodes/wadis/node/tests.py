@@ -37,6 +37,8 @@ xsamsXSD=etree.XMLSchema(etree.parse(xsdPath, parser=parser))
 #The libxml2 has a bug 170795 (reported: 2005). XML Schemas doesn't validate IDREF/IDREFS attributes.
 verificationXSD = etree.XMLSchema(etree.parse(settings.BASE_PATH + "/other/verification/verification.xsd", parser = parser))
 
+from other.verification.check import XSAMS_NS
+
 
 testClient = Client()
 
@@ -47,6 +49,9 @@ def toDict(queryDict):
 		dict[key] = queryDict[key]
 	return dict
 
+def removeSelfSource(objTree):
+	for source in objTree.xpath('//xsams:Sources/xsams:Source[contains(./xsams:Comments[1]/text(), "This Source is a self-reference.")]', namespaces={"xsams":XSAMS_NS}):
+		source[0].getparent().remove(source)
 
 class VerificationTest(TestCase):
 	prefixURL = "/tap/sync?"
@@ -69,6 +74,7 @@ class VerificationTest(TestCase):
 		self.request.REQUEST = self.queryDict
 		content = views.sync(self.request).content
 		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
 		actual = etree.tostring(objTree, pretty_print=True)
 		verificationXSD.assertValid(objTree)
 
@@ -82,6 +88,7 @@ class VerificationTest(TestCase):
 		self.request.REQUEST = self.queryDict
 		content = views.sync(self.request).content
 		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
 		actual = etree.tostring(objTree, pretty_print=True)
 		verificationXSD.assertValid(objTree)
 
@@ -94,6 +101,7 @@ class VerificationTest(TestCase):
 		self.request.REQUEST = self.queryDict
 		content = views.sync(self.request).content
 		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
 		actual = etree.tostring(objTree, pretty_print=True)
 		verificationXSD.assertValid(objTree)
 
@@ -152,6 +160,7 @@ class TapSyncTest(TestCase):
 
 		content = views.sync(self.request).content
 		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
 		actual = etree.tostring(objTree, pretty_print=True)
 		xsamsXSD.assertValid(objTree)
 
@@ -167,6 +176,7 @@ class TapSyncTest(TestCase):
 
 		content = views.sync(self.request).content
 		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
 		actual = etree.tostring(objTree, pretty_print=True)
 		xsamsXSD.assertValid(objTree)
 
@@ -181,6 +191,7 @@ class TapSyncTest(TestCase):
 		self.request.REQUEST = self.queryDict
 
 		objTree = objectify.fromstring(views.sync(self.request).content)
+		removeSelfSource(objTree)
 		actual = etree.tostring(objTree, pretty_print=True)
 		xsamsXSD.assertValid(objTree)
 
@@ -273,9 +284,6 @@ def suite():
 	tsuite = unittest.TestSuite()
 
 	tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]))
-
-	#from vamdctap import tests as vamdctests
-	#tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(vamdctests))
 
 	return tsuite
 
