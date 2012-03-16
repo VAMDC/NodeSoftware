@@ -38,7 +38,7 @@ def getSources(items):
 	sources = set()
 	for item in items:
 		table = item._meta.db_table
-		biblioId = getattr(item, 'id_%s_ds' % table).id_biblio
+		biblioId = getattr(item, 'id_%s_ds' % ('transition' if table == 'lineprof' else table)).id_biblio
 
 		try:
 			biblio = atmos.Biblios.objects.get(biblioid=biblioId)
@@ -108,7 +108,7 @@ def getMolecules(items):
 		if table == 'energy':
 			substance.States.add(State(id_substance, item.getCase(), item, item.qns()))
 
-		elif table == 'transition':
+		elif table == 'transition' or table == 'lineprof':
 			up = State(id_substance, item.getCase(), None, item.up())
 			substance.States.add(up)
 			item.up = up.id
@@ -122,10 +122,10 @@ def getMolecules(items):
 
 
 def getRows(table, q):
-	return getattr(models, table.capitalize()).objects.select_related().filter(makeQ(q, (table,)))
+	return getattr(models, table.capitalize()).objects.select_related().filter(makeQ(q, (('transition' if table == 'lineprof' else table),)))
 
 
-tableList = {'energy':'energy', 'wavenumber':'transition', 'einstein_coefficient':'transition', 'intensity':'lineprof'}
+tableList = {'energy':'energy', 'einstein_coefficient':'transition', 'intensity':'lineprof'}
 def getTable(q, default):
 	for k, c in enumerate(q.children):
 		if type(c) == Q:
@@ -159,7 +159,6 @@ def setupResults(tap):
 	table = getTable(q, None)
 	if table is None:
 		table = "transition"
-
 	rows = getRows(table, q)
 
 	if table == 'energy':

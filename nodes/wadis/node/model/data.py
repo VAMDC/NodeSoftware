@@ -42,13 +42,13 @@ class TransitionDataSource(DataSource):
 
 
 class LineprofDataSource(DataSource):
-	id_lineprof_ds = models.IntegerField(primary_key=True)
+	id_transition_ds = models.IntegerField(primary_key=True, db_column='id_lineprof_ds')
 	composition = models.CharField(max_length=7)
 	temperature = models.FloatField()
 	pressure = models.FloatField()
 
 	def __unicode__(self):
-		return u'ID:%s %s ' % (self.id_lineprof_ds, self.name)
+		return u'ID:%s %s ' % (self.id_transition_ds, self.name)
 
 	class Meta(DataSource.Meta):
 		abstract = True
@@ -87,6 +87,8 @@ class EnergyData(Data):
 		db_table = 'energy'
 
 class Data2(Data):
+	id_transition = None
+	id_transition_ds = None
 	wavenumber = None
 	wavenumber_err = None
 	einstein_coefficient = None
@@ -108,8 +110,7 @@ class Data2(Data):
 
 
 class TransitionData(Data2):
-	id_transition = models.BigIntegerField(primary_key=True)
-	id_transition_ds = None
+	id_transition = models.BigIntegerField(primary_key=True, db_column='id_transition')
 	wavenumber = models.FloatField(db_column='wave_number')
 	wavenumber_err = models.FloatField(db_column='wave_number_uc', null=True, blank=True)
 	einstein_coefficient = models.FloatField(db_column='einstein_coefficient', null=True, blank=True)
@@ -124,15 +125,14 @@ class TransitionData(Data2):
 
 
 class LineprofData(Data2):
-	id_lineprof = models.BigIntegerField(primary_key=True)
-	id_lineprof_ds = None
+	id_transition = models.BigIntegerField(primary_key=True, db_column='id_lineprof')
 	wavenumber = models.FloatField(db_column='wavelength')
 	wavenumber_err = models.FloatField(db_column='wavelength_err', null=True, blank=True)
 	intensity = models.FloatField(null=True, blank=True)
 	intensity_err = models.FloatField(null=True, blank=True)
 
 	def __unicode__(self):
-		return u'ID:%s %s %s =%s=%s=%s=%s=' % (self.id_lineprof, self.id_lineprof_ds, self.id_substance, self.wavenumber, self.wavenumber_err, self.intensity, self.intensity_err)
+		return u'ID:%s %s %s =%s=%s=%s=%s=' % (self.id_transition, self.id_transition_ds, self.id_substance, self.wavenumber, self.wavenumber_err, self.intensity, self.intensity_err)
 
 	class Meta(Data2.Meta):
 		abstract = True
@@ -140,7 +140,7 @@ class LineprofData(Data2):
 
 
 class LineprofHsA(models.Model):
-	id_lineprof = None
+	id_transition = None
 	id_substance_act = models.IntegerField()
 	halfwidth = models.FloatField(null=True, blank=True)
 	halfwidth_err = models.FloatField(null=True, blank=True)
@@ -152,7 +152,7 @@ class LineprofHsA(models.Model):
 	shift_td_err = models.FloatField(null=True, blank=True)
 
 	def __unicode__(self):
-		return u'ID:%s %s =%s=%s=%s=%s=' % (self.id_lineprof, self.id_substance_act, self.halfwidth, self.halfwidth_td, self.shift, self.shift_td)
+		return u'ID:%s %s =%s=%s=%s=%s=' % (self.id_transition, self.id_substance_act, self.halfwidth, self.halfwidth_td, self.shift, self.shift_td)
 
 	class Meta:
 		abstract = True
@@ -160,12 +160,12 @@ class LineprofHsA(models.Model):
 
 
 class LineprofPpA(models.Model):
-	id_lineprof_ds = None
+	id_transition_ds = None
 	substance_act = models.IntegerField(unique=True)
 	p_pressure = models.FloatField()
 
 	def __unicode__(self):
-		return u'ID:%s %s' % (self.id_lineprof_ds, self.substance_act)
+		return u'ID:%s %s' % (self.id_transition_ds, self.substance_act)
 
 	class Meta:
 		abstract = True
@@ -210,7 +210,7 @@ class TransitionDigestA(models.Model):
 
 
 class LineprofDigestA(models.Model):
-	id_lineprof_ds = None
+	id_transition_ds = None
 	id_substance = models.IntegerField()
 	wavenumber_min = models.FloatField(db_column='wavelength_min')
 	wavenumber_max = models.FloatField(db_column='wavelength_max')
@@ -222,7 +222,7 @@ class LineprofDigestA(models.Model):
 	pub_time = models.DateTimeField()
 
 	def __unicode__(self):
-		return u'ID:%s %s' % (self.id_lineprof_ds, self.id_substance)
+		return u'ID:%s %s' % (self.id_transition_ds, self.id_substance)
 
 	class Meta:
 		abstract = True
@@ -230,13 +230,13 @@ class LineprofDigestA(models.Model):
 
 
 class LineprofHsDigestA(models.Model):
-	id_lineprof_ds = None
+	id_transition_ds = None
 	id_substance = models.IntegerField()
 	id_substance_act = models.IntegerField()
 	flags = models.CharField(max_length=91)
 
 	def __unicode__(self):
-		return u'ID:%s %s %s=%s=' % (self.id_lineprof_ds, self.id_substance, self.id_substance_act, self.flags)
+		return u'ID:%s %s %s=%s=' % (self.id_transition_ds, self.id_substance, self.id_substance_act, self.flags)
 
 	class Meta:
 		abstract = True

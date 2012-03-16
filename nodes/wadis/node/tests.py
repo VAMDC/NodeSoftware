@@ -184,6 +184,21 @@ class TapSyncTest(TestCase):
 		self.assertEquals(expected, actual)
 
 
+	def testSyncSelectMoleculeH_17OD_W_Int(self):
+		settings.DEBUG = True
+		sql = "SELECT All WHERE ((Inchi='InChI=1S/H2O/h1H2/i1+1/hD'  AND RadTransWavenumber > 1234.23 AND RadTransWavenumber < 1244.24 AND RadTransProbabilityIdealisedIntensity < 1) AND MethodCategory = 'experiment')"
+		self.queryDict["QUERY"] = sql
+		self.request.REQUEST = self.queryDict
+
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
+		actual = etree.tostring(objTree, pretty_print=True)
+		xsamsXSD.assertValid(objTree)
+
+		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/H_17OD_W_Int.xml").read()), pretty_print=True)
+		self.assertEquals(expected, actual)
+
 	def testSyncSelectMoleculeInchiKey(self):
 		settings.DEBUG = True
 		sql = "SELECT All WHERE (InchiKey='RWSOTUBLDIXVET-IQRQJSDFSA-N'  AND RadTransWavenumber > 40 AND RadTransWavenumber < 45) OR (Inchi IN ('InChI=1S/H2O/h1H2') AND RadTransWavenumber > 1239.2185 AND RadTransWavenumber < 1239.2191)"

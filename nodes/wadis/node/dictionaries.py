@@ -213,7 +213,7 @@ radTransReturnables = {#
 	'RadTransLowerStateRef' : 'RadTran.low',
 	'RadTransProbabilityA': {'Value': 'RadTran.einstein_coefficient', 'Unit': u'1/s', 'Accuracy': 'RadTran.einstein_coefficient_err', 'AccuracyType': u'statistical', 'Method':'RadTran.id_transition_ds.getMethod()'},
 	#No cm2molec-1cm-1 or cm-1/(molecule×cm-2) units in XSAMS
-	'RadTransProbabilityIdealisedIntensity' : {'Value': 'RadTran.intensity', 'Comment': u'cm-1/(molecule×cm-2)', 'Unit':'undef', 'Accuracy': 'RadTran.intensity_err', 'AccuracyType': u'statistical', 'Method':'RadTran.id_transition_ds.getMethod()'},
+	'RadTransProbabilityIdealisedIntensity' : {'Value': 'RadTran.intensity', 'Comment': u'cm-1/(molecule*cm-2)', 'Unit': u'undef', 'Accuracy': 'RadTran.intensity_err', 'AccuracyType': u'statistical', 'Method':'RadTran.id_transition_ds.getMethod()'},
 	#'RadTransProbabilityKind' : '',
 	#'RadTransProbabilityLineStrength' : {},
 	#'RadTransProbabilityLog' : {},

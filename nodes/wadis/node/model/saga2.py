@@ -73,7 +73,7 @@ class LineprofDs(LineprofDataSource):
 
 
 class Lineprof(LineprofData):
-	id_lineprof_ds = models.ForeignKey(LineprofDs, db_column='id_lineprof_ds')
+	id_transition_ds = models.ForeignKey(LineprofDs, db_column='id_lineprof_ds')
 	ident_bt2_up_j = models.IntegerField(null=True, blank=True)
 	ident_bt2_up_s = models.IntegerField(null=True, blank=True)
 	ident_bt2_up_n = models.IntegerField(null=True, blank=True)
@@ -105,14 +105,14 @@ class Lineprof(LineprofData):
 		pass
 
 class LineprofHs(LineprofHsA):
-	id_lineprof = models.ForeignKey(Lineprof, db_column='id_lineprof')
+	id_transition = models.ForeignKey(Lineprof, db_column='id_lineprof')
 
 	class Meta(LineprofHsA.Meta):
 		pass
 
 
 class LineprofPp(LineprofPpA):
-	id_lineprof_ds = models.ForeignKey(LineprofDs, db_column='id_lineprof_ds')
+	id_transition_ds = models.ForeignKey(LineprofDs, db_column='id_lineprof_ds')
 
 	class Meta(LineprofPpA.Meta):
 		pass
@@ -136,14 +136,14 @@ class TransitionDigest(TransitionDigestA):
 
 
 class LineprofDigest(LineprofDigestA):
-	id_lineprof_ds = models.ForeignKey(LineprofDs, db_column='id_lineprof_ds')
+	id_transition_ds = models.ForeignKey(LineprofDs, db_column='id_lineprof_ds')
 
 	class Meta(LineprofDigestA.Meta):
 		pass
 
 
 class LineprofHsDigestA(LineprofHsDigestA):
-	id_lineprof_ds = models.ForeignKey(LineprofDigest, db_column='id_lineprof_ds')
+	id_transition_ds = models.ForeignKey(LineprofDigest, db_column='id_transition_ds')
 
 	class Meta(LineprofHsDigestA.Meta):
 		pass
