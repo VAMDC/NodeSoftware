@@ -107,9 +107,8 @@ def GetValue(name, **kwargs):
     except Exception, e:
         # this catches the case where the dict-value is a string or mistyped.
         #log.debug('Exception in generators.py: GetValue()')
-        if type(name) != unicode:
-            print 'Evaluation failure: ' + name + ' in ' + objname
-            print obj
+        print 'Evaluation failure: ' + name + ' in ' + objname
+        print obj
         value = name
 
     if value == None:
@@ -191,8 +190,7 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
 
     for k, v in extraAttr.items():
-        if v:
-            result.append( ' %s="%s"'% (k, v) )
+        result.append( ' %s="%s"'% (k, v) )
 
     result.append( '>' )
     if comment:
@@ -271,9 +269,9 @@ def makeAccuracy(keyword, G):
     result = []
     for i,ac in enumerate( acc_list ):
         result.append('<Accuracy')
-        if len(acc_conf) > i and acc_conf[i]: result.append(' confidenceInterval="%s"' % acc_conf[i])
-        if len(acc_typ) > i and acc_typ[i]: result.append(' type="%s"' % acc_typ[i])
-        if len(acc_rel) > i and acc_rel[i]: result.append(' relative="%s"' % acc_rel[i])
+        if acc_conf[i]: result.append( ' confidenceInterval="%s"'%acc_conf[i] )
+        if acc_typ[i]: result.append( ' type="%s"'%acc_typ[i] )
+        if acc_rel[i]: result.append( ' relative="true"')
         result.append( '>%s</Accuracy>'%ac )
 
     return ''.join(result)
@@ -316,8 +314,8 @@ def makeEvaluation(keyword, G):
     result = []
     for i,ev in enumerate( makeiter(evs) ):
         result.append('<Evaluation')
-        if len(ev_meth) > i and ev_meth[i]: result.append(' methodRef="%s"' % ev_meth[i])
-        if len(ev_reco) > i and ev_reco[i]: result.append(' recommended="%s"' % ev_reco[i])
+        if ev_meth[i]: result.append( ' methodRef="%s"'%ev_meth[i] )
+        if ev_reco[i]: result.append( ' recommended="true"' )
         result.append( '>' )
         result.append( makeSourceRefs(ev_refs) )
         if ev_comm: result.append('<Comments>%s</Comments>'%ev_comm)
@@ -418,11 +416,7 @@ def XsamsSources(Sources, tap):
     """
 
     yield '<Sources>'
-    try:
-        if not settings.TEST:
-            raise AttributeError
-    except AttributeError:
-        yield SelfSource(tap)
+    yield SelfSource(tap)
 
     if not Sources:
         yield '</Sources>'
@@ -933,7 +927,7 @@ def makeCaseQNs(G):
             makeOptionalTag('case:parity', 'MoleculeQNparity', G),
             makeOptionalTag('case:kronigParity', 'MoleculeQNkronigParity', G),
             makeOptionalTag('case:asSym', 'MoleculeQNasSym', G),
-            "</case:QNs>",
+            "</case:QNs",
             "</Case>"])
     return "".join(result)
 
@@ -942,7 +936,7 @@ def XsamsMSBuild(MoleculeState):
     Generator for MolecularState tag
     """
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    yield makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":"S%s-%s" % (G('NodeID'), G('MoleculeStateID')),
+    makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":'"S%s-%s"' % (G('NodeID'), G('MoleculeStateID')),
                                                                      "fullyAssigned":G("MoleculeStateFullyAssigned")})
     yield makeOptionalTag("Description","MoleculeStateDescription",G)
 
@@ -1056,14 +1050,14 @@ def XsamsSolids(Solids):
             yield ret
             continue
         G = lambda name: GetValue(name, Solid=Solid)
-        yield makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
+        makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
         if hasattr(Solid, "Layers"):
             for Layer in makeiter(Solid.Layers):
                 GL = lambda name: GetValue(name, Layer=Layer)
                 yield "<Layer>"
                 yield "<MaterialName>%s</MaterialName>" % GL("SolidLayerName")
                 if hasattr(Solid, "Components"):
-                    yield makePrimaryType("MaterialComposition", "SolidLayerComponent")
+                    makePrimaryType("MaterialComposition", "SolidLayerComponent")
                     for Component in makeiter(Layer.Components):
                         GLC = lambda name: GetValue(name, Component=Component)
                         yield "<ChemicalElement>"
