@@ -190,7 +190,8 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
 
     for k, v in extraAttr.items():
-        result.append( ' %s="%s"'% (k, v) )
+        if v:
+            result.append( ' %s="%s"'% (k, v) )
 
     result.append( '>' )
     if comment:
@@ -269,9 +270,9 @@ def makeAccuracy(keyword, G):
     result = []
     for i,ac in enumerate( acc_list ):
         result.append('<Accuracy')
-        if acc_conf[i]: result.append( ' confidenceInterval="%s"'%acc_conf[i] )
-        if acc_typ[i]: result.append( ' type="%s"'%acc_typ[i] )
-        if acc_rel[i]: result.append( ' relative="true"')
+        if len(acc_conf) > i and acc_conf[i]: result.append(' confidenceInterval="%s"' % acc_conf[i])
+        if len(acc_typ) > i and acc_typ[i]: result.append(' type="%s"' % acc_typ[i])
+        if len(acc_rel) > i and acc_rel[i]: result.append(' relative="%s"' % acc_rel[i])
         result.append( '>%s</Accuracy>'%ac )
 
     return ''.join(result)
@@ -927,7 +928,7 @@ def makeCaseQNs(G):
             makeOptionalTag('case:parity', 'MoleculeQNparity', G),
             makeOptionalTag('case:kronigParity', 'MoleculeQNkronigParity', G),
             makeOptionalTag('case:asSym', 'MoleculeQNasSym', G),
-            "</case:QNs",
+            "</case:QNs>",
             "</Case>"])
     return "".join(result)
 
@@ -936,7 +937,7 @@ def XsamsMSBuild(MoleculeState):
     Generator for MolecularState tag
     """
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":'"S%s-%s"' % (G('NodeID'), G('MoleculeStateID')),
+    yield makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":"S%s-%s" % (G('NodeID'), G('MoleculeStateID')),
                                                                      "fullyAssigned":G("MoleculeStateFullyAssigned")})
     yield makeOptionalTag("Description","MoleculeStateDescription",G)
 
