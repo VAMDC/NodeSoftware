@@ -188,6 +188,7 @@ def setupResults(tap):
 			substance.States = sorted(substance.States, key = lambda x: x.id)
 			stateCount += len(substance.States)
 
+	size = 0.0011 + sourceCount*0.0014 + moleculeCount*0.00065 + stateCount*0.0006 + transitionCount*0.00045
 
 	# Create the header with some useful info. The key names here are
 	# standardized and shouldn't be changed.
@@ -202,7 +203,7 @@ def setupResults(tap):
 		'COUNT-RADIATIVE': transitionCount,
 		#'COUNT-NONRADIATIVE',
 		'TRUNCATED': percentage, #the percentage that the returned data represent with respect to the total amount available for that query
-		#'APPROX-SIZE', #estimate uncompressed document size in megabytes
+		'APPROX-SIZE': '%.3f' % size, #estimate uncompressed document size in megabytes
 	}
 
 	print headerInfo
