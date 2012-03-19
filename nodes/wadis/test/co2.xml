@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 http://vamdc.org/xml/xsams/0.3" xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema">
+<!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent 100 percent of all available data at this node that
+   matched the query.
+-->
+	<Sources>
+		<Source sourceID="Bwadis-1267">
+			<Authors>
+				<Author>
+					<Name>Che-Chung Chou</Name>
+				</Author>
+				<Author>
+					<Name>Tyson Lin</Name>
+				</Author>
+				<Author>
+					<Name>Jow-Tsong Shy</Name>
+				</Author>
+			</Authors>
+			<Title>Wavenumber Measurements of CO&lt;sub&gt;2&lt;/sub&gt; Transitions in 1.5-&amp;mu;m Atmospheric Window Using an External-Cavity Diode Laser</Title>
+			<Category>journal</Category>
+			<Year>2001</Year>
+			<SourceName>Journal of Molecular Spectroscopy</SourceName>
+			<Volume>205</Volume>
+			<PageBegin>122–127</PageBegin>
+			<PageEnd>122–127</PageEnd>
+			<ArticleNumber>1</ArticleNumber>
+			<DigitalObjectIdentifier>10.1006/jmsp.2000.8242</DigitalObjectIdentifier>
+		</Source>
+	</Sources>
+	<Methods>
+		<Method methodID="Mwadis-Theory">
+			<Category>theory</Category>
+			<Description>theory</Description>
+		</Method>
+		<Method methodID="Mwadis-Exp">
+			<Category>experiment</Category>
+			<Description>experiment</Description>
+		</Method>
+	</Methods>
+	<Species>
+		<Molecules>
+			<Molecule speciesID="Xwadis-CURLTUGMZLYLDI-UHFFFAOYSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>$CO_2$</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>CO2</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Carbon dioxide</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/CO2/c2-1-3</InChI>
+					<InChIKey>CURLTUGMZLYLDI-UHFFFAOYSA-N</InChIKey>
+					<StableMolecularProperties>
+						<MolecularWeight>
+							<Value units="amu">44.009</Value>
+						</MolecularWeight>
+					</StableMolecularProperties>
+					<Comment>CO2</Comment>
+				</MolecularChemicalSpecies>
+				<MolecularState stateID="Swadis-37-0.1.1.0.1.37.e">
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="ltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/ltcs">
+						<case:QNs>
+							<case:v1>0</case:v1>
+							<case:v2>1</case:v2>
+							<case:l2>1</case:l2>
+							<case:v3>0</case:v3>
+							<case:J>37</case:J>
+							<case:r name="1st">1</case:r>
+							<case:kronigParity>e</case:kronigParity>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="Swadis-37-3.1.1.1.1.36.e">
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="ltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/ltcs">
+						<case:QNs>
+							<case:v1>3</case:v1>
+							<case:v2>1</case:v2>
+							<case:l2>1</case:l2>
+							<case:v3>1</case:v3>
+							<case:J>36</case:J>
+							<case:r name="1st">1</case:r>
+							<case:kronigParity>e</case:kronigParity>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+			</Molecule>
+		</Molecules>
+	</Species>
+	<Processes>
+		<Radiative>
+			<RadiativeTransition id="Pwadis-3214409">
+				<SourceRef>Bwadis-1267</SourceRef>
+				<EnergyWavelength>
+					<Wavenumber methodRef="Mwadis-Exp">
+						<Value units="1/cm">6503.5735</Value>
+						<Accuracy type="statistical">0.0008</Accuracy>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>Swadis-37-3.1.1.1.1.36.e</UpperStateRef>
+				<LowerStateRef>Swadis-37-0.1.1.0.1.37.e</LowerStateRef>
+				<Probability/>
+			</RadiativeTransition>
+		</Radiative>
+	</Processes>
+</XSAMSData>

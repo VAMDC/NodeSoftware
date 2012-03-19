@@ -10,8 +10,7 @@ def makeQ(q, tuple):
 	if defaultFlag:
 		for field in defaultList:
 			q &= Q(**{field + '__' + defaultList[field][0]: defaultList[field][1]})
-	if tuple[0] != 'energy':
-		q &= Q(**{'id_%s_ds__composition__exact' % tuple[0]: 'Primary'})
+	q &= Q(**{'id_%s_ds__composition__exact' % tuple[0]: 'Primary'})
 	return q
 
 def formatQ(q, tuple, defaultFlag):

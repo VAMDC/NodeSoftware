@@ -121,8 +121,13 @@ def getMolecules(items):
 	return list(molecules)
 
 
-def getRows(table, q):
-	return getattr(models, table.capitalize()).objects.select_related().filter(makeQ(q, (('transition' if table == 'lineprof' else table),)))
+def getRows(database, table, q):
+	dbModule = getattr(models, database, None)
+	if dbModule:
+		tableObj = getattr(dbModule , table.capitalize())
+		return tableObj.objects.select_related().filter(makeQ(q, (('transition' if table == 'lineprof' else table),)))
+	else:
+		return []
 
 
 tableList = {'energy':'energy', 'einstein_coefficient':'transition', 'intensity':'lineprof'}
@@ -142,6 +147,24 @@ def getTable(q, default):
 							default = tableList[x]
 	return default
 
+def getDatabase(q, default):
+	for k, c in enumerate(q.children):
+		if type(c) == Q:
+			default = getDatabase(c, default)
+		else:
+			for i in [0, 1]:
+				if type(c[i]) == str:
+					x = c[i][:c[i].rfind('__')]
+					if x == 'id_substance':
+						substances = Substancecorr.objects.filter(c)
+						for substance in substances:
+							if default is not None:
+								if default != substance.database_name:
+									del q.children[k]
+							else:
+								default = substance.database_name
+	return default
+
 #------------------------------------------------------------
 # Main function 
 #------------------------------------------------------------
@@ -156,10 +179,14 @@ def setupResults(tap):
 		return {}
 	q = sql2Q(tap)
 
+	database = getDatabase(q, None)
+	if database is None:
+		database = "saga2"
+
 	table = getTable(q, None)
 	if table is None:
 		table = "transition"
-	rows = getRows(table, q)
+	rows = getRows(database, table, q)
 
 	if table == 'energy':
 		transitions = []

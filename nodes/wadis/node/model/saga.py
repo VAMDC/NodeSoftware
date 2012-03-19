@@ -4,10 +4,10 @@ from nodes.wadis.util import inchi
 
 
 class Substance(models.Model):
-	id_substance = models.IntegerField(db_column='ID_substance', primary_key=True) # Field name made lowercase.
-	type = models.CharField(max_length=8)
-	russian = models.CharField(max_length=64)
-	english = models.CharField(max_length=64)
+	id_substance = models.IntegerField(db_column = 'ID_substance', primary_key = True) # Field name made lowercase.
+	type = models.CharField(max_length = 8)
+	russian = models.CharField(max_length = 64)
+	english = models.CharField(max_length = 64)
 	weight = models.FloatField()
 
 
@@ -21,20 +21,21 @@ class Substance(models.Model):
 
 
 class Substancecorr(models.Model):
-	id_substance = models.IntegerField(db_column='ID_substance', primary_key=True) # Field name made lowercase.
-	plain_name = models.TextField(blank=True)
-	html_name = models.TextField(blank=True)
-	id_inchi = models.TextField(blank=True)
-	id_inchi_key = models.TextField(blank=True)
-	id_subst_main = models.IntegerField(db_column='ID_subst_main') # Field name made lowercase.
+	id_substance = models.IntegerField(db_column = 'ID_substance', primary_key = True) # Field name made lowercase.
+	plain_name = models.TextField(blank = True)
+	html_name = models.TextField(blank = True)
+	id_inchi = models.TextField(blank = True)
+	id_inchi_key = models.TextField(blank = True)
+	id_subst_main = models.IntegerField(db_column = 'ID_subst_main') # Field name made lowercase.
 	id_class_sp = models.IntegerField()
 	id_class_gs = models.IntegerField()
 	id_class_mt = models.IntegerField()
-	meta_vibr = models.CharField(max_length=120)
-	meta_rotat = models.CharField(max_length=120)
-	database_name = models.CharField(max_length=16, blank=True)
-	group_access = models.TextField(blank=True)
-	substance_act = models.CharField(max_length=1)
+	meta_vibr = models.CharField(max_length = 120)
+	meta_rotat = models.CharField(max_length = 120)
+	database_name = models.CharField(max_length = 16, blank = True)
+	group_access = models.TextField(blank = True)
+	substance_act = models.CharField(max_length = 1)
+
 
 	def getCharge(self):
 		patternObj = re.compile(r"/q([+-]\d+)")
@@ -45,9 +46,10 @@ class Substancecorr(models.Model):
 	def getLatexFormula(self):
 		# See http://www.physicsforums.com/misc/howtolatex.pdf
 		# See http://vamdc.org/documents/standards/dataModel/vamdcxsams/speciesMolecules.html#molecule
-		
+
 		if self.plain_name is None:
 			return None
+
 
 		def setSubSup(matchObj):
 			str = ''
@@ -61,6 +63,7 @@ class Substancecorr(models.Model):
 				if int(s) > 1:
 					str += "_" + ("{%s}" % s if len(s) > 1 else s)
 			return str
+
 
 		def setPlusMinus(matchObj):
 			str = ''
@@ -76,6 +79,7 @@ class Substancecorr(models.Model):
 					str += '-'
 			str = "^" + ("{%s}" % str if len(str) > 1 else str)
 			return str
+
 
 		latexFormula = self.plain_name
 		latexFormula = re.sub(r"(_(\d+))?([A-Z][a-z]*)(\d*)", setSubSup, latexFormula)
@@ -94,6 +98,7 @@ class Substancecorr(models.Model):
 		if chargeMatchObj is not None:
 			charge = chargeMatchObj.groups()
 
+
 		def setOnlyMainIsotope(matchObj):
 			str = ''
 			s = matchObj.group(3)
@@ -105,6 +110,7 @@ class Substancecorr(models.Model):
 			else:
 				str += "1"
 			return str
+
 
 		abcFormula = re.sub(r"(_(\d+))?([A-Z][a-z]*)(\d*)(_(\d*)(plus|minus))?", setOnlyMainIsotope, abcFormula)
 		atomsOfMolecule = re.split(r"([A-Z][a-z]*)", abcFormula)
@@ -137,6 +143,7 @@ class Substancecorr(models.Model):
 		db_table = u'SubstanceCorr'
 
 
+
 class SubstanceDict():
 	byId = {}
 	byInchi = {}
@@ -145,7 +152,7 @@ class SubstanceDict():
 	for substance in Substancecorr.objects.all():
 		if substance.id_inchi:
 			if not substance.id_inchi_key:
-				substance.id_inchi_key  = inchi.inchiToInchiKey(str(substance.id_inchi))
+				substance.id_inchi_key = inchi.inchiToInchiKey(str(substance.id_inchi))
 				substance.save()
 			if not substance.group_access:
 				byId[substance.id_substance] = substance
@@ -153,10 +160,11 @@ class SubstanceDict():
 				byInchiKey[substance.id_inchi_key] = substance
 
 
+
 class ClassGs(models.Model):
-	id_class_gs = models.IntegerField(primary_key=True)
-	name_eng = models.CharField(max_length=200)
-	name_rus = models.CharField(max_length=200)
+	id_class_gs = models.IntegerField(primary_key = True)
+	name_eng = models.CharField(max_length = 200)
+	name_rus = models.CharField(max_length = 200)
 
 
 	def __unicode__(self):
@@ -169,9 +177,9 @@ class ClassGs(models.Model):
 
 
 class ClassMt(models.Model):
-	id_class_mt = models.IntegerField(primary_key=True)
-	name_eng = models.CharField(max_length=200)
-	name_rus = models.CharField(max_length=200)
+	id_class_mt = models.IntegerField(primary_key = True)
+	name_eng = models.CharField(max_length = 200)
+	name_rus = models.CharField(max_length = 200)
 
 
 	def __unicode__(self):
@@ -184,9 +192,9 @@ class ClassMt(models.Model):
 
 
 class ClassSp(models.Model):
-	id_class_sp = models.IntegerField(primary_key=True)
-	name_eng = models.CharField(max_length=200)
-	name_rus = models.CharField(max_length=200)
+	id_class_sp = models.IntegerField(primary_key = True)
+	name_eng = models.CharField(max_length = 200)
+	name_rus = models.CharField(max_length = 200)
 
 
 	def __unicode__(self):

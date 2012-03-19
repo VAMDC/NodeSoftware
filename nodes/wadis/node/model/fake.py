@@ -5,6 +5,7 @@ class Method(object):
 		self.description = description
 
 
+
 def getMethods():
 	#See XSAMS-schema. Allowed values are: experiment, theory, ritz, recommended, evaluated, empirical, scalingLaw, semiempirical, compilation, derived, observed
 	methods = []
@@ -12,23 +13,46 @@ def getMethods():
 	methods.insert(1, Method("Exp", "experiment", "experiment"))
 	return methods
 
+
+
 def getCategoryTypeDict():
 	categoryTypeDict = {}
 	for type, method in enumerate(methods):
 		categoryTypeDict[method.category] = type
 	return categoryTypeDict
 
+
 methods = getMethods()
 categoryTypeDict = getCategoryTypeDict()
 
+def toStr(item):
+	strValue = 'X'
+	if item is not None:
+		if type(item) == list:
+			if type(item[0]) == str and len(item[0]) > 4 and item[0][-4:] == 'Mode':
+				return ''
+			value = item[1]
+		else:
+			value = item
 
-toStr = lambda item: 'X' if item[1] is None else str(item[1])
+		if value is not None:
+			if type(value) == list:
+				strValue = '.'.join(filter(bool, map(toStr, value)))
+			else:
+				strValue = str(value)
+				if strValue == '+':
+					strValue = '1'
+				elif strValue == '-':
+					strValue = '0'
+	return strValue
+
+
 def makeStateId(id_substance, qns):
-	return str(id_substance - 1000000)+ '-' + '.'.join(map(toStr, qns))
+	return str(id_substance - 1000000) + '-' + '.'.join(filter(bool, map(toStr, qns)))
+
 
 
 class State(object):
-
 	def __init__(self, id_substance, case, obj, *args, **kwargs):
 		self.case = case
 		self._wrappedObj = obj
@@ -38,6 +62,7 @@ class State(object):
 			self.id = makeStateId(id_substance, arg)
 			self.qns = dict(arg)
 		self.qns.update(kwargs)
+
 
 	def __getattr__(self, item):
 		if item in self.__dict__:
@@ -55,11 +80,14 @@ class State(object):
 		else:
 			return None
 
+
 	def __eq__(self, other):
 		return self.id == other.id
 
+
 	def __hash__(self):
 		return hash(self.id)
+
 
 	def __cmp__(self, other):
 		if self.id < other.id:

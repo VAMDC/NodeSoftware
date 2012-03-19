@@ -131,7 +131,7 @@ class TapSyncTest(TestCase):
 	def testGetSources(self):
 		settings.DEBUG = True
 
-		transitions = Transition.objects.select_related().filter(id_transition_ds=17)
+		transitions = saga2.Transition.objects.select_related().filter(id_transition_ds=17)
 		sources = getSources(transitions)
 		if len(sources) == 1:
 			self.assertEquals('2', sources[0].getArticleNumber())
@@ -150,6 +150,81 @@ class TapSyncTest(TestCase):
 			self.assertEquals(2005, sources[0].biblioyear)
 		else:
 			self.fail("Sources is empty")
+
+
+	def testSyncSelectSaga2_co2(self):
+		settings.DEBUG = True
+		sql = "SELECT All WHERE ((Inchi='InChI=1S/CO2/c2-1-3'  AND RadTransWavenumber > 6503.53 AND RadTransWavenumber < 6503.5736) AND MethodCategory = 'experiment')"
+		self.queryDict["QUERY"] = sql
+		self.request.REQUEST = self.queryDict
+
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
+		actual = etree.tostring(objTree, pretty_print=True)
+		xsamsXSD.assertValid(objTree)
+
+		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/co2.xml").read()), pretty_print=True)
+		self.assertEquals(expected, actual)
+
+
+	def testSyncSelectSaga2_n2o(self):
+		settings.DEBUG = True
+		sql = "SELECT All WHERE ((Inchi='InChI=1S/N2O/c1-2-3'  AND RadTransWavenumber > 0.838 AND RadTransWavenumber < 0.839) AND MethodCategory = 'experiment')"
+		self.queryDict["QUERY"] = sql
+		self.request.REQUEST = self.queryDict
+
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
+		actual = etree.tostring(objTree, pretty_print=True)
+		xsamsXSD.assertValid(objTree)
+
+		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/n2o.xml").read()), pretty_print=True)
+		self.assertEquals(expected, actual)
+
+
+	def testSyncSelectSaga2_c2h2(self):
+		settings.DEBUG = True
+		sql = "SELECT All WHERE ((Inchi='InChI=1S/C2H2/c1-2/h1-2H'  AND RadTransWavenumber > 615 AND RadTransWavenumber < 615.15) AND MethodCategory = 'experiment')"
+		self.queryDict["QUERY"] = sql
+		self.request.REQUEST = self.queryDict
+
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
+		actual = etree.tostring(objTree, pretty_print=True)
+		xsamsXSD.assertValid(objTree)
+
+		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/c2h2.xml").read()), pretty_print=True)
+		self.assertEquals(expected, actual)
+
+
+	def testSyncSelectSaga2_nh3(self):
+		settings.DEBUG = True
+		sql = "SELECT All WHERE ((Inchi='InChI=1S/H3N/h1H3'  AND RadTransWavenumber > 4300 AND RadTransWavenumber < 4301) AND MethodCategory = 'experiment')"
+		self.queryDict["QUERY"] = sql
+		self.request.REQUEST = self.queryDict
+
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		xsamsXSD.assertValid(objTree)
+
+
+	def testSyncSelectSaga2_co(self):
+		settings.DEBUG = True
+		sql = "SELECT All WHERE ((Inchi='InChI=1S/CO/c1-2'  AND RadTransWavenumber > 2135.3135 AND RadTransWavenumber < 2135.3137) AND MethodCategory = 'experiment')"
+		self.queryDict["QUERY"] = sql
+		self.request.REQUEST = self.queryDict
+
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
+		actual = etree.tostring(objTree, pretty_print=True)
+		xsamsXSD.assertValid(objTree)
+
+		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/co.xml").read()), pretty_print=True)
+		self.assertEquals(expected, actual)
 
 
 	def testSyncSelectMoleculeEnergy(self):
