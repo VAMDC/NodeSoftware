@@ -875,10 +875,10 @@ def makeCaseQNs(G):
             makeOptionalTag('case:S', 'MoleculeQNS', G)])
     result.extend(['<case:vi mode="%s">%s</case:vi>' %
                    (makeiter(G("MoleculeQNviMode"))[i],val)
-                   for val, i in enumerate(makeiter(G("MoleculeQNvi")))])
+                   for i, val in enumerate(makeiter(G("MoleculeQNvi")))])
     result.extend(['<case:li mode="%s">%s</case:li>' %
                    (makeiter(G("MoleculeQNliMode"))[i],val)
-                   for val, i in enumerate(makeiter(G("MoleculeQNli")))])
+                   for i, val in enumerate(makeiter(G("MoleculeQNli")))])
     result.extend([
             makeOptionalTag('case:v', 'MoleculeQNv', G),
             makeOptionalTag('case:l', 'MoleculeQNl', G),
