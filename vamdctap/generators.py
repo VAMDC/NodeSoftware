@@ -565,11 +565,17 @@ def makeShellType(tag, keyword, G):
         string += "<Symbol>%s</Symbol>" % symb
     string += "</OrbitalAngularMomentum>"
     string += "<NumberOfElectrons>%s</NumberOfElectrons>" % G("%sNumberOfElectrons" % keyword)
-    string += "<Parity>%s</Parity>" % G("%sParity" % keyword)
-    string += "<Kappa>%s</Kappa>" % G("%sKappa" % keyword)
-    string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % G("%sTotalAngularMomentum" % keyword) #TODO-this is not consistent with name OrbitalAngmom - check dict.
+    parity = G("%sParity" % keyword)
+    if (parity):
+      string += "<Parity>%s</Parity>" % parity
+    kappa = G("%sKappa" % keyword)
+    if kappa:
+      string += "<Kappa>%s</Kappa>" % kappa
+    totalAngularMomentum = G("%sTotalAngularMomentum" % keyword)
+    if totalAngularMomentum:
+      string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % totalAngularMomentum
     string += makeTermType("ShellTerm", "%sTerm" % keyword, G)
-    string += "</%s>" % keyword
+    string += "</%s>" % tag
     return string
 
 
@@ -584,7 +590,7 @@ def makeAtomStateComponents(AtomState):
 
     string = ""
     for Component in makeiter(AtomState.Components):
-        G = lambda name: GetValue(name, AtomState=AtomState)
+        G = lambda name: GetValue(name, Component=Component)
 
         string += "<Component>"
 
