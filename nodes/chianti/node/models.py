@@ -68,7 +68,7 @@ class Components(models.Model):
     lss   = models.IntegerField(db_column='lss')
 
     class Meta:
-        db_table=u'Components'
+        db_table=u'components'
 
 class Subshells(models.Model):
     id         = models.AutoField(primary_key=True)
@@ -78,7 +78,7 @@ class Subshells(models.Model):
     population = models.IntegerField(db_column='pop');
 
     class Meta:
-        db_table=u'Subshells'
+        db_table=u'subshells'
 
 
 
