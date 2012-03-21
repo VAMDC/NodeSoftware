@@ -46,7 +46,7 @@ RETURNABLES = {\
 
 'AtomStateTermLSS':'Component.lss',
 'AtomStateTermLSL':'Component.lsl',
-'AtomStateConfigurationLabel':'Component.label',
+#'AtomStateConfigurationLabel':'Component.label',
 'AtomStateElementCore':'Component.core',
 
 'AtomStateShellPrincipalQN':'AtomShell.n',
