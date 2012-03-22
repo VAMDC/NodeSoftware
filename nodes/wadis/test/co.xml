@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 http://vamdc.org/xml/xsams/0.3" xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema">
+<!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent 100 percent of all available data at this node that
+   matched the query.
+-->
+	<Sources>
+		<Source sourceID="Bwadis-1419">
+			<Authors>
+				<Author>
+					<Name>G. Guelachvili</Name>
+				</Author>
+			</Authors>
+			<Title>Absolute wavenumbers and molecular constants of the fundamental bands of &lt;sup&gt;12&lt;/sup&gt;C&lt;sup&gt;16&lt;/sup&gt;O, &lt;sup&gt;12&lt;/sup&gt;C&lt;sup&gt;17&lt;/sup&gt;O, &lt;sup&gt;12&lt;/sup&gt;C&lt;sup&gt;18&lt;/sup&gt;O, &lt;sup&gt;13&lt;/sup&gt;C&lt;sup&gt;16&lt;/sup&gt;O, &lt;sup&gt;13&lt;/sup&gt;C&lt;sup&gt;17&lt;/sup&gt;O, &lt;sup&gt;13&lt;/sup&gt;C&lt;sup&gt;18&lt;/sup&gt;O and of the 2-1 bands of &lt;sup&gt;12&lt;/sup&gt;C&lt;sup&gt;16&lt;/sup&gt;O and &lt;sup&gt;13&lt;/sup&gt;C&lt;sup&gt;16&lt;/sup&gt;O, around 5&amp;mu;m, by Fourier spectroscopy under vacuum</Title>
+			<Category>journal</Category>
+			<Year>1979</Year>
+			<SourceName>Journal of Molecular Spectroscopy</SourceName>
+			<Volume>75</Volume>
+			<PageBegin>251</PageBegin>
+			<PageEnd>269</PageEnd>
+			<ArticleNumber>2</ArticleNumber>
+			<DigitalObjectIdentifier>10.1016/0022-2852(79)90121-8</DigitalObjectIdentifier>
+			<Comments>&lt;p style="text-align: justify;"&gt;This paper is part of a more general work undertaken on the determination of  Dunham coefficients for all the isotopic species of CO. The absolute wavenumbers  of 466 CO lines obtained from absorption spectra of six different isotopic forms  in the 5 &amp;mu;m region are reported with an accuracy of the order of 3 MHz or less  for about 300 lines. Absolutely measured within 9 MHz, 43 lines of  &lt;sup&gt;13&lt;/sup&gt;C&lt;sup&gt;17&lt;/sup&gt;O (a molecule whose spectrum has not been observed in  the infrared before) are given together with 59 wavenumbers measured within 3.2  MHz of &lt;sup&gt;12&lt;/sup&gt;C&lt;sup&gt;17&lt;/sup&gt;O, also reported for the first time. The  wavenumbers extend from 1939 to 2271 cm&lt;sup&gt;&amp;minus;1&lt;/sup&gt;. More than 50 accurate  molecular constants are available allowing precise determination of pure  rotational transitions. These metrologic data should be helpful both for  microwave or infrared identification in astronomy, for instance, and for more  specific molecular purposes. The high self-consistency of these Fourier results  measured versus the Krypton line, and their consistency with all the other  accurate measurements suggest that the reported values be adopted as secondary  standards.&lt;/p&gt;</Comments>
+		</Source>
+	</Sources>
+	<Methods>
+		<Method methodID="Mwadis-Theory">
+			<Category>theory</Category>
+			<Description>theory</Description>
+		</Method>
+		<Method methodID="Mwadis-Exp">
+			<Category>experiment</Category>
+			<Description>experiment</Description>
+		</Method>
+	</Methods>
+	<Species>
+		<Molecules>
+			<Molecule speciesID="Xwadis-UGFAIRIUMAVXCW-UHFFFAOYSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>$CO$</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>CO</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Carbon oxide</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/CO/c1-2</InChI>
+					<InChIKey>UGFAIRIUMAVXCW-UHFFFAOYSA-N</InChIKey>
+					<StableMolecularProperties>
+						<MolecularWeight>
+							<Value units="amu">28.01</Value>
+						</MolecularWeight>
+					</StableMolecularProperties>
+					<Comment>CO</Comment>
+				</MolecularChemicalSpecies>
+				<MolecularState stateID="Swadis-36-1.4">
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="dcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/dcs">
+						<case:QNs>
+							<case:v>1</case:v>
+							<case:J>4</case:J>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="Swadis-36-2.5">
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="dcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/dcs">
+						<case:QNs>
+							<case:v>2</case:v>
+							<case:J>5</case:J>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+			</Molecule>
+		</Molecules>
+	</Species>
+	<Processes>
+		<Radiative>
+			<RadiativeTransition id="Pwadis-10763">
+				<SourceRef>Bwadis-1419</SourceRef>
+				<EnergyWavelength>
+					<Wavenumber methodRef="Mwadis-Exp">
+						<Value units="1/cm">2135.31363</Value>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>Swadis-36-2.5</UpperStateRef>
+				<LowerStateRef>Swadis-36-1.4</LowerStateRef>
+				<Probability/>
+			</RadiativeTransition>
+		</Radiative>
+	</Processes>
+</XSAMSData>
