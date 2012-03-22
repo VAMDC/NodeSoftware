@@ -33,16 +33,21 @@ log = logging.getLogger('vamdc.tap.generator')
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-def makeiter(obj, length=0):
+def makeiter(obj, n=0):
     """
-    Return an iterable, no matter what
+    Return an iterable of length n, no matter what.
+    None as imput should give [], unless n!=0, then [None,None,...]
     """
-    if not obj:
-        # we can specify the length of our default return list
-        return [None] * length
-    if not isiterable(obj):
-        return [obj]
-    return obj
+    if not obj and obj != 0:
+        # the empty case
+        return [None] * n
+    elif not isiterable(obj):
+        if n:
+            # return single value n times
+            return [obj] * n
+        else: return [obj]
+    else:
+        return obj
 
 def makeloop(keyword, G, *args):
     """
@@ -177,7 +182,8 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
     if method:
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
     for k, v in extraAttr.items():
-        result.append( ' %s="%s"'% (k, v) )
+        if v or v==0:
+            result.append( ' %s="%s"'% (k, v) )
 
     result.append( '>' )
     if comment:
@@ -866,10 +872,10 @@ def makeCaseQNs(G):
             makeOptionalTag('case:S', 'MoleculeQNS', G)])
     result.extend(['<case:vi mode="%s">%s</case:vi>' %
                    (makeiter(G("MoleculeQNviMode"))[i],val)
-                   for val, i in enumerate(makeiter(G("MoleculeQNvi")))])
+                   for i, val in enumerate(makeiter(G("MoleculeQNvi")))])
     result.extend(['<case:li mode="%s">%s</case:li>' %
                    (makeiter(G("MoleculeQNliMode"))[i],val)
-                   for val, i in enumerate(makeiter(G("MoleculeQNli")))])
+                   for i, val in enumerate(makeiter(G("MoleculeQNli")))])
     result.extend([
             makeOptionalTag('case:v', 'MoleculeQNv', G),
             makeOptionalTag('case:l', 'MoleculeQNl', G),
@@ -928,8 +934,9 @@ def XsamsMSBuild(MoleculeState):
     Generator for MolecularState tag
     """
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    yield makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('MoleculeStateID')),
-                                                                     "fullyAssigned":G("MoleculeStateFullyAssigned")})
+    yield makePrimaryType("MolecularState", "MoleculeState", G,
+            extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('MoleculeStateID')),
+                       "fullyAssigned":G("MoleculeStateFullyAssigned")})
     yield makeOptionalTag("Description","MoleculeStateDescription",G)
 
     yield '  <MolecularStateCharacterisation>'
