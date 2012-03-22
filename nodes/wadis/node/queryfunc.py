@@ -229,6 +229,7 @@ def setupResults(tap):
 		'APPROX-SIZE': '%.3f' % size, #estimate uncompressed document size in megabytes
 	}
 
+	LOG(headerInfo)
 	# Return the data. The keynames are standardized.
 	# see vamdctap->generators->Xsams()
 	return {#

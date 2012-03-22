@@ -9,6 +9,7 @@ from models import *
 from wadis.node import transforms
 #import nodes.wadis vs. wadis - no cache. See print sys.modules
 import wadis.node.queryfunc as queryfunc
+import wadis.util.test as test
 
 INCHI = import_module(settings.UTILPKG + ".inchi")
 DICTS = import_module(settings.NODEPKG + '.dictionaries')
@@ -29,7 +30,6 @@ except ImportError:
 from django.test.client import Client
 from vamdctap import views
 
-
 from other.verification.test import LocalResolver
 parser = etree.XMLParser()
 xsdPath = settings.BASE_PATH + "/other/verification/xsd/xsams/0.3/xsams.xsd"
@@ -39,7 +39,7 @@ xsamsXSD=etree.XMLSchema(etree.parse(xsdPath, parser=parser))
 verificationXSD = etree.XMLSchema(etree.parse(settings.BASE_PATH + "/other/verification/verification.xsd", parser = parser))
 
 from other.verification.check import XSAMS_NS
-from other.verification.check import Verification, RulesParser, Rule
+from other.verification.check import RulesParser, Rule
 
 
 testClient = Client()
@@ -54,6 +54,26 @@ def toDict(queryDict):
 def removeSelfSource(objTree):
 	for source in objTree.xpath('//xsams:Sources/xsams:Source[contains(./xsams:Comments[1]/text(), "This Source is a self-reference.")]', namespaces={"xsams":XSAMS_NS}):
 		source[0].getparent().remove(source)
+
+
+
+#pyprof2calltree -k -i vamdc_profile.log
+@test.profile('vamdc_profile.log')
+def getBigFile():
+	settings.DEBUG = True
+	query = 'LANG=VSS1&FORMAT=VERIFICATION&QUERY=SELECT All WHERE InChI =\'InChI=1S/H2O/h1H2/i/hD\''
+
+	request = HttpRequest()
+	request.META["SERVER_NAME"] = 'localhost'
+	request.META["SERVER_PORT"] = '80'
+	request.META["REMOTE_ADDR"] = '127.0.0.1'
+	request.META["QUERY_STRING"] = query
+
+	request.REQUEST = toDict(QueryDict(query))
+	return views.sync(request).content
+#getBigFile()
+
+
 
 class VerificationTest(TestCase):
 	prefixURL = "/tap/sync?"
