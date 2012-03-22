@@ -10,16 +10,13 @@
 import sys
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpRequest, HttpResponse
-from nodes.wadis.node.model import atmos
-from nodes.wadis.node.model.fake import State
-from nodes.wadis.node.model.saga import Substancecorr
-from nodes.wadis.node.model.saga import Substance
-from nodes.wadis.node.transforms import makeQ
-import vamdctap.views
+from wadis.node.model import atmos
+from wadis.node.model.fake import State
+from wadis.node.model.saga import Substancecorr
+from wadis.node.model.saga import Substance
+from wadis.node.transforms import makeQ
 from vamdctap.sqlparse import sql2Q
 import other.verification.http
-from string import lower
 from django.db.models import Q
 import cgi
 
@@ -232,7 +229,6 @@ def setupResults(tap):
 		'APPROX-SIZE': '%.3f' % size, #estimate uncompressed document size in megabytes
 	}
 
-	print headerInfo
 	# Return the data. The keynames are standardized.
 	# see vamdctap->generators->Xsams()
 	return {#
@@ -251,7 +247,6 @@ def setupResults(tap):
 		#'NonRadTrans':,
 	}
 
-
-
+rules = None #See tests.py
 def returnResults(tap):
-	return other.verification.http.getResult(tap)
+	return other.verification.http.getResult(tap, rules)

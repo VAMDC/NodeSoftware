@@ -3,8 +3,8 @@ import vamdctap
 from django.http import HttpRequest, HttpResponse
 from string import upper, lower
 
+def getResult(tap, rules = None):
 
-def getResult(tap):
 	if tap.format != 'verification':
 		emsg = 'Currently, only FORMATs VERIFICATION and XSAMS are supported.\n'
 		return vamdctap.views.tapServerError(status=400, errmsg=emsg)
@@ -32,7 +32,7 @@ def getResult(tap):
 	if action not in ('all', 'good', 'bad'):
 		action = 'all'
 
-	ver = check.Verification(xsamsResponse.content)
+	ver = check.Verification(xsamsResponse.content, rules)
 	ver.run(bad=None if action == 'all' else True if action == 'bad' else False)
 
 	response = HttpResponse(ver.getXML(), mimetype='text/xml')

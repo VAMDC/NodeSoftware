@@ -1,6 +1,6 @@
 import re
 from django.db import models
-from nodes.wadis.util import inchi
+from wadis.util import inchi
 
 
 class Substance(models.Model):

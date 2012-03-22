@@ -6,8 +6,9 @@ from lxml import objectify, etree
 from django.conf import settings
 #Warning! Forced DEBUG = FALSE in DjangoTestSuiteRunner->setup_test_environment->settings.DEBUG = False
 from models import *
-from nodes.wadis.node import transforms
-from nodes.wadis.node.queryfunc import getSources
+from wadis.node import transforms
+#import nodes.wadis vs. wadis - no cache. See print sys.modules
+import wadis.node.queryfunc as queryfunc
 
 INCHI = import_module(settings.UTILPKG + ".inchi")
 DICTS = import_module(settings.NODEPKG + '.dictionaries')
@@ -38,6 +39,7 @@ xsamsXSD=etree.XMLSchema(etree.parse(xsdPath, parser=parser))
 verificationXSD = etree.XMLSchema(etree.parse(settings.BASE_PATH + "/other/verification/verification.xsd", parser = parser))
 
 from other.verification.check import XSAMS_NS
+from other.verification.check import Verification, RulesParser, Rule
 
 
 testClient = Client()
@@ -66,6 +68,54 @@ class VerificationTest(TestCase):
 		self.request.META["QUERY_STRING"] = self.query
 
 		self.queryDict = toDict(QueryDict(self.query))
+
+
+	def testAddRules(self):
+		rulesParser = RulesParser()
+		rulesParser.addRules = {Rule(NODEID, "abs(nltcs:J + nltcs:Ka) <= 11"), Rule(NODEID, "abs(nltcs:Ka + nltcs:v1) <= pow(nltcs:v2, nltcs:Kc)")}
+		queryfunc.rules = rulesParser.getRules()
+
+		self.request.REQUEST = self.queryDict
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		verificationXSD.assertValid(objTree)
+
+		numberElements = objTree.xpath('//xsams:NumberOfVerificationByRule', namespaces={"xsams":XSAMS_NS})
+		self.assertEquals(5, len(numberElements))
+
+		numberElements = objTree.xpath('//xsams:NumberOfVerificationByRule[@name = "' + NODEID + 'RuleS01" or @name = "' + NODEID + 'RuleS02"]', namespaces={"xsams":XSAMS_NS})
+		self.assertEquals(2, len(numberElements))
+		for numberElement in numberElements:
+			self.assertEquals("1", numberElement.attrib["correct"])
+			self.assertEquals("2", numberElement.attrib["incorrect"])
+
+
+	def testUseOnlyRules(self):
+		rulesParser = RulesParser()
+		rulesParser.useRules = {Rule("nltcsRuleT02", None), Rule(NODEID, "abs(nltcs:J + nltcs:Ka) <= 11")}
+		queryfunc.rules = rulesParser.getRules()
+
+		self.request.REQUEST = self.queryDict
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		verificationXSD.assertValid(objTree)
+
+		numberElements = objTree.xpath('//xsams:NumberOfVerificationByRule', namespaces={"xsams":XSAMS_NS})
+		self.assertEquals(2, len(numberElements))
+
+
+	def testDelRules(self):
+		rulesParser = RulesParser()
+		rulesParser.delRules = {Rule("nltcsRuleS01", None), Rule("nltcsRuleT02", None)}
+		queryfunc.rules = rulesParser.getRules()
+
+		self.request.REQUEST = self.queryDict
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		verificationXSD.assertValid(objTree)
+
+		numberElements = objTree.xpath('//xsams:NumberOfVerificationByRule', namespaces={"xsams":XSAMS_NS})
+		self.assertEquals(1, len(numberElements))
 
 
 	def testALL(self):
@@ -109,6 +159,7 @@ class VerificationTest(TestCase):
 		self.assertEquals(expected, actual)
 
 	def tearDown(self):
+		queryfunc.rules = None
 		pass
 
 
@@ -132,7 +183,7 @@ class TapSyncTest(TestCase):
 		settings.DEBUG = True
 
 		transitions = saga2.Transition.objects.select_related().filter(id_transition_ds=17)
-		sources = getSources(transitions)
+		sources = queryfunc.getSources(transitions)
 		if len(sources) == 1:
 			self.assertEquals('2', sources[0].getArticleNumber())
 			authors = [u'L.S. Rothman', u'D. Jacquemart', u'A. Barbe', u'D.C. Benner', u'M. Birk', u'L.R. Brown', u'M. Carleer', u'C.Chackerian Jr', u'K. Chance', u'L.H. Coudert', u'V. Dana', u'V.M. Devi', u'J.-M. Flaud', u'R.R. Gamache', u'A.Goldman', u'J.-M. Hartmann', u'K.W. Jucks', u'A.G. Maki', u'etc']
@@ -273,6 +324,7 @@ class TapSyncTest(TestCase):
 
 		expected = etree.tostring(objectify.fromstring(open(settings.BASE_PATH + "/nodes/" + settings.NODENAME + "/test/H_17OD_W_Int.xml").read()), pretty_print=True)
 		self.assertEquals(expected, actual)
+
 
 	def testSyncSelectMoleculeInchiKey(self):
 		settings.DEBUG = True

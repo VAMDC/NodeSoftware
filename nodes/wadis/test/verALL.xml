@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 https://raw.github.com/aip/NodeSoftware/master/other/verification/verification.xsd" xmlns:cml="http://www.xml-cml.org/schema"
+<VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 https://raw.github.com/VAMDC/NodeSoftware/master/other/verification/verification.xsd" xmlns:cml="http://www.xml-cml.org/schema"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.3">
 <VerificationResult>
 	<NumberOfMolecularStates correct="2" incorrect="1" total="3" unidentified="0"/>

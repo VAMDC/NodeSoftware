@@ -14,7 +14,7 @@ ExampleNode dictionary definitions.
 # (singular). 'Source' will be one single instance of a matching
 # database object, from which we extract everything we need (if you
 # look at queryfuncs.py, you'll see 'Sources' being assigned)
-from nodes.wadis.node import transforms
+from wadis.node import transforms
 
 
 def dataTypeDict(physicalMagnitudes):

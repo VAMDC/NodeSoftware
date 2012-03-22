@@ -1,5 +1,5 @@
-import nodes.wadis.node.model.saga as saga
-from nodes.wadis.node.model.fake import categoryTypeDict
+import wadis.node.model.saga as saga
+from wadis.node.model.fake import categoryTypeDict
 from django.db.models import Q
 
 defaultList = {'id_substance':('exact','1000021')}
