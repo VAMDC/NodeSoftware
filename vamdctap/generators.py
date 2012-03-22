@@ -902,7 +902,7 @@ def makeCaseQNs(G):
         if rovibSymGroup:
             result.append('<case:rovibSym group="%s">%s</case:rovibSym>' % (rovibSymGroup,rovibSym))
         else:
-            result.append('<case:rovibSym>%s</case:rovibSym>' % rotSym)
+            result.append('<case:rovibSym>%s</case:rovibSym>' % rovibSym)
     result.extend([
             makeOptionalTag('case:I', 'MoleculeQNI', G, extraAttr={"nuclearSpinRef":G("MoleculeQNInuclSpin")}),
             makeOptionalTag('case:SpinComponentLabel', 'MoleculeQNSpinComponentLabel', G)])
@@ -919,7 +919,7 @@ def makeCaseQNs(G):
             makeOptionalTag('case:parity', 'MoleculeQNparity', G),
             makeOptionalTag('case:kronigParity', 'MoleculeQNkronigParity', G),
             makeOptionalTag('case:asSym', 'MoleculeQNasSym', G),
-            "</case:QNs",
+            "</case:QNs>",
             "</Case>"])
     return "".join(result)
 
@@ -928,7 +928,7 @@ def XsamsMSBuild(MoleculeState):
     Generator for MolecularState tag
     """
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    yield makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":'"S%s-%s"' % (G('NodeID'), G('MoleculeStateID')),
+    yield makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('MoleculeStateID')),
                                                                      "fullyAssigned":G("MoleculeStateFullyAssigned")})
     yield makeOptionalTag("Description","MoleculeStateDescription",G)
 
