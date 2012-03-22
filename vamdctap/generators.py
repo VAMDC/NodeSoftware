@@ -106,11 +106,11 @@ def GetValue(name, **kwargs):
                            # correctly as the query-set attribute
     except Exception, e:
         # this catches the case where the dict-value is a string or mistyped.
-        #log.debug('Exception in generators.py: GetValue()')        
+        #log.debug('Exception in generators.py: GetValue()')
         print 'Evaluation failure (%s:%s): %s in %s' % (e.__class__.__name__, str(e), name, objname)
         print obj
         value = name
-        
+
     if value == None:
         # the database returned NULL
         return ''
@@ -154,7 +154,7 @@ def makePartitionfunc(keyword, G):
     if not value:
         return ''
     temperature = G(keyword + 'T')
-    partitionfunc = G(keyword)        
+    partitionfunc = G(keyword)
     string = '<PartitionFunction><T units="K"><DataList>'
     string += " ".join(str(temp) for temp in temperature)
     string += '</DataList></T><Q><DataList>'
@@ -856,7 +856,7 @@ def makeCaseQNs(G):
             result.append('<case:elecSym group="%s">%s</case:elecSym>' % (elecSymGroup, elecSym))
         else:
             result.append('<case:elecSym>%s</case:elecSym>' % elecSym)
-    
+
     result.extend([
             makeOptionalTag('case:elecInv', 'MoleculeQNelecInv', G),
             makeOptionalTag('case:elecRefl', 'MoleculeQNelecRefl', G),
@@ -928,7 +928,7 @@ def XsamsMSBuild(MoleculeState):
     Generator for MolecularState tag
     """
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":'"S%s-%s"' % (G('NodeID'), G('MoleculeStateID')),
+    yield makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":'"S%s-%s"' % (G('NodeID'), G('MoleculeStateID')),
                                                                      "fullyAssigned":G("MoleculeStateFullyAssigned")})
     yield makeOptionalTag("Description","MoleculeStateDescription",G)
 
