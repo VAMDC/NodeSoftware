@@ -145,6 +145,12 @@ def StoichiometricFormula2MoleculeInchiKey(op, foo):
             stoich_formula_list.append(stoich_formula)
         molecules = Molecule.objects.filter(
                 stoichiometric_formula__in = stoich_formula_list)
+    #elif op == 'like':
+    #    stoich_formula = foo[0]
+    #    stoich_formula = stoich_formula.replace('"','').replace("'",'')\
+    #                                   .replace('%','')
+    #    molecules = Molecule.objects.filter(
+    #            stoichiometric_formula__contains = stoich_formula)
     else:
         print 'I only understand IN and = queries on StoichiometricFormula,'
         print ' but I got', op
