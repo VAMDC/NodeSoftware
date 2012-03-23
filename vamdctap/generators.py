@@ -33,16 +33,21 @@ log = logging.getLogger('vamdc.tap.generator')
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-def makeiter(obj, length=0):
+def makeiter(obj, n=0):
     """
-    Return an iterable, no matter what
+    Return an iterable of length n, no matter what.
+    None as imput should give [], unless n!=0, then [None,None,...]
     """
-    if not obj:
-        # we can specify the length of our default return list
-        return [None] * length
-    if not isiterable(obj):
-        return [obj]
-    return obj
+    if not obj and obj != 0:
+        # the empty case
+        return [None] * n
+    elif not isiterable(obj):
+        if n:
+            # return single value n times
+            return [obj] * n
+        else: return [obj]
+    else:
+        return obj
 
 def makeloop(keyword, G, *args):
     """
@@ -107,7 +112,7 @@ def GetValue(name, **kwargs):
     except Exception, e:
         # this catches the case where the dict-value is a string or mistyped.
         #log.debug('Exception in generators.py: GetValue()')
-        print 'Evaluation failure: ' + name + ' in ' + objname
+        print 'Evaluation failure (%s:%s): %s in %s' % (e.__class__.__name__, str(e), name, objname)
         print obj
         value = name
 
@@ -153,25 +158,13 @@ def makePartitionfunc(keyword, G):
     value = G(keyword)
     if not value:
         return ''
-
     temperature = G(keyword + 'T')
     partitionfunc = G(keyword)
-
-    string = '<PartitionFunction>\n'
-    string += '  <T units="K">\n'
-    string += '     <DataList>\n'
-    for temp in temperature:
-        string += ' %s' % temp
-    string += '\n     </DataList>\n'
-    string += '  </T>\n'
-    string += '  <Q>\n'
-    string += '     <DataList>\n'
-    for q in partitionfunc:
-        string += ' %s' % q
-    string += '\n     </DataList>\n'
-    string += '  </Q>\n'
-    string += '</PartitionFunction>\n'
-
+    string = '<PartitionFunction><T units="K"><DataList>'
+    string += " ".join(str(temp) for temp in temperature)
+    string += '</DataList></T><Q><DataList>'
+    string += " ".join(str(q) for q in partitionfunc)
+    string += '</DataList></Q></PartitionFunction>'
     return string
 
 def makePrimaryType(tagname, keyword, G, extraAttr={}):
@@ -185,12 +178,11 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
     comment = G("%sComment" % keyword)
     refs = G(keyword + 'Ref') # Sources
 
-    result = ["\n<%s" % tagname]
+    result = ["<%s" % tagname]
     if method:
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
-
     for k, v in extraAttr.items():
-        if v:
+        if v or v==0:
             result.append( ' %s="%s"'% (k, v) )
 
     result.append( '>' )
@@ -232,7 +224,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
 
     string = ''
     for i, val in enumerate(value):
-        string += '\n<%s' % tagname
+        string += '<%s' % tagname
         for k, v in extraAttr.items():
             if v[i]: string += ' %s="%s"'%(k,v[i])
         if name[i]:
@@ -243,7 +235,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
         if comment[i]:
             string += '<Comments>%s</Comments>' % escape('%s' % comment[i])
         string += makeSourceRefs(refs[i])
-        string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', value[i])
+        string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
         if acc[i]:
             string += '<Accuracy>%s</Accuracy>' % acc[i]
         string += '</%s>' % tagname
@@ -270,23 +262,22 @@ def makeAccuracy(keyword, G):
     result = []
     for i,ac in enumerate( acc_list ):
         result.append('<Accuracy')
-        if len(acc_conf) > i and acc_conf[i]: result.append(' confidenceInterval="%s"' % acc_conf[i])
-        if len(acc_typ) > i and acc_typ[i]: result.append(' type="%s"' % acc_typ[i])
-        if len(acc_rel) > i and acc_rel[i]: result.append(' relative="%s"' % acc_rel[i])
+        if acc_conf[i]: result.append( ' confidenceInterval="%s"'%acc_conf[i] )
+        if acc_typ[i]: result.append( ' type="%s"'%acc_typ[i] )
+        if acc_rel[i]: result.append( ' relative="true"')
         result.append( '>%s</Accuracy>'%ac )
 
     return ''.join(result)
 
 def makeDataSeriesAccuracyType(keyword, G):
     """
-    build the elenments for accuracy belonging
-    to a data series.
+    build the elements for accuracy belonging to a data series.
     """
     string = makePrimaryType("Accuracy", keyword + "Accuracy", G,
                     extraAttr={"type":G(keyword+"AccuracyType"),
                                "relative":G(keyword+"AccuracyRelative")})
     if G(keyword + "ErrorList"):
-        string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join([makeiter(G(keyword + "ErrorList"))]))
+        string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join(str(o) for o in makeiter(G(keyword + "ErrorList"))))
     elif G(keyword + "ErrorFile"):
         string += "<ErrorFile>%s</ErrorFile>" % G(keyword + "ErrorFile")
     elif G(keyword + "ErrorValue"):
@@ -309,13 +300,12 @@ def makeEvaluation(keyword, G):
     nevs = len(ev_list)
     ev_meth = makeiter( G(keyword + 'EvalMethod'), nevs )
     ev_reco = makeiter( G(keyword + 'EvalRecommended'), nevs )
-    ev_refs = G(keyword + 'EvalRef', nevs)
-    ev_comm = G(keyword + 'EvalComment', nevs)
-
+    ev_refs = G(keyword + 'EvalRef')
+    ev_comm = G(keyword + 'EvalComment')
     result = []
     for i,ev in enumerate( makeiter(evs) ):
         result.append('<Evaluation')
-        if ev_meth[i]: result.append( ' methodRef="%s"'%ev_meth[i] )
+        if ev_meth[i]: result.append( ' methodRef="%s"' % ev_meth[i] )
         if ev_reco[i]: result.append( ' recommended="true"' )
         result.append( '>' )
         result.append( makeSourceRefs(ev_refs) )
@@ -344,7 +334,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     comment = G(keyword + 'Comment')
     refs = G(keyword + 'Ref')
 
-    result = ['\n<%s' % tagname]
+    result = ['<%s' % tagname]
     if method:
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
     for k, v in extraAttr.items():
@@ -400,7 +390,7 @@ def SelfSource(tap):
     The full URL is given in the tag UniformResourceIdentifier but you need
     to unescape ampersands and angle brackets to re-use it.
     Query was: %s
-    </Comments>"""%escape(tap.query))
+    </Comments>""" % escape(tap.query))
     result.append('<Year>%s</Year>'%now.year)
     result.append('<Category>database</Category>')
     result.append('<UniformResourceIdentifier>')
@@ -488,7 +478,7 @@ def XsamsEnvironments(Environments):
 
 def parityLabel(parity):
     """
-    XSAMS whats this as strings "odd" or "even", not numerical
+    XSAMS wants this as strings "odd" or "even", not numerical
 
     """
     try:
@@ -581,11 +571,17 @@ def makeShellType(tag, keyword, G):
         string += "<Symbol>%s</Symbol>" % symb
     string += "</OrbitalAngularMomentum>"
     string += "<NumberOfElectrons>%s</NumberOfElectrons>" % G("%sNumberOfElectrons" % keyword)
-    string += "<Parity>%s</Parity>" % G("%sParity" % keyword)
-    string += "<Kappa>%s</Kappa>" % G("%sKappa" % keyword)
-    string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % G("%sTotalAngularMomentum" % keyword)
+    parity = G("%sParity" % keyword)
+    if (parity):
+      string += "<Parity>%s</Parity>" % parity
+    kappa = G("%sKappa" % keyword)
+    if kappa:
+      string += "<Kappa>%s</Kappa>" % kappa
+    totalAngularMomentum = G("%sTotalAngularMomentum" % keyword)
+    if totalAngularMomentum:
+      string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % totalAngularMomentum
     string += makeTermType("ShellTerm", "%sTerm" % keyword, G)
-    string += "</%s>" % keyword
+    string += "</%s>" % tag
     return string
 
 
@@ -600,7 +596,7 @@ def makeAtomStateComponents(AtomState):
 
     string = ""
     for Component in makeiter(AtomState.Components):
-        G = lambda name: GetValue(name, AtomState=AtomState)
+        G = lambda name: GetValue(name, Component=Component)
 
         string += "<Component>"
 
@@ -783,7 +779,7 @@ def makeNormalMode(G):
         map(makeiter, [vsrefs, x3s, y3s, z3s])
 
     if len(x3s)>0:
-        result.append( makePrimaryType('DisplacementVectors','MoleculeNormalModeDisplacementVectors',G, extraAttr=extraAttr) )
+        result.append( makePrimaryType('DisplacementVectors','MoleculeNormalModeDisplacementVectors',G, extraAttr=extraAttr) ) # TODO-should this be VectorS or Vector?
 
         for i,x3 in enumerate(x3s):
             result.append('<Vector')
@@ -866,6 +862,7 @@ def makeCaseQNs(G):
             result.append('<case:elecSym group="%s">%s</case:elecSym>' % (elecSymGroup, elecSym))
         else:
             result.append('<case:elecSym>%s</case:elecSym>' % elecSym)
+
     result.extend([
             makeOptionalTag('case:elecInv', 'MoleculeQNelecInv', G),
             makeOptionalTag('case:elecRefl', 'MoleculeQNelecRefl', G),
@@ -911,7 +908,7 @@ def makeCaseQNs(G):
         if rovibSymGroup:
             result.append('<case:rovibSym group="%s">%s</case:rovibSym>' % (rovibSymGroup,rovibSym))
         else:
-            result.append('<case:rovibSym>%s</case:rovibSym>' % rotSym)
+            result.append('<case:rovibSym>%s</case:rovibSym>' % rovibSym)
     result.extend([
             makeOptionalTag('case:I', 'MoleculeQNI', G, extraAttr={"nuclearSpinRef":G("MoleculeQNInuclSpin")}),
             makeOptionalTag('case:SpinComponentLabel', 'MoleculeQNSpinComponentLabel', G)])
@@ -920,7 +917,7 @@ def makeCaseQNs(G):
                    for i, val in enumerate(makeiter(G("MoleculeQNFj")))])
     result.extend([
             makeOptionalTag('case:F1', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF1nuclSpin")}),
-            makeOptionalTag('case:F2', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF2nuclSpin")}),
+            makeOptionalTag('case:F2', 'MoleculeQNF2', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF2nuclSpin")}),
             makeOptionalTag('case:F', 'MoleculeQNF', G, extraAttr={"nuclearSpinRef":G("MoleculeQNFnuclSpin")})])
     result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("MoleculeQNrName"))[i],val)
                    for i,val in enumerate(makeiter(G("MoleculeQNr")))])
@@ -937,8 +934,9 @@ def XsamsMSBuild(MoleculeState):
     Generator for MolecularState tag
     """
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    yield makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":"S%s-%s" % (G('NodeID'), G('MoleculeStateID')),
-                                                                     "fullyAssigned":G("MoleculeStateFullyAssigned")})
+    yield makePrimaryType("MolecularState", "MoleculeState", G,
+            extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('MoleculeStateID')),
+                       "fullyAssigned":G("MoleculeStateFullyAssigned")})
     yield makeOptionalTag("Description","MoleculeStateDescription",G)
 
     yield '  <MolecularStateCharacterisation>'
@@ -1138,7 +1136,7 @@ def makeBroadeningType(G, name='Natural'):
     s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
     s += lsparams
     s += '</Lineshape>'
-    s += '</Broadening>\n'
+    s += '</Broadening>'
     return s
 
 def XsamsRadTranBroadening(G):
@@ -1157,7 +1155,6 @@ def XsamsRadTranBroadening(G):
         else:
             s.append( makeBroadeningType(G, name=broadening) )
     return ''.join(s)
-
 
 
 
@@ -1292,7 +1289,7 @@ def makeDataSeriesType(tagname, keyword, G):
 
     dlist = makeiter(G("%s" % keyword))
     if dlist:
-        result.append("<DataList count='%s'>%s</DataList>" % (G("%sN" % keyword), " ".join(dlist)))
+        result.append("<DataList count='%s'>%s</DataList>" % (G("%sN" % keyword), " ".join(str(d) for d in dlist)))
 
     csec = G("%sLinearA0" % keyword) and G("%sLinearA1" % keyword)
     if csec:
@@ -1310,7 +1307,7 @@ def makeDataSeriesType(tagname, keyword, G):
         result.append("<DataFile>%s</DataFile>" % dfile)
     elist = makeiter(G("%sErrorList" % keyword))
     if elist:
-        result.append("<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), " ".join(elist)))
+        result.append("<ErrorList n='%s' units='%s'>%s</ErrorList>" % (G("%sErrorListN" % keyword), G("%sErrorListUnits" % keyword), " ".join(str(e) for e in elist)))
     err = G("%sError" % keyword)
     if err:
         result.append("<Error>%s</Error>" % err)
