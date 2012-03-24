@@ -5,8 +5,10 @@ RETURNABLES={\
 'XSAMSVersion': '0.3',
 #'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/'\
 #                  'release-0.2/xsams.xsd',
+#'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/'\
+#                  'release-0.3/xsams.xsd',
 'SchemaLocation': '/Users/christian/research/VAMDC/XSAMS/'\
-                  'release-0.3/xsams.xsd',
+                  'vamdc-working/xsams.xsd',
 
 'SourceID': 'Source.refID',
 'SourceAuthorName': 'Source.author_list()',
@@ -57,13 +59,18 @@ RETURNABLES={\
 'MoleculeStateEnergyUnit': '1/cm',
 'MoleculeStateEnergyOrigin': 'Zero-point energy',
 'MoleculeStateTotalStatisticalWeight': 'MoleculeState.g',
-'MoleculeStateQuantumNumbers': 'MoleculeState',    # use the an XML() method
+'MoleculeStateQuantumNumbers': 'MoleculeState',    # use the XML() method
+
+'MoleculeBasisStates': 'Molecule.BasisStates',   # XXX YYY
+'BasisState': 'BasisState',   # XXX YYY
+'BasisStateID': 'MoleculeState.id',   # XXX YYY
 
 'MoleculeQnStateID': 'Qns.state',
-'MoleculeQnCase': 'Qns.case',      # e.g. 'dcs', 'ltcs', ...
-'MoleculeQnLabel': 'Qns.qn_name',    # e.g. 'J', 'asSym', ...
-'MoleculeQnValue': 'Qns.qn_val',
-'MoleculeQnAttribute': 'Qns.qn_attr',
+'MoleculeQnCase': 'MoleculeState.Qns.case',      # e.g. 'dcs', 'ltcs', ...
+'MoleculeQnLabel': 'MoleculeState.Qns.qn_name',    # e.g. 'J', 'asSym', ...
+'MoleculeQnValue': 'MoleculeState.Qns.qn_val',
+'MoleculeQnAttribute': 'MoleculeState.Qns.qn_attr',
+'MoleculeQNElecStateLabel': 'MoleculeState.Qns.ElecStateLabel',
 'MoleculeQnXML': 'Qns.xml',
 
 'EnvironmentID': 'Environment.id',

@@ -112,8 +112,8 @@ def GetValue(name, **kwargs):
     except Exception, e:
         # this catches the case where the dict-value is a string or mistyped.
         #log.debug('Exception in generators.py: GetValue()')
-        print 'Evaluation failure (%s:%s): %s in %s' % (e.__class__.__name__, str(e), name, objname)
-        print obj
+        #print 'Evaluation failure (%s:%s): %s in %s' % (e.__class__.__name__, str(e), name, objname)
+        #print obj
         value = name
 
     if value == None:
@@ -1009,6 +1009,22 @@ def XsamsMSBuild(MoleculeState):
 
     yield '</MolecularState>'
 
+def XsamsBSBuild(MoleculeState):
+    G = lambda name: GetValue(name, MoleculeState=MoleculeState)
+    cont, ret = checkXML(MoleculeState)
+    if cont:
+        yield ret
+    else:
+        yield makePrimaryType("BasisState", "BasisState", G,
+            extraAttr={"stateID":'S%s-%s' % (G('NodeID'),
+                                             G('BasisStateID')),})
+        cont, ret = checkXML(G("BasisStateQuantumNumbers"))
+        if cont:
+            yield ret
+        else:
+            yield makeCaseQNs(G)
+        yield '</BasisState>'
+                
 def XsamsMolecules(Molecules):
     """
     Generator for Molecules tag
@@ -1021,11 +1037,19 @@ def XsamsMolecules(Molecules):
             yield ret
             continue
         G = lambda name: GetValue(name, Molecule=Molecule)
-        yield '<Molecule speciesID="X%s-%s">\n' % (NODEID,G("MoleculeSpeciesID"))
+        yield '<Molecule speciesID="X%s-%s">\n' % (NODEID,
+                                                   G("MoleculeSpeciesID"))
 
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS
+
+        if hasattr(Molecule, 'BasisStates'):
+            yield makePrimaryType('BasisStates', 'BasisStates', G)
+            for MoleculeState in Molecule.BasisStates:
+                for BS in XsamsBSBuild(MoleculeState):
+                    yield BS
+            yield '</BasisStates>\n'
 
         if not hasattr(Molecule,'States'):
             Molecule.States = []
