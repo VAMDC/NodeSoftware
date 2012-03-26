@@ -18,7 +18,8 @@ RETURNABLES = {\
 #'MethodCategory':'Method.category',
                            
 'AtomStateID':'AtomState.id',
-
+'AtomInchi' : 'Atom.atomicion.inchi',
+'AtomInchiKey' : 'Atom.atomicion.inchikey',
 'AtomSymbol':'Atom.atomicion.isotope.chemicalelement.elementsymbol',
 'AtomSpeciesID':'Atom.atomicion.id',
 'AtomNuclearCharge':'Atom.atomicion.isotope.chemicalelement.nuclearcharge',
@@ -85,7 +86,7 @@ RETURNABLES = {\
 
 RESTRICTABLES = {\
 'RadTransWavelength':'wavelength',
-'AtomIonCharge' : 'ioncharge',
+'IonCharge' : 'ioncharge',
 'AtomNuclearCharge' : 'nuclearcharge',
 'AtomSymbol' : 'elementsymbol',
 }

@@ -33,16 +33,21 @@ log = logging.getLogger('vamdc.tap.generator')
 # Helper function to test if an object is a list or tuple
 isiterable = lambda obj: hasattr(obj, '__iter__')
 
-def makeiter(obj, length=0):
+def makeiter(obj, n=0):
     """
-    Return an iterable, no matter what
+    Return an iterable of length n, no matter what.
+    None as imput should give [], unless n!=0, then [None,None,...]
     """
-    if not obj:
-        # we can specify the length of our default return list
-        return [None] * length
-    if not isiterable(obj):
-        return [obj]
-    return obj
+    if not obj and obj != 0:
+        # the empty case
+        return [None] * n
+    elif not isiterable(obj):
+        if n:
+            # return single value n times
+            return [obj] * n
+        else: return [obj]
+    else:
+        return obj
 
 def makeloop(keyword, G, *args):
     """
@@ -106,11 +111,11 @@ def GetValue(name, **kwargs):
                            # correctly as the query-set attribute
     except Exception, e:
         # this catches the case where the dict-value is a string or mistyped.
-        #log.debug('Exception in generators.py: GetValue()')        
-        print 'Evaluation failure (%s:%s): %s in %s' % (e.__class__.__name__, str(e), name, objname)
-        print obj
+        #log.debug('Exception in generators.py: GetValue()')
+        #print 'Evaluation failure (%s:%s): %s in %s' % (e.__class__.__name__, str(e), name, objname)
+        #print obj
         value = name
-        
+
     if value == None:
         # the database returned NULL
         return ''
@@ -154,7 +159,7 @@ def makePartitionfunc(keyword, G):
     if not value:
         return ''
     temperature = G(keyword + 'T')
-    partitionfunc = G(keyword)        
+    partitionfunc = G(keyword)
     string = '<PartitionFunction><T units="K"><DataList>'
     string += " ".join(str(temp) for temp in temperature)
     string += '</DataList></T><Q><DataList>'
@@ -177,7 +182,8 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
     if method:
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
     for k, v in extraAttr.items():
-        result.append( ' %s="%s"'% (k, v) )
+        if v or v==0:
+            result.append( ' %s="%s"'% (k, v) )
 
     result.append( '>' )
     if comment:
@@ -565,11 +571,17 @@ def makeShellType(tag, keyword, G):
         string += "<Symbol>%s</Symbol>" % symb
     string += "</OrbitalAngularMomentum>"
     string += "<NumberOfElectrons>%s</NumberOfElectrons>" % G("%sNumberOfElectrons" % keyword)
-    string += "<Parity>%s</Parity>" % G("%sParity" % keyword)
-    string += "<Kappa>%s</Kappa>" % G("%sKappa" % keyword)
-    string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % G("%sTotalAngularMomentum" % keyword) #TODO-this is not consistent with name OrbitalAngmom - check dict.
+    parity = G("%sParity" % keyword)
+    if (parity):
+      string += "<Parity>%s</Parity>" % parity
+    kappa = G("%sKappa" % keyword)
+    if kappa:
+      string += "<Kappa>%s</Kappa>" % kappa
+    totalAngularMomentum = G("%sTotalAngularMomentum" % keyword)
+    if totalAngularMomentum:
+      string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % totalAngularMomentum
     string += makeTermType("ShellTerm", "%sTerm" % keyword, G)
-    string += "</%s>" % keyword
+    string += "</%s>" % tag
     return string
 
 
@@ -584,7 +596,7 @@ def makeAtomStateComponents(AtomState):
 
     string = ""
     for Component in makeiter(AtomState.Components):
-        G = lambda name: GetValue(name, AtomState=AtomState)
+        G = lambda name: GetValue(name, Component=Component)
 
         string += "<Component>"
 
@@ -851,7 +863,7 @@ def makeCaseQNs(G):
             result.append('<case:elecSym group="%s">%s</case:elecSym>' % (elecSymGroup, elecSym))
         else:
             result.append('<case:elecSym>%s</case:elecSym>' % elecSym)
-    
+
     result.extend([
             makeOptionalTag('case:elecInv', 'MoleculeQNelecInv', G),
             makeOptionalTag('case:elecRefl', 'MoleculeQNelecRefl', G),
@@ -861,10 +873,10 @@ def makeCaseQNs(G):
             makeOptionalTag('case:S', 'MoleculeQNS', G)])
     result.extend(['<case:vi mode="%s">%s</case:vi>' %
                    (makeiter(G("MoleculeQNviMode"))[i],val)
-                   for val, i in enumerate(makeiter(G("MoleculeQNvi")))])
+                   for i, val in enumerate(makeiter(G("MoleculeQNvi")))])
     result.extend(['<case:li mode="%s">%s</case:li>' %
                    (makeiter(G("MoleculeQNliMode"))[i],val)
-                   for val, i in enumerate(makeiter(G("MoleculeQNli")))])
+                   for i, val in enumerate(makeiter(G("MoleculeQNli")))])
     result.extend([
             makeOptionalTag('case:v', 'MoleculeQNv', G),
             makeOptionalTag('case:l', 'MoleculeQNl', G),
@@ -897,7 +909,7 @@ def makeCaseQNs(G):
         if rovibSymGroup:
             result.append('<case:rovibSym group="%s">%s</case:rovibSym>' % (rovibSymGroup,rovibSym))
         else:
-            result.append('<case:rovibSym>%s</case:rovibSym>' % rotSym)
+            result.append('<case:rovibSym>%s</case:rovibSym>' % rovibSym)
     result.extend([
             makeOptionalTag('case:I', 'MoleculeQNI', G, extraAttr={"nuclearSpinRef":G("MoleculeQNInuclSpin")}),
             makeOptionalTag('case:SpinComponentLabel', 'MoleculeQNSpinComponentLabel', G)])
@@ -914,7 +926,7 @@ def makeCaseQNs(G):
             makeOptionalTag('case:parity', 'MoleculeQNparity', G),
             makeOptionalTag('case:kronigParity', 'MoleculeQNkronigParity', G),
             makeOptionalTag('case:asSym', 'MoleculeQNasSym', G),
-            "</case:QNs",
+            "</case:QNs>",
             "</Case>"])
     return "".join(result)
 
@@ -923,8 +935,9 @@ def XsamsMSBuild(MoleculeState):
     Generator for MolecularState tag
     """
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    makePrimaryType("MolecularState", "MoleculeState", G, extraAttr={"stateID":'"S%s-%s"' % (G('NodeID'), G('MoleculeStateID')),
-                                                                     "fullyAssigned":G("MoleculeStateFullyAssigned")})
+    yield makePrimaryType("MolecularState", "MoleculeState", G,
+            extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('MoleculeStateID')),
+                       "fullyAssigned":G("MoleculeStateFullyAssigned")})
     yield makeOptionalTag("Description","MoleculeStateDescription",G)
 
     yield '  <MolecularStateCharacterisation>'
@@ -997,6 +1010,22 @@ def XsamsMSBuild(MoleculeState):
 
     yield '</MolecularState>'
 
+def XsamsBSBuild(MoleculeState):
+    G = lambda name: GetValue(name, MoleculeState=MoleculeState)
+    cont, ret = checkXML(MoleculeState)
+    if cont:
+        yield ret
+    else:
+        yield makePrimaryType("BasisState", "BasisState", G,
+            extraAttr={"stateID":'S%s-%s' % (G('NodeID'),
+                                             G('BasisStateID')),})
+        cont, ret = checkXML(G("BasisStateQuantumNumbers"))
+        if cont:
+            yield ret
+        else:
+            yield makeCaseQNs(G)
+        yield '</BasisState>'
+                
 def XsamsMolecules(Molecules):
     """
     Generator for Molecules tag
@@ -1009,11 +1038,19 @@ def XsamsMolecules(Molecules):
             yield ret
             continue
         G = lambda name: GetValue(name, Molecule=Molecule)
-        yield '<Molecule speciesID="X%s-%s">\n' % (NODEID,G("MoleculeSpeciesID"))
+        yield '<Molecule speciesID="X%s-%s">\n' % (NODEID,
+                                                   G("MoleculeSpeciesID"))
 
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS
+
+        if hasattr(Molecule, 'BasisStates'):
+            yield makePrimaryType('BasisStates', 'BasisStates', G)
+            for MoleculeState in Molecule.BasisStates:
+                for BS in XsamsBSBuild(MoleculeState):
+                    yield BS
+            yield '</BasisStates>\n'
 
         if not hasattr(Molecule,'States'):
             Molecule.States = []

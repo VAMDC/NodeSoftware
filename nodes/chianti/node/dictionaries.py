@@ -26,7 +26,7 @@ RESTRICTABLES = {\
 }
 
 RETURNABLES = {\
-'NodeID':'chianti', # Constant value
+'NodeID':u'chianti', # Constant value
 
 'MethodID':'Method.id',
 'MethodCategory':'Method.category',
@@ -38,27 +38,30 @@ RETURNABLES = {\
 'AtomInchi':'Atom.inchi',
 'AtomInchiKey':'Atom.inchikey',
 'AtomStateId':'AtomState.id',
-'AtomStateTermLSS':'AtomState.atomstates',
-'AtomStateTermLSL':'AtomState.atomstatel',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
 'AtomStateEnergy':'AtomState.energy',
 'AtomStateEnergyMethod':'AtomState.energyMethod',
 'AtomStateEnergyUnit':u'1/cm',
 'AtomStateDescription':'AtomState.atomstateconfigurationlabel',
-'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
 
-#'RadTransWavelength':'[RadTran.wavelengthexperimental, RadTran.wavelengththeoretical]',
+'AtomStateTermLSS':'Component.lss',
+'AtomStateTermLSL':'Component.lsl',
+#'AtomStateConfigurationLabel':'Component.label',
+'AtomStateElementCore':'Component.core',
+
+'AtomStateShellPrincipalQN':'AtomShell.n',
+'AtomStateShellOrbitalAngMom':'AtomShell.l',
+'AtomStateShellNumberOfElectrons':'AtomShell.population',
+
 'RadTransWavelength':'RadTran.allWavelengths()',
 'RadTransWavelengthMethod':'RadTran.allWavelengthMethods()',
 'RadTransWavelengthUnit':u'A', # Constant: Angstroms
 'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
 'RadTransProbabilityA':'RadTran.probabilitya',
 'RadTransProbabilityAUnit':u'1/s',
-'RadTransInitialStateRef':'RadTran.initialstateindex.id',
-'RadTransFinalStateRef':'RadTran.finalstateindex.id',
 'RadTransSpeciesRef':'RadTran.initialstateindex.species.id',
-'RadTransUpperStateRef':'RadTran.finalstateindex.id',
-'RadTransLowerStateRef':'RadTran.initialstateindex.id',
+'RadTransUpperStateRef':'RadTran.upperStateRef()',
+'RadTransLowerStateRef':'RadTran.lowerStateRef()',
 'RadTransID':'RadTran.id'
 }
 
