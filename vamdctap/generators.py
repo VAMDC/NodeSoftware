@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, traceback
+import sys
 from datetime import datetime
 from xml.sax.saxutils import escape
 
@@ -998,19 +998,19 @@ def XsamsMSBuild(MoleculeState):
         yield makeCaseQNs(G)
 
     # commented out at the moment, need to confer on names to use, and rework makeCaseQNs(). /SR
-    #if hasattr(MoleculeState, "StateExpansions"):
-    #    for StateExpansion in makeiter(MoleculeState.StateExpansions):
-    #        cont, ret = checkXML(StateExpansion)
-    #        if cont:
-    #            yield ret
-    #            continue
-    #        GE = lambda name: GetValue(name, StateExpansion=StateExpansion)
-    #        yield makePrimaryType("StateExpansion", "MoleculeStateExpansion", GE)
-    #        if hasattr(StateExpansion, "BasisStates"):
-    #            for BasisState in makeiter(StateExpansion.BasisStates):
-    #                GEB = lambda name: GetValue(name, BasisState=BasisState)
-    #                makeCaseQNs(GEB) # this needs to accept a different tag name too ...?
-    #        yield "</StateExpansion>"
+    if hasattr(MoleculeState, "Expansions"):
+        for Expansion in makeiter(MoleculeState.Expansions):
+            cont, ret = checkXML(Expansion)
+            if cont:
+                yield ret
+                continue
+            GE = lambda name: GetValue(name, Expansion=Expansion)
+            yield makePrimaryType("StateExpansion", "MoleculeStateExpansion", GE)
+            if hasattr(Expansion, "Coefficients"):
+                for Coefficient in makeiter(Expansion.Coefficients):
+                    GEC = lambda name: GetValue(name, Coefficient=Coefficient)
+                    yield "<Coeff stateRef=%s>%s</Coeff>" % (GEC("MoleculeStateExpansionCoeffStateRef"),GEC("MoleculeStateExpansionCoeff"))
+            yield "</StateExpansion>"
 
     yield '</MolecularState>'
 
