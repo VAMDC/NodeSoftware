@@ -1,4 +1,5 @@
-from ..node_common.models import *
+from vald.node_common.models import *
+#from ..node_common.models import *
 
 class State(Model):
     id = IntegerField(primary_key=True, db_index=True)
