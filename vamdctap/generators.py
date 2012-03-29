@@ -96,11 +96,10 @@ def GetValue(name, **kwargs):
     # whenever the right-hand-side is not a string, treat
     # it as if the node has prepared the thing beforehand
     # for example a list of constant strings
-    if type(name) != str:
+    if isinstance(name, basestring): # use instead of type(name)==str; also handles unicode
         return name
 
-
-    # now ew get the current object
+    # now we get the current object
     # from which to get the attributes.
     objname,obj = kwargs.popitem()
     exec('%s=obj'%objname)
