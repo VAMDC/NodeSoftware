@@ -96,7 +96,8 @@ def GetValue(name, **kwargs):
     # whenever the right-hand-side is not a string, treat
     # it as if the node has prepared the thing beforehand
     # for example a list of constant strings
-    if isinstance(name, basestring): # use instead of type(name)==str; also handles unicode
+    if not isinstance(name, basestring): # use instead of type(name)!=str; also handles unicode                
+        #print "string return:", name
         return name
 
     # now we get the current object
@@ -109,10 +110,10 @@ def GetValue(name, **kwargs):
         value = eval(name) # this works, if the dict-value is named
                            # correctly as the query-set attribute
     except Exception, e:
-        # this catches the case where the dict-value is a string or mistyped.
-        #log.debug('Exception in generators.py: GetValue()')
-        #print 'Evaluation failure (%s:%s): %s in %s' % (e.__class__.__name__, str(e), name, objname)
-        #print obj
+        # this catches the case where the dict-value is a string or mistyped.        
+        #err = 'ERROR GetValue() (%s:%s): %s in %s. Object: %s' % (e.__class__.__name__, str(e), name, objname, obj)
+        #print err
+        #log.debug(err)
         value = name
 
     if value == None:
