@@ -98,7 +98,7 @@ def GetValue(returnable_key, **kwargs):
     # it as if the node has prepared the thing beforehand
     # for example a list of constant strings
     #print kwargs
-    if not isinstance(getcode, basestring): # use instead of type(name)!=str; also handles unicode                
+    if not isinstance(getcode, basestring): # use instead of type(name)!=str; also handles unicode
         #print "string return:", getcode
         return getcode
 
@@ -112,7 +112,7 @@ def GetValue(returnable_key, **kwargs):
         value = eval(getcode) # this works, if the dict-value is named
                                # correctly as the query-set attribute
     except Exception, e:
-        # this catches the case where the dict-value is a string or mistyped.        
+        # this catches the case where the dict-value is a string or mistyped.
         #print obj.__dict__
         #print traceback.format_exc()
         #err = 'ERROR GetValue(%s,%s=<%s>): %s:%s {%s:%s}' % (returnable_key, objname, obj, e.__class__.__name__, str(e), returnable_key, getcode)
@@ -126,7 +126,6 @@ def GetValue(returnable_key, **kwargs):
     elif value == 0:
         if isinstance(value, float): return '0.0'
         else: return '0'
-    
     return value
 
 def makeOptionalTag(tagname, keyword, G, extraAttr={}):
@@ -725,7 +724,7 @@ def XsamsAtoms(Atoms):
 
             p, j, k, hfm, mqn = G('AtomStateParity'), G('AtomStateTotalAngMom'), \
                                 G('AtomStateKappa'), G('AtomStateHyperfineMomentum'), \
-                                G('AtomStateMagneticQuantumNumber')            
+                                G('AtomStateMagneticQuantumNumber')
 
             if p:
                 yield '<Parity>%s</Parity>' % parityLabel(p)
@@ -1029,7 +1028,7 @@ def XsamsBSBuild(MoleculeState):
         else:
             yield makeCaseQNs(G)
         yield '</BasisState>'
-                
+
 def XsamsMolecules(Molecules):
     """
     Generator for Molecules tag

@@ -50,6 +50,9 @@ class Transition(Model):
 
     wave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
 
+    # wavevac (calculated from energies, has separated wavewac_ref (same as energies))
+    # waveair + waveair_ref
+
     species = ForeignKey(Species, db_index=True)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
     einsteina = DecimalField(max_digits=20, decimal_places=3, db_index=True, null=True)
@@ -63,12 +66,14 @@ class Transition(Model):
 
     #srctag = ForeignKey(Reference, db_index=False)
 
+    #wavevac_ref
     wave_ref = ForeignKey(Reference, related_name='iswaveref_trans', db_index=False)
+    # change above to waveair_ref?
     loggf_ref = ForeignKey(Reference, related_name='isloggfref_trans', db_index=False)
     gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans', db_index=False)
     gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans', db_index=False)
     waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans', db_index=False)
-    
+
     wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False) # needed for population
     #loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
     #gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans', db_index=False)
@@ -91,7 +96,7 @@ class Transition(Model):
 
 # Don't calculate here, but directly using sql
 #    def getEinsteinA(self):
-#        "Calculate the einstein A"        
+#        "Calculate the einstein A"
 #        return (0.667025e16 * 10**self.loggf) / ((2 * self.upstate.j + 1.0) * self.wave**2)
 
     def __unicode__(self):
