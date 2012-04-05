@@ -319,6 +319,7 @@ RETURNABLES = dataTypeDict(RETURNABLES)
 # The left-hand side is standardized, the righ-hand size should
 # be defined in Django query-language style, where e.g. a search
 # for the Species.atomic field  would be written as species__atomic.
+from vamdctap.unitconv import *
 
 RESTRICTABLES = {#
 	#ONLY wadis in transforms.py
@@ -392,7 +393,7 @@ RESTRICTABLES = {#
 	#'RadTransProbabilityLog' : '',
 	#'RadTransProbabilityOscillatorStrength' : '',
 	#'RadTransProbabilityWeightedOscillatorStrength' : '',
-	#'RadTransWavelength' : '',
+	'RadTransWavelength': ('wavenumber',invcm2Angstr),
 	'RadTransWavenumber': 'wavenumber',
 	#'SourceCategory' : '',
 	#'SourceYear' : '',

@@ -90,6 +90,7 @@ class EnergyData(Data):
 	defining_tr_n = models.IntegerField(null = True, blank = True)
 
 
+
 	def qns(self):
 		return []
 
