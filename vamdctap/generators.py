@@ -77,44 +77,48 @@ def makeloop(keyword, G, *args):
                 olist[k].append("")
     return olist
 
-def GetValue(name, **kwargs):
+def GetValue(returnable_key, **kwargs):
     """
     the function that gets a value out of the query set, using the global name
     and the node-specific dictionary.
     """
-    #log.debug("getvalue, name : "+name)
+    #log.debug("getvalue, returnable_key : " + returnable_key)
     try:
-        name = RETURNABLES[name]
+        #obtain the RHS of the RETURNABLES dictionary
+        getcode = RETURNABLES[returnable_key]
     except Exception, e:
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
         #log.debug(e)
-        #print 'Not in dictionary: ' + name
+        #print 'Not in dictionary: ' + returnable_key
         return ''
 
     # whenever the right-hand-side is not a string, treat
     # it as if the node has prepared the thing beforehand
     # for example a list of constant strings
-    if type(name) != str:
-        return name
+    #print kwargs
+    if not isinstance(getcode, basestring): # use instead of type(name)!=str; also handles unicode
+        #print "string return:", getcode
+        return getcode
 
-
-    # now ew get the current object
+    # now we get the current object
     # from which to get the attributes.
-    objname,obj = kwargs.popitem()
-    exec('%s=obj'%objname)
+    objname, obj = kwargs.popitem()
+    exec('%s = obj' % objname)
     try:
         # here, the RHS of the RETURNABLES dict is executed.
         #log.debug(" try eval : " + name)
-        value = eval(name) # this works, if the dict-value is named
-                           # correctly as the query-set attribute
+        value = eval(getcode) # this works, if the dict-value is named
+                               # correctly as the query-set attribute
     except Exception, e:
         # this catches the case where the dict-value is a string or mistyped.
-        #log.debug('Exception in generators.py: GetValue()')
-        print 'Evaluation failure (%s:%s): %s in %s' % (e.__class__.__name__, str(e), name, objname)
-        print obj
-        value = name
+        #print obj.__dict__
+        #print traceback.format_exc()
+        #err = 'ERROR GetValue(%s,%s=<%s>): %s:%s {%s:%s}' % (returnable_key, objname, obj, e.__class__.__name__, str(e), returnable_key, getcode)
+        #print err
+        #log.debug(err)
+        value = getcode
 
     if value == None:
         # the database returned NULL
@@ -122,7 +126,6 @@ def GetValue(name, **kwargs):
     elif value == 0:
         if isinstance(value, float): return '0.0'
         else: return '0'
-
     return value
 
 def makeOptionalTag(tagname, keyword, G, extraAttr={}):
@@ -722,6 +725,7 @@ def XsamsAtoms(Atoms):
             p, j, k, hfm, mqn = G('AtomStateParity'), G('AtomStateTotalAngMom'), \
                                 G('AtomStateKappa'), G('AtomStateHyperfineMomentum'), \
                                 G('AtomStateMagneticQuantumNumber')
+
             if p:
                 yield '<Parity>%s</Parity>' % parityLabel(p)
             if j:
@@ -993,21 +997,37 @@ def XsamsMSBuild(MoleculeState):
         yield makeCaseQNs(G)
 
     # commented out at the moment, need to confer on names to use, and rework makeCaseQNs(). /SR
-    #if hasattr(MoleculeState, "StateExpansions"):
-    #    for StateExpansion in makeiter(MoleculeState.StateExpansions):
-    #        cont, ret = checkXML(StateExpansion)
-    #        if cont:
-    #            yield ret
-    #            continue
-    #        GE = lambda name: GetValue(name, StateExpansion=StateExpansion)
-    #        yield makePrimaryType("StateExpansion", "MoleculeStateExpansion", GE)
-    #        if hasattr(StateExpansion, "BasisStates"):
-    #            for BasisState in makeiter(StateExpansion.BasisStates):
-    #                GEB = lambda name: GetValue(name, BasisState=BasisState)
-    #                makeCaseQNs(GEB) # this needs to accept a different tag name too ...?
-    #        yield "</StateExpansion>"
+    if hasattr(MoleculeState, "Expansions"):
+        for Expansion in makeiter(MoleculeState.Expansions):
+            cont, ret = checkXML(Expansion)
+            if cont:
+                yield ret
+                continue
+            GE = lambda name: GetValue(name, Expansion=Expansion)
+            yield makePrimaryType("StateExpansion", "MoleculeStateExpansion", GE)
+            if hasattr(Expansion, "Coefficients"):
+                for Coefficient in makeiter(Expansion.Coefficients):
+                    GEC = lambda name: GetValue(name, Coefficient=Coefficient)
+                    yield "<Coeff stateRef=%s>%s</Coeff>" % (GEC("MoleculeStateExpansionCoeffStateRef"),GEC("MoleculeStateExpansionCoeff"))
+            yield "</StateExpansion>"
 
     yield '</MolecularState>'
+
+def XsamsBSBuild(MoleculeState):
+    G = lambda name: GetValue(name, MoleculeState=MoleculeState)
+    cont, ret = checkXML(MoleculeState)
+    if cont:
+        yield ret
+    else:
+        yield makePrimaryType("BasisState", "BasisState", G,
+            extraAttr={"stateID":'S%s-%s' % (G('NodeID'),
+                                             G('BasisStateID')),})
+        cont, ret = checkXML(G("BasisStateQuantumNumbers"))
+        if cont:
+            yield ret
+        else:
+            yield makeCaseQNs(G)
+        yield '</BasisState>'
 
 def XsamsMolecules(Molecules):
     """
@@ -1021,11 +1041,19 @@ def XsamsMolecules(Molecules):
             yield ret
             continue
         G = lambda name: GetValue(name, Molecule=Molecule)
-        yield '<Molecule speciesID="X%s-%s">\n' % (NODEID,G("MoleculeSpeciesID"))
+        yield '<Molecule speciesID="X%s-%s">\n' % (NODEID,
+                                                   G("MoleculeSpeciesID"))
 
         # write the MolecularChemicalSpecies description:
         for MCS in XsamsMCSBuild(Molecule):
             yield MCS
+
+        if hasattr(Molecule, 'BasisStates'):
+            yield makePrimaryType('BasisStates', 'BasisStates', G)
+            for MoleculeState in Molecule.BasisStates:
+                for BS in XsamsBSBuild(MoleculeState):
+                    yield BS
+            yield '</BasisStates>\n'
 
         if not hasattr(Molecule,'States'):
             Molecule.States = []

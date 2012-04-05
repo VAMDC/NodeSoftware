@@ -73,8 +73,8 @@ class Atomicion(models.Model):
     id = models.IntegerField(primary_key=True)
     isotope = models.ForeignKey(Isotope, null=True, db_column='isotopeid', blank=True)
     ioncharge = models.IntegerField()
-    inchi = models.CharField(max_length=30)
-    inchikey = models.CharField(max_length=30)
+    inchi = models.CharField(max_length=100)
+    inchikey = models.CharField(max_length=27)
     isoelectronicsequence = models.CharField(max_length=30)  
     class Meta:
         db_table = u't_atomicion'

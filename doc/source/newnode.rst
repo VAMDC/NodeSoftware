@@ -315,6 +315,8 @@ Molecules             Molecule
 ..                                  Molecule.State.Parameters                         Parameter
 ..                                  Molecule.State.Parameter.Vector                   VectorValueOA
 ..                                  Molecule.NormalModes                              NormalMode  
+..                                  Molecule.State.Expansions                         Expansion
+..                                  Molecule.State.Expansion.Coefficients             Coefficient  
 Solids                Solid                                                           
 ..                                  Solid.Layers                                      Layer
 ..                                  Solid.Layer.Components                            Component
