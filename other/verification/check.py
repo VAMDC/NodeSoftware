@@ -451,7 +451,7 @@ class Verification:
 
 
 	def getXML(self, pretty_print = True):
-		return etree.tostring(self.tree, pretty_print = pretty_print)
+		return etree.tostring(self.tree, encoding="UTF-8", xml_declaration=True, pretty_print = pretty_print)
 
 
 
@@ -786,7 +786,9 @@ if __name__ == '__main__':
 	else:
 		fileName = "test/transition3OK.IN.xml"
 
-	xml = Verification(fileName).getXML()
+	ver = Verification(fileName)
+	ver.run()
+	xml = ver.getXML()
 	if len(sys.argv) > 2 and sys.argv[2]:
 		out = open(sys.argv[2], 'w')
 		out.write(xml)
