@@ -122,19 +122,17 @@ def get_term_val(linedata, varname):
     extract configurations from term file. 
       varname is the value type we want (e.g. s or l); we search the identifyer field of the 
               term-file to see if it exists and return the corresponding value, otherwise
-              we return 'X'. 
+              we return 'X'. Varname is case insensitive.
     """
     # the line consists of 3 parts- coupling:identifiers:values . Coupling we get already from transition file. 
-    parts = linedata.split(':')    
-    if len(parts) < 3:
-        return 'X'
-    # parse the identifier part of the line
-    idlist = [p.strip() for p in parts[1].split(',')]
     try:
-        # get the correct section of the value part of the file, if it exists
-        return parts[2].strip().split(',')[idlist.index(varname)]
-    except ValueError, IndexError:
+        coupling, idents, values = linedata.split(':')    
+    except ValueError:
+        # not enough parts (e.g. "Unknown" terms)
         return 'X'
+    # parse to 
+    termdict = dict(zip([p.strip().lower() for p in idents.split(',')], [v.strip() for v in values.split(',')]))
+    return termdict.get(varname.lower(), 'X')
 
 def get_term_transtype(linedata, rflag):
     """

@@ -62,12 +62,12 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>74</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="dcs" xmlns:dcs="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="dcs:Case">
-						<dcs:QNs>
-							<dcs:ElecStateLabel>X</dcs:ElecStateLabel>
-							<dcs:v>3</dcs:v>
-							<dcs:J>18</dcs:J>
-						</dcs:QNs>
+					<Case caseID="dcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="case:Case">
+						<case:QNs>
+							<case:ElecStateLabel>X</case:ElecStateLabel>
+							<case:v>3</case:v>
+							<case:J>18</case:J>
+						</case:QNs>
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="SHIT-6958">
@@ -78,12 +78,12 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>70</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="dcs" xmlns:dcs="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="dcs:Case">
-						<dcs:QNs>
-							<dcs:ElecStateLabel>X</dcs:ElecStateLabel>
-							<dcs:v>0</dcs:v>
-							<dcs:J>17</dcs:J>
-						</dcs:QNs>
+					<Case caseID="dcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="case:Case">
+						<case:QNs>
+							<case:ElecStateLabel>X</case:ElecStateLabel>
+							<case:v>0</case:v>
+							<case:J>17</case:J>
+						</case:QNs>
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="SHIT-6959">
@@ -94,12 +94,12 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>182</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="dcs" xmlns:dcs="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="dcs:Case">
-						<dcs:QNs>
-							<dcs:ElecStateLabel>X</dcs:ElecStateLabel>
-							<dcs:v>8</dcs:v>
-							<dcs:J>46</dcs:J>
-						</dcs:QNs>
+					<Case caseID="dcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="case:Case">
+						<case:QNs>
+							<case:ElecStateLabel>X</case:ElecStateLabel>
+							<case:v>8</case:v>
+							<case:J>46</case:J>
+						</case:QNs>
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="SHIT-6960">
@@ -110,12 +110,12 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>186</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="dcs" xmlns:dcs="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="dcs:Case">
-						<dcs:QNs>
-							<dcs:ElecStateLabel>X</dcs:ElecStateLabel>
-							<dcs:v>0</dcs:v>
-							<dcs:J>46</dcs:J>
-						</dcs:QNs>
+					<Case caseID="dcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="case:Case">
+						<case:QNs>
+							<case:ElecStateLabel>X</case:ElecStateLabel>
+							<case:v>0</case:v>
+							<case:J>46</case:J>
+						</case:QNs>
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="SHIT-6961">
@@ -126,12 +126,12 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>198</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="dcs" xmlns:dcs="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="dcs:Case">
-						<dcs:QNs>
-							<dcs:ElecStateLabel>X</dcs:ElecStateLabel>
-							<dcs:v>1</dcs:v>
-							<dcs:J>51</dcs:J>
-						</dcs:QNs>
+					<Case caseID="dcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="case:Case">
+						<case:QNs>
+							<case:ElecStateLabel>X</case:ElecStateLabel>
+							<case:v>1</case:v>
+							<case:J>51</case:J>
+						</case:QNs>
 					</Case>
 				</MolecularState>
 				<MolecularState stateID="SHIT-6962">
@@ -142,12 +142,12 @@
 						</StateEnergy>
 						<TotalStatisticalWeight>202</TotalStatisticalWeight>
 					</MolecularStateCharacterisation>
-					<Case caseID="dcs" xmlns:dcs="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="dcs:Case">
-						<dcs:QNs>
-							<dcs:ElecStateLabel>X</dcs:ElecStateLabel>
-							<dcs:v>1</dcs:v>
-							<dcs:J>50</dcs:J>
-						</dcs:QNs>
+					<Case caseID="dcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/dcs" xsi:type="case:Case">
+						<case:QNs>
+							<case:ElecStateLabel>X</case:ElecStateLabel>
+							<case:v>1</case:v>
+							<case:J>50</case:J>
+						</case:QNs>
 					</Case>
 				</MolecularState>
 			</Molecule>

@@ -11,6 +11,15 @@ import formula_parser
 import sys
 import time
 
+# YYY XXX
+class Bunch(object):
+    def __init__(self, **kwds):
+        self.__dict__.update(kwds)
+qns1 = Bunch(case='sphcs',ElecStateLabel='X', J='4')
+basis_state1 = Bunch(id='Sb-1', Qns=qns1)
+qns2 = Bunch(case='sphcs',ElecStateLabel='A', J='8')
+basis_state2 = Bunch(id='Sb-2', Qns=qns2)
+
 def LOG(s):
     print >> sys.stderr, s
 
@@ -37,6 +46,7 @@ def get_species(transitions):
         sids = set(chain(stateps, statepps))
         # attach the corresponding states to the species:
         iso.States = State.objects.filter(pk__in = sids)
+        iso.BasisStates = [basis_state1, basis_state2]   # XXX YYY
         nstates += len(sids)
     return species, nspecies, nstates
 
@@ -145,6 +155,12 @@ def StoichiometricFormula2MoleculeInchiKey(op, foo):
             stoich_formula_list.append(stoich_formula)
         molecules = Molecule.objects.filter(
                 stoichiometric_formula__in = stoich_formula_list)
+    #elif op == 'like':
+    #    stoich_formula = foo[0]
+    #    stoich_formula = stoich_formula.replace('"','').replace("'",'')\
+    #                                   .replace('%','')
+    #    molecules = Molecule.objects.filter(
+    #            stoichiometric_formula__contains = stoich_formula)
     else:
         print 'I only understand IN and = queries on StoichiometricFormula,'
         print ' but I got', op
@@ -300,13 +316,16 @@ def setupResults(sql):
     print 'timed at %.1f secs' % (end_time - start_time)
 
    # return the dictionary as described above
-    return {'HeaderInfo': headerinfo,
-            'Methods': methods,
-            'RadTrans': transitions,
-            'Sources': sources,
-            'Molecules': species,
-            'Environments': HITRANenvs,
-            'Functions': HITRANfuncs}
+    if (ntrans > 0 or nstates > 0 or nspecies > 0):
+        return {'HeaderInfo': headerinfo,
+                'Methods': methods,
+                'RadTrans': transitions,
+                'Sources': sources,
+                'Molecules': species,
+                'Environments': HITRANenvs,
+                'Functions': HITRANfuncs}
+    # return an empty dictionary to trigger a 204 if there's no data
+    return {}
 
 def get_xsec_envs(xsecs):
     xsec_envs = []
