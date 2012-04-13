@@ -24,9 +24,6 @@ import util_models as util_models
 
 
 log=logging.getLogger('vamdc.tap')
-l = logging.getLogger('django.db.backends')
-l.setLevel(logging.DEBUG)
-l.addHandler(logging.FileHandler('/home/nicolas/out'))
 
 #------------------------------------------------------------
 # Helper functions (called from setupResults)
