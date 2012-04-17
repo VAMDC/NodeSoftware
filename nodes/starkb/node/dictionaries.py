@@ -6,6 +6,8 @@ RETURNABLES = ({\
 #atomstate 
 'AtomStateID':'AtomState.id',
 'AtomSymbol':'Atom.ion.symbol',
+'AtomInchi':'Atom.ion.inchi',
+'AtomInchiKey':'Atom.ion.inchikey',
 'AtomNuclearCharge':'Atom.ion.nuclear_charge',
 'AtomSpeciesID':'Atom.particle_ion_id()',
 'AtomIonCharge':'Atom.ion.ion_charge',
@@ -18,9 +20,6 @@ RETURNABLES = ({\
 'AtomStateRef':'AtomState.Sources',
 'AtomStateTermJKK':'Component.K',
 'AtomStateTermJKJ':'Component.J1',
-#'AtomStateEnergy' : '0',
-'AtomStateCompositionComment':'bla',
-
 
 #radiative transition
 'RadTransBroadeningPressure':'RadTran',

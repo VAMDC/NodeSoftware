@@ -13,8 +13,6 @@ class Term:
     l = 0
     s = 0
 
-class Component:
-    Terms = Term();
 
 class Species(models.Model):
     id = models.IntegerField(null=False, primary_key=True, blank=False)
@@ -26,6 +24,7 @@ class Species(models.Model):
 
     class Meta:
         db_table = u'species'
+
 
 class States(models.Model):
     id = models.IntegerField(null=False, primary_key=True, blank=False)
@@ -40,15 +39,6 @@ class States(models.Model):
     atomstatetotalangmom = models.FloatField(null=True, db_column='AtomStateTotalAngMom', blank=True)
     energy = models.FloatField(null=True, db_column='AtomStateEnergy', blank=True)
     energyMethod = models.CharField(max_length=4, db_column='AtomStateEnergyMethod', null=False, blank='False')
-
-    # Each state has one component and each component has one term, describing LS coupling.
-    # The generator relies on direct access to the Components attribute of the state and the Terms
-    # attribute of the component, using those specific names. The values of the attributes may be
-    # either scalars or arrays (the generator is specifically coded to deal with either).
-    Components = Component()
-    Components.Terms.l = atomstatel
-    Components.Terms.s = atomstates
-    print Components.Terms.l
 
     def allEnergies(self):
         energies = []
@@ -70,6 +60,28 @@ class States(models.Model):
     class Meta:
         db_table = u'states'
 
+class Components(models.Model):
+    id    = models.IntegerField(db_column='id', primary_key=True)
+    label = models.CharField(db_column='label', max_length=32)
+    core  = models.CharField(db_column='core', max_length=2, null=True)
+    lsl   = models.IntegerField(db_column='lsl')
+    lss   = models.IntegerField(db_column='lss')
+
+    class Meta:
+        db_table=u'components'
+
+class Subshells(models.Model):
+    id         = models.AutoField(primary_key=True)
+    state      = models.IntegerField(db_column='state')
+    n          = models.IntegerField(db_column='n')
+    l          = models.IntegerField(db_column='l');
+    population = models.IntegerField(db_column='pop');
+
+    class Meta:
+        db_table=u'subshells'
+
+
+
 class Transitions(models.Model):
     id = models.IntegerField(db_column='id', null=False, blank=False, primary_key=True)
     chiantiradtranstype = models.CharField(max_length=3, db_column='ChiantiRadTransType', blank=True)
@@ -81,6 +93,20 @@ class Transitions(models.Model):
     wavelength = models.FloatField(null=True, db_column='wavelength', blank=True)
     weightedoscillatorstrength = models.FloatField(null=True, db_column='RadTransProbabilityWeightedOscillatorStrength', blank=True)
     probabilitya = models.FloatField(null=True, db_column='RadTransProbabilityTransitionProbabilityA', blank=True)
+
+    def upperStateRef(self):
+        if self.finalstateindex.energy > self.initialstateindex.energy:
+            return self.finalstateindex.id
+        else:
+            return self.initialstateindex.id
+
+    def lowerStateRef(self):
+        if self.finalstateindex.energy < self.initialstateindex.energy:
+            return self.finalstateindex.id
+        else:
+            return self.initialstateindex.id
+
+
 
     def allWavelengths(self):
         wavelengths = []

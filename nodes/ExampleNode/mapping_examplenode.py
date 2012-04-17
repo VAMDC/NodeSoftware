@@ -13,26 +13,27 @@ Use this file this way (first edit base path) :
 $ cd ../imptools
 $ python run_rewrite.py ../nodes/ExampleNode/mapping_examplenode.py
 
-This will create the output files in the path defined below. 
+This will create the output files in the path defined below.
 
-If you already have a compatible mysql database you can then import these 
+If you already have a compatible mysql database you can then import these
 files directly with the ExampleNode/load.sql script (edit load.sql first
-to have the right paths). 
+to have the right paths).
 
-$ cd node/ExampleNode 
+$ cd node/ExampleNode
 $ mysql -u <databaseuser> -p < load.sql
 
 """
 
-# import database libraries and helper methods 
-import string
+# import database libraries and helper methods
+import os
 from imptools.linefuncs import constant, bySepNr, charrange
 
-# custom linefunctions for our example 
+# custom linefunctions for our example
 
 def get_bibtex(linedata):
     "Return the raw data"
     return linedata
+
 def get_bibtex_dbref(linedata):
     """
     Extract the dbref from the bibtex entry (e.g. REF1, REF2...)
@@ -46,17 +47,16 @@ def merge_cols_by_sep(linedata, *sepNr):
     Merges data from several columns (separated by ,) into one, separating them with '-'.
     sepNr are the nth position of the file, separated by 'sep'.
     Assumes a single line input.
-    """    
+    """
     sep = ','
     return '-'.join([bySepNr(linedata, nr, sep=sep).strip() for nr in sepNr])
 
-        
-# Setting up filenames - change to correct path 
-#base = "/home/vamdc/NodeSoftware/nodes/ExampleNode/"
-base = "/home/griatch/Devel/Work/VAMDC-git/nodes/ExampleNode/"
-inbase = base + "example_data/"
 
-# Raw indata files 
+# Setting up filenames, finding current path as base
+base = os.path.dirname(__file__) + os.path.sep
+inbase = base + "example_data" + os.path.sep
+
+# Raw indata files
 species_list_file = inbase + 'species.dat'
 publications_file = inbase + "references.dat"
 transitions_file = inbase + 'transitions.dat'
@@ -111,42 +111,42 @@ mapping = [
     # separately), so we need to define the possible start/end blocks
     # separating entries.
 
-    {'outfile':publications_out,    
+    {'outfile':publications_out,
      'infiles':publications_file,
-     'headlines':0,        
+     'headlines':0,
      'commentchar':'%',
      'startblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE'),
      'endblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE'),
-     'linemap':[           
+     'linemap':[
             {'cname':'dbref',
              'cbyte':(get_bibtex_dbref,)},
             {'cname':'bibtex',
-             'cbyte':(get_bibtex,)}, 
-            ], 
+             'cbyte':(get_bibtex,)},
+            ],
      }, # end of bibtex publication data
 
-    # All states and transitions are stored in one file, where each 
+    # All states and transitions are stored in one file, where each
     # line contains all data for the transition:
-    # 
+    #
     # upper_state info   |   lower _state info   | transition info
     #
-    # Each data unit is separated by ',', 
+    # Each data unit is separated by ',',
     #
     # We parse this file three times to get the upper, lower and
     # transition information respectively. We must also create a
     # unique id for each state so that the transition can reference
-    # the correct states properly 
+    # the correct states properly
     #
 
     # State model read from transitions file - upper states
-    # (first pass) 
-    {'outfile': states_out,    
+    # (first pass)
+    {'outfile': states_out,
      'infiles': transitions_file,
      'commentchar': '#',
      'headlines':3,
      'linemap':[
-            # creating a unique id hash by combining data from the 
-            {'cname':'id',        #species,coup,jnum,term,energy (upper states)             
+            # creating a unique id hash by combining data from the
+            {'cname':'id',        #species,coup,jnum,term,energy (upper states)
              'cbyte':(merge_cols_by_sep, 0, 4, 6, 5, 1),
              'cnull':'N/A'},
             {'cname':'species',
@@ -156,7 +156,7 @@ mapping = [
              'cbyte':(bySepNr, 1),
              'cnull':'N/A'},
             {'cname':'config',
-             'cbyte':(bySepNr, 2), 
+             'cbyte':(bySepNr, 2),
              'cnull':'N/A'},
             {'cname':'lande',
              'cbyte':(bySepNr, 3),
@@ -202,13 +202,13 @@ mapping = [
             {'cname':'tau_calc',
              'cbyte':(bySepNr,16),
              'cnull':'N/A'},
-            {'cname':'tau_exp_ref', 
+            {'cname':'tau_exp_ref',
              'cbyte':(bySepNr,17),
              'cnull':'N/A'},
             {'cname':'tau_calc_ref',
              'cbyte':(bySepNr,18),
              'cnull':'N/A'},
-                        
+
             {'cname':'energy_ref',
              'cbyte':(bySepNr, 19),
              'cnull':'N/A'},
@@ -222,15 +222,15 @@ mapping = [
      }, # end of upper states
 
     # State model read from transitions file -lower states
-    # (second pass) 
-    {'outfile': states_out,    
+    # (second pass)
+    {'outfile': states_out,
      'infiles': transitions_file,
      'commentchar': '#',
      'headlines':3,
      'linemap':[
-            {'cname':'id',        #species,coup,jnum,term,energy (lower states)             
+            {'cname':'id',        #species,coup,jnum,term,energy (lower states)
              'cbyte':(merge_cols_by_sep, 22, 26, 28, 27, 23),
-             'cnull':'N/A'},            
+             'cnull':'N/A'},
             {'cname':'species',
              'cbyte':(bySepNr, 22),
              'cnull':'N/A'},
@@ -290,7 +290,7 @@ mapping = [
             {'cname':'tau_calc_ref',
              'cbyte':(bySepNr,40),
              'cnull':'N/A'},
-                        
+
             {'cname':'energy_ref',
              'cbyte':(bySepNr, 41),
              'cnull':'N/A'},
@@ -302,9 +302,9 @@ mapping = [
              'cnull':'N/A'},
             ]
      }, # end of lower states
-    
-   
-    # Transition model, from the transitions file 
+
+
+    # Transition model, from the transitions file
     # (third pass)
     {'outfile':transitions_out,
      'infiles':transitions_file,
@@ -323,8 +323,8 @@ mapping = [
              'cnull':'N/A'},
             {'cname':'vacwave',
              'cbyte':(bySepNr, 44),
-             'cnull':'N/A'},            
-            {'cname':'species', # we pick this from the start of the line 
+             'cnull':'N/A'},
+            {'cname':'species', # we pick this from the start of the line
              'cbyte':(bySepNr, 0),
              'cnull':'N/A'},
             {'cname':'loggf',
@@ -350,25 +350,25 @@ mapping = [
              'cnull':'N/A'},
             {'cname':'comment',
              'cbyte':(bySepNr, 52),
-             'cnull':'N/A'}, 
-            {'cname':'wave_ref',             
+             'cnull':'N/A'},
+            {'cname':'wave_ref',
              'cbyte':(bySepNr, 53),
-             'cnull':'N/A'}, 
-            {'cname':'loggf_ref', 
+             'cnull':'N/A'},
+            {'cname':'loggf_ref',
              'cbyte':(bySepNr, 54),
-             'cnull':'N/A'}, 
+             'cnull':'N/A'},
             {'cname':'lande_ref',
              'cbyte':(bySepNr, 55),
-             'cnull':'N/A'}, 
+             'cnull':'N/A'},
             {'cname':'gammarad_ref',
              'cbyte':(bySepNr, 56),
-             'cnull':'N/A'}, 
+             'cnull':'N/A'},
             {'cname':'gammastark_ref',
              'cbyte':(bySepNr, 57),
-             'cnull':'N/A'}, 
-            {'cname':'waals_ref',  
+             'cnull':'N/A'},
+            {'cname':'waals_ref',
              'cbyte':(bySepNr, 58),
-             'cnull':'N/A'}, 
+             'cnull':'N/A'},
             ],
     }, # end of transitions file reading
 ]

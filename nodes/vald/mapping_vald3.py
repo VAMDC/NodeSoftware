@@ -15,12 +15,13 @@ from imptools.linefuncs import *
 base = "/vald/vamdc/raw_vald_data/"
 species_list_file = base + 'VALD_list_of_species'
 vald_cfg_file = base + 'VALD3.cfg'
-vald_file = base + 'vald3_atoms.dat.gz' # change to vald3_molec.dat.gz for molecules
-terms_file = base + 'term_atoms.dat.gz'
+#vald_file = base + 'vald3_atoms.dat.gz' # change to vald3_molec.dat.gz for molecules
+#terms_file = base + 'terms_atoms.dat.gz'
+vald_file = base + 'vald3_atoms_2000.dat' # change to vald3_molec.dat.gz for molecules
+terms_file = base + 'terms_atoms_3000.dat'
 ref_file = base + "VALD3_ref.bib"
 linelist_file = base + "VALD3linelists.txt"
 outbase = "/vald/vamdc/db_input_files/"
-
 
 # helper functions
 
@@ -85,7 +86,7 @@ def charrange_atom(linedata, molid, ia, ib):
     This method is to be used to read species data.
     It returns data only if the species currently worked on
     is an atom and not a molecule. Otherwise return 'X'
-    
+
      molid - minimum species id for species to be a molecule
      ia,ib - index1, index2
     """
@@ -392,7 +393,7 @@ mapping = [
              "debug":False},
             #{'cname':'einstein_a',
             # 'cbyte':(get_einstein_a, 36,44, 0,0, 15,30),
-            # 'cnull':'0.000'},            
+            # 'cnull':'0.000'},
             #{'cname':'accur',
             # 'cbyte':(get_accur, (307,308), (308,314)),
             # 'debug':False},
@@ -417,7 +418,7 @@ mapping = [
              'cbyte':(charrange, 49,57)},
             {'filenum':1,
              'cname':'waals_ref',
-             'cbyte':(charrange, 57,65)},            
+             'cbyte':(charrange, 57,65)},
             {'cname':'wave_linelist',
              'cbyte':(charrange, 334,338)},
             ## These are the old connections to linelists rather than refs directly
@@ -431,7 +432,7 @@ mapping = [
             # 'cbyte':(charrange, 358,362)},
             #{'cname':'waals_linelist',
             # 'cbyte':(charrange, 362,366)},
-            # 
+            #
             # methods are parsed from wave_linelist in post-processing
             # but we need to insert NULLs to make the DB accept the file.
             {'cname':'method_return',

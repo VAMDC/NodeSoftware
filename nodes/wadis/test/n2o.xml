@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 http://vamdc.org/xml/xsams/0.3" xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema">
+<!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent 100 percent of all available data at this node that
+   matched the query.
+-->
+	<Sources>
+		<Source sourceID="Bwadis-931">
+			<Authors>
+				<Author>
+					<Name>L.S. Rothman</Name>
+				</Author>
+				<Author>
+					<Name>D. Jacquemart</Name>
+				</Author>
+				<Author>
+					<Name>A. Barbe</Name>
+				</Author>
+				<Author>
+					<Name>D.C. Benner</Name>
+				</Author>
+				<Author>
+					<Name>M. Birk</Name>
+				</Author>
+				<Author>
+					<Name>L.R. Brown</Name>
+				</Author>
+				<Author>
+					<Name>M. Carleer</Name>
+				</Author>
+				<Author>
+					<Name>C.Chackerian Jr</Name>
+				</Author>
+				<Author>
+					<Name>K. Chance</Name>
+				</Author>
+				<Author>
+					<Name>L.H. Coudert</Name>
+				</Author>
+				<Author>
+					<Name>V. Dana</Name>
+				</Author>
+				<Author>
+					<Name>V.M. Devi</Name>
+				</Author>
+				<Author>
+					<Name>J.-M. Flaud</Name>
+				</Author>
+				<Author>
+					<Name>R.R. Gamache</Name>
+				</Author>
+				<Author>
+					<Name>A.Goldman</Name>
+				</Author>
+				<Author>
+					<Name>J.-M. Hartmann</Name>
+				</Author>
+				<Author>
+					<Name>K.W. Jucks</Name>
+				</Author>
+				<Author>
+					<Name>A.G. Maki</Name>
+				</Author>
+				<Author>
+					<Name>etc</Name>
+				</Author>
+			</Authors>
+			<Title>The HITRAN 2004 Molecular Spectroscopic Database</Title>
+			<Category>journal</Category>
+			<Year>2005</Year>
+			<SourceName>Journal of Quantitative Spectroscopy and Radiation Transfer</SourceName>
+			<Volume>96</Volume>
+			<PageBegin>139</PageBegin>
+			<PageEnd>204</PageEnd>
+			<ArticleNumber>2</ArticleNumber>
+			<DigitalObjectIdentifier>10.1016/j.jqsrt.2004.10.008</DigitalObjectIdentifier>
+			<Comments>This paper describes the status of the 2004 edition of the HITRAN molecular spectroscopic database. The HITRAN compilation consists of several components that serve as input for radiative transfer calculation codes: individual line parameters for the microwave through visible spectra of molecules in the gas phase; absorption cross-sections for molecules having dense spectral features, i.e., spectra in which the individual lines are unresolvable; individual line parameters and absorption cross-sections for bands in the ultra-violet; refractive indices of aerosols; tables and files of general properties associated with the database; and database management software. The line-by-line portion of the database contains spectroscopic parameters for 39 molecules including many of their isotopologues. The format of the section of the database on individual line parameters of HITRAN has undergone the most extensive enhancement in almost two decades. It now lists the Einstein A-coefficients, statistical weights of the upper and lower levels of the transitions, a better system for the representation of quantum identifications, and enhanced referencing and uncertainty codes. In addition, there is a provision for making corrections to the broadening of line transitions due to line mixing.</Comments>
+		</Source>
+	</Sources>
+	<Methods>
+		<Method methodID="Mwadis-Theory">
+			<Category>theory</Category>
+			<Description>theory</Description>
+		</Method>
+		<Method methodID="Mwadis-Exp">
+			<Category>experiment</Category>
+			<Description>experiment</Description>
+		</Method>
+	</Methods>
+	<Species>
+		<Molecules>
+			<Molecule speciesID="Xwadis-GQPLMRYTRLFLPF-UHFFFAOYSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>$N_2O$</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>N2O</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Nitrous oxide</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/N2O/c1-2-3</InChI>
+					<InChIKey>GQPLMRYTRLFLPF-UHFFFAOYSA-N</InChIKey>
+					<StableMolecularProperties>
+						<MolecularWeight>
+							<Value units="amu">44.0124</Value>
+						</MolecularWeight>
+					</StableMolecularProperties>
+					<Comment>N2O</Comment>
+				</MolecularChemicalSpecies>
+				<MolecularState stateID="Swadis-35-0.0.0.0.0.e">
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="ltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/ltcs">
+						<case:QNs>
+							<case:v1>0</case:v1>
+							<case:v2>0</case:v2>
+							<case:l2>0</case:l2>
+							<case:v3>0</case:v3>
+							<case:J>0</case:J>
+							<case:kronigParity>e</case:kronigParity>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="Swadis-35-0.0.0.0.1.e">
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="ltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/ltcs">
+						<case:QNs>
+							<case:v1>0</case:v1>
+							<case:v2>0</case:v2>
+							<case:l2>0</case:l2>
+							<case:v3>0</case:v3>
+							<case:J>1</case:J>
+							<case:kronigParity>e</case:kronigParity>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+			</Molecule>
+		</Molecules>
+	</Species>
+	<Processes>
+		<Radiative>
+			<RadiativeTransition id="Pwadis-11">
+				<SourceRef>Bwadis-931</SourceRef>
+				<EnergyWavelength>
+					<Wavenumber methodRef="Mwadis-Exp">
+						<Value units="1/cm">0.838022</Value>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>Swadis-35-0.0.0.0.1.e</UpperStateRef>
+				<LowerStateRef>Swadis-35-0.0.0.0.0.e</LowerStateRef>
+				<Probability>
+					<TransitionProbabilityA methodRef="Mwadis-Exp">
+						<Value units="1/s">1.7e-09</Value>
+					</TransitionProbabilityA>
+				</Probability>
+			</RadiativeTransition>
+		</Radiative>
+	</Processes>
+</XSAMSData>
