@@ -35,6 +35,7 @@ RETURNABLES = {\
 'RadTransWavelength':'RadTran.wavevac',
 'RadTransWavelengthUnit':u'A',
 'RadTransWavelengthComment':'Wavelength is for vacuum.',
+'RadTransProcess':"RadTran.transition_type",
 'RadTransWavelengthRef':'RadTran.wave_ref_id',
 'RadTransUpperStateRef':'RadTran.upstate_id',
 'RadTransLowerStateRef':'RadTran.lostate_id',
