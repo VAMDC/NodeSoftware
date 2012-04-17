@@ -14,11 +14,13 @@ def get_species_list(spids = None):
         
     return molecules
 
-def get_molecules_list():
+def get_molecules_list(stoichios = None):
     """
     returns list of molecules
     """
     molecules = Molecules.objects.filter().order_by('stoichiometricformula')
+    if stoichios is not None:
+        molecules = molecules.filter(stoichiometricformula__in=stoichios)
     return molecules
     
 def get_isotopologs_list(inchikeys = None):

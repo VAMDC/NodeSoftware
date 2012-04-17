@@ -16,7 +16,7 @@
 		      <big style="font-size:x-large;font-weight:bold">{{specie.isotopolog}}</big>		      
 		    </div>
 		    <div class="columnar" style="clear:left">
-		      <big style="font-style:italic;">{{specie.state}}</big>
+		      <big style="font-style:italic;">{% autoescape off %}{{specie.state_html}}{% endautoescape %}</big>
 		    </div>
 
 		  </div>

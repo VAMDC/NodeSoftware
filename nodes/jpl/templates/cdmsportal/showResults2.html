@@ -1,5 +1,7 @@
 {% extends "cdmsportal/portalBase.html" %}	  
 
+{% block menu_li_catalog %}class="active" {% endblock %}
+
 {% block content %}
 
 {% autoescape off %}
@@ -14,6 +16,12 @@ $(document).ready(function() {
 <form name="form_result" id="form_result" action="index.php" class="yform full" method="post">
  {% for id in postvars.speciesIDs %}
  <INPUT TYPE="HIDDEN" NAME="speciesIDs" VALUE="{{id}}">
+ {% endfor %}
+ {% for id in postvars.inchikey %}
+ <INPUT TYPE="HIDDEN" NAME="inchikey" VALUE="{{id}}">
+ {% endfor %}
+ {% for id in postvars.molecule %}
+ <INPUT TYPE="HIDDEN" NAME="molecule" VALUE="{{id}}">
  {% endfor %}
 
  <INPUT TYPE='HIDDEN' NAME='filterTag' VALUE=''>
@@ -97,7 +105,7 @@ $(document).ready(function() {
 
         </ul>
       </div>
-    {% else %}Processing ...{% endif %}{% if postvars.database == "jpl" %}
+    {% else %}{% if postvars.database == "jpl" %}
       <div class='vlist'><ul>
         <li id='nodehead' class='' style='border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
 	  <div class='' style='background-color:blue;'>
@@ -128,7 +136,7 @@ $(document).ready(function() {
 
         </ul>
       </div>
-    {% else %}Processing ...{% endif %}</div> 
+    {% else %}Processing ...{% endif %}{% endif %}</div> 
 
 <div id ="queryresult" style="display:none;clear:both;" class="subpage"> No query submitted yet. </div>
 

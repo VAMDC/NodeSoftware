@@ -35,7 +35,7 @@
 
 		<script type="text/javascript">
                         isotopologs = [{% for inchikey in inchikey_list %}'{{inchikey}}',{% endfor %}] 
-                        molecules = [{% for molecule in molecule_list %}'{{molecule}}',{% endfor %}] 
+                        molecules = [{% for molecule in stoichio_list %}'{{molecule}}',{% endfor %}] 
 			$(document).ready(function () {
 				$('#a_form_queryRefinements').click();
 			});
@@ -232,8 +232,32 @@
     {% for specie in species_list %}
       <INPUT class="log" TYPE="HIDDEN" NAME="speciesIDs" VALUE="{{specie.id}}">
       <li id="{{specie.id}}" class="speciesRow" >
+       <div id="eTag{{specie.speciestag}}" style="color:darkblue;font-weight:bold;display:inline;min-width:50px" class="eTag float_left"> {{specie.speciestag}}</div> 
+       <div class="eName float_left" style="font-weight:bold;display:inline; min-width:100px"> {{specie.molecule.name}} </div>
+       <div class="eIso float_left" style="font-weight:bold;display:inline; float:left; min-width:100px">  {{specie.isotopolog}} </div>
+       <div class="eState float_left" style="display:inline; float:left; min-width:120px"> {{specie.state}} </div><br>
+
+       <div class="mTrivName float_left full" style="display:inline; text-align:left;float:left; min-width:250px"> {{specie.molecule.trivialname}} </div>
+       <div style='clear:left'></div>
+      </li>
+    {% endfor %}
+    {% for specie in isotopolog_list %}
+      <INPUT class="log" TYPE="HIDDEN" NAME="species_isotopolog" VALUE="{{specie.id}}">
+      <li id="{{specie.id}}" class="speciesRow" >
        <div id="eTag{{specie.speciestag}}" style="font-weight:bold;display:inline;min-width:50px" class="eTag float_left"> {{specie.speciestag}}</div> 
        <div class="eName float_left" style="font-weight:bold;display:inline; min-width:100px"> {{specie.molecule.name}} </div>
+       <div class="eIso float_left" style="color:darkblue;font-weight:bold;display:inline; float:left; min-width:100px">  {{specie.isotopolog}} </div>
+       <div class="eState float_left" style="display:inline; float:left; min-width:120px"> {{specie.state}} </div><br>
+
+       <div class="mTrivName float_left full" style="display:inline; text-align:left;float:left; min-width:250px"> {{specie.molecule.trivialname}} </div>
+       <div style='clear:left'></div>
+      </li>
+    {% endfor %}
+    {% for specie in molecule_list %}
+      <INPUT class="log" TYPE="HIDDEN" NAME="species_molecules" VALUE="{{specie.id}}">
+      <li id="{{specie.id}}" class="speciesRow" >
+       <div id="eTag{{specie.speciestag}}" style="font-weight:bold;display:inline;min-width:50px" class="eTag float_left"> {{specie.speciestag}}</div> 
+       <div class="eName float_left" style="color:darkblue;font-weight:bold;display:inline; min-width:100px"> {{specie.molecule.name}} </div>
        <div class="eIso float_left" style="font-weight:bold;display:inline; float:left; min-width:100px">  {{specie.isotopolog}} </div>
        <div class="eState float_left" style="display:inline; float:left; min-width:120px"> {{specie.state}} </div><br>
 
@@ -244,7 +268,7 @@
     </ul>
   </fieldset>
   <div class="type-button float_left">
-    <INPUT TYPE="BUTTON" VALUE="CHANGE" NAME="B_Change_TAG" onclick="load_page('queryForm');">
+    <INPUT TYPE="BUTTON" VALUE="CHANGE" NAME="B_Change_TAG" onclick="attachSpeciesIds();load_page('queryForm');">
   </div>
   <div class="type-button float_right">
     <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >

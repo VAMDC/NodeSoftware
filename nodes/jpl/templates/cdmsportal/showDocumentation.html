@@ -1,5 +1,6 @@
 {% extends "cdmsportal/portalBase.html" %}
 
+{% block menu_li_catalog %}class="active" {% endblock %}
 
 {% block content %}
     <div id="main">
@@ -15,7 +16,7 @@
 		      <big style="font-size:x-large;font-weight:bold">{{specie.isotopolog}}</big>		      
 		    </div>
 		    <div class="columnar" style="clear:left">
-		      <big style="font-style:italic;">{{specie.state}}</big>
+		      <big style="font-style:italic;">{% autoescape off %}{{specie.state_html}}{% endautoescape %}</big>
 		    </div>
 
 		  </div>
@@ -54,9 +55,8 @@
 	    <li><a href="#" onclick="docShowSubpage('form_references')">References</a></li>
 	    <li><a href="#" onclick="docShowSubpage('form_stickspec')">Stick Spectrum</a></li>
 	    <li><a href="#" onclick="docShowSubpage('form_energylevels')">Energy Level Plot</a></li>
-	    <!--      <li><a href="#" onclick="docShowSubpage('form_otherDbs'); ajaxGetVAMDCstats2();">Other databases</a></li> -->
-	    <li><a href="#" onclick="docShowSubpage('form_otherDbs'); ajaxGetAllVamdcDBstat();">Other databases</a></li>
-	    
+	    <li><a href="#" onclick="docShowSubpage('nodelist'); ajaxGetNodeList();">Other databases</a></li> 
+            <li><a href="http://webbook.nist.gov/cgi/cbook.cgi?InChI={{specie.inchi}}" target="_blank"> NIST - Lookup </a> </li>	    
 	    <li><a href="#" onclick="docShowSubpage('form_archive')">Archive</a></li>
 	  </ul>
 	</div>
@@ -78,7 +78,7 @@
                     </colgroup>
 		    <tbody>
 		      {% for parameter in rotationalconstants %}
-		      <tr><th scope="row" class="sub" > {{parameter.parameter}} </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
+		      <tr><th scope="row" class="sub" > <i>{{parameter.parameter}}</i> </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
 		      {% endfor %}
 		    </tbody>
 		  </table>
@@ -92,7 +92,7 @@
                       <col width="70%">
                     </colgroup>
 		    {% for parameter in dipolemoments %}
-		    <tr><th scope="row" class="sub" > {{parameter.parameter}} </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
+		    <tr><th scope="row" class="sub" ><i>{% autoescape off %}{{parameter.parameter_html}}{% endautoescape %}</i></th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
 		    {% endfor %}
 		  </table>
 		</fieldset>
@@ -150,11 +150,11 @@
 		<div class="legend"> Files </div>
 		<table class="full">
 		  <thead>
-		    <tr><th>Filename</th><th>Type</th><th>Comment</th><th>Createdate</th></tr>
+		    <tr><th>Filename</th><th>Type</th><th>Comment</th><th>Createdate</th><th>&nbsp;</th></tr>
 		  </thead>
 		  <tbody>
 		  {% for file in files %}
-		    <tr><td>{{file.name}}</td><td>{{file.type}}</td><td>{{file.comment}}</td><td>{{file.createdate}}</td></tr>
+		    <tr><td>{{file.name}}</td><td>{{file.type}}</td><td>{{file.comment}}</td><td>{{file.createdate}}</td><td style="background-color:#ccc"><a href="#" onclick="location.href=portal_url+'/getfile/{{file.id}}/'"><img width="30px" src="/static/cdms/img/download.png"></a></td></tr>
 		  {% endfor %}
 		  </tbody>
 		</table> 
@@ -178,20 +178,24 @@
 <!--	      </pre> -->
 	      </fieldset>
 
-	      <fieldset id="form_otherDbs" class="subpage" style="display:none;clear:both;">
+      <input type="hidden" id="inchikey" value="{{specie.inchikey}}">
+      <INPUT TYPE='HIDDEN' NAME='QUERY' VALUE='SELECT ALL WHERE InchiKey = &#39;{{specie.inchikey}}&#39;'>
+
+              <div id="nodelist" class="subpage" style="display:none;clear:both">Processing ...</div>
+
+	      <fieldset id="queryresult" class="subpage" style="display:none;clear:both;">
 		<div class="legend">Other Databases</div> 
 	      </fieldset>
-	      
 
 	      <fieldset id="form_stickspec" class="subpage" style="display:none;clear:both;">
 		<div class="legend">Stick Spectrum</div> 
-		<img class="full" width="100%" src="http://cdms.ph1.uni-koeln.de:8090/DjCDMS/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+radiativetransitions+WHERE++MoleculeSpeciesID={{specie.id}}" alt=\Stick Spectrum">
+		<img class="full" width="100%" src="http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+radiativetransitions+WHERE++MoleculeSpeciesID={{specie.id}}" alt=\Stick Spectrum">
 	      </fieldset>
 
 
 	      <fieldset id="form_energylevels" class="subpage" style="display:none;clear:both;">
 		<div class="legend">Energy Level Plot</div> 
-		<img class="full" width="100%" src="http://cdms.ph1.uni-koeln.de:8090/DjCDMS/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+states+WHERE++MoleculeSpeciesID={{specie.id}}" alt="Energy Level Diagram">
+		<img class="full" width="100%" src="http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+states+WHERE++MoleculeSpeciesID={{specie.id}}" alt="Energy Level Diagram">
 	      </fieldset>
 	    </div>	    
 	  </form>

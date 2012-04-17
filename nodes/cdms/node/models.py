@@ -8,6 +8,7 @@
 # into your database.
 from django.db.models import *
 #from vamdctap.bibtextools import *
+from latex2html import *
 
 class Molecules( Model):
      """
@@ -71,6 +72,8 @@ class Species( Model):
      
      cmlstring = property(CML)
 
+     def state_html(self):
+          return latex2html(self.state)
 
 class Datasets( Model):
      """

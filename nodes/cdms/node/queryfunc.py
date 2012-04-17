@@ -270,7 +270,7 @@ def returnResults(tap, LIMIT=None):
     # only meaningful for CDMS
     RESTRICTABLES.update(CDMSONLYRESTRICTABLES)
 
-    SUPPORTED_FORMATS=['spcat','png','list','xspcat','mrg']
+    SUPPORTED_FORMATS=['spcat','png','list','xspcat','mrg','species']
 
     if tap.format not in SUPPORTED_FORMATS:
         emsg = 'Currently, only FORMATs PNG, SPCAT and XSAMS are supported.\n'
@@ -280,6 +280,14 @@ def returnResults(tap, LIMIT=None):
         speclist=specieslist()
         response = HttpResponse(speclist, mimetype='text/plain')
         return response
+
+    if tap.format == 'species':
+        speclist=plain_specieslist()
+        response = HttpResponse(speclist, mimetype='text/plain')
+        return response
+
+
+    
     LOG('And now some logs:')
     #LOG(tap.data)
         
@@ -740,3 +748,18 @@ def specieslist():
         yield "\n"
 
 
+def plain_specieslist():
+    speciess = Species.objects.filter(archiveflag=0)
+    for specie in speciess:
+        yield "%5s " % specie.id
+        yield "%7s " % specie.speciestag
+        yield "%-20s " % specie.molecule.stoichiometricformula
+        yield "%-20s " % specie.molecule.structuralformula
+        yield "%-20s " % specie.isotopolog        
+        yield "%-30s " % specie.state        
+#        yield "%-20s " % specie.name
+        yield "%-20s " % specie.inchikey
+        yield "%-s " % specie.molecule.trivialname
+        
+        yield "\n"
+    

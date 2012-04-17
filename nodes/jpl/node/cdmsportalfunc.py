@@ -4,16 +4,37 @@
 from models import *
 from django.core.exceptions import ValidationError
 
-def getSpeciesList(spids = None):
+def get_species_list(spids = None):
     """
     """
     molecules = Species.objects.filter(origin=0,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
 
-    if spids:
+    if spids is not None:
         molecules = molecules.filter(pk__in=spids)
         
     return molecules
 
+def get_molecules_list(stoichios = None):
+    """
+    returns list of molecules
+    """
+    molecules = Molecules.objects.filter().order_by('stoichiometricformula')
+    if stoichios is not None:
+        molecules = molecules.filter(stoichiometricformula__in=stoichios)
+    return molecules
+    
+def get_isotopologs_list(inchikeys = None):
+    """
+    Returns list of isotopologues 
+    """
+    species = Species.objects.filter(archiveflag=0)
+
+    if inchikeys is not None:
+        species = species.filter(inchikey__in=inchikeys)
+        
+    isotopologs = species.values('inchikey','isotopolog','molecule__stoichiometricformula','molecule__trivialname').distinct().order_by('molecule__stoichiometricformula')
+    
+    return isotopologs
 
 def getSpecie(id = None):
     """
@@ -108,8 +129,7 @@ def getFiles4specie(id):
     return files
 
 
-    
-def checkQuery(postvars):
+def check_query(postvars):
     """
     Creates TAP-XSAMS query and return it as a string
     In addition some html code for the query page is generated
@@ -120,32 +140,60 @@ def checkQuery(postvars):
     
     htmlcode = ""
     # Check if species have been selected
-    if 'speciesIDs' in postvars:
-        id_list = postvars.getlist('speciesIDs')
-    else :
-        id_list = None
+    id_list = postvars.getlist('speciesIDs')
+    inchikeys = postvars.getlist('inchikey')
+    molecules = postvars.getlist('molecule') # are identified via stoichiometric formula
 
-    if not id_list:
-        htmlcode += "<a href='#' onclick=\"load_page('SelectMolecule');\" ><p class='warning' >SPECIES: nothing selected => Click here to select species!</p></a>"
-        idlist = []
+    ###################################
+    # CREATE QUERY STRING FOR SPECIES
+    ###################################
+    spec_array=[]
+    if len(id_list)+len(inchikeys)+len(molecules)>0:
+        #mols = get_species_list(id_list)
+
+        #inchikeylist = mols.values_list('inchikey',flat=True)
+        #idlist = mols.values_list('id',flat=True)
+
+        #tapxsams += "(" + " OR ".join([" InchiKey = '" + ikey + "'" for ikey in inchikeylist]) + ")"
+
+        if len(id_list)>0:
+            spec_array.append( " OR ".join([" MoleculeSpeciesID = %s " % ikey  for ikey in id_list]) )
+            
+        if len(inchikeys)>0:
+            spec_array.append( " OR ".join([" InchiKey = '%s' " % ikey  for ikey in inchikeys]) )
+
+        if len(molecules)>0:
+            spec_array.append( " OR ".join([" MoleculeStoichiometricFormula = '%s' " % ikey  for ikey in molecules]) )
+
+        
+        tapxsams += "(" + " OR ".join(spec_array) + ")"
+        tapcdms += "(" + " OR ".join(spec_array) + ")"
+
     else:
-        mols = getSpeciesList(id_list)
-
-#        foreach (specie in mols):
-        inchikeylist = mols.values_list('inchikey',flat=True)
-        idlist = mols.values_list('id',flat=True)
-
-#        tapxsams += " InchiKey in ('%s') " % "' OR '".join( map(str, inchikeylist))
-        tapxsams += "(" + " OR ".join([" InchiKey = '" + ikey + "'" for ikey in inchikeylist]) + ")"
-        tapcdms += "(" + " OR ".join([" MoleculeSpeciesID = %s " % ikey  for ikey in idlist]) + ")"
+        htmlcode += "<a href='#' onclick=\"load_page('SelectMolecule');\" ><p class='warning' >SPECIES: nothing selected => Click here to select species!</p></a>"
+        
 
     htmlcode += "<ul class='vlist'>"
     htmlcode += "<li><a href='#' onclick=\"$('#a_form_species').click();$('#a_form_species').addClass('activeLink');\">"
-    
-    htmlcode += " MoleculeSpeciesID in ( %s ) " % ', '.join ( map(str, idlist))
+
+#    if len(idlist)>0:
+#        htmlcode += " MoleculeSpeciesID in ( %s ) " % ', '.join ( map(str, idlist))
+#        if len(inchikeys)+len(molecules)>0:
+#            htmlcode += " OR "
+#    if len(inchikeys)>0:
+#        htmlcode += " InchiKey in ( %s ) " % ', '.join (["'%s'" % ikey for ikey in inchikeys])
+#        if len(molecules)>0:
+#            htmlcode += " OR "
+#    if len(molecules)>0:
+#        htmlcode += " MoleculeStoichiometricFormula in ( %s ) " % ', '.join (["'%s'" % ikey for ikey in molecules])
+    htmlcode += "(" + " OR ".join(spec_array) + ")"
     htmlcode += "</li>"
-        
-    # CHECK Frequency range
+
+
+    #######################################
+    # CREATE QUERY STRING FOR TRANSITIONS
+    #######################################
+
     if 'UnitNu' in postvars:
         unitNu = postvars['UnitNu']
 #        htmlcode += "<p class='info'>AND RadTransFrequencyUnit = %s </p>" % unitNu
@@ -215,6 +263,7 @@ def checkQuery(postvars):
         
 #    return tapxsams, htmlcode
     return tap, htmlcode
+    
 
 
 

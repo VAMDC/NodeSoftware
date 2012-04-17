@@ -141,16 +141,20 @@ def queryPage(request):
     postvars = request.POST
     id_list = request.POST.getlist('speciesIDs')
     inchikey_list = request.POST.getlist('inchikey')
-    molecule_list = request.POST.getlist('molecule')
-    
+    stoichio_list = request.POST.getlist('molecule')
+       
     species_list = get_species_list(id_list)
-    isotopolog_list = get_isotopologs_list(inchikey_list)
+    isotopolog_list = Species.objects.filter(inchikey__in=inchikey_list)
+    molecule_list = Species.objects.filter(molecule__stoichiometricformula__in=stoichio_list)
             
     c=RequestContext(request,{"postvar" : postvars,
                               "speciesid_list": id_list,
-                              "species_list" : species_list,
                               "inchikey_list" : inchikey_list,
-                              "molecule_list": molecule_list,})
+                              "stoichio_list": stoichio_list,
+                              "species_list" : species_list,
+                              "isotopolog_list" : isotopolog_list,
+                              "molecule_list" : molecule_list,
+                              })
     
     return render_to_response('cdmsportal/queryForm.html', c)
 
@@ -160,7 +164,15 @@ def query_form(request):
     Create the species selection - page from the species (model) stored in the database
     """
     #species_list = get_species_list()
-    c=RequestContext(request,{"action" : "queryPage", })
+
+    id_list = request.POST.getlist('speciesIDs')
+    inchikey_list = request.POST.getlist('inchikey')
+    stoichio_list = request.POST.getlist('molecule')
+    c=RequestContext(request,{"action" : "queryPage",
+                              "speciesid_list": id_list,
+                              "inchikey_list" : inchikey_list,
+                              "stoichio_list": stoichio_list,
+                              })
     return render_to_response('cdmsportal/querySpeciesAjax.html', c)
 
 
@@ -341,10 +353,8 @@ def ajaxRequest(request):
             QUERYs, htmlcode = check_query(request.POST)
             response_dict.update({'QUERY' : QUERYs, 'htmlcode' : htmlcode, 'message' : " Tach "})
         elif request.POST['function'] == 'getVAMDCstats':
-            print >> sys.stderr, "GETNODES"
             htmlcode = getHtmlNodeList()            
             response_dict.update({'htmlcode' : htmlcode, 'message' : " Statistics "})
-            print >> sys.stderr, htmlcode
         elif request.POST['function'] == 'ajaxQuery':
             ##### TEST TEST TEST TEST ###########
             # get result and return it via ajax

@@ -220,5 +220,5 @@ CDMSONLYRESTRICTABLES = {
     'hfsflag':'hfsflag',
     'getonlycalc':'getonlycalc',
     'geteinsteina':'geteinsteina',
-
+    'MoleculeSpeciesTag':'specie__speciestag',
 }

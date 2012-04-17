@@ -76,10 +76,23 @@ class QUERY(object ):
         if len(self.orderby)>0 and 'ORDERBY' not in self.url:
             self.url += '&ORDERBY=%s' % self.orderby
             
+        # speciesID identifies only CDMS/JPL species
         try:
             self.speciesIDs = self.data.getlist('speciesIDs')
         except:
             self.speciesIDs = []
+
+        # inchikey is used to identify isotopologs
+        try:
+            self.inchikey = self.data.getlist('inchikey')
+        except:
+            self.inchikey = []
+
+        # Molecules are currently identified via StoichiometricFormula 
+        try:
+            self.molecule = self.data.getlist('molecule')
+        except:
+            self.molecule = []
 
         if self.format == 'spcat':
             if self.explines == 'merge':
@@ -120,21 +133,46 @@ def help(request):
 
         
 def queryPage(request):
-    test = request.POST
+    """
+    Creates the Form to define query parameters;
+    Species are already defined and should be posted to this page
+    """
+    postvars = request.POST
     id_list = request.POST.getlist('speciesIDs')
+    inchikey_list = request.POST.getlist('inchikey')
+    stoichio_list = request.POST.getlist('molecule')
+       
+    species_list = get_species_list(id_list)
+    isotopolog_list = Species.objects.filter(inchikey__in=inchikey_list)
+    molecule_list = Species.objects.filter(molecule__stoichiometricformula__in=stoichio_list)
+            
+    c=RequestContext(request,{"postvar" : postvars,
+                              "speciesid_list": id_list,
+                              "inchikey_list" : inchikey_list,
+                              "stoichio_list": stoichio_list,
+                              "species_list" : species_list,
+                              "isotopolog_list" : isotopolog_list,
+                              "molecule_list" : molecule_list,
+                              })
     
-    species_list = getSpeciesList(id_list)
-    c=RequestContext(request,{"postvar" : test, "speciesid_list": id_list, "species_list" : species_list})
     return render_to_response('cdmsportal/queryForm.html', c)
 
 
-def queryForm(request):
+def query_form(request):
     """
     Create the species selection - page from the species (model) stored in the database
     """
-    species_list = getSpeciesList()
-    c=RequestContext(request,{"action" : "queryPage", "species_list" : species_list})
-    return render_to_response('cdmsportal/querySpecies.html', c)
+    #species_list = get_species_list()
+
+    id_list = request.POST.getlist('speciesIDs')
+    inchikey_list = request.POST.getlist('inchikey')
+    stoichio_list = request.POST.getlist('molecule')
+    c=RequestContext(request,{"action" : "queryPage",
+                              "speciesid_list": id_list,
+                              "inchikey_list" : inchikey_list,
+                              "stoichio_list": stoichio_list,
+                              })
+    return render_to_response('cdmsportal/querySpeciesAjax.html', c)
 
 def tools(request):
     """
@@ -166,9 +204,58 @@ def selectSpecie(request):
     """
     Create the species selection - page from the species (model) stored in the database
     """
-    species_list = getSpeciesList()
+    species_list = get_species_list()
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
     return render_to_response('cdmsportal/selectSpecies.html', c)
+
+
+def selectSpecie2(request):
+    """
+    Create the species selection - page from the species (model) stored in the database
+    """
+    #species_list = get_species_list()
+    c=RequestContext(request,{"action" : "catalog"})
+    return render_to_response('cdmsportal/selectSpeciesAjax.html', c)
+
+
+
+def html_list(request, content='species'):
+    """
+    Renders species, molecules, or isotopologs as html_list,
+    which can be included into webpages via ajax request.
+
+    content: string ('species' - default, 'molecules', 'isotopologs'
+             which specifies which information will be returned.
+
+    Returns html_string 
+    """
+    if content == 'molecules':
+        molecules_list = get_molecules_list()
+        c=RequestContext(request,{"action" : "catalog",
+                                  "species_list" : [],
+                                  "molecules_list" : molecules_list,
+                                  "isotopolog_list" : [],})
+        
+        return render_to_response('cdmsportal/species_table.html', c)
+
+    elif content == 'isotopologs':
+        isotopolog_list = get_isotopologs_list()
+        c=RequestContext(request,{"action" : "catalog",
+                                  "species_list" : [],
+                                  "molecules_list" : [],
+                                  "isotopolog_list" : isotopolog_list,})
+
+        return render_to_response('cdmsportal/species_table.html', c)
+
+    else:
+        species_list = get_species_list()
+        c=RequestContext(request,{"action" : "catalog",
+                                  "species_list" : species_list,
+                                  "molecules_list" : [],
+                                  "isotopolog_list" : [],})
+    
+    return render_to_response('cdmsportal/species_table.html', c)
+
 
 def catalog(request, id=None):
     """
@@ -298,7 +385,7 @@ def ajaxRequest(request):
     if 'function' in request.POST:
 
         if request.POST['function'] == 'checkQuery':
-            QUERYs, htmlcode = checkQuery(request.POST)
+            QUERYs, htmlcode = check_query(request.POST)
             response_dict.update({'QUERY' : QUERYs, 'htmlcode' : htmlcode, 'message' : " Tach "})
         elif request.POST['function'] == 'getVAMDCstats':
             htmlcode = getHtmlNodeList()
@@ -312,15 +399,18 @@ def ajaxRequest(request):
             baseurl = request.POST.get('nodeurl','http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/')
             
             if 'url2' in request.POST:
-                htmlcode = str(applyStylesheet(request.POST['url2'], xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
+                htmlcode = str(applyStylesheet(request.POST['url2'],
+                                               xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
             else:    
                 postvars = QUERY(request.POST,baseurl = baseurl)
                 print >> sys.stderr, "postvars.url = " +postvars.url
                 if postvars.url:
                     if  postvars.format.lower()=='xsams':
-                        htmlcode = str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + '/nodes/jpl/static/xsl/convertXSAMS2html.xslt'))
+                        htmlcode = str(applyStylesheet(postvars.url,
+                                                       xsl = settings.BASE_PATH + '/nodes/jpl/static/xsl/convertXSAMS2html.xslt'))
                     elif  postvars.format=='rad3d':
-                        htmlcode = "<pre>" + str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + "/nodes/jpl/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
+                        htmlcode = "<pre>" + str(applyStylesheet(postvars.url,
+                                                                 xsl = settings.BASE_PATH + "/nodes/jpl/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
                     elif postvars.format=='png':
                         htmlcode = "<img class='full' width='100%' src="+postvars.url+" alt='Stick Spectrum'>"
                     else:
@@ -337,7 +427,6 @@ def ajaxRequest(request):
 
     
             postvars = QUERY(request.POST, baseurl = nodeurl, qformat='XSAMS')
-            #postvars.url=postvars.url.replace('png','XSAMS').replace('spcat','XSAMS').replace('rad3d','XSAMS').replace('xspcat','XSAMS')
 
             print >> sys.stderr," NODESTATURL: "+ postvars.url
             # fetch statistic for this node
@@ -377,7 +466,9 @@ def ajaxRequest(request):
         else:
             response_dict.update({'QUERY' : QUERYs, 'htmlcode' : "<p> HALLO </p>", 'message' : " Tach "})
     else:
-        response_dict.update({'QUERY' : "", 'htmlcode' : "Error: No function name posted! ", 'message' : "Error: No function name posted! "})
+        response_dict.update({'QUERY' : "",
+                              'htmlcode' : "Error: No function name posted! ",
+                              'message' : "Error: No function name posted! "})
        
     return HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
 
@@ -389,7 +480,7 @@ def specieslist(request):
     if not request.user.is_authenticated():
         return HttpResponseRedirect('/DjJPL/cdms/login/?next=%s' % request.path)
 
-    species_list = getSpeciesList()
+    species_list = get_species_list()
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
     return render_to_response('cdmsadmin/selectSpecies.html', c)
 
