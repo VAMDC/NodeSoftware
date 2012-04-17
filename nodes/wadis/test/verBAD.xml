@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 https://raw.github.com/VAMDC/NodeSoftware/master/other/verification/verification.xsd" xmlns:cml="http://www.xml-cml.org/schema"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.3">
+<VerificationResult>
+	<NumberOfMolecularStates correct="2" incorrect="1" total="3" unidentified="0"/>
+	<NumberOfRadiativeTransitions correct="5" incorrect="1" total="6" unidentified="0"/>
+	<NumberOfVerificationByRule name="nltcsRuleS01" correct="2" incorrect="1" unidentified="0"/>
+	<NumberOfVerificationByRule name="nltcsRuleT01" correct="6" incorrect="0" unidentified="0"/>
+	<NumberOfVerificationByRule name="nltcsRuleT02" correct="5" incorrect="1" unidentified="0"/>
+</VerificationResult>
+<XSAMSData><!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent 100 percent of all available data at this node that
+   matched the query.
+-->
+<Sources>
+	<Source sourceID="Bwadis-1152">
+		<Authors>
+			<Author>
+				<Name>C.P. Rinsland</Name>
+			</Author>
+			<Author>
+				<Name>M.A.H. Smith</Name>
+			</Author>
+			<Author>
+				<Name>V.M. Devi D.C. Benner</Name>
+			</Author>
+		</Authors>
+		<Title>Measurements of Lorentz-Broadening Coefficients and Pressure-Induced Line Shift Coefficients in the v&lt;sub&gt;2&lt;/sub&gt; Band of HD&lt;sup&gt;16&lt;/sup&gt;0</Title>
+		<Category>journal</Category>
+		<Year>1991</Year>
+		<SourceName>Journal of Molecular Spectroscopy</SourceName>
+		<Volume>150</Volume>
+		<PageBegin>640</PageBegin>
+		<PageEnd>646</PageEnd>
+		<DigitalObjectIdentifier>10.1016/0022-2852(91)90255-9</DigitalObjectIdentifier>
+	</Source>
+</Sources>
+<Methods>
+	<Method methodID="Mwadis-Exp">
+		<Category>experiment</Category>
+		<Description>experiment</Description>
+	</Method>
+</Methods>
+<Species>
+	<Molecules>
+		<Molecule speciesID="Xwadis-XLYOFNOQVPJJNP-DYCDLGHISA-N">
+			<MolecularChemicalSpecies>
+				<OrdinaryStructuralFormula>
+					<Value>$HOD$</Value>
+				</OrdinaryStructuralFormula>
+				<StoichiometricFormula>H2O</StoichiometricFormula>
+				<IonCharge>0</IonCharge>
+				<ChemicalName>
+					<Value>Water species</Value>
+				</ChemicalName>
+				<InChI>InChI=1S/H2O/h1H2/i/hD</InChI>
+				<InChIKey>XLYOFNOQVPJJNP-DYCDLGHISA-N</InChIKey>
+				<StableMolecularProperties>
+					<MolecularWeight>
+						<Value units="amu">19.0069</Value>
+					</MolecularWeight>
+				</StableMolecularProperties>
+				<Comment>HOD</Comment>
+			</MolecularChemicalSpecies>
+			<MolecularState stateID="Swadis-163-0.0.0.11.1.1">
+				<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+				<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+					<case:QNs>
+						<case:v1>0</case:v1>
+						<case:v2>0</case:v2>
+						<case:v3>0</case:v3>
+						<case:J>11</case:J>
+						<case:Ka>1</case:Ka>
+						<case:Kc>1</case:Kc>
+					</case:QNs>
+				</Case>
+				<Verification>
+					<nltcsRuleS01>false</nltcsRuleS01>
+				</Verification>
+			</MolecularState>
+			<MolecularState stateID="Swadis-163-0.1.0.10.1.9">
+				<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+				<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+					<case:QNs>
+						<case:v1>0</case:v1>
+						<case:v2>1</case:v2>
+						<case:v3>0</case:v3>
+						<case:J>10</case:J>
+						<case:Ka>1</case:Ka>
+						<case:Kc>9</case:Kc>
+					</case:QNs>
+				</Case>
+				<Verification>
+					<nltcsRuleS01>true</nltcsRuleS01>
+				</Verification>
+			</MolecularState>
+		</Molecule>
+	</Molecules>
+</Species>
+<Processes>
+	<Radiative>
+		<RadiativeTransition id="Pwadis-1449149">
+			<SourceRef>Bwadis-1152</SourceRef>
+			<EnergyWavelength>
+				<Wavenumber methodRef="Mwadis-Exp">
+					<Value units="1/cm">1250.8466</Value>
+				</Wavenumber>
+			</EnergyWavelength>
+			<UpperStateRef>Swadis-163-0.1.0.10.1.9</UpperStateRef>
+			<LowerStateRef>Swadis-163-0.0.0.11.1.1</LowerStateRef>
+			<Probability/>
+			<Verification>
+				<nltcsRuleT01>true</nltcsRuleT01>
+				<nltcsRuleT02>false</nltcsRuleT02>
+			</Verification>
+		</RadiativeTransition>
+	</Radiative>
+</Processes>
+</XSAMSData>
+</VerificationData>

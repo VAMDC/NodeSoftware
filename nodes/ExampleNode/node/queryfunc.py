@@ -3,25 +3,24 @@
 # This module (which must have the name queryfunc.py) is responsible
 # for converting incoming queries to a database query understood by
 # this particular node's database schema.
-# 
+#
 # This module must contain a function setupResults, taking a sql object
-# as its only argument. 
+# as its only argument.
 #
 
-# library imports 
+# library imports
 
-import sys
+import logging
 from itertools import chain
-from django.conf import settings
-from vamdctap.sqlparse import where2q
-from django.db.models import Q
 
-import dictionaries
-import models # this imports models.py from the same directory as this file
+from vamdctap.sqlparse import sql2Q
+from dictionaries import *
 
-def LOG(s):
-    "Simple logger function"
-    if settings.DEBUG: print >> sys.stderr, s
+import models
+
+log = logging.getLogger("vamdc.node.queryfu")
+
+LIMIT = 1000
 
 #------------------------------------------------------------
 # Helper functions (called from setupResults)
@@ -32,43 +31,43 @@ def getRefs(transs):
     From the transition-matches, use ForeignKeys to extract all relevant references
     """
     # extract a unique set of reference keys from the given ForeignKey
-    # fields on the Transition model (e.g. Transition.loggf_ref). 
+    # fields on the Transition model (e.g. Transition.loggf_ref).
     # Note: Using *_id on the ForeignKey (e.g. loggf_ref_id)
     # will extract the identifier rather than go to the referenced
     # object (it's the same as loggf_ref.id, but more efficient).  In
     # our example, refset will hold strings "REF1" or "REF2" after
     # this.
     refset = []
-    for t in transs.values_list('wave_ref_id', 'loggf_ref_id', 'lande_ref_id', 
+    for t in transs.values_list('wave_ref_id', 'loggf_ref_id', 'lande_ref_id',
                                 'gammarad_ref_id', 'gammastark_ref_id', 'waals_ref_id'):
         refset.append(t)
-    refset = set(refset) # a set always holds only unique keys 
-    
+    refset = set(refset) # a set always holds only unique keys
+
     # Use the found reference keys to extract the correct references from the References table.
-    refmatches = models.Reference.objects.filter(pk__in=refset) # only match primary keys in refset    
+    refmatches = models.Reference.objects.filter(pk__in=refset) # only match primary keys in refset
     return refmatches
 
 def getSpeciesWithStates(transs):
     """
     Use the Transition matches to obtain the related Species (only atoms in this example)
-    and the states related to each transition. 
-    
-    We also return some statistics of the result 
+    and the states related to each transition.
+
+    We also return some statistics of the result
     """
 
-    # get the reference ids for the 'species' ForeignKey field 
+    # get the reference ids for the 'species' ForeignKey field
     # (see getRefs comment for more info)
     spids = set( transs.values_list('species_id',flat=True) )
-    # use the reference ids to query the Species database table 
+    # use the reference ids to query the Species database table
     species = models.Species.objects.filter(pk__in=spids)
-    nspecies = species.count() # get some statistics 
+    nspecies = species.count() # get some statistics
 
     # get all states. Note that when building a queryset like this,
     # (using objects.filter() etc) will usually not hit the database
-    # until it's really necessary, making this very efficient. 
+    # until it's really necessary, making this very efficient.
     nstates = 0
     for spec in species:
-        # get all transitions in linked to this particular species 
+        # get all transitions in linked to this particular species
         spec_transitions = transs.filter(species=spec)
         # extract reference ids for the states from the transion, combining both
         # upper and lower unique states together
@@ -76,12 +75,12 @@ def getSpeciesWithStates(transs):
         lo = spec_transitions.values_list('lostate_id',flat=True)
         sids = set(chain(up, lo))
 
-        # use the found reference ids to search the State database table 
-        # Note that we store a new queryset called 'States' on the species queryset. 
-        # This is important and a requirement looked for by the node 
+        # use the found reference ids to search the State database table
+        # Note that we store a new queryset called 'States' on the species queryset.
+        # This is important and a requirement looked for by the node
         # software (all RETURNABLES AtomState* will try to loop over this
-        # nested queryset). 
-        spec.States = models.State.objects.filter( pk__in = sids )    
+        # nested queryset).
+        spec.States = models.State.objects.filter( pk__in = sids )
         nstates += spec.States.count()
     return species, nspecies, nstates
 
@@ -90,11 +89,11 @@ def getFunctions(transs):
     Obtain function expressions for correcting/adjusting certain transitions
     In this example, such expressions are stored on the form e.g.  y = a * x + b * z
     where we have max 3 arguments and 3 parameters
-    We assume all arguments (x,y,z ...) and all parameters (a,b,c) are unitless. 
+    We assume all arguments (x,y,z ...) and all parameters (a,b,c) are unitless.
     """
-    import re # regular expressions 
+    import re # regular expressions
     funcs = transs.values_list("function", flat=True)
-    for func in funcs: 
+    for func in funcs:
         func = re.sub(r"\s", "", func) # remove all whitespace in the expresion
         fy, rest = func.split('=', 1)
         fargs = re.findall(r"a|b|c", func)
@@ -104,7 +103,7 @@ def getFunctions(transs):
         func.expression = func
         func.y = fy
         func.yunit = "unitless"
-        for arg in fargs: 
+        for arg in fargs:
             func.Arguments.name = arg
             func.Arguments.lower_limit = 0.0
             func.Arguments.upper_limit = 1.0
@@ -113,7 +112,7 @@ def getFunctions(transs):
     return funcs
 
 
-def getLifetimeMethods():    
+def getLifetimeMethods():
     """
     In the example we are storing both experimental and theoretical
     data for some quantities, such as in the case of experimental or
@@ -124,11 +123,11 @@ def getLifetimeMethods():
     which will go into the XSAMS return). This is a simple python
     object with properties 'id' and 'category'.
      'id' - any string you want, but has to start with M.
-     'category' - this is a valid Method.category as defined 
-                  in the xsams definition online                
+     'category' - this is a valid Method.category as defined
+                  in the xsams definition online
     """
     class Method(object):
-        # simple dummy object to define a Method 
+        # simple dummy object to define a Method
         def __init__(self, mid, category):
             self.id = mid
             self.category = category
@@ -140,24 +139,19 @@ def getLifetimeMethods():
 
 
 #------------------------------------------------------------
-# Main function 
+# Main function
 #------------------------------------------------------------
 
-def setupResults(sql, limit=1000):
+def setupResults(sql):
     """
-    This function is always called by the software.
+    This function is always called by the NodeSoftware.
     """
     # log the incoming query
-    LOG(sql)
+    log.debug(sql)
 
-    # convert the incoming sql to a correct django query syntax object 
-    # based on the RESTRICTABLES dictionary in dictionaries.py
-    # (where2q is a helper function to do this for us).
-    q = where2q(sql.where, dictionaries.RESTRICTABLES)
-    try: 
-        q = eval(q) # test queryset syntax validity
-    except: 
-        return {}
+    # convert the incoming sql to a correct django query syntax object
+    # (sql2Q is a helper function to do this for us).
+    q = sql2Q(sql)
 
     # We build a queryset of database matches on the Transision model
     # since through this model (in our example) we are be able to
@@ -167,15 +161,15 @@ def setupResults(sql, limit=1000):
 
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
-    ntranss=transs.count()    
-    if limit < ntranss :
+    ntranss=transs.count()
+    if LIMIT < ntranss :
         transs = transs[:limit]
         percentage='%.1f' % (float(limit) / ntranss * 100)
-    else: 
+    else:
         percentage=None
 
-    # Through the transition-matches, use our helper functions to extract 
-    # all the relevant database data for our query. 
+    # Through the transition-matches, use our helper functions to extract
+    # all the relevant database data for our query.
     sources = getRefs(transs)
     nsources = sources.count()
     species, nspecies, nstates = getSpeciesWithStates(transs)
@@ -183,19 +177,16 @@ def setupResults(sql, limit=1000):
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
-    headerinfo={\
-            'Truncated':percentage,
-            'COUNT-SOURCES':nsources,
-            'COUNT-species':nspecies,
-            'count-states':nstates,
-            'count-radiative':ntranss
-            }
-            
-    # Return the data. The keynames are standardized. 
+    headerinfo = {'TRUNCATED':percentage,
+                  'COUNT-SOURCES':nsources,
+                  'COUNT-SPECIES':nspecies,
+                  'COUNT-STATES':nstates,
+                  'COUNT_RADIATIVE':ntranss,
+                  'APPROX-SIZE':ntranss*0.001 }
+
+    # Return the data. The keynames are standardized.
     return {'RadTrans':transs,
             'Atoms':species,
             'Sources':sources,
             'HeaderInfo':headerinfo,
-            'Methods':methods
-            #'Functions':functions
-           }
+            'Methods':methods }

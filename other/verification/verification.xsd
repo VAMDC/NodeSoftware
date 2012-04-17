@@ -109,6 +109,7 @@
 			<xs:group ref="sphcsStateRules"/>
 			<xs:group ref="sphosStateRules"/>
 			<xs:group ref="stcsStateRules"/>
+			<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 
@@ -141,6 +142,7 @@
 			<xs:group ref="sphcsTransitionRules"/>
 			<xs:group ref="sphosTransitionRules"/>
 			<xs:group ref="stcsTransitionRules"/>
+			<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:group>
 </xs:schema>

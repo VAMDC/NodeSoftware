@@ -42,10 +42,10 @@ RETURNABLES = {\
 'CollisionDataSetRef':'DataSet.Ref',
 'CollisionDataSetDescription':'DataSet.Description',
 
-'CollisionTabulatedDataX' : 'TabData.xdata',
+'CollisionTabulatedDataXDataList' : 'TabData.xdata',
 'CollisionTabulatedDataXUnits' : 'TabData.xdataunit',
 'CollisionTabulatedDataXParameter' : 'undef',
-'CollisionTabulatedDataY' : 'TabData.ydata',
+'CollisionTabulatedDataYDataList' : 'TabData.ydata',
 'CollisionTabulatedDataYUnits' : 'TabData.ydataunit',
 'CollisionTabulatedDataYParameter' : 'undef',
 

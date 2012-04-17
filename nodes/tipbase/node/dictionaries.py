@@ -5,6 +5,8 @@ RETURNABLES = {\
 'AtomStateID':'AtomState.id',
 
 'AtomSymbol':'Atom.atomicion.isotope.chemicalelement.elementsymbol',
+'AtomInchi' : 'Atom.atomicion.inchi',
+'AtomInchiKey' : 'Atom.atomicion.inchikey',
 'AtomSpeciesID':'Atom.atomicion.id',
 'AtomNuclearCharge':'Atom.atomicion.isotope.chemicalelement.nuclearcharge',
 'AtomIonCharge':'Atom.atomicion.ioncharge',
@@ -30,13 +32,13 @@ RETURNABLES = {\
 'AtomStateTermLSMultiplicity' : 'Component.Lscoupling.multiplicity',
 
 'CollisionTabulatedDataRef' : 'TabData.Sources',
-'CollisionTabulatedDataX' : 'TabData.xdata',
+'CollisionTabulatedDataXDataList' : 'TabData.xdata',
 'CollisionTabulatedDataXUnits' : 'TabData.xdataunit.value',
-'CollisionTabulatedDataXN' : 'len(TabData.xdata.split(" "))',
+'CollisionTabulatedDataXDataListN' : 'len(TabData.xdata.split(" "))',
 'CollisionTabulatedDataXParameter' : 'undef',
-'CollisionTabulatedDataY' : 'TabData.ydata',
+'CollisionTabulatedDataYDataList' : 'TabData.ydata',
 'CollisionTabulatedDataYUnits' : 'TabData.ydataunit.value',
-'CollisionTabulatedDataYN' : 'len(TabData.ydata.split(" "))',
+'CollisionTabulatedDataYDataListN' : 'len(TabData.ydata.split(" "))',
 'CollisionTabulatedDataYParameter' : 'undef',
 
 'CollisionDataSetDescription' : 'DataSet.dataDescription',
@@ -71,7 +73,7 @@ RETURNABLES = {\
 # for the Species.atomic field  would be written as species__atomic.
 
 RESTRICTABLES = {\
-'AtomIonCharge' : 'ioncharge',
+'IonCharge' : 'ioncharge',
 'AtomNuclearCharge' : 'nuclearcharge',
 'AtomSymbol' : 'elementsymbol',
 }

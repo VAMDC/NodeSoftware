@@ -65,10 +65,10 @@ def setupVssRequest(sql, limit=1000):
         @rtype:   util_models.Result
         @return:  Result object		
     """
-    
+
     result = util_models.Result()
     q = sql2Q(sql)    
-    
+
     transs = django_models.Transition.objects.filter(q)
     ntranss=transs.count()
 
@@ -76,7 +76,7 @@ def setupVssRequest(sql, limit=1000):
         transs, percentage = truncateTransitions(transs, q, limit)
     else:
         percentage=None 
-            
+    log.debug("number of transitions : "+str(ntranss))
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     if ntranss > 0 :	
@@ -91,8 +91,8 @@ def setupVssRequest(sql, limit=1000):
         result.addHeaderField('TRUNCATED',percentage)
         result.addHeaderField('COUNT-SPECIES',nspecies)
         result.addHeaderField('COUNT-STATES',nstates)
-        result.addHeaderField('COUNT-RADIATIVE',len(transitions))			
-        
+        result.addHeaderField('COUNT-RADIATIVE',len(transitions))	
+       
         result.addDataField('RadTrans',transitions)        
         result.addDataField('Atoms',species)
         result.addDataField('Environments',environments)
@@ -100,6 +100,7 @@ def setupVssRequest(sql, limit=1000):
         result.addDataField('Sources',sources)
         
     else : # only fill header
+        result.addHeaderField('APPROX-SIZE', 0)    
         result.addHeaderField('TRUNCATED',percentage)
         result.addHeaderField('COUNT-STATES',0)
         result.addHeaderField('COUNT-RADIATIVE',0)
@@ -123,36 +124,35 @@ def truncateTransitions(transitions, request, maxTransitionNumber):
 	return django_models.Transition.objects.filter(request,Q(wavelength__lt=newmax)), percentage
 
 def getSources(transs):
-	"""		
-		Get sources for a list of transitions
-		@type  transs: list
-		@param transs: a list of Transition
-		@rtype:   list
-		@return:  list of Article		
-	"""
-	sources = []
-	datasets = transs.values_list('dataset', flat=True).distinct()    
-	articledatasets = django_models.ArticleDataset.objects.filter(dataset__pk__in = datasets)    
-	for article in articledatasets :
-		sources.append(article.article)
-		
-	return sources
+    """		
+        Get sources for a list of transitions
+        @type  transs: list
+        @param transs: a list of Transition
+        @rtype:   list
+        @return:  list of Article		
+    """
+    sources = []
+    datasets = transs.values_list('dataset', flat=True).distinct()    
+    articledatasets = django_models.ArticleDataset.objects.filter(dataset__pk__in = datasets)    
+    for article in articledatasets :
+        if article.article not in sources : 
+            sources.append(article.article)		
+    return sources
     
 def getDatasetSources(datasetid):
-	"""
-		Get sources for a dataset
-		@type  datasetid: int
-		@param datasetid: id of a dataset
-		@rtype:   list
-		@return:  list of Article
-		
-	"""    
-	sources = []    
-	articledatasets = django_models.ArticleDataset.objects.filter(dataset__pk = datasetid)    
-	for article in articledatasets :
-		sources.append(article.article.pk)
-
-	return sources
+    """
+        Get sources for a dataset
+        @type  datasetid: int
+        @param datasetid: id of a dataset
+        @rtype:   list
+        @return:  list of Article
+        
+    """    
+    sources = []    
+    articledatasets = django_models.ArticleDataset.objects.filter(dataset__pk = datasetid)    
+    for article in articledatasets :
+        sources.append(article.article.pk)
+    return sources
 
 def getSpeciesWithStates(transs):
     """
@@ -270,7 +270,8 @@ def getIonCollidersByTransitions(transs):
 	datasets = transs.values_list('dataset', flat=True).distinct()
 	datasetcolliders = django_models.DatasetCollider.objects.filter(dataset__in = datasets)
 	colliderids = datasetcolliders.values_list('species', flat=True).distinct()
-	return django_models.Species.objects.filter(pk__in = colliderids).filter(particle = None)
+    # exclude meanion from list of species
+	return django_models.Species.objects.filter(pk__in = colliderids).filter(particle = None).exclude(ion__name="meanion")
     
 def getBroadening(environment):
     """

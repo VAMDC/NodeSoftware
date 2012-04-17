@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VerificationData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 https://raw.github.com/VAMDC/NodeSoftware/master/other/verification/verification.xsd" xmlns:cml="http://www.xml-cml.org/schema"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://vamdc.org/xml/xsams/0.3">
+<VerificationResult>
+	<NumberOfMolecularStates correct="2" incorrect="1" total="3" unidentified="0"/>
+	<NumberOfRadiativeTransitions correct="5" incorrect="1" total="6" unidentified="0"/>
+	<NumberOfVerificationByRule name="nltcsRuleS01" correct="2" incorrect="1" unidentified="0"/>
+	<NumberOfVerificationByRule name="nltcsRuleT01" correct="6" incorrect="0" unidentified="0"/>
+	<NumberOfVerificationByRule name="nltcsRuleT02" correct="5" incorrect="1" unidentified="0"/>
+</VerificationResult>
+<XSAMSData><!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent 100 percent of all available data at this node that
+   matched the query.
+-->
+<Sources>
+	<Source sourceID="Bwadis-1152">
+		<Authors>
+			<Author>
+				<Name>C.P. Rinsland</Name>
+			</Author>
+			<Author>
+				<Name>M.A.H. Smith</Name>
+			</Author>
+			<Author>
+				<Name>V.M. Devi D.C. Benner</Name>
+			</Author>
+		</Authors>
+		<Title>Measurements of Lorentz-Broadening Coefficients and Pressure-Induced Line Shift Coefficients in the v&lt;sub&gt;2&lt;/sub&gt; Band of HD&lt;sup&gt;16&lt;/sup&gt;0</Title>
+		<Category>journal</Category>
+		<Year>1991</Year>
+		<SourceName>Journal of Molecular Spectroscopy</SourceName>
+		<Volume>150</Volume>
+		<PageBegin>640</PageBegin>
+		<PageEnd>646</PageEnd>
+		<DigitalObjectIdentifier>10.1016/0022-2852(91)90255-9</DigitalObjectIdentifier>
+	</Source>
+	<Source sourceID="Bwadis-1032">
+		<Authors>
+			<Author>
+				<Name>T. Parekunnel</Name>
+			</Author>
+			<Author>
+				<Name>P. F. Bernath</Name>
+			</Author>
+			<Author>
+				<Name>N. F. Zobov</Name>
+			</Author>
+			<Author>
+				<Name>S. V. Shirin</Name>
+			</Author>
+			<Author>
+				<Name>Oleg L. Polyansky</Name>
+			</Author>
+			<Author>
+				<Name>Jonathan Tennyson</Name>
+			</Author>
+		</Authors>
+		<Title>Emission Spectrum of Hot HDO in the 380–2190 cm&lt;sup&gt;-1&lt;/sup&gt; Region</Title>
+		<Category>journal</Category>
+		<Year>2001</Year>
+		<SourceName>Journal of Molecular Spectroscopy</SourceName>
+		<Volume>210</Volume>
+		<PageBegin>28–40</PageBegin>
+		<PageEnd>28–40</PageEnd>
+		<ArticleNumber>1</ArticleNumber>
+		<DigitalObjectIdentifier>10.1006/jmsp.2001.8434</DigitalObjectIdentifier>
+		<Comments>&lt;p&gt;Fourier transform emission spectra were recorded using a mixture of H&lt;sub&gt;2&lt;/sub&gt;O and D&lt;sub&gt;2&lt;/sub&gt;O at a temperature of 1500&amp;deg;C. The spectra were recorded in three overlapping sections and cover the wavenumber range 380&amp;ndash;2190 cm&lt;sup&gt;-1&lt;/sup&gt;. A total of 22 106 lines were measured, of which 60% are thought to belong to HDO. A total of 6430 HDO transitions are assigned, including the first transitions to the (040) vibrational state, with a term value of 5420.042 cm&lt;sup&gt;-1&lt;/sup&gt;. A total of 1536 new energy levels of HDO belonging to the (000), (010), (020), (030), and (040) states are presented, significantly extending the degree of rotational excitation compared to previous studies.&lt;/p&gt;</Comments>
+	</Source>
+	<Source sourceID="Bwadis-874">
+		<Authors>
+			<Author>
+				<Name>R.A.Toth</Name>
+			</Author>
+		</Authors>
+		<Title>HD&lt;sup&gt;16&lt;/sup&gt;O, HD&lt;sup&gt;18&lt;/sup&gt;O, and HD&lt;sup&gt;17&lt;/sup&gt;O Transition Frequencies and Strengths in the v&lt;sub&gt;2&lt;/sub&gt; Bands</Title>
+		<Category>journal</Category>
+		<Year>1993</Year>
+		<SourceName>Journal of Molecular Spectroscopy</SourceName>
+		<Volume>162</Volume>
+		<PageBegin>20</PageBegin>
+		<PageEnd>40</PageEnd>
+		<ArticleNumber>1</ArticleNumber>
+		<DigitalObjectIdentifier>10.1006/jmsp.1993.1266</DigitalObjectIdentifier>
+		<Comments>&lt;p&gt;Measurements of line positions and absolute linestrengths of HDO in the &amp;nu;&lt;sub&gt;2&lt;/sub&gt; band were made with a Fourier-transform spectrometer at a resolution of 5&amp;times;10&lt;sup&gt;-3&lt;/sup&gt; cm&lt;sup&gt;-1&lt;/sup&gt;. The measured line previous term frequencies next term of HD&lt;sup&gt;16&lt;/sup&gt;O and HD&lt;sup&gt;18&lt;/sup&gt;O were used along with additional data taken from studies of pure rotational previous termtransitionsnext term in an analysis to obtain rotational energies of levels in the (000) and (010) states. Measurements of the linestrengths were fitted by least-squares and the results are in excellent agreement with the 1113 and 651 experimental previous termtransitionsnext term of HD&lt;sup&gt;16&lt;/sup&gt;O and HD&lt;sup&gt;18&lt;/sup&gt;O, respectively, included in the analyses. These results provide a more accurate representation of the line positions and linestrengths for the (010)-(000) band than that which is currently available on the HITRAN absorption line parameter compilation. Over 370 HD&lt;sup&gt;17&lt;/sup&gt;O previous termtransition frequenciesnext term were measured and analyzed to obtain rotational energies of levels in the (000) and (010) states.&lt;/p&gt;</Comments>
+	</Source>
+	<Source sourceID="Bwadis-1066">
+		<Authors>
+			<Author>
+				<Name>A. Janca</Name>
+			</Author>
+			<Author>
+				<Name>K. Tereszchuk</Name>
+			</Author>
+			<Author>
+				<Name>P. F. Bernath</Name>
+			</Author>
+			<Author>
+				<Name>N. F. Zobov</Name>
+			</Author>
+			<Author>
+				<Name>S. V. Shirin</Name>
+			</Author>
+			<Author>
+				<Name>O. L. Polyansky</Name>
+			</Author>
+			<Author>
+				<Name>J. Tennyson</Name>
+			</Author>
+		</Authors>
+		<Title>Emission spectrum of hot HDO below 4000 cm&lt;sup&gt;-1&lt;/sup&gt;</Title>
+		<Category>journal</Category>
+		<Year>2003</Year>
+		<SourceName>Journal of Molecular Spectroscopy</SourceName>
+		<Volume>219</Volume>
+		<PageBegin>132</PageBegin>
+		<PageEnd>135</PageEnd>
+		<ArticleNumber>1</ArticleNumber>
+		<DigitalObjectIdentifier>10.1016/S0022-2852(03)00015-8</DigitalObjectIdentifier>
+		<Comments>&lt;p&gt;Fourier transform emission spectra were recorded using a mixture of H&lt;sub&gt;2&lt;/sub&gt;O and D&lt;sub&gt;2&lt;/sub&gt;O at a temperature of 1500&amp;deg;C. The spectra were recorded in three overlapping sections and cover the wavenumber range 1800&amp;ndash;3932 cm&lt;sup&gt;-1&lt;/sup&gt;. This spectrum is analyzed together with a previously reported one spanning the 380&amp;ndash;2190 cm&lt;sup&gt;-1&lt;/sup&gt; range [Parekunnel et al., J. Mol. Spectrosc. 101 (2001) 28]. This analysis leads to 4409 newly assigned HDO emission lines. This workparticularly extends data on the (200) and (120) states of HDO for which newly determined energy levels are presented.&lt;/p&gt;</Comments>
+	</Source>
+	<Source sourceID="Bwadis-1079">
+		<Authors>
+			<Author>
+				<Name>J.-M. Flaud</Name>
+			</Author>
+			<Author>
+				<Name>C. Camy-Peyret</Name>
+			</Author>
+			<Author>
+				<Name>A. Mahmoudi</Name>
+			</Author>
+			<Author>
+				<Name>G. Guelachvili</Name>
+			</Author>
+		</Authors>
+		<Title>The v&lt;sub&gt;2&lt;/sub&gt; band of HD&lt;sup&gt;16&lt;/sup&gt;O</Title>
+		<Category>journal</Category>
+		<Year>1986</Year>
+		<SourceName>International Journal of Infrared and Millimeter Waves</SourceName>
+		<Volume>7</Volume>
+		<PageBegin>1063</PageBegin>
+		<PageEnd>1090</PageEnd>
+		<ArticleNumber>7</ArticleNumber>
+		<DigitalObjectIdentifier>10.1007/BF01026692</DigitalObjectIdentifier>
+	</Source>
+</Sources>
+<Methods>
+	<Method methodID="Mwadis-Exp">
+		<Category>experiment</Category>
+		<Description>experiment</Description>
+	</Method>
+</Methods>
+<Species>
+	<Molecules>
+		<Molecule speciesID="Xwadis-XLYOFNOQVPJJNP-DYCDLGHISA-N">
+			<MolecularChemicalSpecies>
+				<OrdinaryStructuralFormula>
+					<Value>$HOD$</Value>
+				</OrdinaryStructuralFormula>
+				<StoichiometricFormula>H2O</StoichiometricFormula>
+				<IonCharge>0</IonCharge>
+				<ChemicalName>
+					<Value>Water species</Value>
+				</ChemicalName>
+				<InChI>InChI=1S/H2O/h1H2/i/hD</InChI>
+				<InChIKey>XLYOFNOQVPJJNP-DYCDLGHISA-N</InChIKey>
+				<StableMolecularProperties>
+					<MolecularWeight>
+						<Value units="amu">19.0069</Value>
+					</MolecularWeight>
+				</StableMolecularProperties>
+				<Comment>HOD</Comment>
+			</MolecularChemicalSpecies>
+			<MolecularState stateID="Swadis-163-0.0.0.11.1.10">
+				<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+				<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+					<case:QNs>
+						<case:v1>0</case:v1>
+						<case:v2>0</case:v2>
+						<case:v3>0</case:v3>
+						<case:J>11</case:J>
+						<case:Ka>1</case:Ka>
+						<case:Kc>10</case:Kc>
+					</case:QNs>
+				</Case>
+				<Verification>
+					<nltcsRuleS01>true</nltcsRuleS01>
+				</Verification>
+			</MolecularState>
+			<MolecularState stateID="Swadis-163-0.1.0.10.1.9">
+				<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+				<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
+					<case:QNs>
+						<case:v1>0</case:v1>
+						<case:v2>1</case:v2>
+						<case:v3>0</case:v3>
+						<case:J>10</case:J>
+						<case:Ka>1</case:Ka>
+						<case:Kc>9</case:Kc>
+					</case:QNs>
+				</Case>
+				<Verification>
+					<nltcsRuleS01>true</nltcsRuleS01>
+				</Verification>
+			</MolecularState>
+		</Molecule>
+	</Molecules>
+</Species>
+<Processes>
+	<Radiative>
+		<RadiativeTransition id="Pwadis-1206593">
+			<SourceRef>Bwadis-874</SourceRef>
+			<EnergyWavelength>
+				<Wavenumber methodRef="Mwadis-Exp">
+					<Value units="1/cm">1250.84642</Value>
+				</Wavenumber>
+			</EnergyWavelength>
+			<UpperStateRef>Swadis-163-0.1.0.10.1.9</UpperStateRef>
+			<LowerStateRef>Swadis-163-0.0.0.11.1.10</LowerStateRef>
+			<Probability/>
+			<Verification>
+				<nltcsRuleT01>true</nltcsRuleT01>
+				<nltcsRuleT02>true</nltcsRuleT02>
+			</Verification>
+		</RadiativeTransition>
+		<RadiativeTransition id="Pwadis-1218437">
+			<SourceRef>Bwadis-1152</SourceRef>
+			<EnergyWavelength>
+				<Wavenumber methodRef="Mwadis-Exp">
+					<Value units="1/cm">1250.8466</Value>
+				</Wavenumber>
+			</EnergyWavelength>
+			<UpperStateRef>Swadis-163-0.1.0.10.1.9</UpperStateRef>
+			<LowerStateRef>Swadis-163-0.0.0.11.1.10</LowerStateRef>
+			<Probability/>
+			<Verification>
+				<nltcsRuleT01>true</nltcsRuleT01>
+				<nltcsRuleT02>true</nltcsRuleT02>
+			</Verification>
+		</RadiativeTransition>
+		<RadiativeTransition id="Pwadis-618325">
+			<SourceRef>Bwadis-1079</SourceRef>
+			<EnergyWavelength>
+				<Wavenumber methodRef="Mwadis-Exp">
+					<Value units="1/cm">1250.8469</Value>
+				</Wavenumber>
+			</EnergyWavelength>
+			<UpperStateRef>Swadis-163-0.1.0.10.1.9</UpperStateRef>
+			<LowerStateRef>Swadis-163-0.0.0.11.1.10</LowerStateRef>
+			<Probability/>
+			<Verification>
+				<nltcsRuleT01>true</nltcsRuleT01>
+				<nltcsRuleT02>true</nltcsRuleT02>
+			</Verification>
+		</RadiativeTransition>
+		<RadiativeTransition id="Pwadis-561107">
+			<SourceRef>Bwadis-1032</SourceRef>
+			<EnergyWavelength>
+				<Wavenumber methodRef="Mwadis-Exp">
+					<Value units="1/cm">1250.84691</Value>
+				</Wavenumber>
+			</EnergyWavelength>
+			<UpperStateRef>Swadis-163-0.1.0.10.1.9</UpperStateRef>
+			<LowerStateRef>Swadis-163-0.0.0.11.1.10</LowerStateRef>
+			<Probability/>
+			<Verification>
+				<nltcsRuleT01>true</nltcsRuleT01>
+				<nltcsRuleT02>true</nltcsRuleT02>
+			</Verification>
+		</RadiativeTransition>
+		<RadiativeTransition id="Pwadis-567184">
+			<SourceRef>Bwadis-1066</SourceRef>
+			<EnergyWavelength>
+				<Wavenumber methodRef="Mwadis-Exp">
+					<Value units="1/cm">1250.84691</Value>
+				</Wavenumber>
+			</EnergyWavelength>
+			<UpperStateRef>Swadis-163-0.1.0.10.1.9</UpperStateRef>
+			<LowerStateRef>Swadis-163-0.0.0.11.1.10</LowerStateRef>
+			<Probability/>
+			<Verification>
+				<nltcsRuleT01>true</nltcsRuleT01>
+				<nltcsRuleT02>true</nltcsRuleT02>
+			</Verification>
+		</RadiativeTransition>
+	</Radiative>
+</Processes>
+</XSAMSData>
+</VerificationData>

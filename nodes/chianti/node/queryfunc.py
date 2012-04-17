@@ -77,7 +77,11 @@ def getSpeciesWithStates(transs):
         # This is important and a requirement looked for by the node 
         # software (all RETURNABLES AtomState* will try to loop over this
         # nested queryset). 
-        spec.States = models.States.objects.filter(species=spec).filter(pk__in=stateIds)    
+        spec.States = models.States.objects.filter(species=spec).filter(pk__in=stateIds)
+        for state in spec.States:
+           state.Components = models.Components.objects.filter(pk=state.id)
+           for comp in state.Components:
+               comp.Shells = models.Subshells.objects.filter(state=state.id)
         nstates += spec.States.count()
     return species, nspecies, nstates
 
@@ -212,10 +216,16 @@ def setupResults(sql, limit=100000):
             }
     LOG(headerinfo)
             
-    # Return the data. The keynames are standardized. 
-    return {'RadTrans':transs,
-            'Atoms':species,
-            'Sources':sources,
-            'HeaderInfo':headerinfo,
-            'Methods':methods
-           }
+    # Return the data. The keynames are standardized.
+    if (nspecies > 0 or nstates > 0 or ntranss > 0):
+        return {'RadTrans':transs,
+                'Atoms':species,
+                'Sources':sources,
+                'HeaderInfo':headerinfo,
+                'Methods':methods
+               }
+
+    # As a special case, if there are no data, return an empty structure.
+    # This causes the node software to send a 204 "No content" response.
+    else:
+        return {}
