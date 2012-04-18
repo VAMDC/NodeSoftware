@@ -92,6 +92,12 @@ class Transition(Model):
     method_return = PositiveSmallIntegerField(null=True, db_index=False) # this is the method category, populated in post-processing by parsing wave_linelist field
     method_restrict = PositiveSmallIntegerField(null=True, db_index=True) # this is the method category to restrict on, populated in post-processing.
 
+    def waverefs(self):
+        return self.wavevac_ref, self.waveair_ref
+
+    def waves(self):
+        return self.wavevac, self.waveair
+
     def getWaals(self):
         if self.gammawaals: return self.gammawaals
         elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
