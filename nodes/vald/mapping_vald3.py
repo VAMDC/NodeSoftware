@@ -13,12 +13,12 @@ from imptools.linefuncs import *
 
 # Setting up filenames
 base = "/vald/vamdc/raw_vald_data/"
-species_list_file = base + 'VALD_list_of_species'
+species_list_file = base + 'VALD_list_of_species.txt'
 vald_cfg_file = base + 'VALD3.cfg'
-#vald_file = base + 'vald3_atoms.dat.gz' # change to vald3_molec.dat.gz for molecules
-#terms_file = base + 'terms_atoms.dat.gz'
-vald_file = base + 'vald3_atoms_2000.dat' # change to vald3_molec.dat.gz for molecules
-terms_file = base + 'terms_atoms_3000.dat'
+vald_file = base + 'vald3_atoms.dat' #.gz # change to vald3_molec.dat.gz for molecules
+terms_file = base + 'terms_atoms.dat' #.gz'
+#vald_file = base + 'vald3_atoms_2000.dat' # change to vald3_molec.dat.gz for molecules
+#terms_file = base + 'terms_atoms_3000.dat'
 ref_file = base + "VALD3_ref.bib"
 linelist_file = base + "VALD3linelists.txt"
 outbase = "/vald/vamdc/db_input_files/"
@@ -81,6 +81,57 @@ def get_method_type(linedata):
     else:
         return 'X'
 
+NIST_MAP = {"AAA":0.003,"AA":0.01,"A+":0.02,"A":0.03,"B+":0.07,
+            "B":0.1,"C+":0.18,"C":0.25,"D+":0.40,"D":0.5,"E":1.0}
+def get_accur(linedata):
+    """
+    Extract VALD accur data and convert it to a VAMDC equivalent.
+    Each flag also maps to a given xsams tag as follows:
+    VALD   VAMDC
+    N (NIST)                 AccuracyType:estimated, AccuracyRelative:true
+    E (error in dex)         AccuracyType:estimated, AccuracyRelative:true
+    C (cancellation factor)  AccuracyType:arbitrary, AccurayRelative:true
+    P (predicted line)       AccuracyType:systematic, AccuracyRelative:false
+    """
+    flag = charrange(linedata, 307,308)
+    value = charrange(linedata, 308, 314)
+    if flag == 'N': # NIST quality flag
+        value = NIST_MAP.get(value, "E")
+    elif flag in ('E','P'):
+        value = float(value)
+    elif flag == 'C':
+        value = value # this is incorrect, conversion is non-trivial
+    else:
+        value = 'X'
+    return value
+
+def get_term_transtype(linedata):
+    """
+    Get transition type info from term file.
+
+    line consists of either
+     Allowed_transition:<vacuumwl>, E1, Extra_info:none
+     Forbidden_transition:<vacuumwl>,XX, Extra_info:none
+     or
+     Autoionization, Extra_info:none
+    """
+    try:
+        info, term, extra = linedata.split(":", 2)
+        # term section consists of "wacumwavelength, transtype"
+        wl, ttype, einfo = term.split(",", 2)
+        return ttype.strip()
+    except ValueError:
+        # autoionizing or malformed line
+        return 'X'
+
+def get_auto_ionization(linedata):
+    """
+    In the case of Autoionization, the line looks like this:
+      Autoionization, Extra_information:none
+    """
+    return linedata.count(":") == 1
+
+MOLECULE_NUM = 10000 # starting id for molecules in species file (atoms before this value)
 def charrange_atom(linedata, molid, ia, ib):
     """
     This method is to be used to read species data.
@@ -93,6 +144,50 @@ def charrange_atom(linedata, molid, ia, ib):
     if charrange2int(linedata, 0, 7) < molid:
         return charrange(linedata, ia, ib)
     return 'X'
+def species_component(species_file, outfile):
+    """
+    This is a stand-alone function for creating
+    a species-to-component mapping file representing
+    the many2many relationship. It is called automatically
+    last in this file.
+    """
+    outstring = ""
+    f = open(species_file, 'r')
+    for line in f:
+        if line.strip() and (line.strip().startswith('#') or line.strip().startswith('@')):
+            continue
+        sid = line[:7].strip()
+        if int(sid) < MOLECULE_NUM:
+            continue
+        #import pdb;pdb.set_trace()
+        # we have a molecule
+        ncomp = int(line[198:199])
+        for icomp in range(ncomp):
+            csid = line[200+icomp*8 : 208+icomp*8].strip()
+            outstring += '\N;"%s";"%s"\n' % (sid, csid)
+    f.close()
+    f = open(outfile, 'w')
+    f.write(outstring)
+    f.close()
+    print "... Created file %s." % outfile
+
+# mapper for caching the connections between upper/lower state IDS
+# and their respective unique pk values. This depends on a MySQL database
+# vald_charid2id exists
+#import MySQLdb
+#CBCONN = MySQLdbqlite3.connect("localhost", "vald", "V@ld", "vald_charid2id")
+#CURSOR = DBCONN.cursor()
+#CURSOR.execute("DROP TABLE IF EXISTS mapping")
+#CURSOR.execute("CREATE_TABLE mapping (charid varchar(100) NOT_NULL, id int NOT_NULL AUTO_INCREMENT, PRIMARY KEY (charid))")
+#sql_select = "SELECT * from mapping where charid='%s'"
+#sql_insert = "INSERT "
+
+#def get_unique_state_id(charid):
+    """
+    Check charid against temporary database, return a
+    matching unique and incrememntal ID, or create a new one.
+    """
+
 
 # The mapping itself
 mapping = [
@@ -119,21 +214,21 @@ mapping = [
             {'cname':'ionen',
              'cbyte':(charrange, 92, 102)},
             {'cname':'solariso',
-             'cbyte':(charrange, 103,109)},
+             'cbyte':(charrange, 103,113)},
             {'cname':'dissen',
-             'cbyte':(charrange, 110, 119)},
+             'cbyte':(charrange, 115, 123)},
             {'cname':'ncomp',
-             'cbyte':(charrange, 194, 195)},
+             'cbyte':(charrange, 198, 199)},
             # these fields are only filled in the case of atoms.  for
             # molecules, these are X, and the 'components' field is
             # used instead to link to component species. This is
             # filled by the species_component() function at the end of
             # this module.
             {'cname':'atomic',
-             'cbyte':(charrange_atom, 5000, 196, 198),
+             'cbyte':(charrange_atom, MOLECULE_NUM, 200, 202),
              'cnull':'X'},
             {'cname':'isotope',
-             'cbyte':(charrange_atom, 5000, 199, 202),
+             'cbyte':(charrange_atom, MOLECULE_NUM, 203, 206),
              'cnull':'X'},
             # components field is eventually filled below
             ],
@@ -149,12 +244,12 @@ mapping = [
 
     # States output file appended with lower states
     {'outfile':outbase + 'lowstates.dat',
-     'infiles':(vald_file, vald_file, terms_file, terms_file),
-     'headlines':(2, 2, 0, 0),
-     'commentchar':('#','#','#','#'),
-     'linestep':(2, 2, 3, 3),   # step lengh in each file
-     'lineoffset':(0, 1, 0, 2), # start point of step in each file
-     'errline':("Unknown", "Unknown", "Unknown", "Unknown"),
+     'infiles':(vald_file, vald_file, terms_file),
+     'headlines':(2, 2, 0),
+     'commentchar':('#','#','#'),
+     'linestep':(2, 2, 3),   # step length in each file
+     'lineoffset':(0, 1, 0), # start point of step in each file
+     'errline':("Unknown", "Unknown", "Unknown"),
      'linemap':[
             {'cname':'charid',         #species,coup,jnum,term,energy (lower states)
              'cbyte':(merge_cols,
@@ -233,26 +328,16 @@ mapping = [
              'cname':'sn',
              'cbyte':(get_term_val,'seniority'),
              'cnull':'X',},
-
-            # read extra info from 2nd open term file
-            #{'filenum':3, # use 2nd open term file
-            # 'cname':'transition_type',
-            # 'cbyte':(get_term_transtype,'ttype'),
-            # 'cnull':'X',},
-            #{'filenum':3, # use 2nd open term file
-            # 'cname':'autoionized',
-            # 'cbyte':(get_term_transtype,'autoio'),
-            # 'cnull':'X',},
             ]
      }, # end of State model creation - lower states
 
     # re-importing upper states
     {'outfile':outbase + 'upstates.dat',
-     'infiles': (vald_file, vald_file, terms_file, terms_file),
-     'headlines':(2, 2, 0, 0),
-     'commentchar': ('#', '#', '#','#'),
-     'linestep':(2, 2, 3, 3),
-     'lineoffset':(0, 1, 1, 2), # start point of step
+     'infiles': (vald_file, vald_file, terms_file),
+     'headlines':(2, 2, 0),
+     'commentchar': ('#', '#', '#'),
+     'linestep':(2, 2, 3),
+     'lineoffset':(0, 1, 1), # start point of step
      'errline':("Unknown", "Unknown","Unknown"),
      'linemap':[
             {'cname':'charid',        #species,coup,jnum,term,energy (upper states)
@@ -332,25 +417,16 @@ mapping = [
              'filenum':2, # use term file
              'cbyte':(get_term_val,'seniority'),
              'cnull':'X',},
-            # read extra info from every third line in term file
-            #{'filenum':3, # use 2nd open term file
-            # 'cname':'transition_type',
-            # 'cbyte':(get_term_transtype,'ttype'),
-            # 'cnull':'X',},
-            #{'filenum':3, # use 2nd open term file
-            # 'cname':'autoionized',
-            # 'cbyte':(get_term_transtype,'autoio'),
-            # 'cnull':'X',},
             ]
      }, # end of upper states
 
     # Transition model, using the vald file
     {'outfile': outbase + 'transitions.dat',
-     'infiles':(vald_file,vald_file),
-     'headlines':(2,2),
-     'commentchar':('#','#'),
-     'linestep':(2,2),
-     'lineoffset':(0,1),
+     'infiles':(vald_file, vald_file, terms_file),
+     'headlines':(2,2,0),
+     'commentchar':('#','#','#'),
+     'linestep':(2,2,3),
+     'lineoffset':(0,1,2),
      'linemap':[
             {'cname':'id',
              'cbyte':(constant, 'NULL'),
@@ -363,16 +439,18 @@ mapping = [
              'cbyte':(merge_cols,
                       (30,36), (124,126), (58,64), (126,212), (44,58))},
                       #(30,36), (122,124), (58,63), (124,170), (44,58))},
-            #{'cname':'ritzwave',
-            # 'cbyte':(charrange, 0,15)},
-            {'cname':'wave',
+            {'cname':'wavevac',
+             'cbyte':(charrange, 0,15)},
+            {'cname':'waveair',
              'cbyte':(charrange, 15,30)},
             {'cname':'species',
              'cbyte':(charrange, 30,36)},
             {'cname':'loggf',
              'cbyte':(charrange, 36,44)},
+            # einstena is calculated in post-processing. We must set NULL for db to accept us though.
             {'cname':'einsteina',
-             'cbyte':(constant, 'NULL')},
+             'cbyte':(constant, 'NULL'),
+             'cnull':'NULL'},
             {'cname':'gammarad',
              'cbyte':(charrange, 102,109),
              'cnull':'0.0'},
@@ -394,8 +472,11 @@ mapping = [
             #{'cname':'einstein_a',
             # 'cbyte':(get_einstein_a, 36,44, 0,0, 15,30),
             # 'cnull':'0.000'},
-            #{'cname':'accur',
-            # 'cbyte':(get_accur, (307,308), (308,314)),
+
+            {'cname':'accur',
+             'cbyte':(get_accur,),
+             'cnull':'X'},
+
             # 'debug':False},
             #{'cname':'comment',
             # 'cbyte':(charrange, 318,334)},
@@ -405,11 +486,14 @@ mapping = [
 
             # read from every second line of the vald file
             {'filenum':1,
-             'cname':'wave_ref',
+             'cname':'waveair_ref',
              'cbyte':(charrange, 0,9)},
             {'filenum':1,
              'cname':'loggf_ref',
              'cbyte':(charrange, 9,17)},
+            {'filenum':1,
+             'cname':'wavevac_ref',
+             'cbyte':(charrange, 25,33)}, # extracting ref of upper energy level
             {'filenum':1,
              'cname':'gammarad_ref',
              'cbyte':(charrange, 41,49)},
@@ -421,6 +505,17 @@ mapping = [
              'cbyte':(charrange, 57,65)},
             {'cname':'wave_linelist',
              'cbyte':(charrange, 334,338)},
+
+            # read extra info from term file
+            {'filenum':2,
+             'cname':'transition_type',
+             'cbyte':(get_term_transtype,),
+             'cnull':'X',},
+            {'filenum':2,
+             'cname':'autoionized',
+             'cbyte':(get_auto_ionization,),
+             'cnull':'X',},
+
             ## These are the old connections to linelists rather than refs directly
             #{'cname':'loggf_linelist',
             # 'cbyte':(charrange, 338,342)},
@@ -441,8 +536,6 @@ mapping = [
             {'cname':'method_restrict',
              'cbyte':(constant, 'NULL'),
              'cnull':'NULL'},
-
-
             ],
     }, # end of transitions
 
@@ -510,36 +603,8 @@ mapping = [
 # short-cutting the mapping for testing
 #mapping = [mapping[0]] + mapping[2:]
 
-
-
 # Stand-alone scrípts (cannot depend on tables created above, these
 # are run first!)
-
-def species_component(species_file, outfile):
-    """
-    This is a stand-alone function for creating
-    a species-to-component mapping file representing
-    the many2many relationship.
-    """
-    outstring = ""
-    f = open(species_file, 'r')
-    for line in f:
-        if line.strip() and (line.strip().startswith('#') or line.strip().startswith('@')):
-            continue
-        sid = line[:7].strip()
-        if int(sid) < 5000:
-            continue
-        #import pdb;pdb.set_trace()
-        # we have a molecule
-        ncomp = int(line[194:195])
-        for icomp in range(ncomp):
-            csid = line[196+icomp*8 : 203+icomp*8].strip()
-            outstring += '\N;"%s";"%s"\n' % (sid, csid)
-    f.close()
-    f = open(outfile, 'w')
-    f.write(outstring)
-    f.close()
-    print "... Created file %s." % outfile
 
 # create many2many tables
 

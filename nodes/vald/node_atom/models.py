@@ -30,9 +30,6 @@ class State(Model):
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True)
     sn = PositiveSmallIntegerField(null=True)
 
-    #transition_type = CharField(max_length=2, null=True)
-    #autoionized = NullBooleanField(default=False)
-
     def j1j2(self):
         if self.j1 and self.j2:
             return (self.j1,self.j2)
@@ -48,8 +45,8 @@ class Transition(Model):
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True, db_index=False)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, db_index=False)
 
-    wave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
-
+    wavevac = DecimalField(max_digits=20, decimal_places=8, db_index=True)
+    waveair = DecimalField(max_digits=20, decimal_places=8, db_index=True)
     # wavevac (calculated from energies, has separated wavewac_ref (same as energies))
     # waveair + waveair_ref
 
@@ -61,13 +58,16 @@ class Transition(Model):
     gammawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
     sigmawaals = PositiveSmallIntegerField(null=True)
     alphawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
-    #accur = CharField(max_length=11,null=True)
+
+    # The accur tags are populated using the methods below
+    accurflag = CharField(max_length=1, null=True) # VALD flag: N,E,C or P
+    accur = DecimalField(max_digits=6, decimal_places=3, null=True)
     #comment = CharField(max_length=128, null=True)
 
     #srctag = ForeignKey(Reference, db_index=False)
 
-    #wavevac_ref
-    wave_ref = ForeignKey(Reference, related_name='iswaveref_trans', db_index=False)
+    wavevac_ref = ForeignKey(Reference, related_name='iswavevacref_trans', db_index=False)
+    waveair_ref = ForeignKey(Reference, related_name='iswaveairref_trans', db_index=False)
     # change above to waveair_ref?
     loggf_ref = ForeignKey(Reference, related_name='isloggfref_trans', db_index=False)
     gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans', db_index=False)
@@ -79,6 +79,9 @@ class Transition(Model):
     #gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans', db_index=False)
     #gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
     #waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans', db_index=False)
+
+    transition_type = CharField(max_length=2, null=True)
+    autoionized = NullBooleanField(default=False)
 
     # Method information. Since some xsams method categories are represented more than one vald equivalent,
     # we need one field for restrictable's queries and returnable's queries respectively.
@@ -92,9 +95,20 @@ class Transition(Model):
     def getWaals(self):
         if self.gammawaals: return self.gammawaals
         elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
-        else: return None
+        else: return ""
 
-# Don't calculate here, but directly using sql
+    def getAccurType(self):
+        "retrieve the right AccurType type depending on the VALD accur flag"
+        if self.accurflag in (u"N", u"E"): return u"estimated"
+        elif self.accurflag == u'C': return u"arbitrary"
+        elif self.accurflag == u'P': return u"systematic"
+        else: return ""
+
+    def getAccurRelative(self):
+        "retrieve AccuracyRelative tag as true/false depending on VALD accur flag"
+        return str(self.accurflag in (u"N", u"E", u"C")).lower() # returns true/false
+
+# Don't calculate here, but directly using sql (kept here for reference)
 #    def getEinsteinA(self):
 #        "Calculate the einstein A"
 #        return (0.667025e16 * 10**self.loggf) / ((2 * self.upstate.j + 1.0) * self.wave**2)

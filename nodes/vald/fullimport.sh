@@ -25,7 +25,7 @@ echo "CREATE DATABASE $VDB CHARACTER SET utf8;" | mysql -u "$VUSR" -p"$VPWD"
 echo "done."
 
 echo -n "Running load.sql ... "
-mysql -u "$VUSR" -p"$VPWD" "$VDB" < load.sql
+mysql --verbose -u "$VUSR" -p"$VPWD" "$VDB" < load.sql
 echo "done."
 
 echo -n "Creating database indexes... "

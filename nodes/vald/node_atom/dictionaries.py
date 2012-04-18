@@ -32,9 +32,10 @@ RETURNABLES = {\
 #############################################################
 'RadTransID':'RadTran.id',
 'RadTransSpeciesRef':'RadTran.species_id',
-'RadTransWavelength':'RadTran.wave',
+'RadTransWavelength':'RadTran.wavevac',
 'RadTransWavelengthUnit':u'A',
 'RadTransWavelengthComment':'Wavelength is for vacuum.',
+'RadTransProcess':"RadTran.transition_type",
 'RadTransWavelengthRef':'RadTran.wave_ref_id',
 'RadTransUpperStateRef':'RadTran.upstate_id',
 'RadTransLowerStateRef':'RadTran.lostate_id',
@@ -61,6 +62,9 @@ RETURNABLES = {\
 #'RadTransBroadeningPressureLineshapeName':'lorentzian',
 #'RadTransBroadeningPressureLineshapeParameterName':'["log(gamma)","alpha"]',
 #'RadTransBroadeningPressureRef':'RadTran.waals_ref_id',
+'RadTransProbabilityOscillatorStrengthAccuracy':'Radtran.accur',
+'RadTransProbabilityOscillatorStrengthAccuracyType':'Radtran.getAccurType()',
+'RadTransProbabilityOscillatorStrengthAccuracyRelative':'Radtran.getAccurRelative()'
 }
 
 # import the converter functions
