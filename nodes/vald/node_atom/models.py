@@ -46,7 +46,7 @@ class Transition(Model):
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, db_index=False)
 
     wavevac = DecimalField(max_digits=20, decimal_places=8, db_index=True)
-    waveair = DecimalField(max_digits=20, decimal_places=8, db_index=True)
+    waveair = DecimalField(max_digits=20, decimal_places=8, db_index=False)
     # wavevac (calculated from energies, has separated wavewac_ref (same as energies))
     # waveair + waveair_ref
 
@@ -114,7 +114,7 @@ class Transition(Model):
 #        return (0.667025e16 * 10**self.loggf) / ((2 * self.upstate.j + 1.0) * self.wave**2)
 
     def __unicode__(self):
-        return u'ID:%s Wavel: %s'%(self.id,self.wave)
+        return u'ID:%s Wavel: %s'%(self.id,self.wavevac)
     class Meta:
         db_table = u'transitions'
 
