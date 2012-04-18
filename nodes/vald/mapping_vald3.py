@@ -174,20 +174,25 @@ def species_component(species_file, outfile):
 # mapper for caching the connections between upper/lower state IDS
 # and their respective unique pk values. This depends on a MySQL database
 # vald_charid2id exists
-#import MySQLdb
-#CBCONN = MySQLdbqlite3.connect("localhost", "vald", "V@ld", "vald_charid2id")
-#CURSOR = DBCONN.cursor()
-#CURSOR.execute("DROP TABLE IF EXISTS mapping")
-#CURSOR.execute("CREATE_TABLE mapping (charid varchar(100) NOT_NULL, id int NOT_NULL AUTO_INCREMENT, PRIMARY KEY (charid))")
-#sql_select = "SELECT * from mapping where charid='%s'"
-#sql_insert = "INSERT "
-
-#def get_unique_state_id(charid):
+import MySQLdb
+CBCONN = MySQLdbqlite3.connect(host="localhost", user="vald_charid2id",
+                               passwd="V@ld", db="vald_charid2id")
+CURSOR = DBCONN.cursor()
+CURSOR.execute("DROP TABLE IF EXISTS mapping;")
+CURSOR.execute("""CREATE_TABLE mapping (
+                     charid varchar(255) PRIMARY KEY INDEX,
+                     id int NOT_NULL AUTO_INCREMENT UNIQUE);""")
+SQL_SELECT = "SELECT * from mapping where charid='%s'"
+SQL_INSERT = "INSERT IGNORE INTO mapping (charid) VALUES('%s')"
+def get_unique_state_id(charid):
     """
     Check charid against temporary database, return a
     matching unique and incrememntal ID, or create a new one.
     """
-
+    CURSOR.execute(SQL_INSERT % charid)
+    CURSOR.execute(SQL_SELECT % charid)
+    charid, idnum = CURSOR.fetchone()
+    return idnum
 
 # The mapping itself
 mapping = [
