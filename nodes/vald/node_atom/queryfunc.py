@@ -8,9 +8,9 @@ def setupResults(sql):
     ntranss=transs.count()
     if TRANSLIM < ntranss and (not sql.requestables or 'radiative' in sql.requestables):
         percentage = '%.1f'%(float(TRANSLIM)/ntranss *100)
-        #transs = transs.order_by('wave')
-        newmax = transs[TRANSLIM].wave
-        transs = Transition.objects.filter(q,Q(wave__lt=newmax))
+        #transs = transs.order_by('wavevac')
+        newmax = transs[TRANSLIM].wavevac
+        transs = Transition.objects.filter(q,Q(wavevac__lt=newmax))
         log.debug('Truncated results to %s, i.e %s A.'%(TRANSLIM,newmax))
     else: percentage=None
     log.debug('Transitions QuerySet set up. References next.')
@@ -18,7 +18,7 @@ def setupResults(sql):
     from time import time    
     sources = Reference.objects.all()    
     ## about 100 times slower than objects.all() objects 
-    #refIDs = set(tuple(transs.values_list('wave_ref_id', flat=True)) + 
+    #refIDs = set(tuple(transs.values_list('wavevac_ref_id', flat=True)) + 
     #             tuple(transs.values_list('loggf_ref_id', flat=True)) + 
     #             tuple(transs.values_list('gammarad_ref_id', flat=True)) + 
     #             tuple(transs.values_list('gammastark_ref_id', flat=True)) + 
