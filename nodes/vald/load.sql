@@ -26,19 +26,6 @@ alter table transitions ROW_FORMAT = FIXED;
 load data infile '/vald/vamdc/db_input_files/transitions.dat' ignore into table transitions columns terminated by ';' optionally enclosed by '"';
 
 --update transitions,sids set transitions.upstate=sids.id where transitions.upstate=sids.charid;
---update transitions,sids set transitions.lostate=sids.id where transitions.lostate=sids.charid;
-
---alter table transitions modify upstate INT;
---alter table transitions modify lostate INT;
-
-update transitions t, linelists ll set t.method_return=ll.method where t.wave_linelist_id=ll.id;
-update transitions t set t.method_restrict='0' where t.method_return='0';
-update transitions t set t.method_restrict='1' where t.method_return='1';
-update transitions t set t.method_restrict='2' where t.method_return='2';
-update transitions t set t.method_restrict='3' where t.method_return='3';
-update transitions t set t.method_restrict='1' where t.method_return='4'; -- not one-to-one match
-update transitions t set t.method_restrict='5' where t.method_return='5';
-
 update transitions t, states s set t.einsteina=(0.667025*POWER(10,16) * POWER(10,t.loggf)) / ((2.0 * s.j + 1.0) * POWER(t.wavevac,2)) where t.upstate=s.id;
 
 create index speciesid_wave on transitions (species_id, wavevac);

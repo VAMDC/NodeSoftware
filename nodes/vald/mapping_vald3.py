@@ -192,7 +192,7 @@ def species_component(species_file, outfile):
 import MySQLdb
 CURSORS = [MySQLdb.connect(host="localhost", user="vald", passwd="V@ld", db="vald_import").cursor() for i in range(4)]
 CURSORS[0].execute("DROP TABLE IF EXISTS mapping;")
-CURSORS[0].execute("CREATE TABLE mapping (idnum INT PRIMARY KEY AUTO_INCREMENT UNIQUE, charid VARCHAR(255) UNIQUE, INDEX(charid, idnum)) ENGINE=MEMORY;") #ENGINE=MEMORY);
+CURSORS[0].execute("CREATE TABLE mapping (idnum INT PRIMARY KEY AUTO_INCREMENT UNIQUE NOT NULL, charid VARCHAR(255) UNIQUE NOT NULL, INDEX(charid, idnum)) ENGINE=MEMORY;") #ENGINE=MEMORY);
 SQL_INSERT = "INSERT IGNORE INTO mapping (charid) VALUES('%s');"
 SQL_SELECT = "SELECT * from mapping where charid='%s';"
 def unique_state_id(linedata, cursorid, *ranges):

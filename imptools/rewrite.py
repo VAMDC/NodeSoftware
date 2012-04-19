@@ -309,27 +309,28 @@ def make_outfile(file_dict, global_debug=False):
 
         total += 1
 
-        for linedef in linemap:
+        try:
+            for linedef in linemap:
 
-            # check if debug flag is set for this line
+                # check if debug flag is set for this line
 
-            debug = global_debug or linedef.has_key('debug') and linedef['debug']
+                debug = global_debug or linedef.has_key('debug') and linedef['debug']
 
-            # do not stop or log on errors (this does not hide debug messages if debug is active)
-            #skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
+                # do not stop or log on errors (this does not hide debug messages if debug is active)
+                #skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
 
-            # parse the mapping for this line(s)
-            try:
+                # parse the mapping for this line(s)
                 dat = get_value(lines, linedef)
-            except RuntimeError:
-                # a parse method indicates we should skip creating this line
-                continue
+                if debug:
+                    print "DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat)
 
-            if debug:
-                print "DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat)
+                data.append(dat or NULL)
+            outf.write(';'.join(data) +'\n')
+        except RuntimeError:
+            # a parse method indicates we should skip creating this line
+            total -= 1
+            continue
 
-            data.append(dat or NULL)
-        outf.write(';'.join(data) +'\n')
     outf.close()
 
     print '  %s -> %s: %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), file_dict['outfile'], total, errors)
