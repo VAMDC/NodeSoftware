@@ -66,8 +66,8 @@ LINELIST_DICT = parse_linelist_file(base + "VALD3linelists.txt")
 # emp - relativistic Hartree-Fock calculations, normalized to the experimental lifetimes
 # pred - transitions between predicted energy levels
 # calc - relativistic Hartree-Fock calculations of lifetimes and transition probabilities
-# mix - mixture of observation times
-METHOD_DICT = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
+# mix - mixture of observation times/compilation
+METHOD_DICT = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5, 'comp':5}
 
 def get_method_type(linedata):
     """
@@ -83,6 +83,18 @@ def get_method_type(linedata):
 
 NIST_MAP = {"AAA":0.003,"AA":0.01,"A+":0.02,"A":0.03,"B+":0.07,
             "B":0.1,"C+":0.18,"C":0.25,"D+":0.40,"D":0.5,"E":1.0}
+
+def get_waveair(linedata):
+    """
+    Get measured air wavelengths (converted to vacuum), but only if it's
+    a different valúe than the Ritz wavelengths (wavevac)
+    """
+    waveair = charrange(linedata, 15,30)
+    if waveair == charrange(linedata, 0, 15): # comparing waveair to wavevac
+        return "X"
+    else:
+        return waveair
+
 def get_accur(linedata):
     """
     Extract VALD accur data and convert it to a VAMDC equivalent.
@@ -171,30 +183,53 @@ def species_component(species_file, outfile):
     f.close()
     print "... Created file %s." % outfile
 
-# mapper for caching the connections between upper/lower state IDS
-# and their respective unique pk values. This depends on a MySQL database
-# vald_charid2id exists
+# mapper for caching the connections between upper/lower state IDS and
+# their respective unique pk values. This depends on a MySQL database
+# vald_import exists. We create four database connections to be able
+# to handle multi-processing for each individual point where the
+# linefunc unique_state_id() is accessed.
+# OBS - detta kan återanvändas så länge inte in-dumpen ändrats;
 import MySQLdb
-CBCONN = MySQLdbqlite3.connect(host="localhost", user="vald_charid2id",
-                               passwd="V@ld", db="vald_charid2id")
-CURSOR = DBCONN.cursor()
-CURSOR.execute("DROP TABLE IF EXISTS mapping;")
-CURSOR.execute("""CREATE_TABLE mapping (
-                     charid varchar(255) PRIMARY KEY INDEX,
-                     id int NOT_NULL AUTO_INCREMENT UNIQUE);""")
-SQL_SELECT = "SELECT * from mapping where charid='%s'"
-SQL_INSERT = "INSERT IGNORE INTO mapping (charid) VALUES('%s')"
-def get_unique_state_id(charid):
+CURSORS = [MySQLdb.connect(host="localhost", user="vald", passwd="V@ld", db="vald_import").cursor() for i in range(4)]
+CURSORS[0].execute("DROP TABLE IF EXISTS mapping;")
+CURSORS[0].execute("CREATE TABLE mapping (idnum INT PRIMARY KEY AUTO_INCREMENT UNIQUE, charid VARCHAR(255) UNIQUE, INDEX(charid, idnum)) ENGINE=MEMORY;") #ENGINE=MEMORY);
+SQL_INSERT = "INSERT IGNORE INTO mapping (charid) VALUES('%s');"
+SQL_SELECT = "SELECT * from mapping where charid='%s';"
+def unique_state_id(linedata, cursorid, *ranges):
     """
     Check charid against temporary database, return a
     matching unique and incrememntal ID, or create a new one.
+
+    linedata - current line in indata file
+    cursorid - index of CURSORS list referencing the database
+               cursor to use for this access.
+    *ranges - line indices (tuple of tuples) to build charid from
     """
-    CURSOR.execute(SQL_INSERT % charid)
-    CURSOR.execute(SQL_SELECT % charid)
-    charid, idnum = CURSOR.fetchone()
+    cursor = CURSORS[cursorid]
+    charid = merge_cols(linedata, *ranges)
+    cursor.execute(SQL_SELECT % charid.replace("'","--"))
+    result = cursor.fetchone()
+    if result:
+        # state already stored previously. Rerunning.
+        if cursorid in (0, 1):
+            # no point in adding a new line to one of the states input files.
+            #print "charid exists. Skipping line."
+            raise RuntimeError
+        # transitions.dat should still update though.
+        #print "old id:",
+        idnum = result[0]
+    else:
+        # create a new store for charid
+        #print "new row:",
+        cursor.execute(SQL_INSERT % charid.replace("'","--"))
+        idnum = cursor.lastrowid
+    #print charid, idnum
+    #charid, idnum = cursor.fetchone()
     return idnum
 
+#------------------------------------------------------------
 # The mapping itself
+#------------------------------------------------------------
 mapping = [
     # Populate Species model, using the species input file.
     {'outfile':outbase + 'species.dat',
@@ -256,9 +291,9 @@ mapping = [
      'lineoffset':(0, 1, 0), # start point of step in each file
      'errline':("Unknown", "Unknown", "Unknown"),
      'linemap':[
-            {'cname':'charid',         #species,coup,jnum,term,energy (lower states)
-             'cbyte':(merge_cols,
-                      (30,36), (124,126), (58,64), (126,212), (44,58))},
+            {'cname':'id',         #species,coup,jnum,lande,term,energy (lower states)
+             'cbyte':(unique_state_id, 0,
+                      (30,36), (124,126), (58,64), (84,90), (126,212), (44,58))},
             {'cname':'species',
              'cbyte':(charrange, 30,36)},
             {'cname':'energy',
@@ -345,9 +380,9 @@ mapping = [
      'lineoffset':(0, 1, 1), # start point of step
      'errline':("Unknown", "Unknown","Unknown"),
      'linemap':[
-            {'cname':'charid',        #species,coup,jnum,term,energy (upper states)
-             'cbyte':(merge_cols,
-                      (30,36), (212,214), (78,84), (214,300), (64,78))},
+            {'cname':'id',        #species,coup,jnum,lande,term,energy (upper states)
+             'cbyte':(unique_state_id, 1,
+                      (30,36), (212,214), (78,84), (90,96), (214,300), (64,78))},
             {'cname':'species',
              'cbyte':(charrange, 30,36)},
             {'cname':'energy',
@@ -437,22 +472,24 @@ mapping = [
              'cbyte':(constant, 'NULL'),
              'cnull':'NULL'},
             {'cname':'upstate',
-             'cbyte':(merge_cols,
-                      (30,36), (212,214), (78,84), (214,300), (64,78))},
+             'cbyte':(unique_state_id, 2,
+                      (30,36), (212,214), (78,84), (90,96), (214,300), (64,78))},
                        #(30,36), (170,172), (77,82), (172,218), (63,77))},
             {'cname':'lostate',
-             'cbyte':(merge_cols,
-                      (30,36), (124,126), (58,64), (126,212), (44,58))},
+             'cbyte':(unique_state_id, 3,
+                      (30,36), (124,126), (58,64), (84,90), (126,212), (44,58))},
                       #(30,36), (122,124), (58,63), (124,170), (44,58))},
             {'cname':'wavevac',
-             'cbyte':(charrange, 0,15)},
+             'cbyte':(charrange, 0, 15)},
             {'cname':'waveair',
-             'cbyte':(charrange, 15,30)},
+             'cbyte':(get_waveair,),
+             'cnull':'X'},
             {'cname':'species',
              'cbyte':(charrange, 30,36)},
             {'cname':'loggf',
              'cbyte':(charrange, 36,44)},
             # einstena is calculated in post-processing. We must set NULL for db to accept us though.
+
             {'cname':'einsteina',
              'cbyte':(constant, 'NULL'),
              'cnull':'NULL'},
@@ -474,10 +511,9 @@ mapping = [
              'cbyte':(get_alphawaals, 116,124),
              'cnull':'0.000',
              "debug":False},
-            #{'cname':'einstein_a',
-            # 'cbyte':(get_einstein_a, 36,44, 0,0, 15,30),
-            # 'cnull':'0.000'},
 
+            {'cname':'accurflag',
+             'cbyte':(charrange, 307,308)},
             {'cname':'accur',
              'cbyte':(get_accur,),
              'cnull':'X'},
@@ -491,14 +527,14 @@ mapping = [
 
             # read from every second line of the vald file
             {'filenum':1,
+             'cname':'wavevac_ref',
+             'cbyte':(charrange, 25,33)}, # extracting ref of upper energy level
+             {'filenum':1,
              'cname':'waveair_ref',
              'cbyte':(charrange, 0,9)},
             {'filenum':1,
              'cname':'loggf_ref',
              'cbyte':(charrange, 9,17)},
-            {'filenum':1,
-             'cname':'wavevac_ref',
-             'cbyte':(charrange, 25,33)}, # extracting ref of upper energy level
             {'filenum':1,
              'cname':'gammarad_ref',
              'cbyte':(charrange, 41,49)},
@@ -508,6 +544,7 @@ mapping = [
             {'filenum':1,
              'cname':'waals_ref',
              'cbyte':(charrange, 57,65)},
+
             {'cname':'wave_linelist',
              'cbyte':(charrange, 334,338)},
 
@@ -521,28 +558,16 @@ mapping = [
              'cbyte':(get_auto_ionization,),
              'cnull':'X',},
 
-            ## These are the old connections to linelists rather than refs directly
-            #{'cname':'loggf_linelist',
-            # 'cbyte':(charrange, 338,342)},
-            #{'cname':'lande_linelist',
-            # 'cbyte':(charrange, 350,354)},
-            #{'cname':'gammarad_linelist',
-            # 'cbyte':(charrange, 354,358)},
-            #{'cname':'gammastark_linelist',
-            # 'cbyte':(charrange, 358,362)},
-            #{'cname':'waals_linelist',
-            # 'cbyte':(charrange, 362,366)},
-            #
             # methods are parsed from wave_linelist in post-processing
             # but we need to insert NULLs to make the DB accept the file.
-            {'cname':'method_return',
+             {'cname':'method_return',
              'cbyte':(constant, 'NULL'),
              'cnull':'NULL'},
-            {'cname':'method_restrict',
+             {'cname':'method_restrict',
              'cbyte':(constant, 'NULL'),
-             'cnull':'NULL'},
-            ],
-    }, # end of transitions
+              'cnull':'NULL'},
+             ],
+            }, # end of transitions
 
     # Populate References with bibtex data file (block parsing)
     {'outfile':outbase + 'references.dat',
@@ -603,10 +628,11 @@ mapping = [
             ],
     }, # end of definition for vald_conf file
 
-    ]
+     ]
 
 # short-cutting the mapping for testing
 #mapping = [mapping[0]] + mapping[2:]
+#mapping = [mapping[1]]
 
 # Stand-alone scrípts (cannot depend on tables created above, these
 # are run first!)

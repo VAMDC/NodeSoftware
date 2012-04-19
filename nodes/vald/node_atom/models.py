@@ -45,8 +45,8 @@ class Transition(Model):
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True, db_index=False)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, db_index=False)
 
-    wavevac = DecimalField(max_digits=20, decimal_places=8, db_index=True)
-    waveair = DecimalField(max_digits=20, decimal_places=8, db_index=False)
+    wavevac = DecimalField(max_digits=16, decimal_places=8, db_index=True)
+    waveair = DecimalField(max_digits=16, decimal_places=8, null=True, db_index=False)
     # wavevac (calculated from energies, has separated wavewac_ref (same as energies))
     # waveair + waveair_ref
 
@@ -83,7 +83,7 @@ class Transition(Model):
     transition_type = CharField(max_length=2, null=True)
     autoionized = NullBooleanField(default=False)
 
-    # Method information. Since some xsams method categories are represented more than one vald equivalent,
+    # Method information. Since some xsams method categories are represented by more than one vald equivalent,
     # we need one field for restrictable's queries and returnable's queries respectively.
     # vald category mapping = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
     # vald->xsams mapping = {0:'experiment', 1:'semiempirical', 2:'derived', 3:'theory',4:'semiempirical',5:'compilation'}
@@ -92,15 +92,17 @@ class Transition(Model):
     method_return = PositiveSmallIntegerField(null=True, db_index=False) # this is the method category, populated in post-processing by parsing wave_linelist field
     method_restrict = PositiveSmallIntegerField(null=True, db_index=True) # this is the method category to restrict on, populated in post-processing.
 
-    def waverefs(self):
-        return self.wavevac_ref, self.waveair_ref
-
     def waves(self):
-        return self.wavevac, self.waveair
+        if self.waveair: return self.wavevac, self.waveair
+        else: return self.wavevac
+
+    def waverefs(self):
+        if self.waveair: return self.wavevac_ref, self.waveair_ref
+        else: return self.wavevac_ref
 
     def getWaals(self):
         if self.gammawaals: return self.gammawaals
-        elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
+        elif self.sigmawaals and self.alphawaals: return [self.sigmawaals, self.alphawaals]
         else: return ""
 
     def getAccurType(self):
