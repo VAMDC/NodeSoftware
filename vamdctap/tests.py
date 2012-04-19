@@ -18,7 +18,7 @@ output tests - checks so the total output from generator matches what's expected
 
 # safely import test framework (django-version non-specific)
 
-import re
+import re, sys
 from datetime import datetime
 try:
     from django.utils.unittest import TestCase
@@ -44,6 +44,9 @@ except:
 
 from nodes.ExampleNode.node import queryfunc
 
+if not hasattr(settings, "EXAMPLENODE") or not settings.EXAMPLENODE:
+    print "Error: The NodeSoftware unit tests must be run from nodes/ExampleNode."
+    sys.exit()
 
 #------------------------------------------------------------
 # Testing of sending TAP queries and their response
