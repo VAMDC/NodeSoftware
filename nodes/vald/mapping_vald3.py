@@ -81,9 +81,6 @@ def get_method_type(linedata):
     else:
         return 'X'
 
-NIST_MAP = {"AAA":0.003,"AA":0.01,"A+":0.02,"A":0.03,"B+":0.07,
-            "B":0.1,"C+":0.18,"C":0.25,"D+":0.40,"D":0.5,"E":1.0}
-
 def get_waveair(linedata):
     """
     Get measured air wavelengths (converted to vacuum), but only if it's
@@ -95,6 +92,8 @@ def get_waveair(linedata):
     else:
         return waveair
 
+NIST_MAP = {"AAA":0.003,"AA":0.01,"A+":0.02,"A":0.03,"B+":0.07,
+            "B":0.1,"C+":0.18,"C":0.25,"D+":0.40,"D":0.5,"E":1.0}
 def get_accur(linedata):
     """
     Extract VALD accur data and convert it to a VAMDC equivalent.
@@ -156,6 +155,7 @@ def charrange_atom(linedata, molid, ia, ib):
     if charrange2int(linedata, 0, 7) < molid:
         return charrange(linedata, ia, ib)
     return 'X'
+
 def species_component(species_file, outfile):
     """
     This is a stand-alone function for creating
@@ -220,11 +220,15 @@ def unique_state_id(linedata, cursorid, *ranges):
         idnum = result[0]
     else:
         # create a new store for charid
-        #print "new row:",
+        #print " new row:",
         cursor.execute(SQL_INSERT % charid.replace("'","--"))
         idnum = cursor.lastrowid
-    #print charid, idnum
-    #charid, idnum = cursor.fetchone()
+    if not idnum:
+        # this is a rare condition where two processes try to create a
+        # new row with the same charid at exactly the same time.
+        cursor.execute(SQL_SELECT % charid.replace("'","--"))
+        idnum, charid = cursor.fetchone()
+    #print cursorid, charid, idnum
     return idnum
 
 #------------------------------------------------------------
@@ -327,11 +331,14 @@ mapping = [
             #{'cname':'level_linelist',
             # 'cbyte':(charrange, 366,370)},
 
+            {'cname':'j',
+             'cbyte':(charrange, 58,64)},
+
             # these are read from 1st open term file
-            {'filenum':2, # use term file
-             'cname':'j',
-             'cbyte':(get_term_val,'J'),
-             'cnull':'X',},
+            #{'filenum':2, # use term file
+            # 'cname':'j',
+            # 'cbyte':(get_term_val,'J'),
+            # 'cnull':'X',},
             {'filenum':2, # use term file
              'cname':'l',
              'cbyte':(get_term_val,'L'),
@@ -416,11 +423,14 @@ mapping = [
             #{'cname':'level_linelist',
             # 'cbyte':(charrange, 366,370)},
 
-            # these are read from term file
             {'cname':'j',
-             'filenum':2, # use term file
-             'cbyte':(get_term_val,'J'),
-             'cnull':'X',},
+             'cbyte':(charrange, 78,84)},
+
+            # these are read from term file
+            #{'cname':'j',
+            # 'filenum':2, # use term file
+            # 'cbyte':(get_term_val,'J'),
+            # 'cnull':'X',},
             {'cname':'l',
              'filenum':2, # use term file
              'cbyte':(get_term_val,'L'),
