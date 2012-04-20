@@ -19,6 +19,7 @@ class State(Model):
     #lande_linelist = ForeignKey(LineList, related_name='islandelinelist_state', db_index=False)
     #level_linelist = ForeignKey(LineList, related_name='islevellinelist_state', db_index=False)
 
+    #coupling = CharField(max_length=4, null=True)
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True)
     l = PositiveSmallIntegerField(db_column=u'L', null=True)
     s = DecimalField(max_digits=3, decimal_places=1,db_column=u'S', null=True)
@@ -28,14 +29,23 @@ class State(Model):
     k = DecimalField(max_digits=3, decimal_places=1,db_column=u'K', null=True)
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True)
-    sn = PositiveSmallIntegerField(null=True)
+    sn = PositiveSmallIntegerField(db_column=u'Sn',null=True)
 
-    def j1j2(self):
-        if self.j1 and self.j2:
-            return (self.j1,self.j2)
-
+    def jj(self):
+        if None not in (self,j1, self.j2):
+            return (self.j1, self.j2)
+    def multiplicity(self):
+        if self.s != None:
+            return 2 * self.s + 1
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
+
+    def get_Components(self):
+        """This is required in order to supply a Components property
+        for the makeAtomsComponents tagmaker."""
+        return self
+    Components = property(get_Components)
+
     class Meta:
         db_table = u'states'
 

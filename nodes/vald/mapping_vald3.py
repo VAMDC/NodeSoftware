@@ -293,7 +293,7 @@ mapping = [
      'commentchar':('#','#','#'),
      'linestep':(2, 2, 3),   # step length in each file
      'lineoffset':(0, 1, 0), # start point of step in each file
-     'errline':("Unknown", "Unknown", "Unknown"),
+     'errlines':("Unknown", "Unknown", "X"), # termfile errline must not be 'Unknown' since some good lines start with that.
      'linemap':[
             {'cname':'id',         #species,coup,jnum,lande,term,energy (lower states)
              'cbyte':(unique_state_id, 0,
@@ -303,7 +303,7 @@ mapping = [
             {'cname':'energy',
              'cbyte':(charrange, 44,58)},
             #{'cname':'j',
-            # 'cbyte':(charrange, 58,63)},
+            # 'cbyte':(charrange, 58,64)},
             {'cname':'lande',
              'cbyte':(charrange, 84,90),
              'cnull':'99.00'},
@@ -331,14 +331,11 @@ mapping = [
             #{'cname':'level_linelist',
             # 'cbyte':(charrange, 366,370)},
 
-            {'cname':'j',
-             'cbyte':(charrange, 58,64)},
-
             # these are read from 1st open term file
-            #{'filenum':2, # use term file
-            # 'cname':'j',
-            # 'cbyte':(get_term_val,'J'),
-            # 'cnull':'X',},
+            {'filenum':2, # use term file
+             'cname':'j',
+             'cbyte':(get_term_val,'J'),
+             'cnull':'X',},
             {'filenum':2, # use term file
              'cname':'l',
              'cbyte':(get_term_val,'L'),
@@ -385,7 +382,7 @@ mapping = [
      'commentchar': ('#', '#', '#'),
      'linestep':(2, 2, 3),
      'lineoffset':(0, 1, 1), # start point of step
-     'errline':("Unknown", "Unknown","Unknown"),
+     'errlines':("Unknown", "Unknown","X"),
      'linemap':[
             {'cname':'id',        #species,coup,jnum,lande,term,energy (upper states)
              'cbyte':(unique_state_id, 1,
@@ -397,6 +394,10 @@ mapping = [
             {'cname':'lande',
              'cbyte':(charrange, 90,96),
              'cnull':'99.00'},
+
+            #{'cname':'j',
+            # 'cbyte':(charrange, 78,84)},
+
             #{'cname':'coupling',
             # 'cbyte':(charrange, 212,214)},
             #{'cname':'term',
@@ -423,14 +424,11 @@ mapping = [
             #{'cname':'level_linelist',
             # 'cbyte':(charrange, 366,370)},
 
-            {'cname':'j',
-             'cbyte':(charrange, 78,84)},
-
             # these are read from term file
-            #{'cname':'j',
-            # 'filenum':2, # use term file
-            # 'cbyte':(get_term_val,'J'),
-            # 'cnull':'X',},
+            {'cname':'j',
+             'filenum':2, # use term file
+             'cbyte':(get_term_val,'J'),
+             'cnull':'X',},
             {'cname':'l',
              'filenum':2, # use term file
              'cbyte':(get_term_val,'L'),

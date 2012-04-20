@@ -15,13 +15,13 @@ def setupResults(sql):
     else: percentage=None
     log.debug('Transitions QuerySet set up. References next.')
 
-    from time import time    
-    sources = Reference.objects.all()    
-    ## about 100 times slower than objects.all() objects 
-    #refIDs = set(tuple(transs.values_list('wavevac_ref_id', flat=True)) + 
-    #             tuple(transs.values_list('loggf_ref_id', flat=True)) + 
-    #             tuple(transs.values_list('gammarad_ref_id', flat=True)) + 
-    #             tuple(transs.values_list('gammastark_ref_id', flat=True)) + 
+    from time import time
+    sources = Reference.objects.all()
+    ## about 100 times slower than objects.all() objects
+    #refIDs = set(tuple(transs.values_list('wavevac_ref_id', flat=True)) +
+    #             tuple(transs.values_list('loggf_ref_id', flat=True)) +
+    #             tuple(transs.values_list('gammarad_ref_id', flat=True)) +
+    #             tuple(transs.values_list('gammastark_ref_id', flat=True)) +
     #             tuple(transs.values_list('waals_ref', flat=True)))
     #sources = Reference.objects.filter(pk__in=refIDs)
 

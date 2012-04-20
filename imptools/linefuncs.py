@@ -130,8 +130,9 @@ def get_term_val(linedata, varname):
     except ValueError:
         # not enough parts (e.g. "Unknown" terms)
         return 'X'
-    # parse to
+    # parse
     termdict = dict(zip([p.strip().lower() for p in idents.split(',')], [v.strip() for v in values.split(',')]))
+    #if coupling.startswith("Unknown"): print linedata, termdict
     return termdict.get(varname.lower(), 'X')
 
 def get_gammawaals(linedata, sep1, sep2):
