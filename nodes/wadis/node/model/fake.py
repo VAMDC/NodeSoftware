@@ -28,7 +28,7 @@ categoryTypeDict = getCategoryTypeDict()
 def toStr(item):
 	strValue = 'X'
 	if item is not None:
-		if type(item) == list:
+		if type(item) == tuple:
 			if type(item[0]) == str and len(item[0]) > 4 and item[0][-4:] == 'Mode':
 				return ''
 			value = item[1]
@@ -36,19 +36,23 @@ def toStr(item):
 			value = item
 
 		if value is not None:
-			if type(value) == list:
-				strValue = '.'.join(filter(bool, map(toStr, value)))
-			else:
-				strValue = str(value)
-				if strValue == '+':
-					strValue = '1'
-				elif strValue == '-':
-					strValue = '0'
+			if not (type(value) == int and value < 0):
+				if type(value) == tuple:
+					strValue = '.'.join(filter(bool, map(toStr, value)))
+				else:
+					strValue = str(value)
+					if strValue == '+':
+						strValue = '1'
+					elif strValue == '-':
+						strValue = '0'
 	return strValue
 
 
+idCount = 0
 def makeStateId(id_substance, qns):
-	return str(id_substance - 1000000) + '-' + '.'.join(filter(bool, map(toStr, qns)))
+	global idCount
+	idCount += 1
+	return str(id_substance - 1000000) + '-' + '.'.join(filter(bool, map(toStr, qns))) + '-' + str(idCount)
 
 
 
@@ -68,7 +72,7 @@ class State(object):
 		if item in self.__dict__:
 			return getattr(self, item)
 		elif item in self.qns:
-			if self.qns[item] == -2:
+			if type(self.qns[item]) == int and  self.qns[item] < 0:
 				return None
 			else:
 				if type(self.qns[item]) == unicode and len(self.qns[item]) > 1:
