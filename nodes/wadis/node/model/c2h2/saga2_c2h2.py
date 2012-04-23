@@ -20,7 +20,7 @@ class Energy(EnergyData):
 		qns = [None] * 11
 		if self.ident_nm is not None:
 			qns = self.ident_nm.split()
-		return [["viMode", [1, 2, 3, 4, 5]], ["vi", [qns[0], qns[1], qns[2], qns[3], qns[4]]], ["l", qns[5]], ["r", None if qns[6] == '_' else qns[6]], ["J", qns[7]], ["vibInv", qns[8]], ["parity", None if qns[9] == '_' else qns[9]], ["kronigParity", qns[10]]]
+		return (("viMode", (1, 2, 3, 4, 5)), ("vi", (qns[0], qns[1], qns[2], qns[3], qns[4])), ("l", qns[5]), ("r", None if qns[6] == '_' else qns[6]), ("J", qns[7]), ("vibInv", qns[8]), ("parity", None if qns[9] == '_' else qns[9]), ("kronigParity", qns[10]))
 
 
 	class Meta(EnergyData.Meta):
@@ -64,11 +64,11 @@ class Transition(TransitionDataW):
 
 
 	def up(self):
-		return [["viMode", [1, 2, 3, 4, 5]], ["vi", [self.ident_up_nu1, self.ident_up_nu2, self.ident_up_nu3, self.ident_up_nu4, self.ident_up_nu5]], ["l", self.ident_up_l], ["r", None if self.ident_up_r == '_' else self.ident_up_r], ["J", self.ident_up_j], ["vibInv", self.ident_up_sym], ["parity", None if self.ident_up_sym2 == '_' else self.ident_up_sym2], ["kronigParity", self.ident_up_epsilon]]
+		return (("viMode", (1, 2, 3, 4, 5)), ("vi", (self.ident_up_nu1, self.ident_up_nu2, self.ident_up_nu3, self.ident_up_nu4, self.ident_up_nu5)), ("l", self.ident_up_l), ("r", None if self.ident_up_r == '_' else self.ident_up_r), ("J", self.ident_up_j), ("vibInv", self.ident_up_sym), ("parity", None if self.ident_up_sym2 == '_' else self.ident_up_sym2), ("kronigParity", self.ident_up_epsilon))
 
 
 	def low(self):
-		return [["viMode", [1, 2, 3, 4, 5]], ["vi", [self.ident_lo_nu1, self.ident_lo_nu2, self.ident_lo_nu3, self.ident_lo_nu4, self.ident_lo_nu5]], ["l", self.ident_lo_l], ["r", None if self.ident_lo_r == '_' else self.ident_lo_r], ["J", self.ident_lo_j], ["vibInv", self.ident_lo_sym], ["parity", None if self.ident_lo_sym2 == '_' else self.ident_lo_sym2], ["kronigParity", self.ident_lo_epsilon]]
+		return (("viMode", (1, 2, 3, 4, 5)), ("vi", (self.ident_lo_nu1, self.ident_lo_nu2, self.ident_lo_nu3, self.ident_lo_nu4, self.ident_lo_nu5)), ("l", self.ident_lo_l), ("r", None if self.ident_lo_r == '_' else self.ident_lo_r), ("J", self.ident_lo_j), ("vibInv", self.ident_lo_sym), ("parity", None if self.ident_lo_sym2 == '_' else self.ident_lo_sym2), ("kronigParity", self.ident_lo_epsilon))
 
 
 	class Meta(TransitionData.Meta):
@@ -112,11 +112,11 @@ class Lineprof(LineprofData):
 
 
 	def up(self):
-		return [["viMode", [1, 2, 3, 4, 5]], ["vi", [self.ident_up_nu1, self.ident_up_nu2, self.ident_up_nu3, self.ident_up_nu4, self.ident_up_nu5]], ["l", self.ident_up_l], ["r", None if self.ident_up_r == '_' else self.ident_up_r], ["J", self.ident_up_j], ["vibInv", self.ident_up_sym], ["parity", None if self.ident_up_sym2 == '_' else self.ident_up_sym2], ["kronigParity", self.ident_up_epsilon]]
+		return (("viMode", (1, 2, 3, 4, 5)), ("vi", (self.ident_up_nu1, self.ident_up_nu2, self.ident_up_nu3, self.ident_up_nu4, self.ident_up_nu5)), ("l", self.ident_up_l), ("r", None if self.ident_up_r == '_' else self.ident_up_r), ("J", self.ident_up_j), ("vibInv", self.ident_up_sym), ("parity", None if self.ident_up_sym2 == '_' else self.ident_up_sym2), ("kronigParity", self.ident_up_epsilon))
 
 
 	def low(self):
-		return [["viMode", [1, 2, 3, 4, 5]], ["vi", [self.ident_lo_nu1, self.ident_lo_nu2, self.ident_lo_nu3, self.ident_lo_nu4, self.ident_lo_nu5]], ["l", self.ident_lo_l], ["r", None if self.ident_lo_r == '_' else self.ident_lo_r], ["J", self.ident_lo_j], ["vibInv", self.ident_lo_sym], ["parity", None if self.ident_lo_sym2 == '_' else self.ident_lo_sym2], ["kronigParity", self.ident_lo_epsilon]]
+		return (("viMode", (1, 2, 3, 4, 5)), ("vi", (self.ident_lo_nu1, self.ident_lo_nu2, self.ident_lo_nu3, self.ident_lo_nu4, self.ident_lo_nu5)), ("l", self.ident_lo_l), ("r", None if self.ident_lo_r == '_' else self.ident_lo_r), ("J", self.ident_lo_j), ("vibInv", self.ident_lo_sym), ("parity", None if self.ident_lo_sym2 == '_' else self.ident_lo_sym2), ("kronigParity", self.ident_lo_epsilon))
 
 
 	class Meta(LineprofData.Meta):
