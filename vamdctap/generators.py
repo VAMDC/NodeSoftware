@@ -91,7 +91,6 @@ def GetValue(returnable_key, **kwargs):
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
         #log.debug(e)
-        #print 'Not in dictionary: ' + returnable_key
         return ''
 
     # whenever the right-hand-side is not a string, treat
