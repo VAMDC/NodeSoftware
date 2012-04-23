@@ -276,20 +276,27 @@ def makeDataSeriesAccuracyType(keyword, G):
     """
     build the elements for accuracy belonging to a data series.
     """
+    errlist = makeiter( G(keyword + "AccuracyErrorList") )
+    errfile = G(keyword + "AccuracyErrorFile")
+    errval = G(keyword + "AccuracyErrorValue")
+    if not (errlist or errfile or errval):
+        return ''
+
+    errlistN = G(keyword + "AccuracyErrorListN")
+    if errlist and not errlistN:
+        errlistN = len(errlist)
+
     string = makePrimaryType("Accuracy", keyword + "Accuracy", G,
                     extraAttr={"type":G(keyword+"AccuracyType"),
                                "relative":G(keyword+"AccuracyRelative")})
-    if G(keyword + "ErrorList"):
-        string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join(str(o) for o in makeiter(G(keyword + "ErrorList"))))
-    elif G(keyword + "ErrorFile"):
-        string += "<ErrorFile>%s</ErrorFile>" % G(keyword + "ErrorFile")
-    elif G(keyword + "ErrorValue"):
-        string += "<ErrorValue>%s</ErrorValue" % G(keyword + "ErrorValue")
+    if errlist:
+        string += "<ErrorList count='%s'>%s</ErrorList>" % (errlistN, " ".join(str(o) for o in errlist))
+    elif errfile:
+        string += "<ErrorFile>%s</ErrorFile>" % errfile
+    elif errval:
+        string += "<ErrorValue>%s</ErrorValue" % errval
     string += "</Accuracy>"
-    if '<Error' in string: # check if there actually is some content
-        return string
-    else:
-        return ''
+    return string
 
 def makeEvaluation(keyword, G):
     """
