@@ -20,7 +20,7 @@ class Energy(EnergyData):
 		qns = [None] * 6
 		if self.ident_nm is not None:
 			qns = self.ident_nm.split()
-		return [["v1", qns[0]], ["v2", qns[1]], ["l2", qns[2]], ["v3", qns[3]], ["J", qns[4]], ["kronigParity", qns[5]]]
+		return (("v1", qns[0]), ("v2", qns[1]), ("l2", qns[2]), ("v3", qns[3]), ("J", qns[4]), ("kronigParity", qns[5]))
 
 
 	class Meta(EnergyData.Meta):
@@ -54,11 +54,11 @@ class Transition(TransitionDataW):
 
 
 	def up(self):
-		return [["v1", self.ident_up_n1], ["v2", self.ident_up_n2], ["l2", self.ident_up_l2], ["v3", self.ident_up_n3], ["J", self.ident_up_j], ["kronigParity", self.ident_up_sym]]
+		return (("v1", self.ident_up_n1), ("v2", self.ident_up_n2), ("l2", self.ident_up_l2), ("v3", self.ident_up_n3), ("J", self.ident_up_j), ("kronigParity", self.ident_up_sym))
 
 
 	def low(self):
-		return [["v1", self.ident_lo_n1], ["v2", self.ident_lo_n2], ["l2", self.ident_lo_l2], ["v3", self.ident_lo_n3], ["J", self.ident_lo_j], ["kronigParity", self.ident_lo_sym]]
+		return (("v1", self.ident_lo_n1), ("v2", self.ident_lo_n2), ("l2", self.ident_lo_l2), ("v3", self.ident_lo_n3), ("J", self.ident_lo_j), ("kronigParity", self.ident_lo_sym))
 
 
 	class Meta(TransitionData.Meta):
@@ -92,11 +92,11 @@ class Lineprof(LineprofData):
 
 
 	def up(self):
-		return [["v1", self.ident_up_n1], ["v2", self.ident_up_n2], ["l2", self.ident_up_l2], ["v3", self.ident_up_n3], ["J", self.ident_up_j], ["kronigParity", self.ident_up_sym]]
+		return (("v1", self.ident_up_n1), ("v2", self.ident_up_n2), ("l2", self.ident_up_l2), ("v3", self.ident_up_n3), ("J", self.ident_up_j), ("kronigParity", self.ident_up_sym))
 
 
 	def low(self):
-		return [["v1", self.ident_lo_n1], ["v2", self.ident_lo_n2], ["l2", self.ident_lo_l2], ["v3", self.ident_lo_n3], ["J", self.ident_lo_j], ["kronigParity", self.ident_lo_sym]]
+		return (("v1", self.ident_lo_n1), ("v2", self.ident_lo_n2), ("l2", self.ident_lo_l2), ("v3", self.ident_lo_n3), ("J", self.ident_lo_j), ("kronigParity", self.ident_lo_sym))
 
 
 	class Meta(LineprofData.Meta):
