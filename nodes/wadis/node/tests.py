@@ -6,6 +6,7 @@ from lxml import objectify, etree
 from django.conf import settings
 #Warning! Forced DEBUG = FALSE in DjangoTestSuiteRunner->setup_test_environment->settings.DEBUG = False
 from models import *
+import wadis.node.model.fake as fake
 from wadis.node import transforms
 #import nodes.wadis vs. wadis - no cache. See print sys.modules
 import wadis.node.queryfunc as queryfunc
@@ -18,6 +19,7 @@ if 'NodeID' in DICTS.RETURNABLES:
 else:
 	NODEID = 'fake'
 
+DEBUG = False
 try:
 	from django.utils.unittest import TestCase
 except ImportError:
@@ -61,7 +63,9 @@ def removeSelfSource(objTree):
 @test.profile('vamdc_profile.log')
 def getBigFile():
 	settings.DEBUG = True
-	query = 'LANG=VSS1&FORMAT=VERIFICATION&QUERY=SELECT All WHERE InChI =\'InChI=1S/H2O/h1H2/i/hD\''
+	#query = 'LANG=VSS1&FORMAT=VERIFICATION&QUERY=SELECT All WHERE InChI =\'InChI=1S/H2O/h1H2/i/hD\''
+	#query = "LANG=VSS1&FORMAT=XSAMS&QUERY=select * where (RadTransWavenumber >= 1239.0 AND RadTransWavenumber <= 1240.0) AND ((InchiKey IN ('A', 'XLYOFNOQVPJJNP-DYCDLGHISA-N','XLYOFNOQVPJJNP-DQGQKLTASA-N')))"
+	query = "LANG=VSS1&FORMAT=VERIFICATION&QUERY=select * where (RadTransWavenumber >= 1239.0 AND RadTransWavenumber <= 1240.0) AND ((InchiKey IN ('A', 'XLYOFNOQVPJJNP-DYCDLGHISA-N','XLYOFNOQVPJJNP-DQGQKLTASA-N')))"
 
 	request = HttpRequest()
 	request.META["SERVER_NAME"] = 'localhost'
@@ -70,9 +74,9 @@ def getBigFile():
 	request.META["QUERY_STRING"] = query
 
 	request.REQUEST = toDict(QueryDict(query))
-	return views.sync(request).content
-#getBigFile()
 
+	return views.sync(request).content
+getBigFile()
 
 
 class VerificationTest(TestCase):
@@ -81,6 +85,7 @@ class VerificationTest(TestCase):
 
 
 	def setUp(self):
+		fake.idCount = 0
 		self.request = HttpRequest()
 		self.request.META["SERVER_NAME"] = 'localhost'
 		self.request.META["SERVER_PORT"] = '80'
@@ -92,7 +97,8 @@ class VerificationTest(TestCase):
 
 	def testAddRules(self):
 		rulesParser = RulesParser()
-		rulesParser.addRules = {Rule(NODEID, "abs(nltcs:J + nltcs:Ka) <= 11"), Rule(NODEID, "abs(nltcs:Ka + nltcs:v1) <= pow(nltcs:v2, nltcs:Kc)")}
+		# 2.6 set([]) ; 2.7 {}
+		rulesParser.addRules = set([Rule(NODEID, "abs(nltcs:J + nltcs:Ka) <= 11"), Rule(NODEID, "abs(nltcs:Ka + nltcs:v1) <= pow(nltcs:v2, nltcs:Kc)")])
 		queryfunc.rules = rulesParser.getRules()
 
 		self.request.REQUEST = self.queryDict
@@ -112,7 +118,7 @@ class VerificationTest(TestCase):
 
 	def testUseOnlyRules(self):
 		rulesParser = RulesParser()
-		rulesParser.useRules = {Rule("nltcsRuleT02", None), Rule(NODEID, "abs(nltcs:J + nltcs:Ka) <= 11")}
+		rulesParser.useRules = set([Rule("nltcsRuleT02", None), Rule(NODEID, "abs(nltcs:J + nltcs:Ka) <= 11")])
 		queryfunc.rules = rulesParser.getRules()
 
 		self.request.REQUEST = self.queryDict
@@ -126,7 +132,7 @@ class VerificationTest(TestCase):
 
 	def testDelRules(self):
 		rulesParser = RulesParser()
-		rulesParser.delRules = {Rule("nltcsRuleS01", None), Rule("nltcsRuleT02", None)}
+		rulesParser.delRules = set([Rule("nltcsRuleS01", None), Rule("nltcsRuleT02", None)])
 		queryfunc.rules = rulesParser.getRules()
 
 		self.request.REQUEST = self.queryDict
@@ -139,7 +145,7 @@ class VerificationTest(TestCase):
 
 
 	def testALL(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		self.queryDict["RETURN"] = 'ALL'
 		self.request.REQUEST = self.queryDict
 		content = views.sync(self.request).content
@@ -153,7 +159,7 @@ class VerificationTest(TestCase):
 
 
 	def testBAD(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		self.queryDict["RETURN"] = 'BAD'
 		self.request.REQUEST = self.queryDict
 		content = views.sync(self.request).content
@@ -166,7 +172,7 @@ class VerificationTest(TestCase):
 		self.assertEquals(expected, actual)
 
 	def testGOOD(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		self.queryDict["RETURN"] = 'GOOD'
 		self.request.REQUEST = self.queryDict
 		content = views.sync(self.request).content
@@ -190,6 +196,8 @@ class TapSyncTest(TestCase):
 
 
 	def setUp(self):
+		fake.idCount = 0
+
 		self.request = HttpRequest()
 		self.request.META["SERVER_NAME"] = 'localhost'
 		self.request.META["SERVER_PORT"] = '80'
@@ -200,7 +208,7 @@ class TapSyncTest(TestCase):
 
 
 	def testGetSources(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 
 		transitions = saga2.Transition.objects.select_related().filter(id_transition_ds=17)
 		sources = queryfunc.getSources(transitions)
@@ -224,7 +232,7 @@ class TapSyncTest(TestCase):
 
 
 	def testSyncSelectSaga2_co2(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		sql = "SELECT All WHERE ((Inchi='InChI=1S/CO2/c2-1-3'  AND RadTransWavenumber > 6503.53 AND RadTransWavenumber < 6503.5736) AND MethodCategory = 'experiment')"
 		self.queryDict["QUERY"] = sql
 		self.request.REQUEST = self.queryDict
@@ -240,7 +248,7 @@ class TapSyncTest(TestCase):
 
 
 	def testSyncSelectSaga2_n2o(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		sql = "SELECT All WHERE ((Inchi='InChI=1S/N2O/c1-2-3'  AND RadTransWavenumber > 0.838 AND RadTransWavenumber < 0.839) AND MethodCategory = 'experiment')"
 		self.queryDict["QUERY"] = sql
 		self.request.REQUEST = self.queryDict
@@ -256,7 +264,7 @@ class TapSyncTest(TestCase):
 
 
 	def testSyncSelectSaga2_c2h2(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		sql = "SELECT All WHERE ((Inchi='InChI=1S/C2H2/c1-2/h1-2H'  AND RadTransWavenumber > 615 AND RadTransWavenumber < 615.15) AND MethodCategory = 'experiment')"
 		self.queryDict["QUERY"] = sql
 		self.request.REQUEST = self.queryDict
@@ -272,7 +280,7 @@ class TapSyncTest(TestCase):
 
 
 	def testSyncSelectSaga2_nh3(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		sql = "SELECT All WHERE ((Inchi='InChI=1S/H3N/h1H3'  AND RadTransWavenumber > 4300 AND RadTransWavenumber < 4301) AND MethodCategory = 'experiment')"
 		self.queryDict["QUERY"] = sql
 		self.request.REQUEST = self.queryDict
@@ -283,7 +291,7 @@ class TapSyncTest(TestCase):
 
 
 	def testSyncSelectSaga2_co(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		sql = "SELECT All WHERE ((Inchi='InChI=1S/CO/c1-2'  AND RadTransWavenumber > 2135.3135 AND RadTransWavenumber < 2135.3137) AND MethodCategory = 'experiment')"
 		self.queryDict["QUERY"] = sql
 		self.request.REQUEST = self.queryDict
@@ -299,7 +307,7 @@ class TapSyncTest(TestCase):
 
 
 	def testSyncSelectMoleculeEnergy(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		sql = "SELECT All WHERE StateEnergy > 9895.327 AND StateEnergy < 9895.328"
 		self.queryDict["QUERY"] = sql
 		self.request.REQUEST = self.queryDict
@@ -315,7 +323,7 @@ class TapSyncTest(TestCase):
 
 
 	def testSyncSelectMoleculeH_17OD_W_EC(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		sql = "SELECT All WHERE ((Inchi='InChI=1S/H2O/h1H2/i1+1/hD'  AND RadTransWavenumber > 1234.23 AND RadTransWavenumber < 1244.24) AND MethodCategory = 'experiment')"
 		self.queryDict["QUERY"] = sql
 		self.request.REQUEST = self.queryDict
@@ -331,7 +339,7 @@ class TapSyncTest(TestCase):
 
 
 	def testSyncSelectMoleculeH_17OD_W_Int(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		sql = "SELECT All WHERE ((Inchi='InChI=1S/H2O/h1H2/i1+1/hD'  AND RadTransWavenumber > 1234.23 AND RadTransWavenumber < 1244.24 AND RadTransProbabilityIdealisedIntensity < 1) AND MethodCategory = 'experiment')"
 		self.queryDict["QUERY"] = sql
 		self.request.REQUEST = self.queryDict
@@ -347,7 +355,7 @@ class TapSyncTest(TestCase):
 
 
 	def testSyncSelectMoleculeInchiKey(self):
-		settings.DEBUG = True
+		settings.DEBUG = DEBUG
 		sql = "SELECT All WHERE (InchiKey='RWSOTUBLDIXVET-IQRQJSDFSA-N'  AND RadTransWavenumber > 40 AND RadTransWavenumber < 45) OR (Inchi IN ('InChI=1S/H2O/h1H2') AND RadTransWavenumber > 1239.2185 AND RadTransWavenumber < 1239.2191)"
 		self.queryDict["QUERY"] = sql
 		self.request.REQUEST = self.queryDict

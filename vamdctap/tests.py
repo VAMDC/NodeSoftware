@@ -242,8 +242,8 @@ class TestTagMakers(TestGen):
         G = self.G({"method":"TestMetod", "comment":"TestComment","refs":["ref1","ref2"], "type":"typ", "relative":"rel",
                      "errorlist":[1,2], "errorN":2,"errorfile":"file", "errorvalue":0.5},
                    {"TestAccuracyMethod":"Test.method","TestAccuracyComment":"Test.comment","TestAccuracyRef":"Test.refs",
-                    "TestAccuracyType":"Test.type","TestAccuracyRelative":"Test.relative", "TestErrorList":"Test.errorlist","TestErrorListN":"Test.errorN",
-                    "TestErrorFile":"Test.errorfile", "TestErrorValue":"Test.errorvalue"})
+                    "TestAccuracyType":"Test.type","TestAccuracyRelative":"Test.relative", "TestAccuracyErrorList":"Test.errorlist","TestAccuracyErrorListN":"Test.errorN",
+                    "TestAccuracyErrorFile":"Test.errorfile", "TestAccuracyErrorValue":"Test.errorvalue"})
         self.assertEqual(generators.makeDataSeriesAccuracyType("Test", G),
                          '<Accuracy methodRef="MTestNode-TestMetod" relative="rel" type="typ"><Comments>TestComment</Comments><SourceRef>BTestNode-ref1</SourceRef><SourceRef>BTestNode-ref2</SourceRef><ErrorList count=\'2\'>1 2</ErrorList></Accuracy>')
     def test_makeEvaluation(self):
@@ -386,68 +386,13 @@ class TestMainXSAMS(TestGen):
 # Bibtex perser test suite
 #
 
-class TestBibTex(TestCase):
-   def test_callBibTex2XML(self):
-        import bibtextools
-        tbibtex = """@article{BDMQ,\n        Author = {{Bi{\\'e}mont}, E. and {Dutrieux}, {J.-F.} and {Martin}, I. and {Quinet}, P.},\n        Date-Modified = {2010-09-27 17:27:07 +0200},\n        Doi = {10.1088/0953-4075/31/15/006},\n        Journal = {Journal of Physics B Atomic Molecular Physics},\n        Month = aug,\n        Note = {(BDMQ)},\n        Pages = {3321-3333},\n        Title = {{Lifetime calculations in Yb II}},\n        Volume = 31,\n        Year = 1998,\n        Bdsk-Url-1 = {http://dx.doi.org/10.1088/0953-4075/31/15/006}}\n"""
-        txml = u"""<Source sourceID="BExampleNode-BDMQ">\n<Authors>\n<Author><Name>E. Bi{\\\'e}mont</Name></Author><Author><Name>J.-F. Dutrieux</Name></Author><Author><Name>I. Martin</Name></Author><Author><Name>P. Quinet</Name></Author>\n</Authors><Title>Lifetime calculations in Yb II</Title>\n<Category>journal</Category>\n<Year>1998</Year>\n<SourceName>Journal of Physics B Atomic Molecular Physics</SourceName>\n<Volume>31</Volume>\n<PageBegin>3321</PageBegin>\n<PageEnd>3333</PageEnd>\n<UniformResourceIdentifier>http://dx.doi.org/10.1088/0953-4075/31/15/006</UniformResourceIdentifier>\n<DigitalObjectIdentifier>10.1088/0953-4075/31/15/006</DigitalObjectIdentifier>\n<BibTeX>@article{BDMQ,&#10;        Author = {{Bi{\\\'e}mont}, E. and {Dutrieux}, {J.-F.} and {Martin}, I. and {Quinet}, P.},&#10;        Date-Modified = {2010-09-27 17:27:07 +0200},&#10;        Doi = {10.1088/0953-4075/31/15/006},&#10;        Journal = {Journal of Physics B Atomic Molecular Physics},&#10;        Month = aug,&#10;        Note = {(BDMQ)},&#10;        Pages = {3321-3333},&#10;        Title = {{Lifetime calculations in Yb II}},&#10;        Volume = 31,&#10;        Year = 1998,&#10;        Bdsk-Url-1 = {http://dx.doi.org/10.1088/0953-4075/31/15/006}}&#10;</BibTeX></Source>"""
-        self.maxDiff = None
-        self.assertEquals(txml, bibtextools.BibTeX2XML(tbibtex))
-
-import bibtextools
-
-B9 = """@phdthesis{MIL,
-  author = {{Miller}, M.~H.},
-  title = {{Perturbation Theory of Nonlinear Boundary Value Problems in Mathematical Physics.}},
-  school = {University of Maryland, Technical Note BN-550, NEW YORK UNIVERSITY.},
-  year = {1968},
-  adsurl = {http://cdsads.u-strasbg.fr/abs/1968PhDT........27M},
-  adsnote = {Provided by the SAO/NASA Astrophysics Data System},
-  Note = {MIL}
-}"""
-
-B1 = """@ARTICLE{JNG,
-   author = {{Johansson}, S. and {Nave}, G. and {Geller}, M. and {Sauval}, A.~J. and
-        {Grevesse}, N. and {Schoenfeld}, W.~G. and {Change}, E.~S. and
-        {Farmer}, C.~B.},
-    title = "{Analysis of the 3d^{6}4s(^{6}D)4f-5g supermultiplet of Fe I in laboratory and solar infrared spectra}",
-  journal = {Astrophys. J.},
-   eprint = {arXiv:astro-ph/9404050},
- keywords = {HYPERFINE STRUCTURE, IRON, LINE SPECTRA, SEMIEMPIRICAL EQUATIONS, SOLAR SPECTRA, ABUNDANCE, LOCAL THERMODYNAMIC EQUILIBRIUM, METEORITIC COMPOSITION},
-     year = 1994,
-    month = jul,
-   volume = 429,
-    pages = {419-426},
-      doi = {10.1086/174333}}"""
-B2 = """@article{BKm,
-  author = {{Blagoev}, K.~B. and {Komarovskii}, V.~A.},
-  title = {{Relative oscillator strengths of the spectral lines of atomic samarium}},
-  journal = {Optics and Spectroscopy},
-  year = {1977},
-  month = {Feb},
-  volume = {42},
-  pages = {229-230},
-  adsurl = {http://cdsads.u-strasbg.fr/abs/1977OptSp..42..229B},
-  adsnote = {Provided by the SAO/NASA Astrophysics Data System},
-  Note = {BKm}
-}"""
-
-B3 = """@article{BKP,
-  author = {{Blagoev}, K.~B. and {Komarovskii}, V.~A. and {Penkin}, N.~P.},
-  title = {{Lifetimes of excited states of the samarium atom}},
-  journal = {Optics and Spectroscopy},
-  year = {1977},
-  month = {Mar},
-  volume = {42},
-  pages = {238-239},
-  adsurl = {http://cdsads.u-strasbg.fr/abs/1977OptSp..42..238B},
-  adsnote = {Provided by the SAO/NASA Astrophysics Data System},
-  Note = {BKP}
-}"""
-
-
-#print bibtextools.BibTeX2XML(B2)
-#print bibtextools.BibTeX2XML(B3)
+#class TestBibTex(TestCase):
+#   def test_callBibTex2XML(self):
+#        import bibtextools
+#        tbibtex = """@article{BDMQ,\n        Author = {{Bi{\\'e}mont}, E. and {Dutrieux}, {J.-F.} and {Martin}, I. and {Quinet}, P.},\n        Date-Modified = {2010-09-27 17:27:07 +0200},\n        Doi = {10.1088/0953-4075/31/15/006},\n        Journal = {Journal of Physics B Atomic Molecular Physics},\n        Month = aug,\n        Note = {(BDMQ)},\n        Pages = {3321-3333},\n        Title = {{Lifetime calculations in Yb II}},\n        Volume = 31,\n        Year = 1998,\n        Bdsk-Url-1 = {http://dx.doi.org/10.1088/0953-4075/31/15/006}}\n"""
+#        txml = u"""<Source sourceID="BExampleNode-BDMQ">\n<Authors>\n<Author><Name>E. Bi{\\\'e}mont</Name></Author><Author><Name>J.-F. Dutrieux</Name></Author><Author><Name>I. Martin</Name></Author><Author><Name>P. Quinet</Name></Author>\n</Authors><Title>Lifetime calculations in Yb II</Title>\n<Category>journal</Category>\n<Year>1998</Year>\n<SourceName>Journal of Physics B Atomic Molecular Physics</SourceName>\n<Volume>31</Volume>\n<PageBegin>3321</PageBegin>\n<PageEnd>3333</PageEnd>\n<UniformResourceIdentifier>http://dx.doi.org/10.1088/0953-4075/31/15/006</UniformResourceIdentifier>\n<DigitalObjectIdentifier>10.1088/0953-4075/31/15/006</DigitalObjectIdentifier>\n<BibTeX>@article{BDMQ,&#10;        Author = {{Bi{\\\'e}mont}, E. and {Dutrieux}, {J.-F.} and {Martin}, I. and {Quinet}, P.},&#10;        Date-Modified = {2010-09-27 17:27:07 +0200},&#10;        Doi = {10.1088/0953-4075/31/15/006},&#10;        Journal = {Journal of Physics B Atomic Molecular Physics},&#10;        Month = aug,&#10;        Note = {(BDMQ)},&#10;        Pages = {3321-3333},&#10;        Title = {{Lifetime calculations in Yb II}},&#10;        Volume = 31,&#10;        Year = 1998,&#10;        Bdsk-Url-1 = {http://dx.doi.org/10.1088/0953-4075/31/15/006}}&#10;</BibTeX></Source>"""
+#        self.maxDiff = None
+#        self.assertEquals(txml, bibtextools.BibTeX2XML(tbibtex))
 
 
 if __name__ == "__main__":

@@ -51,7 +51,7 @@
 			<xs:element name="ltcsRuleS03" type="xs:boolean" nillable="true" minOccurs="0">
 				<xs:annotation>
 					<xs:appinfo>
-						<rule forInChIList="InChI=1S/CO2/c2-1-3'.*'  InChI=1S/N2O/c1-2-3'.*'">
+						<rule forInChIList="InChI=1S/CO2/c2-1-3'.*' InChI=1S/N2O/c1-2-3'.*'">
 							<math xmlns="http://www.w3.org/1998/Math/MathML">
 								<apply>
 									<geq/>

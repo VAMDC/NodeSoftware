@@ -111,7 +111,7 @@ This paper describes the status of the 2008 edition of the &lt;i&gt;HITRAN&lt;/i
 					</StableMolecularProperties>
 					<Comment>C2H2</Comment>
 				</MolecularChemicalSpecies>
-				<MolecularState stateID="Swadis-110-0.0.0.1.0.1.X.48.g.X.f">
+				<MolecularState stateID="Swadis-110-0.0.0.1.0.1.X.48.g.X.f-2">
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="lpcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
 						<case:QNs>
@@ -127,7 +127,7 @@ This paper describes the status of the 2008 edition of the &lt;i&gt;HITRAN&lt;/i
 						</case:QNs>
 					</Case>
 				</MolecularState>
-				<MolecularState stateID="Swadis-110-0.0.0.1.1.0.X.47.u.0.f">
+				<MolecularState stateID="Swadis-110-0.0.0.1.1.0.X.47.u.0.f-1">
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="lpcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
 						<case:QNs>
@@ -156,8 +156,8 @@ This paper describes the status of the 2008 edition of the &lt;i&gt;HITRAN&lt;/i
 						<Value units="1/cm">615.00763</Value>
 					</Wavenumber>
 				</EnergyWavelength>
-				<UpperStateRef>Swadis-110-0.0.0.1.1.0.X.47.u.0.f</UpperStateRef>
-				<LowerStateRef>Swadis-110-0.0.0.1.0.1.X.48.g.X.f</LowerStateRef>
+				<UpperStateRef>Swadis-110-0.0.0.1.1.0.X.47.u.0.f-1</UpperStateRef>
+				<LowerStateRef>Swadis-110-0.0.0.1.0.1.X.48.g.X.f-2</LowerStateRef>
 				<Probability>
 					<TransitionProbabilityA methodRef="Mwadis-Exp">
 						<Value units="1/s">0.886</Value>

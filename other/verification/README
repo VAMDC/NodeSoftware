@@ -1,24 +1,55 @@
 Dependencies:
- http://mathdom.sourceforge.net/
- python-lxml
- python-parsing
+	pip install lxml
+	pip install pyparsing
+	pip install mathdom
 
-1. python check.py
-Read from test/transition3OK.IN.xml
-Write to stdout
-WARNING! xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../verification.xsd"
+	OR
 
-First argument - input xml-file
-Second argument - output xml-file
+	http://pypi.python.org/pypi/lxml/2.3.4
+	http://pypi.python.org/pypi/pyparsing/1.5.6
+	http://pypi.python.org/pypi/mathdom/
+
+Problems:
+	Problem 1
+	SyntaxWarning: Cannot combine element of type <type 'NoneType'> with ParserElement
+	AttributeError: 'NoneType' object has no attribute 'setParseAction'
+	
+	Solution 1a
+		Edit /usr/lib/python2.7/site-packages/mathml0.8/termparser.py
+		Replace the 282-292 lines with:
+    def p_case(self, p_arithmetic_exp, p_bool_expression):
+        p_case = (Suppress(CaselessKeyword('CASE') + Optional(CaselessKeyword('WHEN'))) +
+                  str(p_bool_expression) +
+                  str(Suppress(CaselessKeyword('THEN'))) + str(p_arithmetic_exp) +
+                  # Optional => undefined values in expressions!
+                  #Optional(Suppress(CaselessKeyword('ELSE')) + _p_exp) +
+                  str(Suppress(CaselessKeyword('ELSE'))) + str(p_arithmetic_exp) +
+                  str(Suppress(CaselessKeyword('END')))
+                  )
+        p_case.setParseAction(self._parse_case)
+        return p_case
+
+	Solution 1b
+		See http://stackoverflow.com/questions/7131305/is-mathdom-0-8-compatible-with-python-2-7
 
 
-2.  python check.py test/transition3OK.IN.xml
-Read from test/transition3OK.IN.xml
-Write to stdout
-WARNING! xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../verification.xsd"
+Use cases:
+	1. python check.py
+	Read from test/transition3OK.IN.xml
+	Write to stdout
+	WARNING! xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../verification.xsd"
+
+	First argument - input xml-file
+	Second argument - output xml-file
 
 
-3.  python check.py test/transition3OK.IN.xml test/transition3OK.OUT.xml
-Read from test/transition3OK.IN.xml
-Write to test/transition3OK.OUT.xml
-WARNING! xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../verification.xsd"
+	2.  python check.py test/transition3OK.IN.xml
+	Read from test/transition3OK.IN.xml
+	Write to stdout
+	WARNING! xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../verification.xsd"
+
+
+	3.  python check.py test/transition3OK.IN.xml test/transition3OK.OUT.xml
+	Read from test/transition3OK.IN.xml
+	Write to test/transition3OK.OUT.xml
+	WARNING! xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 ../verification.xsd"

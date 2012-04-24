@@ -1,3 +1,4 @@
+import re
 from lxml import objectify, etree
 import unittest
 import sys
@@ -23,7 +24,7 @@ class VerificationTestCase(unittest.TestCase):
 
 	def testAddRules(self):
 		rulesParser = RulesParser()
-		rulesParser.addRules = {Rule("a", "nltcs:J < 9")}
+		rulesParser.addRules = set([Rule("a", "nltcs:J < 9")])
 		ver = Verification("test/moleculeH2O.IN.xml", rulesParser.getRules())
 		tree = ver.run()
 		xsd.assertValid(tree)
@@ -36,7 +37,7 @@ class VerificationTestCase(unittest.TestCase):
 
 	def testUseOnlyRules(self):
 		rulesParser = RulesParser()
-		rulesParser.useRules = {Rule("nltcsRuleT02", None), Rule("nltcsRuleT03", None)}
+		rulesParser.useRules = set([Rule("nltcsRuleT02", None), Rule("nltcsRuleT03", None)])
 		ver = Verification("test/moleculeH2O.IN.xml", rulesParser.getRules())
 		tree = ver.run()
 		xsd.assertValid(tree)
@@ -46,7 +47,7 @@ class VerificationTestCase(unittest.TestCase):
 
 	def testDelRules(self):
 		rulesParser = RulesParser()
-		rulesParser.delRules = {Rule("nltcsRuleT02", None)}
+		rulesParser.delRules = set([Rule("nltcsRuleT02", None)])
 		ver = Verification("test/moleculeH2O.IN.xml", rulesParser.getRules())
 		tree = ver.run()
 		xsd.assertValid(tree)
@@ -75,7 +76,7 @@ class VerificationTestCase(unittest.TestCase):
 		rulesParser = RulesParser()
 		ruleT02 = rulesParser.getRule("atomRuleT02").copy()
 		ruleT02.name = "atomRuleT02F"
-		ruleT02.forInChIList = ["InChI=1S/Fe/q+3/"]
+		ruleT02.forInChIList = [re.escape("InChI=1S/Fe/q+3/")]
 		rulesParser.useRules.add(ruleT02)
 		ver = Verification("test/transition1OK.IN.xml", rulesParser.getRules())
 		#printRules(ver.rules)
@@ -89,25 +90,25 @@ class VerificationTestCase(unittest.TestCase):
 
 	def testRunRulesTransition3MaxOK(self):
 		rulesParser = RulesParser()
-		rulesParser.useRules = {Rule("atomRuleT01", None), Rule("atomRuleT02", None)}
+		rulesParser.useRules = set([Rule("atomRuleT01", None), Rule("atomRuleT02", None)])
 		ver = Verification("test/transition3OK.IN.xml", rulesParser.getRules())
 		tree = ver.run(report = True, bad = None)
 		xsd.assertValid(tree)
-		self.assertEquals(etree.tostring(objectify.fromstring(open("test/transition3OK.OUT.MAX.xml").read()), pretty_print = True), ver.getXML())
+		self.assertEquals(etree.tostring(objectify.fromstring(open("test/transition3OK.OUT.MAX.xml").read()), pretty_print = True), etree.tostring(tree, pretty_print = True))
 
 
 	def testRunRulesTransition3MinOK(self):
 		ver = Verification("test/transition3OK.IN.xml")
 		tree = ver.run(report = False, bad = True)
 		xsd.assertValid(tree)
-		self.assertEquals(etree.tostring(objectify.fromstring(open("test/transition3OK.OUT.MIN.xml").read()), pretty_print = True), ver.getXML())
+		self.assertEquals(etree.tostring(objectify.fromstring(open("test/transition3OK.OUT.MIN.xml").read()), pretty_print = True), etree.tostring(tree, pretty_print = True))
 
 
 	def testRunRulesMoleculeH2OMinOK(self):
 		ver = Verification("test/moleculeH2O.IN.xml")
 		tree = ver.run(report = False, bad = True)
 		xsd.assertValid(tree)
-		self.assertEquals(etree.tostring(objectify.fromstring(open("test/moleculeH2O.OUT.MIN.xml").read()), pretty_print = True), ver.getXML())
+		self.assertEquals(etree.tostring(objectify.fromstring(open("test/moleculeH2O.OUT.MIN.xml").read()), pretty_print = True), etree.tostring(tree, pretty_print = True))
 
 
 	def testRunRulesMoleculeCO2MinOK(self):
@@ -117,14 +118,14 @@ class VerificationTestCase(unittest.TestCase):
 		#printRules(ver.rules)
 		tree = ver.run(report = False, bad = True)
 		xsd.assertValid(tree)
-		self.assertEquals(etree.tostring(objectify.fromstring(open("test/moleculeCO2.OUT.MIN.xml").read()), pretty_print = True), ver.getXML())
+		self.assertEquals(etree.tostring(objectify.fromstring(open("test/moleculeCO2.OUT.MIN.xml").read()), pretty_print = True), etree.tostring(tree, pretty_print = True))
 
 
 	def testRunRulesMoleculeN2OMinOK(self):
 		ver = Verification("test/moleculeN2O.IN.xml")
 		tree = ver.run(bad = True)
 		xsd.assertValid(tree)
-		self.assertEquals(etree.tostring(objectify.fromstring(open("test/moleculeN2O.OUT.MIN.xml").read()), pretty_print = True), ver.getXML())
+		self.assertEquals(etree.tostring(objectify.fromstring(open("test/moleculeN2O.OUT.MIN.xml").read()), pretty_print = True), etree.tostring(tree, pretty_print = True))
 
 
 	def testRunRulesMoleculeCOAllOK(self):
@@ -157,7 +158,7 @@ class VerificationTestCase(unittest.TestCase):
 		tree = ver.run(bad = True)
 		xsd.assertValid(tree)
 		#Need test RuleT03
-		self.assertEquals(etree.tostring(objectify.fromstring(open("test/moleculeCH4.OUT.MIN.xml").read()), pretty_print = True), ver.getXML())
+		self.assertEquals(etree.tostring(objectify.fromstring(open("test/moleculeCH4.OUT.MIN.xml").read()), pretty_print = True), etree.tostring(tree, pretty_print = True))
 
 
 	def tearDown(self):
