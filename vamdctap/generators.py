@@ -293,7 +293,7 @@ def makeDataSeriesAccuracyType(keyword, G):
     elif errfile:
         string += "<ErrorFile>%s</ErrorFile>" % errfile
     elif errval:
-        string += "<ErrorValue>%s</ErrorValue" % errval
+        string += "<ErrorValue>%s</ErrorValue>" % errval
     string += "</Accuracy>"
     return string
 
