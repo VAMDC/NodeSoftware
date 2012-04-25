@@ -589,7 +589,9 @@ def makeShellType(tag, keyword, G):
     totalAngularMomentum = G("%sTotalAngularMomentum" % keyword)
     if totalAngularMomentum:
       string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % totalAngularMomentum
-    string += makeTermType("ShellTerm", "%sTerm" % keyword, G)
+    shellterm = makeTermType("ShellTerm", "%sTerm" % keyword, G)
+    if shellterm != "<%s></%s>" % (tag, tag): # shellterm is optional, so don't accept an empty tag
+        string += shellterm
     string += "</%s>" % tag
     return string
 
