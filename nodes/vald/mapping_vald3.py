@@ -189,48 +189,75 @@ def species_component(species_file, outfile):
 # to handle multi-processing for each individual point where the
 # linefunc unique_state_id() is accessed.
 # OBS - detta kan återanvändas så länge inte in-dumpen ändrats;
-import MySQLdb
-CURSORS = [MySQLdb.connect(host="localhost", user="vald", passwd="V@ld", db="vald_import").cursor() for i in range(4)]
-#CURSORS[0].execute("DROP TABLE IF EXISTS mapping;")
-#CURSORS[0].execute("CREATE TABLE mapping (idnum INT PRIMARY KEY AUTO_INCREMENT UNIQUE NOT NULL, charid VARCHAR(255) UNIQUE NOT NULL, INDEX(charid, idnum));") #ENGINE=MEMORY);
-SQL_INSERT = "INSERT IGNORE INTO mapping (charid) VALUES('%s');"
-SQL_SELECT = "SELECT * from mapping where charid='%s';"
-def unique_state_id(linedata, cursorid, *ranges):
-    """
-    Check charid against temporary database, return a
-    matching unique and incrememntal ID, or create a new one.
+# import MySQLdb
+# CURSORS = [MySQLdb.connect(host="localhost", user="vald", passwd="V@ld", db="vald_import").cursor() for i in range(4)]
+# #CURSORS[0].execute("DROP TABLE IF EXISTS mapping;")
+# #CURSORS[0].execute("CREATE TABLE mapping (idnum INT PRIMARY KEY AUTO_INCREMENT UNIQUE NOT NULL, charid VARCHAR(255) UNIQUE NOT NULL, INDEX(charid, idnum));") #ENGINE=MEMORY);
+# SQL_INSERT = "INSERT IGNORE INTO mapping (charid) VALUES('%s');"
+# SQL_SELECT = "SELECT * from mapping where charid='%s';"
+# def unique_state_id(linedata, cursorid, *ranges):
+#     """
+#     Check charid against temporary database, return a
+#     matching unique and incrememntal ID, or create a new one.
 
-    linedata - current line in indata file
-    cursorid - index of CURSORS list referencing the database
-               cursor to use for this access.
-    *ranges - line indices (tuple of tuples) to build charid from
-    """
-    cursor = CURSORS[cursorid]
+#     linedata - current line in indata file
+#     cursorid - index of CURSORS list referencing the database
+#                cursor to use for this access.
+#     *ranges - line indices (tuple of tuples) to build charid from
+#     """
+#     cursor = CURSORS[cursorid]
+#     charid = merge_cols(linedata, *ranges)
+#     cursor.execute(SQL_SELECT % charid.replace("'","--"))
+#     result = cursor.fetchone()
+
+#     if result:
+#         # state already stored previously. Rerunning.
+#         if cursorid in (0, 1):
+#             # no point in adding a new line to one of the states input files.
+#             #print "charid exists. Skipping line."
+#             raise RuntimeError
+#         # transitions.dat should still update though.
+#         #print "old id:",
+#         idnum = result[0]
+#     else:
+#         # create a new store for charid
+#         #print " new row:",
+#         cursor.execute(SQL_INSERT % charid.replace("'","--"))
+#         idnum = cursor.lastrowid
+#     if not idnum:
+#         # this is a rare condition where two processes try to create a
+#         # new row with the same charid at exactly the same time.
+#         cursor.execute(SQL_SELECT % charid.replace("'","--"))
+#         idnum, charid = cursor.fetchone()
+#     #print cursorid, charid, idnum
+#     return idnum
+
+# Alternative import mechanism using a dictionary - the state table is
+# pretty small and can thus fit in memory; Using the MySQL-based
+# mapper above is very slow (4157 mins = 2.8 days) for a rewrite)
+from multiprocessing import Manager, Lock
+from ctypes import c_int
+MANAGER = Manager()
+LOCK = Lock()
+DBID = MANAGER.Value(c_int, 0)
+STATEDICT = MANAGER.dict()
+def unique_state_id(linedata, processid, *ranges):
+    "alternative line function using dictionary"
+    global STATEDICT
     charid = merge_cols(linedata, *ranges)
-    cursor.execute(SQL_SELECT % charid.replace("'","--"))
-    result = cursor.fetchone()
-
-    if result:
-        # state already stored previously. Rerunning.
-        if cursorid in (0, 1):
-            # no point in adding a new line to one of the states input files.
-            #print "charid exists. Skipping line."
-            raise RuntimeError
-        # transitions.dat should still update though.
-        #print "old id:",
-        idnum = result[0]
+    idnum = None
+    if charid in STATEDICT:
+        if processid in (0, 1): raise RuntimeError
+        else: idnum = STATEDICT[charid]
     else:
-        # create a new store for charid
-        #print " new row:",
-        cursor.execute(SQL_INSERT % charid.replace("'","--"))
-        idnum = cursor.lastrowid
-    if not idnum:
-        # this is a rare condition where two processes try to create a
-        # new row with the same charid at exactly the same time.
-        cursor.execute(SQL_SELECT % charid.replace("'","--"))
-        idnum, charid = cursor.fetchone()
-    #print cursorid, charid, idnum
-    return idnum
+        global DBID
+        with LOCK:
+            idnum = DBID.value + 1
+            DBID.value = idnum
+            STATEDICT[charid] = idnum
+            #print "adding charid %s with dbid %s." % (charid, DBID.value)
+    if idnum: return idnum
+    return STATEDICT[charid]
 
 #------------------------------------------------------------
 # The mapping itself
