@@ -337,7 +337,6 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
         return ''
     if isiterable(value):
         return makeRepeatedDataType(tagname, keyword, G)
-
     unit = G(keyword + 'Unit')
     method = G(keyword + 'Method')
     comment = G(keyword + 'Comment')

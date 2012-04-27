@@ -45,7 +45,7 @@ RETURNABLES = {\
 'RadTransWavelength':'RadTran.waves()',
 'RadTransWavelengthUnit':u'A',
 'RadTransWavelengthMethod':'RadTran.method_return',
-'RadTransWavelengthComment': ['Vacuum wavelength from state energies (Ritz)','Wavelength (non-Ritz), measured in air and converted to vacuum'],
+'RadTransWavelengthComment': 'RadTran.wavecomment()',
 'RadTransProcess':"RadTran.transition_type",
 'RadTransWavelengthRef':'RadTran.waverefs()',
 'RadTransUpperStateRef':'RadTran.upstate_id',
