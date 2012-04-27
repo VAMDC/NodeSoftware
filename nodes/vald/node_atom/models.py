@@ -106,6 +106,11 @@ class Transition(Model):
         if self.waveair: return self.wavevac, self.waveair
         else: return self.wavevac
 
+    WAVE_COMMENT = ['Vacuum wavelength from state energies (Ritz)','Wavelength (non-Ritz), measured in air and converted to vacuum']
+    def wavecomment(self):
+        if self.waveair: return self.WAVE_COMMENT
+        else: return self.WAVE_COMMENT[0]
+
     def waverefs(self):
         if self.waveair: return self.wavevac_ref, self.waveair_ref
         else: return self.wavevac_ref
