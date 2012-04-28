@@ -4,6 +4,8 @@
 # The latter also needs to be a string! (stupid in some cases,
 # I know, but more robust)
 
+import sys
+
 def invertOperator(op):
     if op == '<': return '>'
     elif op == '>': return '<'
@@ -17,7 +19,7 @@ def eV2Angstr(op, eV):
     return [invertOperator(op), str(3.18264053E-20/float(eV))]
 
 def invcm2Angstr(op, invcm):
-    return [invertOperator(op), str(1.0E8/float(invcm))]
+	return [invertOperator(op), str((1.0E8/float(invcm)) if float(invcm)!=0.0 else sys.float_info.max)]
 
 def eV2invcm(op,eV):
     return [op, str(8.06554429E3*float(eV))]
