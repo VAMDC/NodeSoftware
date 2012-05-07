@@ -866,7 +866,7 @@ def makeCaseQNs(G):
     result = [
         '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/%s/cases/%s">' % (case, XSAMS_VERSION, case),
         '<case:QNs>',
-        makeOptionalTag('case:ElecStateLabel', 'MoleculeQNElecStateLabel', G)]
+        yield makeOptionalTag('case:ElecStateLabel', 'MoleculeQNElecStateLabel', G)]
     elecSym, elecSymGroup = G("MoleculeQNelecSym"), G("MoleculeQNelecSymGroup")
     if elecSym:
         if elecSymGroup:
@@ -875,12 +875,12 @@ def makeCaseQNs(G):
             result.append('<case:elecSym>%s</case:elecSym>' % elecSym)
 
     result.extend([
-            makeOptionalTag('case:elecInv', 'MoleculeQNelecInv', G),
-            makeOptionalTag('case:elecRefl', 'MoleculeQNelecRefl', G),
-            makeOptionalTag('case:Lambda', 'MoleculeQNLambda', G),
-            makeOptionalTag('case:Sigma', 'MoleculeQNSigma', G),
-            makeOptionalTag('case:Omega', 'MoleculeQNOmega', G),
-            makeOptionalTag('case:S', 'MoleculeQNS', G)])
+            yield makeOptionalTag('case:elecInv', 'MoleculeQNelecInv', G),
+            yield makeOptionalTag('case:elecRefl', 'MoleculeQNelecRefl', G),
+            yield makeOptionalTag('case:Lambda', 'MoleculeQNLambda', G),
+            yield makeOptionalTag('case:Sigma', 'MoleculeQNSigma', G),
+            yield makeOptionalTag('case:Omega', 'MoleculeQNOmega', G),
+            yield makeOptionalTag('case:S', 'MoleculeQNS', G)])
     result.extend(['<case:vi mode="%s">%s</case:vi>' %
                    (makeiter(G("MoleculeQNviMode"))[i],val)
                    for i, val in enumerate(makeiter(G("MoleculeQNvi")))])
@@ -888,10 +888,10 @@ def makeCaseQNs(G):
                    (makeiter(G("MoleculeQNliMode"))[i],val)
                    for i, val in enumerate(makeiter(G("MoleculeQNli")))])
     result.extend([
-            makeOptionalTag('case:v', 'MoleculeQNv', G),
-            makeOptionalTag('case:l', 'MoleculeQNl', G),
-            makeOptionalTag('case:vibInv', 'MoleculeQNvibInv', G),
-            makeOptionalTag('case:vibRefl', 'MoleculeQNvibRefl', G)])
+            yield makeOptionalTag('case:v', 'MoleculeQNv', G),
+            yield makeOptionalTag('case:l', 'MoleculeQNl', G),
+            yield makeOptionalTag('case:vibInv', 'MoleculeQNvibInv', G),
+            yield makeOptionalTag('case:vibRefl', 'MoleculeQNvibRefl', G)])
     vibSym, vibSymGroup = G("MoleculeQNvibSym"), G("MoleculeQNvibSymGroup")
     if vibSym:
         if vibSymGroup:
@@ -899,15 +899,15 @@ def makeCaseQNs(G):
         else:
             result.append('<case:vibSym>%s</case:vibSym>' % vibSym)
     result.extend([
-            makeOptionalTag('case:v1', 'MoleculeQNv1', G),
-            makeOptionalTag('case:v2', 'MoleculeQNv2', G),
-            makeOptionalTag('case:l2', 'MoleculeQNl2', G),
-            makeOptionalTag('case:v3', 'MoleculeQNv3', G),
-            makeOptionalTag('case:J', 'MoleculeQNJ', G),
-            makeOptionalTag('case:K', 'MoleculeQNK', G),
-            makeOptionalTag('case:N', 'MoleculeQNN', G),
-            makeOptionalTag('case:Ka', 'MoleculeQNKa', G),
-            makeOptionalTag('case:Kc', 'MoleculeQNKc', G)])
+            yield makeOptionalTag('case:v1', 'MoleculeQNv1', G),
+            yield makeOptionalTag('case:v2', 'MoleculeQNv2', G),
+            yield makeOptionalTag('case:l2', 'MoleculeQNl2', G),
+            yield makeOptionalTag('case:v3', 'MoleculeQNv3', G),
+            yield makeOptionalTag('case:J', 'MoleculeQNJ', G),
+            yield makeOptionalTag('case:K', 'MoleculeQNK', G),
+            yield makeOptionalTag('case:N', 'MoleculeQNN', G),
+            yield makeOptionalTag('case:Ka', 'MoleculeQNKa', G),
+            yield makeOptionalTag('case:Kc', 'MoleculeQNKc', G)])
     rotSym, rotSymGroup = G("MoleculeQNrotSym"), G("MoleculeQNrotSymGroup")
     if rotSym:
         if rotSymGroup:
@@ -921,21 +921,21 @@ def makeCaseQNs(G):
         else:
             result.append('<case:rovibSym>%s</case:rovibSym>' % rovibSym)
     result.extend([
-            makeOptionalTag('case:I', 'MoleculeQNI', G, extraAttr={"nuclearSpinRef":G("MoleculeQNInuclSpin")}),
-            makeOptionalTag('case:SpinComponentLabel', 'MoleculeQNSpinComponentLabel', G)])
+            yield makeOptionalTag('case:I', 'MoleculeQNI', G, extraAttr={"nuclearSpinRef":G("MoleculeQNInuclSpin")}),
+            yield makeOptionalTag('case:SpinComponentLabel', 'MoleculeQNSpinComponentLabel', G)])
     result.extend(['<case:Fj j="%s" nuclearSpinRef="%s">%s</case:Fj>' %
                    (makeiter(G("MoleculeQNFjj"))[i], makeiter(G("MoleculeQNFjnuclSpin"))[i], val)
                    for i, val in enumerate(makeiter(G("MoleculeQNFj")))])
     result.extend([
-            makeOptionalTag('case:F1', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF1nuclSpin")}),
-            makeOptionalTag('case:F2', 'MoleculeQNF2', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF2nuclSpin")}),
-            makeOptionalTag('case:F', 'MoleculeQNF', G, extraAttr={"nuclearSpinRef":G("MoleculeQNFnuclSpin")})])
+            yield makeOptionalTag('case:F1', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF1nuclSpin")}),
+            yield makeOptionalTag('case:F2', 'MoleculeQNF2', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF2nuclSpin")}),
+            yield makeOptionalTag('case:F', 'MoleculeQNF', G, extraAttr={"nuclearSpinRef":G("MoleculeQNFnuclSpin")})])
     result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("MoleculeQNrName"))[i],val)
                    for i,val in enumerate(makeiter(G("MoleculeQNr")))])
     result.extend([
-            makeOptionalTag('case:parity', 'MoleculeQNparity', G),
-            makeOptionalTag('case:kronigParity', 'MoleculeQNkronigParity', G),
-            makeOptionalTag('case:asSym', 'MoleculeQNasSym', G),
+            yield makeOptionalTag('case:parity', 'MoleculeQNparity', G),
+            yield makeOptionalTag('case:kronigParity', 'MoleculeQNkronigParity', G),
+            yield makeOptionalTag('case:asSym', 'MoleculeQNasSym', G),
             "</case:QNs>",
             "</Case>"])
     return "".join(result)
@@ -1265,7 +1265,7 @@ def XsamsRadTrans(RadTrans):
         if group: attrs += ' groupLabel="%s"'%group
         if proc: attrs += ' process="%s"'%proc
         yield '<RadiativeTransition id="P%s-%s"%s>'%(NODEID,G('RadTransID'),attrs)
-        makeOptionalTag('Comments','RadTransComment',G)
+        yield makeOptionalTag('Comments','RadTransComment',G)
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
         yield makeDataType('Wavelength', 'RadTransWavelength', G)
@@ -1481,9 +1481,9 @@ def XsamsCollTrans(CollTrans):
         yield makePrimaryType("CollisionalTransition", "Collision", G, extraAttr=dic)
 
         yield "<ProcessClass>"
-        makeOptionalTag('UserDefinition', 'CollisionUserDefinition',G)
-        makeOptionalTag('Code','CollisionCode',G)
-        makeOptionalTag('IAEACode','CollisionIAEACode',G)
+        yield makeOptionalTag('UserDefinition', 'CollisionUserDefinition',G)
+        yield makeOptionalTag('Code','CollisionCode',G)
+        yield makeOptionalTag('IAEACode','CollisionIAEACode',G)
         yield "</ProcessClass>"
 
         if hasattr(CollTran, "Reactants"):
