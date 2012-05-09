@@ -866,7 +866,7 @@ def makeCaseQNs(G):
     result = [
         '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/%s/cases/%s">' % (case, XSAMS_VERSION, case),
         '<case:QNs>',
-        yield makeOptionalTag('case:ElecStateLabel', 'MoleculeQNElecStateLabel', G)]
+        makeOptionalTag('case:ElecStateLabel', 'MoleculeQNElecStateLabel', G)]
     elecSym, elecSymGroup = G("MoleculeQNelecSym"), G("MoleculeQNelecSymGroup")
     if elecSym:
         if elecSymGroup:
@@ -875,12 +875,12 @@ def makeCaseQNs(G):
             result.append('<case:elecSym>%s</case:elecSym>' % elecSym)
 
     result.extend([
-            yield makeOptionalTag('case:elecInv', 'MoleculeQNelecInv', G),
-            yield makeOptionalTag('case:elecRefl', 'MoleculeQNelecRefl', G),
-            yield makeOptionalTag('case:Lambda', 'MoleculeQNLambda', G),
-            yield makeOptionalTag('case:Sigma', 'MoleculeQNSigma', G),
-            yield makeOptionalTag('case:Omega', 'MoleculeQNOmega', G),
-            yield makeOptionalTag('case:S', 'MoleculeQNS', G)])
+            makeOptionalTag('case:elecInv', 'MoleculeQNelecInv', G),
+            makeOptionalTag('case:elecRefl', 'MoleculeQNelecRefl', G),
+            makeOptionalTag('case:Lambda', 'MoleculeQNLambda', G),
+            makeOptionalTag('case:Sigma', 'MoleculeQNSigma', G),
+            makeOptionalTag('case:Omega', 'MoleculeQNOmega', G),
+            makeOptionalTag('case:S', 'MoleculeQNS', G)])
     result.extend(['<case:vi mode="%s">%s</case:vi>' %
                    (makeiter(G("MoleculeQNviMode"))[i],val)
                    for i, val in enumerate(makeiter(G("MoleculeQNvi")))])
@@ -888,10 +888,10 @@ def makeCaseQNs(G):
                    (makeiter(G("MoleculeQNliMode"))[i],val)
                    for i, val in enumerate(makeiter(G("MoleculeQNli")))])
     result.extend([
-            yield makeOptionalTag('case:v', 'MoleculeQNv', G),
-            yield makeOptionalTag('case:l', 'MoleculeQNl', G),
-            yield makeOptionalTag('case:vibInv', 'MoleculeQNvibInv', G),
-            yield makeOptionalTag('case:vibRefl', 'MoleculeQNvibRefl', G)])
+            makeOptionalTag('case:v', 'MoleculeQNv', G),
+            makeOptionalTag('case:l', 'MoleculeQNl', G),
+            makeOptionalTag('case:vibInv', 'MoleculeQNvibInv', G),
+            makeOptionalTag('case:vibRefl', 'MoleculeQNvibRefl', G)])
     vibSym, vibSymGroup = G("MoleculeQNvibSym"), G("MoleculeQNvibSymGroup")
     if vibSym:
         if vibSymGroup:
@@ -899,15 +899,15 @@ def makeCaseQNs(G):
         else:
             result.append('<case:vibSym>%s</case:vibSym>' % vibSym)
     result.extend([
-            yield makeOptionalTag('case:v1', 'MoleculeQNv1', G),
-            yield makeOptionalTag('case:v2', 'MoleculeQNv2', G),
-            yield makeOptionalTag('case:l2', 'MoleculeQNl2', G),
-            yield makeOptionalTag('case:v3', 'MoleculeQNv3', G),
-            yield makeOptionalTag('case:J', 'MoleculeQNJ', G),
-            yield makeOptionalTag('case:K', 'MoleculeQNK', G),
-            yield makeOptionalTag('case:N', 'MoleculeQNN', G),
-            yield makeOptionalTag('case:Ka', 'MoleculeQNKa', G),
-            yield makeOptionalTag('case:Kc', 'MoleculeQNKc', G)])
+            makeOptionalTag('case:v1', 'MoleculeQNv1', G),
+            makeOptionalTag('case:v2', 'MoleculeQNv2', G),
+            makeOptionalTag('case:l2', 'MoleculeQNl2', G),
+            makeOptionalTag('case:v3', 'MoleculeQNv3', G),
+            makeOptionalTag('case:J', 'MoleculeQNJ', G),
+            makeOptionalTag('case:K', 'MoleculeQNK', G),
+            makeOptionalTag('case:N', 'MoleculeQNN', G),
+            makeOptionalTag('case:Ka', 'MoleculeQNKa', G),
+            makeOptionalTag('case:Kc', 'MoleculeQNKc', G)])
     rotSym, rotSymGroup = G("MoleculeQNrotSym"), G("MoleculeQNrotSymGroup")
     if rotSym:
         if rotSymGroup:
@@ -921,21 +921,21 @@ def makeCaseQNs(G):
         else:
             result.append('<case:rovibSym>%s</case:rovibSym>' % rovibSym)
     result.extend([
-            yield makeOptionalTag('case:I', 'MoleculeQNI', G, extraAttr={"nuclearSpinRef":G("MoleculeQNInuclSpin")}),
-            yield makeOptionalTag('case:SpinComponentLabel', 'MoleculeQNSpinComponentLabel', G)])
+            makeOptionalTag('case:I', 'MoleculeQNI', G, extraAttr={"nuclearSpinRef":G("MoleculeQNInuclSpin")}),
+            makeOptionalTag('case:SpinComponentLabel', 'MoleculeQNSpinComponentLabel', G)])
     result.extend(['<case:Fj j="%s" nuclearSpinRef="%s">%s</case:Fj>' %
                    (makeiter(G("MoleculeQNFjj"))[i], makeiter(G("MoleculeQNFjnuclSpin"))[i], val)
                    for i, val in enumerate(makeiter(G("MoleculeQNFj")))])
     result.extend([
-            yield makeOptionalTag('case:F1', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF1nuclSpin")}),
-            yield makeOptionalTag('case:F2', 'MoleculeQNF2', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF2nuclSpin")}),
-            yield makeOptionalTag('case:F', 'MoleculeQNF', G, extraAttr={"nuclearSpinRef":G("MoleculeQNFnuclSpin")})])
+            makeOptionalTag('case:F1', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF1nuclSpin")}),
+            makeOptionalTag('case:F2', 'MoleculeQNF2', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF2nuclSpin")}),
+            makeOptionalTag('case:F', 'MoleculeQNF', G, extraAttr={"nuclearSpinRef":G("MoleculeQNFnuclSpin")})])
     result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("MoleculeQNrName"))[i],val)
                    for i,val in enumerate(makeiter(G("MoleculeQNr")))])
     result.extend([
-            yield makeOptionalTag('case:parity', 'MoleculeQNparity', G),
-            yield makeOptionalTag('case:kronigParity', 'MoleculeQNkronigParity', G),
-            yield makeOptionalTag('case:asSym', 'MoleculeQNasSym', G),
+            makeOptionalTag('case:parity', 'MoleculeQNparity', G),
+            makeOptionalTag('case:kronigParity', 'MoleculeQNkronigParity', G),
+            makeOptionalTag('case:asSym', 'MoleculeQNasSym', G),
             "</case:QNs>",
             "</Case>"])
     return "".join(result)
