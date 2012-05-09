@@ -32,7 +32,7 @@ class State(Model):
     sn = PositiveSmallIntegerField(db_column=u'Sn',null=True)
 
     def jj(self):
-        if None not in (self,j1, self.j2):
+        if None not in (self.j1, self.j2):
             return (self.j1, self.j2)
     def multiplicity(self):
         if self.s != None:
