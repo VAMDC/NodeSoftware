@@ -522,10 +522,10 @@ def makeTermType(tag, keyword, G):
         string += "</jj>"
     j1j2 = makeiter(G("%sJ1J2" % keyword))
     if j1j2:
-        string += "<j1j2>"
+        string += "<J1J2>"
         for j in j1j2:
             string += "<j>%s</j>" % j
-        string += "</j1j2>"
+        string += "</J1J2>"
     K = G("%sK" % keyword)
     if K:
         string += "<jK>"
