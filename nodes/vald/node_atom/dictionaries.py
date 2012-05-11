@@ -87,6 +87,7 @@ from django.db.models import Q
 RESTRICTABLES = {\
 #'ConstantTest':test_constant_factory('"U"'),
 'AtomSymbol':'species__name',
+'AtomMassNumber':'sepcies__massno',
 'AtomNuclearCharge':'species__atomic',
 'IonCharge':'species__ion',
 'InchiKey':'species__inchi',
