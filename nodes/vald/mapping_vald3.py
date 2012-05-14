@@ -183,13 +183,15 @@ def species_component(species_file, outfile):
     f.close()
     print "... Created file %s." % outfile
 
-# mapper for caching the connections between upper/lower state IDS and
-# their respective unique pk values. This depends on a MySQL database
-# vald_import exists. We create four database connections to be able
-# to handle multi-processing for each individual point where the
-# linefunc unique_state_id() is accessed.
-# OBS - detta kan återanvändas så länge inte in-dumpen ändrats;
-# import MySQLdb
+## mapper for caching the connections between upper/lower state IDS and
+## their respective unique pk values. This depends on a MySQL database
+## vald_import exists. We create four database connections to be able
+## to handle multi-processing for each individual point where the
+## linefunc unique_state_id() is accessed.
+## OBS - this is less efficient than the dictionary version below.
+
+# import MySQLd
+#
 # CURSORS = [MySQLdb.connect(host="localhost", user="vald", passwd="V@ld", db="vald_import").cursor() for i in range(4)]
 # #CURSORS[0].execute("DROP TABLE IF EXISTS mapping;")
 # #CURSORS[0].execute("CREATE TABLE mapping (idnum INT PRIMARY KEY AUTO_INCREMENT UNIQUE NOT NULL, charid VARCHAR(255) UNIQUE NOT NULL, INDEX(charid, idnum));") #ENGINE=MEMORY);
@@ -232,9 +234,11 @@ def species_component(species_file, outfile):
 #     #print cursorid, charid, idnum
 #     return idnum
 
-# Alternative import mechanism using a dictionary - the state table is
-# pretty small and can thus fit in memory; Using the MySQL-based
-# mapper above is very slow (4157 mins = 2.8 days) for a rewrite)
+# Alternative import mechanism to the mysql-based on above. This one
+# uses a dictionary - the state table is pretty small and can thus fit in
+# memory; Using the MySQL-based mapper above takes 4157 mins (2 days 21 hours)
+# for a rewrite. Using this solution takes 3442 mins (2 days 9 hours) on the same data.
+
 from multiprocessing import Manager, Lock
 from ctypes import c_int
 MANAGER = Manager()
@@ -335,11 +339,8 @@ mapping = [
             {'cname':'lande',
              'cbyte':(charrange, 84,90),
              'cnull':'99.00'},
-            #{'cname':'coupling',
-            # 'cbyte':(charrange, 124,126)},
-            #{'cname':'term',
-            # 'cbyte':(charrange, 126,212)},
-
+            {'cname':'term_desc',
+             'cbyte':(charrange, 126,212)},
             # read from 2nd open vald file (2nd line per record)
             {'filenum':1,
              'cname':'energy_ref',
@@ -350,15 +351,6 @@ mapping = [
             {'filenum':1,
              'cname':'level_ref',
              'cbyte':(charrange, 65,73)},
-
-            ## this links to linelists rather than refs directly
-            #{'cname':'energy_linelist',
-            # 'cbyte':(charrange, 342,346)},
-            #{'cname':'lande_linelist',
-            # 'cbyte':(charrange, 350,354)},
-            #{'cname':'level_linelist',
-            # 'cbyte':(charrange, 366,370)},
-
             # these are read from 1st open term file
             {'filenum':2, # use term file
              'cname':'j',
@@ -422,15 +414,8 @@ mapping = [
             {'cname':'lande',
              'cbyte':(charrange, 90,96),
              'cnull':'99.00'},
-
-            #{'cname':'j',
-            # 'cbyte':(charrange, 78,84)},
-
-            #{'cname':'coupling',
-            # 'cbyte':(charrange, 212,214)},
-            #{'cname':'term',
-            # 'cbyte':(charrange, 214,300)},
-
+            {'cname':'term_desc',
+             'cbyte':(charrange, 214,300)},
             # read from 2nd open vald file (2nd line per record)
             {'filenum':1,
              'cname':'energy_ref',

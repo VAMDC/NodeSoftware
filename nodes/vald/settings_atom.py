@@ -12,7 +12,7 @@ INSTALLED_APPS.append(NODEPKG)
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'vald_atom',
+    'NAME': 'vald_atom_alt',
     'USER': 'vald',
     'PASSWORD': 'V@ld',
   },

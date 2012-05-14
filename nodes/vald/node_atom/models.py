@@ -8,18 +8,12 @@ class State(Model):
 
     energy = DecimalField(max_digits=15, decimal_places=4,null=True, db_index=True)
     lande = DecimalField(max_digits=6, decimal_places=2,null=True)
-    #coupling = CharField(max_length=2, null=True)
-    #term = CharField(max_length=56, null=True)
+    term_desc = CharField(max_length=86, null=True)
 
     energy_ref = ForeignKey(Reference, related_name='isenergyref_state', db_index=False)
     lande_ref = ForeignKey(Reference, related_name='islanderef_state', db_index=False)
     level_ref = ForeignKey(Reference, related_name='islevelref_state', db_index=False)
 
-    #energy_linelist = ForeignKey(LineList, related_name='isenergylinelist_state', db_index=False)
-    #lande_linelist = ForeignKey(LineList, related_name='islandelinelist_state', db_index=False)
-    #level_linelist = ForeignKey(LineList, related_name='islevellinelist_state', db_index=False)
-
-    #coupling = CharField(max_length=4, null=True)
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True)
     l = PositiveSmallIntegerField(db_column=u'L', null=True)
     s = DecimalField(max_digits=3, decimal_places=1,db_column=u'S', null=True)
@@ -57,8 +51,6 @@ class Transition(Model):
 
     wavevac = DecimalField(max_digits=16, decimal_places=8, db_index=True)
     waveair = DecimalField(max_digits=16, decimal_places=8, null=True, db_index=False)
-    # wavevac (calculated from energies, has separated wavewac_ref (same as energies))
-    # waveair + waveair_ref
 
     species = ForeignKey(Species, db_index=True)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
@@ -74,11 +66,8 @@ class Transition(Model):
     accur = DecimalField(max_digits=6, decimal_places=3, null=True)
     #comment = CharField(max_length=128, null=True)
 
-    #srctag = ForeignKey(Reference, db_index=False)
-
     wavevac_ref = ForeignKey(Reference, related_name='iswavevacref_trans', db_index=False)
     waveair_ref = ForeignKey(Reference, related_name='iswaveairref_trans', db_index=False)
-    # change above to waveair_ref?
     loggf_ref = ForeignKey(Reference, related_name='isloggfref_trans', db_index=False)
     gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans', db_index=False)
     gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans', db_index=False)
