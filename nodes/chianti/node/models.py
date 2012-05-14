@@ -65,7 +65,7 @@ class Components(models.Model):
     label = models.CharField(db_column='label', max_length=32)
     core  = models.CharField(db_column='core', max_length=2, null=True)
     lsl   = models.IntegerField(db_column='lsl')
-    lss   = models.IntegerField(db_column='lss')
+    lss   = models.FloatField(db_column='lss')
 
     class Meta:
         db_table=u'components'

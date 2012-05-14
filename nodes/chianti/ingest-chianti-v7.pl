@@ -36,7 +36,7 @@ print "         id INTEGER, \n"; # Same values as id in states table - 1-to-1 ma
 print "         label VARCHAR(32), \n";
 print "         core CHAR(2), \n";
 print "         lsl INTEGER, \n";
-print "         lss INTEGER, \n";
+print "         lss FLOAT, \n";
 print "	        PRIMARY KEY (id) \n";
 print ");\n";
 
@@ -136,8 +136,8 @@ while(<STATES>) {
 	print '"', $label, '", ';
         print '"', $atomCore, '", ' if $atomCore;
         print 'NULL, ' if !$atomCore;
-	print $atomStateS, ', '; 
-	print $atomStateL;
+	print $atomStateL, ', '; 
+	print $atomStateS;
 	print ");\n";
 }
 
