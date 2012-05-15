@@ -4,7 +4,7 @@
 # but mainly a reminder of the steps involved.
 
 AorM="atom"
-VDB="vald_$AroM"
+VDB="vald_atom_alt"
 VUSR="vald"
 VPWD="V@ld"
 

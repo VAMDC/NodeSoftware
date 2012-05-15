@@ -1,7 +1,7 @@
 from settings_default import *
 
 DEBUG = True
-#DEBUG = False
+DEBUG = False
 TRANSLIM = 6000
 
 INSTALLED_APPS.remove(NODEPKG)
@@ -12,7 +12,7 @@ INSTALLED_APPS.append(NODEPKG)
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'vald_atom',
+    'NAME': 'vald_atom_alt',
     'USER': 'vald',
     'PASSWORD': 'V@ld',
   },

@@ -15,6 +15,7 @@ RETURNABLES = {\
 'AtomNuclearCharge':'Atom.atomic',
 'AtomIonCharge':'Atom.ion',
 'AtomMassNumber':'Atom.massno',
+'AtomStateDescription': 'AtomState.term_desc',
 'AtomStateLandeFactor':'AtomState.lande',
 'AtomStateLandeFactorUnit':'unitless',
 'AtomStateLandeFactorRef':'AtomState.lande_ref_id',
