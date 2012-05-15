@@ -1,7 +1,7 @@
 from settings_default import *
 
 DEBUG = True
-#DEBUG = False
+DEBUG = False
 TRANSLIM = 6000
 
 INSTALLED_APPS.remove(NODEPKG)
