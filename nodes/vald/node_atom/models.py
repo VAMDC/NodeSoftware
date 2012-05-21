@@ -10,9 +10,9 @@ class State(Model):
     lande = DecimalField(max_digits=6, decimal_places=2,null=True)
     term_desc = CharField(max_length=86, null=True)
 
-    energy_ref = ForeignKey(Reference, related_name='isenergyref_state', db_index=False)
-    lande_ref = ForeignKey(Reference, related_name='islanderef_state', db_index=False)
-    level_ref = ForeignKey(Reference, related_name='islevelref_state', db_index=False)
+    energy_ref_id= RefCharField(max_length=7, null=True)
+    lande_ref_id = RefCharField(max_length=7, null=True)
+    level_ref_id = RefCharField(max_length=7, null=True)
 
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True)
     l = PositiveSmallIntegerField(db_column=u'L', null=True)
@@ -66,12 +66,12 @@ class Transition(Model):
     accur = DecimalField(max_digits=6, decimal_places=3, null=True)
     #comment = CharField(max_length=128, null=True)
 
-    wavevac_ref = ForeignKey(Reference, related_name='iswavevacref_trans', db_index=False)
-    waveair_ref = ForeignKey(Reference, related_name='iswaveairref_trans', db_index=False)
-    loggf_ref = ForeignKey(Reference, related_name='isloggfref_trans', db_index=False)
-    gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans', db_index=False)
-    gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans', db_index=False)
-    waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans', db_index=False)
+    wavevac_ref_id = RefCharField(max_length=7, null=True)
+    waveair_ref_id = RefCharField(max_length=7, null=True)
+    loggf_ref_id = RefCharField(max_length=7, null=True)
+    gammarad_ref_id = RefCharField(max_length=7, null=True)
+    gammastark_ref_id = RefCharField(max_length=7, null=True)
+    waals_ref_id = RefCharField(max_length=7, null=True)
 
     wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False) # needed for population
     #loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
@@ -101,8 +101,9 @@ class Transition(Model):
         else: return self.WAVE_COMMENT[0]
 
     def waverefs(self):
-        if self.waveair: return self.wavevac_ref, self.waveair_ref
-        else: return self.wavevac_ref
+        if self.waveair:
+            return self.wavevac_ref_id + self.waveair_ref_id
+        else: return self.wavevac_ref_id
 
     def getWaals(self):
         if self.gammawaals: return self.gammawaals

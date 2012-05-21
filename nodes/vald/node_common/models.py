@@ -1,6 +1,17 @@
 from django.db.models import *
 from vamdctap.bibtextools import *
 
+class RefCharField(CharField):
+    description = "Subclass to CharField that returns strings split at commas"
+    __metaclass__ = SubfieldBase
+    def to_python(self, value):
+        #tmp = super(RefCharField, self).to_python(self, value)
+        if hasattr(value,'split'):
+            return value.split(',')
+        else:
+            return value
+
+
 class Species(Model):
     id = AutoField(primary_key=True, db_index=True)
     name = CharField(max_length=10, db_index=True)
