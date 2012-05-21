@@ -10,6 +10,7 @@ for understanding what happens below.
 import os, sys
 
 from imptools.linefuncs import *
+from xml.sax.saxutils import escape
 
 # Setting up filenames
 base = "/vald/vamdc/raw_vald_data/"
@@ -84,7 +85,7 @@ def get_method_type(linedata):
 def get_waveair(linedata):
     """
     Get measured air wavelengths (converted to vacuum), but only if it's
-    a different valúe than the Ritz wavelengths (wavevac)
+    a different value than the Ritz wavelengths (wavevac)
     """
     waveair = charrange(linedata, 15,30)
     if waveair == charrange(linedata, 0, 15): # comparing waveair to wavevac
@@ -156,6 +157,13 @@ def charrange_atom(linedata, molid, ia, ib):
         return charrange(linedata, ia, ib)
     return 'X'
 
+def charrange_escape(linedata, ia, ib):
+    """
+    This works like charrange except it also escapes the resulting
+    string to make it safe for use in xsams.
+    """
+    return escape(charrange(linedata, ia, ib))
+
 def species_component(species_file, outfile):
     """
     This is a stand-alone function for creating
@@ -182,6 +190,8 @@ def species_component(species_file, outfile):
     f.write(outstring)
     f.close()
     print "... Created file %s." % outfile
+
+
 
 ## mapper for caching the connections between upper/lower state IDS and
 ## their respective unique pk values. This depends on a MySQL database
@@ -340,7 +350,7 @@ mapping = [
              'cbyte':(charrange, 84,90),
              'cnull':'99.00'},
             {'cname':'term_desc',
-             'cbyte':(charrange, 126,212)},
+             'cbyte':(charrange_escape, 126,212)},
             # read from 2nd open vald file (2nd line per record)
             {'filenum':1,
              'cname':'energy_ref',
@@ -415,7 +425,7 @@ mapping = [
              'cbyte':(charrange, 90,96),
              'cnull':'99.00'},
             {'cname':'term_desc',
-             'cbyte':(charrange, 214,300)},
+             'cbyte':(charrange_escape, 214,300)},
             # read from 2nd open vald file (2nd line per record)
             {'filenum':1,
              'cname':'energy_ref',
@@ -595,8 +605,8 @@ mapping = [
      'infiles':ref_file,
      'headlines':0,
      'commentchar':'%',
-     'startblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE','@phdthesis','@unpublished'),
-     'endblock':('@article','@book','@techreport','@inproceedings','@misc','@ARTICLE','@phdthesis','@unpublished'),
+     'startblock':('@article','@book','@BOOK','@techreport','@inproceedings','@misc','@ARTICLE','@MISC','@phdthesis','@unpublished'),
+     'endblock':('@article','@book','@BOOK','@techreport','@inproceedings','@misc','@ARTICLE','@MISC','@phdthesis','@unpublished'),
      'linemap':[
             {'cname':'dbref',
              'cbyte':(get_bibtex_dbref,)},
@@ -654,6 +664,8 @@ mapping = [
 # short-cutting the mapping for testing
 #mapping = [mapping[0]] + mapping[2:]
 #mapping = [mapping[1]]
+
+mapping = [mapping[-2]]
 
 # Stand-alone scrípts (cannot depend on tables created above, these
 # are run first!)

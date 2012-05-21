@@ -1168,7 +1168,7 @@ def makeBroadeningType(G, name='Natural'):
     # in principle we should loop over lineshapes but
     # lets not do so unless somebody actually has several lineshapes
     # per broadening type             RadTransBroadening%sLineshapeName
-    s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
+    s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name) #TODO: This needs a functionRef!
     s += lsparams
     s += '</Lineshape>'
     s += '</Broadening>'
