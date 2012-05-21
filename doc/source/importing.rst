@@ -136,11 +136,12 @@ The only mandatory part is the *mapping* list::
 
    # the names of the input files
    basepath = "/path/to/your/raw_data/" 
+   outpath = "/path/to/store/rewritten/files/"
    file1 = basepath + 'raw_file1.txt'
    file2 = basepath + 'raw_file2.txt'
    file3 = basepath + 'raw_file3.txt'
-   outfile1 = basepath + 'references.dat'
-   outfile2 = basepath + 'species.dat'
+   outfile1 = outpath + 'references.dat'
+   outfile2 = outpath + 'species.dat'
 
    mapping = [ ... ]  # described below
 
@@ -383,7 +384,8 @@ Below is a simple example of a line function::
 
 In the mapping dictionary we will call this with e.g. ``'cbyte' :
 (charrange, 12, 17)``. The first element of the tuple is the function
-object, everything else will be fed to the function as arguments.
+object, everything else will be fed to the function as arguments. The
+function should return the string to store. 
 
 The default line functions coming with the package will handle most
 common use cases. Just ``import linefuncs *`` from your mapping file
@@ -407,6 +409,13 @@ power of Python at your command. Often you can use the
 default functions as "building blocks", linking 
 them together to get what you want. Just code your custom line
 functions directly in the mapping file. 
+
+The mapping file will skip lines/blocks starting with the *commentchar*
+character or containing data matching the *errorline* key value. But
+sometimes you don't have enough information to know if the line/block
+should be skipped. You can then analyze this in your custom line
+function. If there is a problem raise *RuntimeError* - the import
+system will then cleanly skip that line/block for you. 
 
 Here is an example of a line function that wants to create a unique id
 by parsing different parts of lines from different files::
@@ -434,7 +443,7 @@ by parsing different parts of lines from different files::
 Here we made use of the default line functions as building blocks to
 build a complex parsing using three different files. We also do some
 checking to replace data on the spot. The end result is a string
-combined from all sources. 
+combined from all sources.
 
 This function assumes linedata is a list. It must thus be called from
 a mapping where at least three files are read (*inputfiles* is a list
@@ -456,3 +465,23 @@ the function. The the mapping dictionary could look something like this::
 
 
 See *nodes/ExampleNode* for more examples of mappings and linefuncs.
+
+
+How to update an existing database
+==================================
+
+As long as your database schema has not changed, you can use this same 
+rewrite mechanism to append new data to your database. Just run the rewriter on your new raw
+data, then use the *LOAD DATA INFILE* (MySQL) or equivalent again to import it 
+into your database. 
+
+An important limitation of *LOAD DATA INFILE* is that it will not
+change already existing rows. So you cannot update data in-place with
+this method (it is also not the purpose of this import system).
+
+The underlying Django system comes with many third-party tools for helping you manage
+your database however. We recommend you look 
+into Django-South (http://south.aeracode.org/). This Django-plugin
+allows you to write simple "migration" scripts for updating an existing database 
+schema or do data conversions between different versions of a live
+database.   

@@ -49,6 +49,8 @@ class Transition(Model):
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True, db_index=False)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, db_index=False)
 
+    #TODO: change wavvac/waveair to waveritz and wavemeasured instead - that's more correct;
+    # both of these are expressed in vacuum.
     wavevac = DecimalField(max_digits=16, decimal_places=8, db_index=True)
     waveair = DecimalField(max_digits=16, decimal_places=8, null=True, db_index=False)
 
@@ -95,7 +97,8 @@ class Transition(Model):
         if self.waveair: return self.wavevac, self.waveair
         else: return self.wavevac
 
-    WAVE_COMMENT = ['Vacuum wavelength from state energies (Ritz)','Wavelength (non-Ritz), measured in air and converted to vacuum']
+    WAVE_COMMENT = ['Vacuum wavelength from state energies (RITZ)','Vacuum wavelength from measurements (non-RITZ)']
+
     def wavecomment(self):
         if self.waveair: return self.WAVE_COMMENT
         else: return self.WAVE_COMMENT[0]
