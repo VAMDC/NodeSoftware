@@ -64,7 +64,7 @@
 					</StableMolecularProperties>
 					<Comment>H2O</Comment>
 				</MolecularChemicalSpecies>
-				<MolecularState stateID="Swadis-21-00.04.01.01.01.00">
+				<MolecularState stateID="Swadis-21-00.04.01.01.01.00-1">
 					<MolecularStateCharacterisation>
 						<StateEnergy methodRef="Mwadis-Exp" energyOrigin="Zero-point energy">
 							<Value units="1/cm">9895.327847</Value>

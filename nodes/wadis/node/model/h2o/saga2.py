@@ -19,7 +19,7 @@ class Energy(EnergyData):
 		qns = [None] * 6
 		if self.ident_nm is not None:
 			qns = self.ident_nm.split()
-		return [["v1", qns[0]], ["v2", qns[1]], ["v3", qns[2]], ["J", qns[3]], ["Ka", qns[4]], ["Kc", qns[5]]]
+		return (("v1", qns[0]), ("v2", qns[1]), ("v3", qns[2]), ("J", qns[3]), ("Ka", qns[4]), ("Kc", qns[5]))
 
 
 	class Meta(EnergyData.Meta):
@@ -55,11 +55,11 @@ class Transition(TransitionData):
 
 
 	def up(self):
-		return [["v1", self.ident_nm_upr_v1], ["v2", self.ident_nm_upr_v2], ["v3", self.ident_nm_upr_v3], ["J", self.ident_nm_upr_j], ["Ka", self.ident_nm_upr_ka], ["Kc", self.ident_nm_upr_kc]]
+		return (("v1", self.ident_nm_upr_v1), ("v2", self.ident_nm_upr_v2), ("v3", self.ident_nm_upr_v3), ("J", self.ident_nm_upr_j), ("Ka", self.ident_nm_upr_ka), ("Kc", self.ident_nm_upr_kc))
 
 
 	def low(self):
-		return [["v1", self.ident_nm_lwr_v1], ["v2", self.ident_nm_lwr_v2], ["v3", self.ident_nm_lwr_v3], ["J", self.ident_nm_lwr_j], ["Ka", self.ident_nm_lwr_ka], ["Kc", self.ident_nm_lwr_kc]]
+		return (("v1", self.ident_nm_lwr_v1), ("v2", self.ident_nm_lwr_v2), ("v3", self.ident_nm_lwr_v3), ("J", self.ident_nm_lwr_j), ("Ka", self.ident_nm_lwr_ka), ("Kc", self.ident_nm_lwr_kc))
 
 
 	class Meta(TransitionData.Meta):
@@ -91,11 +91,11 @@ class Lineprof(LineprofData):
 
 
 	def up(self):
-		return [["v1", self.ident_nm_up_v1], ["v2", self.ident_nm_up_v2], ["v3", self.ident_nm_up_v3], ["J", self.ident_nm_up_j], ["Ka", self.ident_nm_up_ka], ["Kc", self.ident_nm_up_kc]]
+		return (("v1", self.ident_nm_up_v1), ("v2", self.ident_nm_up_v2), ("v3", self.ident_nm_up_v3), ("J", self.ident_nm_up_j), ("Ka", self.ident_nm_up_ka), ("Kc", self.ident_nm_up_kc))
 
 
 	def low(self):
-		return [["v1", self.ident_nm_lo_v1], ["v2", self.ident_nm_lo_v2], ["v3", self.ident_nm_lo_v3], ["J", self.ident_nm_lo_j], ["Ka", self.ident_nm_lo_ka], ["Kc", self.ident_nm_lo_kc]]
+		return (("v1", self.ident_nm_lo_v1), ("v2", self.ident_nm_lo_v2), ("v3", self.ident_nm_lo_v3), ("J", self.ident_nm_lo_j), ("Ka", self.ident_nm_lo_ka), ("Kc", self.ident_nm_lo_kc))
 
 
 	class Meta(LineprofData.Meta):

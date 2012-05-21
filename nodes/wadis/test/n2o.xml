@@ -109,7 +109,7 @@
 					</StableMolecularProperties>
 					<Comment>N2O</Comment>
 				</MolecularChemicalSpecies>
-				<MolecularState stateID="Swadis-35-0.0.0.0.0.e">
+				<MolecularState stateID="Swadis-35-0.0.0.0.0.e-2">
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="ltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/ltcs">
 						<case:QNs>
@@ -122,7 +122,7 @@
 						</case:QNs>
 					</Case>
 				</MolecularState>
-				<MolecularState stateID="Swadis-35-0.0.0.0.1.e">
+				<MolecularState stateID="Swadis-35-0.0.0.0.1.e-1">
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="ltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/ltcs">
 						<case:QNs>
@@ -147,8 +147,8 @@
 						<Value units="1/cm">0.838022</Value>
 					</Wavenumber>
 				</EnergyWavelength>
-				<UpperStateRef>Swadis-35-0.0.0.0.1.e</UpperStateRef>
-				<LowerStateRef>Swadis-35-0.0.0.0.0.e</LowerStateRef>
+				<UpperStateRef>Swadis-35-0.0.0.0.1.e-1</UpperStateRef>
+				<LowerStateRef>Swadis-35-0.0.0.0.0.e-2</LowerStateRef>
 				<Probability>
 					<TransitionProbabilityA methodRef="Mwadis-Exp">
 						<Value units="1/s">1.7e-09</Value>

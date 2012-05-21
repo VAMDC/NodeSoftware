@@ -74,7 +74,6 @@ class LineList(Model):
     class Meta:
         db_table = u'linelists'
 
-
 class EnvClass(object):
     def __init__(self,xml):
         self.xml = xml

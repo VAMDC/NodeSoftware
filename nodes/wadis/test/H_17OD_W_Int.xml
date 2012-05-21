@@ -111,7 +111,7 @@ This paper describes the status of the 2008 edition of the &lt;i&gt;HITRAN&lt;/i
 					</StableMolecularProperties>
 					<Comment>H_17OD</Comment>
 				</MolecularChemicalSpecies>
-				<MolecularState stateID="Swadis-165-0.0.0.5.4.1">
+				<MolecularState stateID="Swadis-165-0.0.0.5.4.1-2">
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -124,7 +124,7 @@ This paper describes the status of the 2008 edition of the &lt;i&gt;HITRAN&lt;/i
 						</case:QNs>
 					</Case>
 				</MolecularState>
-				<MolecularState stateID="Swadis-165-0.0.0.5.4.2">
+				<MolecularState stateID="Swadis-165-0.0.0.5.4.2-4">
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -137,7 +137,7 @@ This paper describes the status of the 2008 edition of the &lt;i&gt;HITRAN&lt;/i
 						</case:QNs>
 					</Case>
 				</MolecularState>
-				<MolecularState stateID="Swadis-165-0.1.0.4.3.1">
+				<MolecularState stateID="Swadis-165-0.1.0.4.3.1-3">
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -150,7 +150,7 @@ This paper describes the status of the 2008 edition of the &lt;i&gt;HITRAN&lt;/i
 						</case:QNs>
 					</Case>
 				</MolecularState>
-				<MolecularState stateID="Swadis-165-0.1.0.4.3.2">
+				<MolecularState stateID="Swadis-165-0.1.0.4.3.2-1">
 					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
 					<Case xsi:type="case:Case" caseID="nltcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/nltcs">
 						<case:QNs>
@@ -175,8 +175,8 @@ This paper describes the status of the 2008 edition of the &lt;i&gt;HITRAN&lt;/i
 						<Value units="1/cm">1234.23473</Value>
 					</Wavenumber>
 				</EnergyWavelength>
-				<UpperStateRef>Swadis-165-0.1.0.4.3.2</UpperStateRef>
-				<LowerStateRef>Swadis-165-0.0.0.5.4.1</LowerStateRef>
+				<UpperStateRef>Swadis-165-0.1.0.4.3.2-1</UpperStateRef>
+				<LowerStateRef>Swadis-165-0.0.0.5.4.1-2</LowerStateRef>
 				<Probability>
 					<IdealisedIntensity methodRef="Mwadis-Exp">
 						<Comments>cm-1/(molecule*cm-2)</Comments>
@@ -191,8 +191,8 @@ This paper describes the status of the 2008 edition of the &lt;i&gt;HITRAN&lt;/i
 						<Value units="1/cm">1234.44077</Value>
 					</Wavenumber>
 				</EnergyWavelength>
-				<UpperStateRef>Swadis-165-0.1.0.4.3.1</UpperStateRef>
-				<LowerStateRef>Swadis-165-0.0.0.5.4.2</LowerStateRef>
+				<UpperStateRef>Swadis-165-0.1.0.4.3.1-3</UpperStateRef>
+				<LowerStateRef>Swadis-165-0.0.0.5.4.2-4</LowerStateRef>
 				<Probability>
 					<IdealisedIntensity methodRef="Mwadis-Exp">
 						<Comments>cm-1/(molecule*cm-2)</Comments>

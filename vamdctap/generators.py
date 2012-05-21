@@ -91,7 +91,6 @@ def GetValue(returnable_key, **kwargs):
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
         #log.debug(e)
-        #print 'Not in dictionary: ' + returnable_key
         return ''
 
     # whenever the right-hand-side is not a string, treat
@@ -276,20 +275,27 @@ def makeDataSeriesAccuracyType(keyword, G):
     """
     build the elements for accuracy belonging to a data series.
     """
+    errlist = makeiter( G(keyword + "AccuracyErrorList") )
+    errfile = G(keyword + "AccuracyErrorFile")
+    errval = G(keyword + "AccuracyErrorValue")
+    if not (errlist or errfile or errval):
+        return ''
+
+    errlistN = G(keyword + "AccuracyErrorListN")
+    if errlist and not errlistN:
+        errlistN = len(errlist)
+
     string = makePrimaryType("Accuracy", keyword + "Accuracy", G,
                     extraAttr={"type":G(keyword+"AccuracyType"),
                                "relative":G(keyword+"AccuracyRelative")})
-    if G(keyword + "ErrorList"):
-        string += "<ErrorList count='%s'>%s</ErrorList>" % (G(keyword + "ErrorListN"), " ".join(str(o) for o in makeiter(G(keyword + "ErrorList"))))
-    elif G(keyword + "ErrorFile"):
-        string += "<ErrorFile>%s</ErrorFile>" % G(keyword + "ErrorFile")
-    elif G(keyword + "ErrorValue"):
-        string += "<ErrorValue>%s</ErrorValue" % G(keyword + "ErrorValue")
+    if errlist:
+        string += "<ErrorList count='%s'>%s</ErrorList>" % (errlistN, " ".join(str(o) for o in errlist))
+    elif errfile:
+        string += "<ErrorFile>%s</ErrorFile>" % errfile
+    elif errval:
+        string += "<ErrorValue>%s</ErrorValue>" % errval
     string += "</Accuracy>"
-    if '<Error' in string: # check if there actually is some content
-        return string
-    else:
-        return ''
+    return string
 
 def makeEvaluation(keyword, G):
     """
@@ -331,7 +337,6 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
         return ''
     if isiterable(value):
         return makeRepeatedDataType(tagname, keyword, G)
-
     unit = G(keyword + 'Unit')
     method = G(keyword + 'Method')
     comment = G(keyword + 'Comment')
@@ -527,10 +532,10 @@ def makeTermType(tag, keyword, G):
         string += "</jj>"
     j1j2 = makeiter(G("%sJ1J2" % keyword))
     if j1j2:
-        string += "<j1j2>"
+        string += "<J1J2>"
         for j in j1j2:
             string += "<j>%s</j>" % j
-        string += "</j1j2>"
+        string += "</J1J2>"
     K = G("%sK" % keyword)
     if K:
         string += "<jK>"
@@ -583,7 +588,9 @@ def makeShellType(tag, keyword, G):
     totalAngularMomentum = G("%sTotalAngularMomentum" % keyword)
     if totalAngularMomentum:
       string += "<TotalAngularMomentum>%s</TotalAngularMomentum>" % totalAngularMomentum
-    string += makeTermType("ShellTerm", "%sTerm" % keyword, G)
+    shellterm = makeTermType("ShellTerm", "%sTerm" % keyword, G)
+    if shellterm != "<%s></%s>" % (tag, tag): # shellterm is optional, so don't accept an empty tag
+        string += shellterm
     string += "</%s>" % tag
     return string
 
@@ -1258,7 +1265,7 @@ def XsamsRadTrans(RadTrans):
         if group: attrs += ' groupLabel="%s"'%group
         if proc: attrs += ' process="%s"'%proc
         yield '<RadiativeTransition id="P%s-%s"%s>'%(NODEID,G('RadTransID'),attrs)
-        makeOptionalTag('Comments','RadTransComment',G)
+        yield makeOptionalTag('Comments','RadTransComment',G)
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
         yield makeDataType('Wavelength', 'RadTransWavelength', G)
@@ -1474,9 +1481,9 @@ def XsamsCollTrans(CollTrans):
         yield makePrimaryType("CollisionalTransition", "Collision", G, extraAttr=dic)
 
         yield "<ProcessClass>"
-        makeOptionalTag('UserDefinition', 'CollisionUserDefinition',G)
-        makeOptionalTag('Code','CollisionCode',G)
-        makeOptionalTag('IAEACode','CollisionIAEACode',G)
+        yield makeOptionalTag('UserDefinition', 'CollisionUserDefinition',G)
+        yield makeOptionalTag('Code','CollisionCode',G)
+        yield makeOptionalTag('IAEACode','CollisionIAEACode',G)
         yield "</ProcessClass>"
 
         if hasattr(CollTran, "Reactants"):
