@@ -8,16 +8,11 @@ class State(Model):
 
     energy = DecimalField(max_digits=15, decimal_places=4,null=True, db_index=True)
     lande = DecimalField(max_digits=6, decimal_places=2,null=True)
-    #coupling = CharField(max_length=2, null=True)
-    #term = CharField(max_length=56, null=True)
+    term_desc = CharField(max_length=86, null=True)
 
-    energy_ref = ForeignKey(Reference, related_name='isenergyref_state', db_index=False)
-    lande_ref = ForeignKey(Reference, related_name='islanderef_state', db_index=False)
-    level_ref = ForeignKey(Reference, related_name='islevelref_state', db_index=False)
-
-    #energy_linelist = ForeignKey(LineList, related_name='isenergylinelist_state', db_index=False)
-    #lande_linelist = ForeignKey(LineList, related_name='islandelinelist_state', db_index=False)
-    #level_linelist = ForeignKey(LineList, related_name='islevellinelist_state', db_index=False)
+    energy_ref_id= RefCharField(max_length=7, null=True)
+    lande_ref_id = RefCharField(max_length=7, null=True)
+    level_ref_id = RefCharField(max_length=7, null=True)
 
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True)
     l = PositiveSmallIntegerField(db_column=u'L', null=True)
@@ -28,17 +23,23 @@ class State(Model):
     k = DecimalField(max_digits=3, decimal_places=1,db_column=u'K', null=True)
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True)
-    sn = PositiveSmallIntegerField(null=True)
+    sn = PositiveSmallIntegerField(db_column=u'Sn',null=True)
 
-    #transition_type = CharField(max_length=2, null=True)
-    #autoionized = NullBooleanField(default=False)
-
-    def j1j2(self):
-        if self.j1 and self.j2:
-            return (self.j1,self.j2)
-
+    def jj(self):
+        if None not in (self.j1, self.j2):
+            return (self.j1, self.j2)
+    def multiplicity(self):
+        if self.s != None:
+            return 2 * self.s + 1
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
+
+    def get_Components(self):
+        """This is required in order to supply a Components property
+        for the makeAtomsComponents tagmaker."""
+        return self
+    Components = property(get_Components)
+
     class Meta:
         db_table = u'states'
 
@@ -48,10 +49,10 @@ class Transition(Model):
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True, db_index=False)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, db_index=False)
 
-    wave = DecimalField(max_digits=20, decimal_places=8, db_index=True)
-
-    # wavevac (calculated from energies, has separated wavewac_ref (same as energies))
-    # waveair + waveair_ref
+    #TODO: change wavvac/waveair to waveritz and wavemeasured instead - that's more correct;
+    # both of these are expressed in vacuum.
+    wavevac = DecimalField(max_digits=16, decimal_places=8, db_index=True)
+    waveair = DecimalField(max_digits=16, decimal_places=8, null=True, db_index=False)
 
     species = ForeignKey(Species, db_index=True)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
@@ -61,18 +62,18 @@ class Transition(Model):
     gammawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
     sigmawaals = PositiveSmallIntegerField(null=True)
     alphawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
-    #accur = CharField(max_length=11,null=True)
+
+    # The accur tags are populated using the methods below
+    accurflag = CharField(max_length=1, null=True) # VALD flag: N,E,C or P
+    accur = DecimalField(max_digits=6, decimal_places=3, null=True)
     #comment = CharField(max_length=128, null=True)
 
-    #srctag = ForeignKey(Reference, db_index=False)
-
-    #wavevac_ref
-    wave_ref = ForeignKey(Reference, related_name='iswaveref_trans', db_index=False)
-    # change above to waveair_ref?
-    loggf_ref = ForeignKey(Reference, related_name='isloggfref_trans', db_index=False)
-    gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans', db_index=False)
-    gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans', db_index=False)
-    waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans', db_index=False)
+    wavevac_ref_id = RefCharField(max_length=7, null=True)
+    waveair_ref_id = RefCharField(max_length=7, null=True)
+    loggf_ref_id = RefCharField(max_length=7, null=True)
+    gammarad_ref_id = RefCharField(max_length=7, null=True)
+    gammastark_ref_id = RefCharField(max_length=7, null=True)
+    waals_ref_id = RefCharField(max_length=7, null=True)
 
     wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False) # needed for population
     #loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
@@ -80,7 +81,10 @@ class Transition(Model):
     #gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
     #waals_linelist = ForeignKey(LineList, related_name='iswaalslinelist_trans', db_index=False)
 
-    # Method information. Since some xsams method categories are represented more than one vald equivalent,
+    transition_type = CharField(max_length=2, null=True)
+    autoionized = NullBooleanField(default=False)
+
+    # Method information. Since some xsams method categories are represented by more than one vald equivalent,
     # we need one field for restrictable's queries and returnable's queries respectively.
     # vald category mapping = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
     # vald->xsams mapping = {0:'experiment', 1:'semiempirical', 2:'derived', 3:'theory',4:'semiempirical',5:'compilation'}
@@ -89,18 +93,44 @@ class Transition(Model):
     method_return = PositiveSmallIntegerField(null=True, db_index=False) # this is the method category, populated in post-processing by parsing wave_linelist field
     method_restrict = PositiveSmallIntegerField(null=True, db_index=True) # this is the method category to restrict on, populated in post-processing.
 
+    def waves(self):
+        if self.waveair: return self.wavevac, self.waveair
+        else: return self.wavevac
+
+    WAVE_COMMENT = ['Vacuum wavelength from state energies (RITZ)','Vacuum wavelength from measurements (non-RITZ)']
+
+    def wavecomment(self):
+        if self.waveair: return self.WAVE_COMMENT
+        else: return self.WAVE_COMMENT[0]
+
+    def waverefs(self):
+        if self.waveair:
+            return self.wavevac_ref_id + self.waveair_ref_id
+        else: return self.wavevac_ref_id
+
     def getWaals(self):
         if self.gammawaals: return self.gammawaals
-        elif self.sigmawaals and self.alphawaals: return [self.sigmawaals,self.alphawaals]
-        else: return None
+        elif self.sigmawaals and self.alphawaals: return [self.sigmawaals, self.alphawaals]
+        else: return ""
 
-# Don't calculate here, but directly using sql
+    def getAccurType(self):
+        "retrieve the right AccurType type depending on the VALD accur flag"
+        if self.accurflag in (u"N", u"E"): return u"estimated"
+        elif self.accurflag == u'C': return u"arbitrary"
+        elif self.accurflag == u'P': return u"systematic"
+        else: return ""
+
+    def getAccurRelative(self):
+        "retrieve AccuracyRelative tag as true/false depending on VALD accur flag"
+        return str(self.accurflag in (u"N", u"E", u"C")).lower() # returns true/false
+
+# Don't calculate here, but directly using sql (kept here for reference)
 #    def getEinsteinA(self):
 #        "Calculate the einstein A"
 #        return (0.667025e16 * 10**self.loggf) / ((2 * self.upstate.j + 1.0) * self.wave**2)
 
     def __unicode__(self):
-        return u'ID:%s Wavel: %s'%(self.id,self.wave)
+        return u'ID:%s Wavel: %s'%(self.id,self.wavevac)
     class Meta:
         db_table = u'transitions'
 

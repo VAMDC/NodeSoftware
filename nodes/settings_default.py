@@ -27,7 +27,7 @@ ROOT_URLCONF = NODENAME+'.urls'
 
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email).
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
-ADMINS = (('yourname', 'name@mail.net'),)
+ADMINS = (('yourname', 'name@example.com'),)
 MANAGERS = ADMINS
 
 EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
