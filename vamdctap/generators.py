@@ -822,12 +822,15 @@ def XsamsMCSBuild(Molecule):
     yield '<StoichiometricFormula>%s</StoichiometricFormula>\n'\
             % G("MoleculeStoichiometricFormula")
     yield makeOptionalTag('IonCharge', 'MoleculeIonCharge', G)
-    if G("MoleculeChemicalName"):
-        yield '<ChemicalName><Value>%s</Value></ChemicalName>\n'\
-            % G("MoleculeChemicalName")
-    if G("MoleculeInChI"):
-        yield '<InChI>%s</InChI>' % G("MoleculeInChI")
+    yield makeOptionalTag('ChemicalName','MoleculeChemicalName',G)
+    yield makeOptionalTag('InChI','MoleculeInChI',G)
     yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
+
+    cas = makePrimaryType('CASRegistryNumber','MoleculeCASRegistryNumber',G)
+    if cas:
+        yield '%s<Value>%s</Value></CASRegistryNumber>'%(cas,G('MoleculeCASRegistryNumber'))
+
+    yield makeOptionalTag('CNPIGroup','MoleculeCNPIGroup',G)
 
     yield makePartitionfunc("MoleculePartitionFunction", G)
 
