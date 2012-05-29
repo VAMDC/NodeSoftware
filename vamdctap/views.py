@@ -26,12 +26,13 @@ from generators import *
 from sqlparse import SQL
 
 REQUESTABLES = map(lower, [\
- 'Environments',
  'AtomStates',
  'Atoms',
  'Collisions',
+ 'Environments',
  'Functions',
  'Methods',
+ 'MoleculeBasisStates',
  'MoleculeQuantumNumbers',
  'MoleculeStates',
  'Molecules',
@@ -123,6 +124,9 @@ class TAPQUERY(object):
             if 'moleculestates' in self.requestables:
                 self.requestables.add('molecules')
             if 'moleculequantumnumbers' in self.requestables:
+                self.requestables.add('molecules')
+                self.requestables.add('moleculestates')
+            if 'moleculebasisstates' in self.requestables:
                 self.requestables.add('molecules')
                 self.requestables.add('moleculestates')
             if 'processes' in self.requestables:
