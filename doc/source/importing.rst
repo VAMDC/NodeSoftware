@@ -466,22 +466,26 @@ the function. The the mapping dictionary could look something like this::
 
 See *nodes/ExampleNode* for more examples of mappings and linefuncs.
 
+.. _dbupdate:
 
 How to update an existing database
 ==================================
 
-As long as your database schema has not changed, you can use this same 
-rewrite mechanism to append new data to your database. Just run the rewriter on your new raw
-data, then use the *LOAD DATA INFILE* (MySQL) or equivalent again to import it 
-into your database. 
+As long as your database schema has not changed, you can use this same rewrite
+mechanism to append new data to your database. Just run the rewriter on your
+new raw data, then use the *LOAD DATA INFILE* (MySQL) or equivalent again to
+import it into your database. 
 
 An important limitation of *LOAD DATA INFILE* is that it will not
 change already existing rows. So you cannot update data in-place with
 this method (it is also not the purpose of this import system).
 
-The underlying Django system comes with many third-party tools for helping you manage
-your database however. We recommend you look 
-into Django-South (http://south.aeracode.org/). This Django-plugin
-allows you to write simple "migration" scripts for updating an existing database 
-schema or do data conversions between different versions of a live
-database.   
+For altering existing rows in the database, the standard SQL-command *UPDATE TABLE* will do the trick in most cases.
+
+Adding data in the form of new columns to existing tables, can be done as follows. Add the empty column using SQL *ALTER TABLE*, fill it with *UPDATE TABLE* and then add the corresponding field definition in your ``models.py`` and ``dictionaries.py`` to make the NodeSoftware aware of it.
+
+The underlying Django system comes with many third-party tools for helping you
+manage your database however. We recommend you look into Django-South
+(http://south.aeracode.org/). This Django-plugin allows you to write simple
+"migration" scripts for updating an existing database schema or do data
+conversions between different versions of a live database.
