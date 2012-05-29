@@ -95,7 +95,7 @@ class TAPQUERY(object):
         try: self.format=lower(self.request['FORMAT'])
         except: self.errormsg += 'Cannot find FORMAT in request.\n'
 
-        try: self.parsedSQL=SQL.parseString(self.query)
+        try: self.parsedSQL=SQL.parseString(self.query,parseAll=True)
         except: # if this fails, we're done
             self.errormsg += 'Could not parse the SQL query string.\n'
             self.isvalid=False
