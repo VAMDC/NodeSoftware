@@ -1058,7 +1058,7 @@ def XsamsBSBuild(MoleculeBasisState):
         yield ret
     else:
         yield makePrimaryType("BasisState", "BasisState", G,
-            extraAttr={"stateID":'S%s-%s' % (G('NodeID'),
+            extraAttr={"stateID":'S%s-B%s' % (G('NodeID'),
                                               G('BasisStateID')),})
         cont, ret = checkXML(G("BasisStateQuantumNumbers"))
         if cont:
