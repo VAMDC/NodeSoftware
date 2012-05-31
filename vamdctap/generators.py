@@ -1043,10 +1043,8 @@ def XsamsMSBuild(MoleculeState):
                 continue
             GE = lambda name: GetValue(name, Expansion=Expansion)
             yield makePrimaryType("StateExpansion", "MoleculeStateExpansion", GE)
-            if hasattr(Expansion, "Coefficients"):
-                for Coefficient in makeiter(Expansion.Coefficients):
-                    GEC = lambda name: GetValue(name, Coefficient=Coefficient)
-                    yield "<Coeff stateRef=%s>%s</Coeff>" % (GEC("MoleculeStateExpansionCoeffStateRef"),GEC("MoleculeStateExpansionCoeff"))
+            for i,val in enumerate(makeiter(G("MoleculeStateExpansionCoeff"))):
+                yield "<Coeff stateRef=S%s-B%s>%s</Coeff>" % (G('NODEID'),makeiter(G("MoleculeStateExpansionCoeffStateRef"))[i],val)
             yield "</StateExpansion>"
 
     yield '</MolecularState>'
