@@ -1295,7 +1295,7 @@ def XsamsRadTrans(RadTrans):
         attrs=''
         if group: attrs += ' groupLabel="%s"'%group
         if proc: attrs += ' process="%s"'%proc
-        yield '<RadiativeTransition id="P%s-%s"%s>'%(NODEID,G('RadTransID'),attrs)
+        yield '<RadiativeTransition id="P%s-R%s"%s>'%(NODEID,G('RadTransID'),attrs)
         yield makeOptionalTag('Comments','RadTransComment',G)
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
@@ -1413,7 +1413,7 @@ def XsamsRadCross(RadCross):
         # create header
 
         G = lambda name: GetValue(name, RadCros=RadCros)
-        dic = {'id':"P%s-%s" % (NODEID, G("CrossSectionID")) }
+        dic = {'id':"P%s-CS%s" % (NODEID, G("CrossSectionID")) }
 
         envRef = G("CrossSectionEnvironment")
         if envRef:
@@ -1505,7 +1505,7 @@ def XsamsCollTrans(CollTrans):
 
         # create header
         G = lambda name: GetValue(name, CollTran=CollTran)
-        dic = {'id':"P%s-%s" % (NODEID, G("CollisionID")) }
+        dic = {'id':"P%s-C%s" % (NODEID, G("CollisionID")) }
         group = G("CollisionGroup")
         if group:
             dic["groupLabel"] = "%s" % group
