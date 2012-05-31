@@ -10,7 +10,7 @@ controlled from a mapping file.
 
 import sys
 import gzip
-from time import time 
+from time import time
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
@@ -19,6 +19,7 @@ is_iter = lambda iterable: hasattr(iterable, '__iter__')
 DELIM = ';'
 QUOTE = '"'
 NULL = '\N'
+
 
 def ftime(t0, t1):
     "formats time to nice format."
@@ -30,7 +31,7 @@ def log_trace(e, info=""):
     """
     Intended to be called from inside a traceback exception with
     the exception object as first argument.
-    Captures the latest traceback. 
+    Captures the latest traceback.
     """
     sys.stderr.write("%s%s\n" % (info, str(e)))
 
@@ -62,21 +63,21 @@ def validate_mapping(mapping):
     if not mapping:
         raise Exception("Empty/malformed mapping.")
     if not type(mapping) == list or \
-           any([True for fdict in mapping if type(fdict) != dict]): 
+           any([True for fdict in mapping if type(fdict) != dict]):
         raise Exception("Mapping must be a list of dictionaries, one for each file to convert.")
-    for fdict in mapping: 
+    for fdict in mapping:
         if len([True for key in fdict.keys() if key in required_fdict_keys]) < len(required_fdict_keys):
             string = "Mapping error: One of the keys %s is missing from the mapping %s."
             raise Exception(string % (required_fdict_keys, fdict.keys()))
         if not fdict['linemap'] or type(fdict['linemap']) != list:
-            raise Exception("Mapping error: 'linemap' must be a list of dicts.")     
-        for col in fdict['linemap']:            
+            raise Exception("Mapping error: 'linemap' must be a list of dicts.")
+        for col in fdict['linemap']:
             if not type(col) == dict or \
                 len([True for key in col.keys()
                      if key in required_col_keys]) < len(required_col_keys):
-                string = "Mapping error: Linemaps must have at least keys %s" 
+                string = "Mapping error: Linemaps must have at least keys %s"
                 raise Exception(string % required_col_keys)
-    return True 
+    return True
 
 
 # working functions for the importer
@@ -87,22 +88,28 @@ def get_value(linedata, column_dict):
     the column_dict and applied to the linedata. The result is returned, after
     checking for the NULL value.
     """
-    cbyte = column_dict['cbyte']    
+    global TOTAL_ERRS
+    cbyte = column_dict['cbyte']
     colfunc = cbyte[0]
     filenum = column_dict.get('filenum', 0)
-    if is_iter(filenum):       
+    if is_iter(filenum):
         linedata = [linedata[num] for num in filenum] # this will raise error if out of bounds, as it should.
     else:
         linedata = linedata[filenum]
     args = ()
     if len(cbyte) > 1:
-        args = cbyte[1:]    
+        args = cbyte[1:]
     kwargs = column_dict.get('kwargs', {})
-    try:                
+    try:
         dat = colfunc(linedata,  *args, **kwargs)
+    except RuntimeError:
+        # this is let through, it should be a controlled raise to skip this line
+        raise
     except Exception, e:
+        # a general error
         log_trace(e, "error processing line/block '%s' - in %s%s: " % (linedata, colfunc, args))
-        raise 
+        TOTAL_ERRS += 1
+        raise
     if not dat or (column_dict.has_key('cnull') \
                        and dat == column_dict['cnull']):
         return None
@@ -117,7 +124,7 @@ class MappingFile(object):
     keeps track of its own block-step speed and will return lines
     as defined by this speed. E.g. for a line-step speed of 0.5,
     it will return the same line twice in a row whereas for a
-    step speed of 2, will return every second block etc. 
+    step speed of 2, will return every second block etc.
 
     If endblock is \\n (default), the block will infact represent a line.
     """
@@ -136,7 +143,7 @@ class MappingFile(object):
             startblock = [startblock]
         if not is_iter(endblock):
             endblock = [endblock]
-            
+
         # block generator
         block = ""
         for line in self.file.xreadlines():
@@ -148,16 +155,16 @@ class MappingFile(object):
                     # find any matching startblock entries in the line, and index the matches
                     smatches = [inum for inum, start in enumerate(startblock) if start in line]
                     if smatches:
-                        # start a new block                    
+                        # start a new block
                         start = startblock[smatches[0]]
                         scrap, block = line.split(start, 1)
                         block = start + block
-                        continue                     
+                        continue
                     else:
                         # we are outside a block; ignore
-                        continue                                              
+                        continue
 
-            ematches = [inum for inum, end in enumerate(endblock) if end in line]                    
+            ematches = [inum for inum, end in enumerate(endblock) if end in line]
             if ematches:
                 # ending the block
                 end = endblock[ematches[0]]
@@ -167,7 +174,7 @@ class MappingFile(object):
                 if startblock[0] != None:
                     if end in startblock:
                         # we have to re-insert the startblock(=endblock) in this case
-                        block = end + buf 
+                        block = end + buf
                     else:
                         # we ignore data outside startblock...endblock
                         block = ""
@@ -177,10 +184,10 @@ class MappingFile(object):
             else:
                 block += line
         if block:
-            # if we still have data when the file ends (without having hit an endblock), 
+            # if we still have data when the file ends (without having hit an endblock),
             # return this too.
             yield block
-            
+
     def __init__(self, filepath, headblocks, commentchar,
                  blockoffset, blockstep, errblock, startblock=None, endblock='\n'):
         "Initialize the file"
@@ -198,11 +205,11 @@ class MappingFile(object):
         while True:
             self.block = self.blocks.next()
             if not self.block.startswith(self.commentchar):
-                break 
+                break
         self.counter = -blockstep
         self.blockstep = blockstep
         self.errblock = str(errblock)
-        
+
     def readblock(self):
         """
         Return a block from the file.
@@ -211,35 +218,39 @@ class MappingFile(object):
         block stepping (0 < blockstep < 1) and faster (> 1)
         """
         self.counter += self.blockstep
-        if self.counter == 0:          
+        if self.counter == 0:
             # always return the first block
-            return self.block                
+            return self.block
         elif self.counter % 1 == 0:
             # only step if counter equals an even block
-            for i in range(max(1, self.blockstep)):                
+            for i in range(max(1, self.blockstep)):
                 while True:
                     self.block = self.blocks.next()
                     if not self.block.startswith(self.commentchar):
-                        break        
-        if self.block.startswith(self.errblock):            
+                        break
+        if self.block.startswith(self.errblock):
             self.block = ""
         #print self.block
         return self.block
-    
+
 def make_outfile(file_dict, global_debug=False):
     """
     Process one file definition from a config dictionary by
     processing the file name stored in it and parse it according
-    to the mapping. 
+    to the mapping.
 
     file_dict - config dictionary representing one input file structure
     (for an example see e.g. mapping_vald3.py)
-    """    
-    
+
+    a function raising a RuntimeError exception will skip the current
+    line being parsed.
+
+    """
+
     outf = open(file_dict['outfile'],'a')
 
     linemap = file_dict['linemap']
-    
+
     filepaths = file_dict['infiles']
     if not is_iter(filepaths):
         filepaths = [filepaths]
@@ -252,7 +263,7 @@ def make_outfile(file_dict, global_debug=False):
         headlines = [headlines]
     commentchars = file_dict.get('commentchar', ['#'])
     if not is_iter(commentchars):
-        commentchars = [commentchars]          
+        commentchars = [commentchars]
     linesteps = file_dict.get('linestep', [1 for i in range(nfiles)])
     if not is_iter(linesteps):
         linesteps = [linesteps]
@@ -264,27 +275,27 @@ def make_outfile(file_dict, global_debug=False):
     if not is_iter(errlines):
         errlines = [errlines]
     # treat start/endblock characters
-    startblock = file_dict.get("startblock", None)    
+    startblock = file_dict.get("startblock", None)
     endblock = file_dict.get('endblock', '\n')
-        
+
     # -----
-        
+
     if len(filenames) == 1:
         print 'Working on %s ...' % filenames[0]
     else:
-        print "Working on " + " + ".join(filenames) + " ..." 
+        print "Working on " + " + ".join(filenames) + " ..."
 
     # open file handles
     mapfiles = []
     for fnum, filepath in enumerate(filepaths):
         mapfiles.append(MappingFile(filepath, headlines[fnum], commentchars[fnum],
                                     lineoffsets[fnum], linesteps[fnum], errlines[fnum],
-                                    startblock=startblock, endblock=endblock))    
-   
+                                    startblock=startblock, endblock=endblock))
+
     total = 0
-    errors = 0   
+    errors = 0
     while True:
-        # step and read one line from all files 
+        # step and read one line from all files
         lines = []
         data = []
 
@@ -294,27 +305,32 @@ def make_outfile(file_dict, global_debug=False):
                 lines.append(mapfile.readblock())
         except StopIteration:
             # we are done.
-            break 
+            break
 
         total += 1
 
-        for linedef in linemap:
+        try:
+            for linedef in linemap:
 
-            # check if debug flag is set for this line
+                # check if debug flag is set for this line
 
-            debug = global_debug or linedef.has_key('debug') and linedef['debug']
+                debug = global_debug or linedef.has_key('debug') and linedef['debug']
 
-            # do not stop or log on errors (this does not hide debug messages if debug is active)
-            #skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
+                # do not stop or log on errors (this does not hide debug messages if debug is active)
+                #skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
 
-            # parse the mapping for this line(s)
-            dat = get_value(lines, linedef)
+                # parse the mapping for this line(s)
+                dat = get_value(lines, linedef)
+                if debug:
+                    print "DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat)
 
-            if debug:
-                print "DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat)
+                data.append(dat or NULL)
+            outf.write(';'.join(data) +'\n')
+        except RuntimeError:
+            # a parse method indicates we should skip creating this line
+            total -= 1
+            continue
 
-            data.append(dat or NULL)
-        outf.write(';'.join(data) +'\n')
     outf.close()
 
     print '  %s -> %s: %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), file_dict['outfile'], total, errors)

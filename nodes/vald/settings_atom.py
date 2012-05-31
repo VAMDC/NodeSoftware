@@ -1,7 +1,7 @@
 from settings_default import *
 
 DEBUG = True
-#DEBUG = False
+DEBUG = False
 TRANSLIM = 6000
 
 INSTALLED_APPS.remove(NODEPKG)
@@ -26,7 +26,7 @@ EXAMPLE_QUERIES = [\
 
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
-DEPLOY_URL = 'http://vald.astro.uu.se/atoms/tap/'
+DEPLOY_URL = 'http://vald.astro.uu.se/atoms-dev/tap/'
 
 LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode.log'
 if not DEBUG:

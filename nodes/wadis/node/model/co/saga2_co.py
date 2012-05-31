@@ -21,7 +21,7 @@ class Energy(EnergyData):
 		qns = [None] * 2
 		if self.ident_nm is not None:
 			qns = self.ident_nm.split()
-		return [["v", qns[0]], ["J", qns[2]]]
+		return (("v", qns[0]), ("J", qns[2]))
 
 
 	class Meta(EnergyData.Meta):
@@ -47,11 +47,11 @@ class Transition(TransitionDataW):
 
 
 	def up(self):
-		return [["v", self.ident_up_nu], ["J", self.ident_up_j]]
+		return (("v", self.ident_up_nu), ("J", self.ident_up_j))
 
 
 	def low(self):
-		return [["v", self.ident_lo_nu], ["J", self.ident_lo_j]]
+		return (("v", self.ident_lo_nu), ("J", self.ident_lo_j))
 
 
 	class Meta(TransitionData.Meta):
@@ -77,11 +77,11 @@ class Lineprof(LineprofData):
 
 
 	def up(self):
-		return [["v", self.ident_up_nu], ["J", self.ident_up_j]]
+		return (("v", self.ident_up_nu), ("J", self.ident_up_j))
 
 
 	def low(self):
-		return [["v", self.ident_lo_nu], ["J", self.ident_lo_j]]
+		return (("v", self.ident_lo_nu), ("J", self.ident_lo_j))
 
 
 	class Meta(LineprofData.Meta):

@@ -3,7 +3,6 @@ from wadis.node.model.fake import categoryTypeDict
 from django.db.models import Q
 
 defaultList = {'id_substance':('exact','1000021')}
-
 def makeQ(q, tuple):
 	defaultFlag = formatQ(q, tuple, True)
 	q &= Q(**{'id_%s_ds__status__exact' % tuple[0]:'public'})
@@ -38,6 +37,8 @@ def inchi2Id(*restrictionTuple):
 		value = value.replace('"', '').replace("'", '')
 		if value in saga.SubstanceDict.byInchi:
 			values[index] = str(saga.SubstanceDict.byInchi[value].id_substance)
+		else:
+			values[index] = '0'
 
 	restrictions = [variable, operator] + values
 	return restrictions
@@ -56,6 +57,8 @@ def inchiKey2Id(*restrictionTuple):
 		value = value.replace('"', '').replace("'", '')
 		if value in saga.SubstanceDict.byInchiKey:
 			values[index] = str(saga.SubstanceDict.byInchiKey[value].id_substance)
+		else:
+			values[index] = '0'
 
 	restrictions = [variable, operator] + values
 	return restrictions

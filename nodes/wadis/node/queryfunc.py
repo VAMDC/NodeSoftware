@@ -15,6 +15,7 @@ from wadis.node.model.fake import State
 from wadis.node.model.saga import Substancecorr
 from wadis.node.model.saga import Substance
 from wadis.node.transforms import makeQ
+from django.db.models.query import EmptyQuerySet
 from vamdctap.sqlparse import sql2Q
 import other.verification.http
 from django.db.models import Q
@@ -32,56 +33,52 @@ def LOG(s):
 #------------------------------------------------------------
 
 def getSources(items):
-	sources = set()
+	sources = {}
 	for item in items:
 		table = item._meta.db_table
 		biblioId = getattr(item, 'id_%s_ds' % ('transition' if table == 'lineprof' else table)).id_biblio
 
-		try:
-			biblio = atmos.Biblios.objects.get(biblioid=biblioId)
-		except ObjectDoesNotExist:
-			LOG("No biblioId=%s" % biblioId)
-			continue
-		#0000-9999
-		biblio.biblioyear = biblio.biblioyear if biblio.biblioyear > 1000 else 1000 + biblio.biblioyear
-		biblio.biblioTypeName = 'journal'
-		if biblio.biblioname:
-			biblio.biblioname = cgi.escape(biblio.biblioname)
-		if biblio.bibliodigest:
-			biblio.bibliodigest = cgi.escape(biblio.bibliodigest)
-		if biblio.biblioannotation:
-			biblio.biblioannotation = cgi.escape(biblio.biblioannotation)
+		if not (biblioId in sources):
+			try:
+				biblio = atmos.Biblios.objects.get(biblioid=biblioId)
+			except ObjectDoesNotExist:
+				LOG("No biblioId=%s" % biblioId)
+				continue
+			#0000-9999
+			biblio.biblioyear = biblio.biblioyear if biblio.biblioyear > 1000 else 1000 + biblio.biblioyear
+			biblio.biblioTypeName = 'journal'
+			if biblio.biblioname:
+				biblio.biblioname = cgi.escape(biblio.biblioname)
+			if biblio.bibliodigest:
+				biblio.bibliodigest = cgi.escape(biblio.bibliodigest)
+			if biblio.biblioannotation:
+				biblio.biblioannotation = cgi.escape(biblio.biblioannotation)
 
-		if biblio.bibliotype == 1:
-			if biblio.getThesisPattern().search(biblio.biblioname) is not None:
-				biblio.biblioTypeName = 'thesis'
-			else:
-				biblio.biblioTypeName = 'book'
-		elif biblio.bibliotype == 5:
-			biblio.biblioTypeName = 'database'
-		elif biblio.bibliotype == 6:
-			if biblio.getReportPattern().search(biblio.bibliodigest) is not None:
-				biblio.biblioTypeName = 'report'
-			else:
-				biblio.biblioTypeName = 'proceedings'
-		sources.add(biblio)
+			if biblio.bibliotype == 1:
+				if biblio.getThesisPattern().search(biblio.biblioname) is not None:
+					biblio.biblioTypeName = 'thesis'
+				else:
+					biblio.biblioTypeName = 'book'
+			elif biblio.bibliotype == 5:
+				biblio.biblioTypeName = 'database'
+			elif biblio.bibliotype == 6:
+				if biblio.getReportPattern().search(biblio.bibliodigest) is not None:
+					biblio.biblioTypeName = 'report'
+				else:
+					biblio.biblioTypeName = 'proceedings'
+			sources[biblioId] = biblio
 
-	return list(sources)
+	return sources.values()
 
 
 def getMolecules(items):
-	molecules = set()
+	molecules = {}
 
 	for item in items:
 		table = item._meta.db_table
 		id_substance = item.id_substance
 
-		substance = None
-		for molecule in molecules:
-			if molecule.id_substance == id_substance:
-				substance = molecule
-
-		if substance is None:
+		if not (id_substance in molecules):
 			try:
 				substance = Substancecorr.objects.get(id_substance=id_substance)
 
@@ -100,31 +97,48 @@ def getMolecules(items):
 				LOG("No id_substance=%s" % id_substance)
 				continue
 			if not hasattr(substance,'States'):
-				substance.States = set()
+				substance.States = {}
+			molecules[id_substance] = substance
+		else:
+			substance = molecules[id_substance]
 
 		if table == 'energy':
-			substance.States.add(State(id_substance, item.getCase(), item, item.qns()))
+			qns =  item.qns()
+			if not (qns in substance.States):
+				substance.States[qns] = State(id_substance, item.getCase(), item, qns)
 
 		elif table == 'transition' or table == 'lineprof':
-			up = State(id_substance, item.getCase(), None, item.up())
-			substance.States.add(up)
-			item.up = up.id
-			low = State(id_substance, item.getCase(), None, item.low())
-			substance.States.add(low)
-			item.low = low.id
+			upQNs =  item.up()
+			if not (upQNs in substance.States):
+				up = State(id_substance, item.getCase(), None, upQNs)
+				substance.States[upQNs] = up
+				item.up = up.id
+			else:
+				item.up = substance.States[upQNs].id
 
-		molecules.add(substance)
+			lowQNs = item.low()
+			if not (lowQNs in substance.States):
+				low = State(id_substance, item.getCase(), None, lowQNs)
+				substance.States[lowQNs] = low
+				item.low = low.id
+			else:
+				item.low = substance.States[lowQNs].id
 
-	return list(molecules)
+	return molecules.values()
 
 
 def getRows(database, table, q):
+	LOG(q)
 	dbModule = getattr(models, database, None)
 	if dbModule:
 		tableObj = getattr(dbModule , table.capitalize())
-		return tableObj.objects.select_related().filter(makeQ(q, (('transition' if table == 'lineprof' else table),)))
+		tableDigestObj = getattr(dbModule , table.capitalize() + 'Digest')
+		table = 'transition' if table == 'lineprof' else table
+		dsID = 'id_%s_ds' % table
+		exQ = Q(**{dsID + '__in': tableDigestObj.objects.filter(line_count__gt=settings.LIMIT).values_list(dsID, flat=True)})
+		return tableObj.objects.select_related().exclude(exQ).filter(makeQ(q, (table,)))
 	else:
-		return []
+		return EmptyQuerySet()
 
 
 tableList = {'energy':'energy', 'einstein_coefficient':'transition', 'intensity':'lineprof'}
@@ -165,7 +179,6 @@ def getDatabase(q, default):
 #------------------------------------------------------------
 # Main function 
 #------------------------------------------------------------
-LIMIT = 100000
 def setupResults(tap):
 	"""
 		This function is always called by the software.
@@ -184,18 +197,21 @@ def setupResults(tap):
 	if table is None:
 		table = "transition"
 	rows = getRows(database, table, q)
+	rowCount = rows.count()
+
+	if settings.ROW_LIMIT < rowCount:
+		rows = rows[:settings.ROW_LIMIT]
+		percentage = '%.1f' % (float(settings.ROW_LIMIT) / rowCount * 100)
+		rowCount = settings.ROW_LIMIT
+	else:
+		percentage = '100'
 
 	if table == 'energy':
 		transitions = []
+		transitionCount = 0
 	else:
 		transitions = rows
-
-	transitionCount = len(transitions)
-	if LIMIT < transitionCount:
-		transitions = transitions[:LIMIT]
-		percentage = '%.1f' % (float(LIMIT) / transitionCount * 100)
-	else:
-		percentage = '100'
+		transitionCount = rowCount
 
 	sources = getSources(rows)
 	sourceCount = 0
@@ -208,10 +224,10 @@ def setupResults(tap):
 	if molecules is not None:
 		moleculeCount = len(molecules)
 		for substance in molecules:
-			substance.States = sorted(substance.States, key = lambda x: x.id)
+			substance.States = sorted(substance.States.values(), key = lambda x: x.id)
 			stateCount += len(substance.States)
 
-	size = 0.0011 + sourceCount*0.0014 + moleculeCount*0.00065 + stateCount*0.0006 + transitionCount*0.00045
+	size = 0.0011 + sourceCount*0.0015 + moleculeCount*0.00065 + stateCount*0.0004 + transitionCount*0.0003
 
 	# Create the header with some useful info. The key names here are
 	# standardized and shouldn't be changed.
