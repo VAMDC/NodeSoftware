@@ -184,6 +184,16 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
 
     return ''.join(result)
 
+def makeReferencedTextType(tagname,keyword,G):
+    value = G(keyword)
+    if value:
+        return '%s<Value>%s</Value></%s>'%\
+         (makePrimaryType(tagname,keyword,G),
+          value,
+          tagname)
+    else:
+        return ''
+
 def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     """
     Similar to makeDataType above, but allows the result of G()
@@ -805,21 +815,16 @@ def XsamsMCSBuild(Molecule):
     """
     G = lambda name: GetValue(name, Molecule=Molecule)
     yield '<MolecularChemicalSpecies>\n'
-    yield '<OrdinaryStructuralFormula><Value>%s</Value>'\
-            '</OrdinaryStructuralFormula>\n'\
-            % G("MoleculeOrdinaryStructuralFormula")
-
+    yield makeReferencedTextType('OrdinaryStructuralFormula','MoleculeOrdinaryStructuralFormula',G)
     yield '<StoichiometricFormula>%s</StoichiometricFormula>\n'\
             % G("MoleculeStoichiometricFormula")
     yield makeOptionalTag('IonCharge', 'MoleculeIonCharge', G)
-    yield makeOptionalTag('ChemicalName','MoleculeChemicalName',G)
+    yield makeReferencedTextType('ChemicalName','MoleculeChemicalName',G)
+    yield makeReferencedTextType('IUPACName','MoleculeIUPACName',G)
+    yield makeOptionalTag('URLFigure','MoleculeURLFigure',G)
     yield makeOptionalTag('InChI','MoleculeInChI',G)
     yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
-
-    cas = makePrimaryType('CASRegistryNumber','MoleculeCASRegistryNumber',G)
-    if cas:
-        yield '%s<Value>%s</Value></CASRegistryNumber>'%(cas,G('MoleculeCASRegistryNumber'))
-
+    yield makeReferencedTextType('CASRegistryNumber','MoleculeCASRegistryNumber',G)
     yield makeOptionalTag('CNPIGroup','MoleculeCNPIGroup',G)
 
     yield makePartitionfunc("MoleculePartitionFunction", G)
@@ -1033,10 +1038,8 @@ def XsamsMSBuild(MoleculeState):
                 continue
             GE = lambda name: GetValue(name, Expansion=Expansion)
             yield makePrimaryType("StateExpansion", "MoleculeStateExpansion", GE)
-            if hasattr(Expansion, "Coefficients"):
-                for Coefficient in makeiter(Expansion.Coefficients):
-                    GEC = lambda name: GetValue(name, Coefficient=Coefficient)
-                    yield "<Coeff stateRef=%s>%s</Coeff>" % (GEC("MoleculeStateExpansionCoeffStateRef"),GEC("MoleculeStateExpansionCoeff"))
+            for i,val in enumerate(makeiter(G("MoleculeStateExpansionCoeff"))):
+                yield "<Coeff stateRef=S%s-B%s>%s</Coeff>" % (G('NODEID'),makeiter(G("MoleculeStateExpansionCoeffStateRef"))[i],val)
             yield "</StateExpansion>"
 
     yield '</MolecularState>'
@@ -1048,7 +1051,7 @@ def XsamsBSBuild(MoleculeBasisState):
         yield ret
     else:
         yield makePrimaryType("BasisState", "BasisState", G,
-            extraAttr={"stateID":'S%s-%s' % (G('NodeID'),
+            extraAttr={"stateID":'S%s-B%s' % (G('NodeID'),
                                               G('BasisStateID')),})
         cont, ret = checkXML(G("BasisStateQuantumNumbers"))
         if cont:
@@ -1285,7 +1288,7 @@ def XsamsRadTrans(RadTrans):
         attrs=''
         if group: attrs += ' groupLabel="%s"'%group
         if proc: attrs += ' process="%s"'%proc
-        yield '<RadiativeTransition id="P%s-%s"%s>'%(NODEID,G('RadTransID'),attrs)
+        yield '<RadiativeTransition id="P%s-R%s"%s>'%(NODEID,G('RadTransID'),attrs)
         yield makeOptionalTag('Comments','RadTransComment',G)
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
@@ -1403,7 +1406,7 @@ def XsamsRadCross(RadCross):
         # create header
 
         G = lambda name: GetValue(name, RadCros=RadCros)
-        dic = {'id':"P%s-%s" % (NODEID, G("CrossSectionID")) }
+        dic = {'id':"P%s-CS%s" % (NODEID, G("CrossSectionID")) }
 
         envRef = G("CrossSectionEnvironment")
         if envRef:
@@ -1495,7 +1498,7 @@ def XsamsCollTrans(CollTrans):
 
         # create header
         G = lambda name: GetValue(name, CollTran=CollTran)
-        dic = {'id':"P%s-%s" % (NODEID, G("CollisionID")) }
+        dic = {'id':"P%s-C%s" % (NODEID, G("CollisionID")) }
         group = G("CollisionGroup")
         if group:
             dic["groupLabel"] = "%s" % group
