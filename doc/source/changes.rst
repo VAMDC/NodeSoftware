@@ -8,6 +8,14 @@ Changelog
     document before, since terms are used that are introduced later. It is meant
     for returning readers, especially the maintainers of VAMDC nodes.
 
+June 5, 2012
+---------------------
+
+**Version 11.12r3**. This is a bugfix-release over 11.12r2 with few changes.
+Among them are two bug-fixes however that make this quick release necessary.
+One was breaking XSAMS validation with molecule chemical names and another made
+the nodes reject queries from the portal.
+
 May 23, 2012
 ---------------------
 

@@ -10,7 +10,7 @@ import sys, os
 # Software and standards version
 ###################################################
 VAMDC_STDS_VERSION = '11.12'
-NODESOFTWARE_VERSION = '11.12r2'
+NODESOFTWARE_VERSION = '11.12r3'
 
 ###################################################
 # Basic node setup
