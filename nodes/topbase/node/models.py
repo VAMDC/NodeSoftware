@@ -110,18 +110,24 @@ class Atomicstate(models.Model):
     version = models.ForeignKey(Version, db_column='versionid')
     totalangularmomentum = models.FloatField()
     lifetime = models.FloatField()
-    lifetimeunit = models.ForeignKey(Unit, db_column='lifetimeunitid', related_name='+')
+    #lifetimeunit = models.ForeignKey(Unit, db_column='lifetimeunitid', related_name='+')
+    lifetimeunit = models.CharField(max_length=8)
     stateenergy = models.FloatField()
-    stateenergyunit = models.ForeignKey(Unit, db_column='stateenergyunitid', related_name='+')
+    #stateenergyunit = models.ForeignKey(Unit, db_column='stateenergyunitid', related_name='+')
+    stateenergyunit = models.CharField(max_length=8)
     ionizationenergy = models.FloatField(null=True, blank=True)
-    ionizationenergyunit = models.ForeignKey(Unit, db_column='ionizationenergyunitid', related_name='+')
+    #ionizationenergyunit = models.ForeignKey(Unit, db_column='ionizationenergyunitid', related_name='+')
+    ionizationenergyunit = models.CharField(max_length=8)
     statisticalweight = models.IntegerField()
-    statisticalweightunit = models.ForeignKey(Unit, db_column='statisticalweightunitid', related_name='+')
+    #statisticalweightunit = models.ForeignKey(Unit, db_column='statisticalweightunitid', related_name='+')
+    statisticalweightunit = models.CharField(max_length=8)
     parity = models.ForeignKey(Parity, db_column='parityid')
     xdata = models.TextField(null=True)
     ydata = models.TextField(null=True)
-    xdataunit = models.ForeignKey(Unit, db_column='xdataunitid', related_name='+', null=True)
-    ydataunit = models.ForeignKey(Unit, db_column='ydataunitid', related_name='+', null=True)
+    #xdataunit = models.ForeignKey(Unit, db_column='xdataunitid', related_name='+', null=True)
+    #ydataunit = models.ForeignKey(Unit, db_column='ydataunitid', related_name='+', null=True)
+    xdataunit = models.CharField(max_length=8)
+    ydataunit = models.CharField(max_length=8)
     class Meta:
         db_table = u't_atomicstate'
         
@@ -138,18 +144,20 @@ class Radiativetransition(models.Model):
     elementsymbol = models.CharField(max_length=9)
     nuclearcharge =  models.IntegerField()
     ioncharge =  models.IntegerField()
+    oscillatorstrength = models.FloatField()
     weightedoscillatorstrength = models.FloatField()
     transitionprobability = models.IntegerField()
     wavelength = models.FloatField()
-    wavelengthunit = models.ForeignKey(Unit, db_column='wavelengthunitid')
-    initialatomicstate = models.ForeignKey(Atomicstate, db_column='initialatomicstateid', related_name='+')
-    finalatomicstate = models.ForeignKey(Atomicstate, db_column='finalatomicstateid', related_name='+')    
+    #wavelengthunit = models.ForeignKey(Unit, db_column='wavelengthunitid')
+    wavelengthunit = models.CharField(max_length=8)
+    upperatomicstate = models.ForeignKey(Atomicstate, db_column='upperatomicstateid', related_name='+')
+    loweratomicstate = models.ForeignKey(Atomicstate, db_column='loweratomicstateid', related_name='+')    
     
     def abs_weightedoscillatorstrength(self):
         return abs(self.weightedoscillatorstrength)
    
     class Meta:
-        db_table = u'v_recommendedradiativetransition'
+        db_table = u'c_recommendedradiativetransition'
         
 class Radiativetransitionsource(models.Model):
     id = models.IntegerField(primary_key=True)
