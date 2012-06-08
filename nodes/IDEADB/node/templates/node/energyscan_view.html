@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Energyscan for {{ es.species }}- from {{ es.origin_species }}</h2>
+    <div class="general" id="info">Data was taken on {{ es.experiment.name }} on {{ es.productiondate }} with energy resolution: {{ es.energyresolution }} eV</div>
+    <div id="placeholder" style="width:800px;height:400px"></div>
+    {% if es.comment %}
+    <div id="comment" class="general">
+      <strong>Comment for this energyscan:</strong><br />
+      {{ es.comment }}
+    </div>
+    {% endif %}
+    <div class="general" id="source">
+      <table>
+        <tr>
+          <td><strong>This ES was published in:</strong></td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td>Title:</td>
+          <td>{{ es.source.title }}</td>
+        </tr>
+        <tr>
+          <td>Authors:</td>
+          <td>{{ es.authorlist }}</td>
+        </tr>
+        <tr>
+          <td>Year:</td>
+          <td>{{ es.source.year }}</td>
+        </tr>
+        <tr>
+          <td>Journal:</td>
+          <td>{{ es.source.journal }}</td>
+        </tr>
+        <tr>
+          <td>Volume:</td>
+          <td>{{ es.source.volume }}</td>
+        </tr>
+        <tr>
+          <td>Number:</td>
+          <td>{{ es.source.number }}</td>
+        </tr>
+        <tr>
+          <td>Pages:</td>
+          <td>{{ es.source.pagestart }} - {{ es.source.pageend }}</td>
+        </tr>
+        <tr>
+          <td>DOI:</td>
+          <td><a href="http://dx.doi.org/{{ es.source.doi }}">{{ es.source.doi }}</a></td>
+        </tr>
+        <tr>
+          <td>XSAMS-File:</td>
+          <td><a href="../../tap/sync?LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT ALL WHERE MoleculeOrdinaryStructuralFormula = {{ es.species.chemical_formula }}">Download</a></td>
+        </tr>
+        <tr>
+          <td>ASCII-File:</td>
+          <td><a href="../../export/{{ es.id }}">Download</a></td>
+        </tr>
+
+      </table> 
+    </div>
+    <div class="general" id="compare"><a href="../../compare/{{ es.id }}/">Compare this scan</a></div>
+
+<script type="text/javascript">
+$(function () {
+    var d2 = [{{ es.daten }}];
+    plot = $.plot($("#placeholder"), [{ label: "{{ es.species }}-: 00.00",  data: d2, color: "blue"}], {legend: {margin : [15,15]}, crosshair: { mode: "xy" }, grid: { hoverable: true, autoHighlight: false }});
+
+    var legends = $("#placeholder .legendLabel");
+    legends.each(function () {
+        // fix the widths so they don't jump around
+        $(this).css('width', $(this).width());
+    });
+
+    var updateLegendTimeout = null;
+    var latestPosition = null;
+    
+    function updateLegend() {
+        updateLegendTimeout = null;
+        
+        var pos = latestPosition;
+        
+        var axes = plot.getAxes();
+        if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
+            pos.y < axes.yaxis.min || pos.y > axes.yaxis.max)
+            return;
+
+        var i, j, dataset = plot.getData();
+        for (i = 0; i < dataset.length; ++i) {
+            var series = dataset[i];
+
+            // find the nearest points, x-wise
+            for (j = 0; j < series.data.length; ++j)
+                if (series.data[j][0] > pos.x)
+                    break;
+            
+            // now interpolate
+            var x, p1 = series.data[j - 1], p2 = series.data[j];
+            if (p1 == null)
+                x = p2[0];
+            else if (p2 == null)
+                x = p1[0];
+            else
+                x = p1[0] + (p2[0] - p1[0]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
+
+            legends.eq(i).text(series.label.replace(/:.*/, ": " + x.toFixed(2)));
+        }
+    }
+    
+    $("#placeholder").bind("plothover",  function (event, pos, item) {
+        latestPosition = pos;
+        if (!updateLegendTimeout)
+            updateLegendTimeout = setTimeout(updateLegend, 50);
+    });
+
+});
+</script>
+
+{% endblock %}
