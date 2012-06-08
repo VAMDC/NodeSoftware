@@ -21,26 +21,26 @@ from django.db.models import Q
 def show_energyscan(request,id):
     energyscan = models.Energyscan.objects.filter(Q(id__exact=id)).get()
     ES_list = energyscan.energyscan_data.split()
-    k=0
-    xs=[]
-    ys=[]
+    k = 0
+    xs = []
+    ys = []
     stringarray=[]
     for datapoint in ES_list:
         datapoint = datapoint.replace(',','.')
         #even -> x-value
-        if k%2==0:
+        if k % 2 == 0:
             xs.append(float(datapoint))
         #odd -> y-value
         else:
             ys.append(float(datapoint))
-        k=k+1
+        k = k + 1
 
-    xs = map(str,xs)
-    ys = map(str,ys)
-    k=0
+    xs = map(str, xs)
+    ys = map(str, ys)
+    k = 0
     for x in xs:
-        stringarray.append('[%s, %s]'%(x,ys[k]))
-        k = k +1
+        stringarray.append('[%s, %s]'%(x, ys[k]))
+        k = k + 1
 
     energyscan.daten = " ,".join(stringarray)
 
@@ -64,59 +64,59 @@ def compare_energyscan(request,id1,id2):
     ES_list2 = energyscan2.energyscan_data.split()
 
     #put first energyscan in list
-    k=0
-    xs1=[]
-    ys1=[]
-    stringarray1=[]
+    k = 0
+    xs1 = []
+    ys1 = []
+    stringarray1 = []
     for datapoint in ES_list1:
         datapoint = datapoint.replace(',','.')
         #even -> x-value
-        if k%2==0:
+        if k % 2 == 0:
             xs1.append(float(datapoint))
         #odd -> y-value
         else:
             ys1.append(float(datapoint))
-        k=k+1
+        k = k + 1
  
     #second
-    k=0
-    xs2=[]
-    ys2=[]
+    k = 0
+    xs2 = []
+    ys2 = []
     stringarray2=[]
     for datapoint in ES_list2:
         datapoint = datapoint.replace(',','.')
         #even -> x-value
-        if k%2==0:
+        if k % 2 == 0:
             xs2.append(float(datapoint))
         #odd -> y-value
         else:
             ys2.append(float(datapoint))
-        k=k+1
+        k = k + 1
 
     #compare scans - multiply items of second with factor between max(1) and max(2)
-    factor = max(ys1)/max(ys2)
+    factor = max(ys1) / max(ys2)
     ys2[:] = [x*factor for x in ys2] 
     energyscan2.factor = "%.2f" % factor
 
     #prepare scan1 for text-format
 
-    xs1 = map(str,xs1)
-    ys1 = map(str,ys1)
-    k=0
+    xs1 = map(str, xs1)
+    ys1 = map(str, ys1)
+    k = 0
     for x in xs1:
-        stringarray1.append('[%s, %s]'%(x,ys1[k]))
-        k = k +1
+        stringarray1.append('[%s, %s]'%(x, ys1[k]))
+        k = k + 1
 
     energyscan1.daten = " ,".join(stringarray1)
 
     #prepare scan2 for text-format
 
-    xs2 = map(str,xs2)
-    ys2 = map(str,ys2)
+    xs2 = map(str, xs2)
+    ys2 = map(str, ys2)
     k=0
     for x in xs2:
         stringarray2.append('[%s, %s]'%(x,ys2[k]))
-        k = k +1
+        k = k + 1
 
     energyscan2.daten = " ,".join(stringarray2)
 
@@ -139,7 +139,7 @@ def compare_energyscan(request,id1,id2):
     #render and return
 
     t = get_template('node/energyscan_compare.html')
-    c = Context({'es1':energyscan1,'es2':energyscan2})
+    c = Context({'es1':energyscan1, 'es2':energyscan2})
     html = t.render(c)
     return HttpResponse(html)
 
@@ -153,32 +153,32 @@ def contact(request):
 def export_ascii(request,id):
     energyscan = models.Energyscan.objects.filter(Q(id__exact=id)).get()
     ES_list = energyscan.energyscan_data.split()
-    k=0
-    xs=[]
-    ys=[]
+    k = 0
+    xs = []
+    ys = []
     stringarray=[]
     for datapoint in ES_list:
-        datapoint = datapoint.replace(',','.')
+        datapoint = datapoint.replace(',', '.')
         #even -> x-value
-        if k%2==0:
+        if k % 2 == 0:
             xs.append(float(datapoint))
         #odd -> y-value
         else:
             ys.append(float(datapoint))
-        k=k+1
+        k = k + 1
 
     #xs = map(str,xs)
     #ys = map(str,ys)
-    k=0
+    k = 0
     for x in xs:
-        stringarray.append('%f\t%f'%(x,ys[k]))
-        k = k +1
+        stringarray.append('%f\t%f'%(x, ys[k]))
+        k = k + 1
 
     energyscan.daten = "\r\n".join(stringarray)
 
     t = get_template('node/ascii_export.txt')
     c = Context({'es':energyscan})
-    filename = "ES_"+str(energyscan.species)+"_from_"+str(energyscan.origin_species)+".txt"
+    filename = "ES_" + str(energyscan.species) + "_from_" + str(energyscan.origin_species) + ".txt"
     html = t.render(c)
     resp = HttpResponse(html, content_type='text/plain')
     resp['Content-Disposition'] = 'attachment; filename=%s'%filename

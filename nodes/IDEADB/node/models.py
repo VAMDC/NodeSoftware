@@ -23,18 +23,18 @@ def validate_CAS(cas):
     for x in cas_arr[0]:
         sum = sum + length*int(x)
         length = length - 1
-    sum = sum + 2*int(cas_arr[1][0]) + int(cas_arr[1][1])
+    sum = sum + 2 * int(cas_arr[1][0]) + int(cas_arr[1][1])
     if sum % 10 != int(cas_arr[2]):
         raise ValidationError(u'%s is not a valid CAS-number!' % cas)
 
 def validate_chemical_formula(chemical_formula):
     m = re.match(chemical_formula)
-    if m == None:
+    if m is None:
         raise ValidationError(u'%s does not seem to be a chemical formula' % chemical_formula)
 
 def validate_name(name):
     m = re.match(name) 
-    if m != None:
+    if m is not None:
         raise ValidationError(u'%s seems to be a chemical formula. Please use a normal name or leave it blank.' % name)
 
 #start defining the classes

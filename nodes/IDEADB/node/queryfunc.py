@@ -40,6 +40,7 @@ class DataSet:
     """
     this class provides a method to make the Tabulated sub-objects out of two tuples containing the x and y values
     """
+
     def __init__(self,sourceref,xs,ys,productiondate):
         #put reference to source first, so we always know what it is
         self.SourceRef = sourceref
@@ -81,8 +82,8 @@ class Particle:
         if type == 'electron':
             self.charge = -1
             self.name = 'electron'
-            self.speciesid='electron'
-            self.comment='low energy electrons'
+            self.speciesid = 'electron'
+            self.comment = 'low energy electrons'
 
 #------------------------------------------------------------
 # Main function 
@@ -98,13 +99,13 @@ def setupResults(sql, limit=1000):
 
     #x_internal is the list for the iteration over one search result, x the overall list (which is deduplicated in the end)
     
-    molecules=[]
-    molecules_internal=[]
+    molecules = []
+    molecules_internal = []
     atoms = []
     atoms_internal = []
     sources = []
     sources_internal = []
-    particles=[]
+    particles = []
     electron_particle = Particle('electron')
 
     # convert the incoming sql to a correct django query syntax object 
@@ -133,7 +134,7 @@ def setupResults(sql, limit=1000):
     #loop over energyscans that came back
 
     for energyscan in energyscans:
-        if energyscan.species.molecule == True:
+        if energyscan.species.molecule:
             molecules_internal = models.Species.objects.filter(Q(id__exact=energyscan.species.id)|Q(id__exact=energyscan.origin_species.id))
         else:
             atoms_internal = models.Species.objects.filter(Q(id__exact=energyscan.species.id))
@@ -185,18 +186,18 @@ def setupResults(sql, limit=1000):
 
         #prepare the origin data
         ES_list = energyscan.energyscan_data.split()
-        k=0
-        x=[]
-        y=[]
+        k = 0
+        x = []
+        y = []
         for datapoint in ES_list:
             datapoint = datapoint.replace(',','.')
             #even -> x-value
-            if k%2==0:
+            if k%2 == 0:
                 x.append(float(datapoint))
             #odd -> y-value
             else: 
                 y.append(float(datapoint))
-            k=k+1
+            k = k + 1
 
         if len(x) != len(y):
             LOG('WARNING - number of x and y values is not equal')
