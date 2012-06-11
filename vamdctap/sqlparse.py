@@ -34,7 +34,9 @@ def setupSQLparser():
                          Optional(CaselessLiteral('count')).setResultsName("count")  +
                          Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") +
                          ( oneOf('* ALL', caseless=True) | columnNameList ).setResultsName( "columns" ) +
-                         Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) )
+                         Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) +
+                         Optional(ZeroOrMore(CaselessLiteral(";")|CaselessLiteral(" ")))
+                         )
 
     # define Oracle comment format, and ignore them
     oracleSqlComment = "--" + restOfLine

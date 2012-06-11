@@ -1,12 +1,12 @@
 """
 Line functions are helper functions available to use in the mapping file.
 
-All importable line functions take 'linedata' as a first argument. This is either a line or a block of 
-text data from the currently parsed input file. 
+All importable line functions take 'linedata' as a first argument. This is either a line or a block of
+text data from the currently parsed input file.
 
 Example of call from mapping dictionary:
 
- {'cname' : 'whatever_field_name', 
+ {'cname' : 'whatever_field_name',
   'cbyte' : (charrange, 56, 58)}
 
 """
@@ -17,11 +17,11 @@ import string
 def is_iter(iterable):
     """
     Helper function
-    
+
     Checks if the given argument is iterable or not, i.e. if it
     is a list or tuple. Strings are not considered iterable by
     this function.
-    """    
+    """
     return hasattr(iterable, '__iter__')
 
 # Line funcs
@@ -34,15 +34,15 @@ def charrange(linedata, start, end):
 
     Inputs:
      linedata (str or iterable) - current line(s) to operate on
-     start, end (int) - beginning and end indices of the line     
-    
+     start, end (int) - beginning and end indices of the line
+
     """
     try:
         return linedata[start:end].strip()
     except Exception, e:
-        #print "charrange skipping '%s': %s (%s)" % (linedata, e)        
+        #print "charrange skipping '%s': %s (%s)" % (linedata, e)
         pass
-    
+
 def charrange2int(linedata, start, end):
     """
     Cut out part of a line based on indices, return as integer
@@ -51,16 +51,16 @@ def charrange2int(linedata, start, end):
       linedata (str or iterable) - current line(s) to operate on
       start, end (int) - beginning and end indices of the line
 
-   
+
     """
     try:
         return int(round(float(linedata[start:end].strip())))
     except Exception, e:
         #print "ERROR: charrange2int: %s: %s" % (linedata, e)
         pass
-        
+
 def bySepNr(linedata, number, sep=','):
-    try: 
+    try:
         return string.split(linedata,sep)[number].strip()
     except Exception, e:
         pass
@@ -93,8 +93,8 @@ def lineSplit(linedata, splitsep=','):
       linedata (str or iterable) - current line(s) to operate on
       splitsep (str) - string to split by
 
-    Returns a list!      
-    """    
+    Returns a list!
+    """
 
     try:
         return [string.strip() for string in linedata.split(splitsep)]
@@ -119,47 +119,25 @@ def get_publications(linedata):
 
 def get_term_val(linedata, varname):
     """
-    extract configurations from term file. 
-      varname is the value type we want (e.g. s or l); we search the identifyer field of the 
+    extract configurations from term file.
+      varname is the value type we want (e.g. s or l); we search the identifyer field of the
               term-file to see if it exists and return the corresponding value, otherwise
-              we return 'X'. 
+              we return 'X'. Varname is case insensitive.
     """
-    # the line consists of 3 parts- coupling:identifiers:values . Coupling we get already from transition file. 
-    parts = linedata.split(':')    
-    if len(parts) < 3:
-        return 'X'
-    # parse the identifier part of the line
-    idlist = [p.strip() for p in parts[1].split(',')]
+    # the line consists of 3 parts- coupling:identifiers:values . Coupling we get already from transition file.
     try:
-        # get the correct section of the value part of the file, if it exists
-        return parts[2].strip().split(',')[idlist.index(varname)]
-    except ValueError, IndexError:
+        coupling, idents, values = linedata.split(':')
+    except ValueError:
+        # not enough parts (e.g. "Unknown" terms)
         return 'X'
+    # parse
+    termdict = dict(zip([p.strip().lower() for p in idents.split(',')], [v.strip() for v in values.split(',')]))
+    #if coupling.startswith("Unknown"): print linedata, termdict
+    return termdict.get(varname.lower(), 'X')
 
-def get_term_transtype(linedata, rflag):
-    """
-    extract extra transition info from term file.
-     rflag - return 'ttype' - transition type (string)
-                    'autoio' - autoionized (bool)
-    """
-        
-    # line consists of either
-    #  Allowed_transition:E1, Extra_info:none
-    #  Forbidden_transition:XX, Extra_info:none
-    #  Autoindentation, Extra_info:none    
-    info, extra = linedata.split(',',1) # ignoring the extra field for now
-    if ':' in info:
-        if rflag == 'ttype': 
-            return [p.strip() for p in info.split(':', 1)][1]
-        return False
-    else:
-        if rflag == 'autoio':
-            return True
-    return 'X'
-  
 def get_gammawaals(linedata, sep1, sep2):
     "extract gamma - van der waal value"
-    l1 = charrange(linedata, sep1, sep2)    
+    l1 = charrange(linedata, sep1, sep2)
     if float(l1) < 0:
         return l1
     else:
@@ -167,15 +145,15 @@ def get_gammawaals(linedata, sep1, sep2):
 
 def get_alphawaals(linedata, sep1, sep2):
     "extract alpha - van der waal value"
-    l1 = charrange(linedata, sep1, sep2)    
+    l1 = charrange(linedata, sep1, sep2)
     if float(l1) > 0:
         return "%s.%s" % (0, bySepNr(l1, 1, '.'))
     else:
-        return '0.000'    
+        return '0.000'
 
 def get_sigmawaals(linedata, sep1, sep2):
     "extract sigma - van der waal value"
-    l1 = charrange(linedata, sep1, sep2)   
+    l1 = charrange(linedata, sep1, sep2)
     if float(l1) > 0:
         return bySepNr(l1, 0, '.')
     else:
@@ -191,12 +169,12 @@ def merge_cols(linedata, *ranges):
      ranges are any number of tuples (indexstart, indexend) defining the columns.
     """
     return '-'.join([charrange(linedata, *ran) for ran in ranges])
-    
+
 def merge_cols_by_sep(linedata, *sepNr):
     """
     Merges data from several columns (separated by ;) into one, separating them with '-'.
     sepNr are the nth position of the file, separated by 'sep'.
     Assumes a single line input.
-    """    
+    """
     sep = ';'
     return '-'.join([bySepNr(linedata, nr, sep=sep).strip() for nr in sepNr])

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XSAMSData xsi:schemaLocation="http://vamdc.org/xml/xsams/0.3 http://vamdc.org/xml/xsams/0.3" xmlns="http://vamdc.org/xml/xsams/0.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cml="http://www.xml-cml.org/schema">
+<!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent 100 percent of all available data at this node that
+   matched the query.
+-->
+	<Sources>
+		<Source sourceID="Bwadis-1606">
+			<Authors>
+				<Author>
+					<Name>L.S. Rothman</Name>
+				</Author>
+				<Author>
+					<Name>I.E. Gordon</Name>
+				</Author>
+				<Author>
+					<Name>A. Barbe</Name>
+				</Author>
+				<Author>
+					<Name>D.Chris Benner</Name>
+				</Author>
+				<Author>
+					<Name>P.F. Bernath</Name>
+				</Author>
+				<Author>
+					<Name>M. Birk</Name>
+				</Author>
+				<Author>
+					<Name>V. Boudon</Name>
+				</Author>
+				<Author>
+					<Name>L.R. Brown</Name>
+				</Author>
+				<Author>
+					<Name>A. Campargue</Name>
+				</Author>
+				<Author>
+					<Name>J.-P. Champion</Name>
+				</Author>
+				<Author>
+					<Name>K. Chance</Name>
+				</Author>
+				<Author>
+					<Name>L.H. Coudert</Name>
+				</Author>
+				<Author>
+					<Name>V. Dana</Name>
+				</Author>
+				<Author>
+					<Name>V.M. Devi</Name>
+				</Author>
+				<Author>
+					<Name>S. Fally</Name>
+				</Author>
+				<Author>
+					<Name>J.-M. Flaud</Name>
+				</Author>
+				<Author>
+					<Name>R.R. Gamache</Name>
+				</Author>
+				<Author>
+					<Name>A. Goldman</Name>
+				</Author>
+				<Author>
+					<Name>et al.</Name>
+				</Author>
+			</Authors>
+			<Title>The HITRAN 2008 molecular spectroscopic database</Title>
+			<Category>journal</Category>
+			<Year>2009</Year>
+			<SourceName>Journal of Quantitative Spectroscopy and Radiation Transfer</SourceName>
+			<Volume>110</Volume>
+			<PageBegin>533</PageBegin>
+			<PageEnd>572</PageEnd>
+			<ArticleNumber>9</ArticleNumber>
+			<DigitalObjectIdentifier>10.1016/j.jqsrt.2009.02.013</DigitalObjectIdentifier>
+			<Comments>&lt;p&gt;L.S. Rothman, I.E. Gordon, A. Barbe, D.Chris Benner, P.F. Bernath, M. Birk, V. Boudon, L.R. Brown, A. Campargue, J.-P. Champion, K. Chance, L.H. Coudert, V. Dana, V.M. Devi, S. Fally, J.-M. Flaud, R.R. Gamache, A. Goldman, D. Jacquemart, I. Kleiner, N. Lacome, W.J. Lafferty, J.-Y. Mandin, S.T. Massie, S.N. Mikhailenko, C.E. Miller, N. Moazzen-Ahmadi, O.V. Naumenko, A.V. Nikitin, J. Orphal, V.I. Perevalov, A. Perrin, A. Predoi-Cross, C.P. Rinsland, M. Rotger, M. Simeckova, M.A.H. Smith, K. Sung,&amp;nbsp; S.A. Tashkun, J. Tennyson, R.A. Toth, A.C. Vandaele, J. Vander Auwera&lt;br /&gt;
+&lt;br /&gt;
+This paper describes the status of the 2008 edition of the &lt;i&gt;HITRAN&lt;/i&gt; molecular spectroscopic database. The new edition is the first official public release since the 2004 edition, although a number of crucial updates had been made available online since 2004. The &lt;i&gt;HITRAN&lt;/i&gt; compilation consists of several components that serve as input for radiative-transfer calculation codes: individual line parameters for the microwave through visible spectra of molecules in the gas phase; absorption cross-sections for molecules having dense spectral features, i.e. spectra in which the individual lines are not resolved; individual line parameters and absorption cross-sections for bands in the ultraviolet; refractive indices of aerosols, tables and files of general properties associated with the database; and database management software. The line-by-line portion of the database contains spectroscopic parameters for 42 molecules including many of their isotopologues.&lt;/p&gt;</Comments>
+		</Source>
+	</Sources>
+	<Methods>
+		<Method methodID="Mwadis-Theory">
+			<Category>theory</Category>
+			<Description>theory</Description>
+		</Method>
+		<Method methodID="Mwadis-Exp">
+			<Category>experiment</Category>
+			<Description>experiment</Description>
+		</Method>
+	</Methods>
+	<Species>
+		<Molecules>
+			<Molecule speciesID="Xwadis-HSFWRNGVRCDJHI-UHFFFAOYSA-N">
+				<MolecularChemicalSpecies>
+					<OrdinaryStructuralFormula>
+						<Value>$C_2H_2$</Value>
+					</OrdinaryStructuralFormula>
+					<StoichiometricFormula>C2H2</StoichiometricFormula>
+					<IonCharge>0</IonCharge>
+					<ChemicalName>
+						<Value>Acetylene, Ethyne</Value>
+					</ChemicalName>
+					<InChI>InChI=1S/C2H2/c1-2/h1-2H</InChI>
+					<InChIKey>HSFWRNGVRCDJHI-UHFFFAOYSA-N</InChIKey>
+					<StableMolecularProperties>
+						<MolecularWeight>
+							<Value units="amu">26.0378</Value>
+						</MolecularWeight>
+					</StableMolecularProperties>
+					<Comment>C2H2</Comment>
+				</MolecularChemicalSpecies>
+				<MolecularState stateID="Swadis-110-0.0.0.1.0.1.X.48.g.X.f-2">
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="lpcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
+						<case:QNs>
+							<case:vi mode="1">0</case:vi>
+							<case:vi mode="2">0</case:vi>
+							<case:vi mode="3">0</case:vi>
+							<case:vi mode="4">1</case:vi>
+							<case:vi mode="5">0</case:vi>
+							<case:l>1</case:l>
+							<case:vibInv>g</case:vibInv>
+							<case:J>48</case:J>
+							<case:kronigParity>f</case:kronigParity>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+				<MolecularState stateID="Swadis-110-0.0.0.1.1.0.X.47.u.0.f-1">
+					<MolecularStateCharacterisation>  </MolecularStateCharacterisation>
+					<Case xsi:type="case:Case" caseID="lpcs" xmlns:case="http://vamdc.org/xml/xsams/0.3/cases/lpcs">
+						<case:QNs>
+							<case:vi mode="1">0</case:vi>
+							<case:vi mode="2">0</case:vi>
+							<case:vi mode="3">0</case:vi>
+							<case:vi mode="4">1</case:vi>
+							<case:vi mode="5">1</case:vi>
+							<case:l>0</case:l>
+							<case:vibInv>u</case:vibInv>
+							<case:J>47</case:J>
+							<case:parity>-</case:parity>
+							<case:kronigParity>f</case:kronigParity>
+						</case:QNs>
+					</Case>
+				</MolecularState>
+			</Molecule>
+		</Molecules>
+	</Species>
+	<Processes>
+		<Radiative>
+			<RadiativeTransition id="Pwadis-298">
+				<SourceRef>Bwadis-1606</SourceRef>
+				<EnergyWavelength>
+					<Wavenumber methodRef="Mwadis-Exp">
+						<Value units="1/cm">615.00763</Value>
+					</Wavenumber>
+				</EnergyWavelength>
+				<UpperStateRef>Swadis-110-0.0.0.1.1.0.X.47.u.0.f-1</UpperStateRef>
+				<LowerStateRef>Swadis-110-0.0.0.1.0.1.X.48.g.X.f-2</LowerStateRef>
+				<Probability>
+					<TransitionProbabilityA methodRef="Mwadis-Exp">
+						<Value units="1/s">0.886</Value>
+					</TransitionProbabilityA>
+				</Probability>
+			</RadiativeTransition>
+		</Radiative>
+	</Processes>
+</XSAMSData>

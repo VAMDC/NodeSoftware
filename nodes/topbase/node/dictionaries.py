@@ -18,7 +18,8 @@ RETURNABLES = {\
 #'MethodCategory':'Method.category',
                            
 'AtomStateID':'AtomState.id',
-
+'AtomInchi' : 'Atom.atomicion.inchi',
+'AtomInchiKey' : 'Atom.atomicion.inchikey',
 'AtomSymbol':'Atom.atomicion.isotope.chemicalelement.elementsymbol',
 'AtomSpeciesID':'Atom.atomicion.id',
 'AtomNuclearCharge':'Atom.atomicion.isotope.chemicalelement.nuclearcharge',
@@ -27,17 +28,17 @@ RETURNABLES = {\
 
 'AtomStateEnergy':'AtomState.stateenergy',
 'AtomStateRef':'AtomState.Sources',
-'AtomStateEnergyUnit':'AtomState.stateenergyunit.value',
+'AtomStateEnergyUnit':'AtomState.stateenergyunit',
 'AtomStateParity' : 'AtomState.parity.value',
 'AtomStateMixingCoeff':'Component.mixingcoefficient',
 'AtomStateMixingCoeffClass' : 'Component.mixingclass.value',
 'AtomStateLifeTime': 'AtomState.lifetime',
 'AtomStateLifeTimeDecay':'totalRadiative',
 'AtomStateStatisticalWeight' : 'AtomState.statisticalweight',
-'AtomStateStatisticalWeightUnit' : 'AtomState.statisticalweightunit.value',
-'AtomStateLifeTimeUnit': 'AtomState.lifetimeunit.value',
+'AtomStateStatisticalWeightUnit' : 'AtomState.statisticalweightunit',
+'AtomStateLifeTimeUnit': 'AtomState.lifetimeunit',
 'AtomStateIonizationEnergy' : 'AtomState.ionizationenergy',
-'AtomStateIonizationEnergyUnit' : 'AtomState.ionizationenergyunit.value',
+'AtomStateIonizationEnergyUnit' : 'AtomState.ionizationenergyunit',
 'AtomStateTotalAngMom' : 'AtomState.totalangularmomentum',
 'AtomStateTermLabel' : 'Component.termlabel',
 'AtomStateTermLSL' : 'Component.Lscoupling.l',
@@ -47,7 +48,7 @@ RETURNABLES = {\
 'RadTransID':'RadTran.id',
 'RadTransRefs' : 'RadTran.Sources',
 'RadTransWavelength':'RadTran.wavelength',
-'RadTransWavelengthUnit':u'A',
+'RadTransWavelengthUnit':'RadTran.wavelengthunit',
 'RadTransProbabilityWeightedOscillatorStrength' : 'RadTran.abs_weightedoscillatorstrength()',
 'RadTransUpperStateRef':'RadTran.upperatomicstate.id',
 'RadTransLowerStateRef':'RadTran.loweratomicstate.id',
@@ -55,13 +56,13 @@ RETURNABLES = {\
 'RadTransProbabilityAUnit' : '1/s',
 
 
-#'CrossSectionState' : 'RadCros.id',
+'CrossSectionState' : 'RadCros.id',
 'CrossSectionID' : 'RadCros.id',
 'CrossSectionX' : 'RadCros.xdata',
-'CrossSectionXUnit' : 'RadCros.xdataunit.value',
+'CrossSectionXUnit' : 'RadCros.xdataunit',
 'CrossSectionXN' : 'len(RadCros.xdata.split(" "))',
 'CrossSectionY' : 'RadCros.ydata',
-'CrossSectionYUnit' : 'RadCros.ydataunit.value',
+'CrossSectionYUnit' : 'RadCros.ydataunit',
 'CrossSectionYN' : 'len(RadCros.ydata.split(" "))',
 
 #source
@@ -85,7 +86,7 @@ RETURNABLES = {\
 
 RESTRICTABLES = {\
 'RadTransWavelength':'wavelength',
-'AtomIonCharge' : 'ioncharge',
+'IonCharge' : 'ioncharge',
 'AtomNuclearCharge' : 'nuclearcharge',
 'AtomSymbol' : 'elementsymbol',
 }

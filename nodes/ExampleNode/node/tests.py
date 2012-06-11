@@ -10,13 +10,13 @@ try:
     from django.utils.unittest import TestCase
 except ImportError:
     from django.test import TestCase
-try:    
+try:
     from django.utils import unittest
 except ImportError:
     import unittest
 from vamdctap import tests as vamdctests
 
-# add database-specific tests here. See example below. 
+# add database-specific tests here. See example below.
 
 class SimpleTest(TestCase):
     def test_basic_addition(self):
@@ -31,11 +31,11 @@ class SimpleTest(TestCase):
 
 def suite():
     """
-    This function is called automatically by the django test runner. 
+    This function is called automatically by the django test runner.
     This also runs the command tests defined in src/commands/default/tests.py.
     """
     tsuite = unittest.TestSuite()
     tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]))
     tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(vamdctests))
-    
+
     return tsuite
