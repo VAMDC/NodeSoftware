@@ -13,18 +13,15 @@ import models # this imports models.py from the same directory as this file
 
 from django.db.models import Q
 
+# this function fetches energyscan data from the db and is defined as a function
+# because it is needed several times throughout this file
 
-#def index(request):
-#    c=RequestContext(request,{})
-#    return render_to_response('index.html', c)
-
-def show_energyscan(request,id):
+def get_ES_from_db(id):
     energyscan = models.Energyscan.objects.filter(Q(id__exact=id)).get()
     ES_list = energyscan.energyscan_data.split()
     k = 0
     xs = []
     ys = []
-    stringarray=[]
     for datapoint in ES_list:
         datapoint = datapoint.replace(',','.')
         #even -> x-value
@@ -35,9 +32,17 @@ def show_energyscan(request,id):
             ys.append(float(datapoint))
         k = k + 1
 
+    #we end at this point, because the further handling of the data depends on the function
+
+    return energyscan, xs, ys
+
+def show_energyscan(request,id):
+    #get data from db
+    energyscan, xs, ys = get_ES_from_db(id)
     xs = map(str, xs)
     ys = map(str, ys)
     k = 0
+    stringarray = []
     for x in xs:
         stringarray.append('[%s, %s]'%(x, ys[k]))
         k = k + 1
@@ -58,40 +63,12 @@ def show_energyscan(request,id):
     return HttpResponse(html)
 
 def compare_energyscan(request,id1,id2):
-    energyscan1 = models.Energyscan.objects.filter(Q(id__exact=id1)).get()
-    energyscan2 = models.Energyscan.objects.filter(Q(id__exact=id2)).get()
-    ES_list1 = energyscan1.energyscan_data.split()
-    ES_list2 = energyscan2.energyscan_data.split()
+    # get data from db
+    energyscan1, xs1, ys1 = get_ES_from_db(id1)
+    energyscan2, xs2, ys2 = get_ES_from_db(id2)
 
-    #put first energyscan in list
-    k = 0
-    xs1 = []
-    ys1 = []
     stringarray1 = []
-    for datapoint in ES_list1:
-        datapoint = datapoint.replace(',','.')
-        #even -> x-value
-        if k % 2 == 0:
-            xs1.append(float(datapoint))
-        #odd -> y-value
-        else:
-            ys1.append(float(datapoint))
-        k = k + 1
- 
-    #second
-    k = 0
-    xs2 = []
-    ys2 = []
-    stringarray2=[]
-    for datapoint in ES_list2:
-        datapoint = datapoint.replace(',','.')
-        #even -> x-value
-        if k % 2 == 0:
-            xs2.append(float(datapoint))
-        #odd -> y-value
-        else:
-            ys2.append(float(datapoint))
-        k = k + 1
+    stringarray2 = []
 
     #compare scans - multiply items of second with factor between max(1) and max(2)
     factor = max(ys1) / max(ys2)
@@ -151,24 +128,10 @@ def contact(request):
     return HttpResponse(html)
 
 def export_ascii(request,id):
-    energyscan = models.Energyscan.objects.filter(Q(id__exact=id)).get()
-    ES_list = energyscan.energyscan_data.split()
-    k = 0
-    xs = []
-    ys = []
-    stringarray=[]
-    for datapoint in ES_list:
-        datapoint = datapoint.replace(',', '.')
-        #even -> x-value
-        if k % 2 == 0:
-            xs.append(float(datapoint))
-        #odd -> y-value
-        else:
-            ys.append(float(datapoint))
-        k = k + 1
-
-    #xs = map(str,xs)
-    #ys = map(str,ys)
+    #get data from db
+    energyscan, xs, ys = get_ES_from_db(id)
+    
+    stringarray = []
     k = 0
     for x in xs:
         stringarray.append('%f\t%f'%(x, ys[k]))
