@@ -24,9 +24,7 @@ import models # this imports models.py from the same directory as this file
 from django.db.models import Q
 
 def LOG(s):
-#    "Simple logger function"
-#    if settings.DEBUG: print >> sys.stdout, s
-#josis logfunction
+    #josis logfunction
     logfilejosi = open('/var/log/vamdc_josi.log','a')
     s=str(s)
     logfilejosi.write(s + '\n')
@@ -95,7 +93,6 @@ def setupResults(sql, limit=1000):
     """
     # log the incoming query
     LOG(sql)
-    #LOG(sql.where)
 
     #x_internal is the list for the iteration over one search result, x the overall list (which is deduplicated in the end)
     
@@ -108,23 +105,13 @@ def setupResults(sql, limit=1000):
     particles = []
     electron_particle = Particle('electron')
 
-    # convert the incoming sql to a correct django query syntax object 
-    # based on the RESTRICTABLES dictionary in dictionaries.py
-    # (where2q is a helper function to do this for us).
-    q = where2q(sql.where,dictionaries.RESTRICTABLES)
-    
-    try: 
-        q = eval(q) # test queryset syntax validity
-    except:
-        LOG(q) 
-        return {}
-
-    #q = sql2Q(sql.where)
+    #use the function sql2Q provided by vamdctap to translate from query to Q-object
+    q = sql2Q(sql)
 
     #create queryset for energyscans according to query
     energyscans = models.Energyscan.objects.filter(q)
-    # count the number of matches, make a simple trunkation if there are
-    # too many (record the coverage in the returned header)
+
+    # count the number of matches
     nenergyscans=energyscans.count()
 
     #append electron if there are results:
@@ -134,6 +121,7 @@ def setupResults(sql, limit=1000):
     #loop over energyscans that came back
 
     for energyscan in energyscans:
+        #our reactants are always molecules. here we check if the product is a molecule.
         if energyscan.species.molecule:
             molecules_internal = models.Species.objects.filter(Q(id__exact=energyscan.species.id)|Q(id__exact=energyscan.origin_species.id))
         else:
@@ -177,7 +165,6 @@ def setupResults(sql, limit=1000):
         #insert the standard-comment in addition to a possibly existing user-specific comment
         standardcomment = 'X-Values are measured with an energy resolution of %s eV. Therefore every shown peak is the original peak shape convoluted with our resolution. Energy scans are calibrated. Therefore we estimate an error of 0.1 eV' % energyscan.energyresolution 
 
-        LOG(energyscan.comment)
         if energyscan.comment != '':
             usercomment = energyscan.comment
             energyscan.comment = 'Comment of the Producer: ' + usercomment + ' Additional Comment: ' + standardcomment
