@@ -9,7 +9,10 @@ Each model class defines a table in the database. The fields define the columns 
 from django.db.models import *
 from django.core.exceptions import ValidationError
 from vamdctap import bibtextools
+
 import re
+
+from inchivalidation import inchi2inchikey, inchikey2inchi
 
 #we define the regex object for chemical formulas here, as it is used in two different functions
 re = re.compile('^([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+$')
@@ -63,16 +66,41 @@ class Species(Model):
     molecule = BooleanField(verbose_name='Tick, if this is a molecule')
     # defines some optional meta-options for viewing and storage
     def __unicode__(self):
-        if self.name != "":
+        if self.name != '':
             return u'%s (%s)'%(self.name,self.chemical_formula)
         else:
             return u'%s'%(self.chemical_formula)
 
-#    def clean(self):
-#        m = hashlib.sha256()
-#        m.update(self.inchi)
-#        if str(m.digest()) != self.inchikey:
-#            raise ValidationError(u'InChI-Key (%s) does not match the InChI (%s), %s'%(self.inchi,self.inchikey,str(m.digest()))) 
+    def clean(self):
+        #check if either inchi or inchikey are there and either complete the other one or verify
+        if self.inchi == '':
+            if self.inchikey != '':
+                tmpinchi = inchikey2inchi(self.inchikey)
+                if tmpinchi:
+                    self.inchi = tmpinchi
+                else:
+                    raise ValidationError(u'No chemical compound found for this InChI-Key.')
+        else:
+            #check if the given inchi has the InChI= in the beginning
+            #additionally check for Standard-InChI
+
+            if not self.inchi.startswith('InChI='):
+                self.inchi = 'InChI=' + self.inchi
+            if not self.inchi.startswith('InChI=1S'):
+                raise ValidationError(u'InChI %s is not a Standard-InChI (starts with 1S)' % self.inchi)
+
+            #get the rest
+
+            if self.inchikey != '':
+                inchikeycheck = inchi2inchikey(self.inchi)
+                if inchikeycheck != self.inchikey:
+                    raise ValidationError(u'The given InChI and InChI-Key are not compatible.')
+            else:
+                tmpinchikey = inchi2inchikey(self.inchi)
+                if tmpinchikey:
+                    self.inchikey = tmpinchikey
+                else:
+                    raise ValidationError(u'Not a valid InChI-Key.')
 
     class Meta:
         db_table = u'species'
