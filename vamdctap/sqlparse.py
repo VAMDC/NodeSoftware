@@ -108,7 +108,6 @@ def applyRestrictFu(rs,restrictables=RESTRICTABLES):
         rs = [r] + fu(op,foo[0])
     except Exception,e:
         log.error('Could not apply function %s to Restrictable %s. Errormsg: %s'%(fu,r,e))
-        return QFalse
 
     return rs
 
@@ -131,6 +130,7 @@ def checkLen1(x):
     else:
         return x[0].strip('\'"')
 
+
 def restriction2Q(rs, restrictables=RESTRICTABLES):
     if isinstance(rs,QType): # we are done because it is already a Q-object
         return rs
@@ -139,16 +139,24 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
     if r not in restrictables:
         log.debug('Restrictable "%s" not supported!'%r)
         return QFalse
-    if type(restrictables[r]) == tuple:
-        rest_rhs = restrictables[r][0]
-    else: rest_rhs = restrictables[r]
+
+    rest_rhs = restrictables[r]
 
     if op=='in':
         if not (foo[0]=='(' and foo[-1]==')'):
             log.error('Values for IN not bracketed: %s'%foo)
         else: foo=foo[1:-1]
         ins = map(strip,foo,('\'"',)*len(foo))
-        return Q(**{rest_rhs+'__in':ins})
+        q = None
+        if type(rest_rhs) == tuple:
+            for rest_rh in rest_rhs:
+                if q:
+                    q = q | Q(**{rest_rh + '__in': ins})
+                else:
+                    q = Q(**{rest_rh + '__in': ins})
+        else:
+            q = Q(**{rest_rhs + '__in': ins})
+        return q
     if op=='like':
         foo=checkLen1(foo)
         if foo.startswith('%') and foo.endswith('%'): o='__contains'
@@ -157,16 +165,53 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
         else:
             o='__exact'
             log.warning('LIKE operator used without percent signs. Treating as __exact. (Underscore and [] are unsupported)')
-        return Q(**{rest_rhs+o:foo.strip('%')})
+        q = None
+        if type(rest_rhs) == tuple:
+            for rest_rh in rest_rhs:
+                if q:
+                    q = q | Q(**{rest_rh + o:foo.strip('%')})
+                else:
+                    q = Q(**{rest_rh + o:foo.strip('%')})
+        else:
+            q = Q(**{rest_rhs + o:foo.strip('%')})
+        return q
     if op=='<>' or op=='!=':
         foo = checkLen1(foo)
         if foo.lower() == 'null':
-            return Q(**{rest_rhs+'__isnull':False})
+            q = None
+            if type(rest_rhs) == tuple:
+                for rest_rh in rest_rhs:
+                    if q:
+                        q = q | Q(**{rest_rh + '__isnull': False})
+                    else:
+                        q = Q(**{rest_rh + '__isnull': False})
+            else:
+                q = Q(**{rest_rhs + '__isnull': False})
+            return q
         else:
-            return ~Q(**{rest_rhs: foo})
+            q = None
+            if type(rest_rhs) == tuple:
+                for rest_rh in rest_rhs:
+                    if q:
+                        q = q | Q(**{rest_rh + foo})
+                    else:
+                        q = Q(**{rest_rh + foo})
+            else:
+                q = Q(**{rest_rhs + foo})
+            return q
 
     foo = checkLen1(foo)
-    return Q(**{rest_rhs+OPTRANS[op]: foo})
+    q = None
+    if type(rest_rhs) == tuple:
+        for rest_rh in rest_rhs:
+            if q:
+                q = q | Q(**{rest_rh + OPTRANS[op]: foo})
+            else:
+                q = Q(**{rest_rh + OPTRANS[op]: foo})
+    else:
+        q = Q(**{rest_rhs + OPTRANS[op]: foo})
+
+    return q
 
 def sql2Q(sql):
     if not sql.where:

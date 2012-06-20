@@ -93,13 +93,12 @@ RETURNABLES = {\
 # for the Species.atomic field  would be written as species__atomic.
 
 RESTRICTABLES = {\
-'MoleculeChemicalName':'species__name',
+'MoleculeChemicalName':('species__name','origin_species__name'),
 'AtomMassNumber':'species__mass',
-'MoleculeMolecularWeight':'species__mass',
+'MoleculeMolecularWeight':('species__mass','origin_species__mass'),
 'AtomSymbol':'species__chemical_formula',
-'Inchi':'species__inchi',
-'InchiKey':'species__inchikey',
-'MoleculeOrdinaryStructuralFormula':'species__chemical_formula',
-'MoleculeCASRegistryNumber':'species__cas',
+'Inchi':('species__inchi','origin_species__inchi'),
+'InchiKey':('species__inchikey','origin_species__inchikey'),
+'MoleculeOrdinaryStructuralFormula':('species__chemical_formula','origin_species__chemical_formula'),
+'MoleculeCASRegistryNumber':('species__cas','origin_species__cas'),
 }
-
