@@ -107,7 +107,7 @@ def applyRestrictFu(rs,restrictables=RESTRICTABLES):
         bla, fu = restrictables[r]
         rs = [r] + fu(op,foo[0])
     except Exception,e:
-        log.error('Could not apply function %s to Restrictable %s. Errormsg: %s'%(fu,r,e))
+        log.debug('Could not apply function %s to Restrictable %s. Therefore interpreting the tuple as two search possibilities.'%(fu,r))
 
     return rs
 

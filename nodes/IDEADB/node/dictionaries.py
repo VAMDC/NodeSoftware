@@ -62,6 +62,7 @@ RETURNABLES = {\
 'MoleculeMolecularWeight':'Molecule.mass',
 'MoleculeMolecularWeightUnit':'amu',
 'MoleculeInchi':'Molecule.inchi',
+'MoleculeInchiKey':'Molecule.inchikey',
 'MoleculeChemicalNameValue':'Molecule.chemical_formula',
 'MoleculeStoichiometricFormula':'Molecule.chemical_formula',
 'MoleculeCASRegistryNumber':'Molecule.cas',
