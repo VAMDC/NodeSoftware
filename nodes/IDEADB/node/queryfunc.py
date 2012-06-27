@@ -22,6 +22,9 @@ import dictionaries
 import models # this imports models.py from the same directory as this file
 
 from django.db.models import Q
+import re
+
+from inchivalidation import inchikey2chemicalformula
 
 def LOG(s):
     #josis logfunction
@@ -113,6 +116,20 @@ def setupResults(sql, limit=1000):
 
     # count the number of matches
     nenergyscans=energyscans.count()
+
+    #in case somebody is searching for a InchiKey and it didn't bring up any results:
+    #convert the inchikey to an inchi, extract the sum formula and try again
+    if nenergyscans == 0:
+        if re.search('InchiKey', str(sql)) is not None:
+            match = re.search('[A-Z]{14}-[A-Z]{10}-[A-Z]', str(sql))
+            inchikey = str(sql)[match.start():match.end()]
+            chemical_formula = inchikey2chemicalformula(inchikey)
+
+            #now we extracted the stochiometric / chemical formula from the inchi. 
+            #let's see if there is something in the DB
+            energyscans = models.Energyscan.objects.filter(Q(species__chemical_formula__exact=chemical_formula)|Q(origin_species__chemical_formula__exact=chemical_formula))
+
+            nenergyscans=energyscans.count()
 
     #append electron if there are results:
     if nenergyscans != 0:
