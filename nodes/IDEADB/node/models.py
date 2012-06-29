@@ -12,7 +12,7 @@ from vamdctap import bibtextools
 
 import re
 
-from inchivalidation import inchi2inchikey, inchikey2inchi
+from inchivalidation import inchi2inchikey, inchikey2inchi, inchi2chemicalformula
 
 #we define the regex object for chemical formulas here, as it is used in two different functions
 re = re.compile('^([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+$')
@@ -101,6 +101,9 @@ class Species(Model):
                     self.inchikey = tmpinchikey
                 else:
                     raise ValidationError(u'Not a valid InChI-Key.')
+
+            if self.chemical_formula != inchi2chemicalformula(self.inchi):
+                raise ValidationError(u'InChI %s is not compatible with the stochiometric formula %s.' % (self.inchi, self.chemical_formula))
 
     class Meta:
         db_table = u'species'

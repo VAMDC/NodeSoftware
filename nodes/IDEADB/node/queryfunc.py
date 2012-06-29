@@ -127,9 +127,9 @@ def setupResults(sql, limit=1000):
 
             #now we extracted the stochiometric / chemical formula from the inchi. 
             #let's see if there is something in the DB
-            energyscans = models.Energyscan.objects.filter(Q(species__chemical_formula__exact=chemical_formula)|Q(origin_species__chemical_formula__exact=chemical_formula))
-
-            nenergyscans=energyscans.count()
+            if chemical_formula is not None:
+                energyscans = models.Energyscan.objects.filter(Q(species__chemical_formula__exact=chemical_formula)|Q(origin_species__chemical_formula__exact=chemical_formula))
+                nenergyscans=energyscans.count()
 
     #append electron if there are results:
     if nenergyscans != 0:
