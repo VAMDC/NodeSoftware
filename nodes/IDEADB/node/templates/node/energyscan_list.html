@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Available Energyscans</h2>
+    <ul>
+        {% for es in object_list %}
+            <li><a href="{{ es.id }}">{{ es.species }} from {{ es.origin_species }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

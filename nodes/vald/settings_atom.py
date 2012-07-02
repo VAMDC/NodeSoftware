@@ -4,10 +4,17 @@ DEBUG = True
 DEBUG = False
 TRANSLIM = 6000
 
-INSTALLED_APPS.remove(NODEPKG)
-INSTALLED_APPS.append(NODENAME+'.node_common')
-NODEPKG=NODENAME+'.node_atom'
-INSTALLED_APPS.append(NODEPKG)
+try:
+    INSTALLED_APPS.remove('vald.node')
+except:
+    pass
+
+NODEPKG='vald.node_atom'
+if not 'vald.node_common' in INSTALLED_APPS:
+    INSTALLED_APPS.append('vald.node_common')
+if not NODEPKG in INSTALLED_APPS:
+    INSTALLED_APPS.append(NODEPKG)
+print NODEPKG,INSTALLED_APPS
 
 DATABASES = {
   'default': {
