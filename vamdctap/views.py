@@ -97,7 +97,7 @@ class TAPQUERY(object):
 
         try: self.parsedSQL=SQL.parseString(self.query,parseAll=True)
         except: # if this fails, we're done
-            self.errormsg += 'Could not parse the SQL query string.\n'
+            self.errormsg += 'Could not parse the SQL query string: %s\n'%self.query
             self.isvalid=False
             return
 
