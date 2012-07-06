@@ -20,9 +20,9 @@ def setupSQLparser():
                                            ( "." + Word(nums) ) ) +
                        Optional( E + Optional(arithSign) + Word(nums) ) )
     intNum = Combine( Optional(arithSign) + Word( nums ) +
-                      Optional( E + Optional("+") + Word(nums) ) )
+                      Optional( E + Optional(arithSign) + Word(nums) ) )
 
-    columnRval = realNum | intNum | quotedString | columnName
+    columnRval = realNum | intNum | quotedString
     whereCondition = Optional(not_) + Group(
         ( columnName + binop + columnRval ) |
         ( columnName + in_ + "(" + delimitedList( columnRval ) + ")" ) |
