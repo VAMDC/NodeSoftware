@@ -2,8 +2,9 @@ import copy
 import sys
 import os
 
+
 VERIFICATION_PATH = os.path.dirname(os.path.abspath(__file__))
-VERIFICATION_FILE_PATH =  VERIFICATION_PATH + "/verification.xsd"
+VERIFICATION_FILE_PATH = VERIFICATION_PATH + "/verification.xsd"
 
 if __name__ == '__main__':
 	VERIFICATION_SCHEMA_LOCATION = VERIFICATION_FILE_PATH
@@ -22,7 +23,37 @@ XSD_NS = "http://www.w3.org/2001/XMLSchema"
 XSAMS_NS = "http://vamdc.org/xml/xsams/0.3"
 MATHML_NS = "http://www.w3.org/1998/Math/MathML"
 
-DOMAINS = ['AtomicState', 'MolecularState', 'RadiativeTransition', 'NonRadiativeTransition']
+SUBSTANCES = {#
+              'Ion': '/xsams:Species/xsams:Atoms/xsams:Atom/xsams:Isotope/xsams:Ion', #
+              'Molecule': '/xsams:Species/xsams:Molecules/xsams:Molecule', #
+}
+
+INCHES = {#
+          'Ion': '/xsams:InChI', #
+          'Molecule': '/xsams:MolecularChemicalSpecies/xsams:InChI', #
+}
+
+STATES = {#
+          'AtomicState': SUBSTANCES['Ion'] + '/xsams:AtomicState', #
+          'MolecularState': SUBSTANCES['Molecule'] + '/xsams:MolecularState', #
+}
+
+TRANSITIONS = {#
+               'RadiativeTransition': '/xsams:Processes/xsams:Radiative/xsams:RadiativeTransition', #
+               'NonRadiativeTransition': '/xsams:Processes/xsams:NonRadiative/xsams:NonRadiativeTransition'#
+}
+
+DOMAINS = {}
+DOMAINS.update(STATES)
+DOMAINS.update(TRANSITIONS)
+
+XSAMSData_PATH = '/xsams:XSAMSData'
+VER_XSAMSData_PATH = '/xsams:VerificationData' + XSAMSData_PATH
+
+POSITIONS = {#
+             'UpperStateRef': '{%s}UpperStateRef' % XSAMS_NS, #
+             'LowerStateRef': '{%s}LowerStateRef' % XSAMS_NS, #
+}
 
 
 class NoMathMLException(Exception):
@@ -36,7 +67,6 @@ class NoValidException(Exception):
 
 
 class Verification:
-
 	def __init__(self, file, rules = None):
 		if file[0] == '<':
 			file = cStringIO.StringIO(file)
@@ -44,8 +74,9 @@ class Verification:
 		self.rules = RulesParser().getRules() if not rules else rules
 		self.lock = False
 
-		self.stateNodes = {}
-		self.whiteListOfRefs = {}
+		self.verificationCache = {}
+		self._setInchiCache()
+		self._setCaches()
 
 
 	def _setSchemaLocation(self):
@@ -58,8 +89,9 @@ class Verification:
 	def run(self, report = True, bad = None):
 		if not self.lock:
 			self._setSchemaLocation()
-			self._removeVerificationNode()
+			#self._removeVerificationNode()
 			self._addRulesNodes()
+			self._addVerificationDataNode()
 			if report:
 				self._addVerificationResultNode()
 			if bad is not None:
@@ -75,8 +107,10 @@ class Verification:
 		self.whiteListOfRefs = {}
 		parentsOfNodesWithVerification = {}
 
-		nodesWithVerification = self.tree.xpath('//child::xsams:Verification[' + ('' if bad else 'not(') + 'contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil' + ('' if bad else ')') + ']',
-		                                        namespaces = {"xsams": XSAMS_NS, 'xsi': XSI_NS})
+		verXPath = '/xsams:Verification[' + ('' if bad else 'not(') + 'contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil' + ('' if bad else ')') + ']'
+		nodesWithVerification = []
+		for domain in DOMAINS:
+			nodesWithVerification.extend(self.tree.xpath(VER_XSAMSData_PATH + DOMAINS[domain] + verXPath, namespaces = {"xsams": XSAMS_NS, 'xsi': XSI_NS}))
 		if nodesWithVerification:
 			for nodeWithVerification in nodesWithVerification:
 				if not nodeWithVerification.xpath('./child::*[contains(self::node(),  "false") or contains(self::node(),  "true")]'):
@@ -107,6 +141,7 @@ class Verification:
 
 
 	def _removeRedundantParentNodes(self, usefulParentNodes, stopNode, bad = True):
+		verXPath = '/xsams:Verification[' + ('' if bad else 'not(') + 'contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil' + ('' if bad else ')') + ']'
 		if not usefulParentNodes or stopNode in usefulParentNodes:
 			return
 
@@ -127,8 +162,10 @@ class Verification:
 							isRedundantNode = True
 							idNodes = {}
 							if childNode.tag == '{%s}Processes' % XSAMS_NS:
-								if not childNode.xpath('.//child::xsams:Verification[' + ('' if bad else 'not(') + 'contains(self::node(),  "false") or descendant-or-self::node()/attribute::xsi:nil' + ('' if bad else ')') + ']',
-								                       namespaces = {"xsams": XSAMS_NS, 'xsi': XSI_NS}):
+								nodesWithVerification = []
+								for domain in TRANSITIONS:
+									nodesWithVerification.extend(self.tree.xpath(VER_XSAMSData_PATH + DOMAINS[domain] + verXPath, namespaces = {"xsams": XSAMS_NS, 'xsi': XSI_NS}))
+								if not nodesWithVerification:
 									usefulParentNode.getparent().remove(childNode)
 									flag = True
 									break
@@ -153,99 +190,135 @@ class Verification:
 		self._removeRedundantParentNodes(parentsOfNodesWithVerification, stopNode, bad)
 
 
-	def _setStateNodes(self):
-		for stateNode in self.tree.xpath('//*[@stateID]'):
-			self.stateNodes[stateNode.get('stateID')] = stateNode
+	def _setInchiCache(self):
+		self.inchiCache = {}
+		for substance in SUBSTANCES:
+			for substanceNode in self.tree.xpath(XSAMSData_PATH + SUBSTANCES[substance], namespaces = {"xsams": XSAMS_NS}):
+				inchiNodes = substanceNode.xpath('.' + INCHES[substance], namespaces = {"xsams": XSAMS_NS})
+				if inchiNodes and inchiNodes[0].text is not None:
+					self.inchiCache[substanceNode] = inchiNodes[0].text
+				else:
+					self.inchiCache[substanceNode] = False
+
+
+	def _setCaches(self):
+		self.qnsCache = {}
+		self.casesCache = {}
+		self.upLowCache = {}
+		self.nodesCache = {}
+
+		atomicQNs = '{%s}AtomicQuantumNumbers' % XSAMS_NS
+		caseQNs = '{%s}Case' % XSAMS_NS
+		for domain in STATES:
+			self.nodesCache[domain] = {}
+			for node in self.tree.xpath(XSAMSData_PATH + DOMAINS[domain] + '[@stateID]', namespaces = {"xsams": XSAMS_NS}):
+				id = node.get('stateID')
+				self.nodesCache[domain][id] = node
+
+				self.qnsCache[id] = {}
+				self.casesCache[id] = set()
+				if domain == 'AtomicState':
+					caseID = ''
+					self.casesCache[id].add(caseID)
+					for case in node.iterchildren(atomicQNs):
+						self._setQnCacheItem(id, caseID, case)
+				elif domain == 'MolecularState':
+					cases = node.iterchildren(caseQNs)
+					for case in cases:
+						caseID = case.get('caseID')
+						if caseID:
+							self.casesCache[id].add(caseID)
+							caseID += ':'
+							for qns in case.iterchildren():
+								self._setQnCacheItem(id, caseID, qns)
+
+
+		for domain in TRANSITIONS:
+			self.nodesCache[domain] = {}
+			for node in self.tree.xpath(XSAMSData_PATH + DOMAINS[domain] + '[@id]', namespaces = {"xsams": XSAMS_NS}):
+				id = node.get('id')
+				self.nodesCache[domain][id] = node
+
+				self.upLowCache[id] = {}
+				self.casesCache[id] = set()
+				for position in POSITIONS:
+					for stateRefNode in node.iterchildren(POSITIONS[position]):
+						stateID = stateRefNode.text
+						self.upLowCache[id][position] = stateID
+						self.casesCache[id].update(self.casesCache.get(stateID, set()))
+
+
+	def _setQnCacheItem(self, id, caseID, node):
+		for qn in node.iterchildren():
+			if qn.text:
+				name = qn.tag.replace(getTagNameNS(qn.tag), caseID)
+				if qn.attrib:
+					attrStr = ''
+					for attr, value in qn.items():
+						attrStr += (" and " if attrStr else "") + "@%s=%s" % (attr, value)
+					name += "[" + attrStr +"]"
+
+				self.qnsCache[id][name] = qn.text if is_number(qn.text) else '"' + qn.text + '"'
 
 
 	def _addRulesNodes(self):
 		if not self.lock:
-			self._setStateNodes()
-			dataNodes = {'AtomicState': {}, 'MolecularState': {}, 'Transition': {}}
-
 			for rule in sorted(self.rules, key = lambda x: x.name):
-				if rule.domains:
-					domainFlag = rule.getDomainFlag()
-				else:
+				if not rule.domains:
 					continue
 
-				identifiers = rule.getIdentifiers()
+				for identifier in rule.identifiers:
+					stateDomain = 'AtomicState' if identifier.find(':') == -1 else 'MolecularState'
+					break
 
-				for identifier in identifiers:
-					if len(identifiers[identifier]) > 1:
-						if domainFlag != 'Transition':
-							raise NoValidException("Allowed only 'ci' with the '#' symbol but not " + str(identifiers[identifier]))
-						if not dataNodes[domainFlag]:
-							for domain in rule.domains:
-								dataNodes[domainFlag].update(
-									dict.fromkeys(self.tree.xpath('//xsams:' + domain + '[./xsams:' + (identifiers[identifier][1][0:-1] if identifier[-1] == '?' else identifiers[identifier][1]) + ']', namespaces = {"xsams": XSAMS_NS})))
-						break
-					else:
-						if domainFlag != 'AtomicState' and domainFlag != 'MolecularState':
-							raise NoValidException("Allowed only 'ci' without the '#' symbol but not " + str(identifiers[identifier]))
-						if domainFlag == 'AtomicState' and identifier.find(':') != -1:
-							raise NoValidException("Allowed only 'ci' without the ':' symbol but not " + str(identifiers[identifier]))
-						if domainFlag == 'MolecularState' and identifier.find(':') == -1:
-							raise NoValidException("Allowed only 'ci' with the ':' symbol but not " + str(identifiers[identifier]))
-						if not dataNodes[domainFlag]:
-							for domain in rule.domains:
-								dataNodes[domainFlag].update(dict.fromkeys(self.tree.xpath('//xsams:' + domain, namespaces = {"xsams": XSAMS_NS})))
-						break
+				for domain in rule.domains:
+					isState = True if domain[-5:] == 'State' else False
 
-				for dataNode in dataNodes[domainFlag]:
-					if dataNodes[domainFlag][dataNode] is None:
-						dataNodes[domainFlag][dataNode] = {}
+					for idNode, dataNode in self.nodesCache[domain].iteritems():
+						if self.casesCache[idNode] and not (rule.case in self.casesCache[idNode]):
+							continue
 
-					currentExp = rule.python[:]
+						currentExp = rule.python[:]
 
-					available = None
-					for identifier in identifiers:
-						if not (identifier in dataNodes[domainFlag][dataNode]):
-							if domainFlag == 'Transition':
-								for stateRefNode in dataNode.iterchildren(tag = etree.Element):
-									if stateRefNode.tag == '{%s}' % XSAMS_NS + identifiers[identifier][1]:
-										if stateRefNode.text is not None:
-											stateID = stateRefNode.text
-										else:
-											raise NoValidException("No value of '" + identifiers[identifier][1] + "'")
-										if stateID in self.stateNodes:
-											value = self._getValue(self.stateNodes[stateID], identifiers[identifier][0])
-											dataNodes[domainFlag][dataNode][identifier] = {"stateID": stateID, "value": value}
-										else:
-											raise NoValidException("No matches '" + stateID + "' Ref to ID ")
-										break
+						available = None
+						for identifier in rule.identifiers:
+							localIdentifier = rule.identifiers[identifier][0]
+							if isState:
+								stateID = idNode
+								value = self.qnsCache[idNode].get(localIdentifier, None)
 							else:
-								if dataNode.attrib['stateID']:
-									stateID = dataNode.get('stateID')
-									value = self._getValue(self.stateNodes[stateID], identifier)
-									dataNodes[domainFlag][dataNode][identifier] = {"stateID": stateID, "value": value}
-
-						if dataNodes[domainFlag][dataNode].has_key(identifier):
-							if available is None:
-								if dataNodes[domainFlag][dataNode][identifier]["value"] is None:
-									available = self._isAvailableNode(self.stateNodes[dataNodes[domainFlag][dataNode][identifier]["stateID"]], rule)
-									if available:
-										self._addRuleNode(dataNode, [rule.name, None])
-									available = False
-								elif not dataNodes[domainFlag][dataNode][identifier]["value"]:
-									available = False
+								position = rule.identifiers[identifier][1]
+								stateID = self.upLowCache[idNode].get(position, None)
+								if stateID and stateID in self.qnsCache and stateID in self.nodesCache[stateDomain]:
+									value = self.qnsCache[stateID].get(localIdentifier, None)
 								else:
-									available = self._isAvailableNode(self.stateNodes[dataNodes[domainFlag][dataNode][identifier]["stateID"]], rule)
-							if available is not None and not available:
-								break
-							currentExp = currentExp.replace(identifier, dataNodes[domainFlag][dataNode][identifier]["value"])
-						else:
-							available = False
-							break
+									available = False
+									break
 
-					if available:
-						self._addRuleNode(dataNode, [rule.name, str(eval(currentExp)).lower()])
+							if available is None:
+								available = self._isAvailableNode(self.nodesCache[stateDomain][stateID], rule)
+
+							if value is None:
+								if identifier[-1:] == '?':
+									value = 'None'
+								else:
+									if available:
+										self._addRuleNode(idNode, dataNode, [rule.name, None])
+									available = False
+
+							if available is False:
+								break
+
+							currentExp = currentExp.replace(identifier, value)
+
+						if available:
+							self._addRuleNode(idNode, dataNode, [rule.name, str(eval(currentExp)).lower()])
 
 			self.lock = True
 		return self.tree
 
 
-	def _addVerificationResultNode(self):
+	def _addVerificationDataNode(self):
 		rootNode = self.tree.getroot()
 		if rootNode is not None:
 			verificationDataElement = etree.Element('{%s}VerificationData' % XSAMS_NS, nsmap = rootNode.nsmap)
@@ -258,6 +331,12 @@ class Verification:
 			verificationDataElement.append(rootNode)
 			rootNode = verificationDataElement
 
+		return rootNode
+
+
+	def _addVerificationResultNode(self):
+		rootNode = self.tree.getroot()
+		if rootNode is not None:
 			verificationResultNodes = rootNode.xpath('./xsams:VerificationResult', namespaces = {"xsams": XSAMS_NS})
 			if verificationResultNodes:
 				for childNode in verificationResultNodes[:]:
@@ -265,25 +344,26 @@ class Verification:
 
 			verificationResultElement = etree.Element('{%s}VerificationResult' % XSAMS_NS, nsmap = rootNode.nsmap)
 
-			nodesWithVerification = self.tree.xpath('//child::xsams:Verification', namespaces = {"xsams": XSAMS_NS})
-			if nodesWithVerification:
-
+			if self.verificationCache:
 				domainNumbers = {}
 				for domain in DOMAINS:
-					domainNumbers[domain] = None
+					domainNumbers["{%s}%s" % (XSAMS_NS, domain)] = None
 
 				for domain in domainNumbers:
 					domainNumbers[domain] = {'total': 0, 'correct': 0, 'incorrect': 0, 'unidentified': 0}
 
-				for nodeWithVerification in nodesWithVerification:
-					domain = localTagName(nodeWithVerification.getparent().tag)
+				for nodeWithVerification in self.verificationCache.itervalues():
+					domain = nodeWithVerification.getparent().tag
+
 					domainNumbers[domain]['total'] += 1
 					if nodeWithVerification.get('{%s}nil' % XSI_NS) == "true":
 						domainNumbers[domain]['unidentified'] += 1
+
 					else:
 						flagOne = True
 						for ruleNode in nodeWithVerification.iterchildren(tag = etree.Element):
-							ruleNodeLocalTag = localTagName(ruleNode.tag)
+							ruleNodeLocalTag = ruleNode.tag
+
 							if not domainNumbers.has_key(ruleNodeLocalTag):
 								domainNumbers[ruleNodeLocalTag] = {'correct': 0, 'incorrect': 0, 'unidentified': 0}
 							if ruleNode.get('{%s}nil' % XSI_NS) == "true":
@@ -307,10 +387,10 @@ class Verification:
 					if ruleName.find('Rule') == -1:
 						if not domainNumbers[ruleName]['total']:
 							continue
-						numberElement = etree.Element(('{%s}NumberOf' + ruleName + 's') % XSAMS_NS, nsmap = rootNode.nsmap)
+						numberElement = etree.Element(('{%s}NumberOf' + localTagName(ruleName) + 's') % XSAMS_NS, nsmap = rootNode.nsmap)
 					else:
 						numberElement = etree.Element('{%s}NumberOfVerificationByRule' % XSAMS_NS, nsmap = rootNode.nsmap)
-						numberElement.set('name', ruleName)
+						numberElement.set('name', localTagName(ruleName))
 					for numberName in sorted(domainNumbers[ruleName]):
 						numberElement.set(numberName, str(domainNumbers[ruleName][numberName]))
 					verificationResultElement.append(numberElement)
@@ -332,110 +412,32 @@ class Verification:
 		if not rule.forInChIList:
 			return True
 
-		InChI = None
-		if element.tag == '{%s}AtomicState' % XSAMS_NS:
-			#Atoms.Atom.Isotope.Ion.AtomicState
-
-			for ionChild in element.getparent().iterchildren(tag = etree.Element):
-				if ionChild.tag == '{%s}InChI' % XSAMS_NS:
-					if ionChild.text is not None:
-						InChI = ionChild.text
-					else:
-						return False
-					#raise NoValidException("No 'InChI' element")
-		elif element.tag == '{%s}MolecularState' % XSAMS_NS:
-			#Molecules.Molecule.MolecularState
-			for moleculeChild in element.getparent().iterchildren(tag = etree.Element):
-				if moleculeChild.tag == '{%s}MolecularChemicalSpecies' % XSAMS_NS:
-					for molecularChemicalSpeciesChild in moleculeChild.iterchildren(tag = etree.Element):
-						if molecularChemicalSpeciesChild.tag == '{%s}InChI' % XSAMS_NS:
-							if molecularChemicalSpeciesChild.text is not None:
-								InChI = molecularChemicalSpeciesChild.text
-							else:
-								return False
-		else:
+		if not self.inchiCache[element.getparent()]:
 			return False
+		else:
+			InChI = self.inchiCache[element.getparent()]
 
 		for patternInChI in rule.forInChIList:
-			if patternInChI.find("'") == -1:
-				if str(InChI) == patternInChI:
-					return True
-			else:
-				#InChI=1S/H2O/h1H2'.*'
-				patternInChIParts = patternInChI.split("'")
-				if (len(patternInChIParts) % 2) == 1:
-					currentPatternInChI = ""
-					for i, patternInChIPart in enumerate(patternInChIParts):
-						if (i % 2) == 1:
-							currentPatternInChI += patternInChIPart
-						else:
-							currentPatternInChI += re.escape(patternInChIPart)
-					if re.search(currentPatternInChI, InChI):
-						return True
-				else:
-					return False
+			if not patternInChI:
+				return False
+			if re.search(patternInChI, InChI):
+				return True
 		return False
 
 
-	def _getValue(self, element, name):
-		if element.tag == '{%s}AtomicState' % XSAMS_NS or element.tag == '{%s}MolecularState' % XSAMS_NS:
-			namespaces = {"xsams": XSAMS_NS}
-			if element.tag == '{%s}AtomicState' % XSAMS_NS:
-				cases = element.xpath('.//xsams:AtomicQuantumNumbers', namespaces = {"xsams": XSAMS_NS})
-				if cases:
-					if name.find(':') != -1:
-						return False
-					name = "xsams:" + name
-				else:
-					return None
-			elif element.tag == '{%s}MolecularState' % XSAMS_NS:
-				cases = element.xpath('.//*[local-name() = "Case"]')
-				if cases:
-					caseID = cases[0].get('caseID')
-					if caseID:
-						parts = name.split(':')
-						if caseID != parts[0]:
-							return False
-					else:
-						return None
-					namespaces[caseID] = 'http://vamdc.org/xml/xsams/0.3/cases/' + caseID
-				else:
-					return None
-
-			noneFlag = False
-			if name[-1:] == '?':
-				name = name[0:-1]
-				noneFlag = True
-
-			qns = element.xpath('.//' + name, namespaces = namespaces)
-			if qns and qns[0] is not None and qns[0].text is not None:
-				data = qns[0].text
-				return data if is_number(data) else '"' + data + '"'
-			else:
-				if noneFlag:
-					return 'None'
-				return None
-		else:
-			return False
-
-
-	def _addRuleNode(self, element, ruleItem):
+	def _addRuleNode(self, id, element, ruleItem):
 		ruleElement = etree.Element(('{%s}' + ruleItem[0]) % XSAMS_NS, nsmap = element.nsmap)
 		if ruleItem[1] is None:
 			ruleElement.set('{%s}nil' % XSI_NS, "true")
 		else:
 			ruleElement.text = ruleItem[1]
 
-		verificationNodes = element.xpath('.//xsams:Verification', namespaces = {"xsams": XSAMS_NS})
-		if verificationNodes:
-			verificationElement = verificationNodes[0]
-			ruleNodes = verificationElement.xpath('.//xsams:' + ruleItem[0], namespaces = {"xsams": XSAMS_NS})
-			if ruleNodes:
-				verificationElement.replace(ruleElement, ruleNodes[0])
-			else:
-				verificationElement.append(ruleElement)
+		if self.verificationCache.has_key(id):
+			verificationElement = self.verificationCache[id]
+			verificationElement.append(ruleElement)
 		else:
 			verificationElement = etree.Element('{%s}Verification' % XSAMS_NS, nsmap = element.nsmap)
+			self.verificationCache[id] = verificationElement
 			verificationElement.append(ruleElement)
 			element.append(verificationElement)
 
@@ -443,13 +445,13 @@ class Verification:
 
 
 	def _removeVerificationNode(self):
-		verificationNodes = self.tree.xpath(('//*[local-name() = "Verification"]'))
+		verificationNodes = self.tree.xpath('//*[local-name() = "Verification"]')
 		for verificationNode in verificationNodes[:]:
 			verificationNode.getparent().remove(verificationNode)
 
 
 	def getXML(self, pretty_print = True):
-		return etree.tostring(self.tree, pretty_print = pretty_print)
+		return etree.tostring(self.tree, encoding="UTF-8", xml_declaration=True, pretty_print = pretty_print)
 
 
 
@@ -469,17 +471,20 @@ def printRules(rules):
 
 
 def localTagName(tagName):
-	if tagName[:1] == '{':
-		return tagName.split('}', 1)[-1]
-	else:
-		return tagName
+	return tagName.split('}', 1)[-1]
+
+
+
+def getTagNameNS(tagName):
+	return tagName[0:tagName.find('}')+1]
+
 
 
 class Rule:
 	i = 1
 
-	def __init__(self, name, rule, forInChIList = None, domains = None):
 
+	def __init__(self, name, rule, forInChIList = None, domains = None):
 		if type(rule) == MathDOM:
 			self.math = rule
 			self.python = rule.serialize("python")
@@ -487,33 +492,60 @@ class Rule:
 			self.math = None
 			self.python = rule
 
-		if not forInChIList:
-			self.forInChIList = []
-		elif type(forInChIList) == str:
-			self.forInChIList = forInChIList.split(' ')
-		else:
-			self.forInChIList = forInChIList
+		self.case = ''
+		self.identifiers = self.getIdentifiers()
+		for identifier in self.identifiers:
+			if identifier.find(':') != -1:
+				parts = identifier.split(':')
+				self.case = parts[0]
+			break
 
-		self.domains = []
+		self.forInChIList = []
+		if not forInChIList:
+			forInChIListTemp = []
+		elif type(forInChIList) == str:
+			forInChIListTemp = forInChIList.split(' ')
+		else:
+			forInChIListTemp = forInChIList
+
+		for patternInChI in forInChIListTemp:
+			if patternInChI:
+				if patternInChI.find("'") == -1:
+					self.forInChIList.append(patternInChI)
+				else:
+					#InChI=1S/H2O/h1H2'.*'
+					patternInChIParts = patternInChI.split("'")
+					if (len(patternInChIParts) % 2) == 1:
+						currentPatternInChI = ""
+						for i, patternInChIPart in enumerate(patternInChIParts):
+							if (i % 2) == 1:
+								currentPatternInChI += patternInChIPart
+							else:
+								currentPatternInChI += re.escape(patternInChIPart)
+						self.forInChIList.append(currentPatternInChI)
+					else:
+						self.forInChIList.append(None)
+
+		self.domains = set()
 		if domains:
 			for domain in domains:
 				if domain in DOMAINS:
-					self.domains.append(domain)
+					self.domains.add(domain)
 		else:
-			identifiers = self.getIdentifiers()
-
 			for domain in DOMAINS:
-				for identifier in identifiers:
-					if len(identifiers[identifier]) > 1:
-							if domain.endswith('Transition'):
-								self.domains.append(domain)
+				for identifier in self.identifiers:
+					if len(self.identifiers[identifier]) > 1:
+						if domain.endswith('Transition'):
+							self.domains.add(domain)
 					else:
 						if identifier.find(':') == -1:
 							if domain.endswith('AtomicState'):
-								self.domains.append(domain)
+								self.domains.add(domain)
 						else:
 							if domain.endswith('MolecularState'):
-								self.domains.append(domain)
+								self.domains.add(domain)
+					break;
+
 		domainFlag = self.getDomainFlag()
 		abbr = 'T' if domainFlag and domainFlag.endswith('Transition') else 'S'
 		if name and (type(name) == str or type(name) == unicode):
@@ -521,16 +553,19 @@ class Rule:
 				self.name = name
 			else:
 				self.name = name.lower() + 'Rule' + abbr + ('0' + str(self.i) if self.i < 10 else str(self.i))
-				Rule.i +=1
+				Rule.i += 1
 		else:
 			self.name = 'anonymousRule' + abbr + ('0' + str(self.i) if self.i < 10 else str(self.i))
-			Rule.i +=1
+			Rule.i += 1
+
 
 	def __eq__(self, other):
 		return self.name == other.name
 
+
 	def __hash__(self):
 		return hash(self.name)
+
 
 	def __cmp__(self, other):
 		if self.name < other.name:
@@ -540,8 +575,10 @@ class Rule:
 		else:
 			return 0
 
+
 	def copy(self):
 		return copy.copy(self)
+
 
 	def getDomainFlag(self):
 		domainFlag = None
@@ -561,19 +598,20 @@ class Rule:
 
 		return domainFlag
 
+
 	def getIdentifiers(self):
 		identifiers = {}
 		if self.math:
 			xpathEval = etree.XPath('.//math:ci[not(contains(self::node(),  "\'"))]', namespaces = {"math": MATHML_NS})
 			for ci in xpathEval(self.math._etree):
 				name = ci.text
-				identifiers[name] = name.split('#')
+				identifiers[name] = name.strip(' ?').split('#')
 		elif self.python:
 			labels = re.split(r'\s*\w+\s*\(|\s*\(|\s*\)|\'[a-zA-Z0-9_+-]+\'|"[a-zA-Z0-9_+-]+"|\s*[+\-*/%^<>!,|&~=]+=\s*\d*|\s*[+\-*/%^<>!,|&~]+\s*\d*|\s+not\s+|\s+and\s+|\s+or\s+|\s+is\s+|', self.python)
 			for name in labels:
 				name = name.strip()
 				if name:
-					identifiers[name] = name.split('#')
+					identifiers[name] = name.strip(' ?').split('#')
 
 		return identifiers
 
@@ -581,6 +619,7 @@ class Rule:
 
 class RulesParser:
 	rules = set()
+
 
 	def __init__(self):
 		self._domains = {}
@@ -747,10 +786,13 @@ if __name__ == '__main__':
 	else:
 		fileName = "test/transition3OK.IN.xml"
 
-	xml = Verification(fileName).getXML()
+	ver = Verification(fileName)
+	ver.run()
+	xml = ver.getXML()
 	if len(sys.argv) > 2 and sys.argv[2]:
 		out = open(sys.argv[2], 'w')
 		out.write(xml)
 		out.close()
 	else:
 		print xml
+

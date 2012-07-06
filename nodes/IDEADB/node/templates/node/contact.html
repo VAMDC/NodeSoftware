@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Contact Information</h2>
+    <div class="general" id="info">This VAMDC-Node is operated by:<br />
+     <br />
+     Institut f&uuml;r Ionenphysik und Angewandte Physik<br />
+     Universit&auml;t Innsbruck<br />
+     Technikerstr. 25 / 3<br />
+     A-6020 Innsbruck<br />
+     <br />
+     If you have a question or want to contribute data please contact:<br />
+     {{ contact.name }}<br />
+     <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+    </div>
+{% endblock %}

@@ -10,7 +10,7 @@ import sys, os
 # Software and standards version
 ###################################################
 VAMDC_STDS_VERSION = '11.12'
-NODESOFTWARE_VERSION = '11.12r1'
+NODESOFTWARE_VERSION = '11.12r3'
 
 ###################################################
 # Basic node setup
@@ -27,7 +27,7 @@ ROOT_URLCONF = NODENAME+'.urls'
 
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email).
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
-ADMINS = (('yourname', 'name@mail.net'),)
+ADMINS = (('yourname', 'name@example.com'),)
 MANAGERS = ADMINS
 
 EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
