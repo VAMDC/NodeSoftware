@@ -50,7 +50,7 @@ return ($x/title, $x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']/interfa
     while v:
 	nameurls.append({\
 			'name':v.pop(1),
-			'url':v.pop(0)['value'],
+    			'url':v.pop(0)[0],
 			})
     return nameurls
 

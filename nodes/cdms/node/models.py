@@ -228,7 +228,11 @@ class TransitionsCalc( Model):
                                 db_column='P_Up_EGY_ID')
      lowerstateref =  ForeignKey(States, related_name='lowerstate',
                                 db_column='P_Low_EGY_ID')
-
+     
+     upstate =  ForeignKey(States, related_name='upperstate',
+                                db_column='P_Up_EGY_ID')
+     lostate =  ForeignKey(States, related_name='lowerstate',
+                                db_column='P_Low_EGY_ID')
      #frequencyArray        
      
      def __unicode__(self):

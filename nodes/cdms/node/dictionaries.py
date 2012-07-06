@@ -212,6 +212,9 @@ RESTRICTABLES = {
 #'SourceCategory':'',
 #'SourceYear':'',
 'MoleculeSpeciesID':'specie',
+'Lower.StateEnergy':'lowerstateref__energy',
+'Upper.StateEnergy':'upperstateref__energy',
+'StateEnergy':bothStates,
 }
 
 CDMSONLYRESTRICTABLES = {
