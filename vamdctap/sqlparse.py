@@ -193,11 +193,11 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
             if type(rest_rhs) == tuple:
                 for rest_rh in rest_rhs:
                     if q:
-                        q = q | Q(**{rest_rh + foo})
+                        q = q | ~Q(**{rest_rh: foo})
                     else:
-                        q = Q(**{rest_rh + foo})
+                        q = ~Q(**{rest_rh: foo})
             else:
-                q = Q(**{rest_rhs + foo})
+                q = ~Q(**{rest_rhs: foo})
             return q
 
     foo = checkLen1(foo)
