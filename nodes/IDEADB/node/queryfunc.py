@@ -11,12 +11,11 @@
 # library imports 
 
 import sys
-from itertools import chain
 from django.conf import settings
 from vamdctap.sqlparse import *
 from vamdctap.sqlparse import sql2Q
 
-from math import sqrt, trunc
+from math import sqrt
 
 import dictionaries
 import models # this imports models.py from the same directory as this file
@@ -27,13 +26,14 @@ import re
 from inchivalidation import inchikey2chemicalformula
 
 def LOG(s):
-    #josis logfunction
+    """ logfunction. will be removed for final version. """
     logfilejosi = open('/var/log/vamdc_josi.log','a')
-    s=str(s)
+    s = str(s)
     logfilejosi.write(s + '\n')
 
 #generic empty class
 class GenericClass:
+    """return empty class"""
     pass
 
 #create class for datasets
@@ -42,7 +42,7 @@ class DataSet:
     this class provides a method to make the Tabulated sub-objects out of two tuples containing the x and y values
     """
 
-    def __init__(self,sourceref,xs,ys,productiondate):
+    def __init__(self, sourceref, xs, ys, productiondate):
         #put reference to source first, so we always know what it is
         self.SourceRef = sourceref
         self.TabData = []
@@ -62,24 +62,25 @@ class DataSet:
         #uncomment the float as we do it in the energyscan-loop already when reading the data
         #tabdata.X.DataList = map(float,xs)
         #tabdata.Y.DataList = map(float,ys)
-        tabdata.X.DataList = map(str,xs)
-        tabdata.Y.DataList = map(str,ys)
+        tabdata.X.DataList = map(str, xs)
+        tabdata.Y.DataList = map(str, ys)
         
         tabdata.Xlength = len(xs)
         tabdata.Ylength = len(ys)
 
         #create errors
         tabdata.Y.ErrorList = []
-        yerrorlist = map(sqrt,ys)
+        yerrorlist = map(sqrt, ys)
         for yerror in yerrorlist:
-            tabdata.Y.ErrorList.append("%.2f" % round(yerror,2))
+            tabdata.Y.ErrorList.append("%.2f" % round(yerror, 2))
 
         self.TabData.append(tabdata)
 
 # create electron statically, as it is always involved and always the same
 #particles.append()
 class Particle:
-    def __init__(self,type):
+    """Provide class for particles. Only used for electrons as of now"""
+    def __init__(self, type):
         if type == 'electron':
             self.charge = -1
             self.name = 'electron'
@@ -115,7 +116,7 @@ def setupResults(sql, limit=1000):
     energyscans = models.Energyscan.objects.filter(q)
 
     # count the number of matches
-    nenergyscans=energyscans.count()
+    nenergyscans = energyscans.count()
 
     #in case somebody is searching for a InchiKey and it didn't bring up any results:
     #convert the inchikey to an inchi, extract the sum formula and try again
@@ -129,7 +130,7 @@ def setupResults(sql, limit=1000):
             #let's see if there is something in the DB
             if chemical_formula is not None:
                 energyscans = models.Energyscan.objects.filter(Q(species__chemical_formula__exact=chemical_formula)|Q(origin_species__chemical_formula__exact=chemical_formula))
-                nenergyscans=energyscans.count()
+                nenergyscans = energyscans.count()
 
     #append electron if there are results:
     if nenergyscans != 0:
@@ -154,7 +155,7 @@ def setupResults(sql, limit=1000):
 
         #keep in mind, that we actually defined the particle electron further up in the Particle() class. it was instanciated in the beginning of this function under the object electron_particle
         
-        electron = models.Species('electron','','','','')
+        electron = models.Species('electron', '', '', '', '')
         energyscan.Reactants = list(energyscan.Reactants.all())
         energyscan.Reactants.append(electron)
 
@@ -173,9 +174,9 @@ def setupResults(sql, limit=1000):
 
         sources_internal = models.Source.objects.filter(id__exact=energyscan.source.id)
         for source in sources_internal:
-            authorlist=[]
+            authorlist = []
             for author in source.authors.all():
-                authorlist.append(u'%s, %s'%(author.lastname,author.firstname))
+                authorlist.append(u'%s, %s'%(author.lastname, author.firstname))
 
             source.author = authorlist
 
@@ -196,7 +197,7 @@ def setupResults(sql, limit=1000):
         for datapoint in ES_list:
             datapoint = datapoint.replace(',','.')
             #even -> x-value
-            if k%2 == 0:
+            if k % 2 == 0:
                 x.append(float(datapoint))
             #odd -> y-value
             else: 
@@ -208,7 +209,7 @@ def setupResults(sql, limit=1000):
 
         #create datasets
         energyscan.DataSets = []
-        dataset = DataSet(energyscan.source.id,x,y,energyscan.productiondate)
+        dataset = DataSet(energyscan.source.id, x, y, energyscan.productiondate)
         dataset.description = 'crossSection'
         dataset.accuracytype = 'systematic'
         energyscan.DataSets.append(dataset)
@@ -228,7 +229,7 @@ def setupResults(sql, limit=1000):
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
-    headerinfo={\
+    headerinfo = {\
             'COUNT-SOURCES':nsources,
             'COUNT-SPECIES':nspecies,
             'COUNT-ATOMS':natoms,
