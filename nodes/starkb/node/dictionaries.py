@@ -42,6 +42,7 @@ RETURNABLES = ({\
 'RadTransWavelengthUnit':'A',
 'RadTransRefs':'RadTran.Sources',
 'RadTransID':'RadTran.id',
+'RadTransSpeciesRef' : 'RadTran.target.id',
 
 # environments
 'EnvironmentID': 'Environment.id',

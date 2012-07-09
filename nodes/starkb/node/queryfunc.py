@@ -57,7 +57,7 @@ def setupSpecies():
 	result.addDataField('Atoms',species)	
 	return result
 	
-def setupVssRequest(sql, limit=1000):
+def setupVssRequest(sql, limit=2000):
     """		
         Execute a vss request
         @type  sql: string
@@ -69,6 +69,7 @@ def setupVssRequest(sql, limit=1000):
     result = util_models.Result()
     q = sql2Q(sql)    
 
+    #select transitions : combination of density/temperature
     transs = django_models.Transition.objects.filter(q)
     ntranss=transs.count()
 
@@ -76,6 +77,7 @@ def setupVssRequest(sql, limit=1000):
         transs, percentage = truncateTransitions(transs, q, limit)
     else:
         percentage=None 
+        
     log.debug("number of transitions : "+str(ntranss))
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
