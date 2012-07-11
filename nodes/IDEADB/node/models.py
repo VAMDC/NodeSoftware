@@ -127,7 +127,7 @@ class Source(Model):
     year = CharField(max_length=4)
     number = CharField(max_length=6,blank=True)
     volume = CharField(max_length=6)
-    doi = CharField(max_length=40,verbose_name='DOI',blank=True)
+    doi = CharField(max_length=100,verbose_name='DOI',blank=True)
     pagestart = CharField(max_length=5,verbose_name='Starting Page')
     pageend = CharField(max_length=5,verbose_name='Ending Page')
     url = URLField(verify_exists=False, max_length=200,blank=True)
@@ -146,7 +146,7 @@ class Energyscan(Model):
     energyscan_data = TextField(verbose_name='Paste data from Origin in this field')
     productiondate = DateField(verbose_name='Production Date')
     comment = TextField(blank=True,max_length=2000,verbose_name='Comment (max. 2000 chars.)')
-    energyresolution = DecimalField(max_digits=3, decimal_places=2,verbose_name='Energy Resolution of the Experiment in eV')
+    energyresolution = DecimalField(max_digits=4, decimal_places=3,verbose_name='Energy Resolution of the Experiment in eV')
     #define a useful unicode-expression:
     def __unicode__(self):
         return u'ID %s: %s from %s'%(self.id,self.species,self.origin_species)
