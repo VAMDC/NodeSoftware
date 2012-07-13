@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="http://ideadb.uibk.ac.at/files/css/style.css" />
+    <title>IDEADB </title>
+    <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="http://ideadb.uibk.ac.at/files/js/flot/excanvas.min.js"></script><![endif]-->
+    <script language="javascript" type="text/javascript" src="http://ideadb.uibk.ac.at/files/js/flot/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="http://ideadb.uibk.ac.at/files/js/flot/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="http://ideadb.uibk.ac.at/files/js/flot/jquery.flot.crosshair.js"></script>
+</head>
+
+<body>
+    <div id="Header">IDEADB Query</div>
+    <div id="Menu">
+        {% block sidebar %}
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/view/">List of available Data</a></li>
+            <li><a href="/compare">Compare two scans</a></li>
+            <li><a href="/admin/">Administration</a></li>
+            <li><a href="/contact/">Contact</a></li>
+        </ul>
+        {% endblock %}
+    </div>
+
+    <div id="Content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

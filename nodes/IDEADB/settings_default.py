@@ -27,7 +27,7 @@ ROOT_URLCONF = NODENAME+'.urls'
 
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email).
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
-ADMINS = (('yourname', 'name@example.com'),)
+ADMINS = (('Johannes Postler', 'johannes.postler@student.uibk.ac.at'),)
 MANAGERS = ADMINS
 
 EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
@@ -62,20 +62,23 @@ DATABASES = {
 #Copy this field to settings and append the path to
 # the node that you want to run.
 INSTALLED_APPS = [
-#    'django.contrib.contenttypes',
-#    'django.contrib.sessions',
-#    'django.contrib.sites',
-#    'django.contrib.admin',
-#    'django.contrib.admindocs',
-#    'django.contrib.staticfiles',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.admin',
+    'django.contrib.admindocs',
+    'django.contrib.auth',
+    'django.contrib.staticfiles',
     'vamdctap',
+    'south',
     NODEPKG
 ]
 # Setup of Django middleware components (shouldn't have to change this))
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
-#    'django.contrib.sessions.middleware.SessionMiddleware',
-#    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
 )
 
 ###################################################
@@ -104,10 +107,11 @@ USE_I18N = False
 ###################################################
 # Web features
 ###################################################
-#STATIC_URL = '/static/'
+STATIC_URL = '/static/'
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-#MEDIA_ROOT = os.path.join(BASE_PATH, 'static')
+#MEDIA_ROOT = os.path.join(BASE_PATH, 'nodes','IDEADB','node','templates')
+#MEDIA_ROOT = '/var/opt/vamdc-11.12r1/nodes/IDEADB/node/templates/'
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
@@ -115,10 +119,10 @@ USE_I18N = False
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-#ADMIN_MEDIA_PREFIX = '/admin-media/'
+ADMIN_MEDIA_PREFIX = '/admin-static/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '=4nk7k_v3p@gin!bgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
+SECRET_KEY = '=4nkfghdfghdfghjzuk7u6je7k_v3p@gin!bgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
 
 # Web template locations
 TEMPLATE_DIRS = (
@@ -126,10 +130,17 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     os.path.join(BASE_PATH,'static', 'templates'),
+    os.path.join(BASE_PATH,'nodes','IDEADB','node','templates'),
 )
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
+    #uncomment the old version of django 1.3 and earlier. see https://code.djangoproject.com/changeset/11862
+    #'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.filesystem.Loader',
+    #'django.template.loaders.app_directories.load_template_source',
+    'django.template.loaders.app_directories.Loader',
+    #'django.template.loaders.eggs.load_template_source',
+    'django.template.loaders.eggs.Loader',
 )
 
 
