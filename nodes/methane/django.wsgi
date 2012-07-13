@@ -2,7 +2,7 @@ import os
 import sys
 
 # EDIT THE FOLLOWING TWO LINES
-sys.path.append('/var/www/NodeSoftware-11.12')
+sys.path.append('/var/www/NodeSoftware_dev')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.methane.settings'
 
 
