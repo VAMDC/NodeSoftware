@@ -58,7 +58,7 @@ class Species(Model):
     #id = PositiveSmallIntegerField(primary_key=True, db_index=True)
     name = CharField(max_length=40, db_index=True, verbose_name='Common Name (e.g. Water for H2O)',blank=True,validators=[validate_name])
     chemical_formula = CharField(max_length=40, db_index=True, verbose_name='Chemical Formula', default='',validators=[validate_chemical_formula])
-    mass = PositiveIntegerField(db_index=True)
+    mass = PositiveIntegerField(db_index=True, verbose_name='Nominal Mass')
     nuclear_charge = SmallIntegerField(max_length=3,verbose_name='Number of Protons')
     inchi = CharField(max_length=300,db_index=True,verbose_name='InChI',blank=True)
     inchikey = CharField(max_length=27,db_index=True,verbose_name='InChI-Key',blank=True)
