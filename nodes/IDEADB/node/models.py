@@ -13,6 +13,7 @@ from vamdctap import bibtextools
 import re
 
 from inchivalidation import inchi2inchikey, inchikey2inchi, inchi2chemicalformula
+from chemlib import chemicalformula2nominalmass
 
 #we define the regex object for chemical formulas here, as it is used in two different functions
 re = re.compile('^([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+$')
@@ -45,9 +46,9 @@ def validate_name(name):
 class Author(Model):
     firstname = CharField(max_length=20)
     lastname = CharField(max_length=20)
-    email = EmailField(max_length=254,blank=True)
+    email = EmailField(max_length=254, blank=True)
     def __unicode__(self):
-        return u'%s, %s'%(self.lastname,self.firstname)
+        return u'%s, %s'%(self.lastname, self.firstname)
 
 class Experiment(Model):
     name = CharField(max_length=10)
@@ -55,23 +56,32 @@ class Experiment(Model):
         return u'%s'%(self.name)
 
 class Species(Model):
-    #id = PositiveSmallIntegerField(primary_key=True, db_index=True)
-    name = CharField(max_length=40, db_index=True, verbose_name='Common Name (e.g. Water for H2O)',blank=True,validators=[validate_name])
-    chemical_formula = CharField(max_length=40, db_index=True, verbose_name='Chemical Formula', default='',validators=[validate_chemical_formula])
+    name = CharField(max_length=40, db_index=True, verbose_name='Common Name (e.g. Water for H2O)', blank = True, validators=[validate_name])
+    chemical_formula = CharField(max_length=40, db_index=True, verbose_name='Chemical Formula', default = '', validators=[validate_chemical_formula])
     mass = PositiveIntegerField(db_index=True, verbose_name='Nominal Mass')
-    nuclear_charge = SmallIntegerField(max_length=3,verbose_name='Number of Protons')
-    inchi = CharField(max_length=300,db_index=True,verbose_name='InChI',blank=True)
-    inchikey = CharField(max_length=27,db_index=True,verbose_name='InChI-Key',blank=True)
-    cas = CharField(max_length=12,verbose_name='CAS-Number',blank=True,validators=[validate_CAS])
+    isotope = BooleanField(verbose_name='Tick, if this is the most abundant isotope', default = True)
+    nuclear_charge = PositiveSmallIntegerField(max_length=3, verbose_name='Number of Protons', blank = True, null = True)
+    inchi = CharField(max_length=300,db_index=True,verbose_name='InChI', blank = True)
+    inchikey = CharField(max_length=27, db_index=True, verbose_name='InChI-Key', blank = True)
+    cas = CharField(max_length=12,verbose_name='CAS-Number', blank = True, validators = [validate_CAS])
     molecule = BooleanField(verbose_name='Tick, if this is a molecule')
     # defines some optional meta-options for viewing and storage
     def __unicode__(self):
         if self.name != '':
-            return u'%s (%s)'%(self.name,self.chemical_formula)
+            return u'%s (%s)'%(self.name, self.chemical_formula)
         else:
             return u'%s'%(self.chemical_formula)
 
     def clean(self):
+        # we have to run this validator here again, because
+        # chemicalformula2nominalmass expects proper formulae
+        # django runs the validators _after_ this clean function
+
+        validate_chemical_formula(self.chemical_formula)
+        if self.isotope is True:
+            if self.mass != chemicalformula2nominalmass(self.chemical_formula):
+                raise ValidationError(u'Nominal mass and chemical formula are not compatible.')
+
         #check if either inchi or inchikey are there and either complete the other one or verify
         if self.inchi == '':
             if self.inchikey != '':
@@ -110,7 +120,6 @@ class Species(Model):
         verbose_name_plural = u'Species'
 
 class Source(Model):
-    #id = PositiveSmallIntegerField(primary_key=True, db_index=True)
     SOURCETYPE_CHOICES = (
         ('book', 'Book'),
         ('database', 'Database'),
@@ -125,34 +134,32 @@ class Source(Model):
     authors = ManyToManyField(Author) 
     journal = CharField(max_length=200)
     year = CharField(max_length=4)
-    number = CharField(max_length=6,blank=True)
+    number = CharField(max_length=6, blank=True)
     volume = CharField(max_length=6)
-    doi = CharField(max_length=100,verbose_name='DOI',blank=True)
-    pagestart = CharField(max_length=5,verbose_name='Starting Page')
-    pageend = CharField(max_length=5,verbose_name='Ending Page')
-    url = URLField(verify_exists=False, max_length=200,blank=True)
+    doi = CharField(max_length=100, verbose_name='DOI', blank=True)
+    pagestart = CharField(max_length=5, verbose_name='Starting Page')
+    pageend = CharField(max_length=5, verbose_name='Ending Page')
+    url = URLField(verify_exists=False, max_length=200, blank=True)
     title = CharField(max_length=500)
-    type = CharField(max_length=17,default='journal',choices=SOURCETYPE_CHOICES)
+    type = CharField(max_length=17,default='journal', choices=SOURCETYPE_CHOICES)
     #define a useful unicode-expression:
     def __unicode__(self):
-        return u'%s, %s'%(self.title,self.year)
+        return u'%s, %s'%(self.title, self.year)
 
 class Energyscan(Model):
-    #id = PositiveSmallIntegerField(primary_key=True, db_index=True)
     species = ForeignKey(Species, related_name='energyscan_species')
     origin_species = ForeignKey(Species, related_name='energyscan_origin_species')
     source = ForeignKey(Source)
     experiment = ForeignKey(Experiment)
     energyscan_data = TextField(verbose_name='Paste data from Origin in this field')
     productiondate = DateField(verbose_name='Production Date')
-    comment = TextField(blank=True,max_length=2000,verbose_name='Comment (max. 2000 chars.)')
-    energyresolution = DecimalField(max_digits=4, decimal_places=3,verbose_name='Energy Resolution of the Experiment in eV')
+    comment = TextField(blank=True, max_length=2000, verbose_name='Comment (max. 2000 chars.)')
+    energyresolution = DecimalField(max_digits=4, decimal_places=3, verbose_name='Energy Resolution of the Experiment in eV')
     #define a useful unicode-expression:
     def __unicode__(self):
-        return u'ID %s: %s from %s'%(self.id,self.species,self.origin_species)
+        return u'ID %s: %s from %s'%(self.id, self.species, self.origin_species)
 
 class Resonance(Model):
-    #id = PositiveSmallIntegerField(primary_key=True, db_index=True)
     energyscan = ForeignKey(Energyscan)
     species = ForeignKey(Species, related_name='resonance_species')
     origin_species = ForeignKey(Species, related_name='resonance_origin_species')
@@ -162,11 +169,10 @@ class Resonance(Model):
 
     #define a useful unicode-expression:
     def __unicode__(self):
-        return u'ID:%s: %s eV for %s from %s'%(self.id,self.energy,self.species,self.origin_species)
+        return u'ID:%s: %s eV for %s from %s'%(self.id, self.energy, self.species, self.origin_species)
 
 
 class Massspec(Model):
-    #id = PositiveSmallIntegerField(primary_key=True, db_index=True)
     species = ForeignKey(Species, related_name='massspec_species')
     source = ForeignKey(Source)
     energy = DecimalField(max_digits=5, decimal_places=2)
@@ -174,4 +180,4 @@ class Massspec(Model):
 
     #define a useful unicode-expression:
     def __unicode__(self):
-        return u'ID:%s %s at %s'%(self.id,self.species,self.energy)
+        return u'ID:%s %s at %s'%(self.id, self.species, self.energy)

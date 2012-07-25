@@ -52,6 +52,8 @@ RETURNABLES = {\
 
 
 'AtomInchi':'Atom.inchi',
+'AtomMass':'Atom.exactmass',
+'AtomMassUnit':'amu',
 'AtomMassNumber':'Atom.mass',
 'AtomSpeciesID':'Atom.id',
 'AtomSymbol':'Atom.chemical_formula',

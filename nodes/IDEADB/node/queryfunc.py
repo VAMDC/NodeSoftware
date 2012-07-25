@@ -24,6 +24,7 @@ from django.db.models import Q
 import re
 
 from inchivalidation import inchikey2chemicalformula
+import chemlib
 
 def LOG(s):
     """ logfunction. will be removed for final version. """
@@ -172,6 +173,16 @@ def setupResults(sql, limit=1000):
                 else:
                     atom.ioncharge = 0
 
+        #calculate exact / nominal masses
+        for atom in atoms_internal:
+            if molecule.isotope is True:
+                atom.exactmass = chemlib.chemicalformula2exactmass(atom.chemical_formula)
+
+        for molecule in molecules_internal:
+            if molecule.isotope is True:
+                molecule.mass = chemlib.chemicalformula2exactmass(molecule.chemical_formula)
+
+        #treat sources
         sources_internal = models.Source.objects.filter(id__exact=energyscan.source.id)
         for source in sources_internal:
             authorlist = []
