@@ -42,7 +42,7 @@ RETURNABLES = ({\
 'RadTransWavelengthUnit':'A',
 'RadTransRefs':'RadTran.Sources',
 'RadTransID':'RadTran.id',
-'RadTransSpeciesRef' : 'RadTran.target.id',
+'RadTransSpeciesRef' : 'RadTran.target.particle_ion_id()', 
 
 # environments
 'EnvironmentID': 'Environment.id',
