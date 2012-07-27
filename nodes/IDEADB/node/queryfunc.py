@@ -110,6 +110,8 @@ def setupResults(sql, limit=1000):
     particles = []
     electron_particle = Particle('electron')
 
+    inchiconvertedsearch = False
+
     #use the function sql2Q provided by vamdctap to translate from query to Q-object
     q = sql2Q(sql)
 
@@ -118,7 +120,7 @@ def setupResults(sql, limit=1000):
 
     # count the number of matches
     nenergyscans = energyscans.count()
-
+    
     #in case somebody is searching for a InchiKey and it didn't bring up any results:
     #convert the inchikey to an inchi, extract the sum formula and try again
     if nenergyscans == 0:
@@ -132,6 +134,7 @@ def setupResults(sql, limit=1000):
             if chemical_formula is not None:
                 energyscans = models.Energyscan.objects.filter(Q(species__chemical_formula__exact=chemical_formula)|Q(origin_species__chemical_formula__exact=chemical_formula))
                 nenergyscans = energyscans.count()
+                inchiconvertedsearch = True
 
     #append electron if there are results:
     if nenergyscans != 0:
@@ -199,6 +202,11 @@ def setupResults(sql, limit=1000):
             energyscan.comment = 'Comment of the Producer: ' + usercomment + ' Additional Comment: ' + standardcomment
         else:
             energyscan.comment = standardcomment 
+
+        #give warning when we converted inchikey to chemical formula for searching
+        if inchiconvertedsearch is True:
+            inchiwarning = 'WARNING: For this query, an InChI-Key was converted to a stoichiometric formula, because otherwise no results were obtained. '
+            energyscan.comment = inchiwarning + energyscan.comment
 
         #prepare the origin data
         ES_list = energyscan.energyscan_data.split()
