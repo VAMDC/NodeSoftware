@@ -16,6 +16,10 @@ from forms import *
 #from django.views.decorators.csrf import csrf_protect
 #@csrf_protect
 
+FILENAME_XSAMS2HTML = settings.XSLT_DIR + 'convertXSAMS2html.xslt'
+FILENAME_XSAMS2RAD3D = settings.XSLT_DIR + 'convertXSAMS2Rad3d.xslt'
+
+
 class QUERY(object ):
     """
     """
@@ -23,7 +27,7 @@ class QUERY(object ):
      #sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
     requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
 
-    def __init__(self, data, baseurl = "http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/", qformat = None):
+    def __init__(self, data, baseurl = settings.BASE_URL+settings.TAP_URLPATH, qformat = None):
         self.isvalid = True
         self.errormsg = ''
         self.baseurl = baseurl.rstrip()  # remove white spaces from the right side
@@ -111,7 +115,6 @@ class QUERY(object ):
         print >> sys.stderr, self.format
         print >> sys.stderr, self.url
         print >> sys.stderr, self.database
-
 
 
 def index(request):
@@ -361,21 +364,21 @@ def ajaxRequest(request):
             #print >> sys.stderr, "url = " +request.POST['url']
             # just apply the stylesheet if a complete url has been posted
 
-            baseurl = request.POST.get('nodeurl','http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/')
+            baseurl = request.POST.get('nodeurl', settings.BASE_URL + settings.TAP_URLPATH)
             
             if 'url2' in request.POST:
                 htmlcode = str(applyStylesheet(request.POST['url2'],
-                                               xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
+                                               xsl = FILENAME_XSAMS2HTML))
             else:    
                 postvars = QUERY(request.POST,baseurl = baseurl)
                 print >> sys.stderr, "postvars.url = " +postvars.url
                 if postvars.url:
                     if  postvars.format.lower()=='xsams':
                         htmlcode = str(applyStylesheet(postvars.url,
-                                                       xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
+                                                       xsl = FILENAME_XSAMS2HTML))
                     elif  postvars.format=='rad3d':
                         htmlcode = "<pre>" + str(applyStylesheet(postvars.url,
-                                                                 xsl = settings.BASE_PATH + "/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
+                                                                 xsl = FILENAME_XSAMS2HTML)) + "</pre>"
                     elif postvars.format=='png':
                         htmlcode = "<img class='full' width='100%' src="+postvars.url+" alt='Stick Spectrum'>"
                     else:
@@ -443,14 +446,14 @@ def specieslist(request):
     Create the species selection - page for the admin-site from the species (model) stored in the database
     """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect('/DjCDMS/cdms/login/?next=%s' % request.path)
+        return HttpResponseRedirect(settings.BASE_URL+settings.PORTAL_URLPATH +'login/?next=%s' % request.path)
 
     species_list = get_species_list()
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
     return render_to_response('cdmsadmin/selectSpecies.html', c)
 
 
-def queryspecies(request, baseurl = "http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/"):
+def queryspecies(request, baseurl = settings.BASE_URL + settings.TAP_URLPATH):
     
     requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+SPECIES"
     url = baseurl + requeststring

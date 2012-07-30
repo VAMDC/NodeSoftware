@@ -307,7 +307,7 @@ def applyStylesheet(inurl, xsl = None):
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
-        xsl=e.XSLT(e.parse(open('/home/endres/Projects/vamdc/nodes/cdms/node/convertXSAMS2html.xslt')))
+        xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'convertXSAMS2html.xslt')))
 
     from urllib2 import urlopen
 
@@ -346,13 +346,13 @@ def applyStylesheet2File(infile, xsl = None):
     from django.conf import settings
     from lxml import etree as e
 
-    xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'
-    xsl = settings.BASE_PATH + "/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt"
+    #xsl = settings.XSLT_DIR + 'convertXSAMS2html.xslt'
+    #xsl = settings.XSLT_DIR + 'convertXSAMS2Rad3d.xslt"
 
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
-        xsl=e.XSLT(e.parse(open('/home/endres/Projects/vamdc/nodes/cdms/node/convertXSAMS2html.xslt')))
+        xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'convertXSAMS2html.xslt')))
         
     from urllib2 import urlopen
 
