@@ -48,7 +48,7 @@ def attach_partionfunc(molecules):
          
 
 
-def get_species_and_states(transs, addStates=True):
+def get_species_and_states(transs, addStates=True, filteronatoms=False):
     """
     Returns list of species including all states which occur in the list
     of transitions.
@@ -59,11 +59,14 @@ def get_species_and_states(transs, addStates=True):
     - Number of states
     """
 
-    spids = set( transs.values_list('specie_id',flat=True).distinct() )
+    if filteronatoms:
+        spids = set( transs.values_list('specie_id',flat=True).distinct() )
+    else:
+        spids = transs.values_list('specie_id',flat=True)
     # Species object for CDMS includes Atoms AND Molecules. Both can only
     # be distinguished through numberofatoms-field
-    atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic')
-    molecules = Species.objects.filter(pk__in=spids).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
+    atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic', origin=5, archiveflag=0)
+    molecules = Species.objects.filter(pk__in=spids, origin=5, archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
     # Calculate number of species in total
     nspecies = atoms.count() + molecules.count()
     # Intialize state-counter
@@ -71,7 +74,7 @@ def get_species_and_states(transs, addStates=True):
 
     if addStates:
         # Loop through list of species and attach states
-        for specie in chain(atoms , molecules):
+        for specie in chain( molecules):
             # Get distinct list of States which
             # occur as lower or upper state in transitions
             subtranss = transs.filter(specie=specie)
@@ -80,6 +83,17 @@ def get_species_and_states(transs, addStates=True):
             sids = set(chain(up,lo))
             # Attach states to species object
             specie.States = States.objects.filter( pk__in = sids)
+            # Add number of attached states to state-counter
+            nstates += specie.States.count()
+        for specie in chain(atoms ):
+            # Get distinct list of States which
+            # occur as lower or upper state in transitions
+            subtranss = transs.filter(specie=specie)
+            up=subtranss.values_list('upperstateref',flat=True)
+            lo=subtranss.values_list('lowerstateref',flat=True)
+            sids = set(chain(up,lo))
+            # Attach states to species object
+            specie.States = AtomStates.objects.filter( pk__in = sids)
             # Add number of attached states to state-counter
             nstates += specie.States.count()
 
@@ -189,6 +203,18 @@ def setupResults(sql):
     and compiles everything together for the vamdctap.generator function
     which is used to generate XSAMS - output.
     """
+
+    # Modify where-clause:
+    # Ensure that filters on AtomMassNumber only return atoms and not also molecules
+    sql.parsedSQL=SQL.parseString(sql.query.replace("AtomIonCharge","AtomSymbol>0 and AtomIonCharge"),parseAll=True)
+    sql.where = sql.parsedSQL.where
+
+    # Determines wether there is a restriction on a field in the species table
+    # This distinction is needed for speed optimization (to many subqueries are extremely slow in mysql)
+    filteronatoms = "Atom" in sql.query
+    filteroninchi = "Inchi" in sql.query
+    filteronmols = "Molecule" in sql.query
+    filteronspecies = ("Ion" in sql.query) | filteronmols | filteroninchi | filteronatoms
     q = sql2Q(sql)
 
     addStates = (not sql.requestables or 'atomstates' in sql.requestables or 'moleculestates' in sql.requestables)
@@ -197,10 +223,19 @@ def setupResults(sql):
     datasets = Datasets.objects.filter(archiveflag=0)
 
     # Query the database and get calculated transitions (TransitionsCalc)
-    transs = TransitionsCalc.objects.filter(q,specie__origin=5,
-                                            specie__archiveflag=0,
+    transs = TransitionsCalc.objects.filter(q, #specie__origin=5,
+                                            #specie__archiveflag=0,
                                             dataset__in=datasets)
                                             #dataset__archiveflag=0) #.order_by('frequency')
+
+    # get atoms and molecules with states which occur in transition-block
+    atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates, filteronspecies)
+
+    # attach partition functions to each specie
+    attach_partionfunc(molecules)
+
+    # modify filter for transitions:
+    transs = transs.filter(specie__origin=5, specie__archiveflag=0)
 
     # Attach experimental transitions (TransitionsExp) to transitions
     # and obtain their methods. Do it only if transitions will be returned
@@ -218,11 +253,6 @@ def setupResults(sql):
     else:
         sources=Sources.objects.none()
 
-    # get atoms and molecules with states which occur in transition-block
-    atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates)
-
-    # attach partition functions to each specie
-    attach_partionfunc(molecules)
 
     nsources = sources.count()
     nmolecules = molecules.count()

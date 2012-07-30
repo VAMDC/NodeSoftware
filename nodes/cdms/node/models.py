@@ -23,10 +23,30 @@ class Molecules( Model):
      structuralformula     = CharField(max_length=200, db_column='M_StructuralFormula', blank=True)
      trivialname           = CharField(max_length=200, db_column='M_TrivialName', blank=True)
      numberofatoms         = CharField(max_length= 20, db_column='M_NumberOfAtoms', blank=True)
-     formalcharge          = CharField(max_length=  5, db_column='M_FormalCharge', blank=True)
+     elementsymbol         = CharField(max_length=  3, db_column='M_ElementSymbol', blank=True)
+     formalcharge          = IntegerField(db_column='M_FormalCharge', blank=True)
+#     formalcharge          = CharField(max_length=  5, db_column='M_FormalCharge', blank=True)
      comment               = TextField(db_column='M_Comment', blank=True)
      class Meta:
        db_table = u'Molecules'
+       
+
+class DictAtoms( Model):
+     """
+     This table contains a list of atoms and some of their properties.
+     """
+     id                    = IntegerField(primary_key=True, db_column='DA_ID') 
+     name                  = CharField(max_length=50, db_column='DA_Name', blank=True)
+     symbol                = CharField(max_length=10, db_column='DA_Symbol', blank=True)
+     element               = CharField(max_length=10, db_column='DA_Element', blank=True)
+     massnumber            = IntegerField(db_column='DA_MassNumber', blank=True)
+     mass                  = FloatField(db_column='DA_Mass', blank=True)
+     abundance             = FloatField(db_column='DA_Abundance', blank=True)
+     mostabundant          = IntegerField(db_column='DA_MostAbundant', blank=True)
+     massreference         = IntegerField(db_column='DA_MassReference', blank=True)
+     nuclearcharge         = IntegerField(db_column='DA_NuclearCharge', blank=True)
+     class Meta:
+       db_table = u'Dict_Atoms'
        
 
 class Species( Model):
@@ -38,9 +58,11 @@ class Species( Model):
      """
      id                    = IntegerField(primary_key=True, db_column='E_ID')
      molecule              = ForeignKey(Molecules, db_column='E_M_ID')
+     atom                  = ForeignKey(DictAtoms, db_column='E_DA_ID')
      speciestag            = IntegerField(db_column='E_TAG')
      name                  = CharField(max_length=200, db_column='E_Name')
      isotopolog            = CharField(max_length=100, db_column='E_Isotopomer')
+     massnumber            = IntegerField(db_column='E_MassNumber')
      state                 = CharField(max_length=200, db_column='E_States')
      linearsymasym         = CharField(max_length= 20, db_column='E_LinearSymAsym')
      shell                 = CharField(max_length= 20, db_column='E_Shell')
@@ -57,9 +79,9 @@ class Species( Model):
      class Meta:
        db_table = u'Entries'
      
-     def getMassNumber(self):
-          tag = str(self.speciestag)
-          return tag[:-3] #self.speciestag[:-3]
+     #def getMassNumber(self):
+     #     tag = str(self.speciestag)
+     #     return tag[:-3] #self.speciestag[:-3]
 
      def CML(self):
           """
@@ -70,7 +92,14 @@ class Species( Model):
           cursor.execute("SELECT F_GetCML4XSAMS(%s) as cml ", [self.id])
           return cursor.fetchone()[0]
      
+     def get_shortcomment(self):
+          return "%6s- v%2s:%s; %s" % (self.speciestag, self.version, self.isotopolog, self.state)
+
+
      cmlstring = property(CML)
+     #massnumber = property(getMassNumber)
+     shortcomment = property(get_shortcomment)
+          
 
      def state_html(self):
           return latex2html(self.state)
@@ -181,8 +210,94 @@ class States( Model):
                dictqns.update({qn.label : qn.value})
           return dictqns
 
-          
+##     def attach_atomic_qn(self):
+##          """
+##          Attaches atomic states
+##          """
 
+##          qns = QuantumNumbersFilter.objects.filter(specie = self.specie)
+          
+##          for qn in qns:
+##               #if qn.label == 'L':
+##               #     self.L = qn.valuefloat
+##               #elif qn.label == 'S':
+##               #     self.S = qn.valuefloat
+##               if qn.columnvalue:
+##                    exec 'value = self.qn%s' % qn.columnvalue
+##                    if qn.columnvaluefunc == 'half':
+##                         value -= 0.5
+                         
+##               elif qn.valuefloat:
+##                    value = qn.valuefloat
+##               elif qn.valuestring:
+##                    value = qn.valuestring
+                    
+##               exec 'self.%s = %s' % (qn.label, value)
+##          return self.J
+
+class AtomStates( Model):
+     """
+     This class contains the states of each specie.
+     """
+     id                    = IntegerField(primary_key=True, db_column='EGY_ID')
+     specie                = ForeignKey(Species, db_column='EGY_E_ID')
+     speciestag            = IntegerField(db_column='EGY_E_Tag')
+     dataset               = ForeignKey(Datasets, db_column='EGY_DAT_ID')
+     energy                = FloatField(null=True, db_column='EGY_Energy')
+     uncertainty           = FloatField(null=True, db_column='EGY_Uncertainty')
+     mixingcoeff           = FloatField(null=True, db_column='EGY_PMIX')
+     block                 = IntegerField(db_column='EGY_IBLK')
+     index                 = IntegerField(db_column='EGY_INDX') 
+     degeneracy            = IntegerField(db_column='EGY_IDGN') 
+     nuclearstatisticalweight = IntegerField(db_column='EGY_NuclearStatisticalWeight')
+     nuclearspinisomer     = CharField(max_length=10, db_column='EGY_NuclearSpinIsomer')
+     qntag                 = IntegerField(db_column='EGY_QN_Tag') 
+     qn1                   = IntegerField(db_column='EGY_QN1')
+     qn2                   = IntegerField(db_column='EGY_QN2') 
+     qn3                   = IntegerField(db_column='EGY_QN3') 
+     qn4                   = IntegerField(db_column='EGY_QN4') 
+     qn5                   = IntegerField(db_column='EGY_QN5') 
+     qn6                   = IntegerField(db_column='EGY_QN6') 
+     user                  = CharField(max_length=40, db_column='EGY_User')      # obsolete
+     timestamp             = IntegerField(db_column='EGY_TIMESTAMP')
+     class Meta:
+       db_table = u'Energies'
+
+     def get_Components(self):
+          """This is required in order to supply a Components property
+          for the makeAtomsComponents tagmaker."""
+          self.attach_atomic_qn()
+          return self
+     Components = property(get_Components)
+    
+     def attach_atomic_qn(self):
+          """
+          Attaches atomic states
+          """
+
+          qns = QuantumNumbersFilter.objects.filter(specie = self.specie)
+          self.F = None 
+          for qn in qns:
+               #if qn.label == 'L':
+               #     self.L = qn.valuefloat
+               #elif qn.label == 'S':
+               #     self.S = qn.valuefloat
+               if qn.columnvalue:
+                    exec 'value = self.qn%s' % qn.columnvalue
+                    if qn.columnvaluefunc == 'half':
+                         value -= 0.5
+                         
+               elif qn.valuefloat:
+                    value = qn.valuefloat
+               elif qn.valuestring:
+                    value = qn.valuestring
+
+               # convert floats to integer for some QNs
+               if qn.label in ['L']:
+                    value = int(value)
+                    
+               exec 'self.%s = %s' % (qn.label, value)
+          return self.J
 
 
 class TransitionsCalc( Model):
@@ -220,7 +335,7 @@ class TransitionsCalc( Model):
      originid              = IntegerField(db_column='P_Origin_Id')
      hfsflag               = IntegerField(db_column='P_HFS')
      userid                = IntegerField(db_column='P_U_ID')
-     dataset               = ForeignKey(Datasets, related_name='isinitialstate', db_column='P_DAT_ID')
+     dataset               = ForeignKey(Datasets, db_column='P_DAT_ID')
      qualityflag           = IntegerField(db_column='P_Quality')
      archiveflag           = IntegerField(db_column='P_Archive')
      timestamp             = DateTimeField(db_column='P_TIMESTAMP')
