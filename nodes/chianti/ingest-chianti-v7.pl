@@ -12,17 +12,18 @@ print "\n";
 print "CREATE TABLE states (\n";
 print "		ChiantiIonType CHAR(1), \n";
 print "         species INTEGER, \n";
-print "		AtomSymbol CHAR(8), \n";
-print "		AtomNuclearCharge INTEGER, \n";
-print "		AtomIonCharge INTEGER, \n";
-print "         inchi VARCHAR(32), \n";
-print "         inchikey CHAR(27), \n";
+print "		AtomSymbol CHAR(8) NOT NULL, \n";
+print "		AtomNuclearCharge INTEGER NOT NULL, \n";
+print "		AtomIonCharge INTEGER NOT NULL, \n";
+print "         inchi VARCHAR(32) NOT NULL, \n";
+print "         inchikey CHAR(27) NOT NULL, \n";
 print "		ChiantiAtomStateIndex INTEGER NOT NULL, \n";
 print "		AtomStateConfigurationLabel VARCHAR(32), \n";
-print "         atomcore CHAR(8), \n";
-print "		AtomStateS FLOAT, \n";
-print "		AtomStateL INTEGER, \n";
-print "		AtomStateTotalAngMom FLOAT, \n";
+print "         atomcore CHAR(8) NOT NULL, \n";
+print "		AtomStateS FLOAT NOT NULL, \n";
+print "		AtomStateL INTEGER NOT NULL, \n";
+print "		AtomStateTotalAngMom FLOAT NOT NULL, \n";
+print "         parity CHAR(4) NOT NULL, \n";
 print "		AtomStateEnergy DOUBLE, \n";
 print "		AtomStateEnergyMethod CHAR(4), \n";
 print "         id INTEGER, \n";
@@ -94,7 +95,7 @@ while(<STATES>) {
         # The valence shell is described in the subshells tables.
         # The remaining, closed shells form an isoelectronic core to the atom.
         # Chianti has a few cases where the "core" includes part of the valence shell.
-        my ($label, $outerElectronCount) = configuration($index, $configurationLabel);
+        my ($label, $outerElectronCount, $parity) = configuration($index, $configurationLabel);
         my $isoElectronicCount = $nuclearCharge - $outerElectronCount - $ionCharge;
         my $atomCore = "";
         $atomCore = "H"  if $isoElectronicCount ==  1;
@@ -126,6 +127,7 @@ while(<STATES>) {
 	print $atomStateS, ', '; 
 	print $atomStateL, ', ';
 	print $totalAngMom, ', ';
+        print '"', $parity, '", ';
 	print $energy, ', ';
 	print '"', $energyMethod, '", ';
 	print $index; # id - primary key
@@ -259,6 +261,9 @@ sub bestEnergy {
 sub configuration {
   my ($state, $label) = @_;
 
+  # The scalar sum of the orbital angular momenta determines the parity of the state.
+  my $sigmaL = 0;
+
   # Some of the sub-shells have a coupling-term notation, written in parantheses, which we discard.
   $label =~ s/\(\d*[A-Z]\d*\)/ /;
 
@@ -287,9 +292,11 @@ sub configuration {
 
     $id += 1;
     print "INSERT INTO subshells VALUES(NULL, $state, $n, $l, $pop);\n";
+    $sigmaL += $pop * $l;
   }
-
-  return ($label, $totalPop);
+  my $parity = ($sigmaL % 2 == 0)? "even" : "odd";
+ 
+  return ($label, $totalPop, $parity);
 }
 
 

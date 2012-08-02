@@ -39,6 +39,7 @@ RETURNABLES = {\
 'AtomInchiKey':'Atom.inchikey',
 'AtomStateId':'AtomState.id',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
+'AtomStateParity':'AtomState.parity',
 'AtomStateEnergy':'AtomState.energy',
 'AtomStateEnergyMethod':'AtomState.energyMethod',
 'AtomStateEnergyUnit':u'1/cm',

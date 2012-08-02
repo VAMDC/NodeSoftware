@@ -37,8 +37,9 @@ class States(models.Model):
     atomstates = models.FloatField(null=True, db_column='AtomStateS', blank=True)
     atomstatel = models.IntegerField(null=True, db_column='AtomStateL', blank=True)
     atomstatetotalangmom = models.FloatField(null=True, db_column='AtomStateTotalAngMom', blank=True)
+    parity = models.CharField(max_length=4, db_column='parity', null=False, blank=False)
     energy = models.FloatField(null=True, db_column='AtomStateEnergy', blank=True)
-    energyMethod = models.CharField(max_length=4, db_column='AtomStateEnergyMethod', null=False, blank='False')
+    energyMethod = models.CharField(max_length=4, db_column='AtomStateEnergyMethod', null=False, blank=False)
 
     def allEnergies(self):
         energies = []
