@@ -102,6 +102,6 @@ RESTRICTABLES = {\
 'AtomSymbol':'species__chemical_formula',
 'Inchi':('species__inchi','origin_species__inchi'),
 'InchiKey':('species__inchikey','origin_species__inchikey'),
-'MoleculeOrdinaryStructuralFormula':('species__chemical_formula','origin_species__chemical_formula'),
+'MoleculeStoichiometricFormula':('species__chemical_formula','origin_species__chemical_formula'),
 'MoleculeCASRegistryNumber':('species__cas','origin_species__cas'),
 }
