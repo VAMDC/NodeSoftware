@@ -141,20 +141,26 @@ class Source(Model):
     pageend = CharField(max_length=5, verbose_name='Ending Page')
     url = URLField(verify_exists=False, max_length=200, blank=True)
     title = CharField(max_length=500)
-    type = CharField(max_length=17,default='journal', choices=SOURCETYPE_CHOICES)
+    type = CharField(max_length=17, default='journal', choices=SOURCETYPE_CHOICES)
     #define a useful unicode-expression:
     def __unicode__(self):
         return u'%s, %s'%(self.title, self.year)
 
 class Energyscan(Model):
+    Y_UNITS_CHOICES = (
+        ('1/s', '1/s'),
+        ('cm2', 'cm2'),
+        ('m2', 'm2'),
+    )
     species = ForeignKey(Species, related_name='energyscan_species')
     origin_species = ForeignKey(Species, related_name='energyscan_origin_species')
     source = ForeignKey(Source)
     experiment = ForeignKey(Experiment)
     energyscan_data = TextField(verbose_name='Paste data from Origin in this field')
+    y_units = CharField(max_length = 3, verbose_name='Please choose units for y-axis', default='1/s', choices=Y_UNITS_CHOICES)
     productiondate = DateField(verbose_name='Production Date')
-    comment = TextField(blank=True, max_length=2000, verbose_name='Comment (max. 2000 chars.)')
-    energyresolution = DecimalField(max_digits=4, decimal_places=3, verbose_name='Energy Resolution of the Experiment in eV')
+    comment = TextField(blank = True, max_length = 2000, verbose_name = 'Comment (max. 2000 chars.)')
+    energyresolution = DecimalField(max_digits = 4, decimal_places = 3, verbose_name='Energy Resolution of the Experiment in eV')
     #define a useful unicode-expression:
     def __unicode__(self):
         return u'ID %s: %s from %s'%(self.id, self.species, self.origin_species)

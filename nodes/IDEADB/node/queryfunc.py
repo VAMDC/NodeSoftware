@@ -43,13 +43,14 @@ class DataSet:
     this class provides a method to make the Tabulated sub-objects out of two tuples containing the x and y values
     """
 
-    def __init__(self, sourceref, xs, ys, productiondate):
+    def __init__(self, sourceref, xs, ys, productiondate, y_units):
         #put reference to source first, so we always know what it is
         self.SourceRef = sourceref
         self.TabData = []
 
         tabdata = GenericClass()
         tabdata.Xunits = 'eV'
+        tabdata.Yunits = y_units
         tabdata.ProductionDate = productiondate
         tabdata.X = GenericClass()
         tabdata.Y = GenericClass()
@@ -228,7 +229,7 @@ def setupResults(sql, limit=1000):
 
         #create datasets
         energyscan.DataSets = []
-        dataset = DataSet(energyscan.source.id, x, y, energyscan.productiondate)
+        dataset = DataSet(energyscan.source.id, x, y, energyscan.productiondate, energyscan.y_units)
         dataset.description = 'crossSection'
         dataset.accuracytype = 'systematic'
         energyscan.DataSets.append(dataset)

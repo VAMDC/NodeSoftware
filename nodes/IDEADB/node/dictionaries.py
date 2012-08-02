@@ -32,7 +32,7 @@ RETURNABLES = {\
 'CollisionTabulatedDataXDataListN':'TabData.Xlength',
 'CollisionTabulatedDataYDataList':'TabData.Y.DataList',
 'CollisionTabulatedDataYDataListN':'TabData.Ylength',
-'CollisionTabulatedDataYUnits':'1/s',
+'CollisionTabulatedDataYUnits':'TabData.Yunits',
 'CollisionTabulatedDataXUnits':'TabData.Xunits',
 
 'CollisionTabulatedDataYDescription':'Ion Yield',
