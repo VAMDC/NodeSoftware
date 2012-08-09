@@ -9,6 +9,7 @@ from cStringIO import StringIO
 import os, math, sys
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
+import time
 
 import logging
 log=logging.getLogger('vamdc.tap')
@@ -16,6 +17,8 @@ log=logging.getLogger('vamdc.tap')
 # Get the node-specific package!
 from django.conf import settings
 from django.utils.importlib import import_module
+from django.utils.http import http_date
+
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
 
@@ -63,6 +66,9 @@ def getBaseURL(request):
     return getattr(settings, 'DEPLOY_URL', None) or \
         'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
 
+def getFormatLastModified(lastmodified):    
+    return http_date(time.mktime(lastmodified.timetuple()))
+    
 
 class TAPQUERY(object):
     """
@@ -156,6 +162,11 @@ def addHeaders(headers,response):
            'APPROX-SIZE']
 
     headers = CaselessDict(headers)
+
+    try:
+        response['Last-Modified'] = http_date(time.mktime(headers['LAST-MODIFIED'].timetuple()))
+    except:
+        pass
 
     for h in HEADS:
         if headers.has_key(h):

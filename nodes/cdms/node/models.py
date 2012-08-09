@@ -10,6 +10,8 @@ from django.db.models import *
 #from vamdctap.bibtextools import *
 from latex2html import *
 
+FILTER_DICT={}
+
 class Molecules( Model):
      """
      The Molecules class contains general information of the species. It is on top of
@@ -76,6 +78,7 @@ class Species( Model):
      archiveflag           = IntegerField(db_column='E_Archive')
      dateactivated         = DateField(db_column='E_DateActivated')
      datearchived          = DateField(db_column='E_DateArchived')
+     changedate            = DateTimeField(db_column='E_ChangeDate')
      class Meta:
        db_table = u'Entries'
      
@@ -104,6 +107,8 @@ class Species( Model):
      def state_html(self):
           return latex2html(self.state)
 
+
+
 class Datasets( Model):
      """
      This class contains the datasets for each specie. A dataset is a header for
@@ -127,8 +132,24 @@ class Datasets( Model):
      class Meta:
        db_table = u'Datasets'
 
+class NuclearSpinIsomers(Model):
+     """
+     This class contains informations on nuclear spin isomers.
+     """
+     id     = IntegerField(primary_key=True, db_column='NSI_ID')
+     specie = ForeignKey(Species, db_column='NSI_E_ID')
+     name   = CharField(max_length=45, db_column='NSI_Name')
+     lowestrovibsym = CharField(max_length=45, db_column='NSI_LowestRoVibSym')
+     symmetrygroup  = CharField(max_length=45, db_column='NSI_SymmetryGroup')
+     #lowestrovibstate = ForeignKey(States, db_column='NSI_LowestRoVib_EGY_ID')
+     lowestrovibstate = IntegerField(db_column='NSI_LowestRoVib_EGY_ID')
+     class Meta:
+          db_table = u'NuclearSpinIsomers'
 
-       
+     def lowestrovibstateid(self):
+          return '%s-origin-%s' % (self.lowestrovibstate, self.specie_id)
+
+     
 class States( Model):
      """
      This class contains the states of each specie.
@@ -139,12 +160,17 @@ class States( Model):
      dataset               = ForeignKey(Datasets, db_column='EGY_DAT_ID')
      energy                = FloatField(null=True, db_column='EGY_Energy')
      uncertainty           = FloatField(null=True, db_column='EGY_Uncertainty')
+     energyorigin          = IntegerField(db_column='EGY_EnergyOrigin_EGY_ID')
      mixingcoeff           = FloatField(null=True, db_column='EGY_PMIX')
      block                 = IntegerField(db_column='EGY_IBLK')
      index                 = IntegerField(db_column='EGY_INDX') 
      degeneracy            = IntegerField(db_column='EGY_IDGN') 
      nuclearstatisticalweight = IntegerField(db_column='EGY_NuclearStatisticalWeight')
+     nsi                   = ForeignKey(NuclearSpinIsomers, db_column='EGY_NSI_ID')
      nuclearspinisomer     = CharField(max_length=10, db_column='EGY_NuclearSpinIsomer')
+     nuclearspinisomersym  = CharField(max_length=45, db_column='EGY_NuclearSpinIsomerSym')
+     nsioriginid           = IntegerField(db_column='EGY_NSI_LowestEnergy_EGY_ID')
+     msgroup               = CharField(max_length=45, db_column='EGY_MS_Group')
      qntag                 = IntegerField(db_column='EGY_QN_Tag') 
      qn1                   = IntegerField(db_column='EGY_QN1')
      qn2                   = IntegerField(db_column='EGY_QN2') 
@@ -154,14 +180,28 @@ class States( Model):
      qn6                   = IntegerField(db_column='EGY_QN6') 
      user                  = CharField(max_length=40, db_column='EGY_User')      # obsolete
      timestamp             = IntegerField(db_column='EGY_TIMESTAMP')
+
+     
      class Meta:
        db_table = u'Energies'
 
+     def origin(self):
+          return '%s-origin-%s' % (self.energyorigin, self.specie_id)
+
+     def nsiorigin(self):
+          return '%s-origin-%s' % (self.nsioriginid, self.specie_id)
+
      def qns_xml(self):
 	"""Yield the XML for the state quantum numbers"""
-        qns = MolecularQuantumNumbers.objects.filter(state=self.id)
+        # remove "-origin" in order to retrieve also qns for state-origins
+        try:
+             sid = self.id.replace('-origin-%s' % self.specie_id,'')
+        except:
+             sid = self.id
+             
+        qns = MolecularQuantumNumbers.objects.filter(state=sid)
         case = qns[0].case     
-        caseNS = 'http://vamdc.org/xml/xsams/0.3/cases/%s' % case
+        caseNS = 'http://vamdc.org/xml/xsams/1.0/cases/%s' % case
         caseNSloc = '../../cases/%s.xsd' % case
         xml = []
         xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
@@ -188,6 +228,66 @@ class States( Model):
 
      # associate qns_xml with the XML attribute of the States class
      # so that generators.py checkXML() works:
+
+     def get_qns_xml(self):
+          """
+          Yield the XML for state quantum numbers, generated from the filter-table
+          """
+
+          try:
+               qns = FILTER_DICT[self.specie_id][self.qntag]
+          except:
+               if not FILTER_DICT.has_key(self.specie_id):
+                    FILTER_DICT[self.specie_id]={}
+               if not FILTER_DICT[self.specie_id].has_key(self.qntag):
+                        
+                    where = Q(specie = self.specie) & Q(qntag = self.qntag) # & ( Q(qn1=self.qn1) | Q(qn1__isnull=True)) & ( Q(qn2=self.qn1) | Q(qn2__isnull=True)) & ( Q(qn3=self.qn1) | Q(qn3__isnull=True)) & ( Q(qn4=self.qn1) | Q(qn4__isnull=True)) & ( Q(qn5=self.qn1) | Q(qn5__isnull=True)) & ( Q(qn6=self.qn1) | Q(qn6__isnull=True))                       
+                    qns = QuantumNumbersFilter.objects.filter(where) #specie = self.specie, qntag = self.qntag)
+                    FILTER_DICT[self.specie_id][self.qntag]=qns
+          
+          case = qns[0].case     
+          caseNS = 'http://vamdc.org/xml/xsams/1.0/cases/%s' % case
+          caseNSloc = '../../cases/%s.xsd' % case
+          xml = []
+          xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
+                     ' xmlns:%s="%s" xsi:schemaLocation="%s %s">'\
+                     % (case, case, case, caseNS, caseNS, caseNSloc))
+          xml.append('<%s:QNs>\n' % case)
+
+          
+          for qn in qns:
+##               #if qn.label == 'L':
+##               #     self.L = qn.valuefloat
+##               #elif qn.label == 'S':
+##               #     self.S = qn.valuefloat
+               if qn.columnvalue:
+                    exec 'value = self.qn%s' % qn.columnvalue
+                    if qn.columnvaluefunc == 'half':
+                         value -= 0.5
+                         
+               elif qn.valuefloat is not None:
+                    value = qn.valuefloat
+               elif qn.valuestring:
+                    value = qn.valuestring
+                    
+##               exec 'self.%s = %s' % (qn.label, value)
+##          return self.J
+               if qn.attribute:
+                    # put quotes around the value of the attribute
+                    attr_name, attr_val = qn.attribute.split('=')
+                    qn.attribute = ' %s="%s"' % (attr_name, attr_val)
+               else:
+                    qn.attribute = ''
+                    
+               if qn.spinref:
+                    # add spinRef to attribute if it exists
+                    qn.attribute += ' nuclearSpinRef="%s"' % qn.spinref
+               
+               xml.append('<%s:%s%s>%s</%s:%s>\n' % (case, qn.label, qn.attribute , value, case, qn.label) )
+          xml.append('</%s:QNs>\n' % case)
+          xml.append('</Case>\n')
+          return ''.join(xml)
+
      XML = qns_xml
 
      def qns_dict(self):
@@ -245,6 +345,7 @@ class AtomStates( Model):
      dataset               = ForeignKey(Datasets, db_column='EGY_DAT_ID')
      energy                = FloatField(null=True, db_column='EGY_Energy')
      uncertainty           = FloatField(null=True, db_column='EGY_Uncertainty')
+     energyorigin          = IntegerField(db_column='EGY_EnergyOrigin_EGY_ID')
      mixingcoeff           = FloatField(null=True, db_column='EGY_PMIX')
      block                 = IntegerField(db_column='EGY_IBLK')
      index                 = IntegerField(db_column='EGY_INDX') 
@@ -298,6 +399,9 @@ class AtomStates( Model):
                     
                exec 'self.%s = %s' % (qn.label, value)
           return self.J
+
+
+          
 
 
 class TransitionsCalc( Model):
@@ -539,11 +643,11 @@ class QuantumNumbersFilter(Model):
      specie = ForeignKey(Species, db_column='SQN_E_ID')
      qntag = IntegerField(db_column='SQN_QN_Tag')
      qn1 = IntegerField(db_column='SQN_QN1')
-     qn2 = IntegerField(db_column='SQN_QN1')
-     qn3 = IntegerField(db_column='SQN_QN1')
-     qn4 = IntegerField(db_column='SQN_QN1')
-     qn5 = IntegerField(db_column='SQN_QN1')
-     qn6 = IntegerField(db_column='SQN_QN1')
+     qn2 = IntegerField(db_column='SQN_QN2')
+     qn3 = IntegerField(db_column='SQN_QN3')
+     qn4 = IntegerField(db_column='SQN_QN4')
+     qn5 = IntegerField(db_column='SQN_QN5')
+     qn6 = IntegerField(db_column='SQN_QN6')
      case = CharField(max_length=20, db_column='SQN_Case')
      label = CharField(max_length=100, db_column='SQN_Label')
      slaplabel = CharField(max_length=100, db_column='SQN_SLAP_Label')

@@ -384,17 +384,45 @@ def getHtmlNodeList():
 
     response += "<div class='vlist'><ul>"
 
-    response += """<li id='nodehead' class='' style='border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
-                           <div class='' style='background-color:blue;'>
-                              <div class='nodename float_left' style='font-weight:bold;width:20em;background-color2:grey'>%s</div>                                                         
-                              <div class='status float_left' style='width:8em'>Status</div>
-                              <div class='numspecies float_left' style='width:8em'> %s</div>
-                              <div class='nummols float_left' style='width:8em'> %s</div>
-                              <div class='numstates float_left' style='width:8em'> %s</div>
-                              <div class='numradtrans float_left' style='width:8em'> %s</div>
-                              <div class='numtrunc float_left' style='width:8em'> %s</div>
-                           </div>
-                      </li>""" % ("Database","# Species","# Molecules","# States","# Trans","% Trunc.")
+    response += """<li id='nodehead' class='' style='height:7em;border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
+                              <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>%s
+                              </div>                                                         
+                              <div class='status float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='numspecies float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='nummols float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='numstates float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='numradtrans float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='numcollisions float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='numtrunc float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                      </li>""" % ("Database","Status", "# Species","# Molecules","# States","# Trans","# Collis.","% Trunc.")
 
     for node in nodes:
 
@@ -402,16 +430,17 @@ def getHtmlNodeList():
                            <div class='nodeurl' style='display:none' id='%s'>%s </div>
                            <div class='url' style='display:none'></div>
                            <div class='' style=''>
-                              <div class='nodename float_left' style='font-weight:bold;width:20em;background-color2:grey'>%s</div>                                                         
-                              <div class='status float_left' style='width:8em'></div>
-                              <div class='numspecies float_left' style='width:8em'> %s</div>
-                              <div class='nummols float_left' style='width:8em'> %s</div>
-                              <div class='numstates float_left' style='width:8em'> %s</div>
-                              <div class='numradtrans float_left' style='width:8em'> %s</div>
-                              <div class='numtrunc float_left' style='width:8em'> %s</div>
+                              <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>%s</div>                                                         
+                              <div class='status float_left' style='width:4em'></div>
+                              <div class='numspecies float_left' style='width:4em'> %s</div>
+                              <div class='nummols float_left' style='width:4em'> %s</div>
+                              <div class='numstates float_left' style='width:4em'> %s</div>
+                              <div class='numradtrans float_left' style='width:4em'> %s</div>
+                              <div class='numcollisions float_left' style='width:4em'> %s</div>
+                              <div class='numtrunc float_left' style='width:4em'> %s</div>
                            </div>
                            <div class='species' style='clear:both'></div> 
-                      </li>""" % (node["name"],u'98%',node["name"], node["url"],node["name"],"0","0","0","0","0")
+                      </li>""" % (node["name"],u'98%',node["name"], node["url"],node["name"],"0","0","0","0","0","0")
 
     response += "</ul></div>"
     return response
@@ -439,6 +468,15 @@ def doHeadRequest(url, timeout = 20):
     if res.status == 200:
         vamdccounts = [item for item in res.getheaders() if item[0][0:5]=='vamdc']
         content = [item for item in res.getheaders() if item[0][0:7]=='content']
+    elif res.status == 204:
+        vamdccounts = [ ("vamdc-count-species",0),
+                        ("vamdc-count-states",0),
+                        ("vamdc-truncated",0),
+                        ("vamdc-count-molecules",0),
+                        ("vamdc-count-sources",0),
+                        ("vamdc-approx-size",0),
+                        ("vamdc-count-radiative",0),
+                        ("vamdc-count-atoms",0)]
     else:
         vamdccounts =  []
 

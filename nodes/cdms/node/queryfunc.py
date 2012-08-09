@@ -47,6 +47,20 @@ def attach_partionfunc(molecules):
         molecule.partitionfuncQ=pf
          
 
+def remap_species(datasets):
+    idxlist = []
+    species = []
+
+    for i in datasets:
+        specieid = '%s-hyp%s' % (i.specie.id,i.hfsflag)
+        if specieid not in idxlist:
+            idxlist.append(specieid)
+            i.specie.hfs = i.hfsflag
+            i.specie.specieid = specieid
+            species.append(i.specie)
+
+    return species
+
 
 def get_species_and_states(transs, addStates=True, filteronatoms=False):
     """
@@ -59,36 +73,88 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
     - Number of states
     """
 
-    if filteronatoms:
-        spids = set( transs.values_list('specie_id',flat=True).distinct() )
-    else:
-        spids = transs.values_list('specie_id',flat=True)
+#    if filteronatoms:
+#        spids = set( transs.values_list('specie_id',flat=True).distinct() )
+#    else:
+#        spids = transs.values_list('specie_id',flat=True)
+    trans_dats = transs.values_list('dataset',flat=True)
+    dats = Datasets.objects.filter(pk__in=trans_dats, archiveflag=0)
+
+    dat_atoms = dats.filter(specie__molecule__numberofatoms__exact='Atomic').filter(specie__origin=5, specie__archiveflag=0)
+    dat_molecules = dats.exclude(specie__molecule__numberofatoms__exact='Atomic').filter(specie__origin=5, specie__archiveflag=0)
+
+    atoms = remap_species(dat_atoms)
+    molecules = remap_species(dat_molecules)
+
+#    atom_idxlist = []
+#    atoms = []
+
+#    for i in dat_atoms:
+#        specieid = '%s-hyp%s' % (i.specie.id,i.hfsflag)
+#        if specieid not in atom_idxlist:
+#            atom_idxlist.append(specieid)
+#            i.specie.hfs = i.hfsflag
+#            i.specie.specieid = specieid
+#            atoms.append(i.specie)
+
+
+
+    #spids = set(dats.values_list('specie').distinct())
+    #dat_list = set(dats.values_list('id').distinct())
+    #if filteronatoms:
+    #    spids = set( transs.values_list('dataset',flat=True).distinct() )
+    #else:
+    #    spids = transs.values_list('specie_id',flat=True)
+
+        
     # Species object for CDMS includes Atoms AND Molecules. Both can only
     # be distinguished through numberofatoms-field
-    atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic', origin=5, archiveflag=0)
-    molecules = Species.objects.filter(pk__in=spids, origin=5, archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
+ #   atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic', origin=5, archiveflag=0)
+ #   molecules = Species.objects.filter(pk__in=spids, origin=5, archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
     # Calculate number of species in total
-    nspecies = atoms.count() + molecules.count()
+    nspecies = len(atoms) + len(molecules)
     # Intialize state-counter
     nstates = 0
-
+    
     if addStates:
         # Loop through list of species and attach states
         for specie in chain( molecules):
+            dds=Datasets.objects.filter(specie=specie, archiveflag=0, hfsflag=specie.hfs).values_list('id',flat=True)
+            dds=set(dds)
+
             # Get distinct list of States which
             # occur as lower or upper state in transitions
-            subtranss = transs.filter(specie=specie)
+            subtranss = transs.filter(dataset__in=dds) #specie=specie, dataset__archiveflag=0, dataset__hfsflag=specie.hfs)
             up=subtranss.values_list('upperstateref',flat=True)
             lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
-            # Attach states to species object
-            specie.States = States.objects.filter( pk__in = sids)
+            states = States.objects.filter( pk__in = sids)
+            
+            # Get energy origins
+            origin_ids = states.values_list('energyorigin',flat=True).distinct()
+            nsi_origin_ids = NuclearSpinIsomers.objects.filter(pk__in=states.values_list('nsi',flat=True)).values_list('lowestrovibstate',flat=True)
+            # nsi_origin_ids = States.objects.filter(pk__in = sids).values_list('nsioriginid',flat=True).distinct()
+            origin_ids = set(chain(origin_ids,nsi_origin_ids))
+            origins = States.objects.filter(pk__in = origin_ids)
+
+            # Create new ID for 'origin'-states
+            # These states occur twice in the output
+            # species-id is used to make id unique (origin-state could be a state of another specie if v>0)
+            for state in origins:
+                state.id = "%s-origin-%s" % (state.id, specie.id)               
+
+            # Attach states to species object            
+            specie.States = chain(origins, states)
             # Add number of attached states to state-counter
-            nstates += specie.States.count()
+            nstates += states.count()
+
+                
         for specie in chain(atoms ):
+            dds=Datasets.objects.filter(specie=specie, archiveflag=0, hfsflag=specie.hfs).values_list('id',flat=True)
+            dds=set(dds)
             # Get distinct list of States which
             # occur as lower or upper state in transitions
-            subtranss = transs.filter(specie=specie)
+            subtranss = transs.filter(dataset__in=dds) #specie=specie, dataset__archiveflag=0, dataset__hfsflag=specie.hfs)
             up=subtranss.values_list('upperstateref',flat=True)
             lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
@@ -97,11 +163,12 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
             # Add number of attached states to state-counter
             nstates += specie.States.count()
 
+                
     return atoms,molecules,nspecies,nstates
 
 
 
-def get_sources(transs, methods = []):
+def get_sources(atoms, molecules, methods = []):
     """
     Get a complete list of sources and methods for the set of
     predicted transitions. Methods compiled for observed
@@ -110,23 +177,27 @@ def get_sources(transs, methods = []):
     """
 
     # Get the list of species (entries). One method is generated for each specie
-    ids = set( transs.values_list('specie_id',flat=True) )
-    slist = SourcesIDRefs.objects.filter(specie__in=ids).distinct()
+    #ids = set( transs.values_list('specie_id',flat=True) )
+    ids=[]
+    for i in chain(molecules,atoms):
+        ids.append(i.id)
+
+    slist = SourcesIDRefs.objects.filter(specie__in=ids)
 
     sexplist = slist.filter(transitionexp__gt=0)
 
     # Loop over species list and get sources
-    for src in slist.values_list('specie',flat=True):
+    for src in ids: #slist.values_list('specie',flat=True):
         mesrc=SourcesIDRefs.objects.filter(Q(specie=src)).distinct().values_list('source',flat=True)
         this_method = Method(src,src,'derived','derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data',mesrc)
         methods.append(this_method)
 
     # Loop over species list and get sources
-    for src in sexplist.values_list('source',flat=True):
+    for src in sexplist.values_list('source',flat=True).distinct():
         this_method =  Method('EXP'+str(src),src,'experiment','experiment',src)
         methods.append(this_method)
         
-    sourceids = slist.values_list('source',flat=True)
+    sourceids = set(slist.values_list('source',flat=True))
 
     return Sources.objects.filter(pk__in = sourceids), methods
     
@@ -220,13 +291,14 @@ def setupResults(sql):
     addStates = (not sql.requestables or 'atomstates' in sql.requestables or 'moleculestates' in sql.requestables)
     addTrans = (not sql.requestables or 'RadiativeTransitions' in sql.requestables)
 
-    datasets = Datasets.objects.filter(archiveflag=0)
+    #datasets = Datasets.objects.filter(archiveflag=0)
 
     # Query the database and get calculated transitions (TransitionsCalc)
-    transs = TransitionsCalc.objects.filter(q, #specie__origin=5,
+    transs = TransitionsCalc.objects.filter(q #specie__origin=5,
                                             #specie__archiveflag=0,
-                                            dataset__in=datasets)
-                                            #dataset__archiveflag=0) #.order_by('frequency')
+                                            #dataset__in=datasets,
+                                            #dataset__archiveflag=0
+                                            ) #.order_by('frequency')
 
     # get atoms and molecules with states which occur in transition-block
     atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates, filteronspecies)
@@ -235,7 +307,7 @@ def setupResults(sql):
     attach_partionfunc(molecules)
 
     # modify filter for transitions:
-    transs = transs.filter(specie__origin=5, specie__archiveflag=0)
+    transs = transs.filter(specie__origin=5, specie__archiveflag=0, dataset__archiveflag=0)
 
     # Attach experimental transitions (TransitionsExp) to transitions
     # and obtain their methods. Do it only if transitions will be returned
@@ -249,16 +321,21 @@ def setupResults(sql):
     # get sources and methods which have been used
     # to derive predicted transitions
     if addTrans:
-        sources, methods = get_sources(transs, methods)
+        sources, methods = get_sources(atoms, molecules, methods)
     else:
         sources=Sources.objects.none()
 
 
     nsources = sources.count()
-    nmolecules = molecules.count()
-    natoms = atoms.count()
+    nmolecules = len(molecules)#molecules.count()
+    natoms = len(atoms) #atoms.count()
     ntranss = transs.count()
-    
+
+    lastmodified = datetime.datetime.now()
+    for specie in chain(atoms, molecules):
+        if specie.changedate<lastmodified:
+            lastmodified = specie.changedate
+                
     if ntranss+nmolecules+nsources+natoms+nstates>0:
         size_estimate='%.2f'%(ntranss*0.0014 + 0.01)
     else: size_estimate='0.00'
@@ -274,6 +351,7 @@ def setupResults(sql):
         'count-states':nstates,
         'count-radiative':ntranss,
         'APPROX-SIZE':size_estimate,
+        'last-modified':lastmodified,
     }
 
 

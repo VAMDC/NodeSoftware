@@ -988,10 +988,17 @@ def XsamsMSBuild(MoleculeState):
 
     yield '  <MolecularStateCharacterisation>'
     yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G,
-                extraAttr={'energyOrigin':G('MoleculeStateEnergyOrigin')})
+                extraAttr={'energyOrigin':'S%s-%s' % (G('NodeID'), G('MoleculeStateEnergyOrigin'))})
     yield makeOptionalTag("TotalStatisticalWeight", "MoleculeStateTotalStatisticalWeight", G)
     yield makeOptionalTag("NuclearStatisticalWeight", "MoleculeStateNuclearStatisticalWeight", G)
-    yield makeOptionalTag("NuclearSpinIsomer", "MoleculeStateNuclearSpinIsomer", G)
+#    yield makeOptionalTag("NuclearSpinIsomer", "MoleculeStateNuclearSpinIsomer", G)
+    if G("MoleculeStateNuclearSpinIsomer"):
+        yield makePrimaryType("NuclearSpinIsomer", "NuclearSpinIsomer",G,
+                              extraAttr={"lowestEnergyStateRef":'S%s-%s' % (G('NodeID'), G('MoleculeStateNSILowestEnergyStateRef'))})
+        yield "<Name>%s</Name>" % G("MoleculeStateNuclearSpinIsomer")
+        yield "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (G('MoleculeStateNuclearSpinIsomerGroup'), G('MoleculeStateNuclearSpinIsomerLowRoVibSym'))
+        yield "</NuclearSpinIsomer>"
+ 
     if G("MoleculeStateLifeTime"):
         # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
         # the decay attr is a string, either: 'total', 'totalRadiative' or 'totalNonRadiative'

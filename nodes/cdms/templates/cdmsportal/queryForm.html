@@ -3,11 +3,27 @@
 {% block menu_li_catalog %}class="active" {% endblock %}
 
 {% block content %}
+<form name="PARAMETER" aktion="cdms/showResults" class="yform full" method="post">
+
 <div id="main">
   <!-- begin: #col1 - first float column -->
 
   <div id="col1" style="background-color:white;" role="complementary">
     <div id="col1_content" class="clearfix">
+
+      <h6 class="vlist">DATABASE</h6>
+<ul class="vlist">
+<li>
+      <div class="type-select">
+        <SELECT class="log" NAME="database" id="database" onchange="showQueryRefinements();updateNodeView()">
+         <OPTION VALUE="cdms"> CDMS </OPTION>
+         <OPTION VALUE="jpl"> JPL </OPTION>
+         <OPTION VALUE="vamdc"> VAMDC-network </OPTION>
+        </SELECT>
+      </div> 
+</li>
+</ul>
+
      <h6 class="vlist"> QUERY </h6>
      <ul class="vlist">
       <li><a href="#" id="a_form_queryRefinements" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')">Query Transitions</a></li>
@@ -40,8 +56,12 @@
 				$('#a_form_queryRefinements').click();
 			});
 		</script>
+<script>
+$(document).ready(function() {
+  ajaxQueryNodeContent();
 
-<form name="PARAMETER" aktion="cdms/showResults" class="yform full" method="post">
+});
+</script>
 
 <INPUT TYPE='HIDDEN' NAME='filterTag' VALUE=''>
 <INPUT TYPE='HIDDEN' NAME='T_OrderBy' VALUE='E_TAG+ASC'>
@@ -56,7 +76,7 @@
   <div id="form_queryTrans" class="subpage" style="">
     <h3><Strong>QUERY</strong>&nbsp;<i>TRANSITIONS</i></h3>
     <p>&nbsp;</p>
-
+<!--
     <fieldset>
       <div class="legend">Database</div>
       <div class="type-select">
@@ -66,6 +86,71 @@
          <OPTION VALUE="vamdc"> VAMDC-network </OPTION>
         </SELECT>
       </div> 
+    </fieldset> 
+-->
+    <fieldset>
+      <div class="legend">Content</div>
+<div id="nodelist" class="nodes" style="display:none;clear:both">Processing ...</div>
+    <div id="cdmsnode" class="nodes" style="clear:both">
+      <div class='vlist'><ul>
+        <li id='nodehead' class='' style='height:7em;border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
+            <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>Database</div>                                                         
+            <div class='status float_left' style='width:4em'>  
+              <svg xmlns="http://www.w3.org/2000/svg">
+                <text transform="rotate(270, 12, 0) translate(-60,0)">Status
+              </svg>
+            </div>
+            <div class='numspecies float_left' style='width:4em'>
+              <svg xmlns="http://www.w3.org/2000/svg">
+                <text transform="rotate(270, 12, 0) translate(-60,0)"># Species</text>
+              </svg>
+            </div>
+            <div class='nummols float_left' style='width:4em'>
+              <svg xmlns="http://www.w3.org/2000/svg">
+                <text transform="rotate(270, 12, 0) translate(-60,0)"># Molecules</text>
+              </svg>
+            </div>
+            <div class='numstates float_left' style='width:4em'>
+              <svg xmlns="http://www.w3.org/2000/svg">
+                <text transform="rotate(270, 12, 0) translate(-60,0)"># States</text>
+              </svg>
+            </div>
+            <div class='numtrans float_left' style='width:4em'>
+              <svg xmlns="http://www.w3.org/2000/svg">
+                <text transform="rotate(270, 12, 0) translate(-60,0)"># Trans.</text>
+              </svg>
+            </div>
+            <div class='numcollisions float_left' style='width:4em'>
+              <svg xmlns="http://www.w3.org/2000/svg">
+                <text transform="rotate(270, 12, 0) translate(-60,0)"># Coll.</text>
+              </svg>
+            </div>
+            <div class='numtrunc float_left' style='width:4em'>
+              <svg xmlns="http://www.w3.org/2000/svg">
+                <text transform="rotate(270, 12, 0) translate(-60,0)"># Trunc.</text>
+              </svg>
+            </div>
+        </li>
+
+        <li id='nodeCDMS' class='vamdcnode' style='width:98%;border-width:1px;border-style:solid;border-color:black;padding:0.5em;margin:5px;background-color:#fafaff'>
+          <div class='nodeurl' style='display:none' id='CDMS'>http://cdms.ph1.uni-koeln.de/cdms/tap/</div>
+          <div class='url' style='display:none'></div>
+          <div class='' style=''>
+            <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>CDMS</div>                                                         
+            <div class='status float_left' style='width:4em'></div>
+            <div class='numspecies float_left' style='width:4em'>0</div>
+            <div class='nummols float_left' style='width:4em'>0</div>
+            <div class='numstates float_left' style='width:4em'> 0</div>
+            <div class='numradtrans float_left' style='width:4em'> 0</div>
+            <div class='numcollisions float_left' style='width:4em'> 0</div>
+            <div class='numtrunc float_left' style='width:4em'> 0</div>
+          </div>
+          <div class='species' style='clear:both'></div> 
+        </li>
+
+        </ul>
+      </div>
+    </div> 
     </fieldset> 
 
     <fieldset>
@@ -182,7 +267,7 @@
   </fieldset>
 
   <div class="type-button float_right">
-    <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+    <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans');ajaxQueryNodeContent();" VALUE="OK" >
   </div>
 </div>
 
@@ -276,18 +361,7 @@
 </div>
 
 
-<!-- SUBPAGE VAMDC nodes -->
-<div id="form_vamdcnodes" class="subpage" style="display:none">
-  <h3><strong>VAMDC</strong>&nbsp;<i>NODES</i></h3>
-  <p>&nbsp;</p>
-  <fieldset>
-    <!-- <div class="legend">Databases</div> -->
-    <div id="nodelist">Processing ...</div>   
-  </fieldset>
-  <div class="type-button float_right">
-    <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
-  </div>
-</div>
+
 
 <!-- SUBPAGE Result -->
 <div id="form_result" class="subpage" style="display:none">

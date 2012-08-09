@@ -37,7 +37,7 @@ class RegistryDoctor(Doctor):
 def getNodeList():
 
     d = RegistryDoctor()
-    client = Client(WSDL,doctor=d)
+    client = Client(WSDL) #,doctor=d)
 
     qr="""declare namespace ri='http://www.ivoa.net/xml/RegistryInterface/v1.0';
 for $x in //ri:Resource
@@ -45,12 +45,23 @@ where $x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']
 and $x/@status='active'
 return ($x/title, $x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']/interface/accessURL)"""
 
+    qr="""declare namespace ri='http://www.ivoa.net/xml/RegistryInterface/v1.0';
+<nodes>
+{
+   for $x in //ri:Resource
+   where $x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']
+   and $x/@status='active'
+   return  <node><title>{$x/title/text()}</title><url>{$x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']/interface/accessURL/text()}</url></node>   
+}
+</nodes>"""
+
+
     v=client.service.XQuerySearch(qr)
     nameurls=[]
-    while v:
+    for node in v.node:
 	nameurls.append({\
-			'name':v.pop(1),
-    			'url':v.pop(0)[0],
+			'name':node.title,
+    			'url':node.url,
 			})
     return nameurls
 
