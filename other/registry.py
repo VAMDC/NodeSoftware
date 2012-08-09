@@ -40,12 +40,6 @@ def getNodeList():
     client = Client(WSDL) #,doctor=d)
 
     qr="""declare namespace ri='http://www.ivoa.net/xml/RegistryInterface/v1.0';
-for $x in //ri:Resource
-where $x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']
-and $x/@status='active'
-return ($x/title, $x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']/interface/accessURL)"""
-
-    qr="""declare namespace ri='http://www.ivoa.net/xml/RegistryInterface/v1.0';
 <nodes>
 {
    for $x in //ri:Resource

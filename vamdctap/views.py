@@ -164,7 +164,7 @@ def addHeaders(headers,response):
     headers = CaselessDict(headers)
 
     try:
-        response['Last-Modified'] = http_date(time.mktime(headers['LAST-MODIFIED'].timetuple()))
+        response['Last-Modified'] = getFormatLastModified(headers['LAST-MODIFIED'])
     except:
         pass
 
