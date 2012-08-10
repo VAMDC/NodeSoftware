@@ -69,10 +69,10 @@ RETURNABLES = {
 'MoleculeStateEnergyOrigin':'MoleculeState.origin()', #'Zero-point energy',
 'MoleculeStateEnergyUnit':'1/cm', 
 'MoleculeStateTotalStatisticalWeight':'MoleculeState.degeneracy', # has to be changed  <- new
-'MoleculeStateNuclearSpinIsomer':'MoleculeState.nsi.name', #nuclearspinisomer',
+'MoleculeStateNSIName':'MoleculeState.nsiname()', #nuclearspinisomer',
 'MoleculeStateNSILowestEnergyStateRef':'MoleculeState.nsi.lowestrovibstateid()', #nsiorigin()',
-'MoleculeStateNuclearSpinIsomerGroup':'MoleculeState.nsi.symmetrygroup', #msgroup',
-'MoleculeStateNuclearSpinIsomerLowRoVibSym':'MoleculeState.nsi.lowestrovibsym', #nuclearspinisomersym',
+'MoleculeStateNSISymGroup':'MoleculeState.nsi.symmetrygroup', #msgroup',
+'MoleculeStateNSILowestRoVibSym':'MoleculeState.nsi.lowestrovibsym', #nuclearspinisomersym',
 'MoleculeStateNuclearStatisticalWeight':'MoleculeState.nuclearstatisticalweight',
 'MoleculeStateID':'MoleculeState.id',
 #'MoleculeStateQuantumNumbers':'MoleculeState.parsed_qns',
@@ -143,6 +143,9 @@ RETURNABLES = {
 'RadTransSpeciesRef':'RadTran.specie_id',
 #'RadTransWavelength':'RadTran.',
 #'RadTransWavenumber':'RadTran.',
+'RadTransFrequencyEval':'RadTran.evaluations',
+'RadTransFrequencyEvalRecommended':'RadTran.recommendations',
+'RadTransFrequencyEvalRef':'RadTran.evalrefs',
 
 #'RadTransCode':'rota',
 

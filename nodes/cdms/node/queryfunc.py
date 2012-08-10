@@ -179,6 +179,7 @@ def get_sources(atoms, molecules, methods = []):
     # Get the list of species (entries). One method is generated for each specie
     #ids = set( transs.values_list('specie_id',flat=True) )
     ids=[]
+    
     for i in chain(molecules,atoms):
         ids.append(i.id)
 
@@ -198,7 +199,7 @@ def get_sources(atoms, molecules, methods = []):
         methods.append(this_method)
         
     sourceids = set(slist.values_list('source',flat=True))
-
+    sourceids = sourceids.union(DATABASE_REFERENCES)
     return Sources.objects.filter(pk__in = sourceids), methods
     
 

@@ -248,10 +248,12 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
             string += '<Comments>%s</Comments>' % escape('%s' % comment[i])
         string += makeSourceRefs(refs[i])
         string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
+        string += makeEvaluation( keyword, G, j=i) 
         if acc[i]:
             string += '<Accuracy>%s</Accuracy>' % acc[i]
-        string += '</%s>' % tagname
 
+
+        string += '</%s>' % tagname
     return string
 
 # an alias for compatibility reasons
@@ -307,20 +309,46 @@ def makeDataSeriesAccuracyType(keyword, G):
     string += "</Accuracy>"
     return string
 
-def makeEvaluation(keyword, G):
+def makeEvaluation(keyword, G, j=None):
     """
     build the elements for evaluation that belong
     to DataType.
     """
+    print >> sys.stderr, "Evaluation"+keyword
     evs = G(keyword + 'Eval')
+    print >> sys.stderr, evs
     if not evs:
         return ''
-    ev_list = makeiter(evs)
-    nevs = len(ev_list)
-    ev_meth = makeiter( G(keyword + 'EvalMethod'), nevs )
-    ev_reco = makeiter( G(keyword + 'EvalRecommended'), nevs )
-    ev_refs = G(keyword + 'EvalRef')
-    ev_comm = G(keyword + 'EvalComment')
+
+    if j is not None:
+        evs=evs[j]
+        print >> sys.stderr, "J: %d" % j
+        ev_list = makeiter(evs)
+        nevs = len(ev_list)
+        try:
+            ev_meth = makeiter( G(keyword + 'EvalMethod')[j], nevs )
+        except IndexError:
+            ev_meth = makeiter( None, nevs)
+        try:    
+            ev_reco = makeiter( G(keyword + 'EvalRecommended')[j], nevs )
+        except IndexError:
+            ev_reco = makeiter(None, nevs)
+        try:
+            ev_refs = G(keyword + 'EvalRef')[j]
+        except IndexError:
+            ev_refs = []
+        try:
+            ev_comm = G(keyword + 'EvalComment')[j]
+        except IndexError:
+            ev_comm = []
+    else:
+        ev_list = makeiter(evs)
+        nevs = len(ev_list)
+        ev_meth = makeiter( G(keyword + 'EvalMethod'), nevs )
+        ev_reco = makeiter( G(keyword + 'EvalRecommended'), nevs )
+        ev_refs = G(keyword + 'EvalRef')
+        ev_comm = G(keyword + 'EvalComment')
+
     result = []
     for i,ev in enumerate( makeiter(evs) ):
         result.append('<Evaluation')
@@ -364,8 +392,8 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
 
-    result.append( makeAccuracy( keyword, G) )
     result.append( makeEvaluation( keyword, G) )
+    result.append( makeAccuracy( keyword, G) )
     result.append( '</%s>' % tagname )
 
     for k, v in extraElem.items():
@@ -992,11 +1020,11 @@ def XsamsMSBuild(MoleculeState):
     yield makeOptionalTag("TotalStatisticalWeight", "MoleculeStateTotalStatisticalWeight", G)
     yield makeOptionalTag("NuclearStatisticalWeight", "MoleculeStateNuclearStatisticalWeight", G)
 #    yield makeOptionalTag("NuclearSpinIsomer", "MoleculeStateNuclearSpinIsomer", G)
-    if G("MoleculeStateNuclearSpinIsomer"):
+    if G("MoleculeStateNSIName"):
         yield makePrimaryType("NuclearSpinIsomer", "NuclearSpinIsomer",G,
                               extraAttr={"lowestEnergyStateRef":'S%s-%s' % (G('NodeID'), G('MoleculeStateNSILowestEnergyStateRef'))})
-        yield "<Name>%s</Name>" % G("MoleculeStateNuclearSpinIsomer")
-        yield "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (G('MoleculeStateNuclearSpinIsomerGroup'), G('MoleculeStateNuclearSpinIsomerLowRoVibSym'))
+        yield "<Name>%s</Name>" % G("MoleculeStateNSIName")
+        yield "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (G('MoleculeStateNSISymGroup'), G('MoleculeStateNSILowestRoVibSym'))
         yield "</NuclearSpinIsomer>"
  
     if G("MoleculeStateLifeTime"):

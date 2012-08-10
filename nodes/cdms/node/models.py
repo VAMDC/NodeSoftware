@@ -11,6 +11,8 @@ from django.db.models import *
 from latex2html import *
 
 FILTER_DICT={}
+# References which will always be returned
+DATABASE_REFERENCES = [1921]
 
 class Molecules( Model):
      """
@@ -184,9 +186,15 @@ class States( Model):
      
      class Meta:
        db_table = u'Energies'
-
+     
      def origin(self):
           return '%s-origin-%s' % (self.energyorigin, self.specie_id)
+
+     def nsiname(self):
+          if self.nsi_id:
+               return self.nsi.name
+          else:
+               return None
 
      def nsiorigin(self):
           return '%s-origin-%s' % (self.nsioriginid, self.specie_id)
@@ -444,20 +452,32 @@ class TransitionsCalc( Model):
      archiveflag           = IntegerField(db_column='P_Archive')
      timestamp             = DateTimeField(db_column='P_TIMESTAMP')
      upperstateref =  ForeignKey(States, related_name='upperstate',
-                                db_column='P_Up_EGY_ID')
+                                 db_column='P_Up_EGY_ID')
      lowerstateref =  ForeignKey(States, related_name='lowerstate',
-                                db_column='P_Low_EGY_ID')
+                                 db_column='P_Low_EGY_ID')
      
      upstate =  ForeignKey(States, related_name='upperstate',
-                                db_column='P_Up_EGY_ID')
+                           db_column='P_Up_EGY_ID')
      lostate =  ForeignKey(States, related_name='lowerstate',
-                                db_column='P_Low_EGY_ID')
+                           db_column='P_Low_EGY_ID')
      #frequencyArray        
      
      def __unicode__(self):
-        return u'ID:%s Tag:%s Freq: %s'%(self.id,self.speciestag,self.frequency)
-
-
+          return u'ID:%s Tag:%s Freq: %s'%(self.id,self.speciestag,self.frequency)
+     
+     def attach_evaluation(self):
+          """
+          """
+          self.qualities=[]
+          self.recommendations=[]
+          self.evalrefs=[]
+          evals = self.evaluation_set.all()
+          for i in evals:
+               self.qualities.append(i.quality)
+               self.recommendations.append(i.recommended)
+               self.evalrefs.append(i.source_id)
+          return self.qualities
+     
      def attach_exp_frequencies(self):
          """
          Create lists of frequencies, units, sources, ... for each transition.
@@ -477,7 +497,9 @@ class TransitionsCalc( Model):
          self.uncertainties=[self.uncertainty]
          self.refs=[""]
          self.methods=[self.specie.id]
-
+         self.evaluations=[self.attach_evaluation()]
+         self.recommendations=[self.recommendations]
+         self.evalrefs=[self.evalrefs]
          exptranss = TransitionsExp.objects.filter(specie=self.specie,
                                                    qnup1=self.qnup1,
                                                    qnlow1=self.qnlow1,
@@ -496,6 +518,9 @@ class TransitionsCalc( Model):
               self.frequencies.append(exptrans.frequency)
               self.units.append(exptrans.unit)
               self.uncertainties.append(exptrans.uncertainty)
+              self.evaluations.append(exptrans.attach_evaluation())
+              self.recommendations.append(exptrans.recommendations)
+              self.evalrefs.append(exptrans.evalrefs)
               # get sources
               s= exptrans.sources.all().values_list('source',flat=True)
               self.refs.append(s)
@@ -601,11 +626,20 @@ class TransitionsExp( Model):
      def __unicode__(self):
         return self.spfitstr()           
                 
+     def attach_evaluation(self):
+          """
+          """
+          self.qualities=[]
+          self.recommendations=[]
+          self.evalrefs=[]
+          evals = self.evaluation_set.all()
+          for i in evals:
+               self.qualities.append(i.quality)
+               self.recommendations.append(i.recommended)
+               self.evalrefs.append(i.source_id)
+          return self.qualities
 
-
-
-
-
+     
 class Methods (Model):
     id = IntegerField(primary_key=True, db_column='ME_ID')
     ref = CharField(max_length=10, db_column='ME_Ref')
@@ -770,6 +804,22 @@ class SourcesIDRefs( Model):
 #                                db_column='RL_E_ID', null=False)
 
 
+class Evaluation(Model):
+     """
+     This class contains recommendations and evaluation information for specific
+     transitions.
+     One transition (ether experimental or calculated) is evaluated. The entity is
+     specified in source.
+     """
+     id = IntegerField(primary_key=True, db_column='EVA_ID')
+     specie = ForeignKey(Species, db_column='EVA_E_ID')
+     exptransition = ForeignKey(TransitionsExp, db_column='EVA_F_ID')
+     calctransition = ForeignKey(TransitionsCalc, db_column='EVA_P_ID')
+     recommended = BooleanField( db_column='EVA_Recommended')
+     quality = CharField(max_length=45, db_column='EVA_Quality')
+     source = ForeignKey(Sources, db_column='EVA_R_ID')
+     class Meta:
+          db_table = u'Evaluation'
 
 ##class Partitionfunctions( Model):
 ##     """
