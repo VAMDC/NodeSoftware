@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 from django.db.models import Q
 from django.conf import settings
 import sys
@@ -34,17 +34,39 @@ def attach_partionfunc(molecules):
     Attaches partition functions to each specie.
     """
     for molecule in molecules:
-        molecule.partionfuncT = []
-        molecule.partionfuncQ = []
-        
+        molecule.pfT = []
+        molecule.pfQ = []
+        molecule.pfnsiname = [] #nuclearspinisomer',
+        molecule.pflowestrovibstateid = []
+        molecule.pfsymmetrygroup = []
+        molecule.pfnsilowestrovibsym = []
+
         #pfs = Partitionfunctions.objects.filter(eid = molecule.id, mid__isnull=False)
         pfs = Partitionfunctions.objects.filter(specie = molecule, state="All")
-        
-        temp=pfs.values_list('temperature',flat=True)
-        pf = pfs.values_list('partitionfunc',flat=True)
-                   
-        molecule.partitionfuncT=temp
-        molecule.partitionfuncQ=pf
+        nsilist = pfs.values_list('nsi_id', flat=True).distinct()
+
+        for nsi in nsilist:
+            temp=pfs.filter(nsi_id=nsi).values_list('temperature',flat=True)
+            pf = pfs.filter(nsi_id=nsi).values_list('partitionfunc',flat=True)
+
+            try:
+                nsi = NuclearSpinIsomers.objects.get(pk=nsi)
+                nsiname = nsi.name
+                nsilowestrovibstateid = nsi.lowestrovibstate
+                nsisymmetrygroup = nsi.symmetrygroup
+                nsilowestrovibsym = nsi.lowestrovibsym
+            except:
+                nsiname = ''
+                nsilowestrovibstateid = ''
+                nsisymmetrygroup = ''
+                nsilowestrovibsym = '' 
+                
+            molecule.pfT.append(temp)
+            molecule.pfQ.append(pf)
+            molecule.pfnsiname.append(nsiname)
+            molecule.pflowestrovibstateid.append(nsilowestrovibstateid)
+            molecule.pfsymmetrygroup.append(nsisymmetrygroup)
+            molecule.pfnsilowestrovibsym.append(nsilowestrovibsym)
          
 
 def remap_species(datasets):

@@ -156,17 +156,55 @@ def makeSourceRefs(refs):
 def makePartitionfunc(keyword, G):
     """
     Create the Partionfunction tag element.
+    (T and Q can be lists of lists)
     """
     value = G(keyword)
     if not value:
         return ''
-    temperature = G(keyword + 'T')
-    partitionfunc = G(keyword)
-    string = '<PartitionFunction><T units="K"><DataList>'
-    string += " ".join(str(temp) for temp in temperature)
-    string += '</DataList></T><Q><DataList>'
-    string += " ".join(str(q) for q in partitionfunc)
-    string += '</DataList></Q></PartitionFunction>'
+
+    temperature = value
+    unit = G(keyword+'Unit')
+    partitionfunc = G(keyword+'Q')
+    comments = G(keyword+'Comments')
+    # Nuclear Spin Isomer Information 
+    nsilowrovibsym = G(keyword+'NSILowestRoVibSym')
+    nsiname = G(keyword+'NSIName')
+    nsisymgroup = G(keyword+'NSISymGroup')
+    nsistateref = G(keyword+'NSILowestEnergyStateRef')
+
+    if not isiterable(value[0]):
+        Npf = 1
+        temperature = [temperature]
+        unit = [unit]
+        partitionfunc = [partitionfunc]
+        comments = [comments]
+        # Nuclear Spin Isomer Information 
+        nsilowrovibsym = [nsilowrovibsym]
+        nsiname = [nsiname]
+        nsisymgroup = [nsisymgroup]
+        nsistateref = [nsistateref]
+    else:
+        Npf = len(temperature)
+        unit = makeiter(unit,Npf)
+
+    string = ''
+    for i in xrange(Npf):
+        string += '<PartitionFunction>'
+        if len(comments)>i and comments[i]: string += '<Comments>%s</Comments>' % comments[i]
+        string += '<T units="%s"><DataList>' % (unit[i] if (len(unit)>i and unit[i]) else 'K')
+        string += " ".join(str(temp) for temp in temperature[i])
+        string += '</DataList></T>'
+        string += '<Q><DataList>'
+        string += " ".join(str(q) for q in partitionfunc[i])
+        string += '</DataList></Q>'
+        if len(nsiname)>i and nsiname[i]:
+            string += makePrimaryType("NuclearSpinIsomer", "NuclearSpinIsomer",G,
+                                  extraAttr={"lowestEnergyStateRef":'S%s-%s' % (G('NodeID'), nsistateref[i])})
+            string += "<Name>%s</Name>" % nsiname[i]
+            string += "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (nsisymgroup[i], nsilowrovibsym[i])
+            string += "</NuclearSpinIsomer>"
+        
+        string += '</PartitionFunction>'
     return string
 
 def makePrimaryType(tagname, keyword, G, extraAttr={}):
@@ -214,7 +252,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     value = G(keyword)
     if not value:
         return ''
-
+    
     unit = G(keyword + 'Unit')
     method = G(keyword + 'Method')
     comment = G(keyword + 'Comment')
@@ -314,15 +352,13 @@ def makeEvaluation(keyword, G, j=None):
     build the elements for evaluation that belong
     to DataType.
     """
-    print >> sys.stderr, "Evaluation"+keyword
     evs = G(keyword + 'Eval')
-    print >> sys.stderr, evs
     if not evs:
         return ''
 
     if j is not None:
         evs=evs[j]
-        print >> sys.stderr, "J: %d" % j
+
         ev_list = makeiter(evs)
         nevs = len(ev_list)
         try:

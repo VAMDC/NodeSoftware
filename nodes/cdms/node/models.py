@@ -464,6 +464,9 @@ class TransitionsCalc( Model):
      
      def __unicode__(self):
           return u'ID:%s Tag:%s Freq: %s'%(self.id,self.speciestag,self.frequency)
+
+     def specieid(self):
+          return '%s-hyp%s' % (self.specie_id,self.hfsflag)
      
      def attach_evaluation(self):
           """
@@ -843,6 +846,7 @@ class Partitionfunctions( Model):
      molecule =  ForeignKey(Molecules, db_column='PF_M_ID', blank=True, null = True)
      specie =  ForeignKey(Species, db_column='PF_E_ID')
      dataset =  ForeignKey(Datasets, db_column='PF_DAT_ID', blank=True, null = True)
+     nsi =  ForeignKey(NuclearSpinIsomers, db_column='PF_NSI_ID', blank=True, null = True)
      temperature = FloatField(db_column='PF_Temperature')
      partitionfunc = FloatField(db_column='PF_Partitionfunction')
      state = CharField(max_length=100, db_column = 'PF_State')
