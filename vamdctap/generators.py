@@ -135,7 +135,7 @@ def makeOptionalTag(tagname, keyword, G, extraAttr={}):
     elif isiterable(content):
         s = []
         for c in content:
-            s.append( '<%s>%s</%s>'%(tagname,content,tagname) )
+            s.append( '<%s>%s</%s>'%(tagname,c,tagname) )
         return ''.join(s)
     else:
         extra = "".join([' %s="%s"'% (k, v) for k, v in extraAttr.items()])
@@ -1399,6 +1399,12 @@ def XsamsRadTrans(RadTrans):
         yield makeOptionalTag('TransitionKind','RadTransProbabilityKind',G)
         yield makeDataType('EffectiveLandeFactor', 'RadTransEffectiveLandeFactor', G)
         yield '</Probability>\n'
+
+        yield "<ProcessClass>"
+        yield makeOptionalTag('UserDefinition', 'RadTransUserDefinition',G)
+        yield makeOptionalTag('Code','RadTransCode',G)
+        yield makeOptionalTag('IAEACode','RadTransIAEACode',G)
+        yield "</ProcessClass>"
 
         if hasattr(RadTran, 'XML_Broadening'):
             yield RadTran.XML_Broadening()

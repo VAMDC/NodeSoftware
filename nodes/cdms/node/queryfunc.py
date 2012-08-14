@@ -43,12 +43,16 @@ def attach_partionfunc(molecules):
 
         #pfs = Partitionfunctions.objects.filter(eid = molecule.id, mid__isnull=False)
         pfs = Partitionfunctions.objects.filter(specie = molecule, state="All")
+
+        # Get List of all nuclear spin isomers "None" should be included and gives
+        # partition functions which do not distinguish between nuclear spin isomers.
         nsilist = pfs.values_list('nsi_id', flat=True).distinct()
 
         for nsi in nsilist:
             temp=pfs.filter(nsi_id=nsi).values_list('temperature',flat=True)
             pf = pfs.filter(nsi_id=nsi).values_list('partitionfunc',flat=True)
 
+            # Get information on nuclear spin isomers or Null
             try:
                 nsi = NuclearSpinIsomers.objects.get(pk=nsi)
                 nsiname = nsi.name
@@ -95,58 +99,32 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
     - Number of states
     """
 
-#    if filteronatoms:
-#        spids = set( transs.values_list('specie_id',flat=True).distinct() )
-#    else:
-#        spids = transs.values_list('specie_id',flat=True)
-    trans_dats = transs.values_list('dataset',flat=True)
-    dats = Datasets.objects.filter(pk__in=trans_dats, archiveflag=0)
+    # Get list of specie-ids which occur in transitions
+    if filteronatoms:
+        spids = set( transs.values_list('specie_id',flat=True).distinct() )
+    else:
+        spids = transs.values_list('specie_id',flat=True)
 
-    dat_atoms = dats.filter(specie__molecule__numberofatoms__exact='Atomic').filter(specie__origin=5, specie__archiveflag=0)
-    dat_molecules = dats.exclude(specie__molecule__numberofatoms__exact='Atomic').filter(specie__origin=5, specie__archiveflag=0)
-
-    atoms = remap_species(dat_atoms)
-    molecules = remap_species(dat_molecules)
-
-#    atom_idxlist = []
-#    atoms = []
-
-#    for i in dat_atoms:
-#        specieid = '%s-hyp%s' % (i.specie.id,i.hfsflag)
-#        if specieid not in atom_idxlist:
-#            atom_idxlist.append(specieid)
-#            i.specie.hfs = i.hfsflag
-#            i.specie.specieid = specieid
-#            atoms.append(i.specie)
-
-
-
-    #spids = set(dats.values_list('specie').distinct())
-    #dat_list = set(dats.values_list('id').distinct())
-    #if filteronatoms:
-    #    spids = set( transs.values_list('dataset',flat=True).distinct() )
-    #else:
-    #    spids = transs.values_list('specie_id',flat=True)
-
-        
     # Species object for CDMS includes Atoms AND Molecules. Both can only
     # be distinguished through numberofatoms-field
- #   atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic', origin=5, archiveflag=0)
- #   molecules = Species.objects.filter(pk__in=spids, origin=5, archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
+    atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic', origin=5, archiveflag=0)
+    molecules = Species.objects.filter(pk__in=spids, origin=5, archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
+
     # Calculate number of species in total
-    nspecies = len(atoms) + len(molecules)
+    nspecies = atoms.count() + molecules.count()
+
     # Intialize state-counter
     nstates = 0
     
     if addStates:
         # Loop through list of species and attach states
         for specie in chain( molecules):
-            dds=Datasets.objects.filter(specie=specie, archiveflag=0, hfsflag=specie.hfs).values_list('id',flat=True)
-            dds=set(dds)
+            #dds=Datasets.objects.filter(specie=specie, archiveflag=0, hfsflag=specie.hfs).values_list('id',flat=True)
+            #dds=set(dds)
 
             # Get distinct list of States which
             # occur as lower or upper state in transitions
-            subtranss = transs.filter(dataset__in=dds) #specie=specie, dataset__archiveflag=0, dataset__hfsflag=specie.hfs)
+            subtranss = transs.filter(specie=specie, dataset__archiveflag=0)
             up=subtranss.values_list('upperstateref',flat=True)
             lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
@@ -172,11 +150,11 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
 
                 
         for specie in chain(atoms ):
-            dds=Datasets.objects.filter(specie=specie, archiveflag=0, hfsflag=specie.hfs).values_list('id',flat=True)
-            dds=set(dds)
+            #dds=Datasets.objects.filter(specie=specie, archiveflag=0, hfsflag=specie.hfs).values_list('id',flat=True)
+            #dds=set(dds)
             # Get distinct list of States which
             # occur as lower or upper state in transitions
-            subtranss = transs.filter(dataset__in=dds) #specie=specie, dataset__archiveflag=0, dataset__hfsflag=specie.hfs)
+            subtranss = transs.filter(specie=specie, dataset__archiveflag=0)
             up=subtranss.values_list('upperstateref',flat=True)
             lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
@@ -210,11 +188,23 @@ def get_sources(atoms, molecules, methods = []):
     sexplist = slist.filter(transitionexp__gt=0)
 
     # Loop over species list and get sources
-    for src in ids: #slist.values_list('specie',flat=True):
-        mesrc=SourcesIDRefs.objects.filter(Q(specie=src)).distinct().values_list('source',flat=True)
-        this_method = Method(src,src,'derived','derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data',mesrc)
-        methods.append(this_method)
+#    for src in ids: #slist.values_list('specie',flat=True):
+#        mesrc=SourcesIDRefs.objects.filter(Q(specie=src)).distinct().values_list('source',flat=True)
+#        this_method = Method(src,src,'derived','derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data',mesrc)
+#        methods.append(this_method)
 
+    datasets = Datasets.objects.filter(specie__in=ids, type__in=['egy','cat','mrg','lin'], archiveflag=0)
+    for dat in datasets:
+        mesrc=SourcesIDRefs.objects.filter(Q(specie=dat.specie_id)).distinct().values_list('source',flat=True)
+        if dat.type == 'lin':
+            description = 'experimental transition frequencies: %s' % dat.comment
+            category = 'observed'
+        else:
+            description = 'derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data: %s' % dat.comment
+            category='derived'
+        this_method = Method(dat.id, dat.id,category,description,mesrc)
+        methods.append(this_method)
+        
     # Loop over species list and get sources
     for src in sexplist.values_list('source',flat=True).distinct():
         this_method =  Method('EXP'+str(src),src,'experiment','experiment',src)
@@ -358,15 +348,16 @@ def setupResults(sql):
     for specie in chain(atoms, molecules):
         if specie.changedate<lastmodified:
             lastmodified = specie.changedate
-                
+
+    # Calculate estimated size of xsams-file
     if ntranss+nmolecules+nsources+natoms+nstates>0:
-        size_estimate='%.2f'%(ntranss*0.0014 + 0.01)
+        size_estimate='%.2f' % (nstates*0.0008755624 +ntranss*0.000561003 +nmolecules*0.001910 +nsources * 0.0005+0.01)
     else: size_estimate='0.00'
 
 
     # this header info is used in xsams-header-info (html-request)
     headerinfo={\
-        'Truncated':"0", # CDMS will not truncate data (at least for now)
+        'Truncated':"100", # CDMS will not truncate data (at least for now)
         'count-sources':nsources, 
         'count-species':nspecies,
         'count-molecules':nmolecules,

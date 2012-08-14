@@ -66,14 +66,15 @@ RETURNABLES = {
 #'MoleculeNuclearSpins':'Molecule.',
 #'MoleculeNuclearSpinsAtomArray':'Molecule.',
 #'MoleculeNuclearSpinsBondArray':'Molecule.',
-'MoleculeSpeciesID':'Molecule.specieid',
+'MoleculeSpeciesID':'Molecule.id',
 'MoleculeStructure': 'Molecule',    # we have an XML() method for this
 
 #'MoleculeStateCharacLifeTime':'MoleculeState.',
 #'MoleculeStateCharacNuclearSpinSymmetry':'MoleculeState.',
 'MoleculeStateEnergy':'MoleculeState.energy',
 'MoleculeStateEnergyOrigin':'MoleculeState.origin()', #'Zero-point energy',
-'MoleculeStateEnergyUnit':'1/cm', 
+'MoleculeStateEnergyUnit':'1/cm',
+'MoleculeStateEnergyMethod':'MoleculeState.dataset_id',
 'MoleculeStateTotalStatisticalWeight':'MoleculeState.degeneracy', # has to be changed  <- new
 'MoleculeStateNSIName':'MoleculeState.nsiname()', #nuclearspinisomer',
 'MoleculeStateNSILowestEnergyStateRef':'MoleculeState.nsi.lowestrovibstateid()', #nsiorigin()',
@@ -83,6 +84,7 @@ RETURNABLES = {
 'MoleculeStateID':'MoleculeState.id',
 #'MoleculeStateQuantumNumbers':'MoleculeState.parsed_qns',
 'MoleculeStateQuantumNumbers':'MoleculeState',
+#'MoleculeStateMethod':'MoleculeState.dataset_id',
 'MoleculeStoichiometricFormula':'Molecule.molecule.stoichiometricformula',
 'MoleculeOrdinaryStructuralFormula':'Molecule.isotopolog',
 'MoleculeComment': 'Molecule.shortcomment', #'Molecule.name',
@@ -146,14 +148,14 @@ RETURNABLES = {
 #'RadTransProbabilityWeightedOscillatorStrength':'RadTran.',
 'RadTransProcess':'excitation', # CDMS transitions are always absorption lines
 #'RadTransRefs':'RadTran.',
-'RadTransSpeciesRef':'RadTran.specieid()', #specie_id',
+'RadTransSpeciesRef':'RadTran.specie_id',
 #'RadTransWavelength':'RadTran.',
 #'RadTransWavenumber':'RadTran.',
 'RadTransFrequencyEval':'RadTran.evaluations',
 'RadTransFrequencyEvalRecommended':'RadTran.recommendations',
 'RadTransFrequencyEvalRef':'RadTran.evalrefs',
 
-#'RadTransCode':'rota',
+'RadTransCode':'RadTran.process_class()',
 
 'SourceAuthorName':'Source.getAuthorList()',
 'SourceCategory':'Source.category',

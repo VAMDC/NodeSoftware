@@ -186,7 +186,8 @@ class States( Model):
      
      class Meta:
        db_table = u'Energies'
-     
+       ordering = ['energy']
+       
      def origin(self):
           return '%s-origin-%s' % (self.energyorigin, self.specie_id)
 
@@ -467,6 +468,12 @@ class TransitionsCalc( Model):
 
      def specieid(self):
           return '%s-hyp%s' % (self.specie_id,self.hfsflag)
+
+     def process_class(self):
+          pclass=['rota']
+          if self.hfsflag>0:
+               pclass.append('hyp%d' % self.hfsflag)
+          return pclass
      
      def attach_evaluation(self):
           """
@@ -493,17 +500,19 @@ class TransitionsCalc( Model):
          - methods for experimental data
 
          """
-
+         
          # Attach the calculated frequency first
          self.frequencies=[self.frequency]
          self.units=[self.unit]
          self.uncertainties=[self.uncertainty]
          self.refs=[""]
-         self.methods=[self.specie.id]
+         self.methods=[self.dataset_id]
          self.evaluations=[self.attach_evaluation()]
          self.recommendations=[self.recommendations]
          self.evalrefs=[self.evalrefs]
+
          exptranss = TransitionsExp.objects.filter(specie=self.specie,
+                                                   dataset__archiveflag=0,
                                                    qnup1=self.qnup1,
                                                    qnlow1=self.qnlow1,
                                                    qnup2=self.qnup2,
@@ -528,9 +537,10 @@ class TransitionsCalc( Model):
               s= exptrans.sources.all().values_list('source',flat=True)
               self.refs.append(s)
 
-              if s.count()>0:
-                   method = "EXP" + "-".join(str(source) for source in s)
-                   self.methods.append(method)
+              #if s.count()>0:
+              #     method = "EXP" + "-".join(str(source) for source in s)
+              #     self.methods.append(method)
+              self.methods.append(exptrans.dataset_id)
 
          return self.frequencies
 
@@ -565,6 +575,65 @@ class TransitionsCalc( Model):
      class Meta:
         db_table = u'Predictions'
         
+
+
+
+class Sources( Model):
+     """
+     This class contains references 
+     """
+     id        =  IntegerField(primary_key=True, db_column='R_ID')
+     authors   =  CharField(max_length=500, db_column='R_Authors', blank=True)
+     category  =  CharField(max_length=100, db_column='R_Category', blank=True)
+     name      =  CharField(max_length=200, db_column='R_SourceName', blank=True)
+     year      =  IntegerField(null=True, db_column='R_Year', blank=True)
+     vol       =  CharField(max_length=20, db_column='R_Volume', blank=True)
+     doi       =  CharField(max_length=50, db_column='R_DOI', blank=True)
+     pageBegin =  CharField(max_length=10, db_column='R_PageBegin', blank=True)
+     pageEnd   =  CharField(max_length=10, db_column='R_PageEnd', blank=True)
+     uri       =  CharField(max_length=100, db_column='R_URI', blank=True)
+     publisher =  CharField(max_length=300, db_column='R_Publisher', blank=True)
+     city      =  CharField(max_length=80, db_column='R_City', blank=True)
+     editors   =  CharField(max_length=300, db_column='R_Editors', blank=True)
+     productionDate =  DateField(max_length=12, db_column='R_ProductionDate', blank=True)
+     version   =  CharField(max_length=20, db_column='R_Version', blank=True)
+     url       =  CharField(max_length=200, db_column='R_URL', blank=True)
+     comments  =  CharField(max_length=100, db_column='R_Comments', blank=True)
+     class Meta:
+          db_table = u'ReferenceBib'
+          
+     def getAuthorList(self):
+          try:
+               return [name.replace("{","").replace("}","") for name in self.authors.split("},{")]
+          except:
+               return none
+
+#    referenceId =  ForeignKey(SourcesIDRefs, related_name='isRefId',
+#                                db_column='rId', null=False)
+
+class Parameter (Model):
+     id = IntegerField(primary_key=True, db_column='PAR_ID')
+     specie = ForeignKey(Species, db_column='PAR_E_ID')
+     speciestag = IntegerField(db_column='PAR_M_TAG')
+     parameter = CharField(max_length=100, db_column='PAR_PARAMETER')
+     value = CharField(max_length=100, db_column='PAR_VALUE')
+     unit = CharField(max_length=7, db_column='PAR_UNIT')
+     type = CharField(max_length=30, db_column='PAR_Type')
+     rId = ForeignKey(Sources, db_column='PAR_R_ID')
+     class Meta:
+          db_table = u'Parameter'
+
+     def parameter_html(self):
+          u_score = self.parameter.find('_')
+          if u_score<0:
+               return self.parameter
+          else:
+               return self.parameter.replace(self.parameter[u_score:u_score+2],'<sub>'+self.parameter[u_score+1:u_score+2]+'</sub>')
+#          else:
+#               return self.parameter
+          
+          
+
         
 class TransitionsExp( Model):
      """
@@ -595,6 +664,7 @@ class TransitionsExp( Model):
      papid                 = IntegerField(db_column='F_PAP_ID')  # obsolete
      dataset               = ForeignKey(Datasets, db_column='F_DAT_ID')
      timestamp             = DateTimeField(db_column='F_TIMESTAMP')
+     sources               = ManyToManyField(Sources, through='SourcesIDRefs')
      class Meta:
        db_table = u'Frequencies'
        
@@ -641,6 +711,23 @@ class TransitionsExp( Model):
                self.recommendations.append(i.recommended)
                self.evalrefs.append(i.source_id)
           return self.qualities
+
+class SourcesIDRefs( Model):
+     """
+     This class maps references to classes: species, datasets, frequency
+     """
+     id  =  AutoField(primary_key=True, db_column='RL_ID')
+     source =  ForeignKey(Sources, null=True, db_column='RL_R_ID')
+     specie   =  ForeignKey(Species, null=True, db_column='RL_E_ID')
+     dataset =  ForeignKey(Datasets, null=True, db_column='RL_DAT_ID', blank=True)
+     transitionexp  =  ForeignKey(TransitionsExp, null=True, db_column='RL_F_ID', related_name='sources', blank=True)
+     parameter  =  ForeignKey(Parameter, null=True, db_column='RL_F_ID', blank=True)
+     class Meta:
+          db_table = u'ReferenceList'
+
+#     referenceid = ForeignKey(Sources, db_column='RL_R_ID')
+#    stateReferenceId =  ForeignKey(StatesMolecules, related_name='isStateRefId',
+#                                db_column='RL_E_ID', null=False)
 
      
 class Methods (Model):
@@ -731,80 +818,6 @@ class AtomArray( Model):
      
      class Meta:
           db_table = u'AtomArray'
-
-
-
-class Sources( Model):
-     """
-     This class contains references 
-     """
-     id        =  IntegerField(primary_key=True, db_column='R_ID')
-     authors   =  CharField(max_length=500, db_column='R_Authors', blank=True)
-     category  =  CharField(max_length=100, db_column='R_Category', blank=True)
-     name      =  CharField(max_length=200, db_column='R_SourceName', blank=True)
-     year      =  IntegerField(null=True, db_column='R_Year', blank=True)
-     vol       =  CharField(max_length=20, db_column='R_Volume', blank=True)
-     doi       =  CharField(max_length=50, db_column='R_DOI', blank=True)
-     pageBegin =  CharField(max_length=10, db_column='R_PageBegin', blank=True)
-     pageEnd   =  CharField(max_length=10, db_column='R_PageEnd', blank=True)
-     uri       =  CharField(max_length=100, db_column='R_URI', blank=True)
-     publisher =  CharField(max_length=300, db_column='R_Publisher', blank=True)
-     city      =  CharField(max_length=80, db_column='R_City', blank=True)
-     editors   =  CharField(max_length=300, db_column='R_Editors', blank=True)
-     productionDate =  DateField(max_length=12, db_column='R_ProductionDate', blank=True)
-     version   =  CharField(max_length=20, db_column='R_Version', blank=True)
-     url       =  CharField(max_length=200, db_column='R_URL', blank=True)
-     comments  =  CharField(max_length=100, db_column='R_Comments', blank=True)
-     class Meta:
-          db_table = u'ReferenceBib'
-          
-     def getAuthorList(self):
-          try:
-               return [name.replace("{","").replace("}","") for name in self.authors.split("},{")]
-          except:
-               return none
-
-#    referenceId =  ForeignKey(SourcesIDRefs, related_name='isRefId',
-#                                db_column='rId', null=False)
-
-class Parameter (Model):
-     id = IntegerField(primary_key=True, db_column='PAR_ID')
-     specie = ForeignKey(Species, db_column='PAR_E_ID')
-     speciestag = IntegerField(db_column='PAR_M_TAG')
-     parameter = CharField(max_length=100, db_column='PAR_PARAMETER')
-     value = CharField(max_length=100, db_column='PAR_VALUE')
-     unit = CharField(max_length=7, db_column='PAR_UNIT')
-     type = CharField(max_length=30, db_column='PAR_Type')
-     rId = ForeignKey(Sources, db_column='PAR_R_ID')
-     class Meta:
-          db_table = u'Parameter'
-
-     def parameter_html(self):
-          u_score = self.parameter.find('_')
-          if u_score<0:
-               return self.parameter
-          else:
-               return self.parameter.replace(self.parameter[u_score:u_score+2],'<sub>'+self.parameter[u_score+1:u_score+2]+'</sub>')
-#          else:
-#               return self.parameter
-          
-          
-class SourcesIDRefs( Model):
-     """
-     This class maps references to classes: species, datasets, frequency
-     """
-     id  =  AutoField(primary_key=True, db_column='RL_ID')
-     source =  ForeignKey(Sources, null=True, db_column='RL_R_ID')
-     specie   =  ForeignKey(Species, null=True, db_column='RL_E_ID')
-     dataset =  ForeignKey(Datasets, null=True, db_column='RL_DAT_ID', blank=True)
-     transitionexp  =  ForeignKey(TransitionsExp, null=True, db_column='RL_F_ID', related_name='sources', blank=True)
-     parameter  =  ForeignKey(Parameter, null=True, db_column='RL_F_ID', blank=True)
-     class Meta:
-          db_table = u'ReferenceList'
-
-#     referenceid = ForeignKey(Sources, db_column='RL_R_ID')
-#    stateReferenceId =  ForeignKey(StatesMolecules, related_name='isStateRefId',
-#                                db_column='RL_E_ID', null=False)
 
 
 class Evaluation(Model):
