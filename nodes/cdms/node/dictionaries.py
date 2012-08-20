@@ -175,6 +175,21 @@ RETURNABLES = {
 from vamdctap.unitconv import *
 from string import strip
 import sys
+# Q-objects for always True / False
+QTrue = Q(pk=F('pk'))
+QFalse = ~QTrue
+
+OPTRANS= { # transfer SQL operators to django-style
+    '<':  '__lt',
+    '>':  '__gt',
+    '=':  '__exact',
+    '<=': '__lte',
+    '>=': '__gte',
+    '!=': '',
+    '<>': '',
+    'in': '__in',
+    'like': '',
+}
 
 def atomsymbol(r,op,*rhs):
     """
@@ -212,6 +227,40 @@ def stoichiometricformula(r,op,rhs):
     except:
         return Q(pk__isnull=True)
 
+
+def processclass(r, op, *rhs):
+
+    try:
+
+        if op=='in':
+            if not (rhs[0]=='(' and rhs[-1]==')'):
+                log.error('Values for IN not bracketed: %s'%rhs)
+            else: rhs=rhs[1:-1]
+            
+            ins = map(strip,rhs,('\'"',)*len(rhs))
+
+            for i in ins:
+                if i[:3]=='hyp':
+                    try:
+                        q = q & Q(**{'hfsflag__exact':i[3]})
+                    except NameError:
+                        q = Q(**{'hfsflag__exact':i[3]})
+            return q
+        else:
+            op = OPTRANS[op]
+#            ins = rhs.strip('\'"')
+            ins = map(strip,rhs,('\'"',)*len(rhs))
+            ins = ins[0]
+            if ins[:3]=='hyp':
+                return Q(**{'hfsflag'+op:ins[3]})
+            else:
+                return QFalse
+            
+            
+        return QFalse
+    except:
+        return QFalse
+
 RESTRICTABLES = { 
 #'AsOfDate':'',
 #'AtomInchi':'',
@@ -245,7 +294,7 @@ RESTRICTABLES = {
 #'MoleculeNormalModeIntensity':'',
 #'MoleculeStateCharacLifeTime':'',
 #'MoleculeStateCharacNuclearSpinSymmetry':'',
-'MoleculeStateNuclearSpinIsomer':'lowerstateref__nsi__name', #nuclearspinisomer',
+'MoleculeStateNSIName':'lowerstateref__nsi__name', #nuclearspinisomer',
 'MoleculeStateEnergy':'lowerstateref__energy',
 #'MoleculeStateID':'',
 'MoleculeStoichiometricFormula':'specie__molecule__stoichiometricformula',
@@ -269,6 +318,7 @@ RESTRICTABLES = {
 'RadTransWavelength':('frequency',Angstr2MHz),
 #'RadTransWavelength':'frequency',
 'RadTransWavenumber':('frequency',invcm2MHz),
+'RadTransCode':processclass,
 #'SourceCategory':'',
 #'SourceYear':'',
 'MoleculeSpeciesID':'specie',

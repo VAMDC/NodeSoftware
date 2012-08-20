@@ -177,16 +177,6 @@ def check_query(postvars):
     htmlcode += "<ul class='vlist'>"
     htmlcode += "<li><a href='#' onclick=\"$('#a_form_species').click();$('#a_form_species').addClass('activeLink');\">"
 
-#    if len(idlist)>0:
-#        htmlcode += " MoleculeSpeciesID in ( %s ) " % ', '.join ( map(str, idlist))
-#        if len(inchikeys)+len(molecules)>0:
-#            htmlcode += " OR "
-#    if len(inchikeys)>0:
-#        htmlcode += " InchiKey in ( %s ) " % ', '.join (["'%s'" % ikey for ikey in inchikeys])
-#        if len(molecules)>0:
-#            htmlcode += " OR "
-#    if len(molecules)>0:
-#        htmlcode += " MoleculeStoichiometricFormula in ( %s ) " % ', '.join (["'%s'" % ikey for ikey in molecules])
     htmlcode += "(" + " OR ".join(spec_array) + ")"
     htmlcode += "</li>"
 
@@ -194,10 +184,11 @@ def check_query(postvars):
     #######################################
     # CREATE QUERY STRING FOR TRANSITIONS
     #######################################
+    transition_filter = False
 
+    ## FREQUECY RANGE ##
     if 'UnitNu' in postvars:
         unitNu = postvars['UnitNu']
-#        htmlcode += "<p class='info'>AND RadTransFrequencyUnit = %s </p>" % unitNu
     else:
         unitNu = "GHz"
 
@@ -207,53 +198,159 @@ def check_query(postvars):
     else:
         unitfactor = 1.0
 
-    if ('T_SEARCH_FREQ_FROM' in postvars) & ('T_SEARCH_FREQ_TO' in postvars):
-        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Frequency between %s %s AND %s %s </a></li>" % (postvars['T_SEARCH_FREQ_FROM'], unitNu, postvars['T_SEARCH_FREQ_TO'], unitNu)
-            
-    if 'T_SEARCH_FREQ_FROM' in postvars :
-        try:
-            freqfrom = unitfactor * float(postvars['T_SEARCH_FREQ_FROM'])
-        except ValueError:
-            Error = "Lower Frequency is not a number "
-            freqfrom = 0
-
+    # Get Frequency Limits
+    try:
+        freqfrom = unitfactor * float(postvars['T_SEARCH_FREQ_FROM'])
         if (freqfrom>0):
             angstromupper =  2.99792458E12 / freqfrom
             tapxsams += " AND RadTransWavelength < %lf " % angstromupper
             tapcdms += " AND RadTransWavelength < %lf " % angstromupper
-
-        #tapxsams += " AND RadTransFrequency > %lf " % freqfrom
-
-    if 'T_SEARCH_FREQ_TO' in postvars :
-        try:
-            freqto = unitfactor * float(postvars['T_SEARCH_FREQ_TO'])
-        except ValueError:
-            Error = "Lower Frequency is not a number "
-            freqto = 0
-
+            transition_filter = True
+    except KeyError:
+        freqfrom = None
+    except ValueError:
+        Error = "Lower Frequency is not a number "
+        freqfrom = None
+    except:
+        pass
+    
+    try:
+        freqto = unitfactor * float(postvars['T_SEARCH_FREQ_TO'])
         if (freqto>0):
             angstromlower = 2.99792458E12 / freqto            
             tapxsams += " AND RadTransWavelength > %lf " % angstromlower
             tapcdms += " AND RadTransWavelength > %lf " % angstromlower
+        else:
+            # do not return anything (freqto <= 0 should always be false)
+            tapxsams += " AND RadTransWavelength < 0 " 
+            tapcdms += " AND RadTransWavelength < 0 " 
+            
+        transition_filter = True
+    except KeyError:
+        freqto = None
+    except ValueError:
+        Error = "Lower Frequency is not a number "
+        freqto = None
+    except:
+        pass
 
-        #tapxsams += " AND RadTransFrequency < %s " % freqto
-
-    if ('T_SEARCH_FREQ_FROM' not in postvars) & ('T_SEARCH_FREQ_TO' not in postvars):
-        htmlcode += "<a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">"
-        htmlcode += "<p style='background-color:#FFFF99' class='important'>FREQUENCY RANGE: not specified => no restrictions</p></a>"
+    if ((freqfrom is not None) &( freqto is not None)):
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Frequency between %s %s AND %s %s </a></li>" % (postvars['T_SEARCH_FREQ_FROM'], unitNu, postvars['T_SEARCH_FREQ_TO'], unitNu)
+    elif (freqfrom is not None):
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Frequency > %s %s </a></li>" % (postvars['T_SEARCH_FREQ_FROM'], unitNu)
+    elif (freqto is not None):
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Frequency < %s %s </a></li>" % (postvars['T_SEARCH_FREQ_TO'], unitNu)
+        
                                                                                                                                                                            
-    # CHECK Intensity
-    if ('T_SEARCH_INT' in postvars) & (postvars['T_SEARCH_INT']>-10):
-        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Intensity (lg-units) > %s </a></li>" % postvars['T_SEARCH_INT']
+    ## INTENSITY LIMITS 
+    try:
+        lgint = float(postvars['T_SEARCH_INT'])
+        transition_filter = True
+    except KeyError:
+        lgint = None
+    except ValueError:
+        lgint = None
+
+    try:
+        if postvars['IntUnit']=='A':
+            htmlfield = 'Einstein A value'
+            xsamsfield = 'RadTransProbabilityA'
+        else:
+            htmlfield = 'Intensity (lg-units)'            
+            xsamsfield = 'RadTransProbabilityIdealisedIntensity'
+    except:
+        htmlfield = 'Intensity (lg-units)'            
+        xsamsfield = 'RadTransProbabilityIdealisedIntensity'
+        
+    if (lgint is not None): #'T_SEARCH_INT' in postvars) & (postvars['T_SEARCH_INT']>-10):
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND %s > %s </a></li>" % (htmlfield, postvars['T_SEARCH_INT'])
        # tapxsams += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
-        tapcdms += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
+        tapcdms += " AND %s > %s " % (xsamsfield, postvars['T_SEARCH_INT'])
+        tapxsams += " AND %s > %s " % (xsamsfield, postvars['T_SEARCH_INT'])
+#    else:
+#        htmlcode += """<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\"> 
+#                       <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
+#                       </a></li>\n """
+
+
+    ## PROCESS CLASS (HFS-FILTERS)
+    try:
+        hfs = postvars['T_SEARCH_HFSCODE']
+        if hfs:
+            transition_filter=True
+            tapcdms += " AND RadTransCode = '%s' " % (hfs)
+            tapxsams += " AND RadTransCode = '%s' " % (hfs)
+        else:
+            hfs = None
+    except KeyError:
+        hfs = None
+
+    if (hfs is not None): 
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Process code  in ( '%s' ) </a></li>" % (hfs)
+       # tapxsams += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
+
+    
+
+    if not transition_filter: #if ((freqfrom is None) & (freqto is None)):
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">"
+        htmlcode += "<p style='background-color:#FFFF99' class='important'>No restrictions on transitions</p></a></li>"
+
+    #######################################
+    # CREATE QUERY STRING FOR STATES
+    #######################################
+    state_filter = False
+    ## STATE ENERGY FILTER
+    try:
+        energyfrom = float(postvars['T_SEARCH_ENERGY_FROM'])
+        tapxsams += " AND StateEnergy > %lf " % energyfrom
+        tapcdms += " AND StateEnergy > %lf " % energyfrom
+        state_filter = True
+    except KeyError:
+        energyfrom = None
+    except ValueError:
+        energyfrom = None
+        
+    try:
+        energyto = float(postvars['T_SEARCH_ENERGY_TO'])
+        tapxsams += " AND StateEnergy < %lf " % energyto
+        tapcdms += " AND StateEnergy < %lf " % energyto
+        state_filter = True
+    except KeyError:
+        energyto = None
+    except ValueError:
+        energyto = None
+
+    ## NUCLEAR SPIN ISOMER FILTER
+    try:
+        nsi = postvars['T_SEARCH_NSI']
+        if nsi:
+            tapxsams += " AND MoleculeStateNSIName = '%s' " % nsi
+            tapcdms += " AND MoleculeStateNSIName = '%s' " % nsi
+            state_filter = True
+        else:
+            nsi = None
+    except KeyError:
+        nsi = None
+        
+
+    if not state_filter:
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">"
+        htmlcode += "<p style='background-color:#FFFF99' class='important'>No restrictions on states</p></a></li>"
     else:
-        htmlcode += """<a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\"> 
-                       <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
-                       </a>\n """
+        if ((energyfrom is not None) &( energyto is not None)):
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Energy between %s %s AND %s %s </a></li>" % (postvars['T_SEARCH_ENERGY_FROM'], 'cm<sup>-1</sup>', postvars['T_SEARCH_ENERGY_TO'], 'cm<sup>-1</sup>')
+        elif (energyfrom is not None):
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Energy > %s %s </a></li>" % (postvars['T_SEARCH_ENERGY_FROM'], 'cm<sup>-1</sup>')
+        elif (energyto is not None):
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Energy < %s %s </a></li>" % (postvars['T_SEARCH_ENERGY_TO'], 'cm<sup>-1</sup>')
+        
 
-    htmlcode += "</ul>"
+        if nsi is not None:
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Nuclear Spin Isomer = '%s' </a></li>" % (nsi)
 
+    #######################################
+    # RETURN QUERY STRING DEPENDEND ON DB
+    #######################################
     if 'database' in postvars:
         if postvars['database'] in ['cdms','jpl']:
             tap=tapcdms
@@ -261,6 +358,8 @@ def check_query(postvars):
             tap=tapxsams
     else:
         tap=tapcdms
+
+    htmlcode += "</ul>"
         
 #    return tapxsams, htmlcode
     return tap, htmlcode

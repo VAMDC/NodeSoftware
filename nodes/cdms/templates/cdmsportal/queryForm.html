@@ -5,9 +5,49 @@
 {% block content %}
 <form name="PARAMETER" aktion="cdms/showResults" class="yform full" method="post">
 
-<div id="main">
-  <!-- begin: #col1 - first float column -->
+<div class="hlist">
+  <ul>
+    <li><a href="#" onclick="$('#result').hide();$('#control').show();docShowSubpage('form_queryTrans');">Query</a></li>
+    <li><a href="#" onclick="$('#control').hide();$('#result').hide();">Nodes</a></li>
+    <li><a href="#" onclick="$('#control').hide();$('#result').show();docShowSubpage('queryresult');">Result</a></li>
+  </ul>
+</div>
 
+<div id="main">
+
+<div id="result" style="display:none;min-height:100ex;">
+  <!-- begin: #col1 - first float column -->
+  <div id="col1_r" style="background-color:white;width:5ex;" role="complementary">
+    <div id="col1_content" class="clearfix">
+
+      <div style="width:5ex;" class="float_leftw">t
+        <div class='rotate' style='position:absolute;top:87ex;'> 
+          <div class="hlist" style='position:absolute;width:87ex;'>
+            <ul>
+              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_functions').show();">Functions</a></li>
+              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_sources').show();">Sources</a></li>
+              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_methods').show();">Methods</a></li>
+              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_pfs').show();">Partition func.</a></li>
+              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_collisions').show();">Collisions</a></li>
+              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_radiative').show();">Transitions</a></li>
+              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_states').show();">States</a></li>
+              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_molecules').show();$('#list_atoms').show();">Species</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="col3" style="margin-left:8ex;" role="main">
+    <div id="col3_content" class="clearfix">
+      <div id ="queryresult" style="display:none;" class="subpage"> No query submitted yet. </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="control">
   <div id="col1" style="background-color:white;" role="complementary">
     <div id="col1_content" class="clearfix">
 
@@ -23,11 +63,27 @@
       </div> 
 </li>
 </ul>
-
+     <h6 class="vlist">FORMAT</h6>
+     <ul class="vlist">
+      <li>
+      <div class="type-select">
+        <SELECT class="log" NAME="T_TYPE" id="T_TYPE" >
+         <OPTION VALUE="spcat"> SPCAT </OPTION>
+         <OPTION VALUE="comfort"> Full quantum number description </OPTION>
+         <OPTION VALUE="xsams"> XSAMS (File) </OPTION>
+         <OPTION VALUE="rad3d"> Rad3d (XSAMS) </OPTION>
+         <OPTION VALUE="png"> Stick Spectrum (png) </OPTION>
+        </SELECT>
+      </div> 
+     </li>
+     </ul>
      <h6 class="vlist"> QUERY </h6>
      <ul class="vlist">
+      <li><a href="#" id="a_form_queryRefinements" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')">Overview</a></li>
+   <!--
       <li><a href="#" id="a_form_queryRefinements" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')">Query Transitions</a></li>
       <li><a href="#" onclick="docShowSubpage('form_queryStates')">Query States</a></li>
+-->
      </ul>
 
      <h6 class="vlist"> REFINEMENTS </h6>
@@ -35,7 +91,7 @@
    <!--      <li><a href="#" onclick="docShowSubpage('form_basic')">Basic</a></li> -->
       <li><a href="#" id="a_form_species" onclick="docShowSubpage('form_species')">Species</a></li> 
       <li><a href="#" id="a_form_transitions" onclick="docShowSubpage('form_transitions')">Transitions</a></li>
-      <li><a href="#" onclick="docShowSubpage('form_states')">States</a></li>
+      <li><a href="#" id="a_form_states" onclick="docShowSubpage('form_states')">States</a></li>
       <li><a href="#" onclick="docShowSubpage('form_output')">Output</a></li>
 
      </ul>
@@ -72,10 +128,11 @@ $(document).ready(function() {
 
 <DIV id="sectionPage">
 
-<!-- QUERY TRANSITION PAGE -->	    
+<!-- QUERY TRANSITION PAGE -->
   <div id="form_queryTrans" class="subpage" style="">
-    <h3><Strong>QUERY</strong>&nbsp;<i>TRANSITIONS</i></h3>
+<!--    <h3><Strong>QUERY</strong>&nbsp;<i>TRANSITIONS</i></h3>
     <p>&nbsp;</p>
+-->
 <!--
     <fieldset>
       <div class="legend">Database</div>
@@ -88,6 +145,22 @@ $(document).ready(function() {
       </div> 
     </fieldset> 
 -->
+
+    <fieldset>
+      <div class="legend">Current Query:Refinements</div>
+      <div id="refinements">
+       <ul class='vlist'>
+        <li><a href='#' onclick="$('#a_form_species').click();$('#a_form_species').addClass('activeLink');">MoleculeSpeciesID in ({% for id in speciesid_list %}XCDMS-{{id}}{% endfor %})</a></li>
+        <a href='#' onclick="$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');">
+          <p style='background-color:#FFFF99' class='important'>FREQUENCY RANGE: not specified => no restrictions</p>
+        </a>
+        <a href='#' onclick="$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');">
+          <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
+        </a>
+       </ul>
+      </div> <!-- DIV - REFINEMENTS -->
+    </fieldset>
+
     <fieldset>
       <div class="legend">Content</div>
 <div id="nodelist" class="nodes" style="display:none;clear:both">Processing ...</div>
@@ -153,20 +226,6 @@ $(document).ready(function() {
     </div> 
     </fieldset> 
 
-    <fieldset>
-      <div class="legend">Current Query:Refinements</div>
-      <div id="refinements">
-       <ul class='vlist'>
-        <li><a href='#' onclick="$('#a_form_species').click();$('#a_form_species').addClass('activeLink');">MoleculeSpeciesID in ({% for id in speciesid_list %}XCDMS-{{id}}{% endfor %})</a></li>
-        <a href='#' onclick="$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');">
-          <p style='background-color:#FFFF99' class='important'>FREQUENCY RANGE: not specified => no restrictions</p>
-        </a>
-        <a href='#' onclick="$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');">
-          <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
-        </a>
-       </ul>
-      </div> <!-- DIV - REFINEMENTS -->
-    </fieldset>
 
 
     <INPUT TYPE="HIDDEN" VALUE="SELECT ALL WHERE  ( {% for specie in species_list %} {% if not forloop.first %} OR {% endif %} MoleculeInchiKey = '{{specie.inchikey}}' {% endfor %} )" NAME="QUERY" ID="QUERY">
@@ -176,16 +235,9 @@ $(document).ready(function() {
       <div id="TAPxsams">SELECT ALL WHERE  ( {% for specie in species_list %} {% if not forloop.first %} OR {% endif %} MoleculeInchiKey = '{{specie.inchikey}}' {% endfor %} )</div>
     </fieldset> 
 
+<!--
     <fieldset><div class="legend">Data Format</div>
-      <div class="type-select">
-        <SELECT class="log" NAME="T_TYPE" id="T_TYPE" >
-         <OPTION VALUE="spcat"> SPCAT </OPTION>
-         <OPTION VALUE="comfort"> Full quantum number description </OPTION>
-         <OPTION VALUE="xsams"> XSAMS (File) </OPTION>
-         <OPTION VALUE="rad3d"> Rad3d (XSAMS) </OPTION>
-         <OPTION VALUE="png"> Stick Spectrum (png) </OPTION>
-        </SELECT>
-      </div> 
+
       <div class="type-select"> 
        <SELECT class="log" NAME="T_SHOWEXPLINES" id="T_SHOWEXPLINES">
         <OPTION VALUE='no'> Show only predicted frequencies  </OPTION> 
@@ -194,11 +246,12 @@ $(document).ready(function() {
        </SELECT> 
       </div> 
     </fieldset>
-
+-->
+<!--
     <div class="type-button float_right">
-      <!--<INPUT id="vamdcbutton" TYPE="button" NAME="T_SEARCH2" onclick="$('#queryresult').html('Processing ...');docShowSubpage('form_result');ajaxQuery('ajaxQuery','')" VALUE="vamdcQUERY" >
--->      <INPUT id="button1" TYPE="submit" NAME="T_SEARCH" onclick='attachSpeciesIds();submitOutputURL()' VALUE="QUERY" >
+      <INPUT id="button1" TYPE="submit" NAME="T_SEARCH" onclick='attachSpeciesIds();submitOutputURL()' VALUE="QUERY" >
     </div>
+-->
   </div> <!-- DIV FORM QUERY TRANSITIONS (FIRST PAGE) -->
 
 <!-- SUBPAGE REFINE TRANSITIONS -->
@@ -212,14 +265,14 @@ $(document).ready(function() {
     <div class="c50l">
      <div class="subcl type-text">
        <label class="columnar" for="T_SEARCH_FREQ_FROM">Frequency Range from</label>
-       <input class="log" type="text" name="T_SEARCH_FREQ_FROM" id="T_SEARCH_FREQ_FROM" VALUE="0" />
+       <input class="log" type="text" name="T_SEARCH_FREQ_FROM" id="T_SEARCH_FREQ_FROM" VALUE="" />
      </div>
     </div>
 
     <div class="c50r">
      <div class="subcr type-text">
        <label class="columnar" for="T_SEARCH_FREQ_TO">Frequency Range To</label>
-       <input class="log" type="text" name="T_SEARCH_FREQ_TO" id="T_SEARCH_FREQ_TO" VALUE="1000" />
+       <input class="log" type="text" name="T_SEARCH_FREQ_TO" id="T_SEARCH_FREQ_TO" VALUE="" />
      </div>
     </div>
 
@@ -238,7 +291,7 @@ $(document).ready(function() {
     <div class="legend">Intensity</div>
     <div class="type-text"> 
       <label for="T_SEARCH_INT">Minimum </label>
-      <input class="log" type="text" size="3" name="T_SEARCH_INT" id="T_SEARCH_INT" value="-10"> 
+      <input class="log" type="text" size="3" name="T_SEARCH_INT" id="T_SEARCH_INT" value=""> 
     </div>
 
     <div class="type-select">      
@@ -266,6 +319,23 @@ $(document).ready(function() {
 
   </fieldset>
 
+  <fieldset>
+    <div class="legend">Process Code</div>
+
+    <div class="type-select">      
+      <label for="T_SEARCH_HFSCODE">Hyperfine Splitting</label>      
+      <SELECT class="log"  NAME="T_SEARCH_HFSCODE" id="T_SEARCH_HFSCODE" size="1">
+        <OPTION VALUE='' selected="selected"> No filter </OPTION>
+        <OPTION VALUE='hyp0'> Without HFS </OPTION> 
+        <OPTION VALUE='hyp1'> HFS with 1 nucleus </OPTION> 
+        <OPTION VALUE='hyp2'> HFS with 2 nuclei </OPTION> 
+        <OPTION VALUE='hyp3'> HFS with 3 nuclei </OPTION> 
+      </SELECT> 
+    </div>
+
+
+  </fieldset>
+
   <div class="type-button float_right">
     <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans');ajaxQueryNodeContent();" VALUE="OK" >
   </div>
@@ -277,9 +347,39 @@ $(document).ready(function() {
 <p>&nbsp;</p>
  <fieldset><div class="legend">Energy</div>
 
- <p> Functionality not included yet! </p>   </fieldset>
+
+   <div class="subcolumns">
+
+    <div class="c50l">
+     <div class="subcl type-text">
+       <label class="columnar" for="T_SEARCH_ENERGY_FROM">State Energy Range from</label>
+       <input class="log" type="text" name="T_SEARCH_ENERGY_FROM" id="T_SEARCH_ENERGY_FROM" VALUE="" />
+     </div>
+    </div>
+
+    <div class="c50r">
+     <div class="subcr type-text">
+       <label class="columnar" for="T_SEARCH_ENERGY_TO">State Energy Range To</label>
+       <input class="log" type="text" name="T_SEARCH_ENERGY_TO" id="T_SEARCH_ENERGY_TO" VALUE="" />
+     </div>
+    </div>
+
+   </div> <!-- SUBCOLUMNS -->
+   <!-- <p> Functionality not included yet! </p> -->
+ </fieldset>
+
+ <fieldset><div class="legend">Nuclear Spin Isomer</div>
+
+
+     <div class="subcl type-text">
+       <label class="columnar" for="T_SEARCH_NSI">Nuclear Spin Isomer</label>
+       <input class="log" type="text" name="T_SEARCH_NSI" id="T_SEARCH_NSI" VALUE="" />
+     </div>
+
+ </fieldset>
+
     <div class="type-button float_right">
-      <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+      <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans');ajaxQueryNodeContent();" VALUE="OK" >
    </div>
   </div>
 
@@ -363,7 +463,7 @@ $(document).ready(function() {
 
 
 
-<!-- SUBPAGE Result -->
+<!-- SUBPAGE Result 
 <div id="form_result" class="subpage" style="display:none">
   <h3><strong>QUERY</strong>&nbsp;<i>RESULT</i></h3>
   <p>&nbsp;</p>
@@ -374,11 +474,11 @@ $(document).ready(function() {
     <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
   </div>
 </div>
-
+-->
 
 </div>
 </div>
-
+</div>
 </form>
 </div>
 {% endblock %}
