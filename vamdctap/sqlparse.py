@@ -20,9 +20,9 @@ def setupSQLparser():
                                            ( "." + Word(nums) ) ) +
                        Optional( E + Optional(arithSign) + Word(nums) ) )
     intNum = Combine( Optional(arithSign) + Word( nums ) +
-                      Optional( E + Optional("+") + Word(nums) ) )
+                      Optional( E + Optional(arithSign) + Word(nums) ) )
 
-    columnRval = realNum | intNum | quotedString | columnName
+    columnRval = realNum | intNum | quotedString
     whereCondition = Optional(not_) + Group(
         ( columnName + binop + columnRval ) |
         ( columnName + in_ + "(" + delimitedList( columnRval ) + ")" ) |
@@ -34,7 +34,9 @@ def setupSQLparser():
                          Optional(CaselessLiteral('count')).setResultsName("count")  +
                          Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") +
                          ( oneOf('* ALL', caseless=True) | columnNameList ).setResultsName( "columns" ) +
-                         Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) )
+                         Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) +
+                         Optional(ZeroOrMore(CaselessLiteral(";")|CaselessLiteral(" ")))
+                         )
 
     # define Oracle comment format, and ignore them
     oracleSqlComment = "--" + restOfLine
