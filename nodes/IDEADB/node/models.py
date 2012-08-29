@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from vamdctap import bibtextools
 
 import re
+import datetime
 
 from inchivalidation import inchi2inchikey, inchikey2inchi, inchi2chemicalformula
 from chemlib import chemicalformula2nominalmass
@@ -161,6 +162,7 @@ class Energyscan(Model):
     productiondate = DateField(verbose_name='Production Date')
     comment = TextField(blank = True, max_length = 2000, verbose_name = 'Comment (max. 2000 chars.)')
     energyresolution = DecimalField(max_digits = 4, decimal_places = 3, verbose_name='Energy Resolution of the Experiment in eV')
+    lastmodified = DateTimeField(auto_now = True, auto_now_add = True, default = datetime.datetime.now())
     #define a useful unicode-expression:
     def __unicode__(self):
         return u'ID %s: %s from %s'%(self.id, self.species, self.origin_species)
