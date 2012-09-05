@@ -127,15 +127,16 @@ def setupResults(sql, limit=1000):
     if nenergyscans == 0:
         if re.search('InchiKey', str(sql)) is not None:
             match = re.search('[A-Z]{14}-[A-Z]{10}-[A-Z]', str(sql))
-            inchikey = str(sql)[match.start():match.end()]
-            chemical_formula = inchikey2chemicalformula(inchikey)
+            if match is not None:
+                inchikey = str(sql)[match.start():match.end()]
+                chemical_formula = inchikey2chemicalformula(inchikey)
 
-            #now we extracted the stochiometric / chemical formula from the inchi. 
-            #let's see if there is something in the DB
-            if chemical_formula is not None:
-                energyscans = models.Energyscan.objects.filter(Q(species__chemical_formula__exact=chemical_formula)|Q(origin_species__chemical_formula__exact=chemical_formula))
-                nenergyscans = energyscans.count()
-                inchiconvertedsearch = True
+                #now we extracted the stochiometric / chemical formula from the inchi. 
+                #let's see if there is something in the DB
+                if chemical_formula is not None:
+                    energyscans = models.Energyscan.objects.filter(Q(species__chemical_formula__exact=chemical_formula)|Q(origin_species__chemical_formula__exact=chemical_formula))
+                    nenergyscans = energyscans.count()
+                    inchiconvertedsearch = True
 
     #append electron if there are results:
     if nenergyscans != 0:
