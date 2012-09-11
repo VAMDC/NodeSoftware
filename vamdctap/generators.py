@@ -1181,7 +1181,6 @@ def makeBroadeningType(G, name='Natural'):
     """
     Create the Broadening tag
     """
-
     lsparams = makeNamedDataType('LineshapeParameter','RadTransBroadening%sLineshapeParameter' % name, G)
     if not lsparams:
         return ''
@@ -1212,10 +1211,20 @@ def XsamsRadTranBroadening(G):
     """
     helper function for line broadening, called from RadTrans
 
-    allowed names are: pressure, instrument, doppler, natural
+    allowed names are:
+     Pressure - collisional broadenings
+     PressureNeutral - collisional, neutral perturbers (e.g. vad der Waals)
+     PressureCharged - collisional between charged(ionized) perturbers (e.g. Stark)
+     Doppler - doppler broadening
+     Instrument - instrument-specific broadening
+     Natural - for line broadening caused by finite lifetime of initial and final states.
+               Usually, Lorentzian line profile should be used.
+
+     Each broadening object can also optionally hold an iterable property "Broadening" for
+     subclassing.
     """
     s=[]
-    broadenings = ['Natural', 'Instrument', 'Doppler', 'Pressure']
+    broadenings = ('Natural', 'Instrument', 'Doppler', 'Pressure', 'PressureNeutral', 'PressureCharged')
     for broadening in broadenings :
         if hasattr(G('RadTransBroadening'+broadening), "Broadenings"):
             for Broadening in  makeiter(G('RadTransBroadening'+broadening).Broadenings):
@@ -1303,7 +1312,7 @@ def XsamsRadTrans(RadTrans):
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
         yield makeDataType('Wavenumber', 'RadTransWavenumber', G)
-        yield makeDataType('Wavelength', 'RadTransWavelength', G)        
+        yield makeDataType('Wavelength', 'RadTransWavelength', G)
         yield makeDataType('Frequency', 'RadTransFrequency', G)
         yield makeDataType('Energy', 'RadTransEnergy', G)
         yield '</EnergyWavelength>'
