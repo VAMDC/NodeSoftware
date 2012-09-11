@@ -18,3 +18,15 @@ load data infile '/vald/vamdc/db_input_files/transitions.dat' ignore into table 
 update transitions t, states s set t.einsteina=(0.667025*POWER(10,16) * POWER(10,t.loggf)) / ((2.0 * s.j + 1.0) * POWER(t.wavevac,2)) where t.upstate=s.id;
 
 create index speciesid_wave on transitions (species_id, wavevac);
+
+-- fixing a mal-named bibtex reference (kept here for reference, remove
+-- if fixed in raw data dump next update)
+update transitions t set t.wavevac_ref_id="K11" where t.wavevac_ref_id="K11P";
+update transitions t set t.waveair_ref_id="K11" where t.waveair_ref_id="K11P";
+update transitions t set t.loggf_ref_id="K11" where t.loggf_ref_id="K11P";
+update transitions t set t.gammarad_ref_id="K11" where t.gammarad_ref_id="K11P";
+update transitions t set t.gammastark_ref_id="K11" where t.gammastark_ref_id="K11P";
+update transitions t set t.waals_ref_id="K11" where t.waals_ref_id="K11P";
+update states s set s.energy_ref_id="K11" where s.energy_ref_id="K11P";
+update states s set s.lande_ref_id="K11" where s.lande_ref_id="K11P";
+update states s set s.level_ref_id="K11" where s.level_ref_id="K11P";
