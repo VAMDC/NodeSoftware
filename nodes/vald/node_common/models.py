@@ -116,7 +116,6 @@ EnvNatural="""<Environment envID="Evald-natural">
 </Environment>"""
 Environments = [EnvClass(EnvStark), EnvClass(EnvWaals), EnvClass(EnvNatural)]
 
-
 # Not yet functional, pending evntual future changes
 class FuncClass(object):
     def __init__(self, xml):
