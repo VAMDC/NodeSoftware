@@ -194,6 +194,16 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
 
     return ''.join(result)
 
+def makeReferencedTextType(tagname,keyword,G):
+    value = G(keyword)
+    if value:
+        return '%s<Value>%s</Value></%s>'%\
+         (makePrimaryType(tagname,keyword,G),
+          value,
+          tagname)
+    else:
+        return ''
+
 def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     """
     Similar to makeDataType above, but allows the result of G()
@@ -815,19 +825,17 @@ def XsamsMCSBuild(Molecule):
     """
     G = lambda name: GetValue(name, Molecule=Molecule)
     yield '<MolecularChemicalSpecies>\n'
-    yield '<OrdinaryStructuralFormula><Value>%s</Value>'\
-            '</OrdinaryStructuralFormula>\n'\
-            % G("MoleculeOrdinaryStructuralFormula")
-
+    yield makeReferencedTextType('OrdinaryStructuralFormula','MoleculeOrdinaryStructuralFormula',G)
     yield '<StoichiometricFormula>%s</StoichiometricFormula>\n'\
             % G("MoleculeStoichiometricFormula")
     yield makeOptionalTag('IonCharge', 'MoleculeIonCharge', G)
-    if G("MoleculeChemicalName"):
-        yield '<ChemicalName><Value>%s</Value></ChemicalName>\n'\
-            % G("MoleculeChemicalName")
-    if G("MoleculeInChI"):
-        yield '<InChI>%s</InChI>' % G("MoleculeInChI")
+    yield makeReferencedTextType('ChemicalName','MoleculeChemicalName',G)
+    yield makeReferencedTextType('IUPACName','MoleculeIUPACName',G)
+    yield makeOptionalTag('URLFigure','MoleculeURLFigure',G)
+    yield makeOptionalTag('InChI','MoleculeInChI',G)
     yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
+    yield makeReferencedTextType('CASRegistryNumber','MoleculeCASRegistryNumber',G)
+    yield makeOptionalTag('CNPIGroup','MoleculeCNPIGroup',G)
 
     yield makePartitionfunc("MoleculePartitionFunction", G)
 
@@ -940,6 +948,34 @@ def makeCaseQNs(G):
             "</Case>"])
     return "".join(result)
 
+def makeCaseBSQNs(G):
+    """
+    Build the Case tag with the BasisState QNs
+
+    Note: order of QNs matters in xsams.
+    """
+    case = G('MoleculeQNCase')
+    if not case: return ''
+
+    result = [
+        '<Case xsi:type="case:Case" caseID="%s" xmlns:case="http://vamdc.org/xml/xsams/%s/cases/%s">' % (case, XSAMS_VERSION, case),
+        '<case:QNs>']
+
+    result.extend(['<case:vi mode="%s">%s</case:vi>' %
+                   (makeiter(G("BasisStateQNviMode"))[i],val)
+                   for i, val in enumerate(makeiter(G("BasisStateQNvi")))])
+    result.extend(['<case:li mode="%s">%s</case:li>' %
+                   (makeiter(G("BasisStateQNliMode"))[i],val)
+                   for i, val in enumerate(makeiter(G("BasisStateQNli")))])
+    result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("BasisStateQNrName"))[i],val)
+                   for i,val in enumerate(makeiter(G("BasisStateQNr")))])
+    result.extend(['<case:sym name="%s">%s</case:sym>'%(makeiter(G("BasisStateQNsymName"))[i],val)
+                   for i,val in enumerate(makeiter(G("BasisStateQNsym")))])
+    result.extend([
+            "</case:QNs>",
+            "</Case>\n"])
+    return "".join(result)
+
 def XsamsMSBuild(MoleculeState):
     """
     Generator for MolecularState tag
@@ -1012,28 +1048,26 @@ def XsamsMSBuild(MoleculeState):
                 continue
             GE = lambda name: GetValue(name, Expansion=Expansion)
             yield makePrimaryType("StateExpansion", "MoleculeStateExpansion", GE)
-            if hasattr(Expansion, "Coefficients"):
-                for Coefficient in makeiter(Expansion.Coefficients):
-                    GEC = lambda name: GetValue(name, Coefficient=Coefficient)
-                    yield "<Coeff stateRef=%s>%s</Coeff>" % (GEC("MoleculeStateExpansionCoeffStateRef"),GEC("MoleculeStateExpansionCoeff"))
+            for i,val in enumerate(makeiter(G("MoleculeStateExpansionCoeff"))):
+                yield "<Coeff stateRef=S%s-B%s>%s</Coeff>" % (G('NODEID'),makeiter(G("MoleculeStateExpansionCoeffStateRef"))[i],val)
             yield "</StateExpansion>"
 
     yield '</MolecularState>'
 
-def XsamsBSBuild(MoleculeState):
-    G = lambda name: GetValue(name, MoleculeState=MoleculeState)
-    cont, ret = checkXML(MoleculeState)
+def XsamsBSBuild(MoleculeBasisState):
+    G = lambda name: GetValue(name, MoleculeBasisState=MoleculeBasisState)
+    cont, ret = checkXML(MoleculeBasisState)
     if cont:
         yield ret
     else:
         yield makePrimaryType("BasisState", "BasisState", G,
-            extraAttr={"stateID":'S%s-%s' % (G('NodeID'),
-                                             G('BasisStateID')),})
+            extraAttr={"stateID":'S%s-B%s' % (G('NodeID'),
+                                              G('BasisStateID')),})
         cont, ret = checkXML(G("BasisStateQuantumNumbers"))
         if cont:
             yield ret
         else:
-            yield makeCaseQNs(G)
+            yield makeCaseBSQNs(G)
         yield '</BasisState>'
 
 def XsamsMolecules(Molecules):
@@ -1057,8 +1091,8 @@ def XsamsMolecules(Molecules):
 
         if hasattr(Molecule, 'BasisStates'):
             yield makePrimaryType('BasisStates', 'BasisStates', G)
-            for MoleculeState in Molecule.BasisStates:
-                for BS in XsamsBSBuild(MoleculeState):
+            for MoleculeBasisState in Molecule.BasisStates:
+                for BS in XsamsBSBuild(MoleculeBasisState):
                     yield BS
             yield '</BasisStates>\n'
 
@@ -1168,7 +1202,7 @@ def makeBroadeningType(G, name='Natural'):
     # in principle we should loop over lineshapes but
     # lets not do so unless somebody actually has several lineshapes
     # per broadening type             RadTransBroadening%sLineshapeName
-    s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name) #TODO: This needs a functionRef!
+    s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
     s += lsparams
     s += '</Lineshape>'
     s += '</Broadening>'
@@ -1264,12 +1298,12 @@ def XsamsRadTrans(RadTrans):
         attrs=''
         if group: attrs += ' groupLabel="%s"'%group
         if proc: attrs += ' process="%s"'%proc
-        yield '<RadiativeTransition id="P%s-%s"%s>'%(NODEID,G('RadTransID'),attrs)
+        yield '<RadiativeTransition id="P%s-R%s"%s>'%(NODEID,G('RadTransID'),attrs)
         yield makeOptionalTag('Comments','RadTransComment',G)
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
-        yield makeDataType('Wavelength', 'RadTransWavelength', G)
         yield makeDataType('Wavenumber', 'RadTransWavenumber', G)
+        yield makeDataType('Wavelength', 'RadTransWavelength', G)        
         yield makeDataType('Frequency', 'RadTransFrequency', G)
         yield makeDataType('Energy', 'RadTransEnergy', G)
         yield '</EnergyWavelength>'
@@ -1382,7 +1416,7 @@ def XsamsRadCross(RadCross):
         # create header
 
         G = lambda name: GetValue(name, RadCros=RadCros)
-        dic = {'id':"P%s-%s" % (NODEID, G("CrossSectionID")) }
+        dic = {'id':"P%s-CS%s" % (NODEID, G("CrossSectionID")) }
 
         envRef = G("CrossSectionEnvironment")
         if envRef:
@@ -1474,7 +1508,7 @@ def XsamsCollTrans(CollTrans):
 
         # create header
         G = lambda name: GetValue(name, CollTran=CollTran)
-        dic = {'id':"P%s-%s" % (NODEID, G("CollisionID")) }
+        dic = {'id':"P%s-C%s" % (NODEID, G("CollisionID")) }
         group = G("CollisionGroup")
         if group:
             dic["groupLabel"] = "%s" % group

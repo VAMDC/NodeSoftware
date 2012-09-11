@@ -8,16 +8,37 @@ Changelog
     document before, since terms are used that are introduced later. It is meant
     for returning readers, especially the maintainers of VAMDC nodes.
 
-April 23, 2012
+June 5, 2012
+---------------------
+
+**Version 11.12r3**. This is a bugfix-release over 11.12r2 with few changes.
+Among them are two bug-fixes however that make this quick release necessary.
+One was breaking XSAMS validation with molecule chemical names and another made
+the nodes reject queries from the portal.
+
+May 23, 2012
 ---------------------
 
 **Version 11.12r2**. This is a bugfix-release of the NodeSoftware, implementing the VAMDC standards 11.12. There are no major internal changes that should require updating the code that is specific for each data node.
 
-**Django 1.4**. A new version of Django, the framework that we build upon, has been released. With the few changes contained in this release, deployment should not break when upgrading to Django 1.4 and we encourage all nodes to do so. (However staying at 1.3 for a while is no security risk.) If you installed Django via `pip` as recommended later in this document, upgrading is as simple as::
+**Django 1.4**. A new version of Django, the framework that we build upon, has
+been released. With the changes contained in this release, deployment should
+not break when upgrading to Django 1.4 and we encourage all nodes to do so.
+(However staying at 1.3 for a while is no security risk.) If you installed
+Django via `pip` as is recommended later in this document, upgrading is as
+simple as::
 
     pip install --upgrade django
 
+**Bugfixes**. Thanks everyone who reported issues; many small improvements are included in this release. A notable change is that partly invalid queries are now rejected whereas the valid part was executed before.
 
+**Pybtex** is no longer a dependency unless a nodes uses the automatic BibTex to XSAMS conversion.
+
+**Future**. A small number of "post 11.12 standards" things are included
+already (like molecular basis states) but nothing that changes previously
+existing parts of the XML generator.
+
+**Documentation**. Apart from minor updates, information has been added on :ref:`dbupdate`.
 
 February 13, 2012
 ---------------------
