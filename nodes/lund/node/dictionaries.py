@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 
 # Lund dictionary
 
@@ -77,13 +77,17 @@ RETURNABLES = {\
 'RadTransEffectiveLandeFactorRef':'RadTran.lande_ref_id',
 }
 
+from vamdctap.unitconv import *
+
 RESTRICTABLES = {\
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
-'AtomStateEnergy':'upstate__energy',
+'StateEnergy':bothStates,
+'Lower.StateEnergy':'lostate__energy',
+'Upper.StateEnergy':'upstate__energy',
 'RadTransWavelength':'vacwave',
 'RadTransWavenumber':'vavenum',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
-'AtomIonCharge':'species__ion'
+'IonCharge':'species__ion'
 }
 
