@@ -85,6 +85,7 @@ RESTRICTABLES = {\
 'StateEnergy':bothStates,
 'Lower.StateEnergy':'lostate__energy',
 'Upper.StateEnergy':'upstate__energy',
+'RadTransEnergy':('vacwave', ev2Angstr),
 'RadTransWavelength':'vacwave',
 'RadTransWavenumber':'vavenum',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
