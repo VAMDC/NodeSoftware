@@ -1188,7 +1188,10 @@ def makeBroadeningType(G, name='Natural'):
     env = G('RadTransBroadening%sEnvironment' % name)
     meth = G('RadTransBroadening%sMethod' % name)
     comm = G('RadTransBroadening%sComment' % name)
-    s = '<Broadening name="%s"' % name.lower()
+    realname = name.lower()
+    if realname.startswith('pressure') and not (realname=='pressure'):
+        realname=realname.replace('pressure','pressure-')
+    s = '<Broadening name="%s"' % realname
     if meth:
         s += ' methodRef="M%s-%s"' % (NODEID, meth)
     if env:
