@@ -48,7 +48,7 @@ RETURNABLES = {\
 'RadTransWavelengthMethod':'RadTran.method_return',
 'RadTransWavelengthComment': 'RadTran.wavecomment()',
 #'RadTransProcess':"RadTran.transition_type",
-'RadTransProcess':"deexcitation",
+'RadTransProcess':"excitation",
 'RadTransWavelengthRef':'RadTran.waverefs()',
 'RadTransUpperStateRef':'RadTran.upstate_id',
 'RadTransLowerStateRef':'RadTran.lostate_id',
