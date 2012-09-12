@@ -23,6 +23,7 @@ RETURNABLES = {
 'MoleculeStateEnergyMethod':'MoleculeState.energymethod', #kkk
 'MoleculeStateEnergyRef' : 'MoleculeState.StateEnergySourceRef', #kkk electronic state
 'MoleculeStateEnergyUnit':u'au', #TO CHANGE
+'MoleculeStateDescription': 'MoleculeState.description',
 'MoleculeStateID':'MoleculeState.state_id',
 'MoleculeStoichiometricFormula':'Molecule.formula',
 'MoleculeStructure': "Molecule.molecularchemicalspecies",
@@ -43,7 +44,7 @@ RETURNABLES = {
 'MoleculeNormalModeDisplacementVectorX3' : 'NormalMode.displacementvectorsx',
 'MoleculeNormalModeDisplacementVectorY3' : 'NormalMode.displacementvectorsy',
 'MoleculeNormalModeDisplacementVectorZ3' : 'NormalMode.displacementvectorsz',
-'MoleculeNormalModeDisplacementVectorSourceRef' : 'NormalMode.displacementvectorselementref',
+'MoleculeNormalModeDisplacementVectorRef' : 'NormalMode.displacementvectorselementref',
 'MoleculeNormalModeDisplacementVectorsUnit' : '1/cm',
 
 #'Sources' : 'Source' ,

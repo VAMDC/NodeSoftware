@@ -1,4 +1,10 @@
-
+class XsamsDataset:
+    def __init__(self):
+        self.dataDescription = None
+        self.TabData = None
+        
+    
+    
 class Result:
 	def __init__(self):
 		self.header = {}   

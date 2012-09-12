@@ -35,14 +35,58 @@ RETURNABLES = {\
 'CollisionProductSpecies':'Product.id',
 'CollisionReactantSpecies':'Reactant.id',
 
+# 2011-11-30 KWS Add table data.
+# After conversations with C. Hill, we need to use fit parameters.
+# DataFunctype -> FitParameters -> (FitArgument, FitParameter, FunctionRef)
+
+'CollisionDataSetRef':'DataSet.Ref',
+'CollisionDataSetDescription':'DataSet.Description',
+
+'CollisionTabulatedDataXDataList' : 'TabData.xdata',
+'CollisionTabulatedDataXUnits' : 'TabData.xdataunit',
+'CollisionTabulatedDataXParameter' : 'undef',
+'CollisionTabulatedDataYDataList' : 'TabData.ydata',
+'CollisionTabulatedDataYUnits' : 'TabData.ydataunit',
+'CollisionTabulatedDataYParameter' : 'undef',
+
+# Range Limits - need Fit Function and new column in DB
+# or derivation of which fit function to use from number
+# and type of reactants.
+#'CollisionTabulatedDataY':'CollTran.tmin',
+#'CollisionTabulatedDataYDescription':'Tmin',
+#'CollisionTabulatedDataX':'CollTran.tmax',
+#'CollisionTabulatedDataXDescription':'Tmax',
+
+#'CollisionTabulatedDataY':'CollTran.alpha',
+#'CollisionTabulatedDataYDescription':'alpha',
+
+#'CollisionTabulatedDataY':'CollTran.beta',
+#'CollisionTabulatedDataYDescription':'beta',
+
+#'CollisionTabulatedDataY':'CollTran.gamma',
+#'CollisionTabulatedDataYDescription':'gamma',
+
+
+
+# 2012-02-09 KWS Added collision ID
+'CollisionID' : 'CollTran.id',
+
+
+#    'CollTran.acc, # Need to interpret this and place in the correct keyword
+#    'CollTran.clem,
+#    'CollTran.dipole,
+
 'AtomSpeciesID':'Atom.id',
 'AtomInchi':'Atom.vamdc_inchi',
 'AtomInchiKey':'Atom.vamdc_inchikey',
 
 'MoleculeSpeciesID':'Molecule.id',
 'MoleculeOrdinaryStructuralFormula':'Molecule.struct_name',
-'MoleculeInchi':'Molecule.vamdc_inchi',
-'MoleculeInchiKey':'Molecule.vamdc_inchikey',
+
+# 2012-01-25 KWS For the new standards we will use the ordinary standard
+#                inchikey - not vamdc_inchikey
+'MoleculeInChI':'Molecule.inchi',
+'MoleculeInChIKey':'Molecule.inchikey',
 }
 
 # The restrictable dictionary defines limitations to the search. 
@@ -51,8 +95,10 @@ RETURNABLES = {\
 # for the Species.atomic field  would be written as species__atomic.
 
 RESTRICTABLES = {\
-'MoleculeInchiKey':'reaction__species__vamdc_inchikey',
-'MoleculeInchi':'reaction__species__vamdc_inchi',
+'MoleculeInChIKey':'reaction__species__inchikey',
+'InchiKey':'reaction__species__inchikey',
+'MoleculeInChI':'reaction__species__inchi',
+'Inchi':'reaction__species__inchi',
 'MoleculeChemicalName':'reaction__species__names',
 }
 

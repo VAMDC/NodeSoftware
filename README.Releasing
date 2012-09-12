@@ -15,12 +15,11 @@ To do:
 * Edit the version number in settings_default.py
 * Check the version number in documentation, grep for uses of the old one.
 * Update tex-template for docs, both version number and date
+* Update version in doc/source/conf.py
 * merge into release branch
 * push release branch to vamdc-repo
 * make the tag
 * push the tag
-* pull and rebuild docs on http://vamdc.tmy.se/
-* update the virtual machine and upload new image
 * notify vamdc.eu/org that they should grab the tar-ball
   from the tag at GitHub and put it on the web. And to
   update their build of the docs.

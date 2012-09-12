@@ -11,6 +11,7 @@
 # library imports
 
 import sys
+import time
 from itertools import chain
 from django.conf import settings
 from vamdctap.sqlparse import sql2Q
@@ -21,65 +22,100 @@ import dictionaries
 import models as django_models
 import util_models as util_models
 
+
 log=logging.getLogger('vamdc.tap')
 
 #------------------------------------------------------------
 # Helper functions (called from setupResults)
 #------------------------------------------------------------
-'''
-def getRefs(transs):
-    """
-    From the transition-matches, use ForeignKeys to extract all relevant references
-    """
-    # extract a unique set of reference keys from the given ForeignKey
-    # fields on the Transition model (e.g. Transition.loggf_ref).
-    # Note: Using *_id on the ForeignKey (e.g. loggf_ref_id)
-    # will extract the identifier rather than go to the referenced
-    # object (it's the same as loggf_ref.id, but more efficient).  In
-    # our example, refset will hold strings "REF1" or "REF2" after
-    # this.
-    refset = []
-    for t in transs.values_list('wave_ref_id', 'loggf_ref_id', 'lande_ref_id',
-                                'gammarad_ref_id', 'gammastark_ref_id', 'waals_ref_id'):
-        refset.append(t)
-    refset = set(refset) # a set always holds only unique keys
-
-    # Use the found reference keys to extract the correct references from the References table.
-    refmatches = models.Reference.objects.filter(pk__in=refset) # only match primary keys in refset
-    return refmatches
-'''
-
 def getSpeciesWithStates(transs):
     """
     Use the Transition matches to obtain the related Species (only atoms in this example)
     and the states related to each transition.
 
     We also return some statistics of the result
-    """
+    """    
     # get ions according to selected transitions
     ionids = transs.values_list('version', flat=True).distinct()
-    species = django_models.Version.objects.filter(id__in=ionids)
+    species = [] #django_models.Version.objects.filter(id__in=ionids)
+    sourceids = []
     nstates = 0
-
-    for specie in species:
+    #sourceids = getTransitionSources(transs)
+    for trans in transs:
+        trans.Sources = getTransitionSources(trans)
+        sourceids.extend(trans.Sources)
+    
+    for ionid in ionids:
+        new_specie = django_models.Version.objects.get(pk=ionid)
         # get all transitions in linked to this particular species
-        spec_transitions = transs.filter(version=specie.id)
+        spec_transitions = transs.filter(version=ionid)
         
         # extract reference ids for the states from the transion, combining both
         # upper and lower unique states together
-        ini = spec_transitions.values_list('initialatomicstate',flat=True)
-        fin = spec_transitions.values_list('finalatomicstate',flat=True)
-        sids = set(chain(ini, fin))
+        lower = spec_transitions.values_list('loweratomicstate',flat=True)
+        upper = spec_transitions.values_list('upperatomicstate',flat=True)
+        sids = set(chain(upper, lower))
 
         # use the found reference ids to search the State database table
-        specie.States = django_models.Atomicstate.objects.filter( pk__in = sids )
+        new_specie.States = django_models.Atomicstate.objects.filter( pk__in = sids )
         
-        for state in specie.States :
-            state.Component = getCoupling(state)
-        nstates += specie.States.count()
+        for state in new_specie.States :
+            state.Components = []
+            state.Components.append(getCoupling(state))
+            state.Sources = getStateSources(state)
+            sourceids.extend(state.Sources)
+        nstates += new_specie.States.count()
+        species.append(new_specie)
+                
+    return species, nstates, sourceids
+    
+    
+def getTransitionSources(trans):
+    """
+        get ids of sources related to a transition
+    """
+    sourceids = []
+    relatedsources = django_models.Radiativetransitionsource.objects.filter(radiativetransition=trans)    
+    for relatedsource in relatedsources :
+        sourceids.append(relatedsource.source.pk)
+    return sourceids    
+    '''
+    transids = transs.values_list('id', flat=True)  
+    relatedsources = django_models.Radiativetransitionsource.objects.filter(id__in=transids)  
+    ids = relatedsources.values_list('source', flat=True).distinct() 
+    return list(ids)
+    '''
+
+    
+    
+def getStateSources(state):
+    """
+        get ids of sources related to an atomic state
+    """
+    sourceids = []
+    relatedsources = django_models.Atomicstatesource.objects.filter(atomicstate=state)    
+    for relatedsource in relatedsources :
+        sourceids.append(relatedsource.source.pk)
+    return sourceids
+    
+    
+
+def getSources(ids):
+    """
+        get a list of source objects from their ids    
+    """
+    sources = django_models.Source.objects.filter(pk__in=ids)    
+    for source in sources : 
+        names=[]
+        adresses=[]
+        relatedauthors = django_models.Authorsource.objects.filter(source=source).order_by('rank')
+        #build a list of authors
+        for relatedauthor in relatedauthors:
+            names.append(relatedauthor.author.name)
+        source.Authors = names
+    return sources
         
-        
-    return species, nstates
+    
 
 def getCoupling(state):
     """
@@ -99,7 +135,7 @@ def truncateTransitions(transitions, request, maxTransitionNumber):
     newmax = transitions[maxTransitionNumber].wavelength
     return django_models.Radiativetransition.objects.filter(request,Q(wavelength__lt=newmax)), percentage
     
-def toLowerUpperStates(transitions):
+'''def toLowerUpperStates(transitions):
     for transition in transitions:
         if(transition.initialatomicstate.stateenergy > transition.finalatomicstate.stateenergy):
             transition.upperatomicstate = transition.initialatomicstate
@@ -108,7 +144,7 @@ def toLowerUpperStates(transitions):
             transition.upperatomicstate = transition.finalatomicstate
             transition.loweratomicstate = transition.initialatomicstate    
     return transitions
-    
+'''
 
 #------------------------------------------------------------
 # Main function
@@ -125,7 +161,7 @@ def setupResults(sql):
 	"""
 	result = None
 	# return all species
-	if str(sql) == 'select species': 
+	if str(sql).strip() == 'select species': 
 		result = setupSpecies()
 	# all other requests
 	else:		
@@ -137,7 +173,7 @@ def setupResults(sql):
 		raise Exception('error while generating result')
 
 
-def setupVssRequest(sql, limit=1000):
+def setupVssRequest(sql, limit=3000):
     """
     This function is always called by the software.
     """
@@ -147,6 +183,7 @@ def setupVssRequest(sql, limit=1000):
     # convert the incoming sql to a correct django query syntax object
     q = sql2Q(sql)
 
+    start = time.clock()
     transs = django_models.Radiativetransition.objects.filter(q)
     ntranss=transs.count()
 
@@ -155,32 +192,40 @@ def setupVssRequest(sql, limit=1000):
     else:
         percentage=None
 
-
-    #sources = getRefs(transs)
-    #nsources = sources.count()
-
-    species, nstates = getSpeciesWithStates(transs)
+    species, nstates, sourceids = getSpeciesWithStates(transs)
 
     # cross sections
     states = []
-    nspecies = species.count()
+    
+    nspecies = len(species)
     for specie in species:        
         for state in specie.States : 
             if state.xdata is not None : # do not add state without xdata/ydata
                 states.append(state)
-    transs = toLowerUpperStates(transs)
+                
+    #transs = toLowerUpperStates(transs)
+    sources = getSources(sourceids)
+    nsources = sources.count()
 
     # Create the result object
     result = util_models.Result()
+
     result.addHeaderField('TRUNCATED', percentage)
     result.addHeaderField('COUNT-STATES',nstates)
     result.addHeaderField('COUNT-RADIATIVE',ntranss)
     result.addHeaderField('COUNT-SPECIES',nspecies)
+    result.addHeaderField('COUNT-SOURCES',nsources)  
+    
+    if(nstates == 0 and nspecies == 0):
+        result.addHeaderField('APPROX-SIZE', 0)
 
     result.addDataField('RadTrans',transs)
     result.addDataField('Atoms',species)
     result.addDataField('RadCross',states)
+    result.addDataField('Sources', sources)
     
+    end = time.clock()-start
+    log.debug("1 "+str(end)+  "s")
     return result
     
 def setupSpecies():

@@ -8,15 +8,23 @@ def setupResults(sql):
     ntranss=transs.count()
     if TRANSLIM < ntranss and (not sql.requestables or 'radiative' in sql.requestables):
         percentage = '%.1f'%(float(TRANSLIM)/ntranss *100)
-        #transs = transs.order_by('wave')
-        newmax = transs[TRANSLIM].wave
-        transs = Transition.objects.filter(q,Q(wave__lt=newmax))
+        #transs = transs.order_by('wavevac')
+        newmax = transs[TRANSLIM].wavevac
+        transs = Transition.objects.filter(q,Q(wavevac__lt=newmax))
         log.debug('Truncated results to %s, i.e %s A.'%(TRANSLIM,newmax))
     else: percentage=None
     log.debug('Transitions QuerySet set up. References next.')
-    #refIDs = set( transs.values_list('wave_ref_id','loggf_ref_id','gammarad_ref_id','gammastark_ref_id','waals_ref') )
-    #sources = Reference.objects.filter(pk__in=refIDs)
+
+    from time import time
     sources = Reference.objects.all()
+    ## about 100 times slower than objects.all() objects
+    #refIDs = set(tuple(transs.values_list('wavevac_ref_id', flat=True)) +
+    #             tuple(transs.values_list('loggf_ref_id', flat=True)) +
+    #             tuple(transs.values_list('gammarad_ref_id', flat=True)) +
+    #             tuple(transs.values_list('gammastark_ref_id', flat=True)) +
+    #             tuple(transs.values_list('waals_ref', flat=True)))
+    #sources = Reference.objects.filter(pk__in=refIDs)
+
     log.debug('Sources QuerySet set up. References next.')
 
     addStates = (not sql.requestables or 'atomstates' in sql.requestables)
@@ -33,7 +41,7 @@ def setupResults(sql):
             'COUNT-ATOMS':nspecies,
             'COUNT-SPECIES':nspecies,
             'COUNT-STATES':nstates,
-            'CoUNT-RADIATIVE':ntranss,
+            'COUNT-RADIATIVE':ntranss,
             'APPROX-SIZE':size_estimate,
             }
 

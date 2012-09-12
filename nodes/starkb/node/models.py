@@ -30,6 +30,8 @@ class Ion(models.Model):
     ionization_decimal = models.IntegerField(null=False)
     ion_charge = models.IntegerField(null=False)
     nuclear_charge = models.IntegerField()    
+    inchi = models.CharField(max_length=100)
+    inchikey = models.CharField(max_length=27)
     
     '''def ion_charge(self):
         return self.ionization_decimal - 1'''
@@ -57,7 +59,9 @@ class Species(models.Model):
     particle = models.ForeignKey(Particle,  db_column="id_particle", null=True)    
     
     def particle_ion_id(self):
-        if self.ion is not None :                   
+        if self.ion is not None : 
+            if self.ion.name == "meanion":
+                return None
             return self.ion.species_id()
         elif self.particle is not None : 
             return self.particle.species_id()

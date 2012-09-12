@@ -1,13 +1,20 @@
 from settings_default import *
 
 DEBUG = True
-#DEBUG = False
+DEBUG = False
 TRANSLIM = 6000
 
-INSTALLED_APPS.remove(NODEPKG)
-INSTALLED_APPS.append(NODENAME+'.node_common')
-NODEPKG=NODENAME+'.node_atom'
-INSTALLED_APPS.append(NODEPKG)
+try:
+    INSTALLED_APPS.remove('vald.node')
+except:
+    pass
+
+NODEPKG='vald.node_atom'
+if not 'vald.node_common' in INSTALLED_APPS:
+    INSTALLED_APPS.append('vald.node_common')
+if not NODEPKG in INSTALLED_APPS:
+    INSTALLED_APPS.append(NODEPKG)
+print NODEPKG,INSTALLED_APPS
 
 DATABASES = {
   'default': {
@@ -26,7 +33,7 @@ EXAMPLE_QUERIES = [\
 
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
-DEPLOY_URL = 'http://vald.astro.uu.se/atoms/tap/'
+DEPLOY_URL = 'http://vald.astro.uu.se/atoms-dev/tap/'
 
 LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode.log'
 if not DEBUG:

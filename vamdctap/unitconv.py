@@ -4,18 +4,32 @@
 # The latter also needs to be a string! (stupid in some cases,
 # I know, but more robust)
 
+# a decotrator to catch ZeroDivisionError
+def catchZeroDivision(fu):
+    def catcher(op,val):
+        try:
+            return fu(op,val)
+        except ZeroDivisionError:
+            return [invertOperator(op), '9.99E99']
+        except:
+            raise
+    return catcher
+
 def invertOperator(op):
     if op == '<': return '>'
     elif op == '>': return '<'
     elif op == '<=': return '>='
     elif op == '>=': return '<='
 
+@catchZeroDivision
 def Hz2Angstr(op, Hz):
     return [invertOperator(op), str(2.99792458E18/float(Hz))]
 
+@catchZeroDivision
 def eV2Angstr(op, eV):
     return [invertOperator(op), str(3.18264053E-20/float(eV))]
 
+@catchZeroDivision
 def invcm2Angstr(op, invcm):
     return [invertOperator(op), str(1.0E8/float(invcm))]
 
@@ -25,6 +39,7 @@ def eV2invcm(op,eV):
 def invcm2eV(op,invcm):
     return [op, str(1.239841930E-4*float(invcm))]
 
+@catchZeroDivision
 def Angstr2MHz(op, Angstr):
     return [invertOperator(op), str(2.99792458E12/float(Angstr)) ]
 

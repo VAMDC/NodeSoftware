@@ -26,12 +26,13 @@ from generators import *
 from sqlparse import SQL
 
 REQUESTABLES = map(lower, [\
- 'Environments',
  'AtomStates',
  'Atoms',
  'Collisions',
+ 'Environments',
  'Functions',
  'Methods',
+ 'MoleculeBasisStates',
  'MoleculeQuantumNumbers',
  'MoleculeStates',
  'Molecules',
@@ -94,9 +95,9 @@ class TAPQUERY(object):
         try: self.format=lower(self.request['FORMAT'])
         except: self.errormsg += 'Cannot find FORMAT in request.\n'
 
-        try: self.parsedSQL=SQL.parseString(self.query)
+        try: self.parsedSQL=SQL.parseString(self.query,parseAll=True)
         except: # if this fails, we're done
-            self.errormsg += 'Could not parse the SQL query string.\n'
+            self.errormsg += 'Could not parse the SQL query string: %s\n'%self.query
             self.isvalid=False
             return
 
@@ -123,6 +124,9 @@ class TAPQUERY(object):
             if 'moleculestates' in self.requestables:
                 self.requestables.add('molecules')
             if 'moleculequantumnumbers' in self.requestables:
+                self.requestables.add('molecules')
+                self.requestables.add('moleculestates')
+            if 'moleculebasisstates' in self.requestables:
                 self.requestables.add('molecules')
                 self.requestables.add('moleculestates')
             if 'processes' in self.requestables:
@@ -155,7 +159,7 @@ def addHeaders(headers,response):
 
     for h in HEADS:
         if headers.has_key(h):
-            if headers[h]: response['VAMDC-'+h] = '%s'%headers[h]
+            response['VAMDC-'+h] = '%s'%headers[h]
     return response
 
 def sync(request):

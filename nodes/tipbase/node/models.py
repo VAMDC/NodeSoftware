@@ -25,12 +25,31 @@ class Sourcecategory(models.Model):
         
 class Source(models.Model):
     id = models.IntegerField(primary_key=True)
-    sourcecategoryid = models.ForeignKey(Sourcecategory, db_column='sourcecategoryid')
-    title = models.CharField(max_length=450)
-    year = models.IntegerField()
-    url = models.CharField(max_length=450, blank=True)
+    sourcecategory = models.ForeignKey(Sourcecategory, db_column='sourcecategoryid')
+    title = models.TextField(null=True)
+    year = models.IntegerField(null=True)
+    volume = models.IntegerField(null=True)    
+    uri = models.CharField(max_length=150, null=True, db_column='url')
+    bibcode = models.CharField(max_length=19, null=True)
+    sourcename = models.CharField(max_length=100)
+    pagebegin = models.IntegerField(null=True)    
+    pageend = models.IntegerField(null=True)    
+    doi = models.CharField(max_length=50, null=True)  
+    
+    def authornames(self):
+        names = []
+        log.debug('test : '+str(self.id))
+        authors = Authorsource.objects.filter(source=self)
+        for author in authors:
+            log.debug('found : ')
+            names.append(author.name)
+        return names
+        
+        
+      
     class Meta:
         db_table = u't_source'
+
 
 
 class Chemicalelement(models.Model):
@@ -54,8 +73,8 @@ class Atomicion(models.Model):
     id = models.IntegerField(primary_key=True)
     isotope = models.ForeignKey(Isotope, null=True, db_column='isotopeid', blank=True)
     ioncharge = models.IntegerField()
-    inchi = models.CharField(max_length=30)
-    inchikey = models.CharField(max_length=30)
+    inchi = models.CharField(max_length=100)
+    inchikey = models.CharField(max_length=27)
     isoelectronicsequence = models.CharField(max_length=30)  
     class Meta:
         db_table = u't_atomicion'
@@ -65,8 +84,6 @@ class Atomicion(models.Model):
 class Version(models.Model):
     id = models.IntegerField(primary_key=True)
     atomicion = models.ForeignKey(Atomicion, null=True, db_column='atomicionid', blank=True)
-    radiativetransitionsource = models.ForeignKey(Source, null=True, db_column='radiativetransitionsourceid', blank=True, related_name='+')
-    crosssectionsource = models.ForeignKey(Source, null=True, db_column='crosssectionsourceid', blank=True)
     ionversion = models.IntegerField(unique=True)
     creationdate = models.DateField()  
         
@@ -111,6 +128,13 @@ class Atomicstate(models.Model):
     class Meta:
         db_table = u't_atomicstate'
         
+class Atomicstatesource(models.Model):
+    id = models.IntegerField(primary_key=True)
+    atomicstate = models.ForeignKey(Atomicstate, db_column='atomicstateid')
+    source = models.ForeignKey(Source, db_column='sourceid')
+    class Meta:
+        db_table = u't_atomicstatesource'
+        
 class Particle(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(unique=True, max_length=30)
@@ -152,9 +176,16 @@ class Tabulateddata(models.Model):
     xdata = models.TextField(null=True)    
     ydata = models.TextField(null=True) 
     xdataunit = models.ForeignKey(Unit, db_column='xdataunitid', related_name='+', null=True)
-    #ydataunit = models.ForeignKey(Unit, db_column='ydataunitid', related_name='+', null=True)    
+    ydataunit = models.ForeignKey(Unit, db_column='ydataunitid', related_name='+', null=True)  
     class Meta:
         db_table = u't_tabulateddata'   
+        
+class Tabulateddatasource(models.Model):
+    id = models.IntegerField(primary_key=True)
+    tabulateddata = models.ForeignKey(Tabulateddata, db_column='tabulateddataid')
+    source = models.ForeignKey(Source, db_column='sourceid')
+    class Meta:
+        db_table = u't_tabulateddatasource'   
 
 
 class Atomiccomponent(models.Model):
@@ -167,17 +198,17 @@ class Atomiccomponent(models.Model):
     class Meta:
         db_table = u't_atomiccomponent'
 
-
 class Author(models.Model):
     id = models.IntegerField(primary_key=True)
-    firstname = models.CharField(unique=True, max_length=60)
-    lastname = models.CharField(unique=True, max_length=60)
+    name = models.CharField(max_length=20)
+    address = models.TextField(null=True)
     class Meta:
         db_table = u't_author'
 
 class Authorsource(models.Model):
-    authorid = models.ForeignKey(Author, db_column='authorid')
-    sourceid = models.ForeignKey(Source, db_column='sourceid')
+    id = models.IntegerField(primary_key=True)    
+    author = models.ForeignKey(Author, db_column='authorid')
+    source = models.ForeignKey(Source, db_column='sourceid')
     rank = models.IntegerField()
     class Meta:
         db_table = u't_authorsource'

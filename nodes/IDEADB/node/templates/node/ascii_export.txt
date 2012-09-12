@@ -1,0 +1,8 @@
+# This is an energyscan from ideadb.uibk.ac.at
+# It shows {{ es.species }}- coming from {{ es.origin_species }}
+# Creation date: {{ es.productiondate }}
+# It was published in "{{ es.source.title }}" in {{ es.source.journal }} in {{ es.source.year }}
+{% if es.source.doi %}# DOI: {{ es.source.doi }}{% endif %}
+# Further information: http://ideadb.uibk.ac.at/view/{{ es.id }}
+# Electron Energy	Counts per second
+{{ es.daten }}

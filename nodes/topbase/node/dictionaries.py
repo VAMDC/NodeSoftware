@@ -18,7 +18,8 @@ RETURNABLES = {\
 #'MethodCategory':'Method.category',
                            
 'AtomStateID':'AtomState.id',
-
+'AtomInchi' : 'Atom.atomicion.inchi',
+'AtomInchiKey' : 'Atom.atomicion.inchikey',
 'AtomSymbol':'Atom.atomicion.isotope.chemicalelement.elementsymbol',
 'AtomSpeciesID':'Atom.atomicion.id',
 'AtomNuclearCharge':'Atom.atomicion.isotope.chemicalelement.nuclearcharge',
@@ -26,26 +27,28 @@ RETURNABLES = {\
 'AtomMassNumber':'Atom.atomicion.isotope.massnumber',
 
 'AtomStateEnergy':'AtomState.stateenergy',
-'AtomStateEnergyUnit':'AtomState.stateenergyunit.value',
+'AtomStateRef':'AtomState.Sources',
+'AtomStateEnergyUnit':'AtomState.stateenergyunit',
 'AtomStateParity' : 'AtomState.parity.value',
-'AtomStateMixingCoeff':'AtomState.Component.mixingcoefficient',
-'AtomStateMixingCoeffClass' : 'AtomState.Component.mixingclass.value',
+'AtomStateMixingCoeff':'Component.mixingcoefficient',
+'AtomStateMixingCoeffClass' : 'Component.mixingclass.value',
 'AtomStateLifeTime': 'AtomState.lifetime',
 'AtomStateLifeTimeDecay':'totalRadiative',
 'AtomStateStatisticalWeight' : 'AtomState.statisticalweight',
-'AtomStateStatisticalWeightUnit' : 'AtomState.statisticalweightunit.value',
-'AtomStateLifeTimeUnit': 'AtomState.lifetimeunit.value',
+'AtomStateStatisticalWeightUnit' : 'AtomState.statisticalweightunit',
+'AtomStateLifeTimeUnit': 'AtomState.lifetimeunit',
 'AtomStateIonizationEnergy' : 'AtomState.ionizationenergy',
-'AtomStateIonizationEnergyUnit' : 'AtomState.ionizationenergyunit.value',
+'AtomStateIonizationEnergyUnit' : 'AtomState.ionizationenergyunit',
 'AtomStateTotalAngMom' : 'AtomState.totalangularmomentum',
-'AtomStateTermLabel' : 'AtomState.Component.termlabel',
-'AtomStateTermLSL' : 'AtomState.Component.Lscoupling.l',
-'AtomStateTermLSS' : 'AtomState.Component.Lscoupling.s',
-'AtomStateTermLSMultiplicity' : 'AtomState.Component.Lscoupling.multiplicity',
+'AtomStateTermLabel' : 'Component.termlabel',
+'AtomStateTermLSL' : 'Component.Lscoupling.l',
+'AtomStateTermLSS' : 'Component.Lscoupling.s',
+'AtomStateTermLSMultiplicity' : 'Component.Lscoupling.multiplicity',
 
 'RadTransID':'RadTran.id',
+'RadTransRefs' : 'RadTran.Sources',
 'RadTransWavelength':'RadTran.wavelength',
-'RadTransWavelengthUnit':u'A',
+'RadTransWavelengthUnit':'RadTran.wavelengthunit',
 'RadTransProbabilityWeightedOscillatorStrength' : 'RadTran.abs_weightedoscillatorstrength()',
 'RadTransUpperStateRef':'RadTran.upperatomicstate.id',
 'RadTransLowerStateRef':'RadTran.loweratomicstate.id',
@@ -53,14 +56,27 @@ RETURNABLES = {\
 'RadTransProbabilityAUnit' : '1/s',
 
 
-#'CrossSectionState' : 'RadCros.id',
+'CrossSectionState' : 'RadCros.id',
 'CrossSectionID' : 'RadCros.id',
 'CrossSectionX' : 'RadCros.xdata',
-'CrossSectionXUnit' : 'RadCros.xdataunit.value',
+'CrossSectionXUnit' : 'RadCros.xdataunit',
 'CrossSectionXN' : 'len(RadCros.xdata.split(" "))',
 'CrossSectionY' : 'RadCros.ydata',
-'CrossSectionYUnit' : 'RadCros.ydataunit.value',
+'CrossSectionYUnit' : 'RadCros.ydataunit',
 'CrossSectionYN' : 'len(RadCros.ydata.split(" "))',
+
+#source
+'SourceTitle':'Source.title',
+'SourceAuthorName':'Source.Authors',
+'SourceCategory':'Source.sourcecategory.value',
+'SourceName' : 'Source.sourcename',
+'SourceYear' : 'Source.year',
+'SourceURI': 'Source.uri',
+'SourceVolume' : 'Source.volume',
+'SourcePageBegin' : 'Source.pagebegin',
+'SourcePageEnd' : 'Source.pageend',
+'SourceDOI' : 'Source.doi',
+'SourceID' : 'Source.id',
 }
 
 # The restrictable dictionary defines limitations to the search. 
@@ -70,7 +86,7 @@ RETURNABLES = {\
 
 RESTRICTABLES = {\
 'RadTransWavelength':'wavelength',
-'AtomIonCharge' : 'ioncharge',
+'IonCharge' : 'ioncharge',
 'AtomNuclearCharge' : 'nuclearcharge',
 'AtomSymbol' : 'elementsymbol',
 }
