@@ -113,7 +113,7 @@ def getFunctions(transs):
     return funcs
 
 
-def getLifetimeMethods():    
+def getMethods():    
     """
     Chianti has a mix of theor
     In the example we are storing both experimental and theoretical
@@ -141,7 +141,7 @@ def getLifetimeMethods():
 
 
 def everythingRequired(sql):
-    return sql.parsedSQL.columns in ('*', 'ALL')
+    return len(sql.requestables) == 0
 
 
 def transitionsRequired(sql):
@@ -150,6 +150,9 @@ def transitionsRequired(sql):
 
 def statesRequired(sql):
     return 'atomstates' in sql.requestables or everythingRequired(sql)
+
+def constraintsPresent(sql):
+    return len(sql.where) > 0
 
 
 #------------------------------------------------------------
@@ -173,13 +176,68 @@ def query(sql, limit):
     # based on the RESTRICTABLES dictionary in dictionaries.py
     q = sql2Q(sql)
 
+    if constraintsPresent(sql) or transitionsRequired(sql) or statesRequired(sql):
+        species, nstates, transs, percentage = genericQuery(sql, q, limit)
+        nspecies = species.count()
+        ntranss = transs.count()
+    else:
+        species = allSpeciesQuery(sql, q, limit)
+        nspecies = species.count()
+        nstates = 0
+        ntranss = 0
+        transs = {}
+        percentage = None
+    
+
+    # Adjust the counts of things returned according to the requestables.
+    # The caller will choose what actually to return, but we have to set
+    # the counts in the header ourselves.
+    if not transitionsRequired(sql):
+        ntranss = 0
+    if not statesRequired(sql):
+        nstates = 0
+
+
+    # Create the header with some useful info. The key names here are
+    # standardized and shouldn't be changed.
+    headerinfo={\
+            'Truncated':percentage,
+            'COUNT-species':nspecies,
+            'count-states':nstates,
+            'count-radiative':ntranss
+            }
+    LOG(headerinfo)
+            
+    # Return the data. The keynames are standardized.
+    if (nspecies > 0 or nstates > 0 or ntranss > 0):
+        return {'RadTrans':transs,
+                'Atoms':species,
+                'HeaderInfo':headerinfo,
+                'Methods':getMethods()
+               }
+
+    # As a special case, if there are no data, return an empty structure.
+    # This causes the node software to send a 204 "No content" response.
+    else:
+        return {}
+
+def genericQuery(sql, q, limit):
+    """
+    When query constraints are present, this for mof query is used.
+    The query initially selects the transitions and then builds matching
+    sets of species and states. It has to be done this way because the
+    retrictables dictionary contains object references from the Transitions
+    table; the query sets cannot work on directly on the other tables.
+    """
+
+    LOG("Generic query")
+
     # We build a queryset of database matches on the Transision model
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
     LOG("getting transitions")
     transs = models.Transitions.objects.select_related(depth=2).filter(q)
-    LOG(transs.count())
 
     # count the number of matches, make a simple truncation if there are
     # too many (record the coverage in the returned header)
@@ -195,43 +253,12 @@ def query(sql, limit):
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     #sources = getRefs(transs)
-    sources = {}
-    nsources = 0
     LOG("Getting species")
     species, nspecies, nstates = getSpeciesWithStates(transs)
-    methods = getLifetimeMethods()
-    functions = {}
     LOG(species)
 
-    # Adjust the counts of things returned according to the requestables.
-    # The caller will choose what actually to return, but we have to set
-    # the counts in the header ourselves.
-    if not transitionsRequired(sql):
-        ntranss = 0
-    if not statesRequired(sql):
-        nstates = 0
+    return species, nstates, transs, percentage
 
-    # Create the header with some useful info. The key names here are
-    # standardized and shouldn't be changed.
-    headerinfo={\
-            'Truncated':percentage,
-            'COUNT-SOURCES':nsources,
-            'COUNT-species':nspecies,
-            'count-states':nstates,
-            'count-radiative':ntranss
-            }
-    LOG(headerinfo)
-            
-    # Return the data. The keynames are standardized.
-    if (nspecies > 0 or nstates > 0 or ntranss > 0):
-        return {'RadTrans':transs,
-                'Atoms':species,
-                'Sources':sources,
-                'HeaderInfo':headerinfo,
-                'Methods':methods
-               }
-
-    # As a special case, if there are no data, return an empty structure.
-    # This causes the node software to send a 204 "No content" response.
-    else:
-        return {}
+def allSpeciesQuery(sql, q, limit):
+    LOG("All-species query")
+    return models.Species.objects.all()
