@@ -157,9 +157,15 @@ def statesRequired(sql):
 #------------------------------------------------------------
 
 def setupResults(sql, limit=100000):
-    """
-    This function is always called by the software.
-    """
+    try:
+        return query(sql, limit)
+    except Exception as oops:
+        LOG(oops)
+        raise oops
+
+
+def query(sql, limit):
+
     # log the incoming query
     LOG(sql)
 
