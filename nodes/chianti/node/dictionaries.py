@@ -27,6 +27,7 @@ RESTRICTABLES = {\
 
 RETURNABLES = {\
 'NodeID':u'chianti', # Constant value
+'XSAMSVersion':u'1.0',
 
 'MethodID':'Method.id',
 'MethodCategory':'Method.category',
