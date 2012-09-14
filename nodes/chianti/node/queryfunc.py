@@ -48,7 +48,7 @@ def getRefs(transs):
     refmatches = models.Reference.objects.filter(pk__in=refset) # only match primary keys in refset    
     return refmatches
 
-def getSpeciesWithStates(transs):
+def getSpeciesWithStates(transs, sql):
     """
     Use the Transition matches to obtain the related Species (only atoms in this example)
     and the states related to each transition. 
@@ -70,19 +70,22 @@ def getSpeciesWithStates(transs):
     # get all states. Note that when building a queryset like this,
     # (using objects.filter() etc) will usually not hit the database
     # until it's really necessary, making this very efficient. 
+    LOG("Getting states")
     nstates = 0
-    for spec in species:
-        # use the found reference ids to search the State database table 
-        # Note that we store a new queryset called 'States' on the species queryset. 
-        # This is important and a requirement looked for by the node 
-        # software (all RETURNABLES AtomState* will try to loop over this
-        # nested queryset). 
-        spec.States = models.States.objects.filter(species=spec).filter(pk__in=stateIds)
-        for state in spec.States:
-           state.Components = models.Components.objects.filter(pk=state.id)
-           for comp in state.Components:
-               comp.Shells = models.Subshells.objects.filter(state=state.id)
-        nstates += spec.States.count()
+    if statesRequired(sql):
+        for spec in species:
+            # use the found reference ids to search the State database table 
+            # Note that we store a new queryset called 'States' on the species queryset. 
+            # This is important and a requirement looked for by the node 
+            # software (all RETURNABLES AtomState* will try to loop over this
+            # nested queryset). 
+            spec.States = models.States.objects.filter(species=spec).filter(pk__in=stateIds)
+            for state in spec.States:
+                 state.Components = models.Components.objects.filter(pk=state.id)
+                 for comp in state.Components:
+                     comp.Shells = models.Subshells.objects.filter(state=state.id)
+                 nstates += spec.States.count()
+
     return species, nspecies, nstates
 
 def getFunctions(transs):
@@ -254,7 +257,7 @@ def genericQuery(sql, q, limit):
     # all the relevant database data for our query. 
     #sources = getRefs(transs)
     LOG("Getting species")
-    species, nspecies, nstates = getSpeciesWithStates(transs)
+    species, nspecies, nstates = getSpeciesWithStates(transs, sql)
     LOG(species)
 
     return species, nstates, transs, percentage
