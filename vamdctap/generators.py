@@ -786,7 +786,11 @@ def XsamsAtoms(Atoms):
                 yield ret
                 continue
             G = lambda name: GetValue(name, AtomState=AtomState)
-            yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
+#            yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
+            yield makePrimaryType("AtomicState", "AtomicState", G,
+                                  extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('AtomStateID')),
+                                             "auxillary":G("AtomStateAuxillary")})
+
             yield makeSourceRefs(G('AtomStateRef'))
             yield makeOptionalTag('Description','AtomStateDescription',G)
             yield '<AtomicNumericalData>'
@@ -832,6 +836,7 @@ def XsamsAtoms(Atoms):
         G = lambda name: GetValue(name, Atom=Atom) # reset G() to Atoms, not AtomStates
         yield '<InChI>%s</InChI>' % G('AtomInchi')
         yield '<InChIKey>%s</InChIKey>' % G('AtomInchiKey')
+  #        yield '<VAMDCSpeciesID>%s</VAMDCSpeciesID>' % G('AtomVAMDCSpeciesID')
         yield """</Ion>
 </Isotope>
 </Atom>"""
@@ -900,6 +905,7 @@ def XsamsMCSBuild(Molecule):
     yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
     yield makeReferencedTextType('CASRegistryNumber','MoleculeCASRegistryNumber',G)
     yield makeOptionalTag('CNPIGroup','MoleculeCNPIGroup',G)
+    yield '<VAMDCSpeciesID>%s</VAMDCSpeciesID>\n' % G("MoleculeVAMDCSpeciesID")
 
     yield makePartitionfunc("MoleculePartitionFunction", G)
 
@@ -1047,7 +1053,7 @@ def XsamsMSBuild(MoleculeState):
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
     yield makePrimaryType("MolecularState", "MoleculeState", G,
             extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('MoleculeStateID')),
-                       "fullyAssigned":G("MoleculeStateFullyAssigned")})
+                       "fullyAssigned":G("MoleculeStateFullyAssigned"),"auxillary":G("MoleculeStateAuxillary")})
     yield makeOptionalTag("Description","MoleculeStateDescription",G)
 
     yield '  <MolecularStateCharacterisation>'

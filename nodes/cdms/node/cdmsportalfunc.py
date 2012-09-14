@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-
+import sys
 from models import *
 from django.core.exceptions import ValidationError
 
@@ -397,6 +397,71 @@ def geturl(url, timeout=None):
     return content
 
 
+def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xslt', species1=None, species2=None, inurl2=None):
+    """
+    Applies a xslt-stylesheet to the given url
+    """
+    from django.conf import settings
+    from lxml import etree as e
+    if xsl:
+        xsl=e.XSLT(e.parse(open(xsl)))
+    else:
+        xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xslt')))
+
+    from urllib2 import urlopen
+
+
+    # download and save first query-result
+    try: data = urlopen(inurl)
+
+    except Exception,err:
+        raise ValidationError('Could not open given URL: %s'%err)
+
+    # Save XML-File to temporary directory
+    filename = settings.TMPDIR+"/xsams_download.xsams"
+
+    for row in data.info().headers:
+      p = row.find("filename=")
+      if p>-1:
+        filename = settings.TMPDIR+"/"+row[p+9:].rstrip()
+        
+    local_file = open(filename, "w")
+    local_file.write(data.read())
+    local_file.close()
+
+    try: xml=e.parse(filename)
+    except Exception,err:
+        raise ValidationError('Could not parse XML file: %s'%err)
+
+    if inurl2:
+        try: datacol = urlopen(inurl2)
+
+        except Exception,err:
+            raise ValidationError('Could not open given URL: %s'%err)
+
+        # Save XML-File to temporary directory
+        filename2 = settings.TMPDIR+"/xsams_col_download.xsams"
+
+        for row in datacol.info().headers:
+            p = row.find("filename=")
+            if p>-1:
+                filename2 = settings.TMPDIR+"/"+row[p+9:].rstrip()
+        
+        local_file = open(filename2, "w")
+        local_file.write(datacol.read())
+        local_file.close()
+   
+
+        try: result = str(xsl(xml, species1="'%s'" % species1, species2="'%s'" % species2, colfile="'%s'" % "/var/cdms/v1_0/NodeSoftware/nodes/cdms/test/basecol_co.xml"))
+        except Exception,err:
+            raise ValidationError('Could not transform XML file: %s'%err)
+    else:
+        try: result = str(xsl(xml, species1="'%s'" % species1))
+        except Exception,err:
+            raise ValidationError('Could not transform XML file: %s'%err)
+
+    return result
+
 def applyStylesheet(inurl, xsl = None):
     """
     Applies a xslt-stylesheet to the given url
@@ -542,7 +607,7 @@ def getHtmlNodeList():
                       </li>""" % (node["name"],u'98%',node["name"], node["url"],node["name"],"0","0","0","0","0","0")
 
     response += "</ul></div>"
-    return response
+    return response, nodes
 
 
 def doHeadRequest(url, timeout = 20):
@@ -577,7 +642,14 @@ def doHeadRequest(url, timeout = 20):
                         ("vamdc-count-radiative",0),
                         ("vamdc-count-atoms",0)]
     else:
-        vamdccounts =  []
+        vamdccounts =  [("vamdc-count-species",0),
+                        ("vamdc-count-states",0),
+                        ("vamdc-truncated",0),
+                        ("vamdc-count-molecules",0),
+                        ("vamdc-count-sources",0),
+                        ("vamdc-approx-size",0),
+                        ("vamdc-count-radiative",0),
+                        ("vamdc-count-atoms",0)]
 
     return vamdccounts
     
@@ -651,22 +723,48 @@ def getspecies(url):
     xp = "//xsams:Molecule"
     response = ""
 
+    chkbox = "<input type='checkbox' class='idselector'>"
+
     html = "<table class='full'><tbody>"
+    data = []
     try:
         for m in xml.xpath(xp ,namespaces=prefixmap):
             try:
-                stoichiometricformula = m.xpath('./xsams:MolecularChemicalSpecies/xsams:StoichiometricFormula', namespaces=prefixmap)[0].text
-                chemicalname = m.xpath('./xsams:MolecularChemicalSpecies/xsams:ChemicalName/xsams:Value', namespaces=prefixmap)[0].text
-                structuralformula = m.xpath('./xsams:MolecularChemicalSpecies/xsams:OrdinaryStructuralFormula/xsams:Value', namespaces=prefixmap)[0].text
-                inchikey = m.xpath('./xsams:MolecularChemicalSpecies/xsams:InChIKey', namespaces=prefixmap)[0].text
-                comment = m.xpath('./xsams:MolecularChemicalSpecies/xsams:Comment', namespaces=prefixmap)[0].text
+                speciesid = m.xpath('@speciesID', namespaces=prefixmap)[0]
+                try:
+                    stoichiometricformula = m.xpath('./xsams:MolecularChemicalSpecies/xsams:StoichiometricFormula', namespaces=prefixmap)[0].text
+                except:
+                    stoichiometricformula = ""
+                try:
+                    chemicalname = m.xpath('./xsams:MolecularChemicalSpecies/xsams:ChemicalName/xsams:Value', namespaces=prefixmap)[0].text
+                except:
+                    chemicalname = ""
+                try:
+                    structuralformula = m.xpath('./xsams:MolecularChemicalSpecies/xsams:OrdinaryStructuralFormula/xsams:Value', namespaces=prefixmap)[0].text
+                except:
+                    structuralformula = ""
+                try:
+                    inchikey = m.xpath('./xsams:MolecularChemicalSpecies/xsams:InChIKey', namespaces=prefixmap)[0].text
+                except:
+                    inchikey = ""
+                try:
+                    comment = m.xpath('./xsams:MolecularChemicalSpecies/xsams:Comment', namespaces=prefixmap)[0].text
+                except:
+                    comment = ""
             
                 response += "%s %s %s %s \n" % (structuralformula, stoichiometricformula, chemicalname, comment)
-                html += "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr> \n" % (structuralformula, stoichiometricformula, chemicalname, comment)
-            except:
-                pass
+                html += "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr> \n" % (chkbox, speciesid, structuralformula, stoichiometricformula, chemicalname, comment)
+                data.append({'speciesid':speciesid,
+                             'stoichiometricformula':stoichiometricformula,
+                             'chemicalname':chemicalname,
+                             'structuralformula':structuralformula,
+                             'inchikey':inchikey,
+                             'comment':comment,
+                             'url':url,})
+            except Exception, e:
+                print >> sys.stderr, "ERROR %s" % e #pass
     except:
         return "ERROR 2"
 
     html += "</tbody></table>"
-    return  html
+    return  html, data

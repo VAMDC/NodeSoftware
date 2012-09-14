@@ -2,6 +2,7 @@ RETURNABLES = {
 'XSAMSVersion':'1.0',
 'AtomInchi':'Atom.inchi',
 'AtomInchiKey':'Atom.inchikey',
+'AtomVAMDCSpeciesID':'Atom.inchikey',
 'AtomIonCharge':'Atom.molecule.formalcharge',
 #'AtomMass':'AtomState.',
 'AtomMassNumber':'Atom.massnumber', #getMassNumber()',
@@ -18,6 +19,7 @@ RETURNABLES = {
 #'AtomStateHyperfineConstantA':'AtomState.',
 #'AtomStateHyperfineConstantB':'AtomState.',
 'AtomStateID':'AtomState.id',
+'AtomStateAuxillary':'AtomState.auxillary()',
 #'AtomStateIonizationEnergy':'AtomState.',
 #'AtomStateJ1':'AtomState.',
 #'AtomStateJ2':'AtomState.',
@@ -52,6 +54,7 @@ RETURNABLES = {
 'MoleculeID':'Molecule.id',
 'MoleculeInchi':'Molecule.inchi',
 'MoleculeInchiKey':'Molecule.inchikey',
+'MoleculeVAMDCSpeciesID':'Molecule.inchikey',
 'MoleculePartitionFunction':'Molecule.pfT',
 'MoleculePartitionFunctionUnit':'K',
 'MoleculePartitionFunctionQ':'Molecule.pfQ',
@@ -82,6 +85,7 @@ RETURNABLES = {
 'MoleculeStateNSILowestRoVibSym':'MoleculeState.nsi.lowestrovibsym', #nuclearspinisomersym',
 'MoleculeStateNuclearStatisticalWeight':'MoleculeState.nuclearstatisticalweight',
 'MoleculeStateID':'MoleculeState.id',
+'MoleculeStateAuxillary':'MoleculeState.auxillary()',
 #'MoleculeStateQuantumNumbers':'MoleculeState.parsed_qns',
 'MoleculeStateQuantumNumbers':'MoleculeState',
 #'MoleculeStateMethod':'MoleculeState.dataset_id',
@@ -229,7 +233,10 @@ def stoichiometricformula(r,op,rhs):
 
 
 def processclass(r, op, *rhs):
-
+    """
+    Generate filter for process classes. Information on process classes are not
+    stored in a single field in the database. 
+    """
     try:
 
         if op=='in':
@@ -288,6 +295,7 @@ RESTRICTABLES = {
 'AtomSymbol':'specie__atom__element', #molecule__elementsymbol', #atomsymbol, #'specie__molecule__stoichiometricformula',
 'MoleculeInchiKey':'specie__inchikey',
 'InchiKey':'specie__inchikey',
+'VAMDCSpeciesID':'specie__inchikey',
 'MoleculeChemicalName':'specie__molecule__trivialname',
 #'MoleculeMolecularWeight':'',
 #'MoleculeNormalModeHarmonicFrequency':'',

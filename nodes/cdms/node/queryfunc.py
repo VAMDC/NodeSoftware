@@ -141,7 +141,8 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
             # These states occur twice in the output
             # species-id is used to make id unique (origin-state could be a state of another specie if v>0)
             for state in origins:
-                state.id = "%s-origin-%s" % (state.id, specie.id)               
+                state.id = "%s-origin-%s" % (state.id, specie.id)
+                state.aux = True
 
             # Attach states to species object            
             specie.States = chain(origins, states)

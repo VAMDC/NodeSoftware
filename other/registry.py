@@ -8,6 +8,8 @@ routines for querying the registry
 
 REL_REG='http://registry.vamdc.eu/vamdc_registry/services/RegistryQueryv1_0'
 DEV_REG='http://casx019-zone1.ast.cam.ac.uk/registry/services/RegistryQueryv1_0'
+REL_REG='http://registry.vamdc.eu/registry-12.07/services/RegistryQueryv1_0'
+
 REGURL=DEV_REG
 WSDL=REGURL+'?wsdl'
 

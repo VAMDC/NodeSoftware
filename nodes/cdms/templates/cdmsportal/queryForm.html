@@ -7,14 +7,23 @@
 
 <div class="hlist">
   <ul>
-    <li><a href="#" onclick="$('#result').hide();$('#control').show();docShowSubpage('form_queryTrans');">Query</a></li>
-    <li><a href="#" onclick="$('#control').hide();$('#result').hide();">Nodes</a></li>
-    <li><a href="#" onclick="$('#control').hide();$('#result').show();docShowSubpage('queryresult');">Result</a></li>
+    <li><a href="#" onclick="$('#result').hide();$('#control').show();$('#nodes').hide();docShowSubpage('form_queryTrans');">Query</a></li>
+    <li><a href="#" onclick="$('#control').hide();$('#result').hide();$('#nodes').show();">Nodes</a></li>
+    <li><a href="#" onclick="$('#control').hide();$('#result').show();$('#nodes').hide();docShowSubpage('queryresult');">Result</a></li>
   </ul>
 </div>
 
 <div id="main">
 
+<!-- NODES - LIST -->
+<div id="nodes" style="display:none;min-height:100ex;">
+ <fieldset>
+   <div class="legend">VAMDC-Nodes</div>
+   <div id="nodes_list"></div>
+ </fieldset>
+</div>
+
+<!-- RESULT -->
 <div id="result" style="display:none;min-height:100ex;">
   <!-- begin: #col1 - first float column -->
   <div id="col1_r" style="background-color:white;width:5ex;" role="complementary">
@@ -47,77 +56,65 @@
 
 </div>
 
+
 <div id="control">
   <div id="col1" style="background-color:white;" role="complementary">
     <div id="col1_content" class="clearfix">
 
       <h6 class="vlist">DATABASE</h6>
-<ul class="vlist">
-<li>
-      <div class="type-select">
-        <SELECT class="log" NAME="database" id="database" onchange="showQueryRefinements();updateNodeView()">
-         <OPTION VALUE="cdms"> CDMS </OPTION>
-         <OPTION VALUE="jpl"> JPL </OPTION>
-         <OPTION VALUE="vamdc"> VAMDC-network </OPTION>
-        </SELECT>
-      </div> 
-</li>
-</ul>
-     <h6 class="vlist">FORMAT</h6>
-     <ul class="vlist">
-      <li>
-      <div class="type-select">
-        <SELECT class="log" NAME="T_TYPE" id="T_TYPE" >
-         <OPTION VALUE="spcat"> SPCAT </OPTION>
-         <OPTION VALUE="comfort"> Full quantum number description </OPTION>
-         <OPTION VALUE="xsams"> XSAMS (File) </OPTION>
-         <OPTION VALUE="rad3d"> Rad3d (XSAMS) </OPTION>
-         <OPTION VALUE="png"> Stick Spectrum (png) </OPTION>
-        </SELECT>
-      </div> 
-     </li>
-     </ul>
-     <h6 class="vlist"> QUERY </h6>
-     <ul class="vlist">
-      <li><a href="#" id="a_form_queryRefinements" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')">Overview</a></li>
-   <!--
-      <li><a href="#" id="a_form_queryRefinements" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')">Query Transitions</a></li>
-      <li><a href="#" onclick="docShowSubpage('form_queryStates')">Query States</a></li>
--->
-     </ul>
+      <ul class="vlist">
+        <li>
+          <div class="type-select">
+            <SELECT class="log" NAME="database" id="database" onchange="showQueryRefinements();updateNodeView()">
+              <OPTION VALUE="cdms"> CDMS </OPTION>
+              <OPTION VALUE="jpl"> JPL </OPTION>
+              <OPTION VALUE="vamdc"> VAMDC-network </OPTION>
+            </SELECT>
+          </div> 
+        </li>
+      </ul>
+      <h6 class="vlist">FORMAT</h6>
+      <ul class="vlist">
+        <li>
+          <div class="type-select">
+            <SELECT class="log" NAME="T_TYPE" id="T_TYPE" onchange="changeSelector()">
+              <OPTION VALUE="spcat"> SPCAT </OPTION>
+              <OPTION VALUE="comfort"> Full quantum number description </OPTION>
+              <OPTION VALUE="xsams"> XSAMS (File) </OPTION>
+              <OPTION VALUE="rad3d"> Rad3d (XSAMS) </OPTION>
+              <OPTION VALUE="png"> Stick Spectrum (png) </OPTION>
+            </SELECT>
+          </div> 
+        </li>
+      </ul>
+      <h6 class="vlist"> QUERY </h6>
+      <ul class="vlist">
+        <li><a href="#" id="a_form_queryRefinements" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')">Overview</a></li>
+      </ul>
 
-     <h6 class="vlist"> REFINEMENTS </h6>
-     <ul class="vlist">
-   <!--      <li><a href="#" onclick="docShowSubpage('form_basic')">Basic</a></li> -->
-      <li><a href="#" id="a_form_species" onclick="docShowSubpage('form_species')">Species</a></li> 
-      <li><a href="#" id="a_form_transitions" onclick="docShowSubpage('form_transitions')">Transitions</a></li>
-      <li><a href="#" id="a_form_states" onclick="docShowSubpage('form_states')">States</a></li>
-      <li><a href="#" onclick="docShowSubpage('form_output')">Output</a></li>
-
-     </ul>
-<!--     <h6 class="vlist"> VAMDC </h6>
-     <ul class="vlist">
-      <li><a href="#" id="a_form_vamdcnodes" onclick="ajaxGetNodeList();docShowSubpage('form_vamdcnodes');ajaxQueryNodeContent();">VAMDC Nodes</a></li> 
-      <li><a href="#" id="a_form_result" onclick="docShowSubpage('form_result')">Query - Result</a></li>
-     </ul>
--->    </div>
+      <h6 class="vlist"> REFINEMENTS </h6>
+      <ul class="vlist">
+        <li><a href="#" id="a_form_species" onclick="docShowSubpage('form_species')">Species</a></li> 
+        <li><a href="#" id="a_form_transitions" onclick="docShowSubpage('form_transitions')">Transitions</a></li>
+        <li><a href="#" id="a_form_states" onclick="docShowSubpage('form_states')">States</a></li>
+        <li><a href="#" onclick="docShowSubpage('form_output')">Output</a></li>
+      </ul>
+    </div>
   </div>
+
   <div id="col3" role="main">
     <div id="col3_content" class="clearfix">
-
-		<script type="text/javascript">
-                        isotopologs = [{% for inchikey in inchikey_list %}'{{inchikey}}',{% endfor %}] 
-                        molecules = [{% for molecule in stoichio_list %}'{{molecule}}',{% endfor %}] 
-			$(document).ready(function () {
-				$('#a_form_queryRefinements').click();
-			});
-		</script>
-<script>
-$(document).ready(function() {
-  ajaxQueryNodeContent();
-
-});
-</script>
+      <script type="text/javascript">
+         isotopologs = [{% for inchikey in inchikey_list %}'{{inchikey}}',{% endfor %}] 
+         molecules = [{% for molecule in stoichio_list %}'{{molecule}}',{% endfor %}] 
+	 $(document).ready(function () {
+		$('#a_form_queryRefinements').click();
+                ajaxGetNodeList();
+                <!-- ajaxQueryNodeContent(); -->
+		updateNodeView();
+		changeSelector();
+            });
+      </script>
 
 <INPUT TYPE='HIDDEN' NAME='filterTag' VALUE=''>
 <INPUT TYPE='HIDDEN' NAME='T_OrderBy' VALUE='E_TAG+ASC'>
@@ -128,23 +125,10 @@ $(document).ready(function() {
 
 <DIV id="sectionPage">
 
+
+
 <!-- QUERY TRANSITION PAGE -->
   <div id="form_queryTrans" class="subpage" style="">
-<!--    <h3><Strong>QUERY</strong>&nbsp;<i>TRANSITIONS</i></h3>
-    <p>&nbsp;</p>
--->
-<!--
-    <fieldset>
-      <div class="legend">Database</div>
-      <div class="type-select">
-        <SELECT class="log" NAME="database" id="database" onchange="showQueryRefinements();">
-         <OPTION VALUE="cdms"> CDMS </OPTION>
-         <OPTION VALUE="jpl"> JPL </OPTION>
-         <OPTION VALUE="vamdc"> VAMDC-network </OPTION>
-        </SELECT>
-      </div> 
-    </fieldset> 
--->
 
     <fieldset>
       <div class="legend">Current Query:Refinements</div>
@@ -160,6 +144,33 @@ $(document).ready(function() {
        </ul>
       </div> <!-- DIV - REFINEMENTS -->
     </fieldset>
+
+
+
+   <fieldset id="RadexSelectors" style="display:none;">
+     <div class="legend">Radex Input</div>
+
+     <div>Spectroscopic data </div>
+      <div class="type-select">
+        <SELECT class="radexselect" NAME="database" id="sel_spec" onchange="">
+        </SELECT>
+        <INPUT TYPE="HIDDEN" NAME="spec_url" VALUE="">
+        <INPUT TYPE="HIDDEN" NAME="spec_speciesid" VALUE="XCDMS-83">
+      </div> 
+     
+     <div>Collisional data </div>
+      <div class="type-select">
+        <SELECT class="radexselect" NAME="sel_cols" id="sel_cols" onchange="">
+        </SELECT>
+        <INPUT TYPE="HIDDEN" NAME="col_url" VALUE="http://batz.lpma.jussieu.fr:8080/tapservice_11_12/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29">
+        <INPUT TYPE="HIDDEN" NAME="col_speciesid" VALUE="XBAS73">
+      </div> 
+
+      <div class="type-button float_right radexsubmit">
+        <INPUT id="button1" TYPE="button" NAME="T_SEARCH" onclick='$("#control").hide();ajaxQuery("ajaxQuery","http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+ALL+WHERE+%28+InchiKey+=+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27+%29&ORDERBY=frequency","http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/");$("#result").show();docShowSubpage("queryresult");' VALUE="QUERY" >
+      </div>
+   </fieldset>
+
 
     <fieldset>
       <div class="legend">Content</div>
@@ -235,23 +246,7 @@ $(document).ready(function() {
       <div id="TAPxsams">SELECT ALL WHERE  ( {% for specie in species_list %} {% if not forloop.first %} OR {% endif %} MoleculeInchiKey = '{{specie.inchikey}}' {% endfor %} )</div>
     </fieldset> 
 
-<!--
-    <fieldset><div class="legend">Data Format</div>
 
-      <div class="type-select"> 
-       <SELECT class="log" NAME="T_SHOWEXPLINES" id="T_SHOWEXPLINES">
-        <OPTION VALUE='no'> Show only predicted frequencies  </OPTION> 
-        <OPTION VALUE='merge'> Merge experimental and predicted frequencies  </OPTION> 
-        <OPTION VALUE='all'> Show predicted and all experimental frequencies </OPTION> 
-       </SELECT> 
-      </div> 
-    </fieldset>
--->
-<!--
-    <div class="type-button float_right">
-      <INPUT id="button1" TYPE="submit" NAME="T_SEARCH" onclick='attachSpeciesIds();submitOutputURL()' VALUE="QUERY" >
-    </div>
--->
   </div> <!-- DIV FORM QUERY TRANSITIONS (FIRST PAGE) -->
 
 <!-- SUBPAGE REFINE TRANSITIONS -->
@@ -461,20 +456,6 @@ $(document).ready(function() {
 </div>
 
 
-
-
-<!-- SUBPAGE Result 
-<div id="form_result" class="subpage" style="display:none">
-  <h3><strong>QUERY</strong>&nbsp;<i>RESULT</i></h3>
-  <p>&nbsp;</p>
-
-  <div id ="queryresult"> No query submitted yet. </div>
-
-  <div class="type-button float_right">
-    <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
-  </div>
-</div>
--->
 
 </div>
 </div>

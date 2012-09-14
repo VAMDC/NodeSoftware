@@ -197,6 +197,15 @@ class States( Model):
           else:
                return None
 
+     def auxillary(self):
+          try:
+               if self.aux:
+                    return 'True'
+               else:
+                    return ''
+          except AttributeError:
+               return ''
+
      def nsiorigin(self):
           return '%s-origin-%s' % (self.nsioriginid, self.specie_id)
 
@@ -298,6 +307,7 @@ class States( Model):
           return ''.join(xml)
 
      XML = qns_xml
+
 
      def qns_dict(self):
           """ Yield the quantum numbers as a dictionary """
@@ -409,7 +419,14 @@ class AtomStates( Model):
                exec 'self.%s = %s' % (qn.label, value)
           return self.J
 
-
+     def auxillary(self):
+          try:
+               if self.aux:
+                    return 'True'
+               else:
+                    return ''
+          except AttributeError:
+               return ''
           
 
 

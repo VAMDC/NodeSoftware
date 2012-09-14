@@ -18,6 +18,7 @@ from forms import *
 
 FILENAME_XSAMS2HTML = settings.XSLT_DIR + 'convertXSAMS2html.xslt'
 FILENAME_XSAMS2RAD3D = settings.XSLT_DIR + 'convertXSAMS2Rad3d.xslt'
+FILENAME_MERGERADEX = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xslt'
 
 
 class QUERY(object ):
@@ -356,8 +357,8 @@ def ajaxRequest(request):
             QUERYs, htmlcode = check_query(request.POST)
             response_dict.update({'QUERY' : QUERYs, 'htmlcode' : htmlcode, 'message' : " Tach "})
         elif request.POST['function'] == 'getVAMDCstats':
-            htmlcode = getHtmlNodeList()            
-            response_dict.update({'htmlcode' : htmlcode, 'message' : " Statistics "})
+            htmlcode, nodes = getHtmlNodeList()            
+            response_dict.update({'htmlcode' : htmlcode, 'nodes': nodes, 'message' : " Statistics "})
         elif request.POST['function'] == 'ajaxQuery':
             ##### TEST TEST TEST TEST ###########
             # get result and return it via ajax
@@ -376,9 +377,15 @@ def ajaxRequest(request):
                     if  postvars.format.lower()=='xsams':
                         htmlcode = str(applyStylesheet(postvars.url,
                                                        xsl = FILENAME_XSAMS2HTML))
-                    elif  postvars.format=='rad3d':
+                    elif  postvars.format=='rad3dx':
                         htmlcode = "<pre>" + str(applyStylesheet(postvars.url,
                                                                  xsl = FILENAME_XSAMS2HTML)) + "</pre>"
+                    elif postvars.format=='rad3d':
+                        #ouput = str(applyRadex(postvars.url, xsl = FILENAME_MERGERADEX))
+                        url4="http://batz.lpma.jussieu.fr:8080/tapservice_11_12/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29"
+                        output = str(applyRadex(postvars.url, species1="XCDMS-83", species2="XBAS73", inurl2=url4))
+                        
+                        htmlcode = "<pre>" + output + "</pre>"
                     elif postvars.format=='png':
                         htmlcode = "<img class='full' width='100%' src="+postvars.url+" alt='Stick Spectrum'>"
                     else:
@@ -426,11 +433,11 @@ def ajaxRequest(request):
             url=url.replace('comfort','XSAMS')
             print >> sys.stderr, "SPECQUERY: "+url
             try:
-                result =  getspecies(url)
+                result, speciesdata =  getspecies(url)
             except:
                 result = "<p> Invalid request </p>"
         
-            response_dict.update({'htmlcode' : result, 'message' : " Species ",})
+            response_dict.update({'htmlcode' : result, 'speciesdata': speciesdata, 'message' : " Species ",})
         else:
             response_dict.update({'QUERY' : QUERYs, 'htmlcode' : "<p> HALLO </p>", 'message' : " Tach "})
     else:
