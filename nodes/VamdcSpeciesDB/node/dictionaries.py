@@ -54,7 +54,7 @@ RETURNABLES = {\
     
     'MoleculeStoichiometricFormula':'Molecule.stoichiometric_formula',
     'MoleculeOrdinaryStructuralFormula':'Molecule.structural_formula()',
-    #'MoleculeComment': 'Molecule.shortcomment', #'Molecule.name',
+    'MoleculeComment': 'Molecule.comment()', #'Molecule.name',
     
 
 }
@@ -79,13 +79,22 @@ OPTRANS= { # transfer SQL operators to django-style
 }
 
 
-def stoichiometricformula(r,op,rhs):
+def stoichiometricformula(r,op,*rhs):
     """
     """
     try:
+        if op ==  'in':
+            if not (rhs[0]=='(' and rhs[-1]==')'):
+                log.error('Values for IN not bracketed: %s'%rhs)
+            else: rhs=rhs[1:-1]
+
+            ins = map(strip,rhs,('\'"',)*len(rhs))
+        
+            return Q(**{'stoichiometric_formula__in':ins}) & Q(**{'species_type__name__exact':'Molecule'})
+
         op = OPTRANS[op]
         #float(rhs)
-        rhs = rhs.strip('\'"')
+        rhs = rhs[0].strip('\'"')
         return Q(**{'stoichiometric_formula'+op:rhs}) & Q(**{'species_type__name__exact':'Molecule'})
     except:
         return Q(pk__isnull=True)
@@ -102,16 +111,49 @@ def atommassnumber(r,op,rhs):
         return Q(pk__isnull=True)
 
 
-def atomsymbol(r,op,rhs):
+def atomsymbol(r,op,*rhs):
     """
+    creates a Q object (query object) for atom symbols.
+    Atom symbols are not stored in the database which makes querying
+    a little bit more difficult. The atom symbol information is matched
+    against the corresponding part of the inchi identifier.
     """
+
     try:
-        op = OPTRANS[op]
-        #float(rhs)
-        rhs = rhs.strip('\'"')
-        return Q(**{'stoichiometric_formula'+op:rhs}) & Q(**{'species_type__name__exact':'Atom'})
+        # if operand is 'in' then there is a list on the right hand side.
+        # The elements of this list are converted into regular expressions
+        # which can be used to match the inchi against.
+        # The list is converted into conditions concatinated by 'or', because
+        # the regular expression syntax does not allow to check lists
+        if op in ('in','not in'):
+            if not (rhs[0]=='(' and rhs[-1]==')'):
+                log.error('Values for IN not bracketed: %s'%rhs)
+            else: rhs=rhs[1:-1]
+
+            ins = map(strip,rhs,('\'"',)*len(rhs))
+            for c in ins:
+                try:
+                    qas = qas | Q(**{'inchi'+'__regex':u'1S[/]%s([/]|$)' % c})
+                except:
+                    qas = Q(**{'inchi'+'__regex':u'1S[/]%s([/]|$)' % c})
+
+            if (op=='in'):
+                return qas & Q(**{'species_type__name__exact':'Atom'})
+            else:
+                return ~(qas & Q(**{'species_type__name__exact':'Atom'}))
+        
+        elif op=='=':
+            rhs = rhs[0].strip('\'"')        
+            return Q(**{'inchi'+'__regex':u'1S[/]%s([/]|$)' % rhs}) & Q(**{'species_type__name__exact':'Atom'})
+        elif op=='!=':
+            rhs = rhs[0].strip('\'"')        
+            return ~(Q(**{'inchi'+'__regex':u'1S[/]%s([/]|$)' % rhs}) & Q(**{'species_type__name__exact':'Atom'}))
+        else:
+            return Q(pk__isnull=True)            
     except:
         return Q(pk__isnull=True)
+
+
 
 
 # The restrictable dictionary defines limitations to the search.

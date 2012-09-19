@@ -72,6 +72,24 @@ class VamdcSpecies(models.Model):
 
         return name
 
+    def species_foreign_ids(self):
+        """
+        Creates a string which is formated like a dictionary with all the foreign species ids and the related database name.
+        This can be used to provide the information via a comment-elelment.
+        """
+        speciesids = self.vamdcmemberdatabaseidentifiers_set.all()
+        return_string="{"
+        for sid in speciesids:
+            return_string+="{%s:%s}," % (sid.database_species_id ,sid.member_database.short_name)
+        return_string += "}"
+
+        return return_string
+
+    def comment(self):
+        """
+        """
+        return self.species_foreign_ids()
+
 class VamdcConformers(models.Model):
     id = models.IntegerField(primary_key=True)
     species = models.ForeignKey(VamdcSpecies)
