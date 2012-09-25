@@ -24,7 +24,7 @@ ExampleNode dictionary definitions.
 #  assigned)
 
 RETURNABLES = {\
-'NodeID':'lerma', # required
+'NodeID':'sesam', # required
 ############################################################
 'MethodID':'Method.id',
 'MethodCategory':'Method.category',
