@@ -40,8 +40,8 @@ RETURNABLES = {\
 'SourceCategory':'Source.sourcecategory.value',
 'SourceYear':'Source.year',
 'SourceVolume':'Source.volume',
-'Source.DOI':'Source.doi',
-'Source.URI':'Source.uri',
+'SourceDOI':'Source.doi',
+'SourceURI':'Source.uri',
 'SourceAuthorName':'Source.authornames()',
 ############################################################
 #'RadTransSpeciesRef':'RadTran.species_id',
