@@ -73,14 +73,18 @@ RETURNABLES = {\
 'RadTransBroadeningPressureChargedRef':'RadTran.gammastark_ref_id',
 'RadTransBroadeningPressureChargedEnvironment':'stark',
 'RadTransBroadeningPressureChargedComment':"Stark Broadening",
+'RadTransBroadeningPressureChargedLineshapeFunction':"stark",
 
 'RadTransBroadeningPressureNeutralLineshapeParameter':'RadTran.getWaals()',
 'RadTransBroadeningPressureNeutralLineshapeName':'lorentzian',
 'RadTransBroadeningPressureNeutralLineshapeParameterName':'log(gamma)',
 'RadTransBroadeningPressureNeutralLineshapeParameterUnit':'cm3/s',
+'RadTransBroadeningPressureNeutralLineshapeParameterName':'RadTran.getWaalsName()',  #'log(gamma)',
+'RadTransBroadeningPressureNeutralLineshapeParameterUnit':'RadTran.getWaalsUnits()', #'cm3/s',
 'RadTransBroadeningPressureNeutralRef':'RadTran.waals_ref_id',
 'RadTransBroadeningPressureNeutralEnvironment':'waals',
 'RadTransBroadeningPressureNeutralComment':"Van der Waals broadening",
+'RadTransBroadeningPressureNeutralLineshapeFunction':"RadTran.getWaalsFunction()",
 
 'RadTransProbabilityOscillatorStrengthAccuracy':'Radtran.accur',
 'RadTransProbabilityOscillatorStrengthAccuracyType':'Radtran.getAccurType()',
