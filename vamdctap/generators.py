@@ -1204,7 +1204,11 @@ def makeBroadeningType(G, name='Natural'):
     # in principle we should loop over lineshapes but
     # lets not do so unless somebody actually has several lineshapes
     # per broadening type             RadTransBroadening%sLineshapeName
-    s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
+    funcref = G("RadTransBroadening%sLineshapeFunction" % name) or None
+    if funcref:
+        s += '<Lineshape name="%s" functionRef="F%s-%s">' % (G('RadTransBroadening%sLineshapeName' % name), NODEID, funcref)
+    else:
+        s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
     s += lsparams
     s += '</Lineshape>'
     s += '</Broadening>'
