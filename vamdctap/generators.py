@@ -1916,19 +1916,21 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
         except: errs+=generatorError(' Sources')
 
     if not requestables or 'methods' in requestables:
-        log.debug('Working on Methods, Functions, Environments.')
+        log.debug('Working on Methods.')
         try:
             for Method in XsamsMethods(Methods):
                 yield Method
         except: errs+=generatorError(' Methods')
 
     if not requestables or 'functions' in requestables:
+        log.debug('Working on Functions.')
         try:
             for Function in XsamsFunctions(Functions):
                 yield Function
         except: errs+=generatorError(' Functions')
 
     if not requestables or 'environments' in requestables:
+        log.debug('Working on Environments.')
         try:
             for Environment in XsamsEnvironments(Environments):
                 yield Environment
