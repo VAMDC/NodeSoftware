@@ -160,6 +160,10 @@ def addHeaders(headers,response):
     for h in HEADS:
         if headers.has_key(h):
             response['VAMDC-'+h] = '%s'%headers[h]
+
+    if headers.has_key('LAST-MODIFIED'):
+        response['Last-Modified'] = '%s'%headers['LAST-MODIFIED']
+
     return response
 
 def sync(request):
