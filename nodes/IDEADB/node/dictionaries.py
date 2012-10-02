@@ -16,6 +16,7 @@ ExampleNode dictionary definitions.
 # look at queryfuncs.py, you'll see 'Sources' being assigned)
 
 RETURNABLES = {\
+#'XSAMSVersion' : u'1.0',
 'NodeID':'IDEADB',
 'MethodCategory':'experiment',
 'CollisionCode':'elat',
@@ -104,4 +105,6 @@ RESTRICTABLES = {\
 'InchiKey':('species__inchikey','origin_species__inchikey'),
 'MoleculeStoichiometricFormula':('species__chemical_formula','origin_species__chemical_formula'),
 'MoleculeCASRegistryNumber':('species__cas','origin_species__cas'),
+'ParticleName':'electron',
+'CollisionCode':'elat',
 }

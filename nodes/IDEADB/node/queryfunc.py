@@ -26,6 +26,11 @@ import re
 from inchivalidation import inchikey2chemicalformula
 import chemlib
 
+#in order to deal with the Last Modified header
+from email.Utils import formatdate
+import time
+import datetime
+
 def LOG(s):
     """ logfunction. will be removed for final version. """
     logfilejosi = open('/var/log/vamdc_josi.log','a')
@@ -113,6 +118,9 @@ def setupResults(sql, limit=1000):
 
     inchiconvertedsearch = False
 
+    #define the last modified header with an old date. we will compare all timestamps to this and take the most recent one
+    lastmodifiedheader = datetime.datetime(1970, 01, 01, 01, 01)
+
     #use the function sql2Q provided by vamdctap to translate from query to Q-object
     q = sql2Q(sql)
 
@@ -145,6 +153,10 @@ def setupResults(sql, limit=1000):
     #loop over energyscans that came back
 
     for energyscan in energyscans:
+        #compare if lastmodified is newer than then newest we have already included
+        if energyscan.lastmodified > lastmodifiedheader:
+            lastmodifiedheader = energyscan.lastmodified
+
         #our reactants are always molecules. here we check if the product is a molecule.
         if energyscan.species.molecule:
             molecules_internal = models.Species.objects.filter(Q(id__exact=energyscan.species.id)|Q(id__exact=energyscan.origin_species.id))
@@ -248,6 +260,12 @@ def setupResults(sql, limit=1000):
     natoms = len(atoms)
     nspecies = natoms + nmolecules
 
+    #Create the Last Modified header
+    #the header must not be newer than now!
+    if lastmodifiedheader > datetime.datetime.now():
+        lastmodifiedheader = datetime.datetime.now()
+    lastmodifiedheader = formatdate(time.mktime(lastmodifiedheader.timetuple()))
+
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
     headerinfo = {\
@@ -259,6 +277,7 @@ def setupResults(sql, limit=1000):
             'COUNT-STATES':0,
             'COUNT-RADIATIVE':0,
             'COUNT-NONRADIATIVE':0,
+            'Last-Modified':lastmodifiedheader,
             }
 
     # Return the data if it is not empty... The keynames are standardized. 

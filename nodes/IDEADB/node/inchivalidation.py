@@ -30,7 +30,7 @@ def inchikey2inchi(inchikey):
 
 def inchi2chemicalformula(inchi):
     """Extract chemical formula from InChI"""
-    match = re.match('^InChI=1S/(([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+)+/.*$', inchi)
+    match = re.match('^InChI=1S/(([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+)+/.*$', str(inchi))
     if match is not None:
         return match.group(1)
     else:
