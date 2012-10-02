@@ -277,7 +277,7 @@ def setupResults(sql, limit=1000):
             'COUNT-STATES':0,
             'COUNT-RADIATIVE':0,
             'COUNT-NONRADIATIVE':0,
-            'Last-Modified':lastmodifiedheader,
+            'LAST-MODIFIED':lastmodifiedheader,
             }
 
     # Return the data if it is not empty... The keynames are standardized. 
