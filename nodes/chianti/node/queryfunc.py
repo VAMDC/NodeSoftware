@@ -158,6 +158,11 @@ def constraintsPresent(sql):
     return len(sql.where) > 0
 
 
+def getSources(species):
+    speciesIds = species.values_list('id', flat=True)
+    return models.Sources.objects.filter(species__in=speciesIds)
+
+
 #------------------------------------------------------------
 # Main function 
 #------------------------------------------------------------
@@ -191,6 +196,9 @@ def query(sql, limit):
         transs = {}
         percentage = None
     
+    sources = getSources(species)
+    #sources = models.Sources.objects.all()
+    #sources = None;
 
     # Adjust the counts of things returned according to the requestables.
     # The caller will choose what actually to return, but we have to set
@@ -213,10 +221,11 @@ def query(sql, limit):
             
     # Return the data. The keynames are standardized.
     if (nspecies > 0 or nstates > 0 or ntranss > 0):
-        return {'RadTrans':transs,
-                'Atoms':species,
-                'HeaderInfo':headerinfo,
-                'Methods':getMethods()
+        return {'RadTrans'  : transs,
+                'Atoms'     : species,
+                'HeaderInfo': headerinfo,
+                'Methods'   : getMethods(),
+                'Sources'   : sources
                }
 
     # As a special case, if there are no data, return an empty structure.

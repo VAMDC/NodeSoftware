@@ -8,6 +8,7 @@
 # into your database.
 
 from django.db import models
+from vamdctap.bibtextools import *
 
 class Term:
     l = 0
@@ -57,6 +58,13 @@ class States(models.Model):
             methods.append("THEO")
         return methods
 
+    def sourceIds(self):
+        
+	    # Chianti quotes references per species, not per states, so find the species associated with this state.
+        speciesId = self.species_id
+        # Find all the ojects in the source model linked to the species; return a list of their ID numbers.
+        sources = Sources.objects.filter(species = speciesId)
+        return Sources.objects.filter(species = speciesId).values_list('id', flat=True)
 
     class Meta:
         db_table = u'states'
@@ -127,3 +135,18 @@ class Transitions(models.Model):
 
     class Meta:
         db_table = u'transitions'
+
+# This is copied from the VALD node.
+class Sources(models.Model):
+    id = models.CharField(max_length=7, primary_key=True, db_index=True)
+    species = models.ForeignKey(Species, related_name='+')
+    bibtex = models.TextField(null=True)
+
+    def XML(self):
+        print "source ", self.id, " ", self.bibtex
+        return BibTeX2XML(self.bibtex, self.id)
+
+    class Meta:
+        db_table = u'sources'
+        def __unicode__(self):
+            return u'%s'%self.id

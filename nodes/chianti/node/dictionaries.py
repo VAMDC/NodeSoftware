@@ -46,6 +46,7 @@ RETURNABLES = {\
 'AtomStateEnergyMethod':'AtomState.energyMethod',
 'AtomStateEnergyUnit':u'1/cm',
 'AtomStateDescription':'AtomState.atomstateconfigurationlabel',
+'AtomStateRef':'AtomState.sourceIds()',
 
 'AtomStateTermLSS':'Component.lss',
 'AtomStateTermLSL':'Component.lsl',
