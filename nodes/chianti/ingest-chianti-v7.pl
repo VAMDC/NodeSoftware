@@ -2,12 +2,48 @@
 
 use Chemistry::OpenBabel;
 
+print "DROP TABLE IF EXISTS sources;\n";
 print "DROP TABLE IF EXISTS species;\n";
 print "DROP TABLE IF EXISTS states;\n";
 print "DROP TABLE IF EXISTS components;\n";
 print "DROP TABLE IF EXISTS subshells;\n";
 print "DROP TABLE IF EXISTS transitions;\n";
 print "\n";
+
+
+
+print "CREATE table sources (\n";
+print "id INTEGER NOT NULL,\n";
+print "species_id INTEGER,\n";
+print "bibtex VARCHAR(2056),\n";
+print "PRIMARY KEY(id)\n";
+print ");\n";
+
+
+open REFS, "/Users/guy/desktop/chianti-7/chianti_data_v7_l_ref-sample.txt" or die;
+
+
+# Throw away the first line, which is a comment.
+$discard = <REFS>;
+
+$index = 0;
+while(<REFS>) {
+	$index++;
+	
+	$line = $_;
+	chomp $line;
+	@fields = split(/\s*\|\s*/, $line);
+	
+	my ($nuclearCharge, $ionCharge, $bibtex) = @fields;
+	
+	$bibtex =~ s/\'/\\\'/g;
+	
+	# Set the foreign key pointing into the species table.
+	my $species = (1000 * $ionCharge) + $nuclearCharge;
+	
+	print "INSERT INTO sources VALUES($index, $species, '$bibtex');\n";
+}
+
 
 print "CREATE TABLE states (\n";
 print "		ChiantiIonType CHAR(1), \n";
