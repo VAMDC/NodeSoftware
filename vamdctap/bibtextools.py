@@ -34,9 +34,19 @@ TYPE2CATEGORY=CaselessDict({\
 'unpublished':'private communication'
 })
 
-def BibTeX2XML(bibtexstring):
+def BibTeX2XML(bibtexstring, key=None):
+    """
+    Derives an XSAMS source element from the given BibTeX and returns the XML text.
+    The ID of the Source is set in the form B(node)-(key) where (node) is replaced
+    by the ID string for this node and (key) is replaced by the unique key for this
+    Source. If the key argument is given, this value is used for the key; otherwise,
+    a key is generated from the BibTeX content.
+    """
     e = getEntryFromString(bibtexstring)
-    xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,e.key)
+    if key:
+        xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,key)
+    else:
+        xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,e.key)
     for a in e.persons['author']:
         name = a.first() + a.middle() + a.last() + a.lineage()
         name = map(strip,name)
