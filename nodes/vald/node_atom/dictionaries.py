@@ -60,7 +60,7 @@ RETURNABLES = {\
 
 'RadTransBroadeningNaturalLineshapeParameter':'RadTran.gammarad',
 'RadTransBroadeningNaturalLineshapeParameterName':'log(gamma)',
-'RadTransBroadeningNaturalLineshapeParameterUnit':'cm3/s',
+'RadTransBroadeningNaturalLineshapeParameterUnit':'1/s',
 'RadTransBroadeningNaturalRef':'RadTran.gammarad_ref_id',
 'RadTransBroadeningNaturalEnvironment':'natural',
 'RadTransBroadeningNaturalLineshapeName':'lorentzian',
