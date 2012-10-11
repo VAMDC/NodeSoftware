@@ -148,7 +148,7 @@ waalsfunc = FuncClass("""<Function functionID="Fvald-waals">
 <Expression computerLanguage="Fortran">
     gammawaal * (T / 10000.0) ** (1.0/3.0) * N
 </Expression>
-<Y name="gammaL" units="1/cm3"></Y>
+<Y name="gammaL" units="1/cm3/s"></Y>
 <Arguments>
     <Argument name="T" units="K">
         <Description>The absolute temperature, in K</Description>
@@ -158,7 +158,7 @@ waalsfunc = FuncClass("""<Function functionID="Fvald-waals">
     </Argument>
 </Arguments>
 <Parameters>
-    <Parameter name="gammawaal" units="cm3/s">
+    <Parameter name="gammawaal" units="1/cm3/s">
        <Description>Lorentzian FWHM of the line</Description>
     </Parameter>
 </Parameters>
