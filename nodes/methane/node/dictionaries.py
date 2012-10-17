@@ -23,7 +23,7 @@ RESTRICTABLES = CaselessDict({\
 
 RETURNABLES = CaselessDict({\
 'NodeID':'ICB-CH4',
-'XSAMSVersion':'1.0',
+'XSAMSVersion' : u'1.0',
 
 'SourceID':'Source.sourceid',
 'SourceAuthorName':'Source.extractRisVal("AU")',
@@ -123,13 +123,13 @@ RETURNABLES = CaselessDict({\
 
 'MoleculeBasisStates': 'Molecule.BasisStates',
 'BasisStateID': 'MoleculeBasisState.sublevid',
-'MoleculeBQNviMode':'MoleculeBasisState.getQNviMode()',
-'MoleculeBQNvi':'MoleculeBasisState.getQNvi()',
-'MoleculeBQNliMode':'MoleculeBasisState.getQNliMode()',
-'MoleculeBQNli':'MoleculeBasisState.getQNli()',
-'MoleculeBQNrName':'MoleculeBasisState.getQNrName()',
-'MoleculeBQNr':'MoleculeBasisState.getQNr()',
-'MoleculeBQNsymName':'MoleculeBasisState.getQNsymName()',
-'MoleculeBQNsym':'MoleculeBasisState.getQNsym()',
+'BasisStateQNviMode':'MoleculeBasisState.getQNviMode()',
+'BasisStateQNvi':'MoleculeBasisState.getQNvi()',
+'BasisStateQNliMode':'MoleculeBasisState.getQNliMode()',
+'BasisStateQNli':'MoleculeBasisState.getQNli()',
+'BasisStateQNrName':'MoleculeBasisState.getQNrName()',
+'BasisStateQNr':'MoleculeBasisState.getQNr()',
+'BasisStateQNsymName':'MoleculeBasisState.getQNsymName()',
+'BasisStateQNsym':'MoleculeBasisState.getQNsym()',
 
 })
