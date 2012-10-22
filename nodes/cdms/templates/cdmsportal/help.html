@@ -1,0 +1,131 @@
+{% extends "cdmsportal/portalBase.html" %}
+
+{% block menu_li_help %}class="active" {% endblock %}
+{% block content %}
+
+<div id="main">
+
+  <!-- NAVIGATION-BLOCK -->
+
+  <div id="col1" style="background-color:white;" role="complementary">
+    <div id="col1_content" class="clearfix">
+     <h6 class="vlist"> HELP </h6>
+     <ul class="vlist">
+      <li><a href="#" id="" onclick="docShowSubpage('page_faqs')">FAQs</a></li>
+      <li><a href="#" id="" onclick="docShowSubpage('page_abbreviations')">Abbreviations</a></li>
+      <li><a href="#" id="" onclick="docShowSubpage('page_manuals')">Manuals</a></li>
+      <li><a href="#" id="" onclick="docShowSubpage('page_links')">Links</a></li>
+     </ul>
+
+    </div>
+  </div>
+
+  <!-- CONTENT-BLOCK -->
+
+  <div id="col3" role="main">
+    <div id="col3_content" class="clearfix">
+
+<form class='yform'>
+
+<fieldset class='subpage' id='page_faqs' style='display:none'>
+<div class='legend'>Frequently Asked Questions</div>
+
+</fieldset>
+
+
+
+<fieldset class='subpage' id='page_abbreviations' style='display:none'>
+<div class='legend'>Abbreviations</div>
+
+<dl>
+
+  <dt>VAMDC</dt>
+  <dd>Virtual Atomic and Molecular Data Center</dd>
+  <dt>XSAMS</dt>
+  <dd>XML Schema for Atoms, Molecules and Solids</dd>
+
+</dl>
+
+</fieldset>
+
+
+
+<fieldset class='subpage' id='page_manuals' style='display:none'>
+<div class='legend'>Manuals</div>
+<ul>
+<li>Herb Pickett's documentation for the <a href="/sites/default/files/cdms/calpgm.pdf">CALPGM program suite</a> from July 20, 2004 with installation instructions and links to SPFIT/SPCAT  and DPFIT/DPCAT. Several changes and corrections have been made; some of the major <a href="/site/vorhersagen/pickett/quelle/whats.new">changes</a> have been documented briefly.</li>
+<li>Herb Pickett's documentation for <a href="/sites/default/files/cdms/spinv.pdf">SPCAT and SPFIT</a> from April 26, 2006.</li>
+
+<li>Herb Pickett's documentation for <a href="/sites/default/files/cdms/dpi.pdf"> DPCAT and DPFIT</a> from July 9, 2005.</li>
+<li>Remarks on the <a href="/node/476">coding of the  parameters</a>.</li>
+<li><a href="/site/vorhersagen/pickett/beispiele/">Examples</a> for the <font size="+1" color="#ff0040">SPFIT/SPCAT</font> programs available on the computer <small> <b>HERA</b></small>. Unfortunately, at present several <small><b>README</b></small> files are in German. Please send an <a href="mailto:hspm@ph1.uni-koeln.de">e-mail</a> to me if you are in need of more details on the data, the fit, etc.</li>
+
+<li><a href="/site/vorhersagen/pickett/quelle">Source codes</a>, Makefile etc., in general written in C. A zip file is also available.<br />
+    <b>Nov. 2007:</b> New program versions are available. They have been tested to some extent. Care is advised with less commonly used features as there is a chance that they have not yet been tested with the most recent version. <a href="/site/vorhersagen/pickett/quelle/whats.new">Background</a> on the changes. Old source codes will still be available !</li>
+</ul>
+</fieldset>
+
+
+<fieldset class='subpage' id='page_links' style='display:none'>
+<div class='legend'>Links</div>
+
+<p>Home page of the <a target="_top" href="http://www.astro.uni-koeln.de/">I. Physikalisches Institut der Universit&auml;t zu K&ouml;ln</a></p>
+<ul>
+<li>The <a target="_top" href="/kosma">KOSMA observatory</a> page</li>
+<li>The <a target="_top" href="/node/119">laboratory spectroscopy</a> page</li>
+
+</ul>
+
+<p>Home page of the <a href="http://www.vamdc.eu/">Virtual Atomic and Molecular Data Centre (VAMDC)</a></p>
+<ul>
+<li>The <a target="_top" href="http://portal.vamdc.eu">VAMDC portal</a> page</li>
+<li>Documentation of <a href="http://www.vamdc.eu/documents/standards/">VAMDC standards</a></li>
+
+</ul>
+
+
+<p>Some spectroscopy groups and persons</p>
+<ul>
+<li>TU Berlin, Germany; <a target="_top" href="http://www.physik.tu-berlin.de/~dopfer/">Otto Dopfer</a>;</li>
+<li>Universit&eacute; de Lille I, France; <a target="_top" href="http://www-phlam.univ-lille1.fr/">Laboratoire de Physique des Lasers, Atomes et Mol&eacute;cules</a>.</li>
+<li>Universit&eacute; Paris-Sud, France; <a target="_top" href="http://www.ppm.u-psud.fr/">Laboratoire de Photophysique mol&eacute;culaire</a>.</li>
+
+<li>Shizuoka University, Japan; <a target="_top" href="http://www.ipc.shizuoka.ac.jp/~sctokab/Okab.htm">Toshiaki Okabayashi's Home Page for Microwavers</a>.</li>
+<li>University of Alberta, Edmonton, AB, Canada; <a target="_top" href="http://www.chem.ualberta.ca/faculty/jaeger.htm"> Wolfgang J&auml;ger</a>.</li>
+<li>Polska Akademia Nauk (Polish Academy of Sciences); Zbigniew Kisiel's <a target="_top" href="http://info.ifpan.edu.pl/~kisiel/prospe.htm">Programs for ROtational SPEctroscopy, PROSPE</a>.</li>
+<li>Universit&auml;t Basel, Switzerland;<a target="_top" href="http://www.chemie.unibas.ch/~maier/Maier.html">John P. Maier</a>.</li>
+
+<li><a target="_top" href="http://cfa-www.harvard.edu/mmw/mmwlab/lab.shtml"> Spectroscopy Group</a>, Harvard University; P. Thaddeus et al.</li>
+</ul>
+<p>The <a target="_top" href="http://spec.jpl.nasa.gov">JPL millimeter and submillimeter spectroscopy</a> page</p>
+<ul>
+<li>The <a target="_top" href="http://spec.jpl.nasa.gov/ftp/pub/catalog/catdir.html"> JPL catalog</a></li>
+<li>The JPL catalog <a target="_top" href="http://spec.jpl.nasa.gov/ftp/pub/catalog/catform.html">search form</a></li>
+
+</ul>
+<p><a target="_top" href="http://physics.nist.gov/PhysRefData/">NIST Physical Reference Data</a>.</p>
+<ul>
+<li>The NIST recommended rest frequencies <a target="_top" href="http://physics.nist.gov/cgi-bin/micro/table5/start.pl"> search form</a></li>
+</ul>
+<p>The <a target="_top" href="http://cfa-www.harvard.edu/HITRAN">HITRAN</a> database</p>
+<ul>
+<li>Dave Woon's <a target="_top" href="http://www.astrochymist.org/"> Astrochymist</a> web page.</li>
+
+<li>Astrophysics Data System <a target="_top" href="http://cdsads.u-strasbg.fr/abstract_service.html">abstract and article service</a>.</li>
+<li><a target="_top" href="http://www.psigate.ac.uk/">PSIgate</a>Physical Sciences Information Gateway.</li>
+</ul>
+</div>
+
+</fieldset>
+
+</form>
+
+
+
+
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

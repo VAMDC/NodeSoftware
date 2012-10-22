@@ -1,0 +1,90 @@
+{% autoescape off %}
+
+{% if species_list|length > 0 %}
+<div>
+  <table class="full">
+    <tr>
+      <th style="width:40px;">Tag</th>
+      <th style="width:70px">Molecule</th>
+      <th style="width:80px">Isotopolog</th>
+      <th style="width:90px">State</th>
+      <th style="width:130px">Name</th>
+      <th style="width:25px;">&nbsp;</th>
+    </tr>
+  </table>
+</div>
+
+<div style="height:320px;overflow-y:auto;">
+  <table class="full selectMolsHead" style="table-layout: fixed;">
+    <tbody class="selectMolsHead">
+    {% for specie in species_list %}
+      <tr id="{{specie.id}}" class="molRow specie" onclick="selectSpecie({{specie.id}});" ondblclick="selectSpecie({{specie.id}});">
+<!--    <a>-->
+        <th class="specie tag" style="width:40px;" ><i>{{specie.speciestag}}</i></th> 
+        <td class="specie stoichio" style="width:70px" >{{specie.molecule.stoichiometricformula}}</td>
+        <td class="specie iso" style="width:80px"><b>{{specie.isotopolog}}</b></td>
+        <td class="specie state" style="width:90px;">{% autoescape off %}{{specie.state_html}}{% endautoescape %}</td>
+        <td class="molecule trivname" style="width:130px">{{specie.molecule.trivialname}} </td>
+	<td class="specie doc" style="width:35px;margin:0;padding:0;"
+        onclick="show_doc({{specie.id}});">
+<!--<img width="30px" src="/static/cdms/img/view_details.png">-->
+        <a class="circlink" style="font-size:15px;">&nbsp;<sup>doc</sup></a>
+</td>
+<!--    </a>-->
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endif %}
+
+{% if molecules_list|length > 0 %}
+<div class="entryTableHead">
+  <div class="float_left" style="margin-left:5.0em;font-weight:bold;min-width:50px;">Stoich.Form.</div>
+  <div class="float_left" style="font-weight:bold;min-width:100px">Symbol</div>
+  <div class="float_left" style="font-weight:bold;min-width:100px">Triv. Name</div> 
+</div>
+
+<ul class="selectMolsHead vlist full" style="height:300px;overflow-y:scroll;">
+{% for mol in molecules_list %}
+  <li id="{{mol.stoichiometricformula}}" class="molRow molecule" onclick="selectSpecie('{{mol.stoichiometricformula}}');" ondblclick="selectSpecie('{{mol.stoichiometricformula}}');">
+<div style="overflow:hidden;width:100%;position:relative;border-top:1px solid #fff">
+    <a style="overflow:auto;float:left;padding-left:0;">
+      <!-- <div class="molecule name float_left">{{mol.name}}</div> -->
+<!--      <div class="float_left" style="background-color:red"> test </div><div style="background-color:white;overflow:auto"> -->
+      <div class="molecule stoichio float_left" style="width:10ex;overflow:auto;"><b>{{mol.stoichiometricformula}}</b></div>
+      <div class="molecule symbol float_left" style="min-width:10ex">&nbsp;{{mol.symbol}}</div>
+      <!-- <div class="molecule struct float_left2" >   {{mol.structuralformula}} </div> -->
+      <div class="molecule trivname" style="overflow-y:hidden;"><i>&nbsp;{{mol.trivialname}}</i> </div>
+<!--</div>-->
+    </a> <div style="width:10ex;height:100%;float:right;position:absolute;top:50%;right:0;"><p style="position:relative;top:-20%;width:100%;text-align:center">doc</p></div></div>
+  </li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if isotopolog_list|length > 0 %}
+<div class="entryTableHead">
+  <div class="float_left" style="margin-left:5.0em;font-weight:bold;min-width:50px;">Stoich.Form.</div>
+  <div class="float_left" style="font-weight:bold;min-width:100px">Isotopolog</div>
+  <div class="float_left" style="font-weight:bold;min-width:100px">Triv.Name</div> 
+</div>
+
+<ul class="selectMolsHead vlist full" style="height:300px;overflow-y:scroll;">
+{% for iso in isotopolog_list %}
+  <li id="{{iso.inchikey}}" class="molRow isotopolog" onclick="selectSpecie('{{iso.inchikey}}');" ondblclick="selectSpecie('{{iso.inchikey}}')">
+<div style="overflow:auto;border-top:1px solid #fff">
+    <a>
+      <!-- <div class="isotopolog stoichio float_left" style="min-width:10ex"><b>{{iso.inchikey}}</b></div> -->
+      <div class="molecule stoichio float_left" style="min-width:10ex">&nbsp;{{iso.molecule__stoichiometricformula}}</div>
+      <div class="isotopolog iso float_left" style="min-width:10ex"><b>&nbsp;{{iso.isotopolog}}</b></div>
+      <!-- <div class="molecule struct float_left2" >   {{mol.structuralformula}} </div> -->
+      <div class="molecule trivname"><i>&nbsp;{{iso.molecule__trivialname}}</i></div>
+    </a></div>
+  </li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% endautoescape %}

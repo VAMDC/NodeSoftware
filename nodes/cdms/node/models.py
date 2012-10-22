@@ -8,6 +8,11 @@
 # into your database.
 from django.db.models import *
 #from vamdctap.bibtextools import *
+from latex2html import *
+
+FILTER_DICT={}
+# References which will always be returned
+DATABASE_REFERENCES = [1921]
 
 class Molecules( Model):
      """
@@ -22,10 +27,30 @@ class Molecules( Model):
      structuralformula     = CharField(max_length=200, db_column='M_StructuralFormula', blank=True)
      trivialname           = CharField(max_length=200, db_column='M_TrivialName', blank=True)
      numberofatoms         = CharField(max_length= 20, db_column='M_NumberOfAtoms', blank=True)
-     formalcharge          = CharField(max_length=  5, db_column='M_FormalCharge', blank=True)
+     elementsymbol         = CharField(max_length=  3, db_column='M_ElementSymbol', blank=True)
+     formalcharge          = IntegerField(db_column='M_FormalCharge', blank=True)
+#     formalcharge          = CharField(max_length=  5, db_column='M_FormalCharge', blank=True)
      comment               = TextField(db_column='M_Comment', blank=True)
      class Meta:
        db_table = u'Molecules'
+       
+
+class DictAtoms( Model):
+     """
+     This table contains a list of atoms and some of their properties.
+     """
+     id                    = IntegerField(primary_key=True, db_column='DA_ID') 
+     name                  = CharField(max_length=50, db_column='DA_Name', blank=True)
+     symbol                = CharField(max_length=10, db_column='DA_Symbol', blank=True)
+     element               = CharField(max_length=10, db_column='DA_Element', blank=True)
+     massnumber            = IntegerField(db_column='DA_MassNumber', blank=True)
+     mass                  = FloatField(db_column='DA_Mass', blank=True)
+     abundance             = FloatField(db_column='DA_Abundance', blank=True)
+     mostabundant          = IntegerField(db_column='DA_MostAbundant', blank=True)
+     massreference         = IntegerField(db_column='DA_MassReference', blank=True)
+     nuclearcharge         = IntegerField(db_column='DA_NuclearCharge', blank=True)
+     class Meta:
+       db_table = u'Dict_Atoms'
        
 
 class Species( Model):
@@ -37,9 +62,11 @@ class Species( Model):
      """
      id                    = IntegerField(primary_key=True, db_column='E_ID')
      molecule              = ForeignKey(Molecules, db_column='E_M_ID')
+     atom                  = ForeignKey(DictAtoms, db_column='E_DA_ID')
      speciestag            = IntegerField(db_column='E_TAG')
      name                  = CharField(max_length=200, db_column='E_Name')
      isotopolog            = CharField(max_length=100, db_column='E_Isotopomer')
+     massnumber            = IntegerField(db_column='E_MassNumber')
      state                 = CharField(max_length=200, db_column='E_States')
      linearsymasym         = CharField(max_length= 20, db_column='E_LinearSymAsym')
      shell                 = CharField(max_length= 20, db_column='E_Shell')
@@ -53,12 +80,13 @@ class Species( Model):
      archiveflag           = IntegerField(db_column='E_Archive')
      dateactivated         = DateField(db_column='E_DateActivated')
      datearchived          = DateField(db_column='E_DateArchived')
+     changedate            = DateTimeField(db_column='E_ChangeDate')
      class Meta:
        db_table = u'Entries'
      
-     def getMassNumber(self):
-          tag = str(self.speciestag)
-          return tag[:-3] #self.speciestag[:-3]
+     #def getMassNumber(self):
+     #     tag = str(self.speciestag)
+     #     return tag[:-3] #self.speciestag[:-3]
 
      def CML(self):
           """
@@ -69,7 +97,18 @@ class Species( Model):
           cursor.execute("SELECT F_GetCML4XSAMS(%s) as cml ", [self.id])
           return cursor.fetchone()[0]
      
+     def get_shortcomment(self):
+          return "%6s- v%2s:%s; %s" % (self.speciestag, self.version, self.isotopolog, self.state)
+
+
      cmlstring = property(CML)
+     #massnumber = property(getMassNumber)
+     shortcomment = property(get_shortcomment)
+          
+
+     def state_html(self):
+          return latex2html(self.state)
+
 
 
 class Datasets( Model):
@@ -78,7 +117,7 @@ class Datasets( Model):
      either calculated transitions, experimental transitions or states.
      """
      id                    = IntegerField(primary_key=True, db_column='DAT_ID')
-     species               = ForeignKey(Species, db_column='DAT_E_ID')
+     specie                = ForeignKey(Species, db_column='DAT_E_ID')
      userid                = IntegerField(db_column='DAT_U_ID')
      fileid                = IntegerField(db_column='DAT_FIL_ID') 
      speciestag            = IntegerField(db_column='DAT_E_Tag')
@@ -95,24 +134,45 @@ class Datasets( Model):
      class Meta:
        db_table = u'Datasets'
 
+class NuclearSpinIsomers(Model):
+     """
+     This class contains informations on nuclear spin isomers.
+     """
+     id     = IntegerField(primary_key=True, db_column='NSI_ID')
+     specie = ForeignKey(Species, db_column='NSI_E_ID')
+     name   = CharField(max_length=45, db_column='NSI_Name')
+     lowestrovibsym = CharField(max_length=45, db_column='NSI_LowestRoVibSym')
+     symmetrygroup  = CharField(max_length=45, db_column='NSI_SymmetryGroup')
+     #lowestrovibstate = ForeignKey(States, db_column='NSI_LowestRoVib_EGY_ID')
+     lowestrovibstate = IntegerField(db_column='NSI_LowestRoVib_EGY_ID')
+     class Meta:
+          db_table = u'NuclearSpinIsomers'
 
-       
+     def lowestrovibstateid(self):
+          return '%s-origin-%s' % (self.lowestrovibstate, self.specie_id)
+
+     
 class States( Model):
      """
      This class contains the states of each specie.
      """
      id                    = IntegerField(primary_key=True, db_column='EGY_ID')
-     species               = ForeignKey(Species, db_column='EGY_E_ID')
+     specie                = ForeignKey(Species, db_column='EGY_E_ID')
      speciestag            = IntegerField(db_column='EGY_E_Tag')
      dataset               = ForeignKey(Datasets, db_column='EGY_DAT_ID')
      energy                = FloatField(null=True, db_column='EGY_Energy')
      uncertainty           = FloatField(null=True, db_column='EGY_Uncertainty')
+     energyorigin          = IntegerField(db_column='EGY_EnergyOrigin_EGY_ID')
      mixingcoeff           = FloatField(null=True, db_column='EGY_PMIX')
      block                 = IntegerField(db_column='EGY_IBLK')
      index                 = IntegerField(db_column='EGY_INDX') 
      degeneracy            = IntegerField(db_column='EGY_IDGN') 
      nuclearstatisticalweight = IntegerField(db_column='EGY_NuclearStatisticalWeight')
+     nsi                   = ForeignKey(NuclearSpinIsomers, db_column='EGY_NSI_ID')
      nuclearspinisomer     = CharField(max_length=10, db_column='EGY_NuclearSpinIsomer')
+     nuclearspinisomersym  = CharField(max_length=45, db_column='EGY_NuclearSpinIsomerSym')
+     nsioriginid           = IntegerField(db_column='EGY_NSI_LowestEnergy_EGY_ID')
+     msgroup               = CharField(max_length=45, db_column='EGY_MS_Group')
      qntag                 = IntegerField(db_column='EGY_QN_Tag') 
      qn1                   = IntegerField(db_column='EGY_QN1')
      qn2                   = IntegerField(db_column='EGY_QN2') 
@@ -122,14 +182,44 @@ class States( Model):
      qn6                   = IntegerField(db_column='EGY_QN6') 
      user                  = CharField(max_length=40, db_column='EGY_User')      # obsolete
      timestamp             = IntegerField(db_column='EGY_TIMESTAMP')
+
+     
      class Meta:
        db_table = u'Energies'
+       ordering = ['energy']
+       
+     def origin(self):
+          return '%s-origin-%s' % (self.energyorigin, self.specie_id)
+
+     def nsiname(self):
+          if self.nsi_id:
+               return self.nsi.name
+          else:
+               return None
+
+     def auxillary(self):
+          try:
+               if self.aux:
+                    return 'True'
+               else:
+                    return ''
+          except AttributeError:
+               return ''
+
+     def nsiorigin(self):
+          return '%s-origin-%s' % (self.nsioriginid, self.specie_id)
 
      def qns_xml(self):
 	"""Yield the XML for the state quantum numbers"""
-        qns = MolecularQuantumNumbers.objects.filter(state=self.id)
+        # remove "-origin" in order to retrieve also qns for state-origins
+        try:
+             sid = self.id.replace('-origin-%s' % self.specie_id,'')
+        except:
+             sid = self.id
+             
+        qns = MolecularQuantumNumbers.objects.filter(state=sid)
         case = qns[0].case     
-        caseNS = 'http://vamdc.org/xml/xsams/0.2/cases/%s' % case
+        caseNS = 'http://vamdc.org/xml/xsams/1.0/cases/%s' % case
         caseNSloc = '../../cases/%s.xsd' % case
         xml = []
         xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
@@ -156,7 +246,68 @@ class States( Model):
 
      # associate qns_xml with the XML attribute of the States class
      # so that generators.py checkXML() works:
+
+     def get_qns_xml(self):
+          """
+          Yield the XML for state quantum numbers, generated from the filter-table
+          """
+
+          try:
+               qns = FILTER_DICT[self.specie_id][self.qntag]
+          except:
+               if not FILTER_DICT.has_key(self.specie_id):
+                    FILTER_DICT[self.specie_id]={}
+               if not FILTER_DICT[self.specie_id].has_key(self.qntag):
+                        
+                    where = Q(specie = self.specie) & Q(qntag = self.qntag) # & ( Q(qn1=self.qn1) | Q(qn1__isnull=True)) & ( Q(qn2=self.qn1) | Q(qn2__isnull=True)) & ( Q(qn3=self.qn1) | Q(qn3__isnull=True)) & ( Q(qn4=self.qn1) | Q(qn4__isnull=True)) & ( Q(qn5=self.qn1) | Q(qn5__isnull=True)) & ( Q(qn6=self.qn1) | Q(qn6__isnull=True))                       
+                    qns = QuantumNumbersFilter.objects.filter(where) #specie = self.specie, qntag = self.qntag)
+                    FILTER_DICT[self.specie_id][self.qntag]=qns
+          
+          case = qns[0].case     
+          caseNS = 'http://vamdc.org/xml/xsams/1.0/cases/%s' % case
+          caseNSloc = '../../cases/%s.xsd' % case
+          xml = []
+          xml.append('<Case xsi:type="%s:Case" caseID="%s"'\
+                     ' xmlns:%s="%s" xsi:schemaLocation="%s %s">'\
+                     % (case, case, case, caseNS, caseNS, caseNSloc))
+          xml.append('<%s:QNs>\n' % case)
+
+          
+          for qn in qns:
+##               #if qn.label == 'L':
+##               #     self.L = qn.valuefloat
+##               #elif qn.label == 'S':
+##               #     self.S = qn.valuefloat
+               if qn.columnvalue:
+                    exec 'value = self.qn%s' % qn.columnvalue
+                    if qn.columnvaluefunc == 'half':
+                         value -= 0.5
+                         
+               elif qn.valuefloat is not None:
+                    value = qn.valuefloat
+               elif qn.valuestring:
+                    value = qn.valuestring
+                    
+##               exec 'self.%s = %s' % (qn.label, value)
+##          return self.J
+               if qn.attribute:
+                    # put quotes around the value of the attribute
+                    attr_name, attr_val = qn.attribute.split('=')
+                    qn.attribute = ' %s="%s"' % (attr_name, attr_val)
+               else:
+                    qn.attribute = ''
+                    
+               if qn.spinref:
+                    # add spinRef to attribute if it exists
+                    qn.attribute += ' nuclearSpinRef="%s"' % qn.spinref
+               
+               xml.append('<%s:%s%s>%s</%s:%s>\n' % (case, qn.label, qn.attribute , value, case, qn.label) )
+          xml.append('</%s:QNs>\n' % case)
+          xml.append('</Case>\n')
+          return ''.join(xml)
+
      XML = qns_xml
+
 
      def qns_dict(self):
           """ Yield the quantum numbers as a dictionary """
@@ -178,8 +329,105 @@ class States( Model):
                dictqns.update({qn.label : qn.value})
           return dictqns
 
-          
+##     def attach_atomic_qn(self):
+##          """
+##          Attaches atomic states
+##          """
 
+##          qns = QuantumNumbersFilter.objects.filter(specie = self.specie)
+          
+##          for qn in qns:
+##               #if qn.label == 'L':
+##               #     self.L = qn.valuefloat
+##               #elif qn.label == 'S':
+##               #     self.S = qn.valuefloat
+##               if qn.columnvalue:
+##                    exec 'value = self.qn%s' % qn.columnvalue
+##                    if qn.columnvaluefunc == 'half':
+##                         value -= 0.5
+                         
+##               elif qn.valuefloat:
+##                    value = qn.valuefloat
+##               elif qn.valuestring:
+##                    value = qn.valuestring
+                    
+##               exec 'self.%s = %s' % (qn.label, value)
+##          return self.J
+
+class AtomStates( Model):
+     """
+     This class contains the states of each specie.
+     """
+     id                    = IntegerField(primary_key=True, db_column='EGY_ID')
+     specie                = ForeignKey(Species, db_column='EGY_E_ID')
+     speciestag            = IntegerField(db_column='EGY_E_Tag')
+     dataset               = ForeignKey(Datasets, db_column='EGY_DAT_ID')
+     energy                = FloatField(null=True, db_column='EGY_Energy')
+     uncertainty           = FloatField(null=True, db_column='EGY_Uncertainty')
+     energyorigin          = IntegerField(db_column='EGY_EnergyOrigin_EGY_ID')
+     mixingcoeff           = FloatField(null=True, db_column='EGY_PMIX')
+     block                 = IntegerField(db_column='EGY_IBLK')
+     index                 = IntegerField(db_column='EGY_INDX') 
+     degeneracy            = IntegerField(db_column='EGY_IDGN') 
+     nuclearstatisticalweight = IntegerField(db_column='EGY_NuclearStatisticalWeight')
+     nuclearspinisomer     = CharField(max_length=10, db_column='EGY_NuclearSpinIsomer')
+     qntag                 = IntegerField(db_column='EGY_QN_Tag') 
+     qn1                   = IntegerField(db_column='EGY_QN1')
+     qn2                   = IntegerField(db_column='EGY_QN2') 
+     qn3                   = IntegerField(db_column='EGY_QN3') 
+     qn4                   = IntegerField(db_column='EGY_QN4') 
+     qn5                   = IntegerField(db_column='EGY_QN5') 
+     qn6                   = IntegerField(db_column='EGY_QN6') 
+     user                  = CharField(max_length=40, db_column='EGY_User')      # obsolete
+     timestamp             = IntegerField(db_column='EGY_TIMESTAMP')
+     class Meta:
+       db_table = u'Energies'
+
+     def get_Components(self):
+          """This is required in order to supply a Components property
+          for the makeAtomsComponents tagmaker."""
+          self.attach_atomic_qn()
+          return self
+     Components = property(get_Components)
+    
+     def attach_atomic_qn(self):
+          """
+          Attaches atomic states
+          """
+
+          qns = QuantumNumbersFilter.objects.filter(specie = self.specie)
+          self.F = None 
+          for qn in qns:
+               #if qn.label == 'L':
+               #     self.L = qn.valuefloat
+               #elif qn.label == 'S':
+               #     self.S = qn.valuefloat
+               if qn.columnvalue:
+                    exec 'value = self.qn%s' % qn.columnvalue
+                    if qn.columnvaluefunc == 'half':
+                         value -= 0.5
+                         
+               elif qn.valuefloat:
+                    value = qn.valuefloat
+               elif qn.valuestring:
+                    value = qn.valuestring
+
+               # convert floats to integer for some QNs
+               if qn.label in ['L']:
+                    value = int(value)
+                    
+               exec 'self.%s = %s' % (qn.label, value)
+          return self.J
+
+     def auxillary(self):
+          try:
+               if self.aux:
+                    return 'True'
+               else:
+                    return ''
+          except AttributeError:
+               return ''
+          
 
 
 class TransitionsCalc( Model):
@@ -187,12 +435,13 @@ class TransitionsCalc( Model):
      This class contains the calculated transition frequencies (mysql-table Predictions).
      """
      id                    = IntegerField(primary_key=True, db_column='P_ID')
-     species               = ForeignKey(Species, db_column='P_E_ID')
+     specie                = ForeignKey(Species, db_column='P_E_ID')
      speciestag            = IntegerField(db_column='P_E_Tag')
      frequency             =  FloatField(null=True, db_column='P_Frequency')
      frequencyexp          =  FloatField(null=True, db_column='P_Frequency_Exp')
      intensity             =  FloatField(null=True, db_column='P_Intensity')
      einsteina             =  FloatField(null=True, db_column='P_EinsteinA')
+     smu2                  =  FloatField(null=True, db_column='P_Smu2')
      uncertainty           =  FloatField(null=True, db_column='P_Uncertainty')
      energylower           =  FloatField(null=True, db_column='P_Energy_Lower')
      energyupper           =  FloatField(null=True, db_column='P_Energy_Upper')
@@ -216,39 +465,126 @@ class TransitionsCalc( Model):
      originid              = IntegerField(db_column='P_Origin_Id')
      hfsflag               = IntegerField(db_column='P_HFS')
      userid                = IntegerField(db_column='P_U_ID')
-     dataset               = ForeignKey(Datasets, related_name='isinitialstate', db_column='P_DAT_ID')
+     dataset               = ForeignKey(Datasets, db_column='P_DAT_ID')
      qualityflag           = IntegerField(db_column='P_Quality')
      archiveflag           = IntegerField(db_column='P_Archive')
      timestamp             = DateTimeField(db_column='P_TIMESTAMP')
      upperstateref =  ForeignKey(States, related_name='upperstate',
-                                db_column='P_Up_EGY_ID')
+                                 db_column='P_Up_EGY_ID')
      lowerstateref =  ForeignKey(States, related_name='lowerstate',
-                                db_column='P_Low_EGY_ID')
-
-#     frequencyArray        = []
+                                 db_column='P_Low_EGY_ID')
+     
+     upstate =  ForeignKey(States, related_name='upperstate',
+                           db_column='P_Up_EGY_ID')
+     lostate =  ForeignKey(States, related_name='lowerstate',
+                           db_column='P_Low_EGY_ID')
+     #frequencyArray        
      
      def __unicode__(self):
-        return u'ID:%s Tag:%s Freq: %s'%(self.id,self.speciestag,self.frequency)
+          return u'ID:%s Tag:%s Freq: %s'%(self.id,self.speciestag,self.frequency)
 
-#     def get_exp_transitions(self):
-#          exptranss = TransitionsExp.objects.filter(species=self.species,
-#                                                    qnup1=self.qnup1,
-#                                                    qnlow1=self.qnlow1,
-#                                                    qnup2=self.qnup2,
-#                                                    qnlow2=self.qnlow2,
-#                                                    qnup3=self.qnup3,
-#                                                    qnlow4=self.qnlow4,
-#                                                    qnup5=self.qnup5,
-#                                                    qnlow6=self.qnlow6)
-#          freqs=[]
-#          for trans in exptranss:
-#               freqs.append(trans.frequency)
+     def specieid(self):
+          return '%s-hyp%s' % (self.specie_id,self.hfsflag)
 
-#          self.frequencyArray = freqs
-#          return freqs
+     def process_class(self):
+          pclass=['rota']
+          if self.hfsflag>0:
+               pclass.append('hyp%d' % self.hfsflag)
+          return pclass
+     
+     def attach_evaluation(self):
+          """
+          """
+          self.qualities=[]
+          self.recommendations=[]
+          self.evalrefs=[]
+          evals = self.evaluation_set.all()
+          for i in evals:
+               self.qualities.append(i.quality)
+               self.recommendations.append(i.recommended)
+               self.evalrefs.append(i.source_id)
+          return self.qualities
+     
+     def attach_exp_frequencies(self):
+         """
+         Create lists of frequencies, units, sources, ... for each transition.
+         The calculated frequency is given anyway followed by experimental
+         frequencies (db-table: Frequencies). In addition a unique list of
+         methods for the experimental data is created and returned.
+
+         Returns:
+         - modified transitions (frequencies, ... attached as lists)
+         - methods for experimental data
+
+         """
+         
+         # Attach the calculated frequency first
+         self.frequencies=[self.frequency]
+         self.units=[self.unit]
+         self.uncertainties=[self.uncertainty]
+         self.refs=[""]
+         self.methods=[self.dataset_id]
+         self.evaluations=[self.attach_evaluation()]
+         self.recommendations=[self.recommendations]
+         self.evalrefs=[self.evalrefs]
+
+         exptranss = TransitionsExp.objects.filter(specie=self.specie,
+                                                   dataset__archiveflag=0,
+                                                   qnup1=self.qnup1,
+                                                   qnlow1=self.qnlow1,
+                                                   qnup2=self.qnup2,
+                                                   qnlow2=self.qnlow2,
+                                                   qnup3=self.qnup3,
+                                                   qnlow3=self.qnlow3,
+                                                   qnup4=self.qnup4,
+                                                   qnlow4=self.qnlow4,
+                                                   qnup5=self.qnup5,
+                                                   qnlow5=self.qnlow5,
+                                                   qnup6=self.qnup6,
+                                                   qnlow6=self.qnlow6)
+
+         for exptrans in exptranss:
+              self.frequencies.append(exptrans.frequency)
+              self.units.append(exptrans.unit)
+              self.uncertainties.append(exptrans.uncertainty)
+              self.evaluations.append(exptrans.attach_evaluation())
+              self.recommendations.append(exptrans.recommendations)
+              self.evalrefs.append(exptrans.evalrefs)
+              # get sources
+              s= exptrans.sources.all().values_list('source',flat=True)
+              self.refs.append(s)
+
+              #if s.count()>0:
+              #     method = "EXP" + "-".join(str(source) for source in s)
+              #     self.methods.append(method)
+              self.methods.append(exptrans.dataset_id)
+
+         return self.frequencies
 
 
+
+##     def get_exp_transitions(self):
+##          exptranss = TransitionsExp.objects.filter(species=self.species,
+##                                                    qnup1=self.qnup1,
+##                                                    qnlow1=self.qnlow1,
+##                                                    qnup2=self.qnup2,
+##                                                    qnlow2=self.qnlow2,
+##                                                    qnup3=self.qnup3,
+##                                                    qnlow4=self.qnlow4,
+##                                                    qnup5=self.qnup5,
+##                                                    qnlow6=self.qnlow6)
+##          freqs=[self.frequency]
+##          for trans in exptranss:
+##               freqs.append(trans.frequency)
+
+##          self.frequencyArray = freqs
+##          return freqs
+
+##     frequencyarray = attach_exp_frequencies
+     
 #     def __init__(self):
+#          attach_exp_frequencies()
+#          self.frequenciess = 123,234
 #          self.frequencyArray = [12345,2345]
 #          
 #     frequencyArray = get_exp_transitions() #[12345,23456]
@@ -256,13 +592,72 @@ class TransitionsCalc( Model):
      class Meta:
         db_table = u'Predictions'
         
+
+
+
+class Sources( Model):
+     """
+     This class contains references 
+     """
+     id        =  IntegerField(primary_key=True, db_column='R_ID')
+     authors   =  CharField(max_length=500, db_column='R_Authors', blank=True)
+     category  =  CharField(max_length=100, db_column='R_Category', blank=True)
+     name      =  CharField(max_length=200, db_column='R_SourceName', blank=True)
+     year      =  IntegerField(null=True, db_column='R_Year', blank=True)
+     vol       =  CharField(max_length=20, db_column='R_Volume', blank=True)
+     doi       =  CharField(max_length=50, db_column='R_DOI', blank=True)
+     pageBegin =  CharField(max_length=10, db_column='R_PageBegin', blank=True)
+     pageEnd   =  CharField(max_length=10, db_column='R_PageEnd', blank=True)
+     uri       =  CharField(max_length=100, db_column='R_URI', blank=True)
+     publisher =  CharField(max_length=300, db_column='R_Publisher', blank=True)
+     city      =  CharField(max_length=80, db_column='R_City', blank=True)
+     editors   =  CharField(max_length=300, db_column='R_Editors', blank=True)
+     productionDate =  DateField(max_length=12, db_column='R_ProductionDate', blank=True)
+     version   =  CharField(max_length=20, db_column='R_Version', blank=True)
+     url       =  CharField(max_length=200, db_column='R_URL', blank=True)
+     comments  =  CharField(max_length=100, db_column='R_Comments', blank=True)
+     class Meta:
+          db_table = u'ReferenceBib'
+          
+     def getAuthorList(self):
+          try:
+               return [name.replace("{","").replace("}","") for name in self.authors.split("},{")]
+          except:
+               return none
+
+#    referenceId =  ForeignKey(SourcesIDRefs, related_name='isRefId',
+#                                db_column='rId', null=False)
+
+class Parameter (Model):
+     id = IntegerField(primary_key=True, db_column='PAR_ID')
+     specie = ForeignKey(Species, db_column='PAR_E_ID')
+     speciestag = IntegerField(db_column='PAR_M_TAG')
+     parameter = CharField(max_length=100, db_column='PAR_PARAMETER')
+     value = CharField(max_length=100, db_column='PAR_VALUE')
+     unit = CharField(max_length=7, db_column='PAR_UNIT')
+     type = CharField(max_length=30, db_column='PAR_Type')
+     rId = ForeignKey(Sources, db_column='PAR_R_ID')
+     class Meta:
+          db_table = u'Parameter'
+
+     def parameter_html(self):
+          u_score = self.parameter.find('_')
+          if u_score<0:
+               return self.parameter
+          else:
+               return self.parameter.replace(self.parameter[u_score:u_score+2],'<sub>'+self.parameter[u_score+1:u_score+2]+'</sub>')
+#          else:
+#               return self.parameter
+          
+          
+
         
 class TransitionsExp( Model):
      """
      This class contains the experimental transition frequencies (mysql-table Frequencies).
      """
      id                    = IntegerField(primary_key=True, db_column='F_ID')
-     species               = ForeignKey(Species, db_column='F_E_ID')
+     specie                = ForeignKey(Species, db_column='F_E_ID')
      vid                   = IntegerField(db_column='F_V_ID') # obsolete
      frequency             = FloatField(null=True, db_column='F_Frequency')
      uncertainty           = FloatField(null=True, db_column='F_Error')
@@ -286,16 +681,72 @@ class TransitionsExp( Model):
      papid                 = IntegerField(db_column='F_PAP_ID')  # obsolete
      dataset               = ForeignKey(Datasets, db_column='F_DAT_ID')
      timestamp             = DateTimeField(db_column='F_TIMESTAMP')
+     sources               = ManyToManyField(Sources, through='SourcesIDRefs')
      class Meta:
        db_table = u'Frequencies'
        
+     def spfitstr(self):
+          """
+          Renders the current transition in spfit's output format
+          12I3, freeform: QN, FREQ, ERR, WT
+          """
+          qnupstr=""
+          qnlowstr=""
+          emptystr=""
+          for qn in [self.qnup1,self.qnup2,self.qnup3,self.qnup4,self.qnup5,self.qnup6]:
+               if qn is not None:
+                    qnupstr+='%3d' % qn
+               else:
+                    emptystr += '   '
+          for qn in [self.qnlow1,self.qnlow2,self.qnlow3,self.qnlow4,self.qnlow5,self.qnlow6]:
+               if qn is not None:
+                    qnlowstr+='%3d' % qn
+               else:
+                    emptystr += '   '
                 
+          return '%s'\
+                 '%s %s %s  '\
+                 '%s'\
+                 % (qnupstr+qnlowstr+emptystr,
+                    '%16.4lf' % self.frequency if self.frequency  else "",
+                    '%10.4lf' % self.uncertainty if self.uncertainty  else "",
+                    '%8.4lf' % self.weight if self.weight  else "",
+                    self.comment)
+     
+     def __unicode__(self):
+        return self.spfitstr()           
                 
+     def attach_evaluation(self):
+          """
+          """
+          self.qualities=[]
+          self.recommendations=[]
+          self.evalrefs=[]
+          evals = self.evaluation_set.all()
+          for i in evals:
+               self.qualities.append(i.quality)
+               self.recommendations.append(i.recommended)
+               self.evalrefs.append(i.source_id)
+          return self.qualities
 
+class SourcesIDRefs( Model):
+     """
+     This class maps references to classes: species, datasets, frequency
+     """
+     id  =  AutoField(primary_key=True, db_column='RL_ID')
+     source =  ForeignKey(Sources, null=True, db_column='RL_R_ID')
+     specie   =  ForeignKey(Species, null=True, db_column='RL_E_ID')
+     dataset =  ForeignKey(Datasets, null=True, db_column='RL_DAT_ID', blank=True)
+     transitionexp  =  ForeignKey(TransitionsExp, null=True, db_column='RL_F_ID', related_name='sources', blank=True)
+     parameter  =  ForeignKey(Parameter, null=True, db_column='RL_F_ID', blank=True)
+     class Meta:
+          db_table = u'ReferenceList'
 
+#     referenceid = ForeignKey(Sources, db_column='RL_R_ID')
+#    stateReferenceId =  ForeignKey(StatesMolecules, related_name='isStateRefId',
+#                                db_column='RL_E_ID', null=False)
 
-
-
+     
 class Methods (Model):
     id = IntegerField(primary_key=True, db_column='ME_ID')
     ref = CharField(max_length=10, db_column='ME_Ref')
@@ -330,14 +781,14 @@ class QuantumNumbersFilter(Model):
      to XSAMS Quantum numbers (case description)
      """
      id  = IntegerField(primary_key=True, db_column='SQN_ID')
-     species = ForeignKey(Species, db_column='SQN_E_ID')
+     specie = ForeignKey(Species, db_column='SQN_E_ID')
      qntag = IntegerField(db_column='SQN_QN_Tag')
      qn1 = IntegerField(db_column='SQN_QN1')
-     qn2 = IntegerField(db_column='SQN_QN1')
-     qn3 = IntegerField(db_column='SQN_QN1')
-     qn4 = IntegerField(db_column='SQN_QN1')
-     qn5 = IntegerField(db_column='SQN_QN1')
-     qn6 = IntegerField(db_column='SQN_QN1')
+     qn2 = IntegerField(db_column='SQN_QN2')
+     qn3 = IntegerField(db_column='SQN_QN3')
+     qn4 = IntegerField(db_column='SQN_QN4')
+     qn5 = IntegerField(db_column='SQN_QN5')
+     qn6 = IntegerField(db_column='SQN_QN6')
      case = CharField(max_length=20, db_column='SQN_Case')
      label = CharField(max_length=100, db_column='SQN_Label')
      slaplabel = CharField(max_length=100, db_column='SQN_SLAP_Label')
@@ -364,7 +815,7 @@ class BondArray( Model):
      atom1 = CharField(max_length=10, db_column='BA_AtomId1')
      atom2 = CharField(max_length=10, db_column='BA_AtomId2')
      order = CharField(max_length=10, db_column='BA_Order')
-     eId   = ForeignKey(Molecules, db_column='BA_E_ID')
+     specie = ForeignKey(Molecules, db_column='BA_E_ID')
      
      class Meta:
           db_table = u'BondArray'
@@ -380,80 +831,61 @@ class AtomArray( Model):
      elementtype = CharField(max_length=5, db_column='AA_ElementType')
      isotopenumber = IntegerField( db_column='AA_IsotopeNumber')
      formalcharge = CharField(max_length=5, db_column='AA_FormalCharge')
-     eId = ForeignKey(Molecules, db_column='AA_E_ID')    
+     specie = ForeignKey(Species, db_column='AA_E_ID')    
      
      class Meta:
           db_table = u'AtomArray'
 
 
-
-class Sources( Model):
+class Evaluation(Model):
      """
-     This class contains references 
+     This class contains recommendations and evaluation information for specific
+     transitions.
+     One transition (ether experimental or calculated) is evaluated. The entity is
+     specified in source.
      """
-     rId       =  IntegerField(primary_key=True, db_column='R_ID')
-     authors   =  CharField(max_length=500, db_column='R_Authors', blank=True)
-     category  =  CharField(max_length=100, db_column='R_Category', blank=True)
-     name      =  CharField(max_length=200, db_column='R_SourceName', blank=True)
-     year      =  IntegerField(null=True, db_column='R_Year', blank=True)
-     vol       =  CharField(max_length=20, db_column='R_Volume', blank=True)
-     doi       =  CharField(max_length=50, db_column='R_DOI', blank=True)
-     pageBegin =  CharField(max_length=10, db_column='R_PageBegin', blank=True)
-     pageEnd   =  CharField(max_length=10, db_column='R_PageEnd', blank=True)
-     uri       =  CharField(max_length=100, db_column='R_URI', blank=True)
-     publisher =  CharField(max_length=300, db_column='R_Publisher', blank=True)
-     city      =  CharField(max_length=80, db_column='R_City', blank=True)
-     editors   =  CharField(max_length=300, db_column='R_Editors', blank=True)
-     productionDate =  DateField(max_length=12, db_column='R_ProductionDate', blank=True)
-     version   =  CharField(max_length=20, db_column='R_Version', blank=True)
-     comments  =  CharField(max_length=100, db_column='R_Comments', blank=True)
+     id = IntegerField(primary_key=True, db_column='EVA_ID')
+     specie = ForeignKey(Species, db_column='EVA_E_ID')
+     exptransition = ForeignKey(TransitionsExp, db_column='EVA_F_ID')
+     calctransition = ForeignKey(TransitionsCalc, db_column='EVA_P_ID')
+     recommended = BooleanField( db_column='EVA_Recommended')
+     quality = CharField(max_length=45, db_column='EVA_Quality')
+     source = ForeignKey(Sources, db_column='EVA_R_ID')
      class Meta:
-          db_table = u'ReferenceBib'
-          
-     def getAuthorList(self):
-          try:
-               return [name.replace("{","").replace("}","") for name in self.authors.split("},{")]
-          except:
-               return none
+          db_table = u'Evaluation'
 
-#    referenceId =  ForeignKey(SourcesIDRefs, related_name='isRefId',
-#                                db_column='rId', null=False)
-
-        
-class SourcesIDRefs( Model):
-     """
-     This class maps references to classes: species, datasets, frequency
-     """
-     rlId  =  IntegerField(primary_key=True, db_column='RL_ID')
-     rId   =  IntegerField(null=True, db_column='RL_R_ID')
-     eId   =  IntegerField(null=True, db_column='RL_E_ID')
-     datId =  IntegerField(null=True, db_column='RL_DAT_ID', blank=True)
-     fId   =  ForeignKey(TransitionsExp, null=True, db_column='RL_F_ID', related_name='sources', blank=True)
-#     fId   =  IntegerField(null=True, db_column='RL_F_ID', blank=True)
-     class Meta:
-          db_table = u'ReferenceList'
-
-     referenceid = ForeignKey(Sources, db_column='RL_R_ID')
-#    stateReferenceId =  ForeignKey(StatesMolecules, related_name='isStateRefId',
-#                                db_column='RL_E_ID', null=False)
-
-
-
+##class Partitionfunctions( Model):
+##     """
+##     This class contains partition function (mysql-table: Partitionfunctions) for each specie.
+##     """
+##     id  =  IntegerField(primary_key=True, db_column='PF_ID')
+##     mid =  IntegerField(db_column='PF_M_ID')
+##     eid =  ForeignKey(Molecules, db_column='PF_E_ID')
+##     temperature = FloatField(db_column='PF_Temperature')
+##     partitionfunc = FloatField(db_column='PF_Partitionfunction')
+##     comment = CharField(max_length=150, db_column='PF_Comment')
+    
+##     class Meta:
+##          db_table = u'Partitionfunctions' 
+                     
 class Partitionfunctions( Model):
      """
      This class contains partition function (mysql-table: Partitionfunctions) for each specie.
      """
-     id  =  IntegerField(primary_key=True, db_column='PF_ID')
-     mid =  IntegerField(db_column='PF_M_ID')
-     eid =  ForeignKey(Molecules, db_column='PF_E_ID')
+     id  =  AutoField(primary_key=True, db_column='PF_ID')
+     molecule =  ForeignKey(Molecules, db_column='PF_M_ID', blank=True, null = True)
+     specie =  ForeignKey(Species, db_column='PF_E_ID')
+     dataset =  ForeignKey(Datasets, db_column='PF_DAT_ID', blank=True, null = True)
+     nsi =  ForeignKey(NuclearSpinIsomers, db_column='PF_NSI_ID', blank=True, null = True)
      temperature = FloatField(db_column='PF_Temperature')
      partitionfunc = FloatField(db_column='PF_Partitionfunction')
+     state = CharField(max_length=100, db_column = 'PF_State')
      comment = CharField(max_length=150, db_column='PF_Comment')
     
      class Meta:
           db_table = u'Partitionfunctions' 
                      
-                                    
+                         
 
 
 class Method:
@@ -468,17 +900,6 @@ class Method:
         self.description = description
         self.sourcesref = sourcesref
         
-class Parameter (Model):
-     id = IntegerField(primary_key=True, db_column='PAR_ID')
-     specie = ForeignKey(Species, db_column='PAR_E_ID')
-     speciestag = IntegerField(db_column='PAR_M_TAG')
-     parameter = CharField(max_length=100, db_column='PAR_PARAMETER')
-     value = CharField(max_length=100, db_column='PAR_VALUE')
-     unit = CharField(max_length=7, db_column='PAR_UNIT')
-     type = CharField(max_length=30, db_column='PAR_Type')
-     rId = ForeignKey(Sources, db_column='PAR_R_ID')
-     class Meta:
-          db_table = u'Parameter'
 
 class Files (Model):
      id = IntegerField(primary_key=True, db_column='FIL_ID')

@@ -255,6 +255,15 @@
 
 
 
+  #tooltip{ 
+    position:absolute;
+    border:1px solid #333;
+    background:#f7f5d1;
+    padding:2px 5px;
+    color:#333;
+    display:none;
+  }
+
 /*  .yform .legend { background:#D8D8D8; border:1px solid #aaaaaa; padding:0.0em 0.5em;display:block; font-size:130%;margin:-0.45em; margin-bottom:1em; font-variant:small-caps;
 */
   .yform .legend { background:transparent; border-bottom:2px groove #aaa; padding:0.0em 0.5em;display:block; font-size:130%;margin:-0.0em; margin-bottom:1em; font-variant:small-caps;

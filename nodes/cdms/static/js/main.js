@@ -79,16 +79,19 @@ function showFitDetails(subpage,k) {
 
 }
 
+function open_help2(topic) {
+  alert("<p> "+topic+" </p> ");
+}
 
 function open_help(topic) {
-     msg=window.open("","msg","height=200,width=200,left=80,top=80");
-     msg.document.write("<html><title> Help </title>");
-     msg.document.write("<body bgcolor='white' onblur=window.close()>");
-     msg.document.write("<center>")
-     msg.document.write("<h1> HELP - Topic "+topic+"</h1> ");
-     msg.document.write("<p> "+topic+" </p> ");
-     mwg.document.write("</center>");
-     msg.document.write("</body></html><p>");
+  msg=window.open("","msg","height=300,width=250"); //,left=80,top=80");
+  msg.document.write("<html><title> Help </title>");
+  msg.document.write("<body bgcolor='white' onblur=window.close()>");
+  //msg.document.write("<center>")
+  msg.document.write("<h2> HELP - Topic </h2> ");
+  msg.document.write("<p> "+topic+" </p> ");
+  //mwg.document.write("</center>");
+  msg.document.write("</body></html><p>");
 }
 
 function setFocus(page) {
@@ -412,17 +415,25 @@ function orderByState() {
 
 
 
-function ajaxQuery(func,urlstr) {
+function ajaxQuery(func,urlstr, nodeurl) {
 
   var dataToSend =  $("form").serializeArray();
+  $("#queryresult").html('<center><img src="http://cdms.ph1.uni-koeln.de/vamdcdev/nodes/cdms/templates/cdmsportal/loading9.gif" alt="loading"></center>');
 
   if (typeof func=="undefined")
     var func="";
-  
-  if (urlstr.length>0) {
-    var datum = {"name" : "url", "value" : urlstr};
+
+  if ((typeof nodeurl!="undefined") && (nodeurl.length>0)) {
+    var datum = {"name" : "nodeurl", "value" : nodeurl};
     dataToSend.push(datum);
   }
+
+   if (urlstr.length>0) {
+	js = "location.href='"+urlstr+"'";
+
+//     var datum = {"name" : "url", "value" : urlstr};
+//     dataToSend.push(datum);
+   } 
 
   var datum = {"name" : "function", "value" : func}; 
   dataToSend.push(datum);
@@ -438,13 +449,19 @@ function ajaxQuery(func,urlstr) {
 	dataType: "json",
 	success: function(data) {
  	  // Überprüfen, ob ein JS Objekt da ist.
- 	  if(ajax!=false) {
+
+	$("#queryresult").html( data.htmlcode );
+	if (urlstr.length>0) {
+	  $("#B_Download").attr("onclick", js);
+	}
+	//if(ajax!=false) {
  	    // Die von PHP generierte Meldung dem Benutzer darstellen
- 	    $("#queryresult").html( data.htmlcode );
-           }
+	//  $("#queryresult").html( data.htmlcode );
+	//  }
       },
 
     error: function(xhr, ajaxOptions, thrownError){
+		    $("#queryresult").html( "Query failed!" );
                     alert(xhr.statusText);
                     alert(xhr.responseText);
 		    jsonValue = jQuery.parseJSON( xhr.responseText );
@@ -452,7 +469,7 @@ function ajaxQuery(func,urlstr) {
 		    alert(jsonValue);
       },
 	complete: function(data) {
-	//	alert(data.getAllResponseHeaders());
+	//alert(data.getAllResponseHeaders());
       }
 
     });
@@ -462,7 +479,6 @@ function ajaxQuery(func,urlstr) {
 function ajaxGetNodeList() {
   // Perform query only once 
   if ($("#nodelist").html() == "Processing ...") {
-    
     // Set Please wait message
     $("#nodelist").html("Processing ...");
     
@@ -483,7 +499,8 @@ function ajaxGetNodeList() {
 	  dataType: "json",
 	  success: function(data) {
    	    // Überprüfen, ob ein JS Objekt da ist.
- 	    if(ajax!=false) {
+	  //$("#nodelist").html(data.htmlcode);//append(data.htmlcode);
+ 	    if(data!=false) {
  	      // Die von PHP generierte Meldung dem Benutzer darstellen
  	      //$("#queryresult").html( data.htmlcode );
 	      // $("#nodelist").html("<h3 id='results'>VAMDC.database:query</h3>");
@@ -499,6 +516,8 @@ function ajaxGetNodeList() {
 	    alert(jsonValue);
 	  },
 	  complete: function(data) {
+	  ajaxQueryNodeContent();
+
 	    //	alert(data.getAllResponseHeaders());
 	  }
 
@@ -517,12 +536,19 @@ function ajaxQueryNodeContent() {
 
   // Query each node
   $(".vamdcnode").each(function(index,value) {
+			 //alert($(this).find('.nodeurl').attr('id'));
+
 			 // alert($(this).attr("id"));
-			 if ($(this).find('.nodestatistic').html()) {
-			   $(this).find('.nodestatistic').html("Fetching statistics for this database!")
-			 } else {
-			   $("<p class='nodestatistic'>Fetching statistics for this database! </p>").appendTo($(this));
-			 }
+// 			 if ($(this).find('.nodestatistic').html()) {
+// 			   $(this).find('.nodestatistic').html("Fetching statistics for this database!")
+// 			 } else {
+// 			   $("<td class='nodestatistic'>Fetching statistics for this database! </td>").appendTo($(this));
+// 			 }
+			 //if ($(this).find('.status').html()) {
+			   $(this).find('.status').html("Fetching statistics !")
+			     //			 } else {
+			     //			   $("<td class='status'>Fetching statistics for this database! </td>").appendTo($(this));
+			     //}
 			 nodeurl = $(this).find('.nodeurl').text();
 			 //var dataToSend = new Array();
 			 var dataToSend =  $("form").serializeArray();
@@ -548,21 +574,25 @@ function ajaxQueryNodeContent() {
 			       ajaxNode: $(this),
 			       context: $(this),
 			       success: function(data) {
-			       //  alert("success");
-			       //			       alert(ajaxNode);
-			       // Überprüfen, ob ein JS Objekt da ist.
-			       if(ajax!=false) {
-				 //				 anode = this.ajaxI;
-				 //				 node = this.ajaxNode;
-				 // alert(anode);
-				 //  alert(node.find('.nodeurl').text());
 
-				 // Die von PHP generierte Meldung dem Benutzer darstellen
-				 //$("#queryresult").html( data.htmlcode );
-				 // $("#nodelist").html("<h3 id='results'>VAMDC.database:query</h3>");
-				 node.find('.nodestatistic').html(data.htmlcode);
+			       if(data!=false) {
+
+				 //node.find('.nodestatistic').html(data.htmlcode);
+				 node.find('.status').html("OK");
+				 node.find('.numspecies').html(data.vamdccountspecies);
+				 node.find('.numstates').html(data.vamdccountstates);
+				 node.find('.nummols').html(data.vamdccountmolecules);
+				 node.find('.numradtrans').html(data.vamdccountradiative);
+				 // node.find('.numsources').html(vamdccountsources);
+				 node.find('.numtrunc').html(data.vamdctruncated);
+				 node.find('.url').text(data.url);
+				 if (data.vamdccountspecies>0) {
+				   ajaxQuerySpecies(node);
+				 }
+				 //alert(data.numspecies);
 			       } else {
-				 node.find('.nodestatistic').html("Error fetching statistics for this database!");
+				 node.find('.status').html("Error !");
+				 //node.find('.nodestatistic').html("Error fetching statistics for this database!");
 			       }
 			       
 			     },
@@ -581,6 +611,58 @@ function ajaxQueryNodeContent() {
 			   });
 
 		       });
+  
+}
+
+
+
+function ajaxQuerySpecies(node) {
+  nodeurl = node.find('.nodeurl').text();
+  var dataToSend =  $("form").serializeArray();
+  dataToSend.push({"name": "nodeurl", "value" : nodeurl});
+  dataToSend.push({"name" : "function", "value" : "queryspecies"}); 
+
+  $.ajax({
+      
+    url: './ajaxRequest',
+	data: dataToSend,
+	type: "POST",
+	async: true,
+	dataType: "json",
+	ajaxI: 5,
+	ajaxNode: $(this),
+	context: $(this),
+	success: function(data) {
+	
+	if(data!=false) {
+	  
+	  //node.find('.nodestatistic').html(data.htmlcode);
+	  node.find('.species').html(data.htmlcode);
+	  url = node.find('.url').text();
+	  nodeurl = node.find('.nodeurl').text();
+	  onclickfunc = "ajaxQuery(\"ajaxQuery\",\""+url+"\",\""+nodeurl+"\");docShowSubpage(\"queryresult\");";
+	  //alert(onclickfunc);
+	  node.find('.species').append("<div class='type-button float_right'><input type='button' value='Show' onclick='"+onclickfunc+"'></div>");
+	} else {
+	  node.find('.status').html("Error !");
+	  //node.find('.nodestatistic').html("Error fetching statistics for this database!");
+	}
+	
+      },
+	
+	error: function(xhr, ajaxOptions, thrownError){
+	alert(xhr.statusText);
+	alert(xhr.responseText);
+	jsonValue = jQuery.parseJSON( xhr.responseText );
+	alert("JSON");
+	alert(jsonValue);
+      },
+	complete: function(data) {
+	//	alert(data.getAllResponseHeaders());
+      }
+      
+    });
+
   
 }
 
@@ -779,3 +861,39 @@ function startDownload(url) {
 
 
 }
+
+
+
+this.tooltip = function(){	
+	/* CONFIG */		
+		xOffset = 10;
+		yOffset = 20;		
+		// these 2 variable determine popup's distance from the cursor
+		// you might want to adjust to get the right result		
+	/* END CONFIG */		
+	$("a.tooltip").hover(function(e){											  
+		this.t = this.title;
+		this.title = "";									  
+		$("body").append("<div id='tooltip'>"+ this.t +"</div>");
+		$("#tooltip")
+			.css("top",(e.pageY - xOffset) + "px")
+			.css("left",(e.pageX + yOffset) + "px")
+			.fadeIn("fast");		
+    },
+	function(){
+		this.title = this.t;		
+		$("#tooltip").remove();
+    });	
+	$("a.tooltip").mousemove(function(e){
+		$("#tooltip")
+			.css("top",(e.pageY - xOffset) + "px")
+			.css("left",(e.pageX + yOffset) + "px");
+	});			
+};
+
+
+
+// starting the script on page load
+$(document).ready(function(){
+	tooltip();
+});
