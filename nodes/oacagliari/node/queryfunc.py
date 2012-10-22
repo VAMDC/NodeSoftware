@@ -182,6 +182,7 @@ def setupResults(sql, limit=1000):
             'TRUNCATED':percentage,
             'COUNT-STATES':nstates,
             'COUNT-MOLECULES': nmolecules,
+            'COUNT-SPECIES':nspecies,
             'APPROX-SIZE':size_estimate,
             }
             

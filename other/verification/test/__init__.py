@@ -1,21 +1,62 @@
 from lxml import etree
-import sys
+import sys, os, urllib2
+
 sys.path.insert(0, '.')
-from check import *
+try:
+	import check
+except ImportError:
+	from .. import check
 
 __author__ = 'aip'
+
+class LocalResolver(etree.Resolver):
+
+	def __init__(self, localMap, *args, **kwargs):
+		etree.Resolver.__init__(self, *args, **kwargs)
+		self.localMap = localMap
+
+	def checkHTTPContent(self, url):
+		response = urllib2.urlopen(url)
+		if 'Content-Type' in response.info():
+			if response.info()['Content-Type'] != 'application/xml':
+				raise Exception('Incorrect content on the "'  + url + '" link')
+
+
+	def resolve(self, url, id, context):
+		newURL = ''
+
+		if url in self.localMap:
+			newURL = self.localMap[url]
+			if newURL.find('http://') > -1:
+				try:
+					self.checkHTTPContent(newURL)
+					url = newURL
+				except Exception, e:
+					if url == newURL:
+						print e
+			elif os.path.exists(newURL):
+				url = newURL
+
+		if url != newURL:
+			if url.find('http://') > -1:
+				try:
+					self.checkHTTPContent(url)
+				except Exception, e:
+					print e
+
+		return self.resolve_filename(url, context)
 
 
 def makeTestFileFromBigFile(fileName, count=0):
 	tree = etree.parse(open("test/" + fileName + ".xml"))
 
-	namespaces = {"xsams":XSAMS_NS}
+	namespaces = {"xsams":check.XSAMS_NS}
 	XPathEval = etree.XPathEvaluator(tree, namespaces=namespaces)
 
 	root = tree.getroot()
-	locations = root.get('{%s}schemaLocation' % XSI_NS).split(' ')
+	locations = root.get('{%s}schemaLocation' % check.XSI_NS).split(' ')
 	locations[1] = '../xsd/xsams/0.3/xsams.xsd'
-	root.set('{%s}schemaLocation' % XSI_NS, locations[0] + ' ' + locations[1])
+	root.set('{%s}schemaLocation' % check.XSI_NS, locations[0] + ' ' + locations[1])
 
 	nodes = XPathEval('//*[child::xsams:RadiativeTransition]')
 	whiteListOfRefs = _getWhiteListOfRefs(nodes, ['Probability', 'Broadening', 'Shifting'], count)

@@ -20,14 +20,13 @@ from vamdctap.unitconv import invcm2eV
 RESTRICTABLES = {\
 'AtomSymbol':'finalstateindex__species__atomsymbol',
 'AtomNuclearCharge':'finalstateindex__species__atomnuclearcharge',
-'AtomIonCharge':'finalstateindex__species__atomioncharge',
-'AtomStateEnergy':'finalstateindex__energy',
-'AtomStateConfigurationLabel':'finalstateindex__atomstateconfigurationlabel',
+'IonCharge':'finalstateindex__species__atomioncharge',
+'StateEnergy':'finalstateindex__energy',
 'RadTransWavelength':'wavelength'
 }
 
 RETURNABLES = {\
-'NodeID':'chianti', # Constant value
+'NodeID':u'chianti', # Constant value
 
 'MethodID':'Method.id',
 'MethodCategory':'Method.category',
@@ -36,28 +35,33 @@ RETURNABLES = {\
 'AtomSymbol':'Atom.atomsymbol',
 'AtomNuclearCharge':'Atom.atomnuclearcharge',
 'AtomIonCharge':'Atom.atomioncharge',
-
+'AtomInchi':'Atom.inchi',
+'AtomInchiKey':'Atom.inchikey',
 'AtomStateId':'AtomState.id',
-'AtomStateS':'AtomState.atomstates',
-'AtomStateL':'AtomState.atomstatel',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
-'AtomStateEnergy':'AtomState.allEnergies()',
-'AtomStateEnergyMethod':'AtomState.allEnergyMethods()',
+'AtomStateEnergy':'AtomState.energy',
+'AtomStateEnergyMethod':'AtomState.energyMethod',
 'AtomStateEnergyUnit':u'1/cm',
-'AtomStateConfigurationLabel':'AtomState.atomstateconfigurationlabel',
+'AtomStateDescription':'AtomState.atomstateconfigurationlabel',
 
-#'RadTransWavelength':'[RadTran.wavelengthexperimental, RadTran.wavelengththeoretical]',
+'AtomStateTermLSS':'Component.lss',
+'AtomStateTermLSL':'Component.lsl',
+#'AtomStateConfigurationLabel':'Component.label',
+'AtomStateElementCore':'Component.core',
+
+'AtomStateShellPrincipalQN':'AtomShell.n',
+'AtomStateShellOrbitalAngMom':'AtomShell.l',
+'AtomStateShellNumberOfElectrons':'AtomShell.population',
+
 'RadTransWavelength':'RadTran.allWavelengths()',
 'RadTransWavelengthMethod':'RadTran.allWavelengthMethods()',
 'RadTransWavelengthUnit':u'A', # Constant: Angstroms
 'RadTransProbabilityWeightedOscillatorStrength':'RadTran.weightedoscillatorstrength',
 'RadTransProbabilityA':'RadTran.probabilitya',
-'RadTransProbabilityAUnits':u'1/s',
-'RadTransInitialStateRef':'RadTran.initialstateindex.id',
-'RadTransFinalStateRef':'RadTran.finalstateindex.id',
+'RadTransProbabilityAUnit':u'1/s',
 'RadTransSpeciesRef':'RadTran.initialstateindex.species.id',
-'RadTransUpperStateRef':'RadTran.finalstateindex.id',
-'RadTransLowerStateRef':'RadTran.initialstateindex.id',
+'RadTransUpperStateRef':'RadTran.upperStateRef()',
+'RadTransLowerStateRef':'RadTran.lowerStateRef()',
 'RadTransID':'RadTran.id'
 }
 

@@ -9,6 +9,7 @@ from cStringIO import StringIO
 import os, math, sys
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
+import time
 
 import logging
 log=logging.getLogger('vamdc.tap')
@@ -16,6 +17,8 @@ log=logging.getLogger('vamdc.tap')
 # Get the node-specific package!
 from django.conf import settings
 from django.utils.importlib import import_module
+from django.utils.http import http_date
+
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
 
@@ -26,12 +29,13 @@ from generators import *
 from sqlparse import SQL
 
 REQUESTABLES = map(lower, [\
- 'Environments',
  'AtomStates',
  'Atoms',
  'Collisions',
+ 'Environments',
  'Functions',
  'Methods',
+ 'MoleculeBasisStates',
  'MoleculeQuantumNumbers',
  'MoleculeStates',
  'Molecules',
@@ -62,6 +66,9 @@ def getBaseURL(request):
     return getattr(settings, 'DEPLOY_URL', None) or \
         'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
 
+def getFormatLastModified(lastmodified):    
+    return http_date(time.mktime(lastmodified.timetuple()))
+    
 
 class TAPQUERY(object):
     """
@@ -94,9 +101,9 @@ class TAPQUERY(object):
         try: self.format=lower(self.request['FORMAT'])
         except: self.errormsg += 'Cannot find FORMAT in request.\n'
 
-        try: self.parsedSQL=SQL.parseString(self.query)
+        try: self.parsedSQL=SQL.parseString(self.query,parseAll=True)
         except: # if this fails, we're done
-            self.errormsg += 'Could not parse the SQL query string.\n'
+            self.errormsg += 'Could not parse the SQL query string: %s\n'%self.query
             self.isvalid=False
             return
 
@@ -123,6 +130,9 @@ class TAPQUERY(object):
             if 'moleculestates' in self.requestables:
                 self.requestables.add('molecules')
             if 'moleculequantumnumbers' in self.requestables:
+                self.requestables.add('molecules')
+                self.requestables.add('moleculestates')
+            if 'moleculebasisstates' in self.requestables:
                 self.requestables.add('molecules')
                 self.requestables.add('moleculestates')
             if 'processes' in self.requestables:
@@ -152,6 +162,11 @@ def addHeaders(headers,response):
            'APPROX-SIZE']
 
     headers = CaselessDict(headers)
+
+    try:
+        response['Last-Modified'] = getFormatLastModified(headers['LAST-MODIFIED'])
+    except:
+        pass
 
     for h in HEADS:
         if headers.has_key(h):

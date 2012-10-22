@@ -9,13 +9,22 @@
 
 from django.db import models
 
+class Term:
+    l = 0
+    s = 0
+
+
 class Species(models.Model):
     id = models.IntegerField(null=False, primary_key=True, blank=False)
     atomsymbol = models.CharField(max_length=6, db_column='AtomSymbol', blank=True)
     atomnuclearcharge = models.IntegerField(null=True, db_column='AtomNuclearCharge', blank=True)
     atomioncharge = models.IntegerField(null=True, db_column='AtomIonCharge', blank=True)
+    inchi = models.CharField(null=False, db_column='inchi', max_length=32, blank=False)
+    inchikey = models.CharField(null=False, db_column='inchikey', max_length=25, blank=False)
+
     class Meta:
         db_table = u'species'
+
 
 class States(models.Model):
     id = models.IntegerField(null=False, primary_key=True, blank=False)
@@ -26,10 +35,10 @@ class States(models.Model):
     atomioncharge = models.IntegerField(null=True, db_column='AtomIonCharge', blank=True)
     atomstateconfigurationlabel = models.CharField(max_length=96, db_column='AtomStateConfigurationLabel', blank=True)
     atomstates = models.FloatField(null=True, db_column='AtomStateS', blank=True)
-    atomstatel = models.FloatField(null=True, db_column='AtomStateL', blank=True)
+    atomstatel = models.IntegerField(null=True, db_column='AtomStateL', blank=True)
     atomstatetotalangmom = models.FloatField(null=True, db_column='AtomStateTotalAngMom', blank=True)
-    energyexperimental = models.FloatField(null=True, db_column='AtomStateEnergyExperimental', blank=True)
-    energytheoretical = models.FloatField(null=True, db_column='AtomStateEnergyTheoretical', blank=True)
+    energy = models.FloatField(null=True, db_column='AtomStateEnergy', blank=True)
+    energyMethod = models.CharField(max_length=4, db_column='AtomStateEnergyMethod', null=False, blank='False')
 
     def allEnergies(self):
         energies = []
@@ -51,6 +60,28 @@ class States(models.Model):
     class Meta:
         db_table = u'states'
 
+class Components(models.Model):
+    id    = models.IntegerField(db_column='id', primary_key=True)
+    label = models.CharField(db_column='label', max_length=32)
+    core  = models.CharField(db_column='core', max_length=2, null=True)
+    lsl   = models.IntegerField(db_column='lsl')
+    lss   = models.IntegerField(db_column='lss')
+
+    class Meta:
+        db_table=u'components'
+
+class Subshells(models.Model):
+    id         = models.AutoField(primary_key=True)
+    state      = models.IntegerField(db_column='state')
+    n          = models.IntegerField(db_column='n')
+    l          = models.IntegerField(db_column='l');
+    population = models.IntegerField(db_column='pop');
+
+    class Meta:
+        db_table=u'subshells'
+
+
+
 class Transitions(models.Model):
     id = models.IntegerField(db_column='id', null=False, blank=False, primary_key=True)
     chiantiradtranstype = models.CharField(max_length=3, db_column='ChiantiRadTransType', blank=True)
@@ -62,6 +93,20 @@ class Transitions(models.Model):
     wavelength = models.FloatField(null=True, db_column='wavelength', blank=True)
     weightedoscillatorstrength = models.FloatField(null=True, db_column='RadTransProbabilityWeightedOscillatorStrength', blank=True)
     probabilitya = models.FloatField(null=True, db_column='RadTransProbabilityTransitionProbabilityA', blank=True)
+
+    def upperStateRef(self):
+        if self.finalstateindex.energy > self.initialstateindex.energy:
+            return self.finalstateindex.id
+        else:
+            return self.initialstateindex.id
+
+    def lowerStateRef(self):
+        if self.finalstateindex.energy < self.initialstateindex.energy:
+            return self.finalstateindex.id
+        else:
+            return self.initialstateindex.id
+
+
 
     def allWavelengths(self):
         wavelengths = []

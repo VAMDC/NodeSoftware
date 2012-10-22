@@ -1,5 +1,5 @@
 
-This document covers the **release 11.12r1** of the NodeSoftware.
+This document covers the **release 11.12r3** of the NodeSoftware.
 
 Links to HTML-versions:
 

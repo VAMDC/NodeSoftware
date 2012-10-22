@@ -15,9 +15,15 @@
 
 	      <h6 class="vlist"> FILTER SPECIES LIST</h6>
 	      
-	      <p id="navFilterInfo" class="info center"> Use regular expressions! </p><div class="type-text"><label for="eTagFilter">Tag</label> <input id="eTagFilter" onkeyup="filterRows2()"  onblur="filterRows2()"  onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+	      <p id="navFilterInfo" class="info center"> Use 
+
+<a href="#" class="tooltip" title="<div style='text-align:left;'>Examples:<br><br>'^H2O$' to find only 'H2O'<br>'^H2' to find all string beginning with 'H2' like 'H2CO'<br>'H2O' to find all strings containing 'H2O' like 'NH2OH'</div>">regular expressions</a>
+
+<!-- <a href='#' onclick='open_help("Examples:<br> <ul><li>\"^H2O$\" to find H2O</li><li>\"H2O\" to find strings containing H2O</li></ul>");');>regular expressions</a>! -->
+
+</p><div class="type-text"><label for="eTagFilter">Tag</label> <input id="eTagFilter" onkeyup="filterRows2()"  onblur="filterRows2()"  onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
 		
-	      </div><div class="type-text"><label for="molNameFilter">Molecule</label> <input id="molNameFilter" onkeyup="filterRows2()" onblur="filterRows2()" onkeyPress="return disableEnterKey(event)"  type="text" name="filterTag"> 
+	      </div><div class="type-text"><label for="molNameFilter">Molecule</label> <input id="molNameFilter" onkeyup="filterRows2()" onblur="filterRows2()"  type="text" name="filterTag"> 
 	      </div><div class="type-text"><label for="molTrivNameFilter">Trivial&nbsp;Name</label> <input id="molTrivNameFilter" onkeyup="filterRows2()"  onblur="filterRows2()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
 	      </div><div class="type-text"><label for="isoFilter">Isotopolog</label> <input id="isoFilter" onkeyup="filterRows2()"  onblur="filterRows2()"  onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
 	      </div><div class="type-text"><label for="stateFilter">State</label> <input id="stateFilter" onkeyup="filterRows2()"  onblur="filterRows2()"  onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
@@ -65,7 +71,7 @@
 		  <li id="{{specie.id}}" class="molRow" onclick="{% block clickevent %}selectMolRow2({{specie.id}});show_doc({{specie.id}});{% endblock %}" ondblclick="{% block dblclickevent %}selectMolRow2({{specie.id}});show_doc({{specie.id}});{% endblock %}">
 		    <a>
 		<div id="eTag{{specie.tag}}" style="font-weight:bold;display:inline;min-width:50px" class="eTag float_left">  {{specie.speciestag}}</div> 
-		<div class="eName float_left" style="font-weight:bold;display:inline; min-width:100px">     {{specie.molecule.name}} </div>
+		<div class="eName float_left" style="font-weight:bold;display:inline; min-width:100px"> {{specie.molecule.stoichiometricformula}} </div>
 		<div class="eIso float_left" style="font-weight:bold;display:inline; float:left; min-width:100px">   {{specie.isotopolog}} </div>
 		<div class="eState float_left" style="display:inline; float:left; min-width:120px">  {{specie.state}} </div><br>
 		<div class="mTrivName float_left" style="display:inline; text-align:left;float:left; min-width:250px"> {{specie.molecule.trivialname}} </div>&nbsp;

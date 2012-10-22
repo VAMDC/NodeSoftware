@@ -1,25 +1,65 @@
 #!/usr/bin/perl
 
+use Chemistry::OpenBabel;
+
+print "DROP TABLE IF EXISTS species;\n";
+print "DROP TABLE IF EXISTS states;\n";
+print "DROP TABLE IF EXISTS components;\n";
+print "DROP TABLE IF EXISTS subshells;\n";
+print "DROP TABLE IF EXISTS transitions;\n";
+print "\n";
+
 print "CREATE TABLE states (\n";
 print "		ChiantiIonType CHAR(1), \n";
 print "         species INTEGER, \n";
 print "		AtomSymbol CHAR(8), \n";
 print "		AtomNuclearCharge INTEGER, \n";
 print "		AtomIonCharge INTEGER, \n";
+print "         inchi VARCHAR(32), \n";
+print "         inchikey CHAR(27), \n";
 print "		ChiantiAtomStateIndex INTEGER NOT NULL, \n";
 print "		AtomStateConfigurationLabel VARCHAR(32), \n";
+print "         atomcore CHAR(8), \n";
 print "		AtomStateS FLOAT, \n";
-print "		AtomStateL FLOAT, \n";
+print "		AtomStateL INTEGER, \n";
 print "		AtomStateTotalAngMom FLOAT, \n";
-print "		AtomStateEnergyExperimental DOUBLE, \n";
-print "		AtomStateEnergyTheoretical DOUBLE, \n";
 print "		AtomStateEnergy DOUBLE, \n";
+print "		AtomStateEnergyMethod CHAR(4), \n";
 print "         id INTEGER, \n";
 print "		PRIMARY KEY (id) \n";
 print ");\n";
 
 
+# A table of atomic components. Each row of the states table has exactly one component.
+print "CREATE TABLE components (\n";
+print "         id INTEGER, \n"; # Same values as id in states table - 1-to-1 match of rows
+print "         label VARCHAR(32), \n";
+print "         core CHAR(2), \n";
+print "         lsl INTEGER, \n";
+print "         lss INTEGER, \n";
+print "	        PRIMARY KEY (id) \n";
+print ");\n";
+
+# A table of electronic sub-shells. Each row in the state table has one or more rows in sub-shells.
+# The state column is a foreign key to the states table. 
+print "CREATE TABLE subshells (\n";
+print "        id INTEGER NOT NULL AUTO_INCREMENT, \n";
+print "        state INTEGER, \n";
+print "        n INTEGER, \n";
+print "        l INTEGER, \n";
+print "        pop INTEGER, \n";
+print "        PRIMARY KEY (id) \n";
+print ");\n";
+
 open STATES, "/users/guy/desktop/chianti-7/chianti_data_v7_e.txt" or die;
+
+my $inchiConverter = new Chemistry::OpenBabel::OBConversion();
+$inchiConverter->SetInAndOutFormats('smi', 'inchi');
+$inchiConverter->AddOption("X", $Chemistry::OpenBabel::OBConversion::OUTOPTIONS, "DoNotAddH");
+my $inchiKeyConverter = new Chemistry::OpenBabel::OBConversion();
+$inchiKeyConverter->SetInAndOutFormats('smi', 'inchi');
+$inchiKeyConverter->AddOption("K");
+$inchiKeyConverter->AddOption("X", $Chemistry::OpenBabel::OBConversion::OUTOPTIONS, "DoNotAddH");
 
 # Throw away the first line, which is a comment.
 $discard = <STATES>;
@@ -34,24 +74,71 @@ while(<STATES>) {
 
         my $atomSymbol = firstWord($ionName);
 	my $index = (1000000 * $stateIndex) + (1000 * $ionCharge) + $nuclearCharge;
-        my $energy = bestEnergy($energyExperimental, $energyTheoretical);
+        my ($energy, $energyMethod)  = bestEnergy($energyExperimental, $energyTheoretical);
+
+        my $smiles = "[".$atomSymbol;
+        for (1..$ionCharge) {
+          $smiles .= '+';
+        }
+	$smiles .= ']';
+
+        my $molecule = new Chemistry::OpenBabel::OBMol();
+        $inchiConverter->ReadString($molecule, $smiles);
+	my $inchi = $inchiConverter->WriteString($molecule);
+	chomp $inchi;
+	print ERR $inchi, "\n";
+        $inchiKeyConverter->ReadString($molecule, $smiles);
+	my $inchiKey = $inchiKeyConverter->WriteString($molecule);
+	chomp $inchiKey;
+
+        # The valence shell is described in the subshells tables.
+        # The remaining, closed shells form an isoelectronic core to the atom.
+        # Chianti has a few cases where the "core" includes part of the valence shell.
+        my ($label, $outerElectronCount) = configuration($index, $configurationLabel);
+        my $isoElectronicCount = $nuclearCharge - $outerElectronCount - $ionCharge;
+        my $atomCore = "";
+        $atomCore = "H"  if $isoElectronicCount ==  1;
+        $atomCore = "He" if $isoElectronicCount ==  2;
+        $atomCore = "Be" if $isoElectronicCount ==  4;
+        $atomCore = "C"  if $isoElectronicCount ==  6;
+        $atomCore = "O"  if $isoElectronicCount ==  8;
+        $atomCore = "F"  if $isoElectronicCount ==  9;
+        $atomCore = "Ne" if $isoElectronicCount == 10;
+        $atomCore = "Mg" if $isoElectronicCount == 12;
+        $atomCore = "S"  if $isoElectronicCount == 16;
+        $atomCore = "Cl" if $isoElectronicCount == 17;
+        $atomCore = "Ar" if $isoElectronicCount == 18;
+        $atomCore = "Kr" if $isoElectronicCount == 36;
+        $atomCore = "Xe" if $isoElectronicCount == 54;
+        die "No core, $isoElectronicCount" if $isoElectronicCount > 0 && !$atomCore;
 
 	print 'INSERT INTO states VALUES(';
 	print '"', $chiantiIonType, '", ';
-        print '0, '; # species reference - filled in later
+	print '0, '; # species reference - filled in later
 	print '"', $atomSymbol, '", ';
 	print $nuclearCharge, ', ';
 	print $ionCharge, ', ';
+        print '"', $inchi, '", ';
+	print '"', $inchiKey, '", ';
 	print $stateIndex, ', ';
-	print '"', $configurationLabel, '", ';
+	print '"', $label, '", ';
+        print '"', $atomCore, '", ';
 	print $atomStateS, ', '; 
 	print $atomStateL, ', ';
 	print $totalAngMom, ', ';
-	print $energyExperimental, ', '; 
-	print $energyTheoretical, ', ';
 	print $energy, ', ';
+	print '"', $energyMethod, '", ';
 	print $index; # id - primary key
-        print ");\n";
+	print ");\n";
+
+	print 'INSERT INTO components VALUES(';
+	print $index, ', '; # foreign key to states table
+	print '"', $label, '", ';
+        print '"', $atomCore, '", ' if $atomCore;
+        print 'NULL, ' if !$atomCore;
+	print $atomStateS, ', '; 
+	print $atomStateL;
+	print ");\n";
 }
 
 close STATES;
@@ -59,8 +146,6 @@ close STATES;
 # Unknown energies are represented in the input by negative values; convert them to nulls.
 print "UPDATE states SET AtomStateEnergyExperimental = NULL WHERE AtomStateEnergyExperimental < 0.0;\n";
 print "UPDATE states SET AtomStateEnergyTheoretical = NULL WHERE AtomStateEnergyTheoretical < 0.0;\n";
-
-
 
 print "CREATE TABLE transitions (\n";
 print "         id INTEGER NOT NULL, \n"; # Primary key: just an index number.
@@ -130,11 +215,13 @@ print "id INTEGER NOT NULL,\n";
 print "AtomSymbol CHAR(2),\n";
 print "AtomNuclearCharge INTEGER,\n";
 print "AtomIonCharge INTEGER,\n";
+print "inchi VARCHAR(32), \n";
+print "inchikey CHAR(27), \n";
 print "PRIMARY KEY(id)\n";
 print ");\n";
 
 
-print "INSERT INTO species(id,AtomSymbol,AtomNuclearCharge,AtomIonCharge) SELECT DISTINCT ((1000*AtomIonCharge) + AtomNuclearCharge),AtomSymbol,AtomNuclearCharge,AtomIonCharge FROM states;\n";
+print "INSERT INTO species(id,AtomSymbol,AtomNuclearCharge,AtomIonCharge,inchi,inchikey) SELECT DISTINCT ((1000*AtomIonCharge) + AtomNuclearCharge),AtomSymbol,AtomNuclearCharge,AtomIonCharge,inchi,inchikey FROM states;\n";
 
 
 print "CREATE INDEX energy ON states(AtomStateEnergy);\n";
@@ -147,6 +234,8 @@ sub firstWord {
 	my @words = split /\s+/, $sentence;
         return shift @words;
 }
+
+
 
 
 sub bestWavelength {
@@ -165,3 +254,58 @@ sub bestEnergy {
 	return -1.0;
 }
 
+
+# Parses a configuration label and writes one row into the subshells table for each sub-shell.
+sub configuration {
+  my ($state, $label) = @_;
+
+  # Some of the sub-shells have a coupling-term notation, written in parantheses, which we discard.
+  $label =~ s/\(\d*[A-Z]\d*\)/ /;
+
+  # All the sub-shell notations should be separated by spaces, but some are elided.
+  $label =~ s/(\d)([a-z])(\d)([a-z])/$1$2 $3$4/;
+
+  # Sadly, some of the angular-momentum characters appear in the wrong case.
+  $label = lc $label;
+
+  # Keep track of the total number of electrons in the sub-shells.
+  my $totalPop = 0;
+
+  # This matches the nominal notiation for sub-shells, after the correction above.
+  while ($label =~ m/(\d+)([a-z])(\d*)/g) {
+    my $n = $1;
+    my $l = lQn($2);
+    my $pop;
+    if (!$3) {
+      $pop = 1;
+    }
+    else {
+      $pop = $3;
+    }
+
+    $totalPop += $pop;
+
+    $id += 1;
+    print "INSERT INTO subshells VALUES(NULL, $state, $n, $l, $pop);\n";
+  }
+
+  return ($label, $totalPop);
+}
+
+
+# Decodes the angular-momnentum quantum number from the 
+# s(harp)-p(principal)-d(iffuse)-f(aint)-etc notation of letters.
+sub lQn {
+  my ($l) = @_;
+
+  return 0 if $l eq "s";
+  return 1 if $l eq "p";
+  return 2 if $l eq "d";
+  return 3 if $l eq "f";
+  return 4 if $l eq "g";
+  return 5 if $l eq "i";
+  return 6 if $l eq "k";
+  return 7 if $l eq "l";
+  return 8 if $l eq "m";
+  return 9 if $l eq "n";
+} 
