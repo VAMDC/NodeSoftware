@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sources>
+
+<Source>
+<Class>primary</Class>
+<Authors>
+<Author>T. Yoshikawa</Author>
+<Author> Y. Sumiyoshi</Author>
+<Author>Y. Endo</Author>
+</Authors>
+<Category>journal</Category>
+<SourceName>J. Chem. Phys.</SourceName>
+<Year>2009</Year>   
+<Volume>130</Volume>
+<PageBegin>Art. No. 164303</PageBegin>
+<PageEnd>2112</PageEnd>
+<url>http://dx.doi.org/10.1063/1.3120444</url>
+<UniformResourceIdentifier>10.1063/1.3120444</UniformResourceIdentifier>
+</Source>
+
+<Source>
+<Class>primary</Class>
+<Authors>
+<Author>H. S. P. Müller</Author>
+</Authors>
+<Category>unpublished</Category>
+<Year> 2011</Year>   
+</Source>
+
+<Source>
+<Class>dipole</Class>
+<Authors>
+<Author>T. Yoshikawa</Author>
+<Author> Y. Sumiyoshi</Author>
+<Author>Y. Endo</Author>
+</Authors>
+<Category>journal</Category>
+<SourceName>J. Chem. Phys.</SourceName>
+<Year>2009</Year>   
+<Volume>130</Volume>
+<PageBegin>Art. No. 164303</PageBegin>
+<PageEnd>2112</PageEnd>
+<url>http://dx.doi.org/10.1063/1.3120444</url>
+<UniformResourceIdentifier>10.1063/1.3120444</UniformResourceIdentifier>
+</Source>
+
+<Source>
+<Class>line</Class>
+<Tags>
+<Tag>Yoshikawa et al., 2009</Tag>
+</Tags>
+<Authors>
+<Author>T. Yoshikawa</Author>
+<Author> Y. Sumiyoshi</Author>
+<Author>Y. Endo</Author>
+</Authors>
+<Category>journal</Category>
+<SourceName>J. Chem. Phys.</SourceName>
+<Year>2009</Year>   
+<Volume>130</Volume>
+<PageBegin>Art. No. 164303</PageBegin>
+<PageEnd>2112</PageEnd>
+<url>http://dx.doi.org/10.1063/1.3120444</url>
+<UniformResourceIdentifier>10.1063/1.3120444</UniformResourceIdentifier>
+</Source>
+
+
+</Sources>
