@@ -2,3 +2,9 @@ This is the code for the IDEADB
 ===============================
 
 There might be some bugs which you are encouraged to report to johannes.postler@uibk.ac.at
+
+Dependencies:
+===============================
+south >= 0.7.4
+suds >= 0.4 GA
+periodictable >= 1.3.0
