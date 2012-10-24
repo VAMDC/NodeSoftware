@@ -30,8 +30,6 @@ def setupResults(sql):
     addStates = (not sql.requestables or 'atomstates' in sql.requestables)
     atoms,nspecies,nstates = getSpeciesWithStates(transs,Species,State,addStates)
 
-    methods = getMethods()
-
     if ntranss:
         size_estimate='%.2f'%(ntranss*0.0014 + 0.01)
     else: size_estimate='0.00'
@@ -44,12 +42,12 @@ def setupResults(sql):
             'COUNT-RADIATIVE':ntranss,
             'APPROX-SIZE':size_estimate,
             }
-
     log.debug('Returning from setupResults()')
     return {'RadTrans':transs,
             'Atoms':atoms,
             'Sources':sources,
             'HeaderInfo':headerinfo,
-            'Environments':Environments, #this is set up statically in models.py
-            'Methods':methods
+            'Environments':Environments, #set up statically in node_common.models
+            'Methods':getMethods(),      #defined in node_common.queryfuncs
+            'Functions':Functions        #set up statically in node_common.models
            }

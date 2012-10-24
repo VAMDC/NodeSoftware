@@ -5,9 +5,9 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" href="NavFrame.css" type="text/css">
+<!--  <link rel="stylesheet" href="NavFrame.css" type="text/css"> -->
 <!--  <link href="/css/cdms_base.css" rel="stylesheet" type="text/css"/> -->
-<link href="./static/css/cdms_base.css" rel="stylesheet" type="text/css"/>
+<link href="/static/cdms/css/cdms_base.css" rel="stylesheet" type="text/css"/>
   <meta name="generator" content="1. Physikalisches Institut der Universität zu
   Köln">
   <meta name="description" content="">
@@ -20,41 +20,68 @@
   <meta http-equiv="cache-control" content="no-cache">
   <meta http-equiv="EXPIRES" content="0">
   <title>CDMS</title>
-  <script type="text/javascript" src="./static/js/jquery.js"></script>
-  <script language="JavaScript" src="./static/js/main.js" type="text/javascript"></script>
+  <script type="text/javascript" src="/static/cdms/js/jquery.js"></script>
+  <script language="JavaScript" src="/static/cdms/js/main_v1.0.js" type="text/javascript"></script>
 </head>
 
 
-
+<script>portal_url = '{{PORTAL_URLPATH}}';</script>
 
 <body ONLOAD="setFocus('SearchPrediction');">
 
-<div class="page_margins">
-  <div class="page">
-    <div id="header"  role="banner">
-   <a href="./" title="Home" rel="home" id="logo"><img src="https://cdms.ph1.uni-koeln.de/sites/all/themes/cdms/logo.png" alt="Home" /></a><br>
+  <div class="page_margins" style="-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);">
+    <div class="page">
+      <div id="header"  role="banner">
+        <a href="./" title="Home" rel="home" id="logo">
+          <img src="https://cdms.ph1.uni-koeln.de/sites/all/themes/cdms/logo.png" alt="Home" />
+        </a><br>
         <span>(beta - Version)</span>
+      </div>  <!-- header -->
 
-    </div>  <!-- header -->
-
-	{% block mainNavigationBar %}
-    <!-- begin: main navigation #nav -->
-<!--    <div id="nav" role="navigation"> -->
-        <div class="hlist" style="-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);">
-           <ul>
-             <li ><a href="."  style="font-weight:400;"><div style="font-weight:bold">HOME</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">First page</div>
-             <li><a href="#" style="font-weight:400;"><div style="font-weight:bold">GENERAL</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Description of the Catalog</div></a></li>
-             <li><a href="./selectSpecie"  style="font-weight:400;"><div style="font-weight:bold">SPECIES</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Description of the Catalog Species</div></a></li>
-             <li><a href="./queryForm"  style="font-weight:400;"><div style="font-weight:bold">QUERY</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Query the Catalog</div></a></li>
-             <li><a href="./partitionf"  style="font-weight:400;"><div style="font-weight:bold">PARTITION FUNCTIONS</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Listing of Partition functions</div></a></li>
-
-             <li><a href="./contact"  style="font-weight:400;"><div style="font-weight:bold">CONTACT</div><div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Get in contact with real people</div></a></li>
-<!--             </font> -->
-           </ul>
-        </div>
-<!--    </div> -->
-    <!-- end: main navigation -->
-	{% endblock %}
+{% block mainNavigationBar %}
+      <!-- begin: main navigation #nav -->
+	<!--    <div id="nav" role="navigation"> -->
+      <div class="hlist" style="-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);">
+        <ul>
+          <li {% block menu_li_home %}{% endblock %} style="width:150px">
+            <a href="{% url cdms.node.views.index %}"  style="font-weight:400;">
+              <div style="font-weight:bold">HOME</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">First page</div>
+            </a>
+          </li>
+          <li {% block menu_li_general %}{% endblock %} style="width:150px">
+            <a href="{% url cdms.node.views.general %}" style="font-weight:400;">
+              <div style="font-weight:bold">GENERAL</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Description of the Catalog</div>
+            </a>
+          </li>
+          <li {% block menu_li_catalog %}{% endblock %} style="width:150px">
+            <a href="{% url cdms.node.views.query_form %}" style="font-weight:400;">
+              <div style="font-weight:bold">CATALOG</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Query the Catalog</div>
+            </a>
+          </li>
+          <li {% block menu_li_tools %}{% endblock %} style="width:150px">
+            <a href="{% url cdms.node.views.tools %}"  style="font-weight:400;">
+              <div style="font-weight:bold">TOOLS</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Data Tools</div>
+            </a>
+          </li>
+          <li {% block menu_li_contact %}{% endblock %} style="width:180px">
+            <a href="{% url cdms.node.views.contact %}"  style="font-weight:400;">
+              <div style="font-weight:bold">CONTACT</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Get in contact with real people</div>
+            </a>
+          </li>
+          <li {% block menu_li_help %}{% endblock %} style="width:146px">
+            <a href="./help"  style="font-weight:400;">
+              <div style="font-weight:bold">HELP</div>
+              <div style="margin-top:0.5em;font-size:x-small;font-variant:small-caps">Manuals and Faqs</div>
+            </a>
+          </li>
+        </ul>
+      </div>
+{% endblock %}
   
 
 {% block content %}
@@ -65,7 +92,6 @@
 {% block footer %}
 <div id="footer" role="contentinfo">
 &copy; I. Physikalisches Institut der Universität zu Köln
-</a>
 </div>
 {% endblock %}
 

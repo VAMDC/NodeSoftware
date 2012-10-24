@@ -96,9 +96,9 @@ EnvGeneral="""<Environment envID="%s">
 <Comments>%s</Comments>
 <Temperature><Value units="K">1.0E4</Value></Temperature>
 <TotalNumberDensity><Comments>The broadening parameters are given in
-Hz per number density (i.e. cm^3/s), so they can simply
-be scaled with the number density. Note also that
-actually log10(gamma) is given.</Comments>
+Hz per number density (i.e. 1/cm^3/s), so they can simply
+be scaled with the number density. Note that unless otherwise noted,
+log10(gamma) is given.</Comments>
 <Value units="1/cm3">1</Value>
 </TotalNumberDensity>
 </Environment>
@@ -107,86 +107,92 @@ EnvStark=EnvGeneral%('Evald-stark',"""A given gamma can be scaled with
 gamma = gamma_given * (T / T_ref)^1/6 * number density of free electrons.""")
 EnvWaals=EnvGeneral%('Evald-waals',"""A given gamma can be scaled with gamma =
 gamma_given * (T / T_ref)^alpha * number density for any neutral perturber.
-If alpha is not given, it is 1/3""")
-#EnvWaals=EnvGeneral%('Evald-waals',"""The broadening can be
-#calculated by help of additional parameters, using a more accurate equation by
-#Anstee, Barklem & O'Mara.""")
+If alpha is not given, it is 1/3. Note that for some transitions additional parameters
+are available, allowing a more accurate broadening calculation by Anstee, Barklem and O'Mara.""")
 EnvNatural="""<Environment envID="Evald-natural">
 <Comments>There are no parameters for natural/radiative broadening.</Comments>
 </Environment>"""
 Environments = [EnvClass(EnvStark), EnvClass(EnvWaals), EnvClass(EnvNatural)]
 
+# Functions
 
-# Not yet functional, pending evntual future changes
 class FuncClass(object):
     def __init__(self, xml):
         self.xml = xml
     def XML(self):
         return self.xml
-# Functions
-VALDfuncs = [
-FuncClass("""<Function functionID="Fvald-stark">
-<Comments>This function gives the temperature dependence of Stark broadening.</Comments>
+
+starkfunc = FuncClass("""<Function functionID="Fvald-stark">
+<Name>Stark Broadening</Name>
 <Expression computerLanguage="Fortran">
     gammawaal * (T / 10000.0) ** (1.0/6.0) * N
 </Expression>
-<Y name="gammaL" units="1/cm^3"></Y>
+<Y name="gammaL" units="1/cm3/s"></Y>
 <Arguments>
     <Argument name="T" units="K">
         <Description>The absolute temperature, in K</Description>
     </Argument>
-    <Argument name="N" units="1/cm^3">
+    <Argument name="N" units="1/cm3">
         <Description>Number density of neutral perturbers</Description>
     </Argument>
 </Arguments>
 <Parameters>
-    <Parameter name="gammawaal" units="cm^3/s">
-       <Description>Lorentzian HWHM of the line</Description>
+    <Parameter name="gammawaal" units="1/cm3/s">
+       <Description>Lorentzian FWHM of the line</Description>
     </Parameter>
 </Parameters>
-</Function>"""),
-FuncClass("""<Function functionID="Fvald-waals">
-<Comments>This function gives the temperature dependence of Van der Waals broadening.</Comments>
+<Description>This function gives the temperature dependence of Stark broadening.</Description>
+</Function>""")
+waalsfunc = FuncClass("""<Function functionID="Fvald-waals">
+<Name>Waals broadening</Name>
 <Expression computerLanguage="Fortran">
     gammawaal * (T / 10000.0) ** (1.0/3.0) * N
 </Expression>
-<Y name="gammaL" units="1/cm^3"></Y>
+<Y name="gammaL" units="1/cm3/s"></Y>
 <Arguments>
     <Argument name="T" units="K">
         <Description>The absolute temperature, in K</Description>
     </Argument>
-    <Argument name="N" units="1/cm^3">
+    <Argument name="N" units="1/cm3">
         <Description>Number density of neutral perturbers</Description>
     </Argument>
 </Arguments>
 <Parameters>
-    <Parameter name="gammawaal" units="cm^3/s">
-       <Description>Lorentzian HWHM of the line</Description>
+    <Parameter name="gammawaal" units="1/cm3/s">
+       <Description>Lorentzian FWHM of the line</Description>
     </Parameter>
 </Parameters>
-</Function>"""),
-FuncClass("""<Function functionID="Fvald-waals_barklem">
-<Comments>This function gives the temperature dependence of Van der Waals broadening using a more exact formula by Anstee, Barklem & O'Mara.</Comments>
+<Description>This function gives the temperature dependence of Van der Waals broadening.</Description>
+</Function>""")
+import cgi
+waalsbfunc = FuncClass(r"""<Function functionID="Fvald-waals-barklem">
+<Name>Waals broadening, Barklem correction</Name>
 <Expression computerLanguage="LaTeX">
-    \left(\frac{4,\pi}\right)\Gamma\left(\frac{4-\alpha,2}\right)v_0\sigma\left(\frac{\bar{v},1000000}^{(1-\alpha)}\cdot N
+    $\left(\frac{4}{\pi}\right)^{\alpha/2}\cdot\Gamma\left(\frac{6-\alpha}{2}\right)\cdot v_0\cdot\sigma({v_0})\cdot\left(\frac{\bar{v}}{v_0}\right)^{1-\alpha}\cdot N$
 </Expression>
-<Y name="gammaL" units="1/s"></Y>
+<Y name="gammaL" units="1/cm3/s"></Y>
 <Arguments>
-    <Argument name="v" units="cm/s">
-        <Description>Collisional speed, in cm/s</Description>
+    <Argument name="v" units="m/s">
+        <Description>Collisional speed, $\sqrt{\frac{8kT,\pi\mu}}$, where $\mu=\frac{1,\frac{1,1.008}+\frac{1, m_A}}$.</Description>
     </Argument>
-    <Argument name="N" units="1/cm^3">
+    <Argument name="v0" units="m/s">
+        <Description>Calculated collisional speed - 10 000 m/s</Description>
+    </Argument>
+    <Argument name="N" units="1/m3">
         <Description>Number density of neutral perturbers</Description>
     </Argument>
 </Arguments>
 <Parameters>
-    <Parameter name="sigma" units="cm^3/s">
-       <Description>Broadening cross section </Description>
+    <Parameter name="sigma" units="m">
+       <Description>Broadening cross section in atomic size units (Bohr radii)</Description>
     </Parameter>
-    <Parameter name="alpha" units="cm^3/s">
-       <Description>Velocity dependence of the cross section, assuming \sigma(v) \propto v^{-\alpha}<Description>
+    <Parameter name="alpha" units="unitless">
+       <Description>Velocity dependence of the cross section, assuming $\sigma(v) \propto v^{-\alpha}$</Description>
     </Parameter>
 </Parameters>
+<Description>%s</Description>
 <SourceCodeURL>http://www.astro.uu.se/~barklem/howto.html</SourceCodeURL>
 </Function>
-""")]
+""" % cgi.escape("This function gives the temperature dependence of Van der Waals broadening using a more exact formula by Anstee, Barklem & O'Mara."))
+
+Functions = [starkfunc, waalsfunc, waalsbfunc]
