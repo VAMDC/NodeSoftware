@@ -1,0 +1,108 @@
+{% extends "cdms/portalBase.html" %}	  
+	  
+	  
+	  
+{% block content %}	  
+	<div id="main">
+	  <form name="PARAMETER" action="./queryPage" style="background-color:transparent" class="yform full" role="application"  method="post">
+	    
+	    <!-- begin: #col1 - first float column -->
+	  <div id="col1" style="background-color:white;" role="complementary">
+	    <div id="col1_content" class="clearfix">
+	      
+	      
+	      <INPUT TYPE="HIDDEN" NAME="T_PAGE" VALUE="SearchPrediction">
+
+	      <h6 class="vlist"> FILTER SPECIES LIST</h6>
+	      
+	      <p id="navFilterInfo" class="info center"> Use regular expressions! </p><div class="type-text"><label for="eTagFilter">Tag</label> <input id="eTagFilter" onkeyup="filterRows2()"  onblur="filterRows2()"  onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+		
+	      </div><div class="type-text"><label for="molNameFilter">Molecule</label> <input id="molNameFilter" onkeyup="filterRows2()" onblur="filterRows2()" onkeyPress="return disableEnterKey(event)"  type="text" name="filterTag"> 
+	      </div><div class="type-text"><label for="molTrivNameFilter">Trivial&nbsp;Name</label> <input id="molTrivNameFilter" onkeyup="filterRows2()"  onblur="filterRows2()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+	      </div><div class="type-text"><label for="isoFilter">Isotopolog</label> <input id="isoFilter" onkeyup="filterRows2()"  onblur="filterRows2()"  onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+	      </div><div class="type-text"><label for="stateFilter">State</label> <input id="stateFilter" onkeyup="filterRows2()"  onblur="filterRows2()"  onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
+	      </div><div class="type-select"><label for="Moleculesgrp">Group</label><select id="Moleculesgrp" name="Moleculesgrp" multiple size="4">
+		  <option>all species</option>
+		  
+		  <option> ISM/CSM </option>
+		  <option> atomic fine structure </option>
+		  <option> Anions </option>
+		  <option> Cations </option>
+		  <option> CnH </option>
+		  <option> CnH2 </option>
+		  
+		  <option> Complex molecules </option>
+		  <option> Cyano Comp. </option>
+		  <option> Deuterated Species </option>
+		  <option> Hydride Species AHn </option>
+		  <option> metal compounds </option>
+		  <option> Other N Comp. </option>
+		  
+		  <option> O Compounds </option>
+		  <option> P Compounds </option>
+		  <option> S Compounds </option>
+		  <option> Si Compounds </option>
+		</select>
+	      </div>
+	      
+	    </div>
+	    
+	  </div>
+	  <!-- end: #col1 -->
+	  <!-- begin: #col3 static column -->
+	  
+	  <!--  <div id="col3" style="background-color:#F0F0F0;" role="main"> -->
+	  <div id="col3" role="main">
+	    <div id="col3_content" class="clearfix">
+	      
+	      
+	      
+	      <!--
+	      <fieldset>
+	      <legend>Select Species</legend>
+	      -->
+	      
+	      <input id="orderBy" type="hidden" name="T_OrderBy" value="E_TAG ASC">
+	      <input id="EID" type="hidden" name="T_EID" value="">
+	      <fieldset class="full" >
+		
+		<h3 class="center"> 
+		  <strong>SELECT</strong>&nbsp;<i>SPECIES.MOLECULES.ISOTOPOLOGS</i> </h3>
+		<br><br>
+		<p class="important"> Select one or multiple species by mouse clicks! </p>
+		<div class="entryTableHead">
+		  <div class="float_left" style="margin-left:5.0em;font-weight:bold;min-width:50px;">Tag</div>
+		  <div class="float_left" style="font-weight:bold;min-width:100px">Molecule</div>
+		  <div class="float_left" style="font-weight:bold;min-width:100px">Isotopolog</div>
+		  <div class="float_left" style="font-weight:bold;min-width:120px">State</div>
+		</div>
+		<ul class="selectMolsHead vlist full" style="height:300px;overflow-y:scroll;">
+		  
+		  
+		  {% for specie in species_list %}
+		  <li id="{{specie.id}}" class="molRow" onclick="selectMolRow2({{specie.id}});" ondblclick="">
+		    <a>
+		<div id="eTag{{specie.tag}}" style="font-weight:bold;display:inline;min-width:50px" class="eTag float_left">  {{specie.speciestag}}</div> 
+		<div class="eName float_left" style="font-weight:bold;display:inline; min-width:100px">     {{specie.molecule.name}} </div>
+		<div class="eIso float_left" style="font-weight:bold;display:inline; float:left; min-width:100px">   {{specie.isotopolog}} </div>
+		<div class="eState float_left" style="display:inline; float:left; min-width:120px">  {{specie.state}} </div><br>
+		<div class="mTrivName float_left" style="display:inline; text-align:left;float:left; min-width:250px"> {{specie.molecule.trivialname}} </div>&nbsp;
+	      </a>
+	      </li>
+		
+		{% endfor %}
+	      </ul>
+		
+		<div class="type-button center">  
+		  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="Select All" NAME="B_SelectAll" onclick="selectAll();">   
+		  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="Deselect All" NAME="B_DeselectAll" onclick="deselectAll();">   
+		  <INPUT style="width:30%;float:right;" TYPE="SUBMIT"  VALUE="Confirm Selection" NAME="B_Query" onclick="createPostVar();"> <!-- load_page('SearchPrediction');"> -->
+		</div></fieldset>
+	      
+	      
+	      
+	    </div>
+	  </form>
+	    
+	  </div>
+{% endblock %}

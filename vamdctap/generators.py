@@ -135,7 +135,7 @@ def makeOptionalTag(tagname, keyword, G, extraAttr={}):
     elif isiterable(content):
         s = []
         for c in content:
-            s.append( '<%s>%s</%s>'%(tagname,content,tagname) )
+            s.append( '<%s>%s</%s>'%(tagname,c,tagname) )
         return ''.join(s)
     else:
         extra = "".join([' %s="%s"'% (k, v) for k, v in extraAttr.items()])
@@ -156,17 +156,55 @@ def makeSourceRefs(refs):
 def makePartitionfunc(keyword, G):
     """
     Create the Partionfunction tag element.
+    (T and Q can be lists of lists)
     """
     value = G(keyword)
     if not value:
         return ''
-    temperature = G(keyword + 'T')
-    partitionfunc = G(keyword)
-    string = '<PartitionFunction><T units="K"><DataList>'
-    string += " ".join(str(temp) for temp in temperature)
-    string += '</DataList></T><Q><DataList>'
-    string += " ".join(str(q) for q in partitionfunc)
-    string += '</DataList></Q></PartitionFunction>'
+
+    temperature = value
+    unit = G(keyword+'Unit')
+    partitionfunc = G(keyword+'Q')
+    comments = G(keyword+'Comments')
+    # Nuclear Spin Isomer Information 
+    nsilowrovibsym = G(keyword+'NSILowestRoVibSym')
+    nsiname = G(keyword+'NSIName')
+    nsisymgroup = G(keyword+'NSISymGroup')
+    nsistateref = G(keyword+'NSILowestEnergyStateRef')
+
+    if not isiterable(value[0]):
+        Npf = 1
+        temperature = [temperature]
+        unit = [unit]
+        partitionfunc = [partitionfunc]
+        comments = [comments]
+        # Nuclear Spin Isomer Information 
+        nsilowrovibsym = [nsilowrovibsym]
+        nsiname = [nsiname]
+        nsisymgroup = [nsisymgroup]
+        nsistateref = [nsistateref]
+    else:
+        Npf = len(temperature)
+        unit = makeiter(unit,Npf)
+
+    string = ''
+    for i in xrange(Npf):
+        string += '<PartitionFunction>'
+        if len(comments)>i and comments[i]: string += '<Comments>%s</Comments>' % comments[i]
+        string += '<T units="%s"><DataList>' % (unit[i] if (len(unit)>i and unit[i]) else 'K')
+        string += " ".join(str(temp) for temp in temperature[i])
+        string += '</DataList></T>'
+        string += '<Q><DataList>'
+        string += " ".join(str(q) for q in partitionfunc[i])
+        string += '</DataList></Q>'
+        if len(nsiname)>i and nsiname[i]:
+            string += makePrimaryType("NuclearSpinIsomer", "NuclearSpinIsomer",G,
+                                  extraAttr={"lowestEnergyStateRef":'S%s-%s' % (G('NodeID'), nsistateref[i])})
+            string += "<Name>%s</Name>" % nsiname[i]
+            string += "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (nsisymgroup[i], nsilowrovibsym[i])
+            string += "</NuclearSpinIsomer>"
+        
+        string += '</PartitionFunction>'
     return string
 
 def makePrimaryType(tagname, keyword, G, extraAttr={}):
@@ -214,7 +252,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     value = G(keyword)
     if not value:
         return ''
-
+    
     unit = G(keyword + 'Unit')
     method = G(keyword + 'Method')
     comment = G(keyword + 'Comment')
@@ -248,10 +286,12 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
             string += '<Comments>%s</Comments>' % escape('%s' % comment[i])
         string += makeSourceRefs(refs[i])
         string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
+        string += makeEvaluation( keyword, G, j=i) 
         if acc[i]:
             string += '<Accuracy>%s</Accuracy>' % acc[i]
-        string += '</%s>' % tagname
 
+
+        string += '</%s>' % tagname
     return string
 
 # an alias for compatibility reasons
@@ -307,7 +347,7 @@ def makeDataSeriesAccuracyType(keyword, G):
     string += "</Accuracy>"
     return string
 
-def makeEvaluation(keyword, G):
+def makeEvaluation(keyword, G, j=None):
     """
     build the elements for evaluation that belong
     to DataType.
@@ -315,12 +355,36 @@ def makeEvaluation(keyword, G):
     evs = G(keyword + 'Eval')
     if not evs:
         return ''
-    ev_list = makeiter(evs)
-    nevs = len(ev_list)
-    ev_meth = makeiter( G(keyword + 'EvalMethod'), nevs )
-    ev_reco = makeiter( G(keyword + 'EvalRecommended'), nevs )
-    ev_refs = G(keyword + 'EvalRef')
-    ev_comm = G(keyword + 'EvalComment')
+
+    if j is not None:
+        evs=evs[j]
+
+        ev_list = makeiter(evs)
+        nevs = len(ev_list)
+        try:
+            ev_meth = makeiter( G(keyword + 'EvalMethod')[j], nevs )
+        except IndexError:
+            ev_meth = makeiter( None, nevs)
+        try:    
+            ev_reco = makeiter( G(keyword + 'EvalRecommended')[j], nevs )
+        except IndexError:
+            ev_reco = makeiter(None, nevs)
+        try:
+            ev_refs = G(keyword + 'EvalRef')[j]
+        except IndexError:
+            ev_refs = []
+        try:
+            ev_comm = G(keyword + 'EvalComment')[j]
+        except IndexError:
+            ev_comm = []
+    else:
+        ev_list = makeiter(evs)
+        nevs = len(ev_list)
+        ev_meth = makeiter( G(keyword + 'EvalMethod'), nevs )
+        ev_reco = makeiter( G(keyword + 'EvalRecommended'), nevs )
+        ev_refs = G(keyword + 'EvalRef')
+        ev_comm = G(keyword + 'EvalComment')
+
     result = []
     for i,ev in enumerate( makeiter(evs) ):
         result.append('<Evaluation')
@@ -364,8 +428,8 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( makeSourceRefs(refs) )
     result.append( '<Value units="%s">%s</Value>' % (unit or 'unitless', value) )
 
-    result.append( makeAccuracy( keyword, G) )
     result.append( makeEvaluation( keyword, G) )
+    result.append( makeAccuracy( keyword, G) )
     result.append( '</%s>' % tagname )
 
     for k, v in extraElem.items():
@@ -722,7 +786,11 @@ def XsamsAtoms(Atoms):
                 yield ret
                 continue
             G = lambda name: GetValue(name, AtomState=AtomState)
-            yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
+#            yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
+            yield makePrimaryType("AtomicState", "AtomicState", G,
+                                  extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('AtomStateID')),
+                                             "auxillary":G("AtomStateAuxillary")})
+
             yield makeSourceRefs(G('AtomStateRef'))
             yield makeOptionalTag('Description','AtomStateDescription',G)
             yield '<AtomicNumericalData>'
@@ -768,6 +836,7 @@ def XsamsAtoms(Atoms):
         G = lambda name: GetValue(name, Atom=Atom) # reset G() to Atoms, not AtomStates
         yield '<InChI>%s</InChI>' % G('AtomInchi')
         yield '<InChIKey>%s</InChIKey>' % G('AtomInchiKey')
+  #        yield '<VAMDCSpeciesID>%s</VAMDCSpeciesID>' % G('AtomVAMDCSpeciesID')
         yield """</Ion>
 </Isotope>
 </Atom>"""
@@ -836,6 +905,7 @@ def XsamsMCSBuild(Molecule):
     yield '<InChIKey>%s</InChIKey>\n' % G("MoleculeInChIKey")
     yield makeReferencedTextType('CASRegistryNumber','MoleculeCASRegistryNumber',G)
     yield makeOptionalTag('CNPIGroup','MoleculeCNPIGroup',G)
+    yield '<VAMDCSpeciesID>%s</VAMDCSpeciesID>\n' % G("MoleculeVAMDCSpeciesID")
 
     yield makePartitionfunc("MoleculePartitionFunction", G)
 
@@ -983,15 +1053,22 @@ def XsamsMSBuild(MoleculeState):
     G = lambda name: GetValue(name, MoleculeState=MoleculeState)
     yield makePrimaryType("MolecularState", "MoleculeState", G,
             extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('MoleculeStateID')),
-                       "fullyAssigned":G("MoleculeStateFullyAssigned")})
+                       "fullyAssigned":G("MoleculeStateFullyAssigned"),"auxillary":G("MoleculeStateAuxillary")})
     yield makeOptionalTag("Description","MoleculeStateDescription",G)
 
     yield '  <MolecularStateCharacterisation>'
     yield makeDataType('StateEnergy', 'MoleculeStateEnergy', G,
-                extraAttr={'energyOrigin':G('MoleculeStateEnergyOrigin')})
+                extraAttr={'energyOrigin':'S%s-%s' % (G('NodeID'), G('MoleculeStateEnergyOrigin'))})
     yield makeOptionalTag("TotalStatisticalWeight", "MoleculeStateTotalStatisticalWeight", G)
     yield makeOptionalTag("NuclearStatisticalWeight", "MoleculeStateNuclearStatisticalWeight", G)
-    yield makeOptionalTag("NuclearSpinIsomer", "MoleculeStateNuclearSpinIsomer", G)
+#    yield makeOptionalTag("NuclearSpinIsomer", "MoleculeStateNuclearSpinIsomer", G)
+    if G("MoleculeStateNSIName"):
+        yield makePrimaryType("NuclearSpinIsomer", "NuclearSpinIsomer",G,
+                              extraAttr={"lowestEnergyStateRef":'S%s-%s' % (G('NodeID'), G('MoleculeStateNSILowestEnergyStateRef'))})
+        yield "<Name>%s</Name>" % G("MoleculeStateNSIName")
+        yield "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (G('MoleculeStateNSISymGroup'), G('MoleculeStateNSILowestRoVibSym'))
+        yield "</NuclearSpinIsomer>"
+ 
     if G("MoleculeStateLifeTime"):
         # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
         # the decay attr is a string, either: 'total', 'totalRadiative' or 'totalNonRadiative'
@@ -1344,6 +1421,12 @@ def XsamsRadTrans(RadTrans):
         yield makeOptionalTag('TransitionKind','RadTransProbabilityKind',G)
         yield makeDataType('EffectiveLandeFactor', 'RadTransEffectiveLandeFactor', G)
         yield '</Probability>\n'
+
+        yield "<ProcessClass>"
+        yield makeOptionalTag('UserDefinition', 'RadTransUserDefinition',G)
+        yield makeOptionalTag('Code','RadTransCode',G)
+        yield makeOptionalTag('IAEACode','RadTransIAEACode',G)
+        yield "</ProcessClass>"
 
         if hasattr(RadTran, 'XML_Broadening'):
             yield RadTran.XML_Broadening()

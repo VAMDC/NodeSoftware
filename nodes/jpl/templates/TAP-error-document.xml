@@ -1,0 +1,5 @@
+<VOTABLE>
+  <RESOURCE type="RESULTS">
+    <INFO name="QUERY_STATUS" value="ERROR">{{error_message_text}}</INFO>
+  </RESOURCE>
+</VOTABLE>

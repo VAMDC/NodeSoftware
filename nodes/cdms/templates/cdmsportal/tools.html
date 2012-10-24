@@ -1,0 +1,73 @@
+{% extends "cdmsportal/portalBase.html" %}
+
+{% block menu_li_tools %}class="active" {% endblock %}
+
+{% block content %}
+
+<div id="main">
+
+  <!-- NAVIGATION-BLOCK -->
+
+  <div id="col1" style="background-color:white;" role="complementary">
+    <div id="col1_content" class="clearfix">
+     <h6 class="vlist"> TOOLS </h6>
+     <ul class="vlist">
+      <li><a href="#" id="" onclick="docShowSubpage('page_xsams_converter')">Convert XSAMS files</a></li>
+      <li><a href="#" id="" onclick="docShowSubpage('page_pf_calculator')">Calculate Partition Functions</a></li>
+     </ul>
+
+    </div>
+  </div>
+
+  <!-- CONTENT-BLOCK -->
+
+  <div id="col3" role="main">
+    <div id="col3_content" class="clearfix">
+
+<form class='yform' enctype="multipart/form-data"  method="post">
+
+  <fieldset class='subpage' id='page_xsams_converter' style='display:none'>
+    <div class='legend'>Convert XSAMS output to other data formats</div>
+    {% if form.non_field_errors|length > 0 %}
+      <div class="warning">
+      {{form.non_field_errors}}
+      </div>
+    {% endif %}
+{% csrf_token %}
+    <div class="type-select">
+      <label for="{{form.category.auto_id}}">{{form.format.label}}</label>
+      {{form.format}}
+      {{form.format.errors}}
+    </div>
+    <div class="type-text">
+      <label for="{{form.inurl.auto_id}}">{{form.inurl.label}}</label>
+      {{form.inurl}}
+      {{form.inurl.errors}}
+    </div>
+    <div class="type-text">
+      <label for="{{form.category.auto_id}}">{{form.infile.label}}</label>
+      {{form.infile}}
+      {{form.infile.errors}}
+    </div>
+    <div class="type-button float_right">
+      <INPUT id="b_submit" TYPE="submit" NAME="" onclick='submitOutputURL()' VALUE="Submit" >
+    </div>
+  </fieldset>
+
+
+
+  <fieldset class='subpage' id='page_pf_calculator' style='display:none'>
+    <div class='legend'>Calculate Partition functions</div>
+  </fieldset>
+
+</form>
+
+
+
+
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
