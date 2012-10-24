@@ -49,10 +49,10 @@ class SpeciesComp(Model):
 class TransRef(Model):
     """
     This is just the intermediary model so that we can quickly find
-    all References related to a given Transition.
+    all References related to a given Transition. It's populated manually.
     """
-    transition = ForeignKey(Transition, related_name="trans")
-    reference = ForeignKey("Reference", related_name="ref")
+    transid = IntegerField(db_index=True)
+    refid = CharField(max_length=7)
     class Meta:
         db_table = u"transitions_references"
 
