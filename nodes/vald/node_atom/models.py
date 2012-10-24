@@ -24,7 +24,7 @@ class State(Model):
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True)
     sn = PositiveSmallIntegerField(db_column=u'Sn',null=True)
-    n = PositiveSmallIntegerField(db_columnd=u'n',null=True)
+    n = PositiveSmallIntegerField(db_column=u'n',null=True)
 
     def jj(self):
         if None not in (self.j1, self.j2):
