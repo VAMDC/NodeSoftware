@@ -14,9 +14,24 @@ load data infile '/vald/vamdc/db_input_files/lowstates.dat' ignore into table st
 
 load data infile '/vald/vamdc/db_input_files/transitions.dat' ignore into table transitions columns terminated by ';' optionally enclosed by '"';
 
+insert into trans_refs (select id, wavevac_ref_id from transitions);
+
 update transitions t, states s set t.einsteina=(0.667025*POWER(10,16) * POWER(10,t.loggf)) / ((2.0 * s.j + 1.0) * POWER(t.wave,2)) where t.upstate=s.id;
 
-create index speciesid_wave on transitions (species_id, wave);
+-- create the mapping transitions - references and link all references
+-- to the correct transition
+create table trans_refs (trans_id bigint, ref_id varchar(7));
+insert into trans_refs (select id, wave_ref_id from transitions);
+insert into trans_refs (select id, waveritz_ref_id from transitions);
+insert into trans_refs (select id, loggf_ref_id from transitions);
+insert into trans_refs (select id, gammarad_ref_id from transitions);
+insert into trans_refs (select id, gammastark_ref_id from transitions);
+insert into trans_refs (select id, waals_ref_id from transitions);
+insert into trans_refs (select transitions.id,states.energy_ref_id from transitions,states where transitions.upstate=states.id or transitions.lostate=states.id);
+insert into trans_refs (select transitions.id,states.lande_ref_id from transitions,states where transitions.upstate=states.id or transitions.lostate=states.id);
+insert into trans_refs (select transitions.id,states.level_id from transitions,states where transitions.upstate=states.id or transitions.lostate=states.id);
+create index tidx on trans_refs (trans_id);
+
 
 -- fixing a mal-named bibtex reference (kept here for reference, remove
 -- if fixed in raw data dump next update)

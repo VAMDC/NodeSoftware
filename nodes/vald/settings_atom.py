@@ -14,12 +14,12 @@ if not 'vald.node_common' in INSTALLED_APPS:
     INSTALLED_APPS.append('vald.node_common')
 if not NODEPKG in INSTALLED_APPS:
     INSTALLED_APPS.append(NODEPKG)
-print NODEPKG,INSTALLED_APPS
+#print NODEPKG,INSTALLED_APPS
 
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'vald_atom_alt',
+    'NAME': 'vald_atom',
     'USER': 'vald',
     'PASSWORD': 'V@ld',
   },

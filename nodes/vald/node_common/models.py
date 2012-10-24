@@ -46,16 +46,6 @@ class SpeciesComp(Model):
     class Meta:
         db_table = u'species_components'
 
-class TransRef(Model):
-    """
-    This is just the intermediary model so that we can quickly find
-    all References related to a given Transition. It's populated manually.
-    """
-    transid = IntegerField(db_index=True)
-    refid = CharField(max_length=7)
-    class Meta:
-        db_table = u"transitions_references"
-
 class Reference(Model):
     id = CharField(max_length=7, primary_key=True, db_index=True)
     bibtex = TextField(null=True)

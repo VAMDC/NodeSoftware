@@ -4,17 +4,17 @@
 # but mainly a reminder of the steps involved.
 
 AorM="atom"
-VDB="vald_atom_alt"
+VDB="vald_atom"
 VUSR="vald"
 VPWD="V@ld"
 
-echo
-echo -n "Running rewrite... "
-rm /vald/vamdc/db_input_files/*
-cd ../../imptools/
-pypy run_rewrite.py ../nodes/vald/mapping_vald3.py
-cd ../nodes/vald/
-echo "done."
+#echo
+#echo -n "Running rewrite... "
+#rm /vald/vamdc/db_input_files/*
+#cd ../../imptools/
+#pypy run_rewrite.py ../nodes/vald/mapping_vald3.py
+#cd ../nodes/vald/
+#echo "done."
 
 echo "Dropping and re-creating the database... "
 echo "DROP DATABASE $VDB;" | mysql -u "$VUSR" -p"$VPWD"
