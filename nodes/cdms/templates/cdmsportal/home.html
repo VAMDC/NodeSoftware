@@ -1,5 +1,7 @@
 {% extends "cdmsportal/portalBase.html" %}
 
+{% block menu_li_home %}class="active" {% endblock %}
+
 {% block content %}
 
 <div id="main">
@@ -7,17 +9,21 @@
 <p> The Cologne Database for Molecular Spectroscopy (CDMS) contains a catalog of radio frequency and microwave to far-infrared spectral lines of atomic and molecular species that (may) occur in the interstellar or circumstellar medium or in planetary atmospheres. The catalog is continuously updated.</p>
 
 <p> &nbsp; </p>
-<h2> Catalog</h2>
-<p> &nbsp;</p>
-<p> SEARCH.TRANSITIONS.ENERGY LEVELS.</p>
-<p> The catalog section contains mostly rotational transition frequencies, uncertainties, intensities, and a wealth of other information of atomic and molecular species that may occur in the ISM or CSM or in planetary atmospheres</p>
-<p> &nbsp;</p>
 <h2> General Information</h2>
-
 <p> &nbsp;</p>
 <p> FITTING.MOLECULES.EQUATIONS.</p>
 <p> The General part provides information on the content and the format of the catalog, remarks on the partition function, and some equations useful for conversions.</p>
 <p> &nbsp;</p>
+
+
+<h2> Catalog</h2>
+<p> &nbsp;</p>
+<p> SEARCH.TRANSITIONS.ENERGY LEVELS.</p>
+<p> The catalog section contains mostly rotational transition frequencies, uncertainties, intensities, and a wealth of other information of atomic and molecular species that may occur in the ISM or CSM or in planetary atmospheres</p>
+<p> The documentation of molecular and atomic species can be found section SPECIES. Query the content of the catalog in section QUERY.</p>
+<p> &nbsp;</p>
+
+
 <h2> References</h2>
 <p> &nbsp;</p>
 <ul>

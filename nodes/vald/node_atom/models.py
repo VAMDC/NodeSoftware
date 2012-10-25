@@ -112,6 +112,18 @@ class Transition(Model):
         if self.gammawaals: return self.gammawaals
         elif self.sigmawaals and self.alphawaals: return [self.sigmawaals, self.alphawaals]
         else: return ""
+    def getWaalsName(self):
+        if self.gammawaals: return "log(gamma)"
+        elif self.sigmawaals and self.alphawaals: return ["gamma", "alpha"]
+        else: return ""
+    def getWaalsUnits(self):
+        if self.gammawaals: return "cm3/s"
+        elif self.sigmawaals and self.alphawaals: return ["m", "unitless"]
+        else: return ""
+    def getWaalsFunction(self):
+        if self.gammawaals: return "waals"
+        elif self.sigmawaals and self.alphawaals: return "waals-barklem"
+        else: return ""
 
     def getAccurType(self):
         "retrieve the right AccurType type depending on the VALD accur flag"

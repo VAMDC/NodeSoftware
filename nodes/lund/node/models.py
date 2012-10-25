@@ -129,6 +129,6 @@ class Transition(Model):
     waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans',null=True)
         
     def __unicode__(self):
-        return u'ID:%s Wavel: %s'%(self.id,self.vacwave)
+        return u'ID:%s %s %sA'%(self.id,self.species.name, self.vacwave)
     class Meta:
         db_table = u'transitions'
