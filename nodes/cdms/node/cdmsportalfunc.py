@@ -7,7 +7,10 @@ from django.core.exceptions import ValidationError
 def get_species_list(spids = None):
     """
     """
-    molecules = Species.objects.filter(origin=5,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
+    # cdms only
+    molecules = Species.objects.filter(origin=5,archiveflag=0).order_by('speciestag')
+    #molecules = Species.objects.filter(origin=5,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
+    #molecules = Species.objects.filter(archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
 
     if spids is not None:
         molecules = molecules.filter(pk__in=spids)
@@ -149,6 +152,9 @@ def check_query(postvars):
     # CREATE QUERY STRING FOR SPECIES
     ###################################
     spec_array=[]
+    htmlcode += "<ul class='vlist'>"
+    htmlcode += "<li>"
+
     if len(id_list)+len(inchikeys)+len(molecules)>0:
         #mols = get_species_list(id_list)
 
@@ -170,14 +176,12 @@ def check_query(postvars):
         tapxsams += "(" + " OR ".join(spec_array) + ")"
         tapcdms += "(" + " OR ".join(spec_array) + ")"
 
+        htmlcode += "<a href='#' onclick=\"$('#a_form_species').click();$('#a_form_species').addClass('activeLink');\">"
+        htmlcode += "(" + " OR ".join(spec_array) + ")"
     else:
-        htmlcode += "<a href='#' onclick=\"load_page('SelectMolecule');\" ><p class='warning' >SPECIES: nothing selected => Click here to select species!</p></a>"
+        htmlcode += "<a href='#' onclick=\"load_page('queryForm');\" ><p class='warning' >SPECIES: nothing selected => Click here to select species!</p></a>"
         
 
-    htmlcode += "<ul class='vlist'>"
-    htmlcode += "<li><a href='#' onclick=\"$('#a_form_species').click();$('#a_form_species').addClass('activeLink');\">"
-
-    htmlcode += "(" + " OR ".join(spec_array) + ")"
     htmlcode += "</li>"
 
 
@@ -397,7 +401,7 @@ def geturl(url, timeout=None):
     return content
 
 
-def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xslt', species1=None, species2=None, inurl2=None):
+def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v1.0.xslt', species1=None, species2=None, inurl2=None):
     """
     Applies a xslt-stylesheet to the given url
     """
@@ -406,7 +410,7 @@ def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xsl
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
-        xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xslt')))
+        xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'speciesmergerRadex_1.0_v1.0.xslt')))
 
     from urllib2 import urlopen
 
@@ -452,7 +456,7 @@ def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xsl
         local_file.close()
    
 
-        try: result = str(xsl(xml, species1="'%s'" % species1, species2="'%s'" % species2, colfile="'%s'" % "/var/cdms/v1_0/NodeSoftware/nodes/cdms/test/basecol_co.xml"))
+        try: result = str(xsl(xml, species1="'%s'" % species1, species2="'%s'" % species2, colfile="'%s'" % filename2)) #"/var/cdms/v1_0/NodeSoftware/nodes/cdms/test/basecol_co.xml"))
         except Exception,err:
             raise ValidationError('Could not transform XML file: %s'%err)
     else:

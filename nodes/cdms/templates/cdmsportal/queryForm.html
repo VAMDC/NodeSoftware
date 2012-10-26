@@ -146,33 +146,30 @@
     </fieldset>
 
 
-
+<!-- CREATE CONTAINER FOR RADEX INPUT -->
    <fieldset id="RadexSelectors" style="display:none;">
-     <div class="legend">Radex Input</div>
+<!--     <div class="legend">Radex Input</div>  -->
 
-     <div>Spectroscopic data </div>
-      <div class="type-select">
-        <SELECT class="radexselect" NAME="database" id="sel_spec" onchange="">
-        </SELECT>
-        <INPUT TYPE="HIDDEN" NAME="spec_url" VALUE="">
-        <INPUT TYPE="HIDDEN" NAME="spec_speciesid" VALUE="XCDMS-83">
-      </div> 
+     <div class="legend">Spectroscopic data </div>
+      <ul class="vlist" id="list_spec">
+      </ul>
+      <INPUT TYPE="HIDDEN" NAME="spec_url" id="spec_url" VALUE="">
+      <INPUT TYPE="HIDDEN" NAME="spec_speciesid" id="spec_speciesid" VALUE="">
      
-     <div>Collisional data </div>
-      <div class="type-select">
-        <SELECT class="radexselect" NAME="sel_cols" id="sel_cols" onchange="">
-        </SELECT>
-        <INPUT TYPE="HIDDEN" NAME="col_url" VALUE="http://batz.lpma.jussieu.fr:8080/tapservice_11_12/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29">
-        <INPUT TYPE="HIDDEN" NAME="col_speciesid" VALUE="XBAS73">
-      </div> 
+     <div class="legend">Collisional data </div>
+      <ul class="vlist" id="list_col">
+      </ul>
+
+      <INPUT TYPE="HIDDEN" NAME="col_url" id="col_url" VALUE=""> 
+      <INPUT TYPE="HIDDEN" NAME="col_speciesid" id="col_speciesid" VALUE="">
 
       <div class="type-button float_right radexsubmit">
-        <INPUT id="button1" TYPE="button" NAME="T_SEARCH" onclick='$("#control").hide();ajaxQuery("ajaxQuery","http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+ALL+WHERE+%28+InchiKey+=+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27+%29&ORDERBY=frequency","http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/");$("#result").show();docShowSubpage("queryresult");' VALUE="QUERY" >
+        <INPUT id="button1" TYPE="button" NAME="T_SEARCH" onclick='$("#control").hide();ajaxQuery("ajaxQuery","http://cdms.ph1.uni-koeln.de/cdms/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+ALL+WHERE+%28+InchiKey+=+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27+%29&ORDERBY=frequency","http://cdms.ph1.uni-koeln.de/cdms/tap/");$("#result").show();docShowSubpage("queryresult");' VALUE="QUERY" >
       </div>
    </fieldset>
 
 
-    <fieldset>
+    <fieldset id="dbcontent">
       <div class="legend">Content</div>
 <div id="nodelist" class="nodes" style="display:none;clear:both">Processing ...</div>
     <div id="cdmsnode" class="nodes" style="clear:both">

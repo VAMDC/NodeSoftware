@@ -200,7 +200,7 @@ class States( Model):
      def auxillary(self):
           try:
                if self.aux:
-                    return 'True'
+                    return 'true'
                else:
                     return ''
           except AttributeError:
@@ -213,7 +213,8 @@ class States( Model):
 	"""Yield the XML for the state quantum numbers"""
         # remove "-origin" in order to retrieve also qns for state-origins
         try:
-             sid = self.id.replace('-origin-%s' % self.specie_id,'')
+             #sid = self.id.replace('-origin-%s' % self.specie_id,'')
+             sid = self.id.split('-')[0]
         except:
              sid = self.id
              

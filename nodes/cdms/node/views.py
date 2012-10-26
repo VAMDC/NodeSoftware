@@ -112,6 +112,13 @@ class QUERY(object ):
         if self.format == 'png':
             self.url = self.url.replace('XSAMS','png').replace("ALL","RadiativeTransitions")
 
+        # used only for radex:
+        if self.format == 'rad3d':
+            self.spec_url=self.data.get('spec_url','')
+            self.spec_speciesid = self.data.get('spec_speciesid','')
+            self.col_url = self.data.get('col_url','')
+            self.col_speciesid = self.data.get('col_speciesid','')
+
 #        print >> sys.stderr, self.query
         print >> sys.stderr, self.format
         print >> sys.stderr, self.url
@@ -263,6 +270,35 @@ def html_list(request, content='species'):
     return render_to_response('cdmsportal/species_table.html', c)
 
 
+def json_list(request, content='species'):
+
+    response_dict={}
+    species_list=[]
+    for specie in get_species_list():
+        s = {'id':specie.id,
+             'molecule':specie.molecule.id,
+             'structuralformula':specie.molecule.structuralformula,
+             'stoichiometricformula':specie.molecule.stoichiometricformula,
+             'moleculesymbol':specie.molecule.symbol,
+             #'atom':specie.atom,             
+             'speciestag':specie.speciestag,
+             'name':specie.name,
+             'trivialname':specie.molecule.trivialname,
+             'isotopolog':specie.isotopolog,
+             'state':specie.state,
+             'state_html':specie.state_html(),
+             'inchikey':specie.inchikey,
+             'contributor':specie.contributor,
+             'version':specie.version,
+             'dateofentry':str(specie.dateofentry),
+             }
+
+        species_list.append(s)
+    response_dict.update({'species' : species_list})
+       
+    return HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
+
+
 def catalog(request, id=None):
     """
     Creates the documentation page for a specie
@@ -382,8 +418,11 @@ def ajaxRequest(request):
                                                                  xsl = FILENAME_XSAMS2HTML)) + "</pre>"
                     elif postvars.format=='rad3d':
                         #ouput = str(applyRadex(postvars.url, xsl = FILENAME_MERGERADEX))
-                        url4="http://batz.lpma.jussieu.fr:8080/tapservice_11_12/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29"
-                        output = str(applyRadex(postvars.url, species1="XCDMS-83", species2="XBAS73", inurl2=url4))
+#                        url4="http://batz.lpma.jussieu.fr:8080/tapservice_11_12/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29"
+                        url4="http://dev.vamdc.org/basecol/tapservice_12_07/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29"
+
+                        print >> sys.stderr, "col: %s\nspec: %s\n" % (postvars.col_url, postvars.spec_url)
+                        output = str(applyRadex(postvars.spec_url, species1=postvars.spec_speciesid, species2=postvars.col_speciesid, inurl2=postvars.col_url))
                         
                         htmlcode = "<pre>" + output + "</pre>"
                     elif postvars.format=='png':
