@@ -15,7 +15,7 @@ WSDL=REGURL+'?wsdl'
 
 # this is a copy of the URL above but with
 # schema locations fixed:
-WSDL = 'http://tmy.se/t/devreg_wsdl.xml'
+#WSDL = 'http://tmy.se/t/devreg_wsdl.xml'
 
 from suds.client import Client
 from suds.xsd.doctor import Doctor
@@ -47,6 +47,7 @@ def getNodeList():
    for $x in //ri:Resource
    where $x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']
    and $x/@status='active'
+   and $x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']/versionOfStandards='12.07'
    return  <node><title>{$x/title/text()}</title><url>{$x/capability[@standardID='ivo://vamdc/std/VAMDC-TAP']/interface/accessURL/text()}</url></node>   
 }
 </nodes>"""
@@ -55,9 +56,15 @@ def getNodeList():
     v=client.service.XQuerySearch(qr)
     nameurls=[]
     for node in v.node:
+        # take only the first url
+        try:
+            url = node.url.split(" ")[0]
+        except:
+            url = None
+            
 	nameurls.append({\
 			'name':node.title,
-    			'url':node.url,
+    			'url':url,
 			})
     return nameurls
 

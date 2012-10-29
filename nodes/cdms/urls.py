@@ -17,7 +17,7 @@ urlpatterns = patterns('',
 #    (r'^cdms/static', include('nodes.cdms.node.urls')),
 
 # Uncomment this line to include mycdmsadmin if installed
-#    (r'^mycdmsadmin/', include('nodes.cdms.mycdmsadmin.urls')),
+    (r'^mycdmsadmin/', include('nodes.cdms.mycdmsadmin.urls')),
 )
 
 if settings.SERVE_STATIC:
