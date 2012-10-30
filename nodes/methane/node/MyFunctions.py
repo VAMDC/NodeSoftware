@@ -18,7 +18,7 @@ def checkChemicalName(restrictable,operator,string):
 def checkStoichiometricFormula(restrictable,operator,string):
     value = string.strip('\'"')
     value = value.upper()
-    if value == 'H4C' and operator in ('=','=='):
+    if value == 'CH4' and operator in ('=','=='):
         return Q(pk=F('pk'))
     else:
         return ~Q(pk=F('pk'))

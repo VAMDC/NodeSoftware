@@ -98,7 +98,7 @@ RETURNABLES = CaselessDict({\
 'MoleculeChemicalName':'Methane',
 'MoleculeCASRegistryNumber':'Molecule.casregnum',
 'MoleculeOrdinaryStructuralFormula':'Molecule.formtex',
-'MoleculeStoichiometricFormula':'H4C',
+'MoleculeStoichiometricFormula':'CH4',
 'MoleculeSpeciesID': 'Molecule.isotopeid',
 'MoleculeInchi':'Molecule.inchi',
 'MoleculeInchiKey':'Molecule.inchikey',
