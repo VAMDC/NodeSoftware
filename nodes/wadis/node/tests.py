@@ -230,6 +230,17 @@ class TapSyncTest(TestCase):
 		else:
 			self.fail("Sources is empty")
 
+	def testSyncWavelength(self):
+		settings.DEBUG = DEBUG
+		sql = "SELECT All WHERE RadTransWavelength > 0 AND RadTransWavelength < 4000"
+		self.queryDict["QUERY"] = sql
+		self.request.REQUEST = self.queryDict
+
+		content = views.sync(self.request).content
+		objTree = objectify.fromstring(content)
+		removeSelfSource(objTree)
+		actual = etree.tostring(objTree, pretty_print=True)
+		xsamsXSD.assertValid(objTree)
 
 	def testSyncSelectSaga2_co2(self):
 		settings.DEBUG = DEBUG

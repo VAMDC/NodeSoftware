@@ -20,23 +20,57 @@
 						<rule>
 							<math xmlns="http://www.w3.org/1998/Math/MathML">
 								<apply>
-									<or/>
+									<and/>
 									<apply>
-										<eq/>
+										<or/>
 										<apply>
-											<abs/>
+											<eq/>
 											<apply>
-												<minus/>
-												<ci>TotalAngularMomentum#UpperStateRef</ci>
-												<ci>TotalAngularMomentum#LowerStateRef</ci>
+												<abs/>
+												<apply>
+													<minus/>
+													<ci>TotalAngularMomentum#UpperStateRef</ci>
+													<ci>TotalAngularMomentum#LowerStateRef</ci>
+												</apply>
 											</apply>
+											<cn>1</cn>
 										</apply>
-										<cn>1</cn>
+										<apply>
+											<eq/>
+											<ci>TotalAngularMomentum#UpperStateRef</ci>
+											<ci>TotalAngularMomentum#LowerStateRef</ci>
+										</apply>
 									</apply>
 									<apply>
-										<eq/>
-										<ci>TotalAngularMomentum#UpperStateRef</ci>
-										<ci>TotalAngularMomentum#LowerStateRef</ci>
+										<not/>
+										<apply>
+											<and/>
+											<apply>
+												<or/>
+												<apply>
+													<eq/>
+													<ci>TotalAngularMomentum#UpperStateRef</ci>
+													<cn>0</cn>
+												</apply>
+												<apply>
+													<eq/>
+													<ci>TotalAngularMomentum#LowerStateRef</ci>
+													<cn>0</cn>
+												</apply>
+											</apply>
+											<apply>
+												<neq/>
+												<apply>
+													<abs/>
+													<apply>
+														<minus/>
+														<ci>TotalAngularMomentum#UpperStateRef</ci>
+														<ci>TotalAngularMomentum#LowerStateRef</ci>
+													</apply>
+												</apply>
+												<cn>1</cn>
+											</apply>
+										</apply>
 									</apply>
 								</apply>
 							</math>
@@ -44,6 +78,7 @@
 					</xs:appinfo>
 				</xs:annotation>
 			</xs:element>
+
 			<xs:element name="atomRuleT02" type="xs:boolean" nillable="true" minOccurs="0">
 				<xs:annotation>
 					<xs:appinfo>
