@@ -449,6 +449,15 @@ def makeArgumentType(tagname, keyword, G):
     string += "</%s>" % tagname
     return string
 
+def makeParameterType(tagname, keyword, G):
+    """
+    Build ParameterType
+
+    """
+    string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword))
+    string += "<Description>%s</Description>" % G("%sDescription" % keyword)
+    string += "</%s>" % tagname
+    return string
 
 def checkXML(obj,methodName='XML'):
     """
@@ -1126,7 +1135,8 @@ def XsamsMSBuild(MoleculeState):
             GE = lambda name: GetValue(name, Expansion=Expansion)
             yield makePrimaryType("StateExpansion", "MoleculeStateExpansion", GE)
             for i,val in enumerate(makeiter(G("MoleculeStateExpansionCoeff"))):
-                yield "<Coeff stateRef=S%s-B%s>%s</Coeff>" % (G('NODEID'),makeiter(G("MoleculeStateExpansionCoeffStateRef"))[i],val)
+               #yield "<Coeff stateRef=S%s-B%s>%s</Coeff>" % (G('NODEID'),makeiter(G("MoleculeStateExpansionCoeffStateRef"))[i],val)
+                yield '<Coeff basisStateRef="SB%s-%s">%s</Coeff>' % (G('NODEID'),makeiter(G("MoleculeStateExpansionCoeffStateRef"))[i],val)
             yield "</StateExpansion>"
 
     yield '</MolecularState>'
@@ -1138,8 +1148,10 @@ def XsamsBSBuild(MoleculeBasisState):
         yield ret
     else:
         yield makePrimaryType("BasisState", "BasisState", G,
-            extraAttr={"stateID":'S%s-B%s' % (G('NodeID'),
-                                              G('BasisStateID')),})
+           #extraAttr={"stateID":'S%s-B%s' % (G('NodeID'),
+           #                                  G('BasisStateID')),})
+            extraAttr={"basisStateID":'SB%s-%s' % (G('NodeID'),
+                                                   G('BasisStateID')),})
         cont, ret = checkXML(G("BasisStateQuantumNumbers"))
         if cont:
             yield ret
@@ -1418,6 +1430,7 @@ def XsamsRadTrans(RadTrans):
         yield makeDataType('WeightedOscillatorStrength', 'RadTransProbabilityWeightedOscillatorStrength', G)
         yield makeDataType('Log10WeightedOscillatorStrength', 'RadTransProbabilityLog10WeightedOscillatorStrength', G)
         yield makeDataType('IdealisedIntensity', 'RadTransProbabilityIdealisedIntensity', G)
+        yield makeOptionalTag('Multipole','RadTransProbabilityMultipole',G)
         yield makeOptionalTag('TransitionKind','RadTransProbabilityKind',G)
         yield makeDataType('EffectiveLandeFactor', 'RadTransEffectiveLandeFactor', G)
         yield '</Probability>\n'
@@ -1886,7 +1899,8 @@ def XsamsFunctions(Functions):
             yield "<LowerLimit>%s</LowerLimit>" % lowlim
         hilim = G("FunctionYUpperLimit")
         if hilim:
-            yield "<UpperLimit>%s</UpperLimit>"
+           #yield "<UpperLimit>%s</UpperLimit>"
+            yield "<UpperLimit>%s</UpperLimit>" % hilim
         yield "</Y>"
 
         yield "<Arguments>\n"
@@ -1903,25 +1917,45 @@ def XsamsFunctions(Functions):
 
         if hasattr(Function, "Parameters"):
             yield "<Parameters>"
-            for Parameter in makeiter(Function.Parameters):
+           #for Parameter in makeiter(Function.Parameters):
+           #
+           #    cont, ret = checkXML(Parameter)
+           #    if cont:
+           #        yield ret
+           #        continue
+           #
+           #    GP = lambda name: GetValue(name, Parameter=Parameter)
+           #    yield "<Parameter name='%s', units='%s'>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
+           #    desc = GP("FunctionParameterDescription")
+           #    if desc:
+           #        yield "<Description>%s</Description>" % desc
+           #    yield "</Parameter>\n"
+            for FunctionParameter in Function.Parameters:
 
-                cont, ret = checkXML(Parameter)
+                cont, ret = checkXML(FunctionParameter)
                 if cont:
                     yield ret
                     continue
 
-                GP = lambda name: GetValue(name, Parameter=Parameter)
-                yield "<Parameter name='%s', units='%s'>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
-                desc = GP("FunctionParameterDescription")
-                if desc:
-                    yield "<Description>%s</Description>" % desc
-                yield "</Parameter>\n"
+                GP = lambda name: GetValue(name, FunctionParameter=FunctionParameter)
+                yield makeParameterType("Parameter", "FunctionParameter", GP)
             yield "</Parameters>"
 
-        yield """<ReferenceFrame>%s</ReferenceFrame>
-<Description>%s</Description>
-<SourceCodeURL>%s</SourceCodeURL>
-""" % (G("FunctionReferenceFrame"), G("FunctionDescription"), G("FunctionSourceCodeURL"))
+#        yield """<ReferenceFrame>%s</ReferenceFrame>
+#<Description>%s</Description>
+#<SourceCodeURL>%s</SourceCodeURL>
+#""" % (G("FunctionReferenceFrame"), G("FunctionDescription"), G("FunctionSourceCodeURL"))
+        reframe = G("FunctionReferenceFrame")
+        if reframe:
+            yield "<ReferenceFrame>%s</ReferenceFrame>" % reframe
+        descr = G("FunctionDescription")
+        if descr:
+            yield "<Description>%s</Description>" % descr
+        scurl = G("FunctionSourceCodeURL")
+        if scurl:
+            yield "<SourceCodeURL>%s</SourceCodeURL>" % scurl
+        yield '</Function>'
+
     yield '</Functions>'
 
 def XsamsMethods(Methods):
