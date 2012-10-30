@@ -14,10 +14,10 @@ from xml.sax.saxutils import escape
 
 # Setting up filenames
 base = "/vald/vamdc/raw_vald_data/"
-species_list_file = base + 'VALD_list_of_species.txt'
+species_list_file = base + 'VALD_list_of_species.csv'
 vald_cfg_file = base + 'VALD3.cfg'
-vald_file = base + 'vald3_atoms.dat' #.gz # change to vald3_molec.dat.gz for molecules
-terms_file = base + 'terms_atoms.dat' #.gz'
+vald_file = base + 'vald3_atoms_all.dat.gz' #.gz # change to vald3_molec.dat.gz for molecules
+terms_file = base + 'terms_atoms_all.dat.gz' #.gz'
 #vald_file = base + 'vald3_atoms_2000.dat' # change to vald3_molec.dat.gz for molecules
 #terms_file = base + 'terms_atoms_3000.dat'
 ref_file = base + "VALD3_ref.bib"
@@ -82,16 +82,22 @@ def get_method_type(linedata):
     else:
         return 'X'
 
-def get_waveair(linedata):
+def get_wave(linedata):
     """
-    Get measured air wavelengths (converted to vacuum), but only if it's
-    a different value than the Ritz wavelengths (wavevac)
+    Get measured wavelengths if available, otherwise use RITZ wls.
     """
-    waveair = charrange(linedata, 15,30)
-    if waveair == charrange(linedata, 0, 15): # comparing waveair to wavevac
-        return "X"
-    else:
-        return waveair
+    wavemeasured = charrange(linedata, 15,30)
+    waveritz = charrange(linedata, 0,15)
+    return wavemeasured == waveritz and waveritz or wavemeasured
+
+def get_wave_ref(linedata):
+    """
+    Get the correct reference for wave (either from measured or ritz)
+    """
+    if charrange(linedata, 15,30) == charrange(linedata, 0,15): # use ritz ref
+       return charrange(linedata, 25,33)
+    return charrange(linedata, 0,9) # use measured ref
+
 
 NIST_MAP = {"AAA":0.003,"AA":0.01,"A+":0.02,"A":0.03,"B+":0.07,
             "B":0.1,"C+":0.18,"C":0.25,"D+":0.40,"D":0.5,"E":1.0}
@@ -144,18 +150,22 @@ def get_auto_ionization(linedata):
     return linedata.count(":") == 1
 
 MOLECULE_NUM = 10000 # starting id for molecules in species file (atoms before this value)
-def charrange_atom(linedata, molid, ia, ib):
+def bySepNr_atom(linedata, pos):
     """
     This method is to be used to read species data.
     It returns data only if the species currently worked on
-    is an atom and not a molecule. Otherwise return 'X'
+    is an atom and not a molecule. Otherwise return '0'
 
      molid - minimum species id for species to be a molecule
+     pos - comma-position in linedata
      ia,ib - index1, index2
     """
-    if charrange2int(linedata, 0, 7) < molid:
-        return charrange(linedata, ia, ib)
-    return 'X'
+    if bySepNr2int(linedata, 1) < MOLECULE_NUM:
+       return bySepNr(linedata, pos)
+    return '0'
+    #if charrange2int(linedata, 0, 7) < molid:
+    #    return charrange(linedata, ia, ib)
+    #return 'X'
 
 def charrange_escape(linedata, ia, ib):
     """
@@ -173,18 +183,31 @@ def species_component(species_file, outfile):
     """
     outstring = ""
     f = open(species_file, 'r')
+    f.readline() # skip header
     for line in f:
         if line.strip() and (line.strip().startswith('#') or line.strip().startswith('@')):
             continue
-        sid = line[:7].strip()
+        lineparts = line.split(",")
+        #print  len(lineparts), lineparts
+        sid = lineparts[1]
+        # ignore for atoms
         if int(sid) < MOLECULE_NUM:
             continue
-        #import pdb;pdb.set_trace()
         # we have a molecule
-        ncomp = int(line[198:199])
+        ncomp = int(lineparts[9])
         for icomp in range(ncomp):
-            csid = line[200+icomp*8 : 208+icomp*8].strip()
+            csid = lineparts[10 + icomp]
             outstring += '\N;"%s";"%s"\n' % (sid, csid)
+
+        #sid = line[:7].strip()
+        #if int(sid) < MOLECULE_NUM:
+        #    continue
+        ##import pdb;pdb.set_trace()
+        ## we have a molecule
+        #ncomp = int(line[198:199])
+        #for icomp in range(ncomp):
+        #    csid = line[200+icomp*8 : 208+icomp*8].strip()
+        #    outstring += '\N;"%s";"%s"\n' % (sid, csid)
     f.close()
     f = open(outfile, 'w')
     f.write(outstring)
@@ -280,46 +303,43 @@ mapping = [
     # Populate Species model, using the species input file.
     {'outfile':outbase + 'species.dat',
      'infiles':species_list_file,
-     'headlines':16,
+     'headlines':1,
      'commentchar':'#',
      'linemap':[
             {'cname':'id',
-             'cbyte':(charrange, 0,7)},
+             'cbyte':(bySepNr, 1)},
             {'cname':'name',
-             'cbyte':(charrange, 9,19)},
+             'cbyte':(bySepNr, 2)},
             {'cname':'ion',
-             'cbyte':(charrange, 20, 22)},
+             'cbyte':(bySepNr, 3)},
             {'cname':'inchi',
-             'cbyte':(charrange, 23, 54)},
+             'cbyte':(bySepNr, 4)},
             {'cname':'inchikey',
-             'cbyte':(charrange, 55, 82)},
+             'cbyte':(bySepNr, 5)},
             {'cname':'mass',
-             'cbyte':(charrange, 84, 91)},
+             'cbyte':(bySepNr, 6)},
             {'cname':'massno',
-             'cbyte':(charrange2int, 84, 91)},
+             'cbyte':(bySepNr2int, 6)},
             {'cname':'ionen',
-             'cbyte':(charrange, 92, 102)},
-            {'cname':'solariso',
-             'cbyte':(charrange, 103,113)},
-            {'cname':'dissen',
-             'cbyte':(charrange, 115, 123)},
+             'cbyte':(bySepNr, 7)},
+            {'cname':'solariso',#solar isotopic fraction?
+             'cbyte':(bySepNr, 8)},
             {'cname':'ncomp',
-             'cbyte':(charrange, 198, 199)},
+             'cbyte':(bySepNr, 9)},
             # these fields are only filled in the case of atoms.  for
             # molecules, these are X, and the 'components' field is
             # used instead to link to component species. This is
             # filled by the species_component() function at the end of
             # this module.
             {'cname':'atomic',
-             'cbyte':(charrange_atom, MOLECULE_NUM, 200, 202),
-             'cnull':'X'},
+             'cbyte':(bySepNr_atom, 10),
+             'cnull':'0'},
             {'cname':'isotope',
-             'cbyte':(charrange_atom, MOLECULE_NUM, 203, 206),
-             'cnull':'X'},
+             'cbyte':(bySepNr_atom, 11),
+             'cnull':'0'},
             # components field is eventually filled below
             ],
      }, # end of definition for species file
-
 
     # State model read 2 lines at a time from vald3 main file. the term
     # file is grouped with 3 lines (lower,upper,transition_info) for
@@ -353,13 +373,13 @@ mapping = [
              'cbyte':(charrange_escape, 126,212)},
             # read from 2nd open vald file (2nd line per record)
             {'filenum':1,
-             'cname':'energy_ref',
+             'cname':'energy_ref_id',
              'cbyte':(charrange, 17,25)},
             {'filenum':1,
-             'cname':'lande_ref',
+             'cname':'lande_ref_id',
              'cbyte':(charrange, 33,41)},
             {'filenum':1,
-             'cname':'level_ref',
+             'cname':'level_ref_id',
              'cbyte':(charrange, 65,73)},
             # these are read from 1st open term file
             {'filenum':2, # use term file
@@ -402,6 +422,10 @@ mapping = [
              'cname':'sn',
              'cbyte':(get_term_val,'seniority'),
              'cnull':'X',},
+            {'filenum':2, # use term file
+             'cname':'n',
+             'cbyte':(get_term_val,'n'),
+             'cnull':'X',},
             ]
      }, # end of State model creation - lower states
 
@@ -428,15 +452,15 @@ mapping = [
              'cbyte':(charrange_escape, 214,300)},
             # read from 2nd open vald file (2nd line per record)
             {'filenum':1,
-             'cname':'energy_ref',
+             'cname':'energy_ref_id',
              'cbyte':(charrange, 25,33)},
              #'references':(models.Source,'pk')},
             {'filenum':1,
-             'cname':'lande_ref',
+             'cname':'lande_ref_id',
              'cbyte':(charrange, 33,41)},
              #'references':(models.Source,'pk')},
             {'filenum':1,
-             'cname':'level_ref',
+             'cname':'level_ref_id',
              'cbyte':(charrange, 65,73)},
 
             ## links to linelist rather than reference directly
@@ -488,6 +512,10 @@ mapping = [
              'filenum':2, # use term file
              'cbyte':(get_term_val,'seniority'),
              'cnull':'X',},
+            {'filenum':2, # use term file
+             'cname':'n',
+             'cbyte':(get_term_val,'n'),
+             'cnull':'X',},
             ]
      }, # end of upper states
 
@@ -510,17 +538,16 @@ mapping = [
              'cbyte':(unique_state_id, 3,
                       (30,36), (124,126), (58,64), (84,90), (126,212), (44,58))},
                       #(30,36), (122,124), (58,63), (124,170), (44,58))},
-            {'cname':'wavevac',
+            {'cname':'wave',
+             'cbyte':(get_wave,)},
+            {'cname':'waveritz',
              'cbyte':(charrange, 0, 15)},
-            {'cname':'waveair',
-             'cbyte':(get_waveair,),
-             'cnull':'X'},
             {'cname':'species',
              'cbyte':(charrange, 30,36)},
             {'cname':'loggf',
              'cbyte':(charrange, 36,44)},
-            # einstena is calculated in post-processing. We must set NULL for db to accept us though.
 
+            # einstena is calculated in post-processing. We must set NULL for db to accept us though.
             {'cname':'einsteina',
              'cbyte':(constant, 'NULL'),
              'cnull':'NULL'},
@@ -558,22 +585,22 @@ mapping = [
 
             # read from every second line of the vald file
             {'filenum':1,
-             'cname':'wavevac_ref',
+             'cname':'waveritz_ref_id',
              'cbyte':(charrange, 25,33)}, # extracting ref of upper energy level
              {'filenum':1,
-             'cname':'waveair_ref',
-             'cbyte':(charrange, 0,9)},
+             'cname':'wave_ref_id',
+             'cbyte':(get_wave_ref,)},
             {'filenum':1,
-             'cname':'loggf_ref',
+             'cname':'loggf_ref_id',
              'cbyte':(charrange, 9,17)},
             {'filenum':1,
-             'cname':'gammarad_ref',
+             'cname':'gammarad_ref_id',
              'cbyte':(charrange, 41,49)},
             {'filenum':1,
-             'cname':'gammastark_ref',
+             'cname':'gammastark_ref_id',
              'cbyte':(charrange, 49,57)},
             {'filenum':1,
-             'cname':'waals_ref',
+             'cname':'waals_ref_id',
              'cbyte':(charrange, 57,65)},
 
             {'cname':'wave_linelist',
@@ -664,10 +691,9 @@ mapping = [
 # short-cutting the mapping for testing
 #mapping = [mapping[0]] + mapping[2:]
 #mapping = [mapping[1]]
+#mapping = [mapping[-2]]
 
-mapping = [mapping[-2]]
-
-# Stand-alone scrípts (cannot depend on tables created above, these
+# Stand-alone scripts (cannot depend on tables created above, these
 # are run first!)
 
 # create many2many tables

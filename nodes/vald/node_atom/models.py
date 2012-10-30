@@ -24,6 +24,7 @@ class State(Model):
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True)
     sn = PositiveSmallIntegerField(db_column=u'Sn',null=True)
+    n = PositiveSmallIntegerField(db_column=u'n',null=True)
 
     def jj(self):
         if None not in (self.j1, self.j2):
@@ -49,10 +50,8 @@ class Transition(Model):
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True, db_index=False)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, db_index=False)
 
-    #TODO: change wavvac/waveair to waveritz and wavemeasured instead - that's more correct;
-    # both of these are expressed in vacuum.
-    wavevac = DecimalField(max_digits=16, decimal_places=8, db_index=True)
-    waveair = DecimalField(max_digits=16, decimal_places=8, null=True, db_index=False)
+    wave = DecimalField(max_digits=16, decimal_places=8, null=True, db_index=False)
+    waveritz = DecimalField(max_digits=16, decimal_places=8, db_index=True)
 
     species = ForeignKey(Species, db_index=True)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
@@ -68,8 +67,8 @@ class Transition(Model):
     accur = DecimalField(max_digits=6, decimal_places=3, null=True)
     #comment = CharField(max_length=128, null=True)
 
-    wavevac_ref_id = RefCharField(max_length=7, null=True)
-    waveair_ref_id = RefCharField(max_length=7, null=True)
+    wave_ref_id = RefCharField(max_length=7, null=True)
+    waveritz_ref_id = RefCharField(max_length=7, null=True)
     loggf_ref_id = RefCharField(max_length=7, null=True)
     gammarad_ref_id = RefCharField(max_length=7, null=True)
     gammastark_ref_id = RefCharField(max_length=7, null=True)
@@ -93,46 +92,36 @@ class Transition(Model):
     method_return = PositiveSmallIntegerField(null=True, db_index=False) # this is the method category, populated in post-processing by parsing wave_linelist field
     method_restrict = PositiveSmallIntegerField(null=True, db_index=True) # this is the method category to restrict on, populated in post-processing.
 
-    def waves(self):
-        if self.waveair: return self.wavevac, self.waveair
-        else: return self.wavevac
-
-    WAVE_COMMENT = ['Vacuum wavelength from state energies (RITZ)','Vacuum wavelength from measurements (non-RITZ)']
-
-    def wavecomment(self):
-        if self.waveair: return self.WAVE_COMMENT
-        else: return self.WAVE_COMMENT[0]
-
-    def waverefs(self):
-        if self.waveair:
-            return self.wavevac_ref_id + self.waveair_ref_id
-        else: return self.wavevac_ref_id
-
-    def getWaals(self):
+    # helper extraction methods
+    def get_waves(self):
+        return self.wave, self.waveritz
+    def get_wave_comments(self):
+        return 'Vacuum wavelength from state energies (RITZ)','Vacuum wavelength from measurements (non-RITZ)'
+    def get_wave_refs(self):
+        return self.wave_ref_id, self.waveritz_ref_id
+    def get_waals(self):
         if self.gammawaals: return self.gammawaals
         elif self.sigmawaals and self.alphawaals: return [self.sigmawaals, self.alphawaals]
         else: return ""
-    def getWaalsName(self):
+    def get_waals_name(self):
         if self.gammawaals: return "log(gamma)"
         elif self.sigmawaals and self.alphawaals: return ["gamma", "alpha"]
         else: return ""
-    def getWaalsUnits(self):
+    def get_waals_units(self):
         if self.gammawaals: return "cm3/s"
         elif self.sigmawaals and self.alphawaals: return ["m", "unitless"]
         else: return ""
-    def getWaalsFunction(self):
+    def get_waals_function(self):
         if self.gammawaals: return "waals"
         elif self.sigmawaals and self.alphawaals: return "waals-barklem"
         else: return ""
-
-    def getAccurType(self):
+    def get_accur_type(self):
         "retrieve the right AccurType type depending on the VALD accur flag"
         if self.accurflag in (u"N", u"E"): return u"estimated"
         elif self.accurflag == u'C': return u"arbitrary"
         elif self.accurflag == u'P': return u"systematic"
         else: return ""
-
-    def getAccurRelative(self):
+    def get_accur_relative(self):
         "retrieve AccuracyRelative tag as true/false depending on VALD accur flag"
         return str(self.accurflag in (u"N", u"E", u"C")).lower() # returns true/false
 
@@ -142,7 +131,7 @@ class Transition(Model):
 #        return (0.667025e16 * 10**self.loggf) / ((2 * self.upstate.j + 1.0) * self.wave**2)
 
     def __unicode__(self):
-        return u'ID:%s Wavel: %s'%(self.id,self.wavevac)
+        return u'ID:%s Wavel: %s' % (self.id, self.wave)
     class Meta:
         db_table = u'transitions'
 

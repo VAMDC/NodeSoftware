@@ -29,6 +29,6 @@ mysql --verbose -u "$VUSR" -p"$VPWD" "$VDB" < load.sql
 echo "done."
 
 # this does not seem to be necessary anymore.
-# echo -n "Creating database indexes... "
-# ./manage.py sqlindexes node | mysql -u "$VUSR" -p"$VPWD" "$VDB"
-# echo "done."
+echo -n "Creating database indexes... "
+./manage.py sqlindexes node | mysql -u "$VUSR" -p"$VPWD" "$VDB"
+echo "done."

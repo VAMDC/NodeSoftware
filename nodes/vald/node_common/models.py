@@ -22,7 +22,6 @@ class Species(Model):
     massno = PositiveSmallIntegerField(null=True, db_index=True)
     ionen = DecimalField(max_digits=10, decimal_places=3, null=True)
     solariso = DecimalField(max_digits=6, decimal_places=4, null=True)
-    dissen = DecimalField(max_digits=8, decimal_places=4, null=True)
     ncomp = PositiveSmallIntegerField(null=True)
     atomic = PositiveSmallIntegerField(null=True, db_index=True)
     isotope = PositiveSmallIntegerField(null=True)
@@ -46,6 +45,16 @@ class SpeciesComp(Model):
     atom = ForeignKey(Species,related_name='atom')
     class Meta:
         db_table = u'species_components'
+
+class TransRef(Model):
+    """
+    This is just the intermediary model so that we can quickly find
+    all References related to a given Transition. It's populated manually.
+    """
+    transid = IntegerField(db_index=True)
+    refid = CharField(max_length=7)
+    class Meta:
+        db_table = u"transitions_references"
 
 class Reference(Model):
     id = CharField(max_length=7, primary_key=True, db_index=True)
