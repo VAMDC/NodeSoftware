@@ -166,7 +166,7 @@ def makePartitionfunc(keyword, G):
     unit = G(keyword+'Unit')
     partitionfunc = G(keyword+'Q')
     comments = G(keyword+'Comments')
-    # Nuclear Spin Isomer Information 
+    # Nuclear Spin Isomer Information
     nsilowrovibsym = G(keyword+'NSILowestRoVibSym')
     nsiname = G(keyword+'NSIName')
     nsisymgroup = G(keyword+'NSISymGroup')
@@ -178,7 +178,7 @@ def makePartitionfunc(keyword, G):
         unit = [unit]
         partitionfunc = [partitionfunc]
         comments = [comments]
-        # Nuclear Spin Isomer Information 
+        # Nuclear Spin Isomer Information
         nsilowrovibsym = [nsilowrovibsym]
         nsiname = [nsiname]
         nsisymgroup = [nsisymgroup]
@@ -203,7 +203,7 @@ def makePartitionfunc(keyword, G):
             string += "<Name>%s</Name>" % nsiname[i]
             string += "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (nsisymgroup[i], nsilowrovibsym[i])
             string += "</NuclearSpinIsomer>"
-        
+
         string += '</PartitionFunction>'
     return string
 
@@ -252,7 +252,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     value = G(keyword)
     if not value:
         return ''
-    
+
     unit = G(keyword + 'Unit')
     method = G(keyword + 'Method')
     comment = G(keyword + 'Comment')
@@ -286,7 +286,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
             string += '<Comments>%s</Comments>' % escape('%s' % comment[i])
         string += makeSourceRefs(refs[i])
         string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
-        string += makeEvaluation( keyword, G, j=i) 
+        string += makeEvaluation( keyword, G, j=i)
         if acc[i]:
             string += '<Accuracy>%s</Accuracy>' % acc[i]
 
@@ -365,7 +365,7 @@ def makeEvaluation(keyword, G, j=None):
             ev_meth = makeiter( G(keyword + 'EvalMethod')[j], nevs )
         except IndexError:
             ev_meth = makeiter( None, nevs)
-        try:    
+        try:
             ev_reco = makeiter( G(keyword + 'EvalRecommended')[j], nevs )
         except IndexError:
             ev_reco = makeiter(None, nevs)
@@ -795,7 +795,6 @@ def XsamsAtoms(Atoms):
                 yield ret
                 continue
             G = lambda name: GetValue(name, AtomState=AtomState)
-#            yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
             yield makePrimaryType("AtomicState", "AtomicState", G,
                                   extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('AtomStateID')),
                                              "auxillary":G("AtomStateAuxillary")})
@@ -1077,7 +1076,7 @@ def XsamsMSBuild(MoleculeState):
         yield "<Name>%s</Name>" % G("MoleculeStateNSIName")
         yield "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (G('MoleculeStateNSISymGroup'), G('MoleculeStateNSILowestRoVibSym'))
         yield "</NuclearSpinIsomer>"
- 
+
     if G("MoleculeStateLifeTime"):
         # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
         # the decay attr is a string, either: 'total', 'totalRadiative' or 'totalNonRadiative'
@@ -1148,8 +1147,6 @@ def XsamsBSBuild(MoleculeBasisState):
         yield ret
     else:
         yield makePrimaryType("BasisState", "BasisState", G,
-           #extraAttr={"stateID":'S%s-B%s' % (G('NodeID'),
-           #                                  G('BasisStateID')),})
             extraAttr={"basisStateID":'SB%s-%s' % (G('NodeID'),
                                                    G('BasisStateID')),})
         cont, ret = checkXML(G("BasisStateQuantumNumbers"))
@@ -1899,7 +1896,6 @@ def XsamsFunctions(Functions):
             yield "<LowerLimit>%s</LowerLimit>" % lowlim
         hilim = G("FunctionYUpperLimit")
         if hilim:
-           #yield "<UpperLimit>%s</UpperLimit>"
             yield "<UpperLimit>%s</UpperLimit>" % hilim
         yield "</Y>"
 
@@ -1917,20 +1913,7 @@ def XsamsFunctions(Functions):
 
         if hasattr(Function, "Parameters"):
             yield "<Parameters>"
-           #for Parameter in makeiter(Function.Parameters):
-           #
-           #    cont, ret = checkXML(Parameter)
-           #    if cont:
-           #        yield ret
-           #        continue
-           #
-           #    GP = lambda name: GetValue(name, Parameter=Parameter)
-           #    yield "<Parameter name='%s', units='%s'>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
-           #    desc = GP("FunctionParameterDescription")
-           #    if desc:
-           #        yield "<Description>%s</Description>" % desc
-           #    yield "</Parameter>\n"
-            for FunctionParameter in Function.Parameters:
+            for FunctionParameter in makeiter(Function.Parameters):
 
                 cont, ret = checkXML(FunctionParameter)
                 if cont:
@@ -1940,11 +1923,6 @@ def XsamsFunctions(Functions):
                 GP = lambda name: GetValue(name, FunctionParameter=FunctionParameter)
                 yield makeParameterType("Parameter", "FunctionParameter", GP)
             yield "</Parameters>"
-
-#        yield """<ReferenceFrame>%s</ReferenceFrame>
-#<Description>%s</Description>
-#<SourceCodeURL>%s</SourceCodeURL>
-#""" % (G("FunctionReferenceFrame"), G("FunctionDescription"), G("FunctionSourceCodeURL"))
         reframe = G("FunctionReferenceFrame")
         if reframe:
             yield "<ReferenceFrame>%s</ReferenceFrame>" % reframe
@@ -2126,145 +2104,3 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     log.debug('Done with XSAMS')
 
 
-#
-################# Virtual Observatory TABLE GENERATORS ####################
-#
-# Obs - not updated to latest versions
-
-def sources2votable(sources):
-    """
-    Sources to VO
-    """
-    for source in sources:
-        yield ''
-
-def states2votable(states):
-    """
-    States to VO
-    """
-    yield """<TABLE name="states" ID="states">
-      <DESCRIPTION>The States that are involved in transitions</DESCRIPTION>
-      <FIELD name="species name" ID="specname" datatype="char" arraysize="*"/>
-      <FIELD name="energy" ID="energy" datatype="float" unit="1/cm"/>
-      <FIELD name="id" ID="id" datatype="int"/>
-      <FIELD name="charid" ID="charid" datatype="char" arraysize="*"/>
-      <DATA>
-        <TABLEDATA>"""
-
-    for state in states:
-        yield  '<TR><TD>not implemented</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>' % (state.energy, state.id, state.charid)
-    yield """</TABLEDATA></DATA></TABLE>"""
-
-def transitions2votable(transs, count):
-    """
-    Transition to VO
-    """
-    if type(transs) == type([]):
-        n = len(transs)
-    else:
-        transs.count()
-    yield u"""<TABLE name="transitions" ID="transitions">
-      <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>
-      <FIELD name="wavelength (air)" ID="airwave" datatype="float" unit="Angstrom"/>
-      <FIELD name="wavelength (vacuum)" ID="vacwave" datatype="float" unit="Angstrom"/>
-      <FIELD name="log(g*f)"   ID="loggf" datatype="float"/>
-      <FIELD name="effective lande factor" ID="landeff" datatype="float"/>
-      <FIELD name="radiative gamma" ID="gammarad" datatype="float"/>
-      <FIELD name="stark gamma" ID="gammastark" datatype="float"/>
-      <FIELD name="waals gamma" ID="gammawaals" datatype="float"/>
-      <FIELD name="upper state id" ID="upstateid" datatype="char" arraysize="*"/>
-      <FIELD name="lower state id" ID="lostateid" datatype="char" arraysize="*"/>
-      <DATA>
-        <TABLEDATA>""" % (count or n, n)
-    for trans in transs:
-        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n' % (trans.airwave, trans.vacwave, trans.loggf,
-                                                                                                                                   trans.landeff , trans.gammarad ,trans.gammastark ,
-                                                                                                                                   trans.gammawaals , trans.upstateid, trans.lostateid)
-    yield """</TABLEDATA></DATA></TABLE>"""
-
-
-
-def votable(transitions, states, sources, totalcount=None):
-    """
-    VO base definition
-    """
-
-    yield """<?xml version="1.0"?>
-<!--
-<?xml-stylesheet type="text/xml" href="http://vamdc.fysast.uu.se:8888/VOTable2XHTMLbasic.xsl"?>
--->
-<VOTABLE version="1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xmlns="http://www.ivoa.net/xml/VOTable/v1.2"
- xmlns:stc="http://www.ivoa.net/xml/STC/v1.30" >
-  <RESOURCE name="queryresults">
-    <DESCRIPTION>
-    </DESCRIPTION>
-    <LINK></LINK>
-"""
-    for source in sources2votable(sources):
-        yield source
-    for state in states2votable(states):
-        yield state
-    for trans in transitions2votable(transitions,totalcount):
-        yield trans
-    yield """
-</RESOURCE>
-</VOTABLE>
-"""
-
-#######################
-
-def transitions2embedhtml(transs,count):
-    """
-    Converting Transition to html
-    """
-
-    if type(transs) == type([]):
-        n = len(transs)
-    else:
-        transs.count()
-        n = transs.count()
-    yield u"""<TABLE name="transitions" ID="transitions">
-      <DESCRIPTION>%d transitions matched the query. %d are shown here:</DESCRIPTION>
-      <FIELD name="AtomicNr" ID="atomic" datatype="int"/>
-      <FIELD name="Ioniz" ID="ion" datatype="int"/>
-      <FIELD name="wavelength (air)" ID="airwave" datatype="float" unit="Angstrom"/>
-      <FIELD name="log(g*f)"   ID="loggf" datatype="float"/>
-   <!--   <FIELD name="effective lande factor" ID="landeff" datatype="float"/>
-      <FIELD name="radiative gamma" ID="gammarad" datatype="float"/>
-      <FIELD name="stark gamma" ID="gammastark" datatype="float"/>
-      <FIELD name="waals gamma" ID="gammawaals" datatype="float"/>
-  -->    <FIELD name="upper state id" ID="upstateid" datatype="char" arraysize="*"/>
-      <FIELD name="lower state id" ID="lostateid" datatype="char" arraysize="*"/>
-      <DATA>
-        <TABLEDATA>"""%(count or n, n)
-
-    for trans in transs:
-        yield  '<TR><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD><TD>%s</TD></TR>\n' % (trans.species.atomic, trans.species.ion,
-                                                                                                  trans.airwave, trans.loggf,) #trans.landeff , trans.gammarad ,
-                                                                                                  #trans.gammastark , trans.gammawaals , xmlEscape(trans.upstateid), xmlEscape(trans.lostateid))
-    yield '</TABLEDATA></DATA></TABLE>'
-
-def embedhtml(transitions,totalcount=None):
-    """
-    Embed html
-    """
-
-    yield """<?xml version="1.0"?>
-<!--
-<?xml-stylesheet type="text/xml" href="http://vamdc.fysast.uu.se:8888/VOTable2XHTMLbasic.xsl"?>
--->
-<VOTABLE version="1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xmlns="http://www.ivoa.net/xml/VOTable/v1.2"
- xmlns:stc="http://www.ivoa.net/xml/STC/v1.30" >
-  <RESOURCE name="queryresults">
-    <DESCRIPTION>
-    </DESCRIPTION>
-    <LINK></LINK>
-"""
-    for trans in transitions2embedhtml(transitions, totalcount):
-        yield trans
-    yield """
-</RESOURCE>
-</VOTABLE>
-"""
