@@ -46,6 +46,17 @@ class SpeciesComp(Model):
     class Meta:
         db_table = u'species_components'
 
+class TransRef(Model):
+    """
+    This is the intermediary model so that transitions can
+    refer to references
+    """
+    trans_id = BigIntegerField(db_index=False) # note - index is created in sql. Note for next import: Not really needing a BigIntegerField.
+    ref_id = CharField(max_length=7)
+    class Meta:
+        db_table = u"transitions_references"
+
+
 class Reference(Model):
     id = CharField(max_length=7, primary_key=True, db_index=True)
     bibtex = TextField(null=True)

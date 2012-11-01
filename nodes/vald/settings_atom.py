@@ -35,5 +35,6 @@ SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
 DEPLOY_URL = 'http://vald.astro.uu.se/atoms-dev/tap/'
 
 LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode.log'
+#LOGGING['handlers']['logfile']['filename'] = '/tmp/test_atomnode.log'
 if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'

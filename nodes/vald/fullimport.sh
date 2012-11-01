@@ -7,6 +7,7 @@ AorM="atom"
 VDB="vald_atom"
 VUSR="vald"
 VPWD="V@ld"
+Node="node_atom"
 
 #echo
 #echo -n "Running rewrite... "
@@ -30,5 +31,5 @@ echo "done."
 
 # this does not seem to be necessary anymore.
 echo -n "Creating database indexes... "
-./manage.py sqlindexes node | mysql -u "$VUSR" -p"$VPWD" "$VDB"
+./manage.py sqlindexes $Node | mysql -u "$VUSR" -p"$VPWD" "$VDB"
 echo "done."
