@@ -166,7 +166,7 @@ def makePartitionfunc(keyword, G):
     unit = G(keyword+'Unit')
     partitionfunc = G(keyword+'Q')
     comments = G(keyword+'Comments')
-    # Nuclear Spin Isomer Information 
+    # Nuclear Spin Isomer Information
     nsilowrovibsym = G(keyword+'NSILowestRoVibSym')
     nsiname = G(keyword+'NSIName')
     nsisymgroup = G(keyword+'NSISymGroup')
@@ -178,7 +178,7 @@ def makePartitionfunc(keyword, G):
         unit = [unit]
         partitionfunc = [partitionfunc]
         comments = [comments]
-        # Nuclear Spin Isomer Information 
+        # Nuclear Spin Isomer Information
         nsilowrovibsym = [nsilowrovibsym]
         nsiname = [nsiname]
         nsisymgroup = [nsisymgroup]
@@ -203,7 +203,7 @@ def makePartitionfunc(keyword, G):
             string += "<Name>%s</Name>" % nsiname[i]
             string += "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (nsisymgroup[i], nsilowrovibsym[i])
             string += "</NuclearSpinIsomer>"
-        
+
         string += '</PartitionFunction>'
     return string
 
@@ -252,7 +252,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     value = G(keyword)
     if not value:
         return ''
-    
+
     unit = G(keyword + 'Unit')
     method = G(keyword + 'Method')
     comment = G(keyword + 'Comment')
@@ -286,7 +286,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
             string += '<Comments>%s</Comments>' % escape('%s' % comment[i])
         string += makeSourceRefs(refs[i])
         string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
-        string += makeEvaluation( keyword, G, j=i) 
+        string += makeEvaluation( keyword, G, j=i)
         if acc[i]:
             string += '<Accuracy>%s</Accuracy>' % acc[i]
 
@@ -365,7 +365,7 @@ def makeEvaluation(keyword, G, j=None):
             ev_meth = makeiter( G(keyword + 'EvalMethod')[j], nevs )
         except IndexError:
             ev_meth = makeiter( None, nevs)
-        try:    
+        try:
             ev_reco = makeiter( G(keyword + 'EvalRecommended')[j], nevs )
         except IndexError:
             ev_reco = makeiter(None, nevs)
@@ -1068,7 +1068,7 @@ def XsamsMSBuild(MoleculeState):
         yield "<Name>%s</Name>" % G("MoleculeStateNSIName")
         yield "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (G('MoleculeStateNSISymGroup'), G('MoleculeStateNSILowestRoVibSym'))
         yield "</NuclearSpinIsomer>"
- 
+
     if G("MoleculeStateLifeTime"):
         # note: currently only supporting 0..1 lifetimes (xsams dictates 0..3)
         # the decay attr is a string, either: 'total', 'totalRadiative' or 'totalNonRadiative'
@@ -1349,7 +1349,7 @@ def XsamsRadTranShifting(RadTran):
                     if hasattr(ShiftingParam, "Fit"):
                         for Fit in makeiter(ShiftingParam.Fits):
                             GSF = lambda name: GetValue(name, Fit=Fit)
-                            string += "<FitParameters functionRef=F%s-%s>" % (NODEID, GSF("RadTransShiftingParamFitFunction"))
+                            string += "<FitParameters functionRef='F%s-%s>'" % (NODEID, GSF("RadTransShiftingParamFitFunction"))
 
                             # hard-code to avoid yet anoter named loop variable
                             for name, units, desc, llim, ulim in makeloop("RadTransShiftingParamFitArgument", GSF, "Name", "Units", "Description", "LowerLimit", "UpperLimit"):
@@ -1911,17 +1911,16 @@ def XsamsFunctions(Functions):
                     continue
 
                 GP = lambda name: GetValue(name, Parameter=Parameter)
-                yield "<Parameter name='%s', units='%s'>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
+                yield "<Parameter name='%s' units='%s'>" % (GP("FunctionParameterName"), GP("FunctionParameterUnits"))
                 desc = GP("FunctionParameterDescription")
                 if desc:
                     yield "<Description>%s</Description>" % desc
                 yield "</Parameter>\n"
             yield "</Parameters>"
-
         yield """<ReferenceFrame>%s</ReferenceFrame>
-<Description>%s</Description>
-<SourceCodeURL>%s</SourceCodeURL>
-""" % (G("FunctionReferenceFrame"), G("FunctionDescription"), G("FunctionSourceCodeURL"))
+                 <Description>%s</Description>
+                 <SourceCodeURL>%s</SourceCodeURL>""" % (G("FunctionReferenceFrame"), G("FunctionDescription"), G("FunctionSourceCodeURL"))
+        yield '</Function>'
     yield '</Functions>'
 
 def XsamsMethods(Methods):
