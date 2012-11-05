@@ -16,16 +16,17 @@ load data infile '/vald/vamdc/db_input_files/transitions.dat' ignore into table 
 
 update transitions t, states s set t.einsteina=(0.667025*POWER(10,16) * POWER(10,t.loggf)) / ((2.0 * s.j + 1.0) * POWER(t.wave,2)) where t.upstate=s.id;
 
-create index speciesid_wave on transitions (species_id, wave);
+-- create the mapping transitions <-> references for quick ref
+-- retrieval during querying
+insert into transitions_references (trans_id, ref_id)(select id, wave_ref_id from transitions);
+insert into transitions_references (trans_id, ref_id)(select id, waveritz_ref_id from transitions);
+insert into transitions_references (trans_id, ref_id)(select id, loggf_ref_id from transitions);
+insert into transitions_references (trans_id, ref_id)(select id, gammarad_ref_id from transitions);
+insert into transitions_references (trans_id, ref_id)(select id, gammastark_ref_id from transitions);
+insert into transitions_references (trans_id, ref_id)(select id, waals_ref_id from transitions);
+insert into transitions_references (trans_id, ref_id)(select transitions.id,states.energy_ref_id from transitions,states where transitions.upstate=states.id or transitions.lostate=states.id);
+insert into transitions_references (trans_id, ref_id)(select transitions.id,states.lande_ref_id from transitions,states where transitions.upstate=states.id or transitions.lostate=states.id);
+insert into transitions_references (trans_id, ref_id)(select transitions.id,states.level_ref_id from transitions,states where transitions.upstate=states.id or transitions.lostate=states.id);
+-- creating the index here
+create index tidx on transitions_references (trans_id);
 
--- fixing a mal-named bibtex reference (kept here for reference, remove
--- if fixed in raw data dump next update)
-update transitions t set t.wave_ref_id="K11" where t.wave_ref_id="K11P";
-update transitions t set t.waveritz_ref_id="K11" where t.waveritz_ref_id="K11P";
-update transitions t set t.loggf_ref_id="K11" where t.loggf_ref_id="K11P";
-update transitions t set t.gammarad_ref_id="K11" where t.gammarad_ref_id="K11P";
-update transitions t set t.gammastark_ref_id="K11" where t.gammastark_ref_id="K11P";
-update transitions t set t.waals_ref_id="K11" where t.waals_ref_id="K11P";
-update states s set s.energy_ref_id="K11" where s.energy_ref_id="K11P";
-update states s set s.lande_ref_id="K11" where s.lande_ref_id="K11P";
-update states s set s.level_ref_id="K11" where s.level_ref_id="K11P";

@@ -16,8 +16,8 @@ from xml.sax.saxutils import escape
 base = "/vald/vamdc/raw_vald_data/"
 species_list_file = base + 'VALD_list_of_species.csv'
 vald_cfg_file = base + 'VALD3.cfg'
-vald_file = base + 'vald3_atoms_all.dat.gz' #.gz # change to vald3_molec.dat.gz for molecules
-terms_file = base + 'terms_atoms_all.dat.gz' #.gz'
+vald_file = base + 'vald3_atoms_all.dat' #.gz # change to vald3_molec.dat.gz for molecules
+terms_file = base + 'terms_atoms_all.dat' #.gz'
 #vald_file = base + 'vald3_atoms_2000.dat' # change to vald3_molec.dat.gz for molecules
 #terms_file = base + 'terms_atoms_3000.dat'
 ref_file = base + "VALD3_ref.bib"
@@ -214,68 +214,16 @@ def species_component(species_file, outfile):
     f.close()
     print "... Created file %s." % outfile
 
-
-
-## mapper for caching the connections between upper/lower state IDS and
-## their respective unique pk values. This depends on a MySQL database
-## vald_import exists. We create four database connections to be able
-## to handle multi-processing for each individual point where the
-## linefunc unique_state_id() is accessed.
-## OBS - this is less efficient than the dictionary version below.
-
-# import MySQLd
-#
-# CURSORS = [MySQLdb.connect(host="localhost", user="vald", passwd="V@ld", db="vald_import").cursor() for i in range(4)]
-# #CURSORS[0].execute("DROP TABLE IF EXISTS mapping;")
-# #CURSORS[0].execute("CREATE TABLE mapping (idnum INT PRIMARY KEY AUTO_INCREMENT UNIQUE NOT NULL, charid VARCHAR(255) UNIQUE NOT NULL, INDEX(charid, idnum));") #ENGINE=MEMORY);
-# SQL_INSERT = "INSERT IGNORE INTO mapping (charid) VALUES('%s');"
-# SQL_SELECT = "SELECT * from mapping where charid='%s';"
-# def unique_state_id(linedata, cursorid, *ranges):
-#     """
-#     Check charid against temporary database, return a
-#     matching unique and incrememntal ID, or create a new one.
-
-#     linedata - current line in indata file
-#     cursorid - index of CURSORS list referencing the database
-#                cursor to use for this access.
-#     *ranges - line indices (tuple of tuples) to build charid from
-#     """
-#     cursor = CURSORS[cursorid]
-#     charid = merge_cols(linedata, *ranges)
-#     cursor.execute(SQL_SELECT % charid.replace("'","--"))
-#     result = cursor.fetchone()
-
-#     if result:
-#         # state already stored previously. Rerunning.
-#         if cursorid in (0, 1):
-#             # no point in adding a new line to one of the states input files.
-#             #print "charid exists. Skipping line."
-#             raise RuntimeError
-#         # transitions.dat should still update though.
-#         #print "old id:",
-#         idnum = result[0]
-#     else:
-#         # create a new store for charid
-#         #print " new row:",
-#         cursor.execute(SQL_INSERT % charid.replace("'","--"))
-#         idnum = cursor.lastrowid
-#     if not idnum:
-#         # this is a rare condition where two processes try to create a
-#         # new row with the same charid at exactly the same time.
-#         cursor.execute(SQL_SELECT % charid.replace("'","--"))
-#         idnum, charid = cursor.fetchone()
-#     #print cursorid, charid, idnum
-#     return idnum
-
-# Alternative import mechanism to the mysql-based on above. This one
-# uses a dictionary - the state table is pretty small and can thus fit in
-# memory; Using the MySQL-based mapper above takes 4157 mins (2 days 21 hours)
+# Multiprocess id-creator mechanism using a dictionary and multiprocess-locks to make sure
+# state ids are unique already at the import stage. The state table is pretty small and can thus fit in
+# memory; Using the old MySQL-based mapper (now deleted) took 4157 mins (2 days 21 hours)
 # for a rewrite. Using this solution takes 3442 mins (2 days 9 hours) on the same data.
 
 from multiprocessing import Manager, Lock
 from ctypes import c_int
 MANAGER = Manager()
-LOCK = Lock()
+LOCK1 = Lock()
+LOCK2 = Lock()
 DBID = MANAGER.Value(c_int, 0)
 STATEDICT = MANAGER.dict()
 def unique_state_id(linedata, processid, *ranges):
@@ -283,18 +231,22 @@ def unique_state_id(linedata, processid, *ranges):
     global STATEDICT
     charid = merge_cols(linedata, *ranges)
     idnum = None
-    if charid in STATEDICT:
-        if processid in (0, 1): raise RuntimeError
-        else: idnum = STATEDICT[charid]
-    else:
-        global DBID
-        with LOCK:
+
+    with LOCK1:
+        # lock things down and set an updated id
+        if not charid in STATEDICT:
+            global DBID
             idnum = DBID.value + 1
             DBID.value = idnum
-            STATEDICT[charid] = idnum
-            #print "adding charid %s with dbid %s." % (charid, DBID.value)
-    if idnum: return idnum
-    return STATEDICT[charid]
+            STATEDICT[charid] = (idnum, processid)
+            return idnum
+    with LOCK2:
+        idnum, setproc = STATEDICT[charid]
+        if processid in (0, 1) and setproc in (0, 1):
+            # don't store a new one if the value was set by up/lowstate parsing
+            raise RuntimeError
+        return idnum
+
 
 #------------------------------------------------------------
 # The mapping itself

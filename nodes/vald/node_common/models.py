@@ -48,13 +48,14 @@ class SpeciesComp(Model):
 
 class TransRef(Model):
     """
-    This is just the intermediary model so that we can quickly find
-    all References related to a given Transition. It's populated manually.
+    This is the intermediary model so that transitions can
+    refer to references
     """
-    transid = IntegerField(db_index=True)
-    refid = CharField(max_length=7)
+    trans_id = BigIntegerField(db_index=False) # note - index is created in sql. Note for next import: Not really needing a BigIntegerField.
+    ref_id = CharField(max_length=7)
     class Meta:
         db_table = u"transitions_references"
+
 
 class Reference(Model):
     id = CharField(max_length=7, primary_key=True, db_index=True)

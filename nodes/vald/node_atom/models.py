@@ -50,7 +50,7 @@ class Transition(Model):
     upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True, db_index=False)
     lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, db_index=False)
 
-    wave = DecimalField(max_digits=16, decimal_places=8, null=True, db_index=False)
+    wave = DecimalField(max_digits=16, decimal_places=8, db_index=True)
     waveritz = DecimalField(max_digits=16, decimal_places=8, db_index=True)
 
     species = ForeignKey(Species, db_index=True)

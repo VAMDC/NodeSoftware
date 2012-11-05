@@ -66,9 +66,9 @@ def getBaseURL(request):
     return getattr(settings, 'DEPLOY_URL', None) or \
         'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
 
-def getFormatLastModified(lastmodified):    
+def getFormatLastModified(lastmodified):
     return http_date(time.mktime(lastmodified.timetuple()))
-    
+
 
 class TAPQUERY(object):
     """

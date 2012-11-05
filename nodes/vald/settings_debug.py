@@ -9,12 +9,12 @@ NODEPKG=NODENAME+'.node_atom'
 INSTALLED_APPS.append(NODEPKG)
 
 DATABASES = {
-  'default': {    
+  'default': {
     'ENGINE': 'django.db.backends.mysql',
     'NAME': 'vald_atom_test',
     'USER': 'vald',
     'PASSWORD': 'V@ld',
-  },	
+  },
   'valdx-innodb': {
     'ENGINE': 'django.db.backends.mysql',
     'NAME': 'valdx',
@@ -22,7 +22,7 @@ DATABASES = {
     'PASSWORD': 'V@ld',
 #    'OPTIONS': {
 #           "init_command": "SET storage_engine=INNODB",
-#    }   
+#    }
   },
   'valdx': {
     'ENGINE': 'django.db.backends.mysql',
