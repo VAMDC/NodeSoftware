@@ -27,6 +27,7 @@ RESTRICTABLES = {\
 
 RETURNABLES = {\
 'NodeID':u'chianti', # Constant value
+'XSAMSVersion':u'1.0',
 
 'MethodID':'Method.id',
 'MethodCategory':'Method.category',
@@ -39,10 +40,13 @@ RETURNABLES = {\
 'AtomInchiKey':'Atom.inchikey',
 'AtomStateId':'AtomState.id',
 'AtomStateTotalAngMom':'AtomState.atomstatetotalangmom',
+'AtomStateParity':'AtomState.parity',
+'AtomStateStatisticalWeight':'(2*AtomState.atomstatetotalangmom)+1',
 'AtomStateEnergy':'AtomState.energy',
 'AtomStateEnergyMethod':'AtomState.energyMethod',
 'AtomStateEnergyUnit':u'1/cm',
 'AtomStateDescription':'AtomState.atomstateconfigurationlabel',
+'AtomStateRef':'AtomState.sourceIds()',
 
 'AtomStateTermLSS':'Component.lss',
 'AtomStateTermLSL':'Component.lsl',

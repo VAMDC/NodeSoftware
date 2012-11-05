@@ -4,13 +4,16 @@
 # The latter also needs to be a string! (stupid in some cases,
 # I know, but more robust)
 
+import sys
+infty = str(sys.float_info.max)
+
 # a decotrator to catch ZeroDivisionError
 def catchZeroDivision(fu):
     def catcher(op,val):
         try:
             return fu(op,val)
         except ZeroDivisionError:
-            return [invertOperator(op), '9.99E99']
+            return [invertOperator(op), infty]
         except:
             raise
     return catcher
