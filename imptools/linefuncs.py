@@ -40,8 +40,8 @@ def charrange(linedata, start, end):
     try:
         return linedata[start:end].strip()
     except Exception, e:
-        #print "charrange skipping '%s': %s (%s)" % (linedata, e)
-        pass
+        print "charrange skipping '%s': %s (%s)" % (linedata, e)
+        raise
 
 def charrange2int(linedata, start, end):
     """
@@ -56,15 +56,15 @@ def charrange2int(linedata, start, end):
     try:
         return int(round(float(linedata[start:end].strip())))
     except Exception, e:
-        #print "ERROR: charrange2int: %s: %s" % (linedata, e)
-        pass
+        print "ERROR: charrange2int: %s: %s" % (linedata, e)
+        raise
 
 def bySepNr(linedata, number, sep=','):
     try:
         return string.split(linedata,sep)[number].strip()
     except Exception, e:
-        pass
-        #print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
+        print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
+        raise
 
 def bySepNr2(linedata, number, sep=','):
     """
@@ -81,8 +81,8 @@ def bySepNr2(linedata, number, sep=','):
     try:
         return linedata.split(sep)[number].strip()
     except Exception, e:
-        pass
-        #print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
+        print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
+        raise
 
 def bySepNr2int(linedata, number, sep=','):
     """
@@ -97,7 +97,7 @@ def bySepNr2int(linedata, number, sep=','):
         return int(round(float(linedata.split(sep)[number].strip())))
     except Exception, e:
         print "ERROR: bySepNr2int skipping line '%s':%s" %(linedata, e)
-        pass
+        raise
 
 def lineSplit(linedata, splitsep=','):
     """
@@ -115,8 +115,7 @@ def lineSplit(linedata, splitsep=','):
         return [string.strip() for string in linedata.split(splitsep)]
     except Exception, e:
         #print "ERROR: linesplit %s: %s" % (linedata, e)
-        pass
-
+        raise
 
 #
 # VALD-specific examples below

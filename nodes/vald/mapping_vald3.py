@@ -17,7 +17,7 @@ base = "/vald/vamdc/raw_vald_data/"
 species_list_file = base + 'VALD_list_of_species.csv'
 vald_cfg_file = base + 'VALD3.cfg'
 vald_file = base + 'vald3_atoms_all.dat' #.gz # change to vald3_molec.dat.gz for molecules
-terms_file = base + 'terms_atoms_all.dat' #.gz'
+terms_file = base + 'term_atoms_all.dat.gz'
 #vald_file = base + 'vald3_atoms_2000.dat' # change to vald3_molec.dat.gz for molecules
 #terms_file = base + 'terms_atoms_3000.dat'
 ref_file = base + "VALD3_ref.bib"
@@ -640,10 +640,19 @@ mapping = [
 
      ]
 
+# indices:
+# 0 - species
+# 1 - lowstates
+# 2 - upstates
+# 3 - transitions
+# 4 - references
+# 5 - linelists
+
 # short-cutting the mapping for testing
 #mapping = [mapping[0]] + mapping[2:]
 #mapping = [mapping[1]]
 #mapping = [mapping[-2]]
+#mapping = [mapping[1], mapping[2]]
 
 # Stand-alone scripts (cannot depend on tables created above, these
 # are run first!)
