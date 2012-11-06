@@ -66,9 +66,9 @@ def getBaseURL(request):
     return getattr(settings, 'DEPLOY_URL', None) or \
         'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
 
-def getFormatLastModified(lastmodified):    
+def getFormatLastModified(lastmodified):
     return http_date(time.mktime(lastmodified.timetuple()))
-    
+
 
 class TAPQUERY(object):
     """
@@ -171,6 +171,10 @@ def addHeaders(headers,response):
     for h in HEADS:
         if headers.has_key(h):
             response['VAMDC-'+h] = '%s'%headers[h]
+
+    if headers.has_key('LAST-MODIFIED'):
+        response['Last-Modified'] = '%s'%headers['LAST-MODIFIED']
+
     return response
 
 def sync(request):

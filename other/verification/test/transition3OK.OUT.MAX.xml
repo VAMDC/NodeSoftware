@@ -287,7 +287,7 @@
 								</AtomicNumericalData>
 								<AtomicQuantumNumbers>
 									<Parity>odd</Parity>
-									<TotalAngularMomentum>5.0</TotalAngularMomentum>
+									<TotalAngularMomentum>0.0</TotalAngularMomentum>
 								</AtomicQuantumNumbers>
 								<AtomicComposition>
 									<Component>
@@ -321,7 +321,7 @@
 									</LandeFactor>
 								</AtomicNumericalData>
 								<AtomicQuantumNumbers>
-									<TotalAngularMomentum>3.0</TotalAngularMomentum>
+									<TotalAngularMomentum>0.0</TotalAngularMomentum>
 									<Parity>odd</Parity>
 								</AtomicQuantumNumbers>
 								<AtomicComposition>

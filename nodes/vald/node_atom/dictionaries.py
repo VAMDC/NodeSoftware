@@ -37,19 +37,20 @@ RETURNABLES = {\
 'AtomStateTermJKS':'Component.s2',
 'AtomStateTermLKL':'Component.l',
 'AtomStateTermLKK':'Component.k',
-#'AtomStateTermLKLSymbol':"",          #TODO
-'AtinStateTernKJS2':'Component.s2',
+#'AtomStateTermLKLSymbol':"",
+'AtomStateTermKJS2':'Component.s2',
+'AtomStateShellPrincipalQN':'Component.n',
 
 #############################################################
 'RadTransID':'RadTran.id',
 'RadTransSpeciesRef':'RadTran.species_id',
-'RadTransWavelength':'RadTran.waves()',
+'RadTransWavelength':'RadTran.get_waves()',
+'RadTransWavelengthComment': 'RadTran.get_wave_comments()',
+'RadTransWavelengthRef':'RadTran.get_wave_refs()',
 'RadTransWavelengthUnit':u'A',
 'RadTransWavelengthMethod':'RadTran.method_return',
-'RadTransWavelengthComment': 'RadTran.wavecomment()',
 #'RadTransProcess':"RadTran.transition_type",
 'RadTransProcess':"excitation",
-'RadTransWavelengthRef':'RadTran.waverefs()',
 'RadTransUpperStateRef':'RadTran.upstate_id',
 'RadTransLowerStateRef':'RadTran.lostate_id',
 #'RadTransProbabilityA':'RadTran.einsteina',
@@ -75,20 +76,20 @@ RETURNABLES = {\
 'RadTransBroadeningPressureChargedComment':"Stark Broadening",
 'RadTransBroadeningPressureChargedLineshapeFunction':"stark",
 
-'RadTransBroadeningPressureNeutralLineshapeParameter':'RadTran.getWaals()',
+'RadTransBroadeningPressureNeutralLineshapeParameter':'RadTran.get_waals()',
 'RadTransBroadeningPressureNeutralLineshapeName':'lorentzian',
 'RadTransBroadeningPressureNeutralLineshapeParameterName':'log(gamma)',
 'RadTransBroadeningPressureNeutralLineshapeParameterUnit':'1/cm3/s',
-'RadTransBroadeningPressureNeutralLineshapeParameterName':'RadTran.getWaalsName()',  #'log(gamma)',
-'RadTransBroadeningPressureNeutralLineshapeParameterUnit':'RadTran.getWaalsUnits()', #'cm3/s',
+'RadTransBroadeningPressureNeutralLineshapeParameterName':'RadTran.get_waals_name()',  #'log(gamma)',
+'RadTransBroadeningPressureNeutralLineshapeParameterUnit':'RadTran.get_waals_units()', #'cm3/s',
 'RadTransBroadeningPressureNeutralRef':'RadTran.waals_ref_id',
 'RadTransBroadeningPressureNeutralEnvironment':'waals',
 'RadTransBroadeningPressureNeutralComment':"Van der Waals broadening",
-'RadTransBroadeningPressureNeutralLineshapeFunction':"RadTran.getWaalsFunction()",
+'RadTransBroadeningPressureNeutralLineshapeFunction':"RadTran.get_waals_function()",
 
 'RadTransProbabilityOscillatorStrengthAccuracy':'Radtran.accur',
-'RadTransProbabilityOscillatorStrengthAccuracyType':'Radtran.getAccurType()',
-'RadTransProbabilityOscillatorStrengthAccuracyRelative':'Radtran.getAccurRelative()'
+'RadTransProbabilityOscillatorStrengthAccuracyType':'Radtran.get_accur_type()',
+'RadTransProbabilityOscillatorStrengthAccuracyRelative':'Radtran.get_accur_relative()'
 }
 
 # import the converter functions
@@ -108,10 +109,10 @@ RESTRICTABLES = {\
 'StateEnergy':bothStates,
 'Lower.StateEnergy':'lostate__energy',
 'Upper.StateEnergy':'upstate__energy',
-'RadTransWavelength':'wavevac',
-'RadTransWavenumber':('wavevac',invcm2Angstr),
-'RadTransFrequency':('wavevac',Hz2Angstr),
-'RadTransEnergy':('wavevac',eV2Angstr),
+'RadTransWavelength':'wave',
+'RadTransWavenumber':('wave',invcm2Angstr),
+'RadTransFrequency':('wave',Hz2Angstr),
+'RadTransEnergy':('wave',eV2Angstr),
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 'RadTransBroadeningNatural':'gammarad',
 'RadTransBroadeningPressure':'gammastark',

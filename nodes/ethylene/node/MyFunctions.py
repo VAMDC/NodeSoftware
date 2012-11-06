@@ -23,5 +23,19 @@ def checkStoichiometricFormula(restrictable,operator,string):
     else:
         return ~Q(pk=F('pk'))
 
+#  function rather table->fields for EnvironmentTemperature
+
+def checkEnvironmentTemperature(restrictable,operator,string):
+    value = string.strip('\'"')
+    value = float(value)
+    if value == 296. and operator in ('=','==','<=','>='):
+        return Q(pk=F('pk'))
+    elif value > 296. and operator in ('<','<='):
+        return Q(pk=F('pk'))
+    elif value < 296. and operator in ('>','>='):
+        return Q(pk=F('pk'))
+    else:
+        return ~Q(pk=F('pk'))
+
 ######################################################################
 
