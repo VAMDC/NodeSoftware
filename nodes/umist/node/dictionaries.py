@@ -111,6 +111,12 @@ RETURNABLES = {\
 'MoleculeOrdinaryStructuralFormula':'Molecule.struct_name',
 'MoleculeVAMDCSpeciesID':'Molecule.vamdc_species_id',
 'MoleculeMolecularWeight':'Molecule.mass',
+'MoleculeStoichiometricFormula':'Molecule.stoic_formula',
+
+'ParticleName':'Particle.comments',
+'ParticleSpeciesID':'Particle.id',
+'ParticleCharge':'Particle.charge',
+'ParticleComment':'Particle.names',
 
 # 2012-01-25 KWS For the new standards we will use the ordinary standard
 #                inchikey - not vamdc_inchikey
@@ -127,7 +133,10 @@ RESTRICTABLES = {\
 'MoleculeInChIKey':'reaction__species__inchikey',
 'InchiKey':'reaction__species__inchikey',
 'MoleculeInChI':'reaction__species__inchi',
-'Inchi':'reaction__species__inchi',
 'MoleculeChemicalName':'reaction__species__names',
+'VAMDCSpeciesID':'reaction__species__vamdc_species_id',
+'MoleculeStoichiometricFormula':'reaction__species__stoic_formula',
+#'MoleculeChemicalName':'',
+#'MoleculeOrdinaryStructuralFormula':'',
 }
 
