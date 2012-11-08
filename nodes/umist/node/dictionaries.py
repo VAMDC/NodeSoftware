@@ -17,6 +17,7 @@ ExampleNode dictionary definitions.
 
 RETURNABLES = {\
 'NodeID':'umist',
+'XSAMSVersion':'1.0',
 
 'SourceID':'Source.id',
 'SourceAuthorName':'Source.authorlist',
@@ -39,7 +40,7 @@ RETURNABLES = {\
 'CollisionReactantSpecies':'Reactant.id',
 
 'CollisionDataSetRef':'DataSet.Ref',
-'CollisionDataSetDescription':'DataSet.Description',
+'CollisionDataSetDescription':'rateCoefficient',
 # 2012-10-30 KWS Commented out TabulatedDataSets for the time being
 #'CollisionTabulatedDataXDataList' : 'TabData.xdata',
 #'CollisionTabulatedDataXUnits' : 'TabData.xdataunit',
@@ -55,9 +56,9 @@ RETURNABLES = {\
 'FunctionArgumentDescription':'FunctionArgument.description',
 'FunctionArgumentName':'FunctionArgument.name',
 'FunctionArgumentUnits':'FunctionArgument.units',
-'FunctionParameterDescription':'Parameter.description',
-'FunctionParameterName':'Parameter.name',
-'FunctionParameterUnits':'Parameter.units',
+'FunctionParameterDescription':'FunctionParameter.description',
+'FunctionParameterName':'FunctionParameter.name',
+'FunctionParameterUnits':'FunctionParameter.units',
 #'FunctionSourceRef':'Function.sourceref',
 
 'FunctionComputerLanguage':'Function.computer_language',
@@ -102,12 +103,13 @@ RETURNABLES = {\
 'AtomSpeciesID':'Atom.id',
 'AtomInchi':'Atom.inchi',
 'AtomInchiKey':'Atom.inchikey',
-'AtomSpeciesID':'Atom.vamdc_species_id',
 'AtomNuclearCharge':'Atom.nuclear_charge',
 'AtomIonCharge':'Atom.charge',
 'AtomSymbol':'Atom.stoic_no_charge',
 
 'MoleculeSpeciesID':'Molecule.id',
+'MoleculeInChI':'Molecule.inchi',
+'MoleculeInChIKey':'Molecule.inchikey',
 'MoleculeOrdinaryStructuralFormula':'Molecule.struct_name',
 'MoleculeVAMDCSpeciesID':'Molecule.vamdc_species_id',
 'MoleculeMolecularWeight':'Molecule.mass',
@@ -118,10 +120,6 @@ RETURNABLES = {\
 'ParticleCharge':'Particle.charge',
 'ParticleComment':'Particle.names',
 
-# 2012-01-25 KWS For the new standards we will use the ordinary standard
-#                inchikey - not vamdc_inchikey
-'MoleculeInChI':'Molecule.inchi',
-'MoleculeInChIKey':'Molecule.inchikey',
 }
 
 # The restrictable dictionary defines limitations to the search. 
