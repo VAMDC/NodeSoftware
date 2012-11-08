@@ -10,7 +10,7 @@
 import sys
 from django.db.models import Q
 from django.conf import settings
-from vamdctap.sqlparse import where2q
+from vamdctap.sqlparse import where2q, sql2Q
 
 import dictionaries
 from models import *
@@ -22,29 +22,24 @@ log = logging.getLogger('vamdc.node.queryfu')
 class EmptyClass:
     """Empty class to add attributes dynamically to"""
 
-def setupResults(sql):
-    """
-    This function is always called by the software.
-    """
-    # log the incoming query
-    log.debug('sql input: %s'%sql)
-
+def constrainedResults(sql, q, limit):
     # convert the incoming sql to a correct django query syntax object 
     # based on the RESTRICTABLES dictionary in dictionaries.py
     # (where2q is a helper function to do this for us).
-    q = where2q(sql.where, dictionaries.RESTRICTABLES)
-    try: 
-        q = eval(q) # test queryset syntax validity
-    except: 
-        return {}
+
+    #q = where2q(sql.where, dictionaries.RESTRICTABLES)
+
+
+    #try: 
+    #    q = eval(q) # test queryset syntax validity
+    #except Exception, e: 
+    #    log.debug(e)
+    #    return {}
 
     #react_ds = RxnData.objects.filter(pk__in=(2,4,3862,3863,7975,7976))
     react_ds = RxnData.objects.filter(q, network_id=3)
 
-    # count the number of matches, make a simple trunkation if there are
-    # too many (record the coverage in the returned header)
-    nreacts=react_ds.count()
-    log.debug('number of reaction data: %s'%nreacts)
+    log.debug('Number of reaction data rows: %s' % react_ds.count())
 
     #sources = Source.objects.filter(pk__in=set(react_ds.values_list('ref_id', flat=True))) 
     sources = SourceAll.objects.filter(abbr__in=set(react_ds.values_list('ref_id', flat=True))) 
@@ -54,10 +49,10 @@ def setupResults(sql):
     #    else:
     #        source.authorlist = []
 
-    nsources = sources.count()
 
     # Get only the relevant reactions
     reacts = Reaction.objects.filter(pk__in=set(react_ds.values_list('reaction_id', flat=True)))
+
 
     # Get only the relevant species
     species = Species.objects.filter(pk__in=reacts.values_list('species'))
@@ -152,31 +147,99 @@ def setupResults(sql):
 
         rea.DataSets.append(dataset)
 
+    return react_ds, atoms, molecules, particles, sources, functions, methods
 
 
 
+def speciesOnlyResults(sql, q, limit):
 
-    log.debug('done setting up the QuerySets')
+    # Get ALL the species.  Don't need the Q object for the time being.
+    # The code currently returns ONLY species for which we have an
+    # inchikey (more precisely, vamdc_species_id).
+    # The code is also required to return all Particles.
+
+    species = Species.objects.filter(Q(vamdc_species_id__isnull=False) | Q(type=3))
+
+    atoms = species.filter(type=1)
+    molecules = species.filter(type=2)
+    particles = species.filter(type=3)
+
+    return atoms, molecules, particles
+
+
+def query(sql, limit):
+    # log the incoming query
+    log.debug('SQL input: %s' % sql)
+
+    q = sql2Q(sql)
+
+    if len(sql.where) > 0:
+        # It's a constrained query
+        react_ds, atoms, molecules, particles, sources, functions, methods = constrainedResults(sql, q, limit)
+        nsources = sources.count()
+        nreacts = react_ds.count()
+        nmolecules = molecules.count()
+        natoms = atoms.count()
+        nparticles = particles.count()
+    elif ('%s' % sql).upper() == 'SELECT SPECIES':
+        # Assume it's a species only query
+        atoms, molecules, particles = speciesOnlyResults(sql, q, limit)
+        methods = {}
+        react_ds = {}
+        sources = {}
+        functions = {}
+        methods = {}
+        nreacts = 0
+        nmolecules = molecules.count()
+        natoms = atoms.count()
+        nparticles = particles.count()
+    else:
+        return {}
+
+
+    log.debug('Done setting up the QuerySets')
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
     headerinfo={\
-            'COUNT-ATOMS':atoms.count(),
-            'COUNT-MOLECULES':molecules.count(),
-            'COUNT-COLLISIONS':nreacts,
+            'COUNT-ATOMS':natoms,
+            'COUNT-MOLECULES':nmolecules,
+            'COUNT-SPECIES':nmolecules+natoms+nparticles,
             }
 
     # Return the data. The keynames are standardized. 
     # 2012-02-14 KWS As per Guy's message - return an empty dict if there is no data.
     if nreacts > 0:
+        headerinfo['COUNT-COLLISIONS'] = nreacts
         return {\
+                'HeaderInfo':headerinfo,
                 'CollTrans':react_ds,
                 'Atoms':atoms,
                 'Molecules':molecules,
                 'Particles':particles,
                 'Sources':sources,
-                'HeaderInfo':headerinfo,
                 'Functions':functions,
                 'Methods':methods
                }
+    elif nreacts == 0 and (nmolecules > 0 or natoms > 0 or nparticles > 0):
+        return {\
+                'HeaderInfo':headerinfo,
+                'Atoms':atoms,
+                'Molecules':molecules,
+                'Particles':particles,
+               }
     else:
         return {}
+
+
+def setupResults(sql, limit = 100000):
+    """
+    This function is always called by the software.
+    """
+
+    try:
+        return query(sql, limit)
+    except Exception, e:
+        log.debug(e)
+        raise e
+
+
