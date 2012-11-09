@@ -7,8 +7,6 @@ The config file for importing VALD into a database.
 Go to http://vamdc.tmy.se/doc/importing.html
 for understanding what happens below.
 """
-import os, sys
-
 from imptools.linefuncs import *
 from xml.sax.saxutils import escape
 
@@ -142,6 +140,38 @@ def get_term_transtype(linedata):
         # autoionizing or malformed line
         return 'X'
 
+def get_species_part(linedata, ipos, retint=False, sep=","):
+    """
+    Variation to sepByNumber taking into account that
+    inchi can sometimes also contain a comma - in that
+    case all following positions must be shifted accordingly.
+    retint (bool) - return as integer rather than string
+    """
+    splits = linedata.split(sep)
+    if splits[4].startswith('"'):
+        # inchicode starts with ", this means it contains a comma
+        if ipos == 4:
+            return (splits[4] + splits[5]).strip('"')
+        elif ipos > 4:
+            # shift position
+            ipos += 1
+    # return normally
+    return retint and int(round(float(splits[ipos].strip()))) or splits[ipos].strip()
+
+MOLECULE_START = 10000 # starting id for molecules in species file (atoms lower than this value)
+def get_species_part_atom(linedata, pos):
+    """
+    This method is to be used to read species data.
+    It returns data only if the species currently worked on
+    is an atom and not a molecule. Otherwise return '0'
+
+     pos - comma-position in linedata
+     ia,ib - index1, index2
+    """
+    if bySepNr2int(linedata, 1) < MOLECULE_START:
+       return get_species_part(linedata, pos)
+    return '0'
+
 def get_auto_ionization(linedata):
     """
     In the case of Autoionization, the line looks like this:
@@ -149,23 +179,6 @@ def get_auto_ionization(linedata):
     """
     return linedata.count(":") == 1
 
-MOLECULE_NUM = 10000 # starting id for molecules in species file (atoms before this value)
-def bySepNr_atom(linedata, pos):
-    """
-    This method is to be used to read species data.
-    It returns data only if the species currently worked on
-    is an atom and not a molecule. Otherwise return '0'
-
-     molid - minimum species id for species to be a molecule
-     pos - comma-position in linedata
-     ia,ib - index1, index2
-    """
-    if bySepNr2int(linedata, 1) < MOLECULE_NUM:
-       return bySepNr(linedata, pos)
-    return '0'
-    #if charrange2int(linedata, 0, 7) < molid:
-    #    return charrange(linedata, ia, ib)
-    #return 'X'
 
 def charrange_escape(linedata, ia, ib):
     """
@@ -191,7 +204,7 @@ def species_component(species_file, outfile):
         #print  len(lineparts), lineparts
         sid = lineparts[1]
         # ignore for atoms
-        if int(sid) < MOLECULE_NUM:
+        if int(sid) < MOLECULE_START:
             continue
         # we have a molecule
         ncomp = int(lineparts[9])
@@ -200,7 +213,7 @@ def species_component(species_file, outfile):
             outstring += '\N;"%s";"%s"\n' % (sid, csid)
 
         #sid = line[:7].strip()
-        #if int(sid) < MOLECULE_NUM:
+        #if int(sid) < MOLECULE_START:
         #    continue
         ##import pdb;pdb.set_trace()
         ## we have a molecule
@@ -258,36 +271,37 @@ mapping = [
      'headlines':1,
      'commentchar':'#',
      'linemap':[
+            # pos 0 should be ignored
             {'cname':'id',
-             'cbyte':(bySepNr, 1)},
+             'cbyte':(get_species_part, 1)},
             {'cname':'name',
-             'cbyte':(bySepNr, 2)},
+             'cbyte':(get_species_part, 2)},
             {'cname':'ion',
-             'cbyte':(bySepNr, 3)},
+             'cbyte':(get_species_part, 3)},
             {'cname':'inchi',
-             'cbyte':(bySepNr, 4)},
+             'cbyte':(get_species_part, 4)},
             {'cname':'inchikey',
-             'cbyte':(bySepNr, 5)},
+             'cbyte':(get_species_part, 5)},
             {'cname':'mass',
-             'cbyte':(bySepNr, 6)},
+             'cbyte':(get_species_part, 6)},
             {'cname':'massno',
-             'cbyte':(bySepNr2int, 6)},
+             'cbyte':(get_species_part, 6, True)}, # return rounded to integer
             {'cname':'ionen',
-             'cbyte':(bySepNr, 7)},
+             'cbyte':(get_species_part, 7)},
             {'cname':'solariso',#solar isotopic fraction?
-             'cbyte':(bySepNr, 8)},
+             'cbyte':(get_species_part, 8)},
             {'cname':'ncomp',
-             'cbyte':(bySepNr, 9)},
+             'cbyte':(get_species_part, 9)},
             # these fields are only filled in the case of atoms.  for
             # molecules, these are X, and the 'components' field is
             # used instead to link to component species. This is
             # filled by the species_component() function at the end of
             # this module.
             {'cname':'atomic',
-             'cbyte':(bySepNr_atom, 10),
+             'cbyte':(get_species_part_atom, 10),
              'cnull':'0'},
             {'cname':'isotope',
-             'cbyte':(bySepNr_atom, 11),
+             'cbyte':(get_species_part_atom, 11),
              'cnull':'0'},
             # components field is eventually filled below
             ],
