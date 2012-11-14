@@ -142,7 +142,7 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
     r, op, foo = rs[0], rs[1], rs[2:]
     if r not in restrictables:
         log.debug('Restrictable "%s" not supported!'%r)
-        return QFalse
+        raise Exception('Restrictable "%s" not supported!'%r)
 
     rest_rhs = restrictables[r]
 
@@ -218,9 +218,10 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
     return q
 
 def sql2Q(sql):
-    if not sql.where:
-        return Q()
     log.debug('Starting sql2Q.')
+    if not sql.where:
+        log.debug('Treating missing WHERE clause as False')
+        return QFalse
     logic,rs,count = splitWhere(sql.where)
     log.debug('splitWhere() returned: logic: %s\nrs: %s\ncount: %s'%(logic,rs,count))
     qdict = {}
