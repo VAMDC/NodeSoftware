@@ -8,6 +8,9 @@ def setupSQLparser():
     ident = Word( alphas, alphanums+'.' ).setName("identifier")
     columnName     = delimitedList( ident, ",", )#combine=True )
     columnNameList = Group( delimitedList( columnName ) )
+    fromToken   = Keyword("from", caseless=True)
+    tableName      = delimitedList( ident, ".", combine=True )
+    tableNameList  = Group( delimitedList( tableName ) )
     whereExpression = Forward()
     and_ = Keyword("and", caseless=True)
     or_ = Keyword("or", caseless=True)
@@ -34,6 +37,7 @@ def setupSQLparser():
                          Optional(CaselessLiteral('count')).setResultsName("count")  +
                          Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") +
                          ( oneOf('* ALL', caseless=True) | columnNameList ).setResultsName( "columns" ) +
+                         Optional(Group(fromToken + tableNameList)).setResultsName( "from" ) +
                          Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) +
                          Optional(ZeroOrMore(CaselessLiteral(";")|CaselessLiteral(" ")))
                          )
