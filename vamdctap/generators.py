@@ -21,7 +21,7 @@ except:
 try:
     XSAMS_VERSION = RETURNABLES['XSAMSVersion']
 except:
-    XSAMS_VERSION = '0.3'
+    XSAMS_VERSION = '1.0'
 try:
     SCHEMA_LOCATION = RETURNABLES['SchemaLocation']
 except:
