@@ -244,6 +244,7 @@ def capabilities(request):
                                  "STANDARDS_VERSION" : settings.VAMDC_STDS_VERSION,
                                  "SOFTWARE_VERSION" : settings.NODESOFTWARE_VERSION,
                                  "EXAMPLE_QUERIES" : settings.EXAMPLE_QUERIES,
+                                 "MIRRORS" : settings.MIRRORS,
                                  })
     return render_to_response('tap/capabilities.xml', c, mimetype='text/xml')
 
