@@ -2,6 +2,17 @@
 
 # UMIST Modified Database Tables for compatibility with VAMDC and XSAMS
 
+ACCURACY = {'A': 'within 25%',
+            'B': 'within 50%',
+            'C': 'within a factor of 2',
+            'D': 'within an order of magnitude',
+            'E': 'highly uncertain',
+            '1': '1: not stated',
+            '2': '2: not stated',
+            '3': '3: not stated',
+            '4': '4: not stated',
+            '8': '8: not stated'}
+
 from django.db import models
 
 class Species(models.Model):
@@ -19,9 +30,18 @@ class Species(models.Model):
     cometary = models.IntegerField()
     inchikey = models.CharField(max_length=90, blank=True)
     inchi = models.TextField(blank=True)
-    vamdc_inchikey = models.CharField(max_length=90, blank=True)
-    vamdc_inchi = models.TextField(blank=True)
     type = models.IntegerField(db_column='species_type')
+    stoic_formula = models.CharField(max_length=150, blank=True)
+    charge = models.IntegerField(null=True, blank=True)
+    vamdc_species_id = models.CharField(max_length=120, blank=True)
+    nuclear_charge = models.IntegerField(null=True, blank=True)
+    comments = models.CharField(max_length=765, blank=True)
+
+    @property
+    def stoic_no_charge(self):
+        symbol = self.stoic_formula.replace('-','').replace('+','')
+        return symbol
+
     class Meta:
         db_table = u'new_species'
 
@@ -30,6 +50,7 @@ class ReacTypes(models.Model):
     id = models.IntegerField(primary_key=True, db_column='rt_id')
     type = models.CharField(max_length=765, blank=True)
     abbr = models.CharField(max_length=4, blank=True)
+    function_id = models.IntegerField(null=True, blank=True)
     class Meta:
         db_table = u'new_reac_types'
 
@@ -39,6 +60,34 @@ class Source(models.Model):
     url = models.CharField(max_length=765, blank=True)
     class Meta:
         db_table = u'new_source'
+
+class SourceAll(models.Model):
+    id = models.IntegerField(primary_key=True)
+    abbr = models.CharField(max_length=12)
+    url = models.CharField(max_length=765, blank=True)
+    category = models.CharField(max_length=150, blank=True)
+    sourcename = models.CharField(max_length=150, blank=True)
+    year = models.CharField(max_length=150, blank=True)
+    authors = models.CharField(max_length=2304, blank=True)
+    title = models.CharField(max_length=2304, blank=True)
+    volume = models.CharField(max_length=150, blank=True)
+    doi = models.CharField(max_length=300, blank=True)
+    bibcode = models.CharField(max_length=300, blank=True)
+    articlenumber = models.CharField(max_length=300, blank=True)
+    pagebegin = models.CharField(max_length=60, blank=True)
+    pageend = models.CharField(max_length=60, blank=True)
+    publisher = models.CharField(max_length=300, blank=True)
+    comments = models.CharField(max_length=765, blank=True)
+
+    @property
+    def authorlist(self):
+        authorList = []
+        if self.authors:
+            authorList = self.authors.split('|')
+        return authorList
+
+    class Meta:
+        db_table = u'new_source_all'
 
 class Reaction(models.Model):
     id = models.IntegerField(primary_key=True, db_column='reaction_id')
@@ -97,7 +146,51 @@ class RxnData(models.Model):
     user_id = models.IntegerField(null=True, blank=True)
     prv_rd_id = models.IntegerField(null=True, blank=True)
     watch = models.IntegerField(null=True, blank=True)
+
+    @property
+    def accuracy(self):
+        try:
+            a = ACCURACY[self.acc]
+        except KeyError, e:
+            a = 'undefined'
+        return a
+
     class Meta:
         db_table = u'new_rxn_data'
 
 
+#2012-10-30 KWS Added new functions tables
+
+class FunctionParamsArgs(models.Model):
+    id = models.IntegerField(primary_key=True)
+    function_id = models.IntegerField()
+    name = models.CharField(max_length=120)
+    units = models.CharField(max_length=120)
+    description = models.CharField(max_length=300, blank=True)
+    lower_limit = models.FloatField(null=True, blank=True)
+    upper_limit = models.FloatField(null=True, blank=True)
+    param_or_arg = models.CharField(max_length=12)
+    class Meta:
+        db_table = u'new_function_params_args'
+
+class Functions(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=120)
+    comments = models.CharField(max_length=300, blank=True)
+    source_ref = models.CharField(max_length=30, blank=True)
+    description = models.CharField(max_length=300, blank=True)
+    expression = models.CharField(max_length=300)
+    computer_language = models.CharField(max_length=120)
+    y_name = models.CharField(max_length=120)
+    y_units = models.CharField(max_length=120)
+    y_description = models.CharField(max_length=300, blank=True)
+    class Meta:
+        db_table = u'new_functions'
+
+class Methods(models.Model):
+    name = models.CharField(max_length=30, primary_key=True)
+    category = models.CharField(max_length=300)
+    description = models.CharField(max_length=300)
+    function_id = models.IntegerField(null=True, blank=True)
+    class Meta:
+        db_table = u'new_methods'

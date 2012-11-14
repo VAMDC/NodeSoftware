@@ -1713,7 +1713,7 @@ def XsamsCollTrans(CollTrans):
 
                             fref = GDF("CollisionFitDataFunction")
                             if fref:
-                                yield "<FitParameters functionRef=F%s-%s>" % (NODEID, fref)
+                                yield "<FitParameters functionRef='F%s-%s'>" % (NODEID, fref)
                             else:
                                 yield "<FitParameters>"
 
@@ -1735,7 +1735,7 @@ def XsamsCollTrans(CollTrans):
                                         yield "<LowerLimit>%s</LowerLimit>" % lowlim
                                     hilim = GDFA("CollisionFitDataArgumentUpperLimit")
                                     if hilim:
-                                        yield "<UpperLimit>%s</UpperLimit>"
+                                        yield "<UpperLimit>%s</UpperLimit>" % hilim
                                     yield "</FitArgument>"
                             if hasattr(FitData, "Parameters"):
                                 for Parameter in FitData.Parameters:
