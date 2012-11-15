@@ -144,23 +144,16 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
         log.debug('Restrictable "%s" not supported!'%r)
         raise Exception('Restrictable "%s" not supported!'%r)
 
-    rest_rhs = restrictables[r]
+    if type(restrictables[r]) == tuple:
+        rest_rhs = restrictables[r][0]
+    else: rest_rhs = restrictables[r]
 
     if op=='in':
         if not (foo[0]=='(' and foo[-1]==')'):
             log.error('Values for IN not bracketed: %s'%foo)
         else: foo=foo[1:-1]
         ins = map(strip,foo,('\'"',)*len(foo))
-        q = None
-        if type(rest_rhs) == tuple:
-            for rest_rh in rest_rhs:
-                if q:
-                    q = q | Q(**{rest_rh + '__in': ins})
-                else:
-                    q = Q(**{rest_rh + '__in': ins})
-        else:
-            q = Q(**{rest_rhs + '__in': ins})
-        return q
+        return Q(**{rest_rhs+'__in':ins})
     if op=='like':
         foo=checkLen1(foo)
         if foo.startswith('%') and foo.endswith('%'): o='__contains'
@@ -169,53 +162,16 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
         else:
             o='__exact'
             log.warning('LIKE operator used without percent signs. Treating as __exact. (Underscore and [] are unsupported)')
-        q = None
-        if type(rest_rhs) == tuple:
-            for rest_rh in rest_rhs:
-                if q:
-                    q = q | Q(**{rest_rh + o:foo.strip('%')})
-                else:
-                    q = Q(**{rest_rh + o:foo.strip('%')})
-        else:
-            q = Q(**{rest_rhs + o:foo.strip('%')})
-        return q
+        return Q(**{rest_rhs+o:foo.strip('%')})
     if op=='<>' or op=='!=':
         foo = checkLen1(foo)
         if foo.lower() == 'null':
-            q = None
-            if type(rest_rhs) == tuple:
-                for rest_rh in rest_rhs:
-                    if q:
-                        q = q | Q(**{rest_rh + '__isnull': False})
-                    else:
-                        q = Q(**{rest_rh + '__isnull': False})
-            else:
-                q = Q(**{rest_rhs + '__isnull': False})
-            return q
+            return Q(**{rest_rhs+'__isnull':False})
         else:
-            q = None
-            if type(rest_rhs) == tuple:
-                for rest_rh in rest_rhs:
-                    if q:
-                        q = q | ~Q(**{rest_rh: foo})
-                    else:
-                        q = ~Q(**{rest_rh: foo})
-            else:
-                q = ~Q(**{rest_rhs: foo})
-            return q
+            return ~Q(**{rest_rhs: foo})
 
     foo = checkLen1(foo)
-    q = None
-    if type(rest_rhs) == tuple:
-        for rest_rh in rest_rhs:
-            if q:
-                q = q | Q(**{rest_rh + OPTRANS[op]: foo})
-            else:
-                q = Q(**{rest_rh + OPTRANS[op]: foo})
-    else:
-        q = Q(**{rest_rhs + OPTRANS[op]: foo})
-
-    return q
+    return Q(**{rest_rhs+OPTRANS[op]: foo})
 
 def sql2Q(sql):
     log.debug('Starting sql2Q.')
