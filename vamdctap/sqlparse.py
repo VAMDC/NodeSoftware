@@ -176,8 +176,7 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
 def sql2Q(sql):
     log.debug('Starting sql2Q.')
     if not sql.where:
-        log.debug('Treating missing WHERE clause as False')
-        return QTrue
+        return Q()
     logic,rs,count = splitWhere(sql.where)
     log.debug('splitWhere() returned: logic: %s\nrs: %s\ncount: %s'%(logic,rs,count))
     qdict = {}
