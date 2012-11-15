@@ -2,7 +2,7 @@
 
 
 import sys
-from datetime import datetime
+import datetime
 from xml.sax.saxutils import escape
 
 # Get the node-specific parts
@@ -470,7 +470,7 @@ def checkXML(obj,methodName='XML'):
         return False, None
 
 def SelfSource(tap):
-    now = datetime.now()
+    now = datetime.datetime.now()
     stamp = now.date().isoformat() + '-%s-%s-%s'%(now.hour,now.minute,now.second)
     result = ['<Source sourceID="B%s-%s">'%(NODEID,stamp)]
     result.append("""
