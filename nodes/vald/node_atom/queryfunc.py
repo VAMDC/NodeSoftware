@@ -15,16 +15,16 @@ def setupResults(sql):
         percentage=None
     log.debug('Transitions QuerySet set up. References next.')
 
-    refIDs = TransRef.objects.filter(trans_id__in=transs).values_list('ref_id', flat=True)
-    print "TransRef refIDs:", refIDs.count()
-    #sources = Reference.objects.all()
+    #refIDs = TransRef.objects.filter(trans_id__in=transs).values_list('ref_id', flat=True)
+    #print "TransRef refIDs:", refIDs.count()
     ## about 100 times slower than objects.all() objects
     #refIDs = set(tuple(transs.values_list('wavevac_ref_id', flat=True)) +
     #             tuple(transs.values_list('loggf_ref_id', flat=True)) +
     #             tuple(transs.values_list('gammarad_ref_id', flat=True)) +
     #             tuple(transs.values_list('gammastark_ref_id', flat=True)) +
     #             tuple(transs.values_list('waals_ref', flat=True)))
-    sources = Reference.objects.filter(pk__in=refIDs)
+    #sources = Reference.objects.filter(pk__in=refIDs)
+    sources = Reference.objects.all()
 
     log.debug('Sources QuerySet set up. References next.')
     addStates = (not sql.requestables or 'atomstates' in sql.requestables)
