@@ -46,17 +46,18 @@ echo "CREATE DATABASE $VDB CHARACTER SET utf8;" | mysql -u "$VUSR" -p"$VPWD"
 echo "done."
 
 #------------------------------------------------------------
-# loading the database with rewrite data
-#------------------------------------------------------------ 
-
+## loading the database with rewrite data
+##------------------------------------------------------------ 
+#
 echo -n "Running load.sql ... "
 mysql --verbose -u "$VUSR" -p"$VPWD" "$VDB" < load.sql
 echo "done."
 
 #------------------------------------------------------------
-# creating the database indices all at once
+# creating the remaining database indices all at once
 #------------------------------------------------------------
 
 echo -n "Creating database indexes... "
-./manage.py sqlindexes $Node | mysql -u "$VUSR" -p"$VPWD" "$VDB"
+./manage.py sqlindexes $Node | mysql --verbose -u "$VUSR" -p"$VPWD" "$VDB"
+./manage.py sqlindexes node_common | mysql --verbose -u "$VUSR" -p"$VPWD" "$VDB"
 echo "done."
