@@ -1358,7 +1358,7 @@ def XsamsRadTranShifting(RadTran):
                     if hasattr(ShiftingParam, "Fit"):
                         for Fit in makeiter(ShiftingParam.Fits):
                             GSF = lambda name: GetValue(name, Fit=Fit)
-                            string += "<FitParameters functionRef='F%s-%s>'" % (NODEID, GSF("RadTransShiftingParamFitFunction"))
+                            string += "<FitParameters functionRef='F%s-%s'>" % (NODEID, GSF("RadTransShiftingParamFitFunction"))
 
                             # hard-code to avoid yet anoter named loop variable
                             for name, units, desc, llim, ulim in makeloop("RadTransShiftingParamFitArgument", GSF, "Name", "Units", "Description", "LowerLimit", "UpperLimit"):
