@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse
 
-from datetime import datetime
+import datetime
 from string import lower
 from cStringIO import StringIO
 import os, math, sys
@@ -163,17 +163,20 @@ def addHeaders(headers,response):
 
     headers = CaselessDict(headers)
 
-    try:
-        response['Last-Modified'] = getFormatLastModified(headers['LAST-MODIFIED'])
-    except:
-        pass
-
     for h in HEADS:
         if headers.has_key(h):
             response['VAMDC-'+h] = '%s'%headers[h]
 
-    if headers.has_key('LAST-MODIFIED'):
-        response['Last-Modified'] = '%s'%headers['LAST-MODIFIED']
+    lastmod = headers.get('LAST-MODIFIED')
+    if not lastmod and hasattr(settings,'LAST_MODIFIED'):
+        lastmod=settings.LAST_MODIFIED
+
+    if isinstance(lastmod,datetime.date):
+        response['Last-Modified'] = getFormatLastModified(lastmod)
+    elif isinstance(lastmod,str):
+        response['Last-Modified'] = lastmod
+    else:
+        pass
 
     return response
 
@@ -204,7 +207,8 @@ def sync(request):
     generator=Xsams(tap=tap,**querysets)
     log.debug('Generator set up, handing it to HttpResponse.')
     response=HttpResponse(generator,mimetype='text/xml')
-    response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
+    response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
+        datetime.datetime.now().isoformat(), tap.format)
 
     if 'HeaderInfo' in querysets:
         response=addHeaders(querysets['HeaderInfo'],response)
@@ -244,6 +248,7 @@ def capabilities(request):
                                  "STANDARDS_VERSION" : settings.VAMDC_STDS_VERSION,
                                  "SOFTWARE_VERSION" : settings.NODESOFTWARE_VERSION,
                                  "EXAMPLE_QUERIES" : settings.EXAMPLE_QUERIES,
+                                 "MIRRORS" : settings.MIRRORS,
                                  })
     return render_to_response('tap/capabilities.xml', c, mimetype='text/xml')
 

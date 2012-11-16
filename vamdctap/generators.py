@@ -2,7 +2,7 @@
 
 
 import sys
-from datetime import datetime
+import datetime
 from xml.sax.saxutils import escape
 
 # Get the node-specific parts
@@ -21,7 +21,7 @@ except:
 try:
     XSAMS_VERSION = RETURNABLES['XSAMSVersion']
 except:
-    XSAMS_VERSION = '0.3'
+    XSAMS_VERSION = '1.0'
 try:
     SCHEMA_LOCATION = RETURNABLES['SchemaLocation']
 except:
@@ -470,7 +470,7 @@ def checkXML(obj,methodName='XML'):
         return False, None
 
 def SelfSource(tap):
-    now = datetime.now()
+    now = datetime.datetime.now()
     stamp = now.date().isoformat() + '-%s-%s-%s'%(now.hour,now.minute,now.second)
     result = ['<Source sourceID="B%s-%s">'%(NODEID,stamp)]
     result.append("""
@@ -1713,7 +1713,7 @@ def XsamsCollTrans(CollTrans):
 
                             fref = GDF("CollisionFitDataFunction")
                             if fref:
-                                yield "<FitParameters functionRef=F%s-%s>" % (NODEID, fref)
+                                yield "<FitParameters functionRef='F%s-%s'>" % (NODEID, fref)
                             else:
                                 yield "<FitParameters>"
 
@@ -1735,7 +1735,7 @@ def XsamsCollTrans(CollTrans):
                                         yield "<LowerLimit>%s</LowerLimit>" % lowlim
                                     hilim = GDFA("CollisionFitDataArgumentUpperLimit")
                                     if hilim:
-                                        yield "<UpperLimit>%s</UpperLimit>"
+                                        yield "<UpperLimit>%s</UpperLimit>" % hilim
                                     yield "</FitArgument>"
                             if hasattr(FitData, "Parameters"):
                                 for Parameter in FitData.Parameters:

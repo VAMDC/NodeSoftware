@@ -40,6 +40,9 @@ EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
 # by default to make things fail-safe.
 SERVE_STATIC = True
 
+# MIRROR sites
+MIRRORS = []
+
 ###################################################
 # Database connection
 # Setting up the database type and information.

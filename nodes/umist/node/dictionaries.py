@@ -17,76 +17,109 @@ ExampleNode dictionary definitions.
 
 RETURNABLES = {\
 'NodeID':'umist',
+'XSAMSVersion':'1.0',
 
-'SourceID':'Source.abbr',
-#'SourceAuthorName':'Source.author',
-#'SourceCategory':'Source.category',
-#'SourcePageBegin':'Source.pages',
-#'SourcePageEnd':'Source.pages',
-#'SourceName':'Source.journal',
-'SourceTitle':'Source.full',
+'SourceID':'Source.id',
+'SourceAuthorName':'Source.authorlist',
+'SourceCategory':'Source.category',
+'SourcePageBegin':'Source.pagebegin',
+'SourcePageEnd':'Source.pageend',
+'SourceName':'Source.sourcename',
+'SourceTitle':'Source.title',
 'SourceURI':'Source.url',
-#'SourceVolume':'Source.volume',
-#'SourceYear':'Source.year',
+'SourceVolume':'Source.volume',
+'SourceYear':'Source.year',
+'SourceDOI':'Source.doi',
+'SourceComments':'Source.comments',
 
+'CollisionUserDefinition':'CollTran.rt.type',
 'CollisionThreshold':'CollTran.tmin',
 'CollisionThresholdUnit':'K',
 'CollisionThresholdComment':'Minimum temperature',
 'CollisionProductSpecies':'Product.id',
 'CollisionReactantSpecies':'Reactant.id',
 
-# 2011-11-30 KWS Add table data.
-# After conversations with C. Hill, we need to use fit parameters.
-# DataFunctype -> FitParameters -> (FitArgument, FitParameter, FunctionRef)
-
 'CollisionDataSetRef':'DataSet.Ref',
-'CollisionDataSetDescription':'DataSet.Description',
+'CollisionDataSetDescription':'rateCoefficient',
+# 2012-10-30 KWS Commented out TabulatedDataSets for the time being
+#'CollisionTabulatedDataXDataList' : 'TabData.xdata',
+#'CollisionTabulatedDataXUnits' : 'TabData.xdataunit',
+#'CollisionTabulatedDataXParameter' : 'undef',
+#'CollisionTabulatedDataYDataList' : 'TabData.ydata',
+#'CollisionTabulatedDataYUnits' : 'TabData.ydataunit',
+#'CollisionTabulatedDataYParameter' : 'undef',
 
-'CollisionTabulatedDataXDataList' : 'TabData.xdata',
-'CollisionTabulatedDataXUnits' : 'TabData.xdataunit',
-'CollisionTabulatedDataXParameter' : 'undef',
-'CollisionTabulatedDataYDataList' : 'TabData.ydata',
-'CollisionTabulatedDataYUnits' : 'TabData.ydataunit',
-'CollisionTabulatedDataYParameter' : 'undef',
+# 2012-10-30 KWS Added functions. Unused features (so far) are left commented out.
 
-# Range Limits - need Fit Function and new column in DB
-# or derivation of which fit function to use from number
-# and type of reactants.
-#'CollisionTabulatedDataY':'CollTran.tmin',
-#'CollisionTabulatedDataYDescription':'Tmin',
-#'CollisionTabulatedDataX':'CollTran.tmax',
-#'CollisionTabulatedDataXDescription':'Tmax',
+'FunctionArgumentLowerLimit':'FunctionArgument.lower_limit',
+'FunctionArgumentUpperLimit':'FunctionArgument.upper_limit',
+'FunctionArgumentDescription':'FunctionArgument.description',
+'FunctionArgumentName':'FunctionArgument.name',
+'FunctionArgumentUnits':'FunctionArgument.units',
+'FunctionParameterDescription':'FunctionParameter.description',
+'FunctionParameterName':'FunctionParameter.name',
+'FunctionParameterUnits':'FunctionParameter.units',
+#'FunctionSourceRef':'Function.sourceref',
 
-#'CollisionTabulatedDataY':'CollTran.alpha',
-#'CollisionTabulatedDataYDescription':'alpha',
+'FunctionComputerLanguage':'Function.computer_language',
+'FunctionExpression':'Function.expression',
+'FunctionID':'Function.id',
+'FunctionName':'Function.name',
+'FunctionYName':'Function.y_name',
+'FunctionYUnits':'Function.y_units',
+#'FunctionYDescription':'',
+#'FunctionReferenceFrame':'',
+#'FunctionSourceCodeURL':'',
+#'FunctionSourceRef':'',
+#'FunctionYLowerLimit':'',
+#'FunctionYUpperLimit':'',
 
-#'CollisionTabulatedDataY':'CollTran.beta',
-#'CollisionTabulatedDataYDescription':'beta',
+# 2012-10-23 KWS Added fitfunction data
 
-#'CollisionTabulatedDataY':'CollTran.gamma',
-#'CollisionTabulatedDataYDescription':'gamma',
+'CollisionFitDataMethod':'FitData.clem',
+'CollisionFitDataAccuracy':'FitData.acc',
+'CollisionFitDataFunction' : 'FitData.functionref',
+'CollisionFitDataArgumentName' : 'T',
+'CollisionFitDataArgumentUnits' : 'K',
+'CollisionFitDataArgumentDescription' : 'Argument.description',
+'CollisionFitDataArgumentLowerLimit' : 'Argument.tmin',
+'CollisionFitDataArgumentUpperLimit' : 'Argument.tmax',
 
+'CollisionFitDataParameter' : 'Parameter.parameter',
+'CollisionFitDataParameterName' : 'Parameter.names',
+'CollisionFitDataParameterUnit' : 'Parameter.units',
 
+# 2012-10-31 KWS Added Methods
+
+'MethodCategory':'Method.category',
+'MethodDescription':'Method.description',
+'MethodID':'Method.name',
 
 # 2012-02-09 KWS Added collision ID
 'CollisionID' : 'CollTran.id',
 
-
-#    'CollTran.acc, # Need to interpret this and place in the correct keyword
-#    'CollTran.clem,
 #    'CollTran.dipole,
 
 'AtomSpeciesID':'Atom.id',
-'AtomInchi':'Atom.vamdc_inchi',
-'AtomInchiKey':'Atom.vamdc_inchikey',
+'AtomInchi':'Atom.inchi',
+'AtomInchiKey':'Atom.inchikey',
+'AtomNuclearCharge':'Atom.nuclear_charge',
+'AtomIonCharge':'Atom.charge',
+'AtomSymbol':'Atom.stoic_no_charge',
 
 'MoleculeSpeciesID':'Molecule.id',
-'MoleculeOrdinaryStructuralFormula':'Molecule.struct_name',
-
-# 2012-01-25 KWS For the new standards we will use the ordinary standard
-#                inchikey - not vamdc_inchikey
 'MoleculeInChI':'Molecule.inchi',
 'MoleculeInChIKey':'Molecule.inchikey',
+'MoleculeOrdinaryStructuralFormula':'Molecule.struct_name',
+'MoleculeVAMDCSpeciesID':'Molecule.vamdc_species_id',
+'MoleculeMolecularWeight':'Molecule.mass',
+'MoleculeStoichiometricFormula':'Molecule.stoic_formula',
+
+'ParticleName':'Particle.comments',
+'ParticleSpeciesID':'Particle.id',
+'ParticleCharge':'Particle.charge',
+'ParticleComment':'Particle.names',
+
 }
 
 # The restrictable dictionary defines limitations to the search. 
@@ -98,7 +131,10 @@ RESTRICTABLES = {\
 'MoleculeInChIKey':'reaction__species__inchikey',
 'InchiKey':'reaction__species__inchikey',
 'MoleculeInChI':'reaction__species__inchi',
-'Inchi':'reaction__species__inchi',
 'MoleculeChemicalName':'reaction__species__names',
+'VAMDCSpeciesID':'reaction__species__vamdc_species_id',
+'MoleculeStoichiometricFormula':'reaction__species__stoic_formula',
+#'MoleculeChemicalName':'',
+#'MoleculeOrdinaryStructuralFormula':'',
 }
 
