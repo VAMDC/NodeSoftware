@@ -1751,7 +1751,7 @@ def XsamsCollTrans(CollTrans):
 
                                 accur = GDF("CollisionFitDataAccuracy")
                                 if accur:
-                                    yield "<Accuracy>%s</Accuracy>" % accur
+                                    yield "<FitAccuracy>%s</FitAccuracy>" % accur
                                 physun = GDF("CollisionFitDataPhysicalUncertainty")
                                 if physun:
                                     yield "<PhysicalUncertainty>%s</PhysicalUncertainty>" % physun
