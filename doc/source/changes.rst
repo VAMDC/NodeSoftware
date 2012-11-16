@@ -25,7 +25,7 @@ information. It is up to each node whether this will be done on a fine-grained
 level of individual data or globally for the whole database. The values can be
 set from ``settings.py`` (variable LAST_MODIFIED) or from the node's
 ``setupresults()`` function as LAST-MODIFIED in the header dictionary. As
-values, either a string (format like: Sat, 10 Nov 2012 23:00:00 GMT) or a
+values, either a string (like: *Sat, 10 Nov 2012 23:00:00 GMT*) or a
 Python ``datetime.date`` instance that will be formatted automatically.
 
 
