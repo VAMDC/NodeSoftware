@@ -8,6 +8,31 @@ Changelog
     document before, since terms are used that are introduced later. It is meant
     for returning readers, especially the maintainers of VAMDC nodes.
 
+Nov 15, 2012
+---------------------
+
+**Mirrors**. VAMDC nodes can have mirrors and each deployment should know about the others in order to convey the URLs through the ``/tap/capabilities`` endpoint. The way to do this is through a variable in ``settings.py`` like this::
+
+    MIRRORS = ['http://mirror1.domain/tap/', 'http://mirror2.domain/tap/']
+
+Note that the URL of the current node should not be repeated here and that they should end including the trailing slash.
+
+
+**Last modified**. The information on when the data that are returned in a
+query were last modified, e.g. to use a HEAD (preview) request to check for new
+data, nodes can fill the HTTP header ``Last-Modified`` to convey this
+information. It is up to each node whether this will be done on a fine-grained
+level of individual data or globally for the whole database. The values can be
+set from ``settings.py`` (variable LAST_MODIFIED) or from the node's
+``setupresults()`` function as LAST-MODIFIED in the header dictionary. As
+values, either a string (format like: Sat, 10 Nov 2012 23:00:00 GMT) or a
+Python ``datetime.date`` instance that will be formatted automatically.
+
+
+**Django upgrade**. Lastly, please do not forget to keep the underlying
+software packages up to date. Currently Django is at version 1.4.2 and upgrading
+should not make much problems. Also upgrade the rest of your nodes' stack, like Nginx, Gunicorn or Apache.
+
 June 5, 2012
 ---------------------
 
