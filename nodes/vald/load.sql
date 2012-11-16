@@ -29,4 +29,5 @@ insert into transitions_references (trans_id, ref_id)(select transitions.id,stat
 insert into transitions_references (trans_id, ref_id)(select transitions.id,states.level_ref_id from transitions,states where transitions.upstate=states.id or transitions.lostate=states.id);
 -- creating the index here
 create index tidx on transitions_references (trans_id);
+--create index ridx on transitions_references (ref_id);
 
