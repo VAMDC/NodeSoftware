@@ -264,7 +264,9 @@ def setupResults(sql, limit=1000):
     #the header must not be newer than now!
     if lastmodifiedheader > datetime.datetime.now():
         lastmodifiedheader = datetime.datetime.now()
-    lastmodifiedheader = formatdate(time.mktime(lastmodifiedheader.timetuple()))
+
+    #not necessary any more, since t. marquart changed the behaviour of the NS
+    #lastmodifiedheader = formatdate(time.mktime(lastmodifiedheader.timetuple()))
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
