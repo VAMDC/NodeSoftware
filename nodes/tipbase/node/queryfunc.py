@@ -125,7 +125,7 @@ def setupSpecies():
 	result = util_models.Result()
 	ids = django_models.Collisionaltransition.objects.all().values_list('version', flat=True)
 	versions = django_models.Version.objects.filter(pk__in = ids)
-	result.addHeaderField('COUNT-SPECIES',len(versions))
+	result.addHeaderField('COUNT-SPECIES',versions.count())
 	result.addDataField('Atoms',versions)	
 	return result
 	
