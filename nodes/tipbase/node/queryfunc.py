@@ -15,8 +15,8 @@ from django.conf import settings
 from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.db import connection
-import logging
-log=logging.getLogger('vamdc.tap')
+#import logging
+#log=logging.getLogger('vamdc.tap')
 
 import dictionaries
 import models as django_models
@@ -44,10 +44,8 @@ def setupResults(sql):
 
     result = None
     sql.request['QUERY'] = replacements(sql.request['QUERY'])
-    #log.debug("test")
-    #log.debug(sql)
     # return all species
-    if str(sql.request['QUERY']).strip() == 'select species': 
+    if str(sql.request['QUERY']).strip().lower() == 'select species': 
         result = setupSpecies()
     # all other requests
     else:		
@@ -68,10 +66,7 @@ def setupVssRequest(sql, limit=10000):
     """
     # convert the incoming sql to a correct django query syntax object 
     # based on the RESTRICTABLES dictionary in dictionaries.py
-    for value in sql.where:
-        log.debug(str(type(value)))
     q = sql2Q(sql)  
-    log.debug("print modif") 
     transs = django_models.Collisionaltransition.objects.filter(q)
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
