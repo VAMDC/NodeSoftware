@@ -77,7 +77,9 @@ class DataSet:
 
         #create errors
         tabdata.Y.ErrorList = []
-        yerrorlist = map(sqrt, ys)
+        #apparently we have to take the abs, since there can be negative data
+        yerrorlist = map(abs, ys)
+        yerrorlist = map(sqrt, yerrorlist)
         for yerror in yerrorlist:
             tabdata.Y.ErrorList.append("%.2f" % round(yerror, 2))
 
