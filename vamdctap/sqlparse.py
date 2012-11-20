@@ -105,7 +105,7 @@ def applyRestrictFu(rs,restrictables=RESTRICTABLES):
 
     if not isinstance(restrictables[r], TupleType): return rs
     if len(foo) != 1:
-        log.dedug('Applying a function to a Restrictable works only on a single value')
+        log.debug('Applying a function to a Restrictable works only on a single value')
         return rs
     try:
         bla, fu = restrictables[r]

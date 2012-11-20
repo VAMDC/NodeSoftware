@@ -64,7 +64,7 @@
 <script type="text/javascript">
 $(function () {
     var d2 = [{{ es.daten }}];
-    plot = $.plot($("#placeholder"), [{ label: "{{ es.species }}-: 00.00",  data: d2, color: "blue"}], {legend: {margin : [15,15]}, crosshair: { mode: "xy" }, grid: { hoverable: true, autoHighlight: false }});
+    plot = $.plot($("#placeholder"), [{ label: "{{ es.species }}-: 00.00 eV / 00.00",  data: d2, color: "blue"}], {legend: {margin : [15,15]}, crosshair: { mode: "xy" }, grid: { hoverable: true, autoHighlight: false }});
 
     var legends = $("#placeholder .legendLabel");
     legends.each(function () {
@@ -103,7 +103,22 @@ $(function () {
             else
                 x = p1[0] + (p2[0] - p1[0]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
 
-            legends.eq(i).text(series.label.replace(/:.*/, ": " + x.toFixed(2)));
+            // find the nearest points, y-wise
+            for (j = 0; j < series.data.length; ++j)
+                if (series.data[j][0] > pos.y)
+                    break;
+
+            // now interpolate
+            var y, p1 = series.data[j - 1], p2 = series.data[j];
+            if (p1 == null)
+                y = p2[0];
+            else if (p2 == null)
+                y = p1[0];
+            else
+                y = p1[0] + (p2[0] - p1[0]) * (pos.y - p1[0]) / (p2[0] - p1[0]);
+
+
+            legends.eq(i).text(series.label.replace(/:.*/, ": " + x.toFixed(2) + " eV / " + y.toFixed(2)));
         }
     }
     

@@ -2,8 +2,8 @@ import os
 import sys
 
 # EDIT THE FOLLOWING TWO LINES
-sys.path.append('/home/tom/py/vamdc/')
-os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.YourNode.settings'
+sys.path.append('/var/opt/vamdcgit/NodeSoftware/')
+os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.IDEADB.settings'
 
 
 import django.core.handlers.wsgi
