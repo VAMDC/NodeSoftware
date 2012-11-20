@@ -119,6 +119,7 @@ class Species(Model):
     class Meta:
         db_table = u'species'
         verbose_name_plural = u'Species'
+        ordering = ['chemical_formula','name']
 
 class Source(Model):
     SOURCETYPE_CHOICES = (
