@@ -11,6 +11,7 @@ RETURNABLES = ({\
 'AtomNuclearCharge':'Atom.ion.nuclear_charge',
 'AtomSpeciesID':'Atom.particle_ion_id()',
 'AtomIonCharge':'Atom.ion.ion_charge',
+'AtomStateParity':'AtomState.parity',
 'AtomStateConfigurationLabel':'Component.config',
 'AtomStateTermLabel':'Component.term',
 'AtomStateTotalAngMom' : 'AtomState.totalAngularMomentum',
