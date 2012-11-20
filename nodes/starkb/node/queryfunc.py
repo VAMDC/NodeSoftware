@@ -194,8 +194,9 @@ def getSpeciesWithStates(transs):
                 specie.States[i].Sources = getDatasetSources(specie.States[i].Components[0].dataset.pk)
 
             nstates += len(specie.States)
-        #except ObjectDoesNotExist as e:
-        #    log.debug(str(e)) # this species is a collider
+        except ObjectDoesNotExist as e:
+            pass
+            #log.debug(str(e)) # this species is a collider
 
     nspecies = len(species) # get some statistics 
     return species, nspecies, nstates  
