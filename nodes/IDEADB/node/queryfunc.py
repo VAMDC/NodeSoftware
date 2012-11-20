@@ -136,17 +136,27 @@ def setupResults(sql, limit=1000):
     #convert the inchikey to an inchi, extract the sum formula and try again
     if nenergyscans == 0:
         if re.search('InchiKey', str(sql)) is not None:
-            match = re.search('[A-Z]{14}-[A-Z]{10}-[A-Z]', str(sql))
-            if match is not None:
-                inchikey = str(sql)[match.start():match.end()]
-                chemical_formula = inchikey2chemicalformula(inchikey)
+            strsql = str(sql)
+            match = re.findall('[A-Z]{14}-[A-Z]{10}-[A-Z]', strsql)
 
-                #now we extracted the stochiometric / chemical formula from the inchi. 
-                #let's see if there is something in the DB
+            #for each inchikey found we extract the chemical formula from the inchi
+            #then we replace it in the original sql string
+            for matchitem in match:
+                chemical_formula = inchikey2chemicalformula(matchitem)
                 if chemical_formula is not None:
-                    energyscans = models.Energyscan.objects.filter(Q(species__chemical_formula__exact=chemical_formula)|Q(origin_species__chemical_formula__exact=chemical_formula))
-                    nenergyscans = energyscans.count()
-                    inchiconvertedsearch = True
+	            strsql = strsql.replace(matchitem,chemical_formula)
+
+            #if we had found one, we now replace the query
+            if match is not None:
+                strsql = strsql.replace('InchiKey','MoleculeStoichiometricFormula')
+                #we now inject the new query to the request and call validate() to parse the SQL
+                sql.request['QUERY'] = strsql
+                sql.validate()
+
+                #try again as usual
+                energyscans = models.Energyscan.objects.filter(q)
+                nenergyscans = energyscans.count()
+                inchiconvertedsearch = True
 
     #append electron if there are results:
     if nenergyscans != 0:
