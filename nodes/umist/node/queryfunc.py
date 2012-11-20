@@ -23,36 +23,18 @@ class EmptyClass:
     """Empty class to add attributes dynamically to"""
 
 def constrainedResults(sql, q, limit):
-    # convert the incoming sql to a correct django query syntax object 
-    # based on the RESTRICTABLES dictionary in dictionaries.py
-    # (where2q is a helper function to do this for us).
-
-    #q = where2q(sql.where, dictionaries.RESTRICTABLES)
-
-
-    #try: 
-    #    q = eval(q) # test queryset syntax validity
-    #except Exception, e: 
-    #    log.debug(e)
-    #    return {}
+    """Return constrained results"""
 
     #react_ds = RxnData.objects.filter(pk__in=(2,4,3862,3863,7975,7976))
+    # network_id=3 (UMIST RATE06 data only)
     react_ds = RxnData.objects.filter(q, network_id=3)
 
     log.debug('Number of reaction data rows: %s' % react_ds.count())
 
-    #sources = Source.objects.filter(pk__in=set(react_ds.values_list('ref_id', flat=True))) 
     sources = SourceAll.objects.filter(abbr__in=set(react_ds.values_list('ref_id', flat=True))) 
-    #for source in sources:
-    #    if source.authors:
-    #        source.authorlist = source.authors.split('|')
-    #    else:
-    #        source.authorlist = []
-
 
     # Get only the relevant reactions
     reacts = Reaction.objects.filter(pk__in=set(react_ds.values_list('reaction_id', flat=True)))
-
 
     # Get only the relevant species
     species = Species.objects.filter(pk__in=reacts.values_list('species'))
@@ -76,27 +58,19 @@ def constrainedResults(sql, q, limit):
         rea.Reactants = rea.reaction.reactants.all()
         rea.Products = rea.reaction.products.all()
 
-        # Add the rate coefficient at 10K as a data table
-        #data = []
         rea.DataSets = []
         dataset = EmptyClass()
+
+        # Add the rate coefficient at 10K as a data table
+        # Commented this table out for the time being
+        #data = []
         #dataRow = EmptyClass()
         #dataRow.xdata = '10'
         #dataRow.ydata = str(rea.r10kr)
-
         #dataRow.xdataunit = 'K'
         #dataRow.ydataunit = 'cm3/sec'
         #dataRow.datadescription = 'Rate Coefficient at 10K'
         #data.append(dataRow)
-
-
-        # Fit Function data
-        #fitdata = []
-        #fitDataRow = EmptyClass()
-        #fitDataRow.fitfunctionref = '12345' # Hard wired for the time being to non-existent function.
-        #                                    # We need to use the reaction type to generate the correct
-        #                                    # formula.  And we may need to add the formulae to the db.
-        #fitdata.append(fitDataRow)
 
         fitDataClass = EmptyClass()
 
@@ -111,6 +85,7 @@ def constrainedResults(sql, q, limit):
         fitDataParameter = EmptyClass()
         fitDataParameters = []
 
+        # Commented out example shows hard wired data. Below is data generated on the fly.
         #fitDataParameter.parameter = [rea.alpha, rea.beta, rea.gamma]
         #fitDataParameter.names = ['alpha', 'beta', 'gamma']
         #fitDataParameter.units = ['cm3/s', 'unitless', 'unitless']
@@ -124,11 +99,8 @@ def constrainedResults(sql, q, limit):
         fitDataParameter.names = parameterNames
         fitDataParameter.units = functionparams.filter(function_id=rea.rt.function_id, param_or_arg='P').values_list('units', flat=True)
 
-
         fitDataParameters.append(fitDataParameter)
 
-
-        #fitDataClass.fitdata = fitdata
         fitDataClass.Arguments = fitDataArguments
         fitDataClass.Parameters = fitDataParameters
         fitDataClass.functionref = rea.rt.function_id
@@ -141,9 +113,6 @@ def constrainedResults(sql, q, limit):
         #dataset.TabData = data
         dataset.FitData = [fitDataClass]
         #dataset.Description = dataRow.datadescription
-        #dataset.Ref = rea.ref.abbr
-        dataset.Ref = sources.filter(abbr=rea.ref.abbr).values_list('id', flat=True)
-
 
         rea.DataSets.append(dataset)
 
@@ -153,10 +122,12 @@ def constrainedResults(sql, q, limit):
 
 def speciesOnlyResults(sql, q, limit):
 
-    # Get ALL the species.  Don't need the Q object for the time being.
-    # The code currently returns ONLY species for which we have an
-    # inchikey (more precisely, vamdc_species_id).
-    # The code is also required to return all Particles.
+    """
+    Get ALL the species.  Don't need the Q object for the time being.
+    The code currently returns ONLY species for which we have an
+    inchikey (more precisely, vamdc_species_id).
+    The code is also required to return all Particles.
+    """
 
     species = Species.objects.filter(Q(vamdc_species_id__isnull=False) | Q(type=3))
 
@@ -168,10 +139,16 @@ def speciesOnlyResults(sql, q, limit):
 
 
 def query(sql, limit):
+    """
+    Do the query.  Pass to the appropriate function depending on the type of query.
+    """
+
     # log the incoming query
     log.debug('SQL input: %s' % sql)
 
     q = sql2Q(sql)
+
+    #log.debug('Q: %s' % q)
 
     if len(sql.where) > 0:
         # It's a constrained query
