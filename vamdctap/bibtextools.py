@@ -12,7 +12,7 @@ DICTS=import_module(settings.NODEPKG+'.dictionaries')
 try: NODEID = DICTS.RETURNABLES['NodeID']
 except: NODEID = 'PleaseFillTheNodeID'
 
-DUMMY='@article{DUMMY, Author = {No Boby}, Title = {This is a dummy entry. If you see it in your XSAMS output it means that at there was a malformed BibTex entry.}, annote = {%s}}'
+DUMMY='@article{DUMMY, Author = {No Body}, Title = {This is a dummy entry. If you see it in your XSAMS output it means that at there was a malformed BibTex entry.}, annote = {%s}}'
 
 def getEntryFromString(s):
     parser = bibtex.Parser()
@@ -65,7 +65,7 @@ def BibTeX2XML(bibtexstring, key=None):
     volume = f.get('volume', "")
     pages = f.get('pages', "")
     p1, p2 = '', ''
-    pages = re.findall(r'[0-9][0-9]*', pages)        
+    pages = re.findall(r'[0-9][0-9]*', pages)
     if pages:
         p1 = pages[0]
         if len(pages) > 1:
