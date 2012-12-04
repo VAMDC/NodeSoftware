@@ -21,6 +21,7 @@ class Result:
 							}
 		self.data = {}
 		self._dataFields = {'RadTrans':None,
+                            'Molecules':None,
 							'Atoms':None,
 							'Environments':None,
 							'Particles' : None,
