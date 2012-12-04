@@ -21,13 +21,24 @@ class Characterisation(models.Model):
     class Meta:
         db_table = u'characterisation'
 
-    def renameCharacterisation(self):
+    def getTransitionKind(self):
+        if(self.characid == 2):
+           return "Polarizability"
+        else:
+           return
+
+    def getMultipole(self):
+        if(self.characid == 1):
+           return "E1"
+        else:
+           return
+
+    def getUnit(self):
         result = self.name
         if(self.characid == 1):
-           result = "E1"
+           result = "1/cm2/atm"
         if(self.characid == 2):
-           result = "P"
-
+           result = "undef"
         return result
 
 class Sources(models.Model):
@@ -204,9 +215,21 @@ class Polyads(models.Model):
     class Meta:
         db_table = u'polyads'
 
+class MoleculesIsotopes(models.Model):
+    isotopeid = models.IntegerField(primary_key=True)
+    moltypeid = models.ForeignKey(MoleculeTypes, db_column='moltypeid')
+    isotopename = models.CharField(max_length=30)
+    inchi = models.CharField(max_length=120)
+    inchikey = models.CharField(max_length=81)
+    formtex = models.CharField(max_length=15)
+    casregnum = models.CharField(max_length=15)
+    eostateid = models.IntegerField()
+    class Meta:
+        db_table = u'molecules_isotopes'
+
 class VibrationalSublevels(models.Model):
     sublevid = models.IntegerField(primary_key=True)
-    moltypeid = models.ForeignKey(MoleculeTypes, db_column='moltypeid')
+    isotopeid = models.ForeignKey(MoleculesIsotopes, db_column='isotopeid')
     qvalue1 = models.IntegerField()
     qvalue2 = models.IntegerField()
     qvalue3 = models.IntegerField()
@@ -236,14 +259,77 @@ class VibrationalSublevels(models.Model):
     class Meta:
         db_table = u'vibrational_sublevels'
 
-class MoleculesIsotopes(models.Model):
-    isotopeid = models.IntegerField(primary_key=True)
-    moltypeid = models.ForeignKey(MoleculeTypes, db_column='moltypeid')
-    isotopename = models.CharField(max_length=30)
-    inchi = models.CharField(max_length=120)
-    inchikey = models.CharField(max_length=81)
-    class Meta:
-        db_table = u'molecules_isotopes'
+    def getQNviMode(self):
+        # X2Y4
+        return [1,2,3,4,5,6,7,8,9,10,11,12]
+
+    def getQNvi(self):
+        # X2Y4
+        return [self.qvalue3 ,self.qvalue5 ,self.qvalue7 ,self.qvalue9 ,
+                self.qvalue11,self.qvalue13,self.qvalue15,self.qvalue17,
+                self.qvalue19,self.qvalue21,self.qvalue23,self.qvalue25]
+
+    def getQNrName(self):
+        res = ["nv"]
+        # X2Y4
+        return res
+
+    def getQNr(self):
+        res = [self.qvalue2]
+        # X2Y4
+        return res
+
+    def getQNsymName(self):
+        res =["Cv"]
+        # X2Y4
+        res += ["C1","C2" ,"C3" ,"C4" ,
+                "C5","C6" ,"C7" ,"C8" ,
+                "C9","C10","C11","C12"]
+        return res
+
+    def getQNsym(self):
+        # Cv
+        vssymid = self.qvalue1
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res = [s.name]
+        # X2Y4
+        vssymid = self.qvalue4
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue6
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue8
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue10
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue12
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue14
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue16
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue18
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue20
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue22
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue24
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        vssymid = self.qvalue26
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res.append(s.name)
+        return res
 
 class ScalarNumbers(models.Model):
     scalarid = models.IntegerField(primary_key=True)
@@ -255,10 +341,16 @@ class ScalarNumbers(models.Model):
     class Meta:
         db_table = u'scalar_numbers'
 
-class VibrationalComponents(models.Model):
-    vibcompid = models.IntegerField(primary_key=True)
+class MolecularStates(models.Model):
+    stateid = models.IntegerField(primary_key=True)
     isotopeid = models.ForeignKey(MoleculesIsotopes, db_column='isotopeid')
     polyadid = models.ForeignKey(Polyads, db_column='polyadid')
+    position = models.FloatField()
+    j = models.IntegerField()
+    symname = models.CharField(max_length=3)
+    alpha = models.IntegerField()
+    weight = models.IntegerField()
+    nbcoefn0 = models.IntegerField()
     sublevid1 = models.ForeignKey(VibrationalSublevels, null=True, db_column='sublevid1', blank=True, related_name='rn_sublevid1')
     coefficient1 = models.FloatField(null=True, blank=True)
     sublevid2 = models.ForeignKey(VibrationalSublevels, null=True, db_column='sublevid2', blank=True, related_name='rn_sublevid2')
@@ -268,27 +360,23 @@ class VibrationalComponents(models.Model):
     sublevid4 = models.ForeignKey(VibrationalSublevels, null=True, db_column='sublevid4', blank=True, related_name='rn_sublevid4')
     coefficient4 = models.FloatField(null=True, blank=True)
     class Meta:
-        db_table = u'vibrational_components'
-
-class MolecularStates(models.Model):
-    stateid = models.IntegerField(primary_key=True)
-    isotopeid = models.ForeignKey(MoleculesIsotopes, db_column='isotopeid')
-    polyadid = models.ForeignKey(Polyads, db_column='polyadid')
-    position = models.FloatField()
-    j = models.IntegerField()
-    symnameid = models.ForeignKey(SymmetryNames, db_column='symnameid')
-    alpha = models.IntegerField()
-    vibcompid = models.ForeignKey(VibrationalComponents, db_column='vibcompid')
-    weight = models.IntegerField()
-    class Meta:
         db_table = u'molecular_states'
 
-    def PnJcn(self):
-        return "P%s %s %s %s" % (self.polyadid.polyadnb,self.j,self.symnameid.name,self.alpha)
+    def PnPsn(self):
+        return "P%s PS%s" % (self.polyadid.polyadnb,self.polyadid.polschid_id)
+
+    Expansions = [1]
+
+    def getBSID(self):
+        return ( self.sublevid1_id,  self.sublevid2_id,  self.sublevid3_id,  self.sublevid4_id ) [:self.nbcoefn0]
+
+    def getCoef(self):
+        return ( self.coefficient1,  self.coefficient2,  self.coefficient3,  self.coefficient4 ) [:self.nbcoefn0]
 
 class Transitions(models.Model):
     transitionid = models.IntegerField(primary_key=True)
     isotopeid = models.ForeignKey(MoleculesIsotopes, db_column='isotopeid')
+    inchikey = models.CharField(max_length=81)
     typeid = models.ForeignKey(TransitionTypes, db_column='typeid')
     characid = models.ForeignKey(Characterisation, db_column='characid')
     lowstateid = models.ForeignKey(MolecularStates, db_column='lowstateid', related_name='rn_lowstateid')

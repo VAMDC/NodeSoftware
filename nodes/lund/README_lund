@@ -52,11 +52,10 @@ mysql -D lund -u lund -p < load.sql
 Start/Restart the server: 
 -------------------------
 
-Run ./restart_server.
+Run nodes/lund/restart_server_lund.sh.
 
-Or manually: 
+Or manually (from nodes/lund): 
 
 killall gunicorn 
 gunicorn_django -c gunicorn.conf
 sudo /etc/init.d/nginx restart (probably not necessary)
-sudo /etc/init.d/nginx restart

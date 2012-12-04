@@ -11,28 +11,35 @@
 # library imports 
 
 import sys
-from itertools import chain
 from django.conf import settings
 from vamdctap.sqlparse import *
 from vamdctap.sqlparse import sql2Q
 
-from math import sqrt, trunc
+from math import sqrt
 
 import dictionaries
 import models # this imports models.py from the same directory as this file
 
 from django.db.models import Q
+import re
+
+from inchivalidation import inchikey2chemicalformula
+import chemlib
+
+#in order to deal with the Last Modified header
+from email.Utils import formatdate
+import time
+import datetime
 
 def LOG(s):
-#    "Simple logger function"
-#    if settings.DEBUG: print >> sys.stdout, s
-#josis logfunction
+    """ logfunction. will be removed for final version. """
     logfilejosi = open('/var/log/vamdc_josi.log','a')
-    s=str(s)
+    s = str(s)
     logfilejosi.write(s + '\n')
 
 #generic empty class
 class GenericClass:
+    """return empty class"""
     pass
 
 #create class for datasets
@@ -41,13 +48,14 @@ class DataSet:
     this class provides a method to make the Tabulated sub-objects out of two tuples containing the x and y values
     """
 
-    def __init__(self,sourceref,xs,ys,productiondate):
+    def __init__(self, sourceref, xs, ys, productiondate, y_units):
         #put reference to source first, so we always know what it is
         self.SourceRef = sourceref
         self.TabData = []
 
         tabdata = GenericClass()
         tabdata.Xunits = 'eV'
+        tabdata.Yunits = y_units
         tabdata.ProductionDate = productiondate
         tabdata.X = GenericClass()
         tabdata.Y = GenericClass()
@@ -61,24 +69,27 @@ class DataSet:
         #uncomment the float as we do it in the energyscan-loop already when reading the data
         #tabdata.X.DataList = map(float,xs)
         #tabdata.Y.DataList = map(float,ys)
-        tabdata.X.DataList = map(str,xs)
-        tabdata.Y.DataList = map(str,ys)
+        tabdata.X.DataList = map(str, xs)
+        tabdata.Y.DataList = map(str, ys)
         
         tabdata.Xlength = len(xs)
         tabdata.Ylength = len(ys)
 
         #create errors
         tabdata.Y.ErrorList = []
-        yerrorlist = map(sqrt,ys)
+        #apparently we have to take the abs, since there can be negative data
+        yerrorlist = map(abs, ys)
+        yerrorlist = map(sqrt, yerrorlist)
         for yerror in yerrorlist:
-            tabdata.Y.ErrorList.append("%.2f" % round(yerror,2))
+            tabdata.Y.ErrorList.append("%.2f" % round(yerror, 2))
 
         self.TabData.append(tabdata)
 
 # create electron statically, as it is always involved and always the same
 #particles.append()
 class Particle:
-    def __init__(self,type):
+    """Provide class for particles. Only used for electrons as of now"""
+    def __init__(self, type):
         if type == 'electron':
             self.charge = -1
             self.name = 'electron'
@@ -95,7 +106,6 @@ def setupResults(sql, limit=1000):
     """
     # log the incoming query
     LOG(sql)
-    #LOG(sql.where)
 
     #x_internal is the list for the iteration over one search result, x the overall list (which is deduplicated in the end)
     
@@ -108,24 +118,35 @@ def setupResults(sql, limit=1000):
     particles = []
     electron_particle = Particle('electron')
 
-    # convert the incoming sql to a correct django query syntax object 
-    # based on the RESTRICTABLES dictionary in dictionaries.py
-    # (where2q is a helper function to do this for us).
-    q = where2q(sql.where,dictionaries.RESTRICTABLES)
-    
-    try: 
-        q = eval(q) # test queryset syntax validity
-    except:
-        LOG(q) 
-        return {}
+    inchiconvertedsearch = False
 
-    #q = sql2Q(sql.where)
+    #define the last modified header with an old date. we will compare all timestamps to this and take the most recent one
+    lastmodifiedheader = datetime.datetime(1970, 01, 01, 01, 01)
+
+    #use the function sql2Q provided by vamdctap to translate from query to Q-object
+    q = sql2Q(sql)
 
     #create queryset for energyscans according to query
     energyscans = models.Energyscan.objects.filter(q)
-    # count the number of matches, make a simple trunkation if there are
-    # too many (record the coverage in the returned header)
-    nenergyscans=energyscans.count()
+
+    # count the number of matches
+    nenergyscans = energyscans.count()
+    
+    #in case somebody is searching for a InchiKey and it didn't bring up any results:
+    #convert the inchikey to an inchi, extract the sum formula and try again
+    if nenergyscans == 0:
+        if re.search('InchiKey', str(sql)) is not None:
+            match = re.search('[A-Z]{14}-[A-Z]{10}-[A-Z]', str(sql))
+            if match is not None:
+                inchikey = str(sql)[match.start():match.end()]
+                chemical_formula = inchikey2chemicalformula(inchikey)
+
+                #now we extracted the stochiometric / chemical formula from the inchi. 
+                #let's see if there is something in the DB
+                if chemical_formula is not None:
+                    energyscans = models.Energyscan.objects.filter(Q(species__chemical_formula__exact=chemical_formula)|Q(origin_species__chemical_formula__exact=chemical_formula))
+                    nenergyscans = energyscans.count()
+                    inchiconvertedsearch = True
 
     #append electron if there are results:
     if nenergyscans != 0:
@@ -134,6 +155,11 @@ def setupResults(sql, limit=1000):
     #loop over energyscans that came back
 
     for energyscan in energyscans:
+        #compare if lastmodified is newer than then newest we have already included
+        if energyscan.lastmodified > lastmodifiedheader:
+            lastmodifiedheader = energyscan.lastmodified
+
+        #our reactants are always molecules. here we check if the product is a molecule.
         if energyscan.species.molecule:
             molecules_internal = models.Species.objects.filter(Q(id__exact=energyscan.species.id)|Q(id__exact=energyscan.origin_species.id))
         else:
@@ -149,7 +175,7 @@ def setupResults(sql, limit=1000):
 
         #keep in mind, that we actually defined the particle electron further up in the Particle() class. it was instanciated in the beginning of this function under the object electron_particle
         
-        electron = models.Species('electron','','','','')
+        electron = models.Species('electron', '', '', '', '')
         energyscan.Reactants = list(energyscan.Reactants.all())
         energyscan.Reactants.append(electron)
 
@@ -166,23 +192,37 @@ def setupResults(sql, limit=1000):
                 else:
                     atom.ioncharge = 0
 
+        #calculate exact / nominal masses
+        for atom in atoms_internal:
+            if molecule.isotope is True:
+                atom.exactmass = chemlib.chemicalformula2exactmass(atom.chemical_formula)
+
+        for molecule in molecules_internal:
+            if molecule.isotope is True:
+                molecule.mass = chemlib.chemicalformula2exactmass(molecule.chemical_formula)
+
+        #treat sources
         sources_internal = models.Source.objects.filter(id__exact=energyscan.source.id)
         for source in sources_internal:
-            authorlist=[]
+            authorlist = []
             for author in source.authors.all():
-                authorlist.append(u'%s, %s'%(author.lastname,author.firstname))
+                authorlist.append(u'%s, %s'%(author.lastname, author.firstname))
 
             source.author = authorlist
 
         #insert the standard-comment in addition to a possibly existing user-specific comment
         standardcomment = 'X-Values are measured with an energy resolution of %s eV. Therefore every shown peak is the original peak shape convoluted with our resolution. Energy scans are calibrated. Therefore we estimate an error of 0.1 eV' % energyscan.energyresolution 
 
-        LOG(energyscan.comment)
         if energyscan.comment != '':
             usercomment = energyscan.comment
             energyscan.comment = 'Comment of the Producer: ' + usercomment + ' Additional Comment: ' + standardcomment
         else:
             energyscan.comment = standardcomment 
+
+        #give warning when we converted inchikey to chemical formula for searching
+        if inchiconvertedsearch is True:
+            inchiwarning = 'WARNING: For this query, an InChI-Key was converted to a stoichiometric formula, because otherwise no results were obtained. '
+            energyscan.comment = inchiwarning + energyscan.comment
 
         #prepare the origin data
         ES_list = energyscan.energyscan_data.split()
@@ -192,7 +232,7 @@ def setupResults(sql, limit=1000):
         for datapoint in ES_list:
             datapoint = datapoint.replace(',','.')
             #even -> x-value
-            if k%2 == 0:
+            if k % 2 == 0:
                 x.append(float(datapoint))
             #odd -> y-value
             else: 
@@ -204,7 +244,7 @@ def setupResults(sql, limit=1000):
 
         #create datasets
         energyscan.DataSets = []
-        dataset = DataSet(energyscan.source.id,x,y,energyscan.productiondate)
+        dataset = DataSet(energyscan.source.id, x, y, energyscan.productiondate, energyscan.y_units)
         dataset.description = 'crossSection'
         dataset.accuracytype = 'systematic'
         energyscan.DataSets.append(dataset)
@@ -222,9 +262,17 @@ def setupResults(sql, limit=1000):
     natoms = len(atoms)
     nspecies = natoms + nmolecules
 
+    #Create the Last Modified header
+    #the header must not be newer than now!
+    if lastmodifiedheader > datetime.datetime.now():
+        lastmodifiedheader = datetime.datetime.now()
+
+    #not necessary any more, since t. marquart changed the behaviour of the NS
+    #lastmodifiedheader = formatdate(time.mktime(lastmodifiedheader.timetuple()))
+
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.
-    headerinfo={\
+    headerinfo = {\
             'COUNT-SOURCES':nsources,
             'COUNT-SPECIES':nspecies,
             'COUNT-ATOMS':natoms,
@@ -233,6 +281,7 @@ def setupResults(sql, limit=1000):
             'COUNT-STATES':0,
             'COUNT-RADIATIVE':0,
             'COUNT-NONRADIATIVE':0,
+            'LAST-MODIFIED':lastmodifiedheader,
             }
 
     # Return the data if it is not empty... The keynames are standardized. 
