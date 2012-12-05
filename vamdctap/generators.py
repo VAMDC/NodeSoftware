@@ -420,6 +420,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     if method:
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
     for k, v in extraAttr.items():
+        if not v: continue
         result.append( ' %s="%s"'% (k, v) )
     result.append( '>' )
 
@@ -433,6 +434,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( '</%s>' % tagname )
 
     for k, v in extraElem.items():
+        if not v: continue
         result.append( '<%s>%s</%s>' % (k, v, k) )
 
     return ''.join(result)
@@ -1405,7 +1407,10 @@ def XsamsRadTrans(RadTrans):
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
         yield makeDataType('Wavenumber', 'RadTransWavenumber', G)
-        yield makeDataType('Wavelength', 'RadTransWavelength', G)
+        yield makeDataType('Wavelength', 'RadTransWavelength', G,
+                extraAttr={'envRef':G('RadTransWavelengthEnv'),
+                    'vacuum':G('RadTransWavelengthVacuum')},
+                extraElem={'AirToVacuum':G('RadTransWavelengthAirToVac')})
         yield makeDataType('Frequency', 'RadTransFrequency', G)
         yield makeDataType('Energy', 'RadTransEnergy', G)
         yield '</EnergyWavelength>'
@@ -1685,6 +1690,7 @@ def XsamsCollTrans(CollTrans):
                 yield "</Product>"
 
         yield makeDataType("Threshold", "CollisionThreshold", G)
+        yield makeDataType("BranchingRatio", "CollisionBranchingRatio", G)
 
         if hasattr(CollTran, "DataSets"):
             yield "<DataSets>"
