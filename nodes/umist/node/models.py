@@ -122,6 +122,15 @@ class Reaction(models.Model):
     species = models.ManyToManyField(Species, db_table='reaction_species_mat_view', related_name='reactspecies')
     reactants = models.ManyToManyField(Species, db_table='reaction_reactants_mat_view', related_name='reactreactants')
     products = models.ManyToManyField(Species, db_table='reaction_products_mat_view', related_name='reactproducts')
+
+    # 2012-11-19 KWS Experiment: Attempt to allow any combination of many to many reactants and products
+    reactants1 = models.ManyToManyField(Species, db_table='reaction_reactants_mat_view', related_name='reactreactants1')
+    reactants2 = models.ManyToManyField(Species, db_table='reaction_reactants_mat_view', related_name='reactreactants2')
+    reactants3 = models.ManyToManyField(Species, db_table='reaction_reactants_mat_view', related_name='reactreactants3')
+    products1 = models.ManyToManyField(Species, db_table='reaction_products_mat_view', related_name='reactproducts1')
+    products2 = models.ManyToManyField(Species, db_table='reaction_products_mat_view', related_name='reactproducts2')
+    products3 = models.ManyToManyField(Species, db_table='reaction_products_mat_view', related_name='reactproducts3')
+    products4 = models.ManyToManyField(Species, db_table='reaction_products_mat_view', related_name='reactproducts4')
     class Meta:
         db_table = u'new_reaction'
 

@@ -1358,7 +1358,7 @@ def XsamsRadTranShifting(RadTran):
                     if hasattr(ShiftingParam, "Fit"):
                         for Fit in makeiter(ShiftingParam.Fits):
                             GSF = lambda name: GetValue(name, Fit=Fit)
-                            string += "<FitParameters functionRef='F%s-%s>'" % (NODEID, GSF("RadTransShiftingParamFitFunction"))
+                            string += "<FitParameters functionRef='F%s-%s'>" % (NODEID, GSF("RadTransShiftingParamFitFunction"))
 
                             # hard-code to avoid yet anoter named loop variable
                             for name, units, desc, llim, ulim in makeloop("RadTransShiftingParamFitArgument", GSF, "Name", "Units", "Description", "LowerLimit", "UpperLimit"):
@@ -1751,7 +1751,7 @@ def XsamsCollTrans(CollTrans):
 
                                 accur = GDF("CollisionFitDataAccuracy")
                                 if accur:
-                                    yield "<Accuracy>%s</Accuracy>" % accur
+                                    yield "<FitAccuracy>%s</FitAccuracy>" % accur
                                 physun = GDF("CollisionFitDataPhysicalUncertainty")
                                 if physun:
                                     yield "<PhysicalUncertainty>%s</PhysicalUncertainty>" % physun
@@ -1777,7 +1777,7 @@ def XsamsCollTrans(CollTrans):
                         # handle X components
                         yield makePrimaryType("X", "CollisionTabulatedDataX", GDT, extraAttr={"parameter": GDT("CollisionTabulatedDataXParameter"),
                                                                                               "units": GDT("CollisionTabulatedDataXUnits")})
-                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
+                        yield "<Description>%s</Description>" % GDT("CollisionTabulatedDataXDescription")
 
                         if GDT("CollisionTabulatedDataXDataList"):
                             yield "<DataList count='%s'>%s</DataList>" % (GDT("CollisionTabulatedDataXDataListN"), " ".join(makeiter(GDT("CollisionTabulatedDataXDataList"))))
@@ -1793,7 +1793,7 @@ def XsamsCollTrans(CollTrans):
                         # handle Y components
                         yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT, extraAttr={"parameter": GDT("CollisionTabulatedDataYParameter"),
                                                                                               "units": GDT("CollisionTabulatedDataYUnits")})
-                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
+                        yield "<Description>%s</Description>" % GDT("CollisionTabulatedDataYDescription")
 
                         if GDT("CollisionTabulatedDataYDataList"):
                             yield "<DataList count='%s'>%s</DataList>" % (GDT("CollisionTabulatedDataYDataListN"), " ".join(makeiter(GDT("CollisionTabulatedDataYDataList"))))

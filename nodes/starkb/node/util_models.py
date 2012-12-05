@@ -1,4 +1,3 @@
-
 class Result:
 	def __init__(self):
 		self.header = {}
@@ -15,6 +14,7 @@ class Result:
 							}
 		self.data = {}
 		self._dataFields = {'RadTrans':None,
+                            'Molecules':None,
 							'Atoms':None,
 							'Environments':None,
 							'Particles' : None,

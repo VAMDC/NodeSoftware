@@ -663,6 +663,7 @@ mapping = [
 # 5 - linelists
 
 # short-cutting the mapping for testing
+#mapping = [mapping[4]]
 #mapping = [mapping[0]] + mapping[2:]
 #mapping = [mapping[1]]
 #mapping = [mapping[-2]]

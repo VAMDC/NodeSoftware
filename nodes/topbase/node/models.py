@@ -41,10 +41,8 @@ class Source(models.Model):
     
     def authornames(self):
         names = []
-        log.debug('test : '+str(self.id))
         authors = Authorsource.objects.filter(source=self)
         for author in authors:
-            log.debug('found : ')
             names.append(author.name)
         return names
         

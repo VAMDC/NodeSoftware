@@ -107,4 +107,5 @@ RESTRICTABLES = {\
 'MoleculeCASRegistryNumber':('species__cas','origin_species__cas'),
 'ParticleName':'electron',
 'CollisionCode':'elat',
+'SourceDOI':'source__doi',
 }
