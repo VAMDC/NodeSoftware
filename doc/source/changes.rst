@@ -34,7 +34,11 @@ set from ``settings.py`` (variable LAST_MODIFIED) or from the node's
 values, either a string (like: *Sat, 10 Nov 2012 23:00:00 GMT*) or a
 Python ``datetime.date`` instance that will be formatted automatically.
 
-**Basis States**. The dictionary keywords for the molecular basis states were named inconsistently. In order to keep the naming scheme somewhat sane, `BasisState*` have been renamed to `MoleculeBasisState*`. The words for the basis state quantum numbers like `BasisStateQN*` have been renamed to `MoleculeBQN*`.
+**Basis States**. The dictionary keywords for the molecular basis states were
+named inconsistently. In order to keep the naming scheme somewhat sane, words
+like `BasisState*` have been renamed to `MoleculeBasisState*`. The words for
+the basis state quantum numbers like `BasisStateQN*` have been renamed to
+`MoleculeBQN*`.
 
 **License**. A file LICENSE has been added to the package and contains the agreed-upon software license, as taken from http://opensource.org/licenses/BSD-3-Clause
 
