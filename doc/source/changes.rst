@@ -34,7 +34,9 @@ set from ``settings.py`` (variable LAST_MODIFIED) or from the node's
 values, either a string (like: *Sat, 10 Nov 2012 23:00:00 GMT*) or a
 Python ``datetime.date`` instance that will be formatted automatically.
 
-**License** Licensing information , BSD
+**Basis States**. The dictionary keywords for the molecular basis states were named inconsistently. In order to keep the naming scheme somewhat sane, `BasisState*` have been renamed to `MoleculeBasisState*`. The words for the basis state quantum numbers like `BasisStateQN*` have been renamed to `MoleculeBQN*`.
+
+**License**. A file LICENSE has been added to the package and contains the agreed-upon software license, as taken from http://opensource.org/licenses/BSD-3-Clause
 
 **Django upgrade**. Lastly, please do not forget to keep the underlying
 software packages up to date. Currently Django is at version 1.4.2 and upgrading
