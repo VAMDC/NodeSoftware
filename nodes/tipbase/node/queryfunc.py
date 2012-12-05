@@ -15,38 +15,48 @@ from django.conf import settings
 from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.db import connection
-import logging
-log=logging.getLogger('vamdc.tap')
+#import logging
+#log=logging.getLogger('vamdc.tap')
 
 import dictionaries
 import models as django_models
 import util_models as util_models
 
-def setupResults(sql):
-	"""		
-		Return results for request
-		@type  sql: string
-		@param sql: vss request
-		@type  limit: int
-		@param limit: maximum number of results
-		@rtype:   dict
-		@return:  dictionnary containig data		
-	"""
-	result = None
-	# return all species
-	if str(sql).strip() == 'select species': 
-		result = setupSpecies()
-	# all other requests
-	else:		
-		result = setupVssRequest(sql)			
+def replacements(sql):
+    pfx = 'target.'
+    restrictables = ['IonCharge', 'AtomSymbol', 'AtomNuclearCharge']
+    for r in restrictables : 
+        if pfx+r in sql:
+            sql=sql.replace(pfx+r, r)
+            
+    return sql
 
-	if isinstance(result, util_models.Result) :
-		return result.getResult()
-	else:
-		raise Exception('error while generating result')
-		
-		
-def setupVssRequest(sql, limit=1000):
+def setupResults(sql):
+    """		
+        Return results for request
+        @type  sql: string
+        @param sql: vss request
+        @type  limit: int
+        @param limit: maximum number of results
+        @rtype:   dict
+        @return:  dictionnary containig data		
+    """
+
+    result = None
+    sql.request['QUERY'] = replacements(sql.request['QUERY'])
+    # return all species
+    if str(sql.request['QUERY']).strip().lower() == 'select species': 
+        result = setupSpecies()
+    # all other requests
+    else:		
+        result = setupVssRequest(sql)			
+
+    if isinstance(result, util_models.Result) :
+        return result.getResult()
+    else:
+        raise Exception('error while generating result')  
+
+def setupVssRequest(sql, limit=10000):
     """		
         Execute a vss request
         @type  sql: string
@@ -56,8 +66,7 @@ def setupVssRequest(sql, limit=1000):
     """
     # convert the incoming sql to a correct django query syntax object 
     # based on the RESTRICTABLES dictionary in dictionaries.py
-    q = sql2Q(sql)   
-
+    q = sql2Q(sql)  
     transs = django_models.Collisionaltransition.objects.filter(q)
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)
@@ -111,7 +120,7 @@ def setupSpecies():
 	result = util_models.Result()
 	ids = django_models.Collisionaltransition.objects.all().values_list('version', flat=True)
 	versions = django_models.Version.objects.filter(pk__in = ids)
-	result.addHeaderField('COUNT-SPECIES',len(versions))
+	result.addHeaderField('COUNT-SPECIES',versions.count())
 	result.addDataField('Atoms',versions)	
 	return result
 	

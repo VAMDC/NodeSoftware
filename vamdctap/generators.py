@@ -1777,7 +1777,7 @@ def XsamsCollTrans(CollTrans):
                         # handle X components
                         yield makePrimaryType("X", "CollisionTabulatedDataX", GDT, extraAttr={"parameter": GDT("CollisionTabulatedDataXParameter"),
                                                                                               "units": GDT("CollisionTabulatedDataXUnits")})
-                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataXDescription")
+                        yield "<Description>%s</Description>" % GDT("CollisionTabulatedDataXDescription")
 
                         if GDT("CollisionTabulatedDataXDataList"):
                             yield "<DataList count='%s'>%s</DataList>" % (GDT("CollisionTabulatedDataXDataListN"), " ".join(makeiter(GDT("CollisionTabulatedDataXDataList"))))
@@ -1793,7 +1793,7 @@ def XsamsCollTrans(CollTrans):
                         # handle Y components
                         yield makePrimaryType("Y", "CollisionTabulatedDataY", GDT, extraAttr={"parameter": GDT("CollisionTabulatedDataYParameter"),
                                                                                               "units": GDT("CollisionTabulatedDataYUnits")})
-                        yield "<DataDescription>%s</DataDescription>" % GDT("CollisionTabulatedDataYDescription")
+                        yield "<Description>%s</Description>" % GDT("CollisionTabulatedDataYDescription")
 
                         if GDT("CollisionTabulatedDataYDataList"):
                             yield "<DataList count='%s'>%s</DataList>" % (GDT("CollisionTabulatedDataYDataListN"), " ".join(makeiter(GDT("CollisionTabulatedDataYDataList"))))
