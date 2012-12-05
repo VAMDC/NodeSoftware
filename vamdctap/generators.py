@@ -1148,9 +1148,9 @@ def XsamsBSBuild(MoleculeBasisState):
     if cont:
         yield ret
     else:
-        yield makePrimaryType("BasisState", "BasisState", G,
+        yield makePrimaryType("BasisState", "MoleculeBasisState", G,
             extraAttr={"basisStateID":'SB%s-%s' % (G('NodeID'),
-                                                   G('BasisStateID')),})
+                                                   G('MoleculeBasisStateID')),})
         cont, ret = checkXML(G("BasisStateQuantumNumbers"))
         if cont:
             yield ret
@@ -1178,7 +1178,7 @@ def XsamsMolecules(Molecules):
             yield MCS
 
         if hasattr(Molecule, 'BasisStates'):
-            yield makePrimaryType('BasisStates', 'BasisStates', G)
+            yield makePrimaryType('BasisStates', 'MoleculeBasisStates', G)
             for MoleculeBasisState in Molecule.BasisStates:
                 for BS in XsamsBSBuild(MoleculeBasisState):
                     yield BS
