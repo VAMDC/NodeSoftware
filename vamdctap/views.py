@@ -237,7 +237,7 @@ def cleandict(dict):
     """
     ret={}
     for key in dict.keys():
-        if dict[key] and not '.' in dict[key]: ret[key]=dict[key]
+        if dict[key] and not '.' in key: ret[key]=dict[key]
     return ret
 
 
