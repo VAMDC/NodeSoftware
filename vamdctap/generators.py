@@ -1042,15 +1042,15 @@ def makeCaseBSQNs(G):
         '<case:QNs>']
 
     result.extend(['<case:vi mode="%s">%s</case:vi>' %
-                   (makeiter(G("BasisStateQNviMode"))[i],val)
-                   for i, val in enumerate(makeiter(G("BasisStateQNvi")))])
+                   (makeiter(G("MoleculeBQNviMode"))[i],val)
+                   for i, val in enumerate(makeiter(G("MoleculeBQNvi")))])
     result.extend(['<case:li mode="%s">%s</case:li>' %
-                   (makeiter(G("BasisStateQNliMode"))[i],val)
-                   for i, val in enumerate(makeiter(G("BasisStateQNli")))])
-    result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("BasisStateQNrName"))[i],val)
-                   for i,val in enumerate(makeiter(G("BasisStateQNr")))])
-    result.extend(['<case:sym name="%s">%s</case:sym>'%(makeiter(G("BasisStateQNsymName"))[i],val)
-                   for i,val in enumerate(makeiter(G("BasisStateQNsym")))])
+                   (makeiter(G("MoleculeBQNliMode"))[i],val)
+                   for i, val in enumerate(makeiter(G("MoleculeBQNli")))])
+    result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("MoleculeBQNrName"))[i],val)
+                   for i,val in enumerate(makeiter(G("MoleculeBQNr")))])
+    result.extend(['<case:sym name="%s">%s</case:sym>'%(makeiter(G("MoleculeBQNsymName"))[i],val)
+                   for i,val in enumerate(makeiter(G("MoleculeBQNsym")))])
     result.extend([
             "</case:QNs>",
             "</Case>\n"])
