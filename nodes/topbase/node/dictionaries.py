@@ -41,6 +41,7 @@ RETURNABLES = {\
 'AtomStateIonizationEnergyUnit' : 'AtomState.ionizationenergyunit',
 'AtomStateTotalAngMom' : 'AtomState.totalangularmomentum',
 'AtomStateTermLabel' : 'Component.termlabel',
+'AtomStateConfigurationLabel' : 'Component.configuration',
 'AtomStateTermLSL' : 'Component.Lscoupling.l',
 'AtomStateTermLSS' : 'Component.Lscoupling.s',
 'AtomStateTermLSMultiplicity' : 'Component.Lscoupling.multiplicity',

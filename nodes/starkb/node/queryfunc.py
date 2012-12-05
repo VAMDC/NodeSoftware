@@ -15,8 +15,8 @@ from django.conf import settings
 from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-import logging
-log=logging.getLogger('vamdc.tap')
+#import logging
+#log=logging.getLogger('vamdc.tap')
 from django.db import connection
 import dictionaries
 import models as django_models
@@ -57,7 +57,7 @@ def setupSpecies():
 	result.addDataField('Atoms',species)	
 	return result
 	
-def setupVssRequest(sql, limit=1000):
+def setupVssRequest(sql, limit=2000):
     """		
         Execute a vss request
         @type  sql: string
@@ -69,6 +69,7 @@ def setupVssRequest(sql, limit=1000):
     result = util_models.Result()
     q = sql2Q(sql)    
 
+    #select transitions : combination of density/temperature
     transs = django_models.Transition.objects.filter(q)
     ntranss=transs.count()
 
@@ -76,7 +77,7 @@ def setupVssRequest(sql, limit=1000):
         transs, percentage = truncateTransitions(transs, q, limit)
     else:
         percentage=None 
-    log.debug("number of transitions : "+str(ntranss))
+        
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     if ntranss > 0 :	
@@ -194,7 +195,8 @@ def getSpeciesWithStates(transs):
 
             nstates += len(specie.States)
         except ObjectDoesNotExist as e:
-            log.debug(str(e)) # this species is a collider
+            pass
+            #log.debug(str(e)) # this species is a collider
 
     nspecies = len(species) # get some statistics 
     return species, nspecies, nstates  
@@ -205,6 +207,7 @@ def getStates(specie, sids):
     for component in statescomponent : 
         starkState = util_models.State()
         starkState.id = component.id
+        starkState.parity = component.get_int_parity()
         starkState.totalAngularMomentum = component.j_asFloat()
         starkState.Components.append(component)
         allStates.append(starkState)
