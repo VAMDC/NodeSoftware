@@ -445,9 +445,9 @@ def makeArgumentType(tagname, keyword, G):
 
     """
     string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword))
-    string += "<Description>%s</Description>" % G("%sDescription" % keyword)
-    string += "<LowerLimit>%s</LowerLimit>" % G("%sLowerLimit" % keyword)
-    string += "<UpperLimit>%s</UpperLimit>" % G("%sUpperLimit" % keyword)
+    string +=  makeOptionalTag("Description","%sDescription" % keyword, G)
+    string +=  makeOptionalTag("LowerLimit","%sLowerLimit" % keyword, G)
+    string +=  makeOptionalTag("UpperLimit","%sUpperLimit" % keyword, G)
     string += "</%s>" % tagname
     return string
 
@@ -1206,7 +1206,7 @@ def XsamsSolids(Solids):
             yield ret
             continue
         G = lambda name: GetValue(name, Solid=Solid)
-        makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
+        yield makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
         if hasattr(Solid, "Layers"):
             for Layer in makeiter(Solid.Layers):
                 GL = lambda name: GetValue(name, Layer=Layer)
@@ -1244,7 +1244,9 @@ def XsamsParticles(Particles):
             yield ret
             continue
         G = lambda name: GetValue(name, Particle=Particle)
-        yield """<Particle speciesID="X%s-%s" name="%s">""" % (G('NodeID'), G('ParticleSpeciesID'), G('ParticleName'))
+        yield makePrimaryType("Particle", "Particle", G,
+         extraAttr={'speciesID':"X%s-%s"%(G('NodeID'), G('ParticleSpeciesID')),
+                    'name':"%s"%G('ParticleName')})
         yield "<ParticleProperties>"
         charge = G("ParticleCharge")
         if charge :
