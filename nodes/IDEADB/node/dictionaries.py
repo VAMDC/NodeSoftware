@@ -1,3 +1,5 @@
+from vamdctap.unitconv import *
+
 # -*- coding: utf-8 -*-
 """
 ExampleNode dictionary definitions. 
@@ -39,7 +41,6 @@ RETURNABLES = {\
 'CollisionTabulatedDataYDescription':'Ion Yield',
 'CollisionTabulatedDataXDescription':'Energy of the impact electron',
 
-'CollisionDataSetRef':'DataSet.SourceRef',
 'CollisionTabulatedData':'TabData',
 
 #errors
@@ -97,6 +98,11 @@ RETURNABLES = {\
 # for the Species.atomic field  would be written as species__atomic.
 
 RESTRICTABLES = {\
+#general stuff
+'CollisionCode':test_constant(['elat']),
+'SourceDOI':'source__doi',
+
+#general: has the tuples and searches either in origin_species or in species
 'MoleculeChemicalName':('species__name','origin_species__name'),
 'AtomMassNumber':'species__mass',
 'MoleculeMolecularWeight':('species__mass','origin_species__mass'),
@@ -105,7 +111,36 @@ RESTRICTABLES = {\
 'InchiKey':('species__inchikey','origin_species__inchikey'),
 'MoleculeStoichiometricFormula':('species__chemical_formula','origin_species__chemical_formula'),
 'MoleculeCASRegistryNumber':('species__cas','origin_species__cas'),
-'ParticleName':'electron',
-'CollisionCode':'elat',
-'SourceDOI':'source__doi',
+'ParticleName':test_constant(['electron']),
+
+#only search for reactants
+'reactant1.MoleculeChemicalName':('origin_species__name'),
+'reactant1.AtomMassNumber':'species__mass',
+'reactant1.MoleculeMolecularWeight':('origin_species__mass'),
+'reactant1.AtomSymbol':'species__chemical_formula',
+'reactant1.Inchi':('origin_species__inchi'),
+'reactant1.InchiKey':('origin_species__inchikey'),
+'reactant1.MoleculeStoichiometricFormula':('origin_species__chemical_formula'),
+'reactant1.MoleculeCASRegistryNumber':('origin_species__cas'),
+'reactant1.ParticleName':test_constant(['electron']),
+
+'reactant2.MoleculeChemicalName':('origin_species__name'),
+'reactant2.AtomMassNumber':'species__mass',
+'reactant2.MoleculeMolecularWeight':('origin_species__mass'),
+'reactant2.AtomSymbol':'species__chemical_formula',
+'reactant2.Inchi':('origin_species__inchi'),
+'reactant2.InchiKey':('origin_species__inchikey'),
+'reactant2.MoleculeStoichiometricFormula':('origin_species__chemical_formula'),
+'reactant2.MoleculeCASRegistryNumber':('origin_species__cas'),
+'reactant2.ParticleName':test_constant(['electron']),
+
+#only search for products
+'product1.MoleculeChemicalName':('species__name'),
+'product1.AtomMassNumber':'species__mass',
+'product1.MoleculeMolecularWeight':('species__mass'),
+'product1.AtomSymbol':'species__chemical_formula',
+'product1.Inchi':('species__inchi'),
+'product1.InchiKey':('species__inchikey'),
+'product1.MoleculeStoichiometricFormula':('species__chemical_formula'),
+'product1.MoleculeCASRegistryNumber':('species__cas'),
 }
