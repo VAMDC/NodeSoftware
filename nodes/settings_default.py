@@ -5,6 +5,7 @@
 #
 
 import sys, os
+import datetime
 
 ###################################################
 # Software and standards version
@@ -33,6 +34,8 @@ MANAGERS = ADMINS
 EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
                    'SELECT ALL WHERE ... something else',
                    ]
+
+LAST_MODIFIED = datetime.date(1901,2,3)
 
 # This turns on/off the serving of static files
 # though Django. It is better to let the deployment

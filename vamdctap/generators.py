@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#coding: utf-8 -*-
 
 
 import sys
@@ -1971,6 +1971,28 @@ def generatorError(where):
     log.warn('Generator error in%s!' % where, exc_info=sys.exc_info())
     return where
 
+def XsamsHeader(HeaderInfo):
+    head = ['<?xml version="1.0" encoding="UTF-8"?>\n']
+    head.append('<XSAMSData xmlns="http://vamdc.org/xml/xsams/%s"' % XSAMS_VERSION )
+    head.append(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+    head.append(' xmlns:cml="http://www.xml-cml.org/schema"')
+    head.append(' xsi:schemaLocation="http://vamdc.org/xml/xsams/%s %s">'\
+            % (XSAMS_VERSION, SCHEMA_LOCATION) )
+
+    if HeaderInfo:
+        HeaderInfo = CaselessDict(HeaderInfo)
+        if HeaderInfo.has_key('Truncated'):
+            if HeaderInfo['Truncated'] != None: # note: allow 0 percent
+                head.append( """
+<!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent %s percent of all available data at this node that
+   matched the query.
+-->
+""" % HeaderInfo['Truncated'] )
+
+    return ''.join(head)
+
 def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
           Environments=None, Atoms=None, Molecules=None, Solids=None, Particles=None,
           CollTrans=None, RadTrans=None, RadCross=None, NonRadTrans=None):
@@ -1982,24 +2004,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     and not to be looped over beforehand.
     """
 
-    yield '<?xml version="1.0" encoding="UTF-8"?>\n'
-    yield '<XSAMSData xmlns="http://vamdc.org/xml/xsams/%s"' % XSAMS_VERSION
-    yield ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
-    yield ' xmlns:cml="http://www.xml-cml.org/schema"'
-    yield ' xsi:schemaLocation="http://vamdc.org/xml/xsams/%s %s">'\
-            % (XSAMS_VERSION, SCHEMA_LOCATION)
-
-    if HeaderInfo:
-        HeaderInfo = CaselessDict(HeaderInfo)
-        if HeaderInfo.has_key('Truncated'):
-            if HeaderInfo['Truncated'] != None: # note: allow 0 percent
-                yield """
-<!--
-   ATTENTION: The amount of data returned may have been truncated by the node.
-   The data below represent %s percent of all available data at this node that
-   matched the query.
--->
-""" % HeaderInfo['Truncated']
+    yield XsamsHeader(HeaderInfo)
 
     errs=''
 

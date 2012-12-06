@@ -1,6 +1,5 @@
 from settings_default import *
 
-#DEBUG = True
 DEBUG = False
 TRANSLIM = 6000
 
@@ -14,7 +13,6 @@ if not 'vald.node_common' in INSTALLED_APPS:
     INSTALLED_APPS.append('vald.node_common')
 if not NODEPKG in INSTALLED_APPS:
     INSTALLED_APPS.append(NODEPKG)
-#print NODEPKG,INSTALLED_APPS
 
 DATABASES = {
   'default': {
@@ -24,6 +22,8 @@ DATABASES = {
     'PASSWORD': 'V@ld',
   },
 }
+LAST_MODIFIED = datetime.date(2012,11,11)
+
 EXAMPLE_QUERIES = [\
     "SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4000.01",
     "SELECT ALL WHERE AtomSymbol = 'U'",
@@ -32,9 +32,8 @@ EXAMPLE_QUERIES = [\
     ]
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
-DEPLOY_URL = 'http://vald.astro.uu.se/atoms-dev/tap/'
+DEPLOY_URL = 'http://vald.astro.uu.se/atoms-12.07/tap/'
 
-LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode.log'
-#LOGGING['handlers']['logfile']['filename'] = '/tmp/test_atomnode.log'
+LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode12.07.log'
 if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'

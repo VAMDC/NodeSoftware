@@ -292,6 +292,9 @@ where *checkIron* would be a function, e.g. defined in the same file (before ref
 .. note::
     If this topic is relevant for you, please also have a look into ``vamdctap/unitconv.py`` where there are some examples.
 
+.. note::
+    For the easy example of comparing to a constant string, we have a ready solution: One can use `'SomeRestrictable':test_constant(['Fe','U']),` where the function `test_constant` takes a single string or a list of strings that the value will be compared to.
+
 Manipulatine the query
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
