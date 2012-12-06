@@ -18,7 +18,21 @@ def checkChemicalName(restrictable,operator,string):
 def checkStoichiometricFormula(restrictable,operator,string):
     value = string.strip('\'"')
     value = value.upper()
-    if value == 'H4C' and operator in ('=','=='):
+    if value == 'CH4' and operator in ('=','=='):
+        return Q(pk=F('pk'))
+    else:
+        return ~Q(pk=F('pk'))
+
+#  function rather table->fields for EnvironmentTemperature
+
+def checkEnvironmentTemperature(restrictable,operator,string):
+    value = string.strip('\'"')
+    value = float(value)
+    if value == 296. and operator in ('=','==','<=','>='):
+        return Q(pk=F('pk'))
+    elif value > 296. and operator in ('<','<='):
+        return Q(pk=F('pk'))
+    elif value < 296. and operator in ('>','>='):
         return Q(pk=F('pk'))
     else:
         return ~Q(pk=F('pk'))

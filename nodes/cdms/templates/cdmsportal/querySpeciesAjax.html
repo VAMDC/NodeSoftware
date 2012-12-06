@@ -1,0 +1,39 @@
+{% extends "cdmsportal/selectSpeciesAjax.html" %}	  
+      
+      {% block moleculesgroup %}
+      <div class="type-select">
+	<label for="Moleculesgrp">Group</label>
+	<select id="Moleculesgrp" name="Moleculesgrp" multiple size="4">
+	  <option>all species</option>
+	  
+	  <option> ISM/CSM </option>
+	  <option> atomic fine structure </option>
+	  <option> Anions </option>
+	  <option> Cations </option>
+	  <option> CnH </option>
+	  <option> CnH2 </option>
+	  
+	  <option> Complex molecules </option>
+	  <option> Cyano Comp. </option>
+	  <option> Deuterated Species </option>
+	  <option> Hydride Species AHn </option>
+	  <option> metal compounds </option>
+	  <option> Other N Comp. </option>
+	  
+	  <option> O Compounds </option>
+	  <option> P Compounds </option>
+	  <option> S Compounds </option>
+	  <option> Si Compounds </option>
+	</select>
+      </div>
+      {% endblock %}
+      
+      {% block hint %}
+      <p class="important"> Select one or multiple species by mouse clicks! </p>
+      {% endblock %}
+
+    {% block selectButtons %}
+    <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="Select All" NAME="B_SelectAll" onclick="selectAll();">   
+    <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="Deselect All" NAME="B_DeselectAll" onclick="deselectAll();">   
+    {% endblock %}
+

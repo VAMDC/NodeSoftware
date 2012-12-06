@@ -8,6 +8,15 @@
 # into your database.
 
 from django.db import models
+from dictionaries import RETURNABLES
+
+NODEID = RETURNABLES['NodeID']
+source_prefix = 'B%s-' % NODEID
+func_prefix = 'F%s-' % NODEID
+env_prefix = 'E%s-' % NODEID
+allenv = ('self','N2','O2','air','H2O','CO2','H2','He','Ar')                                       # all broadening environments
+curenvid = (0,1,2,6)                                                                               # current environment ids e.g. 1,6 = N2,H2
+
 
 class TransitionTypes(models.Model):
     typeid = models.IntegerField(primary_key=True)
@@ -21,13 +30,17 @@ class Characterisation(models.Model):
     class Meta:
         db_table = u'characterisation'
 
-    def renameCharacterisation(self):
-        result = self.name
-        if(self.characid == 1):
-           result = "E2"
+    def getTransitionKind(self):
         if(self.characid == 2):
-           result = "P"
-        return result
+           return "Polarizability"
+        else:
+           return
+
+    def getMultipole(self):
+        if(self.characid == 1):
+           return "E1"
+        else:
+           return
 
     def getUnit(self):
         result = self.name
@@ -205,9 +218,21 @@ class Polyads(models.Model):
     class Meta:
         db_table = u'polyads'
 
+class MoleculesIsotopes(models.Model):
+    isotopeid = models.IntegerField(primary_key=True)
+    moltypeid = models.ForeignKey(MoleculeTypes, db_column='moltypeid')
+    isotopename = models.CharField(max_length=30)
+    inchi = models.CharField(max_length=120)
+    inchikey = models.CharField(max_length=81)
+    formtex = models.CharField(max_length=15)
+    casregnum = models.CharField(max_length=15)
+    eostateid = models.IntegerField()
+    class Meta:
+        db_table = u'molecules_isotopes'
+
 class VibrationalSublevels(models.Model):
     sublevid = models.IntegerField(primary_key=True)
-    moltypeid = models.ForeignKey(MoleculeTypes, db_column='moltypeid')
+    isotopeid = models.ForeignKey(MoleculesIsotopes, db_column='isotopeid')
     qvalue1 = models.IntegerField()
     qvalue2 = models.IntegerField()
     qvalue3 = models.IntegerField()
@@ -232,14 +257,114 @@ class VibrationalSublevels(models.Model):
     class Meta:
         db_table = u'vibrational_sublevels'
 
-class MoleculesIsotopes(models.Model):
-    isotopeid = models.IntegerField(primary_key=True)
-    moltypeid = models.ForeignKey(MoleculeTypes, db_column='moltypeid')
-    isotopename = models.CharField(max_length=30)
-    inchi = models.CharField(max_length=120)
-    inchikey = models.CharField(max_length=81)
-    class Meta:
-        db_table = u'molecules_isotopes'
+    def getQNviMode(self):
+        if( self.isotopeid.moltypeid.description == 'XY4' ):
+            # XY4
+            return [1,2,3,4]
+        else:
+            # XY3Z
+            return [1,2,3,4,5,6]
+
+    def getQNvi(self):
+        if( self.isotopeid.moltypeid.description == 'XY4' ):
+            # XY4
+            return [self.qvalue3,self.qvalue7,self.qvalue11,self.qvalue16]
+        else:
+            # XY3Z
+            return [self.qvalue3,self.qvalue6,self.qvalue9,self.qvalue12,self.qvalue15,self.qvalue19]
+
+    def getQNliMode(self):
+        if( self.isotopeid.moltypeid.description == 'XY4' ):
+            # XY4
+            return [1,2,3,4]
+        else:
+            # XY3Z
+            return [1,2,3,4,5,6]
+
+    def getQNli(self):
+        if( self.isotopeid.moltypeid.description == 'XY4' ):
+            # XY4
+            return [self.qvalue4,self.qvalue8,self.qvalue12,self.qvalue17]
+        else:
+            # XY3Z
+            return [self.qvalue4,self.qvalue7,self.qvalue10,self.qvalue13,self.qvalue16,self.qvalue20]
+
+    def getQNrName(self):
+        res = ["nv"]
+        if( self.isotopeid.moltypeid.description == 'XY4' ):
+            # XY4
+            res += ["n1","n2","n3","n4"]
+        else:
+            # XY3Z
+            pass
+        return res
+
+    def getQNr(self):
+        res = [self.qvalue2]
+        if( self.isotopeid.moltypeid.description == 'XY4' ):
+            # XY4
+            res += [self.qvalue5,self.qvalue9,self.qvalue13,self.qvalue18]
+        else:
+            # XY3Z
+            pass
+        return res
+
+    def getQNsymName(self):
+        res = ["Cv"]
+        if( self.isotopeid.moltypeid.description == 'XY4' ):
+            # XY4
+            res += ["C1","C2","C3","C23","C4"]
+        else:
+            # XY3Z
+            res += ["C1","C2","C3","C4","C5","C45","C6"]
+        return res
+
+    def getQNsym(self):
+        # Cv
+        vssymid = self.qvalue1
+        s = SymmetryNames.objects.get(symnameid = vssymid)
+        res = [s.name]
+        if( self.isotopeid.moltypeid.description == 'XY4' ):
+            # XY4
+            vssymid = self.qvalue6
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+            vssymid = self.qvalue10
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+            vssymid = self.qvalue14
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+            vssymid = self.qvalue15
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+            vssymid = self.qvalue19
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+        else:
+            # XY3Z
+            vssymid = self.qvalue5
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+            vssymid = self.qvalue8
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+            vssymid = self.qvalue11
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+            vssymid = self.qvalue14
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+            vssymid = self.qvalue17
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+            vssymid = self.qvalue18
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+            vssymid = self.qvalue21
+            s = SymmetryNames.objects.get(symnameid = vssymid)
+            res.append(s.name)
+        return res
 
 class ScalarNumbers(models.Model):
     scalarid = models.IntegerField(primary_key=True)
@@ -251,10 +376,16 @@ class ScalarNumbers(models.Model):
     class Meta:
         db_table = u'scalar_numbers'
 
-class VibrationalComponents(models.Model):
-    vibcompid = models.IntegerField(primary_key=True)
+class MolecularStates(models.Model):
+    stateid = models.IntegerField(primary_key=True)
     isotopeid = models.ForeignKey(MoleculesIsotopes, db_column='isotopeid')
     polyadid = models.ForeignKey(Polyads, db_column='polyadid')
+    position = models.FloatField()
+    j = models.IntegerField()
+    symname = models.CharField(max_length=3)
+    alpha = models.IntegerField()
+    weight = models.IntegerField()
+    nbcoefn0 = models.IntegerField()
     sublevid1 = models.ForeignKey(VibrationalSublevels, null=True, db_column='sublevid1', blank=True, related_name='rn_sublevid1')
     coefficient1 = models.FloatField(null=True, blank=True)
     sublevid2 = models.ForeignKey(VibrationalSublevels, null=True, db_column='sublevid2', blank=True, related_name='rn_sublevid2')
@@ -376,54 +507,41 @@ class VibrationalComponents(models.Model):
     sublevid60 = models.ForeignKey(VibrationalSublevels, null=True, db_column='sublevid60', blank=True, related_name='rn_sublevid60')
     coefficient60 = models.FloatField(null=True, blank=True)
     class Meta:
-        db_table = u'vibrational_components'
-
-class MolecularStates(models.Model):
-    stateid = models.IntegerField(primary_key=True)
-    isotopeid = models.ForeignKey(MoleculesIsotopes, db_column='isotopeid')
-    polyadid = models.ForeignKey(Polyads, db_column='polyadid')
-    position = models.FloatField()
-    j = models.IntegerField()
-    symnameid = models.ForeignKey(SymmetryNames, db_column='symnameid')
-    alpha = models.IntegerField()
-    vibcompid = models.ForeignKey(VibrationalComponents, db_column='vibcompid')
-    weight = models.IntegerField()
-    class Meta:
         db_table = u'molecular_states'
 
-    def PnJcn(self):
-        return "P%s %s %s %s" % (self.polyadid.polyadnb,self.j,self.symnameid.name,self.alpha)
+    def PnPsn(self):
+        return "P%s PS%s" % (self.polyadid.polyadnb,self.polyadid.polschid_id)
 
-#   def getQnLabel(self):
-#      #return "('J','rovibSym','r')"
-#       return "('J')"
-#      #return "'J'"
+    Expansions = [1]
 
-#   def getQnAttribute(self):
-#      #return "('','','name=\"alpha\"')"
-#       return "('')"
-#      #return ""
+    def getBSID(self):
+        return ( self.sublevid1_id,  self.sublevid2_id,  self.sublevid3_id,  self.sublevid4_id,  self.sublevid5_id,  self.sublevid6_id,
+                 self.sublevid7_id,  self.sublevid8_id,  self.sublevid9_id,  self.sublevid10_id, self.sublevid11_id, self.sublevid12_id,
+                 self.sublevid13_id, self.sublevid14_id, self.sublevid15_id, self.sublevid16_id, self.sublevid17_id, self.sublevid18_id,
+                 self.sublevid19_id, self.sublevid20_id, self.sublevid21_id, self.sublevid22_id, self.sublevid23_id, self.sublevid24_id,
+                 self.sublevid25_id, self.sublevid26_id, self.sublevid27_id, self.sublevid28_id, self.sublevid29_id, self.sublevid30_id,
+                 self.sublevid31_id, self.sublevid32_id, self.sublevid33_id, self.sublevid34_id, self.sublevid35_id, self.sublevid36_id,
+                 self.sublevid37_id, self.sublevid38_id, self.sublevid39_id, self.sublevid40_id, self.sublevid41_id, self.sublevid42_id,
+                 self.sublevid43_id, self.sublevid44_id, self.sublevid45_id, self.sublevid46_id, self.sublevid47_id, self.sublevid48_id,
+                 self.sublevid49_id, self.sublevid50_id, self.sublevid51_id, self.sublevid52_id, self.sublevid53_id, self.sublevid54_id,
+                 self.sublevid55_id, self.sublevid56_id, self.sublevid57_id, self.sublevid58_id, self.sublevid59_id, self.sublevid60_id ) [:self.nbcoefn0]
 
-#   def getQnValue(self):
-#      #return "('%s','%s','%s')" (self.j,self.symnameid.name,self.alpha)
-#       return "('%s')" (self.j)
-#      #return "'%s'" (self.j)
-
-    def getQNJ(self):
-        return "'%s'" (self.j)
-
-    def getQNrovibSym(self):
-        return "'%s'" (self.symnameid.name)
-
-    def getQNr(self):
-        return "('%s')" (self.alpha)
-
-    def getQNrName(self):
-        return "('alpha')"
+    def getCoef(self):
+        return ( self.coefficient1,  self.coefficient2,  self.coefficient3,  self.coefficient4,  self.coefficient5,  self.coefficient6,
+                 self.coefficient7,  self.coefficient8,  self.coefficient9,  self.coefficient10, self.coefficient11, self.coefficient12,
+                 self.coefficient13, self.coefficient14, self.coefficient15, self.coefficient16, self.coefficient17, self.coefficient18,
+                 self.coefficient19, self.coefficient20, self.coefficient21, self.coefficient22, self.coefficient23, self.coefficient24,
+                 self.coefficient25, self.coefficient26, self.coefficient27, self.coefficient28, self.coefficient29, self.coefficient30,
+                 self.coefficient31, self.coefficient32, self.coefficient33, self.coefficient34, self.coefficient35, self.coefficient36,
+                 self.coefficient37, self.coefficient38, self.coefficient39, self.coefficient40, self.coefficient41, self.coefficient42,
+                 self.coefficient43, self.coefficient44, self.coefficient45, self.coefficient46, self.coefficient47, self.coefficient48,
+                 self.coefficient49, self.coefficient50, self.coefficient51, self.coefficient52, self.coefficient53, self.coefficient54,
+                 self.coefficient55, self.coefficient56, self.coefficient57, self.coefficient58, self.coefficient59, self.coefficient60 ) [:self.nbcoefn0]
 
 class Transitions(models.Model):
     transitionid = models.IntegerField(primary_key=True)
     isotopeid = models.ForeignKey(MoleculesIsotopes, db_column='isotopeid')
+    inchikey = models.CharField(max_length=81)
     typeid = models.ForeignKey(TransitionTypes, db_column='typeid')
     characid = models.ForeignKey(Characterisation, db_column='characid')
     lowstateid = models.ForeignKey(MolecularStates, db_column='lowstateid', related_name='rn_lowstateid')
@@ -522,3 +640,142 @@ class Transitions(models.Model):
     class Meta:
         db_table = u'transitions'
 
+###
+# thanks to hitran
+
+    def XML_Broadening(self):
+        """
+        Build and return the XML for the various broadening environments
+        gamma, delta, nexp
+
+        """
+
+        gamma = ( self.gamma1, self.gamma2, self.gamma3, self.gamma4, self.gamma5,
+                  self.gamma6, self.gamma7, self.gamma8, self.gamma9 )
+        gamma_prec = ( self.gamma1_prec, self.gamma2_prec, self.gamma3_prec, self.gamma4_prec, self.gamma5_prec,
+                       self.gamma6_prec, self.gamma7_prec, self.gamma8_prec, self.gamma9_prec )
+        gamma_sourceid = ( self.gamma1_sourceid, self.gamma2_sourceid, self.gamma3_sourceid, self.gamma4_sourceid, self.gamma5_sourceid,
+                           self.gamma6_sourceid, self.gamma7_sourceid, self.gamma8_sourceid, self.gamma9_sourceid )
+       #delta = ( self.delta1, self.delta2, self.delta3, self.delta4, self.delta5,
+       #          self.delta6, self.delta7, self.delta8, self.delta9 )
+       #delta_prec = ( self.delta1_prec, self.delta2_prec, self.delta3_prec, self.delta4_prec, self.delta5_prec,
+       #               self.delta6_prec, self.delta7_prec, self.delta8_prec, self.delta9_prec )
+       #delta_sourceid = ( self.delta1_sourceid, self.delta2_sourceid, self.delta3_sourceid, self.delta4_sourceid, self.delta5_sourceid,
+       #                   self.delta6_sourceid, self.delta7_sourceid, self.delta8_sourceid, self.delta9_sourceid )
+        nexp = ( self.nexp1, self.nexp2, self.nexp3, self.nexp4, self.nexp5,
+                 self.nexp6, self.nexp7, self.nexp8, self.nexp9 )
+        nexp_prec = ( self.nexp1_prec, self.nexp2_prec, self.nexp3_prec, self.nexp4_prec, self.nexp5_prec,
+                      self.nexp6_prec, self.nexp7_prec, self.nexp8_prec, self.nexp9_prec )
+        nexp_sourceid = ( self.nexp1_sourceid, self.nexp2_sourceid, self.nexp3_sourceid, self.nexp4_sourceid, self.nexp5_sourceid,
+                          self.nexp6_sourceid, self.nexp7_sourceid, self.nexp8_sourceid, self.nexp9_sourceid )
+
+        broadening_xml = []
+        for idc in curenvid:
+            lineshape_xml = []
+            lineshape_xml.append('      <Lineshape name="Lorentzian">\n'\
+                   '      <Comments>The temperature-dependent pressure'\
+                   ' broadening Lorentzian lineshape</Comments>\n'\
+                   '      <LineshapeParameter name="gammaL">\n'\
+                   '        <FitParameters functionRef="%sgammaL">\n'\
+                   '          <FitArgument name="T" units="K">\n'\
+                   '          </FitArgument>\n'\
+                   '          <FitParameter name="gammaL_ref">\n'
+                   % func_prefix)
+            if gamma_sourceid[idc]:
+                lineshape_xml.append('           <SourceRef>%s%s</SourceRef>\n'
+                                     % (source_prefix, gamma_sourceid[idc]))
+            lineshape_xml.append('            <Value units="1/cm">%s</Value>\n'
+                                 % gamma[idc])
+            lineshape_xml.append('            <Accuracy type="statistical" relative="true"'
+                                 '>%s</Accuracy>\n' % str(gamma_prec[idc]))
+            lineshape_xml.append('          </FitParameter>\n')
+            lineshape_xml.append('          <FitParameter name="n">\n')
+            if nexp_sourceid[idc]:
+                lineshape_xml.append('            <SourceRef>%s%s'
+                                     '</SourceRef>\n' % (source_prefix, nexp_sourceid[idc]))
+            lineshape_xml.append('            <Value units="unitless">%s'
+                                 '</Value>\n' % nexp[idc])
+            lineshape_xml.append('            <Accuracy type="statistical" relative="true"'
+                                 '>%s</Accuracy>\n' % str(nexp_prec[idc]))
+            lineshape_xml.append('          </FitParameter>\n')
+            lineshape_xml.append('        </FitParameters>\n'\
+                                 '      </LineshapeParameter>\n</Lineshape>\n')
+            broadening_xml.append('    <Broadening'
+                ' envRef="%sBroadening-%s" name="pressure">\n'
+                '%s    </Broadening>\n' % (env_prefix, allenv[idc], ''.join(lineshape_xml)))
+        return '    %s\n' % ''.join(broadening_xml)
+
+#
+###
+
+###
+# thanks to smpo
+
+class FunArg(object):
+    def __init__(self, arg):
+        self.name = arg[0]
+        if len(arg)>1:
+            self.units = arg[1]
+        else:
+            self.units = 'unitless'
+        if len(arg)>2:
+            self.low = arg[2]
+        else:
+           #self.low = ''
+            self.low = 0                                                                           # must be double
+        if len(arg)>3:
+            self.up = arg[3]
+        else:
+           #self.up = ''
+            self.up = 0                                                                            # must be double
+        if len(arg)>4:
+            self.descr = arg[4]
+        else:
+            self.descr = ''
+
+class FunParm(object):
+    def __init__(self, arg):
+        self.name = arg[0]
+        if len(arg)>1:
+            self.units = arg[1]
+        else:
+            self.units = 'unitless'
+        if len(arg)>2:
+            self.descr = arg[2]
+        else:
+            self.descr = ''
+
+class Function(object):
+    def __init__(self, id, name, clang, expr, yname, yunits, descr='', ydescr='', args=[], parms=[]):
+        self.id = id
+        self.name = name
+        self.clang = clang
+        self.expr = expr
+        self.yname = yname
+        self.yunits = yunits
+        self.descr = descr
+        self.ydescr = ydescr
+        if len(args)>0:
+            self.Arguments = []
+            for arg in args:
+                self.Arguments.append(FunArg(arg))
+        if len(parms)>0:
+            self.Parameters = []
+            for parm in parms:
+                self.Parameters.append(FunParm(parm))
+
+class EnvSpecie(object):
+    def __init__(self, name, fraction):
+        self.name = name
+        self.fraction = fraction
+
+class Environment(object):
+    def __init__(self, id, com, temp, press=(), species=[]):
+        self.id = id
+        self.comment = com
+        self.temperature = temp
+        self.pressure = press
+        if len(species)>0:
+            self.Species = []
+            for specie in species:
+                self.Species.append(EnvSpecie(specie[0],specie[1]))

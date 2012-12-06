@@ -2,6 +2,7 @@
 
 use Chemistry::OpenBabel;
 
+print "DROP TABLE IF EXISTS sources;\n";
 print "DROP TABLE IF EXISTS species;\n";
 print "DROP TABLE IF EXISTS states;\n";
 print "DROP TABLE IF EXISTS components;\n";
@@ -9,20 +10,56 @@ print "DROP TABLE IF EXISTS subshells;\n";
 print "DROP TABLE IF EXISTS transitions;\n";
 print "\n";
 
+
+
+print "CREATE table sources (\n";
+print "id INTEGER NOT NULL,\n";
+print "species_id INTEGER,\n";
+print "bibtex VARCHAR(2056),\n";
+print "PRIMARY KEY(id)\n";
+print ");\n";
+
+
+open REFS, "/Users/guy/desktop/chianti-7/chianti_data_v7_l_ref-sample.txt" or die;
+
+
+# Throw away the first line, which is a comment.
+$discard = <REFS>;
+
+$index = 0;
+while(<REFS>) {
+	$index++;
+	
+	$line = $_;
+	chomp $line;
+	@fields = split(/\s*\|\s*/, $line);
+	
+	my ($nuclearCharge, $ionCharge, $bibtex) = @fields;
+	
+	$bibtex =~ s/\'/\\\'/g;
+	
+	# Set the foreign key pointing into the species table.
+	my $species = (1000 * $ionCharge) + $nuclearCharge;
+	
+	print "INSERT INTO sources VALUES($index, $species, '$bibtex');\n";
+}
+
+
 print "CREATE TABLE states (\n";
 print "		ChiantiIonType CHAR(1), \n";
 print "         species INTEGER, \n";
-print "		AtomSymbol CHAR(8), \n";
-print "		AtomNuclearCharge INTEGER, \n";
-print "		AtomIonCharge INTEGER, \n";
-print "         inchi VARCHAR(32), \n";
-print "         inchikey CHAR(27), \n";
+print "		AtomSymbol CHAR(8) NOT NULL, \n";
+print "		AtomNuclearCharge INTEGER NOT NULL, \n";
+print "		AtomIonCharge INTEGER NOT NULL, \n";
+print "         inchi VARCHAR(32) NOT NULL, \n";
+print "         inchikey CHAR(27) NOT NULL, \n";
 print "		ChiantiAtomStateIndex INTEGER NOT NULL, \n";
 print "		AtomStateConfigurationLabel VARCHAR(32), \n";
-print "         atomcore CHAR(8), \n";
-print "		AtomStateS FLOAT, \n";
-print "		AtomStateL INTEGER, \n";
-print "		AtomStateTotalAngMom FLOAT, \n";
+print "         atomcore CHAR(8) NOT NULL, \n";
+print "		AtomStateS FLOAT NOT NULL, \n";
+print "		AtomStateL INTEGER NOT NULL, \n";
+print "		AtomStateTotalAngMom FLOAT NOT NULL, \n";
+print "         parity CHAR(4) NOT NULL, \n";
 print "		AtomStateEnergy DOUBLE, \n";
 print "		AtomStateEnergyMethod CHAR(4), \n";
 print "         id INTEGER, \n";
@@ -36,7 +73,7 @@ print "         id INTEGER, \n"; # Same values as id in states table - 1-to-1 ma
 print "         label VARCHAR(32), \n";
 print "         core CHAR(2), \n";
 print "         lsl INTEGER, \n";
-print "         lss INTEGER, \n";
+print "         lss FLOAT, \n";
 print "	        PRIMARY KEY (id) \n";
 print ");\n";
 
@@ -94,7 +131,7 @@ while(<STATES>) {
         # The valence shell is described in the subshells tables.
         # The remaining, closed shells form an isoelectronic core to the atom.
         # Chianti has a few cases where the "core" includes part of the valence shell.
-        my ($label, $outerElectronCount) = configuration($index, $configurationLabel);
+        my ($label, $outerElectronCount, $parity) = configuration($index, $configurationLabel);
         my $isoElectronicCount = $nuclearCharge - $outerElectronCount - $ionCharge;
         my $atomCore = "";
         $atomCore = "H"  if $isoElectronicCount ==  1;
@@ -126,6 +163,7 @@ while(<STATES>) {
 	print $atomStateS, ', '; 
 	print $atomStateL, ', ';
 	print $totalAngMom, ', ';
+        print '"', $parity, '", ';
 	print $energy, ', ';
 	print '"', $energyMethod, '", ';
 	print $index; # id - primary key
@@ -136,8 +174,8 @@ while(<STATES>) {
 	print '"', $label, '", ';
         print '"', $atomCore, '", ' if $atomCore;
         print 'NULL, ' if !$atomCore;
-	print $atomStateS, ', '; 
-	print $atomStateL;
+	print $atomStateL, ', '; 
+	print $atomStateS;
 	print ");\n";
 }
 
@@ -259,6 +297,9 @@ sub bestEnergy {
 sub configuration {
   my ($state, $label) = @_;
 
+  # The scalar sum of the orbital angular momenta determines the parity of the state.
+  my $sigmaL = 0;
+
   # Some of the sub-shells have a coupling-term notation, written in parantheses, which we discard.
   $label =~ s/\(\d*[A-Z]\d*\)/ /;
 
@@ -287,9 +328,11 @@ sub configuration {
 
     $id += 1;
     print "INSERT INTO subshells VALUES(NULL, $state, $n, $l, $pop);\n";
+    $sigmaL += $pop * $l;
   }
-
-  return ($label, $totalPop);
+  my $parity = ($sigmaL % 2 == 0)? "even" : "odd";
+ 
+  return ($label, $totalPop, $parity);
 }
 
 

@@ -12,7 +12,7 @@ DICTS=import_module(settings.NODEPKG+'.dictionaries')
 try: NODEID = DICTS.RETURNABLES['NodeID']
 except: NODEID = 'PleaseFillTheNodeID'
 
-DUMMY='@article{DUMMY, Author = {No Boby}, Title = {This is a dummy entry. If you see it in your XSAMS output it means that at there was a malformed BibTex entry.}, annote = {%s}}'
+DUMMY='@article{DUMMY, Author = {No Body}, Title = {This is a dummy entry. If you see it in your XSAMS output it means that at there was a malformed BibTex entry.}, annote = {%s}}'
 
 def getEntryFromString(s):
     parser = bibtex.Parser()
@@ -34,9 +34,19 @@ TYPE2CATEGORY=CaselessDict({\
 'unpublished':'private communication'
 })
 
-def BibTeX2XML(bibtexstring):
+def BibTeX2XML(bibtexstring, key=None):
+    """
+    Derives an XSAMS source element from the given BibTeX and returns the XML text.
+    The ID of the Source is set in the form B(node)-(key) where (node) is replaced
+    by the ID string for this node and (key) is replaced by the unique key for this
+    Source. If the key argument is given, this value is used for the key; otherwise,
+    a key is generated from the BibTeX content.
+    """
     e = getEntryFromString(bibtexstring)
-    xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,e.key)
+    if key:
+        xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,key)
+    else:
+        xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,e.key)
     for a in e.persons['author']:
         name = a.first() + a.middle() + a.last() + a.lineage()
         name = map(strip,name)
@@ -55,7 +65,7 @@ def BibTeX2XML(bibtexstring):
     volume = f.get('volume', "")
     pages = f.get('pages', "")
     p1, p2 = '', ''
-    pages = re.findall(r'[0-9][0-9]*', pages)        
+    pages = re.findall(r'[0-9][0-9]*', pages)
     if pages:
         p1 = pages[0]
         if len(pages) > 1:

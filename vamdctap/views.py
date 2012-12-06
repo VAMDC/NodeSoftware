@@ -3,12 +3,13 @@ from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse
 
-from datetime import datetime
+import datetime
 from string import lower
 from cStringIO import StringIO
 import os, math, sys
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
+import time
 
 import logging
 log=logging.getLogger('vamdc.tap')
@@ -16,6 +17,8 @@ log=logging.getLogger('vamdc.tap')
 # Get the node-specific package!
 from django.conf import settings
 from django.utils.importlib import import_module
+from django.utils.http import http_date
+
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
 
@@ -62,6 +65,9 @@ def tapServerError(request=None, status=500, errmsg=''):
 def getBaseURL(request):
     return getattr(settings, 'DEPLOY_URL', None) or \
         'http://' + request.get_host() + request.path.split('/tap',1)[0] + '/tap/'
+
+def getFormatLastModified(lastmodified):
+    return http_date(time.mktime(lastmodified.timetuple()))
 
 
 class TAPQUERY(object):
@@ -160,6 +166,18 @@ def addHeaders(headers,response):
     for h in HEADS:
         if headers.has_key(h):
             response['VAMDC-'+h] = '%s'%headers[h]
+
+    lastmod = headers.get('LAST-MODIFIED')
+    if not lastmod and hasattr(settings,'LAST_MODIFIED'):
+        lastmod=settings.LAST_MODIFIED
+
+    if isinstance(lastmod,datetime.date):
+        response['Last-Modified'] = getFormatLastModified(lastmod)
+    elif isinstance(lastmod,str):
+        response['Last-Modified'] = lastmod
+    else:
+        pass
+
     return response
 
 def sync(request):
@@ -189,7 +207,8 @@ def sync(request):
     generator=Xsams(tap=tap,**querysets)
     log.debug('Generator set up, handing it to HttpResponse.')
     response=HttpResponse(generator,mimetype='text/xml')
-    response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID, datetime.now().isoformat(), tap.format)
+    response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
+        datetime.datetime.now().isoformat(), tap.format)
 
     if 'HeaderInfo' in querysets:
         response=addHeaders(querysets['HeaderInfo'],response)
@@ -218,7 +237,7 @@ def cleandict(dict):
     """
     ret={}
     for key in dict.keys():
-        if dict[key]: ret[key]=dict[key]
+        if dict[key] and not '.' in key: ret[key]=dict[key]
     return ret
 
 
@@ -229,6 +248,7 @@ def capabilities(request):
                                  "STANDARDS_VERSION" : settings.VAMDC_STDS_VERSION,
                                  "SOFTWARE_VERSION" : settings.NODESOFTWARE_VERSION,
                                  "EXAMPLE_QUERIES" : settings.EXAMPLE_QUERIES,
+                                 "MIRRORS" : settings.MIRRORS,
                                  })
     return render_to_response('tap/capabilities.xml', c, mimetype='text/xml')
 

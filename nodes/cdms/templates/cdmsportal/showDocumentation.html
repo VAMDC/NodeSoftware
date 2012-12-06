@@ -1,9 +1,46 @@
 {% extends "cdmsportal/portalBase.html" %}
 
+{% block menu_li_catalog %}class="active" {% endblock %}
 
 {% block content %}
     <div id="main">
       <!-- begin: #col1 - first float column -->
+	      <div class="subpage_main float_right" id="form_main" style="background-color:#F5F5F5;text-align:center;font-size:13px;-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);width:100%">
+		<div style="margin-left:0em;padding-left:5em;padding-right:5em;background-color:#F0F0F0;
+" class="clearfix">
+		  <div  style="text-align:left" class='float_left' >
+		    <div class="columnar" style="clear:left">
+		      <big style="text-transform:uppercase">{{specie.molecule.trivialname}}</big>
+		    </div>
+		    <div class="columnar" style="clear:left;">
+		      <big style="font-size:x-large;font-weight:bold">{{specie.isotopolog}}</big>		      
+		    </div>
+		    <div class="columnar" style="clear:left">
+		      <big style="font-style:italic;">{% autoescape off %}{{specie.state_html}}{% endautoescape %}</big>
+		    </div>
+
+		  </div>
+		  <div class='float_right' style="text-align:left">
+		    <div class="columnar" style="clear:left">
+		      <big style="float:left;min-width:10em;padding-right:1em;text-align:right;">Tag:</big>  
+		      <big style="font-style:italic;">{{specie.speciestag}}</big>
+		    </div>
+		    <div class="columnar" style="clear:left">
+		      <big style="float:left;min-width:10em;padding-right:1em;text-align:right;">Version:</big>  
+		      <big style="font-style:italic;">{{specie.version}}</big>
+		    </div>
+		    <div class="columnar" style="clear:left">
+		      <big style="float:left;min-width:10em;padding-right:1em;text-align:right;">Date of Entry:</big>  
+		      <big style="font-style:italic;">{{specie.dateofentry}}</big>
+		    </div>
+		    <div class="columnar" style="clear:left">
+		      <big style="float:left;min-width:10em;padding-right:1em;text-align:right;">Contributor:</big>  
+		      <big style="font-style:italic;">{{specie.contributor}}</big>
+		    </div>
+		  </div>
+		</div>
+
+	      </div> <!-- form_main -->
       
       <div id="col1" style="background-color:white;" role="complementary">
 	<div id="col1_content" class="clearfix">
@@ -11,16 +48,15 @@
 	  <ul class="vlist">
 	    <li><a href="#" onclick="docShowSubpage('form_comment')">Description</a></li>
 	    <!-- <li><a onclick="docShowSubpage('form_comment')">Description</a></li> -->
-	    <li><a href="#" onclick="docShowSubpage('form_parameter')">Parameters</a></li>
-	    
+	    <li><a href="#" onclick="docShowSubpage('form_parameter')">Molecular Constants</a></li>
+	    <li><a href="#" onclick="docShowSubpage('form_pf')">Partition functions</a></li>	    
 	    <li><a href="#" onclick="docShowSubpage('form_data')">Data</a></li>
 	    <li><a href="#" onclick="docShowSubpage('form_files')">Files</a></li>
 	    <li><a href="#" onclick="docShowSubpage('form_references')">References</a></li>
 	    <li><a href="#" onclick="docShowSubpage('form_stickspec')">Stick Spectrum</a></li>
 	    <li><a href="#" onclick="docShowSubpage('form_energylevels')">Energy Level Plot</a></li>
-	    <!--      <li><a href="#" onclick="docShowSubpage('form_otherDbs'); ajaxGetVAMDCstats2();">Other databases</a></li> -->
-	    <li><a href="#" onclick="docShowSubpage('form_otherDbs'); ajaxGetAllVamdcDBstat();">Other databases</a></li>
-	    
+	    <li><a href="#" onclick="docShowSubpage('nodelist'); ajaxGetNodeList();">Other databases</a></li> 
+            <li><a href="http://webbook.nist.gov/cgi/cbook.cgi?InChI={{specie.inchi}}" target="_blank"> NIST - Lookup </a> </li>	    
 	    <li><a href="#" onclick="docShowSubpage('form_archive')">Archive</a></li>
 	  </ul>
 	</div>
@@ -30,103 +66,47 @@
 
 	  <form method="post" action="" class="yform full" role="application">
 	    <div style="overflow:auto" id="sectionPage">
-	      <h3> {{specie.speciestag}}.{{specie.molecule.stoichiometricformula}}.{{specie.isotopolog}}.{{specie.molecule.trivialname}}</h3><br>
-	      
-	      <div class="subpage_main" id="form_main">
-		<fieldset>
-		  <div class='float_left'>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">Species TAG:</strong>  
-		      <var>{{specie.speciestag}}</var>
-		    </div>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">Molecule:</strong>  
-		      <var>{{specie.molecule.name}}</var>
-		    </div>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">Trivial Name:</strong>  
-		      <var>{{specie.molecule.trivialname}}</var>
-		    </div>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">Stoichiometric Formula:</strong>  
-		      <var>{{specie.molecule.stoichiometricformula}}</var>
-		    </div>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">Structural Formula:</strong>  
-		      <var>{{specie.molecule.structuralformula}}</var>
-		    </div>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">Isotopolog:</strong>  
-		      <var>{{specie.isotopolog}}</var>		      
-		    </div>
-		  </div>
-		  <div class='float_right'>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">State:</strong>  
-		      <var>{{specie.state}}</var>
-		    </div>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">InChI:</strong>  
-		      <var>{{specie.inchi}}</var>
-		    </div>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">InChI-key:</strong>
-		      <var id="inchikey">{{specie.inchikey}}</var>		      
-		    </div>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">Version:</strong>  
-		      <var>{{specie.version}}</var>
-		    </div>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">Date of Entry:</strong>  
-		      <var>{{specie.dateofentry}}</var>
-		    </div>
-		    <div class="columnar" style="clear:left">
-		      <strong style="float:left;min-width:12em;padding-right:1em;text-align:right;">Contributor:</strong>  
-		      <var>{{specie.contributor}}</var>		      
-		    </div>
-		  </div>
-		</fieldset>
-	      </div> <!-- form_main -->
 
+	      <div id="form_parameter"  class="subpage" style="display:none;clear:both;">
 
-	      
-	      <div id="form_parameter"  class="subpage" style="display:none;">
-
-		<fieldset>
+		<fieldset style="border-style:none;background-color:white;">
 		  <div class="legend">Rotational constants</div>
 		  <table class="full">
+                    <colgroup>
+                      <col width="20ex">
+                      <col width="70%">
+                    </colgroup>
 		    <tbody>
 		      {% for parameter in rotationalconstants %}
-		      <tr><th scope="row" class="sub" > {{parameter.parameter}} </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
+		      <tr><th scope="row" class="sub" > <i>{{parameter.parameter}}</i> </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
 		      {% endfor %}
 		    </tbody>
 		  </table>
 		</fieldset>
 
-		<fieldset>
+		<fieldset style="border-style:none;background-color:white;">
 		  <div class="legend">Dipole moment</div>
 		  <table class="full">
+                    <colgroup>
+                      <col width="20ex">
+                      <col width="70%">
+                    </colgroup>
 		    {% for parameter in dipolemoments %}
-		    <tr><th scope="row" class="sub" > {{parameter.parameter}} </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
+		    <tr><th scope="row" class="sub" ><i>{% autoescape off %}{{parameter.parameter_html}}{% endautoescape %}</i></th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
 		    {% endfor %}
 		  </table>
 		</fieldset>
 
-		<fieldset>
-		  <div class="legend">Partition functions</div>
-		  <table class="full">
-		    {% for parameter in partitionfunctions %}
-		    <tr><th scope="row" class="sub" > {{parameter.parameter}} </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
-		    {% endfor %}
-		  </table>
-		</fieldset>
 
-		<fieldset>
+		<fieldset style="border-style:none;background-color:white;">
 		  <div class="legend">Other</div>
 		  <table class="full">
+                    <colgroup>
+                      <col width="20ex">
+                      <col width="70%">
+                    </colgroup>
 		    {% for parameter in otherparameters %}
-		    <tr><th scope="row" class="sub" > {{parameter.parameter}} </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
+		    <tr><th scope="row" class="sub" width="20em"> {{parameter.parameter}} </th><td> {{parameter.value}} {{parameter.unit}} </td></tr> 
 		    {% endfor %}
 		  </table>
 		</fieldset>
@@ -134,15 +114,25 @@
 	      </div> <!-- form_parameter -->
 
 
+	      <fieldset id="form_pf" class="subpage" style="display:none;clear:both;border-style:none;background-color:white;"> 
+  	        <div class="legend">Partition functions</div>
+
+{% autoescape off %}
+		{{pfhtml}}
+{% endautoescape %}
+
+	      </fieldset>
 
 
-	      <div class="subpage" id="form_comment">
+	      <fieldset class="subpage" id="form_comment" style="border-style:none;background-color:white;">
+                <div class="legend"> Description </div>
+<!--                <p> IMPORTANT INFORMATION FOR THE ENTRY </p> -->
 {% autoescape off %}
 		<p style='clear:both'>{{specie.comment}} </p> 
 {% endautoescape %}
-	      </div>
+	      </fieldset>
 
-	      <fieldset id="form_data" class="subpage" style="display:none"> 
+	      <fieldset id="form_data" class="subpage" style="display:none;clear:both;border-style:none;background-color:white;"> 
 		<div class="legend"> Datasets </div>
 		<table class="full">
 		  <thead>
@@ -156,22 +146,22 @@
 		</table>
 	      </fieldset>
 
-	      <fieldset  id="form_files" class="subpage" style="display:none"> 
+	      <fieldset  id="form_files" class="subpage" style="display:none;clear:both;border-style:none;background-color:white;"> 
 		<div class="legend"> Files </div>
 		<table class="full">
 		  <thead>
-		    <tr><th>Filename</th><th>Type</th><th>Comment</th><th>Createdate</th></tr>
+		    <tr><th>Filename</th><th>Type</th><th>Comment</th><th>Createdate</th><th>&nbsp;</th></tr>
 		  </thead>
 		  <tbody>
 		  {% for file in files %}
-		    <tr><td>{{file.name}}</td><td>{{file.type}}</td><td>{{file.comment}}</td><td>{{file.createdate}}</td></tr>
+		    <tr><td>{{file.name}}</td><td>{{file.type}}</td><td>{{file.comment}}</td><td>{{file.createdate}}</td><td style="background-color:#ccc"><a href="#" onclick="location.href=portal_url+'/getfile/{{file.id}}/'"><img width="30px" src="/static/cdms/img/download.png"></a></td></tr>
 		  {% endfor %}
 		  </tbody>
 		</table> 
 	      </fieldset>
 
 
-	      <fieldset id="form_references" class="subpage" style="display:none">
+	      <fieldset id="form_references" class="subpage" style="display:none; clear:both;border-style:none;background-color:white;">
 		<div class="legend">References</div> 
 		<small>
 		<dl>
@@ -188,20 +178,24 @@
 <!--	      </pre> -->
 	      </fieldset>
 
-	      <fieldset id="form_otherDbs" class="subpage" style="display:none">
+      <input type="hidden" id="inchikey" value="{{specie.inchikey}}">
+      <INPUT TYPE='HIDDEN' NAME='QUERY' VALUE='SELECT ALL WHERE InchiKey = &#39;{{specie.inchikey}}&#39;'>
+
+              <div id="nodelist" class="subpage" style="display:none;clear:both">Processing ...</div>
+
+	      <fieldset id="queryresult" class="subpage" style="display:none;clear:both;">
 		<div class="legend">Other Databases</div> 
 	      </fieldset>
-	      
 
-	      <fieldset id="form_stickspec" class="subpage" style="display:none">
+	      <fieldset id="form_stickspec" class="subpage" style="display:none;clear:both;">
 		<div class="legend">Stick Spectrum</div> 
-		<img class="full" width="100%" src="http://cdms.ph1.uni-koeln.de:8090/DjCDMS/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+radiativetransitions+WHERE++MoleculeSpeciesID={{specie.id}}" alt=\Stick Spectrum">
+		<img class="full" width="100%" src="{{BASE_URL}}{{TAP_URLPATH}}sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+radiativetransitions+WHERE++MoleculeSpeciesID={{specie.id}}" alt=\Stick Spectrum">
 	      </fieldset>
 
 
-	      <fieldset id="form_energylevels" class="subpage" style="display:none">
+	      <fieldset id="form_energylevels" class="subpage" style="display:none;clear:both;">
 		<div class="legend">Energy Level Plot</div> 
-		<img class="full" width="100%" src="http://cdms.ph1.uni-koeln.de:8090/DjCDMS/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+states+WHERE++MoleculeSpeciesID={{specie.id}}" alt="Energy Level Diagram">
+		<img class="full" width="100%" src="{{BASE_URL}}{{TAP_URLPATH}}sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+states+WHERE++MoleculeSpeciesID={{specie.id}}" alt="Energy Level Diagram">
 	      </fieldset>
 	    </div>	    
 	  </form>

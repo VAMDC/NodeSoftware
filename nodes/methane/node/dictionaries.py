@@ -12,12 +12,18 @@ RESTRICTABLES = CaselessDict({\
 
 'MoleculeChemicalName':checkChemicalName,
 'Inchi':'isotopeid__inchi',
-'InchiKey':'isotopeid__inchikey',
+'InchiKey':'inchikey',
 'MoleculeStoichiometricFormula':checkStoichiometricFormula,
+'upper.StateEnergy':'upstateid__position',
+'lower.StateEnergy':'lowstateid__position',
+'StateEnergy':'lowstateid__position',
+
+'EnvironmentTemperature' : checkEnvironmentTemperature,
 })
 
 RETURNABLES = CaselessDict({\
 'NodeID':'ICB-CH4',
+'XSAMSVersion' : u'1.0',
 
 'SourceID':'Source.sourceid',
 'SourceAuthorName':'Source.extractRisVal("AU")',
@@ -40,22 +46,15 @@ RETURNABLES = CaselessDict({\
 'RadTransWavenumberAccuracy':'RadTran.wavenumber_prec',
 'RadTransWavenumberAccuracyType':'statistical',
 
-'RadTransBroadeningPressureLineshapeParameterName':'SelfBroadening',
-'RadTransBroadeningPressureLineshapeParameter':'RadTran.gamma1',
-'RadTransBroadeningPressureLineshapeParameterUnit':'1/cm/atm',
-'RadTransBroadeningPressureLineshapeParameterRef':'RadTran.gamma1_sourceid_id',
-'RadTransBroadeningPressureLineshapeParameterAccuracy':'RadTran.gamma1_prec',
-'RadTransBroadeningPressureLineshapeParameterAccuracyType':'statistical',
-
 'RadTransUpperStateRef':'RadTran.upstateid_id',
 'RadTransLowerStateRef':'RadTran.lowstateid_id',
 
 'RadTransProbabilityA':'RadTran.einstein',
 'RadTransProbabilityAUnit':'1/s',
 
-'RadTransProbabilityKind':'RadTran.characid.renameCharacterisation()',
+'RadTransProbabilityMultipole':'RadTran.characid.getMultipole()',
+'RadTransProbabilityKind':'RadTran.characid.getTransitionKind()',
 'RadTransProbabilityLineStrength':'RadTran.intensity',
-#'RadTransProbabilityLineStrengthUnit':'1/cm2/atm',
 'RadTransProbabilityLineStrengthUnit':'RadTran.characid.getUnit()',
 'RadTransProbabilityLineStrengthRef':'RadTran.intensity_sourceid_id',
 'RadTransProbabilityLineStrengthAccuracy':'RadTran.intensity_prec',
@@ -68,32 +67,69 @@ RETURNABLES = CaselessDict({\
 'MethodDescription':'Method.name',
 'MethodID':'Method.typeid',
 
+'FunctionID': 'Function.id',
+'FunctionName': 'Function.name',
+'FunctionComputerLanguage': 'Function.clang',
+'FunctionExpression': 'Function.expr',
+'FunctionDescription': 'Function.descr',
+'FunctionYName': 'Function.yname',
+'FunctionYUnits': 'Function.yunits',
+'FunctionYDescription': 'Function.ydescr',
+'FunctionArgumentName': 'FunctionArgument.name',
+'FunctionArgumentUnits': 'FunctionArgument.units',
+'FunctionArgumentDescription': 'FunctionArgument.descr',
+'FunctionArgumentLowerLimit': 'FunctionArgument.low',
+'FunctionArgumentUpperLimit': 'FunctionArgument.up',
+'FunctionParameterName': 'FunctionParameter.name',
+'FunctionParameterUnits': 'FunctionParameter.units',
+'FunctionParameterDescription': 'FunctionParameter.descr',
+
+'EnvironmentID': 'Environment.id',
+'EnvironmentComment': 'Environment.comment',
+'EnvironmentTemperature': 'Environment.temperature',
+'EnvironmentTemperatureUnit': 'K',
+'EnvironmentTotalPressure': 'Environment.pressure',
+'EnvironmentTotalPressureUnit': 'atm',
+'EnvironmentSpeciesName': 'EnvSpecies.name',
+'EnvironmentSpeciesMoleFraction': 'EnvSpecies.fraction',
+
 ##########################################################################
 
-'MoleculeChemicalName':'methane',
-'MoleculeOrdinaryStructuralFormula':'CH4',
-'MoleculeStoichiometricFormula':'H4C',
+'MoleculeChemicalName':'Methane',
+'MoleculeCASRegistryNumber':'Molecule.casregnum',
+'MoleculeOrdinaryStructuralFormula':'Molecule.formtex',
+'MoleculeStoichiometricFormula':'CH4',
 'MoleculeSpeciesID': 'Molecule.isotopeid',
 'MoleculeInchi':'Molecule.inchi',
 'MoleculeInchiKey':'Molecule.inchikey',
 
 'MoleculeStateID':'MoleculeState.stateid',
+'MoleculeStateFullyAssigned':'true',
 'MoleculeStateEnergy':'MoleculeState.position',
-'MoleculeStateEnergyOrigin':'Zero-point energy',
+'MoleculeStateEnergyOrigin':'MoleculeState.isotopeid.eostateid',
 'MoleculeStateEnergyUnit':'1/cm',
-'MoleculeStateEnergyComment':'MoleculeState.PnJcn()',
+'MoleculeStateEnergyComment':'MoleculeState.PnPsn()',
 'MoleculeStateTotalStatisticalWeight':'MoleculeState.weight',
 
-'MoleculeStateQuantumNumbers':'MoleculeState',
-'MoleculeQnStateID':'MoleculeState.stateid',
-'MoleculeQnCase':'sphcs',                               # e.g. 'dcs', 'ltcs', ...
-#'MoleculeQnLabel':'MoleculeState.getQnLabel()',         # e.g. 'J', 'asSym', ...
-#'MoleculeQnValue':'MoleculeState.getQnValue()',
-#'MoleculeQnAttribute':'MoleculeState.getQnAttribute()',
+'MoleculeStateExpansionCoeffStateRef':'MoleculeState.getBSID()',
+'MoleculeStateExpansionCoeff':'MoleculeState.getCoef()',
+
+'MoleculeStateQuantumNumbers':'',                       #'MoleculeStateQuantumNumbers':'MoleculeState',
+'MoleculeQnCase':'sphcs',
 'MoleculeQNJ':'MoleculeState.j',
-'MoleculeQNrovibSym':'MoleculeState.symnameid.name',
-#'MoleculeQNr':'MoleculeState.getQNr()',
-#'MoleculeQNrName':'MoleculeState.getQNrName()',
-#'MoleculeQnXML':'QNs.xml',                             # use the an XML() method
+'MoleculeQNrovibSym':'MoleculeState.symname',
+'MoleculeQNrName':'alpha',
+'MoleculeQNr':'MoleculeState.alpha',
+
+'MoleculeBasisStates': 'Molecule.BasisStates',
+'BasisStateID': 'MoleculeBasisState.sublevid',
+'BasisStateQNviMode':'MoleculeBasisState.getQNviMode()',
+'BasisStateQNvi':'MoleculeBasisState.getQNvi()',
+'BasisStateQNliMode':'MoleculeBasisState.getQNliMode()',
+'BasisStateQNli':'MoleculeBasisState.getQNli()',
+'BasisStateQNrName':'MoleculeBasisState.getQNrName()',
+'BasisStateQNr':'MoleculeBasisState.getQNr()',
+'BasisStateQNsymName':'MoleculeBasisState.getQNsymName()',
+'BasisStateQNsym':'MoleculeBasisState.getQNsym()',
 
 })

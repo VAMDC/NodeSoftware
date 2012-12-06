@@ -8,15 +8,15 @@ def setupResults(sql):
     ntranss=transs.count()
     if TRANSLIM < ntranss and (not sql.requestables or 'radiative' in sql.requestables):
         percentage = '%.1f'%(float(TRANSLIM)/ntranss *100)
-        #transs = transs.order_by('wavevac')
-        newmax = transs[TRANSLIM].wavevac
-        transs = Transition.objects.filter(q,Q(wavevac__lt=newmax))
+        newmax = transs[TRANSLIM].wave
+        transs = Transition.objects.filter(q,Q(wave__lt=newmax))
         log.debug('Truncated results to %s, i.e %s A.'%(TRANSLIM,newmax))
-    else: percentage=None
+    else:
+        percentage=None
     log.debug('Transitions QuerySet set up. References next.')
 
-    from time import time
-    sources = Reference.objects.all()
+    #refIDs = TransRef.objects.filter(trans_id__in=transs).values_list('ref_id', flat=True)
+    #print "TransRef refIDs:", refIDs.count()
     ## about 100 times slower than objects.all() objects
     #refIDs = set(tuple(transs.values_list('wavevac_ref_id', flat=True)) +
     #             tuple(transs.values_list('loggf_ref_id', flat=True)) +
@@ -24,17 +24,16 @@ def setupResults(sql):
     #             tuple(transs.values_list('gammastark_ref_id', flat=True)) +
     #             tuple(transs.values_list('waals_ref', flat=True)))
     #sources = Reference.objects.filter(pk__in=refIDs)
+    sources = Reference.objects.all()
 
     log.debug('Sources QuerySet set up. References next.')
-
     addStates = (not sql.requestables or 'atomstates' in sql.requestables)
     atoms,nspecies,nstates = getSpeciesWithStates(transs,Species,State,addStates)
 
-    methods = getMethods()
-
     if ntranss:
         size_estimate='%.2f'%(ntranss*0.0014 + 0.01)
-    else: size_estimate='0.00'
+    else:
+        size_estimate='0.00'
 
     headerinfo={\
             'TRUNCATED':percentage,
@@ -44,12 +43,12 @@ def setupResults(sql):
             'COUNT-RADIATIVE':ntranss,
             'APPROX-SIZE':size_estimate,
             }
-
     log.debug('Returning from setupResults()')
     return {'RadTrans':transs,
             'Atoms':atoms,
             'Sources':sources,
             'HeaderInfo':headerinfo,
-            'Environments':Environments, #this is set up statically in models.py
-            'Methods':methods
+            'Environments':Environments, #set up statically in node_common.models
+            'Methods':getMethods(),      #defined in node_common.queryfuncs
+            'Functions':Functions        #set up statically in node_common.models
            }

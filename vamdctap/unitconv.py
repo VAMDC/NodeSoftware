@@ -4,13 +4,16 @@
 # The latter also needs to be a string! (stupid in some cases,
 # I know, but more robust)
 
+import sys
+infty = str(sys.float_info.max)
+
 # a decotrator to catch ZeroDivisionError
 def catchZeroDivision(fu):
     def catcher(op,val):
         try:
             return fu(op,val)
         except ZeroDivisionError:
-            return [invertOperator(op), '9.99E99']
+            return [invertOperator(op), infty]
         except:
             raise
     return catcher
@@ -69,6 +72,9 @@ def valdObstype(op,obstype):
 # again, this is VALD-specific but may be instructive for other nodes
 
 from django.db.models import Q,F
+QTrue = Q(pk=F('pk'))
+QFalse = ~QTrue
+
 OPTRANS= { # convert numerical operators to the django-query equivalent
     '<':  '__lt',
     '>':  '__gt',
@@ -86,18 +92,25 @@ def bothStates(r,op,rhs):
         float(rhs)
         return Q(**{'upstate__energy'+op:rhs}) & Q(**{'lostate__energy'+op:rhs})
     except:
-        return Q(pk__isnull=True)
+        return QFalse
 
-def test_constant_factory(const):
-    """ returns a function that allows testing
-        a restrictable against a constant
+def test_constant(const):
+    """ function factory.
+        returns a function that allows testing
+        a restrictable against a list of constants
+        use in dictionary.py like:
+        'SomeRestrictable':test_constant(['A','B'])
     """
     def fu(r,op,rhs):
-        try:
-            if op not in ('=','=='): raise Exception
-            match = eval('%s == %s'%(rhs,const))
-            if not match: raise Exception
-            return Q(pk=F('pk'))
-        except:
-            return ~Q(pk=F('pk'))
+        if op not in ('=','==','IN'): raise Exception
+        if not hasattr(const,'__iter__'): consts = [const]
+        else: consts = const
+        for c in consts:
+            c=str(c)
+            c=c.strip('"').strip("'")
+            rhs=rhs.strip().strip('"').strip("'")
+            if rhs == c:
+                return QTrue
+        return QFalse
     return fu
+test_constant_factory=test_constant # legacy compatibility

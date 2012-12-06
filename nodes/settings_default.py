@@ -9,8 +9,8 @@ import sys, os
 ###################################################
 # Software and standards version
 ###################################################
-VAMDC_STDS_VERSION = '11.12'
-NODESOFTWARE_VERSION = '11.12r3'
+VAMDC_STDS_VERSION = '12.07'
+NODESOFTWARE_VERSION = '12.07'
 
 ###################################################
 # Basic node setup
@@ -39,6 +39,9 @@ EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
 # webserver do this, not Django. But it is on
 # by default to make things fail-safe.
 SERVE_STATIC = True
+
+# MIRROR sites
+MIRRORS = []
 
 ###################################################
 # Database connection

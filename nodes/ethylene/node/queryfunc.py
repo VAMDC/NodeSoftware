@@ -19,48 +19,61 @@ from itertools import chain
 import logging
 log=logging.getLogger('vamdc.node.queryfu')
 
-#LIMIT =  100
 LIMIT = 100000
 
-def getRefs(transs):
+def getRefs(transitions):
     refset = set()
-    for t in transs.values_list('wavenumber_sourceid', 'intensity_sourceid',
-                                'gamma1_sourceid','delta1_sourceid','nexp1_sourceid',
-                                'gamma2_sourceid','delta2_sourceid','nexp2_sourceid',
-                                'gamma3_sourceid','delta3_sourceid','nexp3_sourceid',
-                                'gamma4_sourceid','delta4_sourceid','nexp4_sourceid',
-                                'gamma5_sourceid','delta5_sourceid','nexp5_sourceid',
-                                'gamma6_sourceid','delta6_sourceid','nexp6_sourceid',
-                                'gamma7_sourceid','delta7_sourceid','nexp7_sourceid',
-                                'gamma8_sourceid','delta8_sourceid','nexp8_sourceid',
-                                'gamma9_sourceid','delta9_sourceid','nexp9_sourceid'):
+    for t in transitions.values_list('wavenumber_sourceid', 'intensity_sourceid',
+                                     'gamma1_sourceid','delta1_sourceid','nexp1_sourceid',
+                                     'gamma2_sourceid','delta2_sourceid','nexp2_sourceid',
+                                     'gamma3_sourceid','delta3_sourceid','nexp3_sourceid',
+                                     'gamma4_sourceid','delta4_sourceid','nexp4_sourceid',
+                                     'gamma5_sourceid','delta5_sourceid','nexp5_sourceid',
+                                     'gamma6_sourceid','delta6_sourceid','nexp6_sourceid',
+                                     'gamma7_sourceid','delta7_sourceid','nexp7_sourceid',
+                                     'gamma8_sourceid','delta8_sourceid','nexp8_sourceid',
+                                     'gamma9_sourceid','delta9_sourceid','nexp9_sourceid'):
         refset = refset.union(t)
 
     # Use the found reference keys to extract the correct references from the References table.
     refmatches = Sources.objects.filter(pk__in=refset) # only match primary keys in refset
     return refmatches
 
-def getMethods(transs):
-    mids = set( transs.values_list('typeid',flat=True) )
+def getMethods(transitions):
+    mids = set( transitions.values_list('typeid',flat=True) )
     methods = TransitionTypes.objects.filter(pk__in=mids)
     return methods
 
-def getStates(transs,addMoleStates):
-    spids = set( transs.values_list('isotopeid',flat=True) )
+def getMolecules(transitions):
+    spids = set( transitions.values_list('isotopeid',flat=True) )
     isotopes = MoleculesIsotopes.objects.filter(pk__in=spids)
     nisotopes = isotopes.count()
+    return isotopes,nisotopes
+
+def getStates(transitions,isotopes,addStates,addBStates):
     nstates = 0
 
-    if addMoleStates:
-      for isotope in isotopes:
-        subtranss = transs.filter(isotopeid=isotope)
-        up=subtranss.values_list('upstateid',flat=True)
-        lo=subtranss.values_list('lowstateid',flat=True)
-        sids = set(chain(up,lo))
-        isotope.States = MolecularStates.objects.filter(stateid__in = sids)
-        nstates += len(sids)
+    if addStates:
+        for isotope in isotopes:
+            # States
+            subtransitions = transitions.filter(isotopeid=isotope)
+            up = subtransitions.values_list('upstateid',flat=True)
+            lo = subtransitions.values_list('lowstateid',flat=True)
+            eos = (isotope.eostateid,)
+            sids = set(chain(up,lo,eos))
+            isotope.States = MolecularStates.objects.filter(stateid__in = sids)
+            if addBStates:
+                # BasisStates
+                sublevids = set()
+                for MS in isotope.States:
+                    sublevids = sublevids.union( (MS.sublevid1_id, MS.sublevid2_id, MS.sublevid3_id, MS.sublevid4_id)[:MS.nbcoefn0] )
+                isotope.BasisStates = VibrationalSublevels.objects.filter(pk__in=sublevids)
+            #
+            nstates += len(sids)
 
-    return isotopes,nisotopes,nstates
+    return nstates
+
+####################################################################################################
 
 def setupResults(sql):
     """
@@ -69,45 +82,61 @@ def setupResults(sql):
     log.debug('sql.where: %s'%sql.where)
     q = sql2Q(sql)
 
-    #e_transs = Transitions.objects.filter(q, Q(multipoleid__exact=1)).order_by('wavenumber')
-    #non_transs = Transitions.objects.filter(q, Q(multipoleid__exact=2)).order_by('wavenumber')
-    #transs = e_transs or non_transs
+    # RadTrans
+    transitions = Transitions.objects.filter(q).order_by('wavenumber')
+    ntransitions = transitions.count()
 
-    transs = Transitions.objects.filter(q).order_by('wavenumber')
-    ntranss = transs.count()
-
-    if ntranss > LIMIT:
-        percentage = '%.1f'%(float(LIMIT)/ntranss *100)
-        limitwave = transs[LIMIT].wavenumber
-        transs = Transitions.objects.filter(q,Q(wavenumber__lt=limitwave))
+    # LIMIT
+    if ntransitions > LIMIT:
+        percentage = '%.1f'%(float(LIMIT)/ntransitions *100)
+        limitwave = transitions[LIMIT].wavenumber
+        transitions = Transitions.objects.filter(q,Q(wavenumber__lt=limitwave))
     else: percentage=None
 
-    sources= getRefs(transs)
-    nsources = sources.count()
-    addMoleStates = (not sql.requestables or 'moleculestates' in sql.requestables)
-    isotopes,nisotopes,nstates= getStates(transs,addMoleStates)
-    methods = getMethods(transs)
+    # Molecules
+    isotopes,nisotopes = getMolecules(transitions)
 
-    if ntranss:
-        size_estimate='%.2f'%(nstates*0.000312+ntranss*0.000714)
+    # States and BasisStates
+    addStates  = ( not sql.requestables or 'moleculestates' in sql.requestables )
+    addBStates = ( not sql.requestables or ('moleculebasisstates' in sql.requestables) or ('moleculequantumnumbers' in sql.requestables) )
+    nstates = getStates(transitions,isotopes,addStates,addBStates)
+
+    # Sources
+    sources = getRefs(transitions)
+    nsources = sources.count()
+
+    # Methods
+    methods = getMethods(transitions)
+
+    # APPROX-SIZE
+    if ntransitions:
+        size = 0
+        if( not sql.requestables or 'radiativetransitions' in sql.requestables ):
+            size += ntransitions*0.000825
+        if( not sql.requestables or 'moleculestates' in sql.requestables ):
+            size += nstates*0.000310
+        if( not sql.requestables or 'moleculequantumnumbers' in sql.requestables ):
+            size += nstates*0.000493
+        size_estimate='%.2f'%(size)
     else: size_estimate='0.00'
 
+    # HEADERINFO
     headerinfo=CaselessDict({\
             'TRUNCATED':percentage,
             'COUNT-SOURCES':nsources,
             'COUNT-SPECIES':nisotopes,
             'COUNT-MOLECULES':nisotopes,
             'COUNT-STATES':nstates,
-            'COUNT-RADIATIVE':ntranss,
+            'COUNT-RADIATIVE':ntransitions,
             'APPROX-SIZE':size_estimate
             })
 
-    if (ntranss > 0):
-        return {'RadTrans':transs,
-                #'NonRadTrans':non_transs,
+    if (ntransitions > 0):
+        return {'RadTrans':transitions,
                 'Molecules':isotopes,
                 'Sources':sources,
                 'Methods':methods,
+                'Environments': [1],
                 'HeaderInfo':headerinfo
                }
     else:

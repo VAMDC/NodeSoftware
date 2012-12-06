@@ -8,6 +8,9 @@ def setupSQLparser():
     ident = Word( alphas, alphanums+'.' ).setName("identifier")
     columnName     = delimitedList( ident, ",", )#combine=True )
     columnNameList = Group( delimitedList( columnName ) )
+    fromToken   = Keyword("from", caseless=True)
+    tableName      = delimitedList( ident, ".", combine=True )
+    tableNameList  = Group( delimitedList( tableName ) )
     whereExpression = Forward()
     and_ = Keyword("and", caseless=True)
     or_ = Keyword("or", caseless=True)
@@ -34,6 +37,7 @@ def setupSQLparser():
                          Optional(CaselessLiteral('count')).setResultsName("count")  +
                          Optional(Group(CaselessLiteral('top') + intNum )).setResultsName("top") +
                          ( oneOf('* ALL', caseless=True) | columnNameList ).setResultsName( "columns" ) +
+                         Optional(Group(fromToken + tableNameList)).setResultsName( "from" ) +
                          Optional( CaselessLiteral("where") + whereExpression.setResultsName("where") ) +
                          Optional(ZeroOrMore(CaselessLiteral(";")|CaselessLiteral(" ")))
                          )
@@ -101,14 +105,13 @@ def applyRestrictFu(rs,restrictables=RESTRICTABLES):
 
     if not isinstance(restrictables[r], TupleType): return rs
     if len(foo) != 1:
-        log.dedug('Applying a function to a Restrictable works only on a single value')
+        log.debug('Applying a function to a Restrictable works only on a single value')
         return rs
     try:
         bla, fu = restrictables[r]
         rs = [r] + fu(op,foo[0])
     except Exception,e:
-        log.error('Could not apply function %s to Restrictable %s. Errormsg: %s'%(fu,r,e))
-        return QFalse
+        log.debug('Could not apply function %s to Restrictable %s. Therefore interpreting the tuple as two search possibilities.'%(fu,r))
 
     return rs
 
@@ -131,6 +134,7 @@ def checkLen1(x):
     else:
         return x[0].strip('\'"')
 
+
 def restriction2Q(rs, restrictables=RESTRICTABLES):
     if isinstance(rs,QType): # we are done because it is already a Q-object
         return rs
@@ -138,7 +142,8 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
     r, op, foo = rs[0], rs[1], rs[2:]
     if r not in restrictables:
         log.debug('Restrictable "%s" not supported!'%r)
-        return QFalse
+        raise Exception('Restrictable "%s" not supported!'%r)
+
     if type(restrictables[r]) == tuple:
         rest_rhs = restrictables[r][0]
     else: rest_rhs = restrictables[r]
@@ -169,9 +174,9 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
     return Q(**{rest_rhs+OPTRANS[op]: foo})
 
 def sql2Q(sql):
+    log.debug('Starting sql2Q.')
     if not sql.where:
         return Q()
-    log.debug('Starting sql2Q.')
     logic,rs,count = splitWhere(sql.where)
     log.debug('splitWhere() returned: logic: %s\nrs: %s\ncount: %s'%(logic,rs,count))
     qdict = {}

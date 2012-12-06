@@ -12,12 +12,18 @@ RESTRICTABLES = CaselessDict({\
 
 'MoleculeChemicalName':checkChemicalName,
 'Inchi':'isotopeid__inchi',
-'InchiKey':'isotopeid__inchikey',
+'InchiKey':'inchikey',
 'MoleculeStoichiometricFormula':checkStoichiometricFormula,
+'upper.StateEnergy':'upstateid__position',
+'lower.StateEnergy':'lowstateid__position',
+'StateEnergy':'lowstateid__position',
+
+'EnvironmentTemperature' : checkEnvironmentTemperature,
 })
 
 RETURNABLES = CaselessDict({\
 'NodeID':'GSMA-C2H4',
+'XSAMSVersion':'1.0',
 
 'SourceID':'Source.sourceid',
 'SourceAuthorName':'Source.extractRisVal("AU")',
@@ -38,12 +44,7 @@ RETURNABLES = CaselessDict({\
 'RadTransWavenumberRef':'RadTran.wavenumber_sourceid_id',
 'RadTransWavenumberMethod':'RadTran.typeid_id',
 'RadTransWavenumberAccuracy':'RadTran.wavenumber_prec',
-
-'RadTransBroadeningPressureLineshapeParameterName':'SelfBroadening',
-'RadTransBroadeningPressureLineshapeParameter':'RadTran.gamma1',
-'RadTransBroadeningPressureLineshapeParameterUnit':'1/cm/atm',
-'RadTransBroadeningPressureLineshapeParameterRef':'RadTran.gamma1_sourceid_id',
-'RadTransBroadeningPressureLineshapeParameterAccuracy':'RadTran.gamma1_prec',
+'RadTransWavenumberAccuracyType':'statistical',
 
 'RadTransUpperStateRef':'RadTran.upstateid_id',
 'RadTransLowerStateRef':'RadTran.lowstateid_id',
@@ -51,11 +52,14 @@ RETURNABLES = CaselessDict({\
 'RadTransProbabilityA':'RadTran.einstein',
 'RadTransProbabilityAUnit':'1/s',
 
-'RadTransProbabilityKind':'RadTran.characid.renameCharacterisation()',
+'RadTransProbabilityMultipole':'RadTran.characid.getMultipole()',
+'RadTransProbabilityKind':'RadTran.characid.getTransitionKind()',
 'RadTransProbabilityLineStrength':'RadTran.intensity',
-'RadTransProbabilityLineStrengthUnit':'1/cm2/atm',
+'RadTransProbabilityLineStrengthUnit':'RadTran.characid.getUnit()',
 'RadTransProbabilityLineStrengthRef':'RadTran.intensity_sourceid_id',
 'RadTransProbabilityLineStrengthAccuracy':'RadTran.intensity_prec',
+'RadTransProbabilityLineStrengthAccuracyType':'statistical',
+'RadTransProbabilityLineStrengthAccuracyRelative':'true',
 
 ##########################################################################
 
@@ -63,20 +67,47 @@ RETURNABLES = CaselessDict({\
 'MethodDescription':'Method.name',
 'MethodID':'Method.typeid',
 
+'EnvironmentID': '1',
+'EnvironmentComment': 'Pressure and NumberDensity are not used in this data base',
+'EnvironmentTemperature': '296',
+'EnvironmentTemperatureUnit': 'K',
+
 ##########################################################################
 
-'MoleculeChemicalName':'ethylene',
+'MoleculeChemicalName':'Ethylene,Ethene',
+'MoleculeCASRegistryNumber':'Molecule.casregnum',
 'MoleculeOrdinaryStructuralFormula':'C2H4',
+'MoleculeOrdinaryStructuralFormula':'Molecule.formtex',
 'MoleculeStoichiometricFormula':'H4C2',
 'MoleculeSpeciesID': 'Molecule.isotopeid',
 'MoleculeInchi':'Molecule.inchi',
 'MoleculeInchiKey':'Molecule.inchikey',
 
 'MoleculeStateID':'MoleculeState.stateid',
+'MoleculeStateFullyAssigned':'true',
 'MoleculeStateEnergy':'MoleculeState.position',
-'MoleculeStateEnergyOrigin':'Zero-point energy',
+'MoleculeStateEnergyOrigin':'MoleculeState.isotopeid.eostateid',
 'MoleculeStateEnergyUnit':'1/cm',
-'MoleculeStateEnergyComment':'MoleculeState.PnJcn()',
+'MoleculeStateEnergyComment':'MoleculeState.PnPsn()',
 'MoleculeStateTotalStatisticalWeight':'MoleculeState.weight',
+
+'MoleculeStateExpansionCoeffStateRef':'MoleculeState.getBSID()',
+'MoleculeStateExpansionCoeff':'MoleculeState.getCoef()',
+
+'MoleculeStateQuantumNumbers':'',                       #'MoleculeStateQuantumNumbers':'MoleculeState',
+'MoleculeQnCase':'sphcs',
+'MoleculeQNJ':'MoleculeState.j',
+'MoleculeQNrovibSym':'MoleculeState.symname',
+'MoleculeQNrName':'alpha',
+'MoleculeQNr':'MoleculeState.alpha',
+
+'MoleculeBasisStates': 'Molecule.BasisStates',
+'BasisStateID': 'MoleculeBasisState.sublevid',
+'MoleculeBQNviMode':'MoleculeBasisState.getQNviMode()',
+'MoleculeBQNvi':'MoleculeBasisState.getQNvi()',
+'MoleculeBQNrName':'MoleculeBasisState.getQNrName()',
+'MoleculeBQNr':'MoleculeBasisState.getQNr()',
+'MoleculeBQNsymName':'MoleculeBasisState.getQNsymName()',
+'MoleculeBQNsym':'MoleculeBasisState.getQNsym()',
 
 })
