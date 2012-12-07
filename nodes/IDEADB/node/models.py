@@ -116,6 +116,20 @@ class Species(Model):
             if self.chemical_formula != inchi2chemicalformula(self.inchi):
                 raise ValidationError(u'InChI %s is not compatible with the stochiometric formula %s.' % (self.inchi, self.chemical_formula))
 
+        #we check if we already have a species with same chem formula, mass and isotope-status
+        sp_search = Species.objects.filter(chemical_formula__exact=self.chemical_formula).filter(mass__exact=self.mass).filter(isotope__exact=self.isotope)
+
+        #exclude this very instance
+        sp_search = sp_search.exclude(id__exact=self.id)
+
+        if len(sp_search) > 0:
+            #indeed we do
+            #in this case they should be isomeres and therefore have a different inchi
+            if self.inchi == sp_search.get().inchi:
+                raise ValidationError(u'A species with this chemical formula and InChI already exists in the database')
+            if self.inchi == '':
+                raise ValidationError(u'Isomeres need to be distinguished via their InChI')
+
     class Meta:
         db_table = u'species'
         verbose_name_plural = u'Species'
