@@ -21,5 +21,5 @@ load data infile '/vald/vamdc/db_input_files/transitions.dat' ignore into table 
 update transitions t, states s set t.einsteina=(0.667025*POWER(10,16) * POWER(10,t.loggf)) / ((2.0 * s.j + 1.0) * POWER(t.wave,2)) where t.upstate=s.id;
 
 -- an index over these two tables speeds up usual queries
-create index speciesid_wave on transitions (species_id, wavevac);
+create index speciesid_wave on transitions (species_id, wave);
 

@@ -11,7 +11,7 @@ import datetime
 # Software and standards version
 ###################################################
 VAMDC_STDS_VERSION = '12.07'
-NODESOFTWARE_VERSION = '12.07'
+NODESOFTWARE_VERSION = '12.07r1-rc'
 
 ###################################################
 # Basic node setup
