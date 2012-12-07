@@ -190,6 +190,7 @@ def sync(request):
 
     # if the requested format is not XSAMS, hand over to the node QUERYFUNC
     if tap.format != 'xsams' and hasattr(QUERYFUNC,'returnResults'):
+        log.debug("using custom QUERYFUNC.returnResults(tap)")
         return QUERYFUNC.returnResults(tap)
 
     # otherwise, setup the results and build the XSAMS response here
@@ -204,7 +205,12 @@ def sync(request):
         return HttpResponse('', status=204)
 
     log.debug('Requestables: %s'%tap.requestables)
-    generator=Xsams(tap=tap,**querysets)
+
+    if hasattr(QUERYFUNC,'customXsams'):
+        log.debug("using QUERYFUNC.customXsams as generator")
+        generator = QUERYFUNC.customXsams(tap=tap,**querysets)
+    else:
+        generator = Xsams(tap=tap,**querysets)
     log.debug('Generator set up, handing it to HttpResponse.')
     response=HttpResponse(generator,mimetype='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
