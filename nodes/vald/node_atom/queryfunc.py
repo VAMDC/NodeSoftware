@@ -1,36 +1,44 @@
 from ..node_common.queryfunc import *
 from models import *
 
+
+def returnHeaders(transs):
+    log.debug('Calculating statistics.')
+    ntranss=transs.count()
+    headers={'COUNT-RADIATIVE': ntranss}
+
+    if TRANSLIM < ntranss:
+        headers['TRUNCATED'] = '%.1f'%(float(TRANSLIM)/ntranss *100)
+
+    if ntranss:
+        headers['APPROX-SIZE']='%.2f'%(ntranss*0.0014 + 0.01)
+    else:
+        headers['APPROX-SIZE']='0.00'
+
+    if ntranss < 1E6:
+        headers['COUNT-ATOMS'] = \
+            len(transs.values_list('species_id',flat=True).distinct())
+        headers['COUNT-SPECIES'] = headers['COUNT-ATOMS']
+        sids = transs.values_list('upstate_id','lostate_id')
+        sids = set(item for s in sids for item in s)
+        headers['COUNT-STATES'] = len(sids)
+
+    return headers
+
 def setupResults(sql):
     q = sql2Q(sql)
     log.debug('Just ran sql2Q(sql); setting up QuerySets now.')
     transs = Transition.objects.filter(q)
-    ntranss=transs.count()
-    if TRANSLIM < ntranss and (not sql.requestables or 'radiative' in sql.requestables):
-        percentage = '%.1f'%(float(TRANSLIM)/ntranss *100)
-        newmax = transs[TRANSLIM].wave
-        transs = Transition.objects.filter(q,Q(wave__lt=newmax))
-        log.debug('Truncated results to %s, i.e %s A.'%(TRANSLIM,newmax))
-    else:
-        percentage=None
-    log.debug('Transitions QuerySet set up. References next.')
+    if sql.HTTPmethod == 'HEAD':
+        return {'HeaderInfo':returnHeaders(transs)}
 
-    if ntranss:
-        size_estimate='%.2f'%(ntranss*0.0014 + 0.01)
-    else:
-        size_estimate='0.00'
-
-    headerinfo={\
-            'TRUNCATED':percentage,
-            'COUNT-RADIATIVE':ntranss,
-            'APPROX-SIZE':size_estimate,
-            }
+    transs = transs[:TRANSLIM]
     log.debug('Returning from setupResults()')
     return {'RadTrans':transs,
-            'HeaderInfo':headerinfo,
             'Environments':Environments, #set up statically in node_common.models
             'Methods':getMethods(),      #defined in node_common.queryfuncs
-            'Functions':Functions        #set up statically in node_common.models
+            'Functions':Functions,        #set up statically in node_common.models
+            #'HeaderInfo':returnHeaders(transs),
            }
 
 
@@ -122,7 +130,8 @@ def XsamsRadTrans(RadTrans):
 
 
 
-def customXsams(tap, RadTrans, HeaderInfo, Environments, Methods, Functions):
+def customXsams(tap, RadTrans=None, Environments=None,
+        Methods=None, Functions=None, HeaderInfo=None):
     #return GEN.Xsams(tap, **kwargs)
     yield XsamsHeader(HeaderInfo)
     errs=''
