@@ -150,7 +150,6 @@ def customXsams(tap, RadTrans, HeaderInfo, Environments, Methods, Functions):
             Atom.States = []
     else:
         for Atom in Atoms:
-            print stateIDs[Atom.pk]
             Atom.States = State.objects.filter(pk__in=stateIDs[Atom.pk])
 
     yield '<Species>\n'
@@ -177,6 +176,12 @@ def customXsams(tap, RadTrans, HeaderInfo, Environments, Methods, Functions):
             for Source in XsamsSources(Sources, tap):
                 yield Source
         except: errs+=generatorError(' Sources')
+
+
+    # reset them for the next query!
+    stateIDs = {}
+    refIDs = set()
+
 
     if not requestables or 'methods' in requestables:
         log.debug('Working on Methods.')
