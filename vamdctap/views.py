@@ -76,6 +76,7 @@ class TAPQUERY(object):
     and triggers the SQL parser.
     """
     def __init__(self,request):
+        self.HTTPmethod = request.method
         self.isvalid = True
         self.errormsg = ''
         try:

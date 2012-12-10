@@ -1,7 +1,7 @@
 from settings_default import *
 
 DEBUG = False
-TRANSLIM = 6000
+TRANSLIM = 50000
 
 try:
     INSTALLED_APPS.remove('vald.node')
