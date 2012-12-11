@@ -60,6 +60,7 @@ RETURNABLES = {\
 
 ############################################################
 'MoleculeStateEnergy':'MoleculeState.energy',
+'MoleculeStateEnergyOrigin':'MoleculeState.origin',
 'MoleculeStateEnergyUnit':'1/cm',
 'MoleculeStateID':'MoleculeState.id',
 'MoleculeStateTotalStatisticalWeight':'MoleculeState.total_statistical_weight',
