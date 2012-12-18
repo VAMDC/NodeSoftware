@@ -182,7 +182,7 @@ waalsbfunc = FuncClass(r"""<Function functionID="Fvald-waals-barklem">
     </Argument>
 </Arguments>
 <Parameters>
-    <Parameter name="sigma" units="m">
+    <Parameter name="sigma" units="unitless">
        <Description>Broadening cross section in atomic size units (Bohr radii)</Description>
     </Parameter>
     <Parameter name="alpha" units="unitless">
