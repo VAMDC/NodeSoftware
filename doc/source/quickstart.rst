@@ -1,32 +1,38 @@
 .. _quickstart:
 
-Want to make your research data available through VAMDC but don't
-know where to start? You have come to the right place.
+`VAMDC <http://www.vamdc.org/>`_ is a European collaborative effort to centralize access to
+atomic and molecular research data. Data producers maintain their
+scientific resources as "nodes" in the VAMDC network. Data consumers can then conveniently
+query the network from an online portal, receiving collated information from the nodes having what
+they need. Not only does this allow consumers a unified way to access data, since references are
+stored with the data, it also creates a clear way for scientists to credit the original data producer.
 
-* You have data that could complement or improve existing atomic/molecular data.
-* I have data in some custom/nonstandard format and want to make it available as a VAMDC node
-* I have an existing database and want to connect it to VAMDC
+This quickstart guide is aimed at you who are a data producer and are interested
+in making your research available through VAMDC. This page is relevant to you if any
+of the following statments apply:
 
-See below for each case.
+* I have data that could complement or improve existing atomic/molecular data.
+* I have data in some custom format and want to make it available as a VAMDC node.
+
+The `full documentation <http://www.vamdc.org/documents/nodesoftware/index.html>`_
+gives more details. Also don't be shy to send an email to support@vamdc.eu if you run into trouble.
+
 
 I have complementary data
 =========================
 
 This is for you who don't want to set up and maintain your data in
-a regular VAMDC node.
-
-Maybe you have calculated better partition functions or measured
+a regular VAMDC node. Maybe you have calculated better partition functions or measured
 wavelengths more accurately -- things that are best used in
 conjunction with other databases. Maybe your data set is too small to
 warrant a full node. Or you simply don't have the time to maintain
 one.
 
 The solution is to let your data be accessible through an existing VAMDC
-database - one dealing with the type of data you have. Go to
+database - one dealing with the type of data you have.
 
-http://portal.vamdc.org/vamdc_portal/nodes.seam
-
-Here you will find a list of all database nodes in VAMDC along with
+Go to the `VAMDC portal <http://portal.vamdc.org/vamdc_portal/nodes.seam>`_. Here you will
+find a list of all database nodes in VAMDC along with
 brief descriptions and contact information. Once you find a database
 you think would benefit from your data, contact the maintainer via
 the email given on that page. As the internal format of each database
@@ -34,75 +40,131 @@ varies, you need to agree with the maintainer just how your data
 should be supplied.
 
 
+I want to publish existing data as a VAMDC node
+===============================================
 
-I have existing data and want it stored as a VAMDC node
-======================================================================
-
-This is for you who already maintains a body of data in some custom,
-legacy or otherwise non-standard storage/access system. Such systems are
-often highly optimized for the hardware they were created on, but can
-be hard to maintain, update and keep secure in the long run. Especially
+This is for you who already maintain a body of data. Maybe it's in a
+database. Maybe it's stored using some legacy or otherwise
+non-standard storage/access system. Such systems are often highly
+optimized for the hardware they were created on, but can be hard to
+maintain, update and keep secure in the long run. Especially
 when the original creators have moved on.
 
-As long as you can get your data into normal ASCII files (it can be
-gzipped if very large), you should be helped by the import tool
-VAMDC distributes. This tool converts from almost any ASCII format
-into a form suitable to import into a modern relational database
-(MySQL, PostgreSQL etc).
+VAMDC:s open-source *NodeSoftware* package is downloadable via GIT using
+`these <http://www.vamdc.org/documents/nodesoftware/prereqs.html>`_
+instructions. There are also tarballs to be found `here <http://www.vamdc.eu/software>`_.
+The default NodeSoftware is Python based and uses the `Django <https://www.djangoproject.com/>`_
+`Python <http://www.python.org/>`_ framework and a few more dependencies outlined on
+`these <http://www.vamdc.org/documents/nodesoftware/prereqs.html>`_.
+pages. All documentation referes to the Python version of the
+software.
 
-Here are the steps in brief. You can find detailed documentation here: <link>
+The NodeSoftware contains all tools for setting up and running a
+VAMDC node. It also offers import tools for converting existing data.
+It supports several modern relational databases (*MySQL*,
+*PostgreSQL* etc).
 
-#. Download the NodeSoftware from #link. This includes the import
-   tools, documentation and examples.
-#. Prepare your data as ASCII files.
-#. Think about how you should store that data in your new database.
-   The database schema is defined using the NodeSoftware so you don't have to dabble
-   with the database directly.
-#. Describe the format of your files in a "mapping file". This tells
+Once you have everything installed, here is how you
+get it set up, in brief:
+
+#. In the NodeSoftware directory, go to  ``nodes/``. Copy and rename
+   the ExampleNode directory. This will hold your new node.
+#. In your new node directory, edit ``settings.py``. This sets up your
+   database and other properties. See other nodes for more examples.
+#. You now need to specify the database schema to match how you store
+   your data. You need to describe the tables as "models" using Django's
+   easy syntax.
+
+  * If you already store data in a relational database, you can let Django create the
+    database models automatically as described on the
+    `Django homepage <https://docs.djangoproject.com/en/dev/howto/legacy-databases/#auto-generate-the-models>`_.
+  * If your data is stored in some other form you need to define your database
+    scheme yourself. See examples in the ExampleNode.
+
+The NodeSoftware can help you import legacy data from ASCII files on
+almost any format. The included import tool (in the ``imptools/``
+directory) converts from such raw data into a format possible to directly import into a
+modern database. The process is summarized below (in more detail in
+the `imptool documentation <http://www.vamdc.org/documents/nodesoftware/prereqs.html>`_).
+
+#. Prepare your raw data as text files (they can be gzipped if very
+   large)
+#. Describe the format of your text in a *mapping file*. This tells
    the import tool how it should read your input data and how this maps to the
-   new database you are creating.
-#. Running the import tools with your mapping file will convert your
-   raw input data to intermediary text files on a database-friendly
-   format. These can be directly (and efficiently) be imported into
-   an SQL database.
-#. You need to make your database available online. There are
-   instructions and suggestions for this here <link>.
-#. From here on, jump to the section on connecting an existing
-   database to VAMDC.
+   new database structure you are creating. You can find an example
+   mapping file in the ExampleNode.
+#. Run the import tool on your mapping file. This will convert your
+   raw input data to intermediary text files exactly representing
+   how the data will be represented in your database.
+#. Import the converted files into your database using the SQL command
+   suitable for your database (such as ``LOAD DATA INFILE`` for MySQL).
+
+To test your new Node you can start it with Django's in-built
+webserver (``manage.py runserver``). This will start your node locally
+on port `8000` by default. You can then download the JAVA-based validation
+tool from http://www.vamdc.org/software and try sending some queries.
+
+Also test that ``<URL>/availability`` and ``<URL>/capabilities``
+work as they should. Remember to set up some sample queries in your
+settings file - once you register with VAMDC these will be used to
+test your node's status.
+
+The Django test server should *never* be used for anything but
+debugging. See the `documentation <http://www.vamdc.org/documents/nodesoftware/deply.html>`_
+for instructions on setting up a full-fledged webserver and proxy to serve your data.
 
 
+I want to connect my existing node to VAMDC
+============================================
 
-Connecting an existing database to VAMDC
-========================================
+This is for you who have an existing database and NodeSoftware set up
+already. You now need to make sure VAMDC can talk to it correctly.
 
-This is for you who have an existing database. Maybe you just created
-it from flat files in the previous section. Maybe you are wanting to
-improve access to an old and tried system.
+VAMDC exchanges data with nodes on a unified format. In one direction are sent queries
+using well-defined keywords, in the other are results in a standardized XML format.
+These VAMDC-keys may not match your actual database structure or naming
+scheme at all. You thus need to prepare a "dictionary" that
+properly maps incoming requests to queries to your database. Vice-versa,
+you need a dictionary to convert your data back to the VAMDC's unified
+format.
 
-Even if your database is already ready to run, it is highly recommended
-that you nevertheless set up and manage it using the NodeSoftware. Not only will
-this give you more examples to look at, implementing a node from
-scratch is a lot of work!
+The VAMDC dictionaries are necessarily rather complex in order to
+cover all possible data forms. They are more extensively explained on the
+the `concepts <http://www.vamdc.org/documents/nodesoftware/concepts.html#conceptdict>`_, page
+and in the `new node <http://www.vamdc.org/documents/nodesoftware/newnode.html#the-dictionaries>`_.
+documentation. Thmere is also a `list of all VAMDC keywords <http://dictionary.vamdc.org/returnables/>`_.
+The NodeSoftware contains many examples of creating your dictionaries.
 
-Assuming you have the database up and running and has it set up to be
-accessible, you now need to make sure VAMDC can talk to it correctly.
+The final step consists of registering your node with
+the central VAMDC repository.
 
-You generally need to prepare two dictionaries:
+#. Go to the development VAMDC repository at
+   http://casx019-zone1.ast.cam.ac.uk:/registry/.
+#. Choose to create a new Entry in the side bar. In the login
+   requester, enter user ``vamdc`` and password ``deploy-ws``.
+#. Name your new entry (read the Help link first) and pick the registry type
+   as "catalogue service".
+#. You will next be asked to fill in human-readable information about
+   your node. The most important parts are highlighted and there are
+   also help links to read. You should fill in as much information as you can,
+   but at least these:
 
-#. The "restrictables" dictionary -- this dictionary is used when someone from the VAMDC
-   side wants to find something in your database. On the VAMDC-side
-   generic names are used to describe the query. You must make sure to map
-   this generic query to whatever query is required to find that property in your particular database.
-#. The "returnables" dictionary -- vice-versa, once your database has processed the
-   query, it must echo the result back in a form VAMDC understands. In
-   other words you must take your data and map each bit to the label
-   that VAMDC dictates for data of that type.
+  * *Title* is used to identify your node
+  * *Contact details* should contain the email to the node maintainer
+  * *Description* is used in node listings and describe what type of
+    data users should expect to find in your node.
 
-You can find all the keywords that VAMDC specifies here <link to dictionary>
-The NodeSoftware contains many examples of how to do this translation in practice.
-You can even run a local test node and test it comforms to VAMDC standards.
+#. Find your registration in the registry interface (it will be visible while
+   filling in the node info earlier) and choose the *Edit* link.
+#. From the *Edit* link, choose *Edit metadata ... via VOSI* and enter
+   the ``/capabilities`` URL of your node. Remember that you must have
+   set up some sample queries in your settings file as well.
+#. Uploading/Saving completes the registration.
 
-The final step is registering your node with VAMDC online.
-support@vamdc.eu?
+Once the node has been validated in the development registry it will
+manually be transcribed to the `main registry <http://registry.vamdc.eu/>`
+where you can from then on manage it. Normal data consumers will henceforth be able to access
+it from the `main VAMDC portal <http://portal.vamdc.org//vamdc_portal/>`_.
 
+Welcome the VAMDC community!
 
