@@ -105,11 +105,11 @@ class Transition(Model):
         else: return ""
     def get_waals_name(self):
         if self.gammawaals: return "log(gamma)"
-        elif self.sigmawaals and self.alphawaals: return ["log(gamma)", "alpha"]
+        elif self.sigmawaals and self.alphawaals: return ["sigma", "alpha"]
         else: return ""
     def get_waals_units(self):
-        if self.gammawaals: return "cm3/s"
-        elif self.sigmawaals and self.alphawaals: return ["m", "unitless"]
+        if self.gammawaals: return "1/cm3/s"
+        elif self.sigmawaals and self.alphawaals: return ["unitless", "unitless"]
         else: return ""
     def get_waals_function(self):
         if self.gammawaals: return "waals"
