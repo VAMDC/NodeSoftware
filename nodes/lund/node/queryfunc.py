@@ -75,7 +75,7 @@ def setupResults(sql,limit=1000):
     return {'RadTrans':transs,
             'Atoms':atoms,
             'Sources':sources,
-            'HeaderInfo':headerinfo,
+            #'HeaderInfo':headerinfo,
             'Methods':methods
            }
 
