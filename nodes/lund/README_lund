@@ -49,6 +49,10 @@ cd ../nodes/lund
 
 mysql -D lund -u lund -p < load.sql
 
+Update settings.py/LAST_MODIFIED to match the current date. This will inform
+                          users of the portal when you last updated the database.
+                                
+
 Start/Restart the server: 
 -------------------------
 
