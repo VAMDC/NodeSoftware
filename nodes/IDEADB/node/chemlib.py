@@ -2,6 +2,7 @@
 """ provides some basic chemical functions """
 
 import periodictable
+import re
 
 #list of nominal mass of most abundant isotopes
 #taken from http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl
@@ -149,3 +150,15 @@ def chemicalformula2nominalmass(chemicalformula, atommasses = atommasses):
     mass += calculate(symbolcache, indexcache)
 
     return mass
+
+def checkatoms(chemicalformula, atommasses = atommasses):
+    """ Checks each atom in a chemical formula for validity (e.g. listing in atommasses) """
+    result = 0
+    match = re.findall('([A-Z]{1}[a-z]{0,2})', str(chemicalformula))
+    for atom in match:
+        try:
+            mass = atommasses[atom]
+        except KeyError:
+            result = atom
+
+    return result

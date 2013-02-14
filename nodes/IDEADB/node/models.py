@@ -14,7 +14,7 @@ import re
 import datetime
 
 from inchivalidation import inchi2inchikey, inchikey2inchi, inchi2chemicalformula
-from chemlib import chemicalformula2nominalmass
+from chemlib import chemicalformula2nominalmass, checkatoms
 
 #we define the regex object for chemical formulas here, as it is used in two different functions
 re = re.compile('^([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+$')
@@ -33,9 +33,17 @@ def validate_CAS(cas):
         raise ValidationError(u'%s is not a valid CAS-number!' % cas)
 
 def validate_chemical_formula(chemical_formula):
+    """ checks chemical formalae for plausibility """
+
+    # first we check if the formula seems like a chemical formula
     m = re.match(chemical_formula)
     if m is None:
         raise ValidationError(u'%s does not seem to be a chemical formula' % chemical_formula)
+
+    # we outsource the checking of individual atoms to the chemlib
+    result = checkatoms(chemical_formula)
+    if result != 0:
+        raise ValidationError(u'%s is not an atom' % result)
 
 def validate_name(name):
     m = re.match(name) 
