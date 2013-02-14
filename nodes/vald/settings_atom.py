@@ -1,7 +1,7 @@
 from settings_default import *
 
 DEBUG = False
-TRANSLIM = 6000
+TRANSLIM = 50000
 
 try:
     INSTALLED_APPS.remove('vald.node')
@@ -22,7 +22,7 @@ DATABASES = {
     'PASSWORD': 'V@ld',
   },
 }
-LAST_MODIFIED = datetime.date(2012,11,11)
+LAST_MODIFIED = datetime.date(2012,12,18)
 
 EXAMPLE_QUERIES = [\
     "SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4000.01",

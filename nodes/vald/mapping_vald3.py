@@ -14,7 +14,7 @@ from xml.sax.saxutils import escape
 base = "/vald/vamdc/raw_vald_data/"
 species_list_file = base + 'VALD_list_of_species.csv'
 vald_cfg_file = base + 'VALD3.cfg'
-vald_file = base + 'vald3_atoms_all.dat' #.gz # change to vald3_molec.dat.gz for molecules
+vald_file = base + 'vald3_atoms_all.dat.gz' # change to vald3_molec.dat.gz for molecules
 terms_file = base + 'term_atoms_all.dat.gz'
 #vald_file = base + 'vald3_atoms_2000.dat' # change to vald3_molec.dat.gz for molecules
 #terms_file = base + 'terms_atoms_3000.dat'
