@@ -31,6 +31,9 @@ from email.Utils import formatdate
 import time
 import datetime
 
+#to deal with (un)escaped URLs
+from xml.sax.saxutils import escape, unescape
+
 def LOG(s):
     """ logfunction. will be removed for final version. """
     logfilejosi = open('/var/log/vamdc_josi.log','a')
@@ -216,6 +219,9 @@ def setupResults(sql, limit=1000):
                 authorlist.append(u'%s, %s'%(author.lastname, author.firstname))
 
             source.author = authorlist
+
+            #unescape and escape the URL again. this prevents us from delivering ampersands and therefore creating invalid XSAMS documents
+            source.url = escape(unescape(source.url))
 
         #insert the standard-comment in addition to a possibly existing user-specific comment
         standardcomment = 'X-Values are measured with an energy resolution of %s eV. Therefore every shown peak is the original peak shape convoluted with our resolution. Energy scans are calibrated. Therefore we estimate an error of 0.1 eV' % energyscan.energyresolution 
