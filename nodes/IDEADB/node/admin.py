@@ -28,10 +28,14 @@ class EnergyscanAdmin(admin.ModelAdmin):
     search_fields = ('species__chemical_formula', 'species__name', 'origin_species__chemical_formula', 'origin_species__name')
     raw_id_fields = ('species', 'origin_species')
 
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ('lastname', 'firstname')
+    search_fields = ('lastname', 'firstname')
+
 admin.site.register(Species, SpeciesAdmin)
 admin.site.register(Resonance)
 admin.site.register(Source, SourceAdmin)
 admin.site.register(Massspec)
 admin.site.register(Energyscan, EnergyscanAdmin)
-admin.site.register(Author)
+admin.site.register(Author, AuthorAdmin)
 admin.site.register(Experiment)
