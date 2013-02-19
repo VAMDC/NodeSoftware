@@ -53,11 +53,15 @@ def validate_name(name):
 #start defining the classes
 
 class Author(Model):
-    firstname = CharField(max_length=20)
-    lastname = CharField(max_length=20)
+    firstname = CharField(max_length=30)
+    lastname = CharField(max_length=30)
+    middlename = CharField(max_length=30, blank=True)
     email = EmailField(max_length=254, blank=True)
     def __unicode__(self):
-        return u'%s, %s'%(self.lastname, self.firstname)
+        if self.middlename != '':
+            return u'%s, %s %s'%(self.lastname, self.firstname, self.middlename)
+        else:
+            return u'%s, %s'%(self.lastname, self.firstname)
 
 class Experiment(Model):
     name = CharField(max_length=10)
@@ -65,7 +69,7 @@ class Experiment(Model):
         return u'%s'%(self.name)
 
 class Species(Model):
-    name = CharField(max_length=40, db_index=True, verbose_name='Common Name (e.g. Water for H2O)', blank = True, validators=[validate_name])
+    name = CharField(max_length=100, db_index=True, verbose_name='Common Name (e.g. Water for H2O)', blank = True, validators=[validate_name])
     chemical_formula = CharField(max_length=40, db_index=True, verbose_name='Chemical Formula', default = '', validators=[validate_chemical_formula])
     mass = PositiveIntegerField(db_index=True, verbose_name='Nominal Mass')
     isotope = BooleanField(verbose_name='Tick, if this is the most abundant isotope', default = True)
@@ -189,6 +193,11 @@ class Energyscan(Model):
     #define a useful unicode-expression:
     def __unicode__(self):
         return u'ID %s: %s from %s'%(self.id, self.species, self.origin_species)
+
+    def clean(self):
+        #we check for -- in the numerical data, because Origin occasionally produces those
+        if self.energyscan_data.find('--') is not -1:
+            raise ValidationError(u'Energyscan data contains -- most likely due to empty lines in the Origin table.')
 
 class Resonance(Model):
     energyscan = ForeignKey(Energyscan)
