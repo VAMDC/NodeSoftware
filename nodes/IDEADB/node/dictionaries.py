@@ -103,14 +103,14 @@ RESTRICTABLES = {\
 'SourceDOI':'source__doi',
 
 #general: has the tuples and searches either in origin_species or in species
-'MoleculeChemicalName':('species__name','origin_species__name'),
+'MoleculeChemicalName':('species__name'),
 'AtomMassNumber':'species__mass',
-'MoleculeMolecularWeight':('species__mass','origin_species__mass'),
+'MoleculeMolecularWeight':('species__mass'),
 'AtomSymbol':'species__chemical_formula',
-'Inchi':('species__inchi','origin_species__inchi'),
-'InchiKey':('species__inchikey','origin_species__inchikey'),
-'MoleculeStoichiometricFormula':('species__chemical_formula','origin_species__chemical_formula'),
-'MoleculeCASRegistryNumber':('species__cas','origin_species__cas'),
+'Inchi':('origin_species__inchi'),
+'InchiKey':('origin_species__inchikey'),
+'MoleculeStoichiometricFormula':('species__chemical_formula'),
+'MoleculeCASRegistryNumber':('species__cas'),
 'ParticleName':test_constant(['electron']),
 
 #only search for reactants
