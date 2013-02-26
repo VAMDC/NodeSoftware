@@ -137,7 +137,7 @@ class Species(Model):
         if len(sp_search) > 0:
             #indeed we do
             #in this case they should be isomeres and therefore have a different inchi
-            if self.inchi == sp_search.get().inchi:
+            if self.inchi in sp_search.values_list('inchi'):
                 raise ValidationError(u'A species with this chemical formula and InChI already exists in the database')
             if self.inchi == '':
                 raise ValidationError(u'Isomeres need to be distinguished via their InChI')
