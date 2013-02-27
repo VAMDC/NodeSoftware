@@ -67,20 +67,22 @@ def parse_cmd(string,cmd):
 def latex2html(string):
 
     # find mathmode
-    
-    strings = string.split('$')
-    # odd elements are encapsulated in math mode
+    try:
+        strings = string.split('$')
+        # odd elements are encapsulated in math mode
 
-    for i in xrange(len(strings)):
-        if i % 2 == 1:
-            strings[i] = parse_mathmode(strings[i])
+        for i in xrange(len(strings)):
+            if i % 2 == 1:
+                strings[i] = parse_mathmode(strings[i])
 
 
-    # combine everything
+        # combine everything
+                
+        ret_string = ''.join(strings)
 
-    ret_string = ''.join(strings)
+        for letter in translation_dict:
+            ret_string = ret_string.replace(letter,translation_dict[letter])
 
-    for letter in translation_dict:
-        ret_string = ret_string.replace(letter,translation_dict[letter])
-
-    return ret_string
+        return ret_string
+    except:
+        return ""

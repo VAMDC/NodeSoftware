@@ -95,7 +95,7 @@
 	<xsl:text>&#xa;</xsl:text>
 	<ul class="vlist2 full" style="list-style:none;">
 	<xsl:apply-templates select="/xsams10:XSAMSData/xsams10:Species/xsams10:Atoms/xsams10:Atom/xsams10:Isotope/xsams10:Ion/xsams10:AtomicState"/>
-        <xsl:apply-templates select="/xsams10:XSAMSData/xsams10:Species/xsams10:Molecules/xsams10:Molecule/xsams10:MolecularState"/>
+        <xsl:apply-templates select="/xsams10:XSAMSData/xsams10:Species/xsams10:Molecules/xsams10:Molecule/xsams10:MolecularState[not(@auxillary='true')]"/>
         <xsl:text>&#xa;</xsl:text>
 	</ul>
 	</fieldset>
@@ -279,22 +279,37 @@
 	<div style="float:left; min-width:27em;">
 	<ul style="list-style:none;">
 	<li style="font-weight:bold">
-
+<xsl:element name="a">
+  <xsl:attribute name="class">tooltip</xsl:attribute>
+  <xsl:attribute name="title">
+Source: <xsl:value-of select="xsams10:SourceRef"/>
+Method: <xsl:value-of select="xsams10:EnergyWavelength/*/@methodRef"/>
+</xsl:attribute>
         <xsl:apply-templates select="xsams10:EnergyWavelength"/>
 
 	<div style="float:left;text-align:right; min-width:10ex;">
         <xsl:value-of select="format-number(xsams10:Probability/xsams10:TransitionProbabilityA/xsams10:Value,'0.00000000 ')"/>
 	</div>
-
+<!--
 	 <div style="float:left;text-align:right; min-width:15ex;margin-right:1.0em">
    	  <xsl:value-of select="xsams10:SourceRef"/>
+   	  <xsl:value-of select=""/>
 	 </div>
-
+-->
+</xsl:element>
 	</li>
 
 
 	<xsl:for-each select="xsams10:EnergyWavelength/xsams10:Frequency[position() > 1]">
 <li style="clear:left">
+
+<xsl:element name="a">
+  <xsl:attribute name="class">tooltip</xsl:attribute>
+  <xsl:attribute name="title">
+Source: <xsl:value-of select="xsams10:SourceRef"/>
+Method: <xsl:value-of select="@methodRef"/>
+</xsl:attribute>
+
  	 <div style="float:left;text-align:right; min-width:10ex;margin-right:0.5em">
 	  <xsl:value-of select="format-number(xsams10:Value,'0.0000')"/>
 	 </div>
@@ -302,14 +317,7 @@
 	 <div style="float:left;text-align:right; min-width:7ex;margin-right:0.5em">
    	  <xsl:value-of select="format-number(xsams10:Accuracy,'0.0000 ')"/>
 	 </div>
-
-	 <div style="float:left;text-align:right; min-width:10ex;margin-right:0.5ex">
-	<xsl:text>- </xsl:text>
-	 </div>
-
-	 <div style="float:left;text-align:right; min-width:15ex;margin-right:1.0em">
-   	  <xsl:value-of select="xsams10:SourceRef"/>
-	 </div>
+</xsl:element>
 
 </li>
         </xsl:for-each>

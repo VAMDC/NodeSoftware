@@ -431,7 +431,7 @@ def returnResults(tap, LIMIT=None):
     # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
     
-    transs = TransitionsCalc.objects.filter(q,specie__origin=5,specie__archiveflag=0,dataset__archiveflag=0) 
+    transs = TransitionsCalc.objects.filter(q,specie__origin=5,specie__archiveflag=0,dataset__archiveflag=0,energylower__gt=0) 
     ntrans = transs.count()
 
     if LIMIT is not None and ntrans > LIMIT:

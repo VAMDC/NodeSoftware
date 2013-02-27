@@ -303,6 +303,7 @@ RESTRICTABLES = {
 #'MoleculeStateCharacLifeTime':'',
 #'MoleculeStateCharacNuclearSpinSymmetry':'',
 'MoleculeStateNSIName':'lowerstateref__nsi__name', #nuclearspinisomer',
+'MoleculeStateNuclearSpinIsomer':'lowerstateref_nsi_name',
 'MoleculeStateEnergy':'lowerstateref__energy',
 #'MoleculeStateID':'',
 'MoleculeStoichiometricFormula':'specie__molecule__stoichiometricformula',

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 from django.db.models import Q
 from django.conf import settings
 import sys
@@ -34,21 +34,61 @@ def attach_partionfunc(molecules):
     Attaches partition functions to each specie.
     """
     for molecule in molecules:
-        molecule.partionfuncT = []
-        molecule.partionfuncQ = []
-        
+        molecule.pfT = []
+        molecule.pfQ = []
+        molecule.pfnsiname = [] #nuclearspinisomer',
+        molecule.pflowestrovibstateid = []
+        molecule.pfsymmetrygroup = []
+        molecule.pfnsilowestrovibsym = []
+
         #pfs = Partitionfunctions.objects.filter(eid = molecule.id, mid__isnull=False)
         pfs = Partitionfunctions.objects.filter(specie = molecule, state="All")
-        
-        temp=pfs.values_list('temperature',flat=True)
-        pf = pfs.values_list('partitionfunc',flat=True)
-                   
-        molecule.partitionfuncT=temp
-        molecule.partitionfuncQ=pf
+
+        # Get List of all nuclear spin isomers "None" should be included and gives
+        # partition functions which do not distinguish between nuclear spin isomers.
+        nsilist = pfs.values_list('nsi_id', flat=True).distinct()
+
+        for nsi in nsilist:
+            temp=pfs.filter(nsi_id=nsi).values_list('temperature',flat=True)
+            pf = pfs.filter(nsi_id=nsi).values_list('partitionfunc',flat=True)
+
+            # Get information on nuclear spin isomers or Null
+            try:
+                nsi = NuclearSpinIsomers.objects.get(pk=nsi)
+                nsiname = nsi.name
+                nsilowestrovibstateid = nsi.lowestrovibstate
+                nsisymmetrygroup = nsi.symmetrygroup
+                nsilowestrovibsym = nsi.lowestrovibsym
+            except:
+                nsiname = ''
+                nsilowestrovibstateid = ''
+                nsisymmetrygroup = ''
+                nsilowestrovibsym = '' 
+                
+            molecule.pfT.append(temp)
+            molecule.pfQ.append(pf)
+            molecule.pfnsiname.append(nsiname)
+            molecule.pflowestrovibstateid.append(nsilowestrovibstateid)
+            molecule.pfsymmetrygroup.append(nsisymmetrygroup)
+            molecule.pfnsilowestrovibsym.append(nsilowestrovibsym)
          
 
+def remap_species(datasets):
+    idxlist = []
+    species = []
 
-def get_species_and_states(transs, addStates=True):
+    for i in datasets:
+        specieid = '%s-hyp%s' % (i.specie.id,i.hfsflag)
+        if specieid not in idxlist:
+            idxlist.append(specieid)
+            i.specie.hfs = i.hfsflag
+            i.specie.specieid = specieid
+            species.append(i.specie)
+
+    return species
+
+
+def get_species_and_states(transs, addStates=True, filteronatoms=False):
     """
     Returns list of species including all states which occur in the list
     of transitions.
@@ -59,35 +99,77 @@ def get_species_and_states(transs, addStates=True):
     - Number of states
     """
 
-    spids = set( transs.values_list('specie_id',flat=True).distinct() )
+    # Get list of specie-ids which occur in transitions
+    if filteronatoms:
+        spids = set( transs.values_list('specie_id',flat=True).distinct() )
+    else:
+        spids = transs.values_list('specie_id',flat=True)
+
     # Species object for CDMS includes Atoms AND Molecules. Both can only
     # be distinguished through numberofatoms-field
-    atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic')
-    molecules = Species.objects.filter(pk__in=spids).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
+    atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic', origin=0, archiveflag=0)
+    molecules = Species.objects.filter(pk__in=spids, origin=0, archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
+
     # Calculate number of species in total
     nspecies = atoms.count() + molecules.count()
+
     # Intialize state-counter
     nstates = 0
-
+    
     if addStates:
         # Loop through list of species and attach states
-        for specie in chain(atoms , molecules):
+        for specie in chain( molecules):
+            #dds=Datasets.objects.filter(specie=specie, archiveflag=0, hfsflag=specie.hfs).values_list('id',flat=True)
+            #dds=set(dds)
+
             # Get distinct list of States which
             # occur as lower or upper state in transitions
-            subtranss = transs.filter(specie=specie)
+            subtranss = transs.filter(specie=specie, dataset__archiveflag=0)
+            up=subtranss.values_list('upperstateref',flat=True)
+            lo=subtranss.values_list('lowerstateref',flat=True)
+            sids = set(chain(up,lo))
+            states = States.objects.filter( pk__in = sids)
+            
+            # Get energy origins
+            origin_ids = states.values_list('energyorigin',flat=True).distinct()
+            nsi_origin_ids = NuclearSpinIsomers.objects.filter(pk__in=states.values_list('nsi',flat=True)).values_list('lowestrovibstate',flat=True)
+            # nsi_origin_ids = States.objects.filter(pk__in = sids).values_list('nsioriginid',flat=True).distinct()
+            origin_ids = set(chain(origin_ids,nsi_origin_ids))
+            origins = States.objects.filter(pk__in = origin_ids)
+
+            # Create new ID for 'origin'-states
+            # These states occur twice in the output
+            # species-id is used to make id unique (origin-state could be a state of another specie if v>0)
+            for state in origins:
+                state.id = "%s-origin-%s" % (state.id, specie.id)
+                state.aux = True
+
+            # Attach states to species object            
+            specie.States = chain(origins, states)
+            # Add number of attached states to state-counter
+            nstates += states.count()
+
+                
+        for specie in chain(atoms ):
+            #dds=Datasets.objects.filter(specie=specie, archiveflag=0, hfsflag=specie.hfs).values_list('id',flat=True)
+            #dds=set(dds)
+            # Get distinct list of States which
+            # occur as lower or upper state in transitions
+            subtranss = transs.filter(specie=specie, dataset__archiveflag=0)
             up=subtranss.values_list('upperstateref',flat=True)
             lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
             # Attach states to species object
-            specie.States = States.objects.filter( pk__in = sids)
+            specie.States = AtomStates.objects.filter( pk__in = sids)
             # Add number of attached states to state-counter
             nstates += specie.States.count()
 
+                
     return atoms,molecules,nspecies,nstates
 
 
 
-def get_sources(transs, methods = []):
+def get_sources(atoms, molecules, methods = []):
     """
     Get a complete list of sources and methods for the set of
     predicted transitions. Methods compiled for observed
@@ -96,24 +178,41 @@ def get_sources(transs, methods = []):
     """
 
     # Get the list of species (entries). One method is generated for each specie
-    ids = set( transs.values_list('specie_id',flat=True) )
-    slist = SourcesIDRefs.objects.filter(specie__in=ids).distinct()
+    #ids = set( transs.values_list('specie_id',flat=True) )
+    ids=[]
+    
+    for i in chain(molecules,atoms):
+        ids.append(i.id)
+
+    slist = SourcesIDRefs.objects.filter(specie__in=ids)
 
     sexplist = slist.filter(transitionexp__gt=0)
 
     # Loop over species list and get sources
-    for src in slist.values_list('specie',flat=True):
-        mesrc=SourcesIDRefs.objects.filter(Q(specie=src)).distinct().values_list('source',flat=True)
-        this_method = Method(src,src,'derived','derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data',mesrc)
-        methods.append(this_method)
+#    for src in ids: #slist.values_list('specie',flat=True):
+#        mesrc=SourcesIDRefs.objects.filter(Q(specie=src)).distinct().values_list('source',flat=True)
+#        this_method = Method(src,src,'derived','derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data',mesrc)
+#        methods.append(this_method)
 
+    datasets = Datasets.objects.filter(specie__in=ids, type__in=['egy','cat','mrg','lin'], archiveflag=0)
+    for dat in datasets:
+        mesrc=SourcesIDRefs.objects.filter(Q(specie=dat.specie_id)).distinct().values_list('source',flat=True)
+        if dat.type == 'lin':
+            description = 'experimental transition frequencies: %s' % dat.comment
+            category = 'observed'
+        else:
+            description = 'derived with Herb Pickett\'s spfit / spcat fitting routines, based on experimental data: %s' % dat.comment
+            category='derived'
+        this_method = Method(dat.id, dat.id,category,description,mesrc)
+        methods.append(this_method)
+        
     # Loop over species list and get sources
-    for src in sexplist.values_list('source',flat=True):
+    for src in sexplist.values_list('source',flat=True).distinct():
         this_method =  Method('EXP'+str(src),src,'experiment','experiment',src)
         methods.append(this_method)
         
-    sourceids = slist.values_list('source',flat=True)
-
+    sourceids = set(slist.values_list('source',flat=True))
+    sourceids = sourceids.union(DATABASE_REFERENCES)
     return Sources.objects.filter(pk__in = sourceids), methods
     
 
@@ -189,18 +288,40 @@ def setupResults(sql):
     and compiles everything together for the vamdctap.generator function
     which is used to generate XSAMS - output.
     """
+
+    # Modify where-clause:
+    # Ensure that filters on AtomMassNumber only return atoms and not also molecules
+    sql.parsedSQL=SQL.parseString(sql.query.replace("AtomIonCharge","AtomSymbol>0 and AtomIonCharge"),parseAll=True)
+    sql.where = sql.parsedSQL.where
+
+    # Determines wether there is a restriction on a field in the species table
+    # This distinction is needed for speed optimization (to many subqueries are extremely slow in mysql)
+    filteronatoms = "Atom" in sql.query
+    filteroninchi = "Inchi" in sql.query
+    filteronmols = "Molecule" in sql.query
+    filteronspecies = ("Ion" in sql.query) | filteronmols | filteroninchi | filteronatoms
     q = sql2Q(sql)
 
     addStates = (not sql.requestables or 'atomstates' in sql.requestables or 'moleculestates' in sql.requestables)
     addTrans = (not sql.requestables or 'RadiativeTransitions' in sql.requestables)
 
-    datasets = Datasets.objects.filter(archiveflag=0)
+    #datasets = Datasets.objects.filter(archiveflag=0)
 
     # Query the database and get calculated transitions (TransitionsCalc)
-    transs = TransitionsCalc.objects.filter(q,specie__origin=0,
-                                            specie__archiveflag=0,
-                                            dataset__in=datasets)
-                                            #dataset__archiveflag=0) #.order_by('frequency')
+    transs = TransitionsCalc.objects.filter(q #specie__origin=0,
+                                            #specie__archiveflag=0,
+                                            #dataset__in=datasets,
+                                            #dataset__archiveflag=0
+                                            ) #.order_by('frequency')
+
+    # get atoms and molecules with states which occur in transition-block
+    atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates, filteronspecies)
+
+    # attach partition functions to each specie
+    attach_partionfunc(molecules)
+
+    # modify filter for transitions:
+    transs = transs.filter(specie__origin=0, specie__archiveflag=0, dataset__archiveflag=0)
 
     # Attach experimental transitions (TransitionsExp) to transitions
     # and obtain their methods. Do it only if transitions will be returned
@@ -214,29 +335,30 @@ def setupResults(sql):
     # get sources and methods which have been used
     # to derive predicted transitions
     if addTrans:
-        sources, methods = get_sources(transs, methods)
+        sources, methods = get_sources(atoms, molecules, methods)
     else:
         sources=Sources.objects.none()
 
-    # get atoms and molecules with states which occur in transition-block
-    atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates)
-
-    # attach partition functions to each specie
-    attach_partionfunc(molecules)
 
     nsources = sources.count()
-    nmolecules = molecules.count()
-    natoms = atoms.count()
+    nmolecules = len(molecules)#molecules.count()
+    natoms = len(atoms) #atoms.count()
     ntranss = transs.count()
-    
+
+    lastmodified = datetime.datetime.now()
+    for specie in chain(atoms, molecules):
+        if specie.changedate<lastmodified:
+            lastmodified = specie.changedate
+
+    # Calculate estimated size of xsams-file
     if ntranss+nmolecules+nsources+natoms+nstates>0:
-        size_estimate='%.2f'%(ntranss*0.0014 + 0.01)
+        size_estimate='%.2f' % (nstates*0.0008755624 +ntranss*0.000561003 +nmolecules*0.001910 +nsources * 0.0005+0.01)
     else: size_estimate='0.00'
 
 
     # this header info is used in xsams-header-info (html-request)
     headerinfo={\
-        'Truncated':"0", # CDMS will not truncate data (at least for now)
+        'Truncated':"100", # CDMS will not truncate data (at least for now)
         'count-sources':nsources, 
         'count-species':nspecies,
         'count-molecules':nmolecules,
@@ -244,6 +366,7 @@ def setupResults(sql):
         'count-states':nstates,
         'count-radiative':ntranss,
         'APPROX-SIZE':size_estimate,
+        'last-modified':lastmodified,
     }
 
 
@@ -270,7 +393,7 @@ def returnResults(tap, LIMIT=None):
     # only meaningful for CDMS
     RESTRICTABLES.update(CDMSONLYRESTRICTABLES)
 
-    SUPPORTED_FORMATS=['spcat','png','list','xspcat','mrg']
+    SUPPORTED_FORMATS=['spcat','png','list','xspcat','mrg','species']
 
     if tap.format not in SUPPORTED_FORMATS:
         emsg = 'Currently, only FORMATs PNG, SPCAT and XSAMS are supported.\n'
@@ -280,6 +403,14 @@ def returnResults(tap, LIMIT=None):
         speclist=specieslist()
         response = HttpResponse(speclist, mimetype='text/plain')
         return response
+
+    if tap.format == 'species':
+        speclist=plain_specieslist()
+        response = HttpResponse(speclist, mimetype='text/plain')
+        return response
+
+
+    
     LOG('And now some logs:')
     #LOG(tap.data)
         
@@ -740,3 +871,18 @@ def specieslist():
         yield "\n"
 
 
+def plain_specieslist():
+    speciess = Species.objects.filter(archiveflag=0)
+    for specie in speciess:
+        yield "%5s " % specie.id
+        yield "%7s " % specie.speciestag
+        yield "%-20s " % specie.molecule.stoichiometricformula
+        yield "%-20s " % specie.molecule.structuralformula
+        yield "%-20s " % specie.isotopolog        
+        yield "%-30s " % specie.state        
+#        yield "%-20s " % specie.name
+        yield "%-20s " % specie.inchikey
+        yield "%-s " % specie.molecule.trivialname
+        
+        yield "\n"
+    

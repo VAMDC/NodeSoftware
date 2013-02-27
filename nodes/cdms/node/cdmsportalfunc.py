@@ -89,7 +89,7 @@ def getParameters4specie(id, paramtype=None):
     return parameters
 
 
-def getPartitionf4specie(id, format='html'):
+def getPartitionf4specie(id, nsi=None, format='html'):
     """
     Queries the partition functions for this specie and creates a html-table.
     (This is done because it seems to be simpler than using a template; issue: ordering)
@@ -99,10 +99,19 @@ def getPartitionf4specie(id, format='html'):
     returns:
        string with html-table as content
     """
+
+    if nsi is None:
+        nsiid=None
+        tablename = ''
+    else:
+        nsiid = nsi.id
+        tablename = "Partitionfunctions for %s states only" % nsi.name
     partitionFunctions = Partitionfunctions.objects.filter(specie=id)
     temps=partitionFunctions.values_list("temperature", flat=True).distinct().order_by("temperature")
     states=partitionFunctions.values_list("state", flat=True).distinct().order_by("state")
-    pftableHtml = "<table class='full'><thead><tr><th>&nbsp;</th>"
+    pftableHtml = "<table class='full'>"
+    pftableHtml += "<caption><div class='float_left'>%s</div></caption>" % tablename
+    pftableHtml += "<thead><tr><th>&nbsp;</th>"
 
     for s in states:
         pftableHtml += "<th> %s </th>" % s
@@ -113,7 +122,7 @@ def getPartitionf4specie(id, format='html'):
         pftableHtml+= "<tr><th scope='row' class='sub'> Q(%s /K) </th>" % t
         for s in states:
             try:
-                pftableHtml += "<td>%s</td> " % partitionFunctions.get(temperature=t, state=s).partitionfunc
+                pftableHtml += "<td>%s</td> " % partitionFunctions.get(temperature=t, nsi=nsiid, state=s).partitionfunc
             except:
                 pftableHtml += "<td>&nbsp;</td>"
         pftableHtml+= "<tr>"

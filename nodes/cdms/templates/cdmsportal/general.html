@@ -10,14 +10,26 @@
 
   <div id="col1" style="background-color:white;" role="complementary">
     <div id="col1_content" class="clearfix">
-     <h6 class="vlist"> CATALOG DESCRIPTION</h6>
+     <h6 class="vlist"> GENERAL</h6>
      <ul class="vlist">
-      <li><a href="#" id="" onclick="docShowSubpage('page_cdms')">General remarks</a></li>
+      <li><a href="#" id="" onclick="docShowSubpage('page_cdms')">About the Database</a></li>
+      <li><a href="#" id="" onclick="docShowSubpage('page_citation')">Citation Guidelines</a></li>
       <li><a href="#" id="" onclick="docShowSubpage('page_query')">Catalog Queries</a></li>
-      <li><a href="#" id="" onclick="docShowSubpage('page_format')">File Formats</a></li>
-      <li><a href="#" onclick="docShowSubpage('page_selectionrules')">Selection Rules and Assignments</a></li>
-      <li><a href="#" onclick="docShowSubpage('page_reliability')">Reliability of the Predictions</a></li>
-      <li><a href="#" onclick="docShowSubpage('page_pf')">Remarks on the Partition Function</a></li>
+      <li><a href="#" id="" onclick="docShowSubpage('page_portal')">Web-Portal</a></li>
+      <li>
+        <a onclick="$('.fformats').toggle()">File Formats</a>
+        <ul style='display:none' class="fformats">  
+          <li><a href="#" id="" onclick="docShowSubpage('page_spcatformat')">spcat</a></li>
+          <li><a href="#" id="" onclick="docShowSubpage('page_xsamsformat')">xsams</a></li>
+        </ul>
+     </ul>
+     <h6 class="vlist"> DATABASE CONTENT </h6>
+     <ul class="vlist">
+      <li><a href="#" onclick="docShowSubpage('page_dataingeneral')">General</a></li>
+      <li><a href="#" onclick="docShowSubpage('page_selectionrules')">Selection Rules</a></li>
+      <li><a href="#" onclick="docShowSubpage('page_assignments')">Assignments</a></li>
+      <li><a href="#" onclick="docShowSubpage('page_reliability')">Reliability</a></li>
+      <li><a href="#" onclick="docShowSubpage('page_pf')">Partition Functions</a></li>
      </ul>
 
      <h6 class="vlist"> VAMDC </h6>
@@ -43,198 +55,717 @@
 <form class='yform'>
 
 <fieldset class='subpage' id='page_cdms' style=''>
-<div class='legend'>General Remarks</div>
-	  <p>The files in the <a href="/node/469">Entries section</a> contain predictions for atoms and molecules of astrophysical and atmospheric interest as well as some documentation on which data have been used for the predictions. At present, the aim of of this page is to supplement data bases such as the <a target="_top" href="http://spec.jpl.nasa.gov/ftp/pub/catalog/catform.html">JPL catalog</a>. Herb Pickett's programs <small><b>SPFIT</b></small> and <small><b>SPCAT</b></small> have been used for the most part to generate the predictions.</p>
-<p>After some general remark, a <a href="#description">brief description of the format of the catalog entries</a> follows below along with <a href="#selection">remarks on the selection rules and assignments</a>, <a href="#reliable">comments on the reliability of the predictions</a>, <a href="#partition">remarks on the partition function</a>, and <a href="#equations">some useful equations</a>.</p>
+  <div class='legend'>General Remarks</div> 
+   <p>
+     The CDMS database contains a catalog of transition frequencies
+     and state energies for atoms and molecules of astrophysical and
+     atmospheric interest.
 
-<p><font color="#f00090">The structure of the files</font> is described in detail in the Letter <a href="/sites/default/files/cdms/CDMS_AA.pdf"><b>THE COLOGNE DATABASE FOR MOLECULAR SPECTROSCOPY, CDMS</b></a> by H. S. P. M&uuml;ller, S. Thorwirth, D. A. Roth, and G. Winnewisser; <i>Astron. Astrophys.</i> <b>370</b> (2001) L49 &ndash; L52.<br />
-An update on the CDMS has appeared very recently: H. S. P. M&uuml;ller, F. Schl&ouml;der, J. Stutzki, and G. Winnewisser, <a target="_top" href="/sites/default/files/cdms/CDMS_JMSt.pdf"><b>THE COLOGNE DATABASE FOR MOLECULAR SPECTROSCOPY, CDMS: A USEFUL TOOL FOR ASTRONOMERS AND SPECTROSCOPISTS</b></a>, <i>J. Mol. Struct.</i> <b>742</b>, 215&ndash;227 (2005).<br />
+     The relevant laboratory data on these molecules is scattered over
+     many journals and very many issues, and the CDMS has the purpose
+     to provide the relevant data to the astronomical and
+     spectroscopical community in a standardized way. Generally,
+     emphasis has been put on creating new or updated entries taking
+     into account particularly the submillimeter and terahertz
+     regions.
+   </p>
+   <p>
+     The entries are not restricted to species already observed in the
+     ISM or CSM, but also include molecules that may be found there in
+     the future. Therefore, the catalog can be, and has been used to
+     identify new molecules in space. At present, the catalog covers
+     mostly rotational transitions from the radio-frequency to the
+     terahertz region and lower mid-infrared region, i.e. frequencies
+     lower than ~18 THz or ~600 cm<sup>-1</sup>, or wavelengths longer
+     than ~16.5 &mu;m.
+   </p>
+   <p>
+     Vibration-rotation transitions in the far-infrared region have
+     been included for C<sub>3</sub>. They may be included in a
+     greater number in the near future. Vibration-rotation transitions
+     in the mid-infrared region are currently not considered to be
+     included in the database. If there is a genuine interest for such
+     information to be included in our database please sent us
+     comments and suggestions in order to suggest species. Information
+     on background literature is desirable !!
+   </p>
+   <p>
+     CDMS is part of the Virtual Atomic and Molecular Datacenter
+     (VAMDC) and thus supports all its standards. <br><a>[more...]</a>
+   </p>
 
-Please acknowledge use of the CDMS by citing these articles. You are very welcome to state the web address also. We recommend to cite the original sources of the data too, which are given in the documentations, at least as far as this is feasible. Since the format in the CDMS catalog is identical to the one in the JPL catalog information can also be found in the article SUBMILLIMETER, MILLIMETER, AND MICROWAVE SPECTRAL LINE CATALOG by H. M. Pickett, R. L. Poynter, E. A. Cohen, M. L. Delitsky, J. C. Pearson, and H. S. P. M&uuml;ller; <i>J. Quant. Spectrosc. Radiat. Transfer</i> <b>60</b> (1998) 883 &ndash; 890.</p>
-<p>Some catalog entries are available with frequencies in units of cm<sup>&ndash;1</sup>. This applies mainly to light hydrides and some stable molecules that might be of interest as secondary standards in the laboratory or in radioastronomical observations.</p>
-<p><font color="#f00090">Vibration-rotation transitions</font> in the far-infrared region have been included for C<sub>3</sub>. They may be included in a greater number in the near future. Vibration-rotation transitions in the mid-infrared region are currently not considered to be included in the database. If there is a genuine interest for such information to be included in our database please use the <font color="#f00090">comments and suggestions</font> option below in order to suggest species. Information on background literature is desirable !!</p>
 
-<p>As in the JPL catalog, the species are sorted according to their molecular weight in atomic mass units, which also constitutes the first three digits of the six digit <b><font color="#ff9000">molecule tag</font></b> (with leading zeros frequently omitted), the fourth digit is a 5 (to avoid any conflict with the JPL numbering scheme), and the last two digits are used to number entries with the same molecular weight.</p>
+<!--
+At present, the aim of of this page is to supplement data bases such as the <a target="_top" href="http://spec.jpl.nasa.gov/ftp/pub/catalog/catform.html">JPL catalog</a>. Herb Pickett's programs <small><b>SPFIT</b></small> and <small><b>SPCAT</b></small> have been used for the most part to generate the predictions.</p>
+-->
+
 <hr />
-<p><font color="#f00090"><b>Comments and suggestions</b></font> are very welcome. Please visit the <a href="/node/474">Contact</a> section.</p>
+<p><b>Comments and suggestions</b> are very welcome. Please visit the <a href="contact">Contact</a> section.</p>
 <hr />
-
 </fieldset>
 
 
 
 
-<fieldset class='subpage' id='page_format' style='display:none'>
+<fieldset class='subpage' id='page_citation' style='display:none'>
+  <div class='legend'>Citation Guidelines</div>
+    <p>
+      Please acknowledge use of the CDMS by citing the following
+      references. You are very welcome to state the web address
+      also. We recommend to cite the original sources of the data too,
+      which are given in the documentations, at least as far as this
+      is feasible.
+    </p>
 
-<div class='legend'>Brief Description of the Format of the Catalog Entries</div>
+    <ul>
+     <li>
+       <a href="http://www.astro.uni-koeln.de/sites/default/files/cdms/CDMS_AA.pdf">
+        <b>THE COLOGNE DATABASE FOR MOLECULAR SPECTROSCOPY, CDMS</b></a><br> 
+        H. S. P. M&uuml;ller, S. Thorwirth, D. A. Roth, and G. Winnewisser;
+        <i>Astron. Astrophys.</i> <b>370</b> (2001) L49 &ndash; L52.
+     </li>
+     <li>
+       <a target="_top" href="http://www.astro.uni-koeln.de/sites/default/files/cdms/CDMS_JMSt.pdf">
+         <b>THE COLOGNE DATABASE FOR MOLECULAR SPECTROSCOPY, CDMS: <br>
+         A USEFUL TOOL FOR ASTRONOMERS AND SPECTROSCOPISTS</b></a><br>
+         H. S. P. M&uuml;ller, F. Schl&ouml;der, J. Stutzki, and G. Winnewisser, , <i>J. Mol. Struct.</i> <b>742</b>, 215&ndash;227 (2005).
+     </li>
+    </ul>
 
-<p>Each line in a given catalog entry corresponds to one spectral feature, some of which might be overlapped. The information given for the spectral features is shown below for two lines of H<sub>2</sub>C<sup>18</sup>O.</p>
-<p><font color="#9000f0">Frequency of the line (usually in MHz, can be in cm<sup>&ndash;1</sup>; see below)</font>; <font color="#0000ff">uncertainty of the line (usually in MHz, can be in cm<sup>&ndash;1</sup>; see below)</font>; <font color="#00b0d0">base 10 logarithm of the integrated intensity at 300 K (in nm<sup>2</sup>MHz)</font>; degree of freedom in the rotational partition function (0 for atoms, 2 for linear molecules, and 3 for non-linear molecules; <font color="#00f020">lower state energy (in cm<sup>&ndash;1</sup>)</font>; upper state degeneracy <b><i>g</i><sub>up</sub></b>; <font color="#ff9000">molecule tag (see below) &ndash; a negative value indicates that both line frequency and uncertainty are experimental values</font>; <a href="/node/477#qnfmt">coding</a> of the quantum numbers; and finally <font color="#f00050">the quantum numbers</font>.</p>
+    <p>
+     The first reference describes the structure of the files which
+     have been used to generate the catalog, whereas the second, more
+     recent one, contains updates of the database.
+    </p>
+</fieldset>
 
-<pre>
+<fieldset class='subpage' id='page_portal' style='display:none'>
+  <div class='legend'>Description of the CATALOG section of this Web-Portal</div>
+  <p>
+    The catalog section of this web portal gives access to all the data available in the catalog. 
+  </p>
+  <p>
+    Data such as listings of transitions and states is
+    provided through a query form, which allows to specify
+    restrictions on the returned data, e.g. specify a frequency range.
+  </p>
+  <p>
+    In addition, there is a documentation for each species which contains 
+    <ul>
+      <li>general informations such as a description of the data</li>
+      <li>important molecular constants</li>
+      <li>partition functions</li>
+      <li>references</li>
+      <li>links to information available in other databases</li>
+      <li>download section for files</li>
+    </ul>
+  </p>
+  <p>
+    The catalog section starts with a listing of species, which
+    contains all the species available in CDMS. A link named <cite>doc</cite> guides
+    the user directly to the documentation of the species specified in
+    the table row.
+  </p>
+  <p>
+    To access the query form, the user has to select the species of
+    interest via mouse clicks (one or multiple) first and confirm the
+    selection with the corresponding submit-button.  The selection can
+    also be done on the level of isotopologs or molecules. Pressing
+    one of the buttons above the listing will change the listing
+    correspondingly. Thus, if the level of molecules has been chosen,
+    the listing will show all the different molecules in the database
+    and queries will restrict the data output to all species of the
+    selected molecule.
+  </p>
+  <p>
+    The query form offers the possibility to submit queries also to
+    all databases in the VAMDC network if chosen in the
+    DATABASE-Select box. Results from other databases is only obtained
+    if selections on the level of isotopologs or molecules have been
+    defined. Species define concrete entries (compilations) in CDMS
+    and thus only data from CDMS is returned by the network.
+  </p>
+  <p>
+    Further refinements on the query such as frequency range, can be
+    specified in the corresponding REFINEMENTS section. The page also
+    shows a short summary of data found in the databases for the given
+    query. Hit the SHOW-button to view the complete result. Different
+    output formats can be chosen.
+  </p>
+</fieldset>
+
+<fieldset class='subpage' id='page_spcatformat' style='display:none'>
+  <div class='legend'>Brief Description of the spcat-Format of the Catalog Entries</div>
+   <p>
+     Each line in a given catalog entry corresponds to one spectral
+     feature, some of which might be overlapped. The information given
+     for the spectral features is shown below for two lines of
+     H<sub>2</sub>C<sup>18</sup>O.
+   </p>
+   <p>
+     <font color="#9000f0">Frequency of the line (usually in MHz, can
+     be in cm<sup>&ndash;1</sup>; see below)</font>; <font
+     color="#0000ff">uncertainty of the line (usually in MHz, can be
+     in cm<sup>&ndash;1</sup>; see below)</font>; <font
+     color="#00b0d0">base 10 logarithm of the integrated intensity at
+     300 K (in nm<sup>2</sup>MHz)</font>; degree of freedom in the
+     rotational partition function (0 for atoms, 2 for linear
+     molecules, and 3 for non-linear molecules; <font
+     color="#00f020">lower state energy (in
+     cm<sup>&ndash;1</sup>)</font>; upper state degeneracy
+     <b><i>g</i><sub>up</sub></b>; <font color="#ff9000">molecule tag
+     (see below) &ndash; a negative value indicates that both line
+     frequency and uncertainty are experimental values</font>; <a
+     href="/node/477#qnfmt">coding</a> of the quantum numbers; and
+     finally <font color="#f00050">the quantum numbers</font>.
+   </p>
+
+   <pre>
       <font color="#9000f0">1872169.0570</font> <font color="#0000ff">0.2000</font> <font color="#00b0d0">-1.3865</font> 3 <font color="#00f020"> 887.6325</font>165 <font color="#ff9000">-32503</font> 303<font color="#f00050">27 325 26 324</font>
 
       <font color="#7000f0">1872505.7621</font> <font color="#0000f0">0.2374</font> <font color="#00b0d0">-2.3388</font> 3 <font color="#00f020">1107.9703</font> 55 <font color="#ff9000"> 32503</font> 303<font color="#f00050">27 622 26 621</font>
 
 
-</pre><p>REMARKS</p>
-<p>The <font color="#9000f0">line position</font> and its <font color="#0000ff">uncertainty</font> are <b>either</b> in units of <b>MHz</b>, namely if <font color="#0000ff">the uncertainty of the line</font> is greater or equal to zero; <b>or</b> the units are in <b>cm<sup>&ndash;1</sup></b>, namely if <font color="#0000ff">the uncertainty of the line</font> is less or equal to zero !</p>
+   </pre>
+   <p>REMARKS</p>
+   <p>
+     The <font color="#9000f0">line position</font> and its <font
+     color="#0000ff">uncertainty</font> are <b>either</b> in units of
+     <b>MHz</b>, namely if <font color="#0000ff">the uncertainty of
+     the line</font> is greater or equal to zero; <b>or</b> the units
+     are in <b>cm<sup>&ndash;1</sup></b>, namely if <font
+     color="#0000ff">the uncertainty of the line</font> is less or
+     equal to zero !
+   </p>
 
-<p><center><b><i>g</i><sub>up</sub> = <i>g</i><sub>I</sub> &times; <i>g</i><sub>F</sub></b>; </center></p>
-<p>with <b><i>g</i><sub>I</sub></b> the spin-statistical weight and <b><i>g</i><sub>F</sub> = 2<i>F</i> + 1</b> the upper state spin-rotational degeneracy.<br />
+   <p>
+     <center><b><i>g</i><sub>up</sub> = <i>g</i><sub>I</sub> &times;
+     <i>g</i><sub>F</sub></b>; </center>
+   </p>
+   <p>
+     with <b><i>g</i><sub>I</sub></b> the spin-statistical weight and
+     <b><i>g</i><sub>F</sub> = 2<i>F</i> + 1</b> the upper state
+     spin-rotational degeneracy.<br />
 
-<font color="#f00050"><b>Note:</b></font><br />
-Common factors in <b><i>g</i><sub>I</sub></b> have been devided off frequently. This leads to correspondingly smaller values for the partition function ! See <a href="#partition">below</a>.</p>
-<p><font color="#f00050"><b>Note:</b></font><br />
-the degree of freedom in the rotational partition function has been provided because of tradition. It is not needed in any of the calculations or conversions. A linear molecule will only have the value of 2 if exactly 1 value of <i>K</i> or corresponding quantum numbers is permitted (per vibrational state). A molecule with several allowed values of <i>K</i> has an additional degree of freedom and is better considered as a non-linear molecule.</p>
+     <div class="note">
+       <b>Note:</b><br /> Common factors in
+       <b><i>g</i><sub>I</sub></b> have been devided off
+       frequently. This leads to correspondingly smaller values for
+       the partition function ! See <a href="#partition">below</a>.
+     </div>
+   </p>
+   <p>
+     <div class="note">
+       <b>Note:</b><br /> the degree of freedom in the rotational
+       partition function has been provided because of tradition. It
+       is not needed in any of the calculations or conversions. A
+       linear molecule will only have the value of 2 if exactly 1
+       value of <i>K</i> or corresponding quantum numbers is permitted
+       (per vibrational state). A molecule with several allowed values
+       of <i>K</i> has an additional degree of freedom and is better
+       considered as a non-linear molecule.
+     </div>
+   </p>
 
-<p>The six digit <font color="#ff9000">molecule tag</font> consists of the molecular weight in atomic mass units for the first three digits (here: 2&times;1 + 12 + 18 = 32), a 5, and the last two digits are used to differenciate between entries with the same molecular weight.<br />
-<font color="#ff0050"><b>Note:</b></font> leading zeros are frequently omitted.</p>
-<p>The <font color="#f00050">quantum numbers</font> are given in the following order:<br />
-<font size="+1"><font color="#f00050"><i>J</i></font> (or <font color="#f00050"><i>N</i></font>); <font color="#f00050"><i>K<sub>a</sub></i></font> and <font color="#f00050"><i>K<sub>c</sub></i></font> (or <font color="#f00050">&plusmn;</font>; <font color="#f00050"><i>K</i></font>); <font color="#f00050"><i>v</i></font>; <font color="#f00050"><i>F</i><sub>1</sub></font> . . . <font color="#f00050"><i>F</i></font></font><br />
+   <p>
+     The six digit <font color="#ff9000">molecule tag</font> consists
+     of the molecular weight in atomic mass units for the first three
+     digits (here: 2&times;1 + 12 + 18 = 32), a 5, and the last two
+     digits are used to differenciate between entries with the same
+     molecular weight.<br /> 
+     <div class="note">
+       <b>Note:</b> leading zeros are frequently omitted.
+     </div>
+   </p>
+   <p>
+     The <font color="#f00050">quantum numbers</font> are given in the
+     following order:<br /> <font size="+1">
+     <font color="#f00050"><i>J</i></font> (or 
+     <font color="#f00050"><i>N</i></font>); 
+     <font color="#f00050"><i>K<sub>a</sub></i></font> and 
+     <font color="#f00050"><i>K<sub>c</sub></i></font> (or 
+     <font color="#f00050">&plusmn;</font>; 
+     <font color="#f00050"><i>K</i></font>); 
+     <font color="#f00050"><i>v</i></font>; 
+     <font color="#f00050"><i>F</i><sub>1</sub></font> . . . 
+     <font color="#f00050"><i>F</i></font></font><br />
 
-for the upper state followed immediately by those for the lower state (see also below).</p>
-<ul>
-<li><font color="#f00050"><i>N</i></font> is the total rotational angular momentum excluding electron and nuclear spins. For singlet molecules, <i>J</i>, the total rotational angular momentum including electron spin, is equal to <i>N</i>.</li>
-<li><font color="#f00050"><i>K<sub>a</sub></i></font> and <font color="#f00050"><i>K<sub>c</sub></i></font> are the projections of <i>N</i> onto the <i>A</i> and <i>C</i> inertial axes, respectively. For symmetric top molecules, only <font color="#f00050"><i>K</i></font> is needed (instead of <i>K<sub>a</sub></i> and <i>K<sub>c</sub></i>) along with <font color="#f00050">+</font> or &nbsp; <font color="#f00050">&ndash;</font>, which designate the parity; if redundant, the latter might be omitted. Instead of <i>K</i>, <font face="symbol">L</font> or <i><font face="verdana">l</font></i> may be used for linear molecules.</li>
-
-<li><font color="#f00050"><i>v</i></font> is a <b>state number</b> ! It specifies different vibrational or electronic states. It may also be used to distinguish between different species that have been fit simultaneously. Details on the meaning of the state numbers are given in the documentation ! <br />
-    <font color="#f00090"><b>Note:</b></font> More than one state number may be needed to designate one vibrational state &ndash; this is the case, for example, for a degenerate (e.g. bending) state of a symmetric top molecule !</li>
-<li><font color="#f00050"><i>F</i><sub>1</sub></font> . . . <font color="#f00050"><i>F</i></font> designate spin quanta. In general, the electron spin <font color="#f00050"><i>S</i></font> is coupled to the rotational angular momentum first, followed by nuclear spins. In this case <i>F</i><sub>1</sub> = <i>J</i>.</li>
-
-</ul>
-<p><font color="#f00090"><b>Very Important:</b></font><br />
-Exactly two characters are available for each quantum number. Therefore, half integer quanta are rounded up ! In addition, capital letters are used to indicate quantum numbers larger than 99. E. g. A0 is 100, Z9 is 359. Small types are used to signal corresponding negative quantum numbers.</p>
-<p>Since the program was written for asymmetric top molecules, some of the quantum numbers may be redundant.</p>
-<p>Six quantum numbers are available at most to describe the upper and lower state, respectively. In case more quantum numbers are needed, even if some of them are redundant, the only spin designating quantum numbers are <font color="#f00050" size="+1"><i>n, F</i></font>, were <font color="#f00050"><i>n</i></font> is an <a href="/node/475">aggregate spin number</a>.</p>
-<hr />
-
+     for the upper state followed immediately by those for the lower state (see also below).
+   </p>
+   <ul>
+    <li><font color="#f00050"><i>N</i></font> is the total rotational
+    angular momentum excluding electron and nuclear spins. For singlet
+    molecules, <i>J</i>, the total rotational angular momentum
+    including electron spin, is equal to <i>N</i>.  </li> <li> <font
+    color="#f00050"><i>K<sub>a</sub></i></font> and <font
+    color="#f00050"><i>K<sub>c</sub></i></font> are the projections of
+    <i>N</i> onto the <i>A</i> and <i>C</i> inertial axes,
+    respectively. For symmetric top molecules, only <font
+    color="#f00050"><i>K</i></font> is needed (instead of
+    <i>K<sub>a</sub></i> and <i>K<sub>c</sub></i>) along with <font
+    color="#f00050">+</font> or &nbsp; <font
+    color="#f00050">&ndash;</font>, which designate the parity; if
+    redundant, the latter might be omitted. Instead of <i>K</i>, <font
+    face="symbol">L</font> or <i><font face="verdana">l</font></i> may
+    be used for linear molecules.</li> <li><font
+    color="#f00050"><i>v</i></font> is a <b>state number</b> ! It
+    specifies different vibrational or electronic states. It may also
+    be used to distinguish between different species that have been
+    fit simultaneously. Details on the meaning of the state numbers
+    are given in the documentation ! <br /> 
+    <div class="note">
+      <b>Note:</b> More than one state number may be needed to
+      designate one vibrational state &ndash; this is the case, for
+      example, for a degenerate (e.g. bending) state of a symmetric
+      top molecule !  
+    </div>
+    </li> 
+    <li><font color="#f00050"><i>F</i><sub>1</sub></font> . . . <font
+      color="#f00050"><i>F</i></font> designate spin quanta. In
+      general, the electron spin <font color="#f00050"><i>S</i></font>
+      is coupled to the rotational angular momentum first, followed by
+      nuclear spins. In this case <i>F</i><sub>1</sub> =
+      <i>J</i>.</li>
+  </ul>
+  <p>
+    <div class="important">
+      <b>Very Important:</b><br /> Exactly two characters are
+      available for each quantum number. Therefore, half integer
+      quanta are rounded up ! In addition, capital letters are used to
+      indicate quantum numbers larger than 99. E. g. A0 is 100, Z9 is
+      359. Small types are used to signal corresponding negative
+      quantum numbers.
+    </div>
+  </p>
+  <p>
+    Since the program was written for asymmetric top molecules, some
+    of the quantum numbers may be redundant.</p> <p>Six quantum
+    numbers are available at most to describe the upper and lower
+    state, respectively. In case more quantum numbers are needed, even
+    if some of them are redundant, the only spin designating quantum
+    numbers are <font color="#f00050" size="+1"><i>n, F</i></font>,
+    were <font color="#f00050"><i>n</i></font> is an <a
+    href="/node/475">aggregate spin number</a>.
+  </p> <hr />
 </fieldset>
 
+<fieldset class='subpage' id='page_dataingeneral' style='display:none'>
+  <div class='legend'>Content of the CDMS database</div>
+  <p>
+    The CDMS database contains predictions for atoms and molecules of
+    astrophysical and atmospheric interest as well as some
+    documentation on which data have been used for the predictions.
 
+    Its Catalog section contains mostly rotational transition
+    frequencies, uncertainties, intensities, and a wealth of other
+    information of atomic and molecular species that may occur in the
+    ISM or CSM or in planetary atmospheres.
+
+    The transition frequencies were predicted from fits of
+    experimental data to established Hamiltonian models.
+
+    Herb Pickett's programs <small><b>SPFIT</b></small> and
+    <small><b>SPCAT</b></small> have been used for the most part to
+    generate the predictions.
+  </p>
+  <p>
+    Vibration-rotation transitions in the far-infrared region have
+    been included for C<sub>3</sub>. They may be included in a greater
+    number in the near future. Vibration-rotation transitions in the
+    mid-infrared region are currently not considered to be included in
+    the database. If there is a genuine interest for such information
+    to be included in our database please sent comments and
+    suggestions in order to suggest species (email to one of the given
+    contacts). Information on background literature is desirable !!
+  </p>
+  <hr />
+</fieldset>
 
 
 <fieldset class='subpage' id='page_selectionrules' style='display:none'>
+  <div class='legend'>Remarks on the Selection Rules</div>
+  <p>
+    Strictly speaking, only the final quantum number <i>F</i>, which
+    includes all effects of rotation etc. as well as electronic and
+    nuclear spins, is a good one; meaning that it has a well-defined
+    an unambiguous meaning. And this holds only in the absence of an
+    electric or magnetic field. Mixing effects mediated by,
+    e.&nbsp;g., vibration-, fine structure- (electronic spin), or
+    hyperfine structure-rotation interaction (nuclear spins)
+    frequently will prevent <i>N</i>, <i>K</i>, <i>v</i>, <i>J</i>, or
+    <i>F<sub>i</sub></i> from being good quantum numbers in
+    general. Of course, in many instances these quantum numbers are
+    reasonably meaningful over a large range of quantum number
+    combinations. Only the selection rule
+    <b>&Delta;<i>F</i>&nbsp;=&nbsp;0,&nbsp;&plusmn;1</b> holds
+    strictly&nbsp;! Fine or hyperfine structure effects may cause
+    mixing of levels having different values of <i>N</i>, <i>J</i>,
+    etc., so that &Delta;<i>N</i>&nbsp;=&nbsp;0,&nbsp;&plusmn;1 and
+    &Delta;<i>J</i>&nbsp;=&nbsp;0,&nbsp;&plusmn;1 only hold
+    approximately&nbsp;! Note: certain hyperfine interactions can
+    cause mixing of <i>ortho</i>- and <i>para</i>-levels&nbsp;! 
+    E.&nbsp;g. vibration-rotation interaction can cause mixing of
+    different values of <i>K</i>. The strong transitions obey the
+    selection rules
+    &Delta;<i>F</i>&nbsp;=&nbsp;.&nbsp;.&nbsp;.&nbsp;=&nbsp;&Delta;<i>J</i>&nbsp;=&nbsp;&Delta;<i>N</i>;
+    for low values of <i>N</i>, other transitions may be comparatively
+    strong.
+  </p>
+  <p>
+    The projections of the rotational angular momentum onto the
+    <i>a</i>- and <i>c</i>-axes are described by the quantum numbers
+    <i>K<sub>a</sub></i> and <i>K<sub>c</sub></i>. Usually
+    <i>K<sub>c</sub></i>, not <i>K<sub>a</sub></i>, is the more
+    meaningful quantum number for an oblate asymmetric rotor while
+    <i>K<sub>a</sub></i> is more appropriate for a prolate rotor. For
+    that reason, one may find <i>K<sub>p</sub></i> and
+    <i>K<sub>o</sub></i> instead of <i>K<sub>a</sub></i> and
+    <i>K<sub>c</sub></i>, respectively. For rotational levels near the
+    oblate (prolate) limit, i.&nbsp;e. low (high) values of
+    <i>K<sub>a</sub></i> and high (low) values of
+    <i>K<sub>c</sub></i>, it is more useful to use
+    <i>K<sub>c</sub></i> (<i>K<sub>a</sub></i>) as the designated
+    <i>K</i> even if the molecule is a prolate (oblate)
+    rotor&nbsp;!
+  </p>
+  <p>
+    The <b><i>a</i>-type</b> transitions are described by
+    &Delta;<i>K<sub>a</sub></i>&nbsp;&equiv;&nbsp;0&nbsp;mod&nbsp;2
+    and
+    &Delta;<i>K<sub>c</sub></i>&nbsp;&equiv;&nbsp;1&nbsp;mod&nbsp;2. Transitions
+    with &Delta;<i>K<sub>a</sub></i>&nbsp;=&nbsp;0 are the strongest
+    ones &ndash; by far so for a molecule close the the prolate limit,
+    e.&nbsp;g. H<sub>2</sub>CO. The <b><i>c</i>-type</b> transitions
+    are described analogously:
+    &Delta;<i>K<sub>c</sub></i>&nbsp;&equiv;&nbsp;0&nbsp;mod&nbsp;2
+    and
+    &Delta;<i>K<sub>a</sub></i>&nbsp;&equiv;&nbsp;1&nbsp;mod&nbsp;2. Again,
+    transitions with &Delta;<i>K<sub>c</sub></i>&nbsp;=&nbsp;0 are the
+    strongest ones &ndash; by far so for a molecule close the the
+    oblate limit. Both <i>a</i>- and <i>c</i>-type transitions do not
+    conserve the parity. The <b><i>b</i>-type</b> transitions are
+    described by
+    &Delta;<i>K<sub>a</sub></i>&nbsp;&equiv;&nbsp;1&nbsp;mod&nbsp;2
+    and
+    &Delta;<i>K<sub>c</sub></i>&nbsp;&equiv;&nbsp;1&nbsp;mod&nbsp;2;
+    these do conserve the parity. And again, transitions with
+    &Delta;<i>K<sub>a</sub></i>&nbsp;=&nbsp;1 and
+    &Delta;<i>K<sub>c</sub></i>&nbsp;=&nbsp;1 are the strongest ones
+    &ndash; by far so for a molecule close the the prolate and oblate
+    limit, respectively. 
+    <div class="info">
+      <b>NOTE:</b><br/> Mixing effects will cause these selection
+      rules to hold only approximately&nbsp;! In other words: a
+      molecule with, e.&nbsp;g., only <i>b</i>-type selection rules
+      may have transitions obeying other selection rules in its
+      spectrum in the presence of mixing effects. Morever, mixing
+      effects may lead to so-called <b><i>x</i>-type</b> transitions
+      in the spectrum. These are described by
+      &Delta;<i>K<sub>c</sub></i>&nbsp;&equiv;&nbsp;0&nbsp;mod&nbsp;2
+      and
+      &Delta;<i>K<sub>a</sub></i>&nbsp;&equiv;&nbsp;0&nbsp;mod&nbsp;2. Obviously,
+      these transitions are also parity conserving.
+    </div>
+  </p>
+</fieldset>
 
-<div class='legend'>Remarks on the Selection Rules and Assignments</div>
-<p>Strictly speaking, only the final quantum number <i>F</i>, which includes all effects of rotation etc. as well as electronic and nuclear spins, is a good one; meaning that it has a well-defined an unambiguous meaning. And this holds only in the absence of an electric or magnetic field. Mixing effects mediated by, e.&nbsp;g., vibration-, fine structure- (electronic spin), or hyperfine structure-rotation interaction (nuclear spins) frequently will prevent <i>N</i>, <i>K</i>, <i>v</i>, <i>J</i>, or <i>F<sub>i</sub></i> from being good quantum numbers in general. Of course, in many instances these quantum numbers are reasonably meaningful over a large range of quantum number combinations. Only the selection rule <b>&Delta;<i>F</i>&nbsp;=&nbsp;0,&nbsp;&plusmn;1</b> holds strictly&nbsp;! Fine or hyperfine structure effects may cause mixing of levels having different values of <i>N</i>, <i>J</i>, etc., so that &Delta;<i>N</i>&nbsp;=&nbsp;0,&nbsp;&plusmn;1 and &Delta;<i>J</i>&nbsp;=&nbsp;0,&nbsp;&plusmn;1 only hold approximately&nbsp;! Note: certain hyperfine interactions can cause mixing of <i>ortho</i>- and <i>para</i>-levels&nbsp;! E.&nbsp;g. vibration-rotation interaction can cause mixing of different values of <i>K</i>. The strong transitions obey the selection rules &Delta;<i>F</i>&nbsp;=&nbsp;.&nbsp;.&nbsp;.&nbsp;=&nbsp;&Delta;<i>J</i>&nbsp;=&nbsp;&Delta;<i>N</i>; for low values of <i>N</i>, other transitions may be comparatively strong.</p>
 
-<p>The projections of the rotational angular momentum onto the <i>a</i>- and <i>c</i>-axes are described by the quantum numbers <i>K<sub>a</sub></i> and <i>K<sub>c</sub></i>. Usually <i>K<sub>c</sub></i>, not <i>K<sub>a</sub></i>, is the more meaningful quantum number for an oblate asymmetric rotor while <i>K<sub>a</sub></i> is more appropriate for a prolate rotor. For that reason, one may find <i>K<sub>p</sub></i> and <i>K<sub>o</sub></i> instead of <i>K<sub>a</sub></i> and <i>K<sub>c</sub></i>, respectively. For rotational levels near the oblate (prolate) limit, i.&nbsp;e. low (high) values of <i>K<sub>a</sub></i> and high (low) values of <i>K<sub>c</sub></i>, it is more useful to use <i>K<sub>c</sub></i> (<i>K<sub>a</sub></i>) as the designated <i>K</i> even if the molecule is a prolate (oblate) rotor&nbsp;!</p>
-
-<p>The <b><i>a</i>-type</b> transitions are described by &Delta;<i>K<sub>a</sub></i>&nbsp;&equiv;&nbsp;0&nbsp;mod&nbsp;2 and &Delta;<i>K<sub>c</sub></i>&nbsp;&equiv;&nbsp;1&nbsp;mod&nbsp;2. Transitions with &Delta;<i>K<sub>a</sub></i>&nbsp;=&nbsp;0 are the strongest ones &ndash; by far so for a molecule close the the prolate limit, e.&nbsp;g. H<sub>2</sub>CO. The <b><i>c</i>-type</b> transitions are described analogously: &Delta;<i>K<sub>c</sub></i>&nbsp;&equiv;&nbsp;0&nbsp;mod&nbsp;2 and &Delta;<i>K<sub>a</sub></i>&nbsp;&equiv;&nbsp;1&nbsp;mod&nbsp;2. Again, transitions with &Delta;<i>K<sub>c</sub></i>&nbsp;=&nbsp;0 are the strongest ones &ndash; by far so for a molecule close the the oblate limit. Both <i>a</i>- and <i>c</i>-type transitions do not conserve the parity. The <b><i>b</i>-type</b> transitions are described by &Delta;<i>K<sub>a</sub></i>&nbsp;&equiv;&nbsp;1&nbsp;mod&nbsp;2 and &Delta;<i>K<sub>c</sub></i>&nbsp;&equiv;&nbsp;1&nbsp;mod&nbsp;2; these do conserve the parity. And again, transitions with &Delta;<i>K<sub>a</sub></i>&nbsp;=&nbsp;1 and &Delta;<i>K<sub>c</sub></i>&nbsp;=&nbsp;1 are the strongest ones &ndash; by far so for a molecule close the the prolate and oblate limit, respectively. <font color="#ff0040"><b>NOTE:</b></font> Mixing effects will cause these selection rules to hold only approximately&nbsp;! In other words: a molecule with, e.&nbsp;g., only <i>b</i>-type selection rules may have transitions obeying other selection rules in its spectrum in the presence of mixing effects. Morever, mixing effects may lead to so-called <b><i>x</i>-type</b> transitions in the spectrum. These are described by &Delta;<i>K<sub>c</sub></i>&nbsp;&equiv;&nbsp;0&nbsp;mod&nbsp;2 and &Delta;<i>K<sub>a</sub></i>&nbsp;&equiv;&nbsp;0&nbsp;mod&nbsp;2. Obviously, these transitions are also parity conserving.</p>
-
-<p>The assignment of quantum numbers may seem to be a straightforward issue. While this is true in many simple systems this is <font color="#ff0040"><b>not</b></font> the case in general&nbsp;!! Mixing effects are model-dependent, and in extreme cases the assignment of certain levels can be altered based on very small changes in the parameter &ndash; even more so if the parameter set is different.</p>
-<p>The assignment of, e.&nbsp;g., <i>K</i> quantum numbers is not always unique. To avoid assignment of one quantum number to more than one state, quantum numbers are assigned to levels in the order of increasing ambiguity.</p>
-<p>The presence of more than one non-zero spin will cause assignment ambiguities. To minimize these assignment ambiguities, certain rules apply how the various spin-angular momenta are coupled to the rotational angular momentum. Usually, they are coupled in order of decreasing size. <font color="#ff0040"><b>Exception:</b></font> one set of equivalent nuclear spin-angular momenta is coupled to the combined spin-rotational angular momentum last. The same applies if two different spin-angular momenta are coupled together before they are coupled to the combined spin-rotational angular momentum. Thus, the electronic spin-angular momentum is usually coupled to the rotation first. <font color="#ff0040"><b>Exception:</b></font> if the effects of the nuclear spin-electron spin coupling are larger than the effects caused by the electronic spin alone. This may happen in particular in some radicals with &Sigma; electronic state, e.&nbsp;g. in <sup>13</sup>CN, the order of the spins is <sup>13</sup>C, electron, <sup>14</sup>N. Quantum number assignments <font color="#ff0040"><b>always</b></font> refer to Hund's case (b). Alternative assignments may be available as non-default in the future.</p>
-
+<fieldset class='subpage' id='page_assignments' style='display:none'>
+  <div class='legend'>Remarks on the Assignments</div>
+  <p>
+    The assignment of quantum numbers may seem to be a straightforward
+    issue. While this is true in many simple systems this is
+    <b>not</b> the case in general&nbsp;!! Mixing effects are
+    model-dependent, and in extreme cases the assignment of certain
+    levels can be altered based on very small changes in the parameter
+    &ndash; even more so if the parameter set is different.</p> <p>The
+    assignment of, e.&nbsp;g., <i>K</i> quantum numbers is not always
+    unique. To avoid assignment of one quantum number to more than one
+    state, quantum numbers are assigned to levels in the order of
+    increasing ambiguity.</p> <p>The presence of more than one
+    non-zero spin will cause assignment ambiguities. To minimize these
+    assignment ambiguities, certain rules apply how the various
+    spin-angular momenta are coupled to the rotational angular
+    momentum. Usually, they are coupled in order of decreasing
+    size. <b>Exception:</b> one set of equivalent nuclear spin-angular
+    momenta is coupled to the combined spin-rotational angular
+    momentum last. The same applies if two different spin-angular
+    momenta are coupled together before they are coupled to the
+    combined spin-rotational angular momentum. Thus, the electronic
+    spin-angular momentum is usually coupled to the rotation
+    first. <b>Exception:</b> if the effects of the nuclear
+    spin-electron spin coupling are larger than the effects caused by
+    the electronic spin alone. This may happen in particular in some
+    radicals with &Sigma; electronic state, e.&nbsp;g. in
+    <sup>13</sup>CN, the order of the spins is <sup>13</sup>C,
+    electron, <sup>14</sup>N. Quantum number assignments <b>always</b>
+    refer to Hund's case (b). Alternative assignments may be available
+    as non-default in the future.
+  </p>
 </fieldset>
 
 <fieldset class='subpage' id='page_query' style='display:none'>
-<div class='legend'>Query the catalog</div>
-
-<ul>
-<li>Human interfaces (portals)</li>
-<li>Direct http-requests</li>
-</ul>
-
+  <div class='legend'>Query the catalog</div>
+  <p>
+    CDMS offers different ways how catalog data can be searched and
+    accessed. Probably, the easiest way is through this webportal or
+    alternatively through VAMDC's portal at (http://portal.vamdc.eu).
+  </p>
+  <p>
+    Alternatively, every software, e.g. web-browsers, which can send
+    http-requests, can be used and data can be retrieved just by
+    formulating the data request as an URL string. The data will be
+    returned as XML-file. Please have a look at the VAMDC standards
+    section for more information.
+  </p>
 </fieldset>
 
 
 <fieldset class='subpage' id='page_reliability' style='display:none'>
-<div class='legend'>Comments on the Reliability of the Predictions</div>
-
-<p>The predicted uncertainties of the transition frequencies are model dependent. Therefore, an additional parameter employed in the fit will cause these to increase in general. Basically for the same reason, extrapolations should always be viewed with some caution since these may be affected by spectroscopic parameters that could not be determined thus far. In contrast, interpolations should be reliable in most instances.</p>
-<p>If a large number of transition frequencies has been measured and is included in a fit the predicted uncertainties can be much smaller than the experimental uncertainties for a large range of quantum numbers. One should keep in mind that these smaller uncertainties are only meaningful if the experimental uncertainties are caused by purely statistical effects. For that matter, the predictions in the CDMS catalog have experimental transition frequencies and uncertainties nerged into the catalog file to indicate a more conservative means.</p>
-<p>Recent catalog entries often contain some estimates as to how far the predictions should be reliable. Here &quot;reliable&quot; means that the transition frequencies should be found within three to ten times the predicted uncertainties.</p>
+  <div class='legend'>Comments on the Reliability of the Predictions</div>
+  <p>
+    The predicted uncertainties of the transition frequencies are
+    model dependent. Therefore, an additional parameter employed in
+    the fit will cause these to increase in general. Basically for the
+    same reason, extrapolations should always be viewed with some
+    caution since these may be affected by spectroscopic parameters
+    that could not be determined thus far. In contrast, interpolations
+    should be reliable in most instances.
+  </p>
+  <p>
+    If a large number of transition frequencies has been measured and
+    is included in a fit the predicted uncertainties can be much
+    smaller than the experimental uncertainties for a large range of
+    quantum numbers. One should keep in mind that these smaller
+    uncertainties are only meaningful if the experimental
+    uncertainties are caused by purely statistical effects. For that
+    matter, the predictions in the CDMS catalog have experimental
+    transition frequencies and uncertainties nerged into the catalog
+    file to indicate a more conservative means.
+  </p>
+  <p>
+    Recent catalog entries often contain some estimates as to how far
+    the predictions should be reliable. Here &quot;reliable&quot;
+    means that the transition frequencies should be found within three
+    to ten times the predicted uncertainties.
+  </p>
 </fieldset>
 
 <fieldset class='subpage' id='page_pf' style='display:none'>
-<div class='legend'>Remarks on the Partition Function</div>
-
-<p>The partition function <i>Q</i> is very important to calculate intensities of molecular lines at a given temperature. In general, only data for the ground vibrational state have been considered in the calculation of <i>Q</i> for a certain species. If excited vibrational states have been taken into account this will be mentioned in the documentation. Usually, individual contributions of the vibrational states are given in the documentation, too, or a link is given to a separate file containing the information.</p>
-<p>Spin-statistical weight-ratios have been considered in most instances. <font color="#f00050"><b>NOTE:</b></font> Common factors have been devided off in order to keep <i>Q</i> and <i>g<sub>up</sub></i> small. Therefore, it is strongly advizable to compare <i>Q</i>/<i>g<sub>up</sub></i> rather than <i>Q</i> from various databases. Non-trivial spin-statistical weight ratios are given explicitely in the documentation of a given species. Spin-statistical weight-ratios are the prime reason for <i>Q</i> values of different isotopomers to be quite different on occasion. Other reasons may be that the number of vibrational states considered differ substantially.</p>
-
-<p>In very cold regions of the ISM it may be important to consider <i>ortho</i> and <i>para</i> states separately. The energy of the lowest rotational or rotation-hyperfine level is 0 by default. The energy of the lowest level for the other spin-modification(s) is usually given in the documentation. Strictly speaking, one should consider <i>Q</i> values for the different spin-modifications separately &ndash; at least at low temperatures. We intend to provide this information in the near future.</p>
+  <div class='legend'>Remarks on the Partition Function</div>
+  <p>
+    The partition function <i>Q</i> is very important to calculate
+    intensities of molecular lines at a given temperature. In general,
+    only data for the ground vibrational state have been considered in
+    the calculation of <i>Q</i> for a certain species. If excited
+    vibrational states have been taken into account this will be
+    mentioned in the documentation. Usually, individual contributions
+    of the vibrational states are given in the documentation, too, or
+    a link is given to a separate file containing the information.
+  </p>
+  <p>
+    Spin-statistical weight-ratios have been considered in most
+    instances. 
+    <div class="info">
+      <b>NOTE:</b> Common factors have been devided off in order to
+      keep <i>Q</i> and <i>g<sub>up</sub></i> small. Therefore, it is
+      strongly advizable to compare <i>Q</i>/<i>g<sub>up</sub></i>
+      rather than <i>Q</i> from various databases. Non-trivial
+      spin-statistical weight ratios are given explicitely in the
+      documentation of a given species. Spin-statistical weight-ratios
+      are the prime reason for <i>Q</i> values of different
+      isotopomers to be quite different on occasion. Other reasons may
+      be that the number of vibrational states considered differ
+      substantially.
+    </div>
+  </p>
+  <p>
+    In very cold regions of the ISM it may be important to consider
+    <i>ortho</i> and <i>para</i> states separately. The energy of the
+    lowest rotational or rotation-hyperfine level is 0 by default. The
+    energy of the lowest level for the other spin-modification(s) is
+    usually given in the documentation. Strictly speaking, one should
+    consider <i>Q</i> values for the different spin-modifications
+    separately &ndash; at least at low temperatures. We intend to
+    provide this information in the near future.
+  </p>
 </fieldset>
 
-
-
-
-
-
-
-
-
 <fieldset class='subpage' id='page_vamdc' style='display:none'>
-<div class='legend'>About VAMDC</div>
-
-<ul>
-<li>VAMDC network</li>
-<li>VAMDC portal</li>
-</ul>
-
-
+  <div class='legend'>About VAMDC</div>
+  <ul>
+   <li>VAMDC network</li>
+   <li>VAMDC portal</li>
+  </ul>
 </fieldset>
 
 <fieldset class='subpage' id='page_vamdcstandards' style='display:none'>
-<div class='legend'>VAMDC standards</div>
+  <div class='legend'>VAMDC standards</div> 
+  <p>
+    CDMS supports the standards defined by VAMDC. Please have a look
+    at <a
+    href="http://www.vamdc.eu/documents/standards/">http://www.vamdc.eu/documents/standards/</a>
+    for detailed information.
+  </p>
+  <p>
+    All databases in the VAMDC network can be queried simply via
+    http-request. Thus every simple web-browser is capable of sending
+    data request to the databases in retrieve the result just by
+    formulating the request as a URL and a XML-file will be
+    returned. Within the VAMDC standards it is defined how the URL
+    string has to be formulated and how the returned XML-file will
+    look like.
 
-<ul>
-<li>XSAMS: The data exchange format </li>
-<li>Database query language</li>
-</ul>
+    Most importantly, a protocol for data-access (VAMDC-TAP), a common
+    query language (VSS2), and a common output format (VAMDC-XSAMS)
+    have been defined.
+  </p>
+  <p>
+    <strong>VAMDC-TAP</strong>
+  </p>
+  <p>
+    is a protocol for data-access services that provide the common
+    table model matching VAMDC-XSAMS and which can return the results
+    of queries in VAMDC-XSAMS. It is based on IVOA's Table Access
+    Protocol (TAP), which already provides virtual data and allows to
+    plug in the query language VSS2 and the data model VAMDC-XSAMS.
+  </p>
+  <p>
+    VAMDC-TAP is defined as a web-service protocol. That means that
+    VAMDC-TAP services are driven by GET and POST requests to HTTP (or
+    HTTPS) URIs.
+  </p>
+  <p>
+    <i>Example:</i>
+    <div class="info">
+http://cdms.ph1.uni-koeln.de/cdms/tap/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=SELECT+All+WHERE+MoleculeStoichiometricFormula='H2O'
+</div>
+  </p>
+  <p>
+    <strong>VSS2</strong>
+  </p>
+  <p>
+    VAMDC SQL Subset 2 (VSS2) is a query language designed for the
+    VAMDC-TAP web-services. It specifies how queries to VAMDC
+    databases have to be formulated.
+  </p>
+  <p>
+    <i>Example:</i>
+    <div class="info">SELECT All WHERE MoleculeStoichiometricFormula = "H2O"</div>
+  </p>
 
-
+  <p>
+    <strong>VAMDC-XSAMS</strong>
+  </p>
+  <p>
+    The VAMDC-XSAMS standard defines the data exchange format which is
+    used by VAMDC databases. All databases within the VAMDC network
+    will return data as XML file according to this standard.
+  </p>
+  <p>
+    Started with the International Atomic
+    Energy Agency's XML Schema for Atomic, Molecular and Solid Data
+    (XSAMS) version 0.1.1 [XSAMS], VAMDC consortium has found that
+    modifications/additions were necessary in order to meet the needs
+    of implementation and queries. This effort has resulted in the
+    so-called VAMDC-XSAMS schema that is used within VAMDC.
+  </p>
 </fieldset>
-
-
-
-
 
 
 
 
 <fieldset class='subpage' id='page_equations' style='display:none'>
+  <div class='legend'>Some useful equations</div>
+  <p>
+    Here are some equations the user of the CDMS catalog may find helpful. They are
+    taken from<br /> SUBMILLIMETER, MILLIMETER, AND MICROWAVE SPECTRAL
+    LINE CATALOG<br /> by H. M. Pickett, R. L. Poynter, E. A. Cohen,
+    M. L. Delitsky, J. C. Pearson, and H. S. P. M&uuml;ller;<br />
+    <i>J. Quant. Spectrosc. Radiat. Transfer</i> <b>60</b> (1998) 883
+    &ndash; 890.</p>
+  <p>&nbsp;</p>
+  <ol>
+    <li>
+      The intensity <i>I</i>(<i>T</i>) is calculated according to<br/>
+      <font size="+1"><i>I</i>(<i>T</i>) =
+      (8&pi;<sup>3</sup>/3<i>hc</i>) <i>&nu;</i> <i>S<sub>g</sub></i>
+      &micro;<i><sub>g</sub></i><sup>2</sup>
+      (<i>e<sup>&ndash;E&quot;/kT</sup> &ndash;
+      e<sup>&ndash;E'/kT</sup></i>)/<i>Q</i><sub>rs</sub>(<i>T</i>)</font><br/>
+      with <i>&nu;</i> and <i>S<sub>g</sub></i> being the line
+      frequency and strength, respectively, &micro;<i><sub>g</sub></i>
+      the dipole moment along the molecular <i>g</i>-axis,
+      <i>E&quot;</i> and <i>E'</i> the lower and upper state energy,
+      respectively, and <i>Q</i><sub>rs</sub> the rotation-spin
+      partition function at the temperature <i>T</i></li> <li>With
+      <i>I</i>(<i>T</i>) in nm<sup>2</sup> MHz, <i>&nu;</i> in MHz,
+      and &micro; <i><sub>g</sub></i> in D one obtains<br /> <font
+      size="+1"><i>I</i>(<i>T</i>) = 4.16231 &times;
+      10<sup>&ndash;5</sup> <i>&nu;</i> <i>S<sub>g</sub></i>
+      &micro;<i><sub>g</sub></i><sup>2</sup>
+      (<i>e<sup>&ndash;E&quot;/kT</sup> &ndash;
+      e<sup>&ndash;E'/kT</sup></i>)/<i>Q</i><sub>rs</sub>(<i>T</i>)</font>
+    </li>
+    <li>
+      Or conversely <br /> <font size="+1"><i>S<sub>g</sub></i>
+      &micro;<i><sub>g</sub></i><sup>2</sup> = 2.40251 &times;
+      10<sup>4</sup> <i>I</i>(<i>T</i>)
+      <i>Q</i><sub>rs</sub>(<i>T</i>) <i>&nu;</i><sup>&ndash;1</sup>
+      (<i>e<sup>&ndash;E&quot;/kT</sup> &ndash;
+      e<sup>&ndash;E'/kT</sup></i>)<sup>&ndash;1</sup></font>
 
-<div class='legend'>Some useful equations</div>
-
-<p>Here are some equations the user of the <font color="#0000ff">CDMS</font> catalog may find helpful. They are taken from<br />
-SUBMILLIMETER, MILLIMETER, AND MICROWAVE SPECTRAL LINE CATALOG<br />
-by H. M. Pickett, R. L. Poynter, E. A. Cohen, M. L. Delitsky, J. C. Pearson, and H. S. P. M&uuml;ller;<br />
-<i>J. Quant. Spectrosc. Radiat. Transfer</i> <b>60</b> (1998) 883 &ndash; 890.</p>
-
-<p>&nbsp;</p>
-<ol>
-<li>The intensity <i>I</i>(<i>T</i>) is calculated according to<br />
-    <font size="+1"><i>I</i>(<i>T</i>) = (8&pi;<sup>3</sup>/3<i>hc</i>) <i>&nu;</i> <i>S<sub>g</sub></i> &micro;<i><sub>g</sub></i><sup>2</sup> (<i>e<sup>&ndash;E&quot;/kT</sup> &ndash; e<sup>&ndash;E'/kT</sup></i>)/<i>Q</i><sub>rs</sub>(<i>T</i>)</font><br />
-
-    with <i>&nu;</i> and <i>S<sub>g</sub></i> being the line frequency and strength, respectively, &micro;<i><sub>g</sub></i> the dipole moment along the molecular <i>g</i>-axis, <i>E&quot;</i> and <i>E'</i> the lower and upper state energy, respectively, and <i>Q</i><sub>rs</sub> the rotation-spin partition function at the temperature <i>T</i></li>
-
-<li>With <i>I</i>(<i>T</i>) in nm<sup>2</sup> MHz, <i>&nu;</i> in MHz, and &micro; <i><sub>g</sub></i> in D one obtains<br />
-    <font size="+1"><i>I</i>(<i>T</i>) = 4.16231 &times; 10<sup>&ndash;5</sup> <i>&nu;</i> <i>S<sub>g</sub></i> &micro;<i><sub>g</sub></i><sup>2</sup> (<i>e<sup>&ndash;E&quot;/kT</sup> &ndash; e<sup>&ndash;E'/kT</sup></i>)/<i>Q</i><sub>rs</sub>(<i>T</i>)</font></li>
-
-<li>Or conversely <br />
-    <font size="+1"><i>S<sub>g</sub></i> &micro;<i><sub>g</sub></i><sup>2</sup> = 2.40251 &times; 10<sup>4</sup> <i>I</i>(<i>T</i>) <i>Q</i><sub>rs</sub>(<i>T</i>) <i>&nu;</i><sup>&ndash;1</sup> (<i>e<sup>&ndash;E&quot;/kT</sup> &ndash; e<sup>&ndash;E'/kT</sup></i>)<sup>&ndash;1</sup> </font></p>
-
-<p class="note"><font color="#ff0050"><b>Note:</b></font> While frequently it is straightforward to calculate <i>S<sub>g</sub></i> from <i>S<sub>g</sub></i> &micro; <i><sub>g</sub></i><sup>2</sup> by deviding through the respective &micro; <i><sub>g</sub></i><sup>2</sup>, this is not always correct or applicable, for example in cases of strong vibration rotation interaction.</p>
-
-</li>
-<li>The intensity in nm<sup>2</sup> MHz is converted to cm<sup>&ndash;1</sup>/(molecule/cm<sup>2</sup>) by dividing the catalog intensity by<br />
-    2.99792458 &times; 10<sup>18</sup></li>
-<li><font size="+1"><i>A</i> = <i>I</i>(<i>T</i>) <i>&nu;</i><sup>2</sup> (<i>Q</i><sub>rs</sub>(<i>T</i>)/<i>g</i><sub>up</sub>) (<i>e<sup>&ndash;E&quot;/kT</sup> &ndash; e<sup>&ndash;E'/kT</sup></i>)<sup>&ndash;1</sup> &times; 2.7964 &times; 10<sup>&ndash;16</sup> s<sup>&ndash;1</sup></font></li>
-
-<li>Combined with <b>2.</b> one obtains<br />
-    <font size="+1"><i>A</i> = 1.16395 &times; 10<sup>&ndash;20</sup><i>&nu;</i><sup>3</sup> <i>S<sub>g</sub></i> &micro;<i><sub>g</sub></i><sup>2</sup>/<i>g</i><sub>up</sub></font></p>
-
-<p class="note"><font color="#ff0050"><b>Note:</b></font> Numerical problems may occur in eq. 1, 2, 3 and 5 if the frequency <i>&nu;</i> is small with respect to the lower state energy <i>E&quot;</i>. It is advisable to take the following expressions into accout:</p>
-</li>
-<li><font size="+1"><i>e<sup>&ndash;E&quot;/kT</sup> &ndash; e<sup>&ndash;E'/kT</sup></i> = <i>e<sup>&ndash;E&quot;/kT</sup></i> (1 &ndash; <i>e</i><sup>&ndash;(<i>E' &ndash; E&quot;</i>)/<i>kT</i></sup>) = <i>e<sup>&ndash;E&quot;/kT</sup></i> (1 &ndash; <i>e</i><sup>&ndash;<i>&nu;/kT</i></sup>) </font></li>
-
-<li>With <i>&nu;/kT</i> much smaller than 1 one obtains<br />
-    <font size="+1">1 &ndash; <i>e</i><sup>&ndash;<i>&nu;/kT</i></sup> &asymp; <i>&nu;/kT</i> </font></li>
-</ol>
+      <p>&nbsp;</p>
+      <p class="note">
+       <b>Note:</b> While frequently it
+       is straightforward to calculate <i>S<sub>g</sub></i> from
+       <i>S<sub>g</sub></i> &micro; <i><sub>g</sub></i><sup>2</sup> by
+       deviding through the respective &micro;
+       <i><sub>g</sub></i><sup>2</sup>, this is not always correct or
+       applicable, for example in cases of strong vibration rotation
+       interaction.
+      </p>
+    </li>
+    <li>
+      The intensity in nm<sup>2</sup> MHz is converted to
+      cm<sup>&ndash;1</sup>/(molecule/cm<sup>2</sup>) by dividing the
+      catalog intensity by<br /> 2.99792458 &times;
+      10<sup>18</sup></li> <li><font size="+1"><i>A</i> =
+      <i>I</i>(<i>T</i>) <i>&nu;</i><sup>2</sup>
+      (<i>Q</i><sub>rs</sub>(<i>T</i>)/<i>g</i><sub>up</sub>)
+      (<i>e<sup>&ndash;E&quot;/kT</sup> &ndash;
+      e<sup>&ndash;E'/kT</sup></i>)<sup>&ndash;1</sup> &times; 2.7964
+      &times; 10<sup>&ndash;16</sup> s<sup>&ndash;1</sup></font>
+    </li>
+    <li>
+      Combined with <b>2.</b> one obtains<br /> <font
+      size="+1"><i>A</i> = 1.16395 &times;
+      10<sup>&ndash;20</sup><i>&nu;</i><sup>3</sup>
+      <i>S<sub>g</sub></i>
+      &micro;<i><sub>g</sub></i><sup>2</sup>/<i>g</i><sub>up</sub></font>
+      <p>&nbsp;</p>
+      <p class="note">
+       <b>Note:</b> Numerical problems
+       may occur in eq. 1, 2, 3 and 5 if the frequency <i>&nu;</i> is
+       small with respect to the lower state energy <i>E&quot;</i>. It
+       is advisable to take the following expressions into accout:
+      </p>
+    </li>
+    <li>
+      <font size="+1"><i>e<sup>&ndash;E&quot;/kT</sup> &ndash;
+      e<sup>&ndash;E'/kT</sup></i> =
+      <i>e<sup>&ndash;E&quot;/kT</sup></i> (1 &ndash;
+      <i>e</i><sup>&ndash;(<i>E' &ndash; E&quot;</i>)/<i>kT</i></sup>)
+      = <i>e<sup>&ndash;E&quot;/kT</sup></i> (1 &ndash;
+      <i>e</i><sup>&ndash;<i>&nu;/kT</i></sup>) </font>
+    </li>
+    <li>
+      With <i>&nu;/kT</i> much smaller than 1 one obtains<br /> <font
+      size="+1">1 &ndash; <i>e</i><sup>&ndash;<i>&nu;/kT</i></sup>
+      &asymp; <i>&nu;/kT</i> </font>
+    </li>
+  </ol>
 </fieldset>
-
 
 
 </form>

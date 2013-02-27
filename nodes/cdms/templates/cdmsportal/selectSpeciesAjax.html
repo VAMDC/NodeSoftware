@@ -27,7 +27,7 @@
       </div>
       <div class="type-text">
         <label for="molNameFilter">Molecule</label>
-        <input id="molNameFilter" onkeyup="applySpeciesFilter()" onblur="applySpeciesFilter()"  type="text" name="filterTag"> 
+        <input id="molNameFilter" onkeyup="applySpeciesFilter()" onmouseenter="applySpeciesFilter()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
       </div>
       <div class="type-text">
         <label for="molTrivNameFilter">Trivial&nbsp;Name</label>
@@ -94,10 +94,10 @@
 		isotopologs = [{% for inchikey in inchikey_list %}'{{inchikey}}',{% endfor %}] 
 		molecules = [{% for molecule in stoichio_list %}'{{molecule}}',{% endfor %}] 
 		$(document).ready(function() {
+
 		<!-- ajaxGetList('species'); -->
 		ajaxGetSpeciesList();
-
-<!-- ajaxGetSpeciesList(); -->
+		<!-- ajaxGetSpeciesList(); -->
 		});
 </script>
 
