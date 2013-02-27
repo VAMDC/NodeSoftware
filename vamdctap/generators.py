@@ -929,7 +929,7 @@ def XsamsMCSBuild(Molecule):
 
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
     if G("MoleculeComment"):
-        yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
+        yield '<Comment>%s</Comment>\n' % escape(G("MoleculeComment"))
     yield '</MolecularChemicalSpecies>\n'
 
 def makeCaseQNs(G):
