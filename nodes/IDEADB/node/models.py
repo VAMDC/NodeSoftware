@@ -190,6 +190,8 @@ class Energyscan(Model):
     comment = TextField(blank = True, max_length = 2000, verbose_name = 'Comment (max. 2000 chars.)')
     energyresolution = DecimalField(max_digits = 4, decimal_places = 3, verbose_name='Energy Resolution of the Experiment in eV')
     lastmodified = DateTimeField(auto_now = True, auto_now_add = True, default = datetime.datetime.now())
+    numberofpeaks = IntegerField(blank = True, verbose_name = 'Number of peaks visible (no shoulder structures)')
+
     #define a useful unicode-expression:
     def __unicode__(self):
         return u'ID %s: %s from %s'%(self.id, self.species, self.origin_species)
