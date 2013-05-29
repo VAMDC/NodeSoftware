@@ -50,12 +50,12 @@ optimized for the hardware they were created on, but can be hard to
 maintain, update and keep secure in the long run. Especially
 when the original creators have moved on.
 
-VAMDC:s open-source *NodeSoftware* package is downloadable via GIT using
-`these <http://www.vamdc.org/documents/nodesoftware/prereqs.html>`_
+VAMDC's open-source *NodeSoftware* package is downloadable via GIT using
+`these <http://www.vamdc.org/documents/nodesoftware/prereq.html>`_
 instructions. There are also tarballs to be found `here <http://www.vamdc.eu/software>`_.
 The default NodeSoftware is `Python <http://www.python.org/>`_ based and uses the `Django <https://www.djangoproject.com/>`_
 framework and a few more dependencies outlined on the
-`prerequisites <http://www.vamdc.org/documents/nodesoftware/prereqs.html>`_ page. All documentation
+`prerequisites <http://www.vamdc.org/documents/nodesoftware/prereq.html>`_ page. All documentation
 referes to the Python version of the software.
 
 The NodeSoftware contains all tools for setting up and running a
@@ -84,7 +84,7 @@ The NodeSoftware can help you import legacy data from text files on
 almost any format. The included import tool (in the ``imptools/``
 directory) converts from such raw data into a format possible to directly import into a
 modern database. The process is summarized below (in more detail in
-the `imptool documentation <http://www.vamdc.org/documents/nodesoftware/prereqs.html>`_).
+the `imptool documentation <http://www.vamdc.org/documents/nodesoftware/prereq.html>`_).
 
 #. Prepare your raw data as text files (they can be gzipped if very
    large).
