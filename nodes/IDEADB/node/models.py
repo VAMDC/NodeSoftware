@@ -179,6 +179,7 @@ class Energyscan(Model):
         ('1/s', '1/s'),
         ('cm2', 'cm2'),
         ('m2', 'm2'),
+        ('unitless', 'unitless'),
     )
     species = ForeignKey(Species, related_name='energyscan_species')
     origin_species = ForeignKey(Species, related_name='energyscan_origin_species')

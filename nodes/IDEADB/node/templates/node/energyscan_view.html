@@ -3,7 +3,29 @@
 {% block content %}
     <h2>Energyscan for {{ es.species }}- from {{ es.origin_species }}</h2>
     <div class="general" id="info">Data was taken on {{ es.experiment.name }} on {{ es.productiondate }} with energy resolution: {{ es.energyresolution }} eV</div>
-    <div id="placeholder" style="width:800px;height:400px"></div>
+    <div>
+     <table style="text-align:center">
+       <tr>
+         <td>{{ es.y_units }}</td>
+
+         <td>
+           <div id="placeholder" style="width:800px;height:400px"></div>
+         </td>
+
+         <td></td>
+       </tr>
+
+       <tr>
+         <td></td>
+
+         <td>Electron Energy (eV)</td>
+
+         <td></td>
+       </tr>
+
+    </table>
+   </div>
+   <div>&nbsp;</div>
     {% if es.comment %}
     <div id="comment" class="general">
       <strong>Comment for this energyscan:</strong><br />
@@ -63,6 +85,7 @@
 
 <script type="text/javascript">
 $(function () {
+    var container = $("#placeholder");
     var d2 = [{{ es.daten }}];
     plot = $.plot($("#placeholder"), [{ label: "{{ es.species }}-: 00.00 eV / 00.00",  data: d2, color: "blue"}], {legend: {margin : [15,15]}, crosshair: { mode: "xy" }, grid: { hoverable: true, autoHighlight: false }});
 
