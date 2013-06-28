@@ -3,7 +3,31 @@
 {% block content %}
     <h2>Comparing {{ es1.species }}- from {{ es1.origin_species }} with {{ es2.species }}- from {{ es2.origin_species }}</h2>
     <div class="general" id="info">Data for {{ es1.species }}-/{{ es1.origin_species }} was taken on {{ es1.experiment.name }} on {{ es1.productiondate }} with energy resolution: {{ es1.energyresolution }} eV<br /> Data for {{ es2.species }}-/{{ es2.origin_species }} was taken on {{ es2.experiment.name }} on {{ es2.productiondate }} with energy resolution: {{ es2.energyresolution }} eV</div>
-    <div id="placeholder" style="width:800px;height:400px"></div>
+
+    <div>
+     <table style="text-align:center">
+       <tr>
+         <td>{{ es1.y_units }}</td>
+
+         <td>
+           <div id="placeholder" style="width:800px;height:400px"></div>
+         </td>
+
+         <td></td>
+       </tr>
+
+       <tr>
+         <td></td>
+
+         <td>Electron Energy (eV)</td>
+
+         <td></td>
+       </tr>
+
+    </table>
+   </div>
+   <div>&nbsp;</div>
+
     <div class="wrapper">
      <div class="floater">
       <table>
