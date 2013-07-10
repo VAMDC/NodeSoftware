@@ -118,6 +118,7 @@ RESTRICTABLES = {\
 'RadTransProbabilityOscillatorStrength':'oscillator_strength',
 'StateEnergy':'lowerstate__energy',
 'RadTransWavenumber':'wavenumber_calculated',
+'InchiKey':'inchikey',
 #'RadTransWavenumber':'vavenum',
 #'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 #'AtomIonCharge':'species__ion'
