@@ -91,5 +91,6 @@ RESTRICTABLES = {\
 'IonCharge' : 'ioncharge',
 'AtomNuclearCharge' : 'nuclearcharge',
 'AtomSymbol' : 'elementsymbol',
+'InchiKey' : 'inchikey',
 }
 

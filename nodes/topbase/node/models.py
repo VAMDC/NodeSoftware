@@ -150,7 +150,7 @@ class Radiativetransition(models.Model):
     wavelengthunit = models.CharField(max_length=8)
     upperatomicstate = models.ForeignKey(Atomicstate, db_column='upperatomicstateid', related_name='+')
     loweratomicstate = models.ForeignKey(Atomicstate, db_column='loweratomicstateid', related_name='+')    
-    
+    inchikey = models.CharField(max_length=27)
     def abs_weightedoscillatorstrength(self):
         return abs(self.weightedoscillatorstrength)
    
