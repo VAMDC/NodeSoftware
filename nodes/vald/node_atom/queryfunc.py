@@ -174,9 +174,9 @@ def customXsams(tap, RadTrans=None, Environments=None,
 
     for Atom in Atoms:
         for state in Atom.States:
-            refIDs.update(state.energy_ref_id)
-            refIDs.update(state.lande_ref_id)
-            refIDs.update(state.level_ref_id)
+            refIDs.update(state.energy_ref_id or [])
+            refIDs.update(state.lande_ref_id or [])
+            refIDs.update(state.level_ref_id or [])
 
     Sources = Reference.objects.filter(pk__in=refIDs)
     if not requestables or 'sources' in requestables:
