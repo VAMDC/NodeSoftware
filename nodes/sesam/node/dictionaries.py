@@ -124,3 +124,8 @@ RESTRICTABLES = {\
 #'AtomIonCharge':'species__ion'
 }
 
+PREFIXES = {\
+'lower.StateEnergy':'lowerstate__energy',
+'upper.StateEnergy':'upperstate__energy',
+}
+
