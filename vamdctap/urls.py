@@ -1,5 +1,5 @@
+from django.conf.urls import patterns, url, include
 from django.conf import settings
-from django.conf.urls.defaults import *
 import django.views.static
 
 urlpatterns = patterns('vamdctap.views',

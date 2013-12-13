@@ -138,6 +138,8 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
 )
 
+# ALLOW TO SERVER FROM ALL HOSTS
+ALLOWED_HOSTS = ['*']
 
 #########################
 #  LOGGING
