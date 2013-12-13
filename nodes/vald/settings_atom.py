@@ -1,6 +1,7 @@
 from settings_default import *
 
 DEBUG = False
+#DEBUG = True
 TRANSLIM = 50000
 
 try:
