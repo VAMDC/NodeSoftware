@@ -15,8 +15,8 @@ from django.conf import settings
 from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-#import logging
-#log=logging.getLogger('vamdc.tap')
+import logging
+log=logging.getLogger('vamdc.tap')
 from django.db import connection
 import dictionaries
 import models as django_models
@@ -34,7 +34,7 @@ def setupResults(sql):
 	"""
 	result = None
 	# return all species
-	if str(sql) == 'select species': 
+	if str(sql).strip().lower() == 'select species': 
 		result = setupSpecies()
 	# all other requests
 	else:		
@@ -57,7 +57,7 @@ def setupSpecies():
 	result.addDataField('Atoms',species)	
 	return result
 	
-def setupVssRequest(sql, limit=2000):
+def setupVssRequest(sql, limit=500):
     """		
         Execute a vss request
         @type  sql: string
@@ -84,8 +84,10 @@ def setupVssRequest(sql, limit=2000):
         species, nspecies, nstates = getSpeciesWithStates(transs)      
         transitions, environments = getTransitionsData(transs)    
         particles = getParticles(ntranss) 
+        functions = getFunctions()
         sources =  getSources(transs)
         nsources = len(sources)
+        
 
         # Create the header with some useful info. The key names here are
         # standardized and shouldn't be changed.
@@ -98,6 +100,7 @@ def setupVssRequest(sql, limit=2000):
         result.addDataField('Atoms',species)
         result.addDataField('Environments',environments)
         result.addDataField('Particles',particles)
+        result.addDataField('Functions',functions)
         result.addDataField('Sources',sources)
         
     else : # only fill header
@@ -242,7 +245,8 @@ def getTransitionsData(transs):
             # generators.py do not create broadening element when broadening.value is empty
             br = getBroadening(environment)
             if br is not None : 
-                broadenings.append(br)            
+                broadenings.append(br) 
+                #getFitBroadening(environment)           
             # shifting to be added later
             sh = getShifting(environment)
             if sh is not None : 
@@ -292,6 +296,10 @@ def getBroadening(environment):
         param.comment = getValidity(environment.w, environment.n_w)
         return param
     return None
+    
+def getFitCoefficients(environment):
+    fits = django_models.FitCoefficient.objects.filter(transitiondata=environment.temperature.transitiondata, species=environment.species)
+    broad = [fits.a0, fits.a1, fits.a2]
     
 def getShifting(environment):
     """
@@ -355,3 +363,8 @@ def getValidity(value, nvalue):
 			return 'the impact approximation reachs its limit of validity, 0.1 < NV ≤ 0.5'
             
 
+def getFunctions():
+    functions = []
+    functions.append(util_models.FunctionBuilder.widthCalculation())
+    functions.append(util_models.FunctionBuilder.shiftCalculation())
+    return functions
