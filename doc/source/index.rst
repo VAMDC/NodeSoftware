@@ -18,4 +18,4 @@ Documentation for the VAMDC node software.
    limitations
    contact
    modules
-
+   quickstart

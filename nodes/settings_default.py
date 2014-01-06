@@ -5,12 +5,13 @@
 #
 
 import sys, os
+import datetime
 
 ###################################################
 # Software and standards version
 ###################################################
 VAMDC_STDS_VERSION = '12.07'
-NODESOFTWARE_VERSION = '12.07-rc'
+NODESOFTWARE_VERSION = '12.07r1-rc'
 
 ###################################################
 # Basic node setup
@@ -33,6 +34,8 @@ MANAGERS = ADMINS
 EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
                    'SELECT ALL WHERE ... something else',
                    ]
+
+LAST_MODIFIED = datetime.date(1901,2,3)
 
 # This turns on/off the serving of static files
 # though Django. It is better to let the deployment
@@ -135,6 +138,8 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
 )
 
+# ALLOW TO SERVER FROM ALL HOSTS
+ALLOWED_HOSTS = ['*']
 
 #########################
 #  LOGGING
@@ -152,6 +157,11 @@ LOGGING = {
             'format': '%(asctime)s %(levelname)s %(message)s'
         },
     },
+    'filters': {
+        'require_debug_false': {
+        '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
     'handlers': {
         'null': {
             'level':'DEBUG',
@@ -163,6 +173,7 @@ LOGGING = {
         },
         'mail_admins': {
             'level': 'ERROR',
+            'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
             'include_html': True,
         },

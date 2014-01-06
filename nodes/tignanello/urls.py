@@ -1,4 +1,5 @@
-from django.conf.urls import patterns, url, include
+from django.conf.urls.defaults import *
+
 # Uncomment the next two lines to enable the admin:
 #from django.contrib import admin
 #admin.autodiscover()
@@ -10,9 +11,6 @@ urlpatterns = patterns('',
     #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     (r'^tap/', include('vamdctap.urls')),
-#    (r'', include('vald.node.urls')),
+#    (r'', include('node.urls')),
 
 )
-
-handler500 = 'vamdctap.views.tapServerError'
-handler404 = 'vamdctap.views.tapNotFoundError'

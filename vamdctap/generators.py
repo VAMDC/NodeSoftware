@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#coding: utf-8 -*-
 
 
 import sys
@@ -420,6 +420,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     if method:
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
     for k, v in extraAttr.items():
+        if not v: continue
         result.append( ' %s="%s"'% (k, v) )
     result.append( '>' )
 
@@ -433,6 +434,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
     result.append( '</%s>' % tagname )
 
     for k, v in extraElem.items():
+        if not v: continue
         result.append( '<%s>%s</%s>' % (k, v, k) )
 
     return ''.join(result)
@@ -443,9 +445,9 @@ def makeArgumentType(tagname, keyword, G):
 
     """
     string = "<%s name='%s' units='%s'>" % (tagname, G("%sName" % keyword), G("%sUnits" % keyword))
-    string += "<Description>%s</Description>" % G("%sDescription" % keyword)
-    string += "<LowerLimit>%s</LowerLimit>" % G("%sLowerLimit" % keyword)
-    string += "<UpperLimit>%s</UpperLimit>" % G("%sUpperLimit" % keyword)
+    string +=  makeOptionalTag("Description","%sDescription" % keyword, G)
+    string +=  makeOptionalTag("LowerLimit","%sLowerLimit" % keyword, G)
+    string +=  makeOptionalTag("UpperLimit","%sUpperLimit" % keyword, G)
     string += "</%s>" % tagname
     return string
 
@@ -1040,15 +1042,15 @@ def makeCaseBSQNs(G):
         '<case:QNs>']
 
     result.extend(['<case:vi mode="%s">%s</case:vi>' %
-                   (makeiter(G("BasisStateQNviMode"))[i],val)
-                   for i, val in enumerate(makeiter(G("BasisStateQNvi")))])
+                   (makeiter(G("MoleculeBQNviMode"))[i],val)
+                   for i, val in enumerate(makeiter(G("MoleculeBQNvi")))])
     result.extend(['<case:li mode="%s">%s</case:li>' %
-                   (makeiter(G("BasisStateQNliMode"))[i],val)
-                   for i, val in enumerate(makeiter(G("BasisStateQNli")))])
-    result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("BasisStateQNrName"))[i],val)
-                   for i,val in enumerate(makeiter(G("BasisStateQNr")))])
-    result.extend(['<case:sym name="%s">%s</case:sym>'%(makeiter(G("BasisStateQNsymName"))[i],val)
-                   for i,val in enumerate(makeiter(G("BasisStateQNsym")))])
+                   (makeiter(G("MoleculeBQNliMode"))[i],val)
+                   for i, val in enumerate(makeiter(G("MoleculeBQNli")))])
+    result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("MoleculeBQNrName"))[i],val)
+                   for i,val in enumerate(makeiter(G("MoleculeBQNr")))])
+    result.extend(['<case:sym name="%s">%s</case:sym>'%(makeiter(G("MoleculeBQNsymName"))[i],val)
+                   for i,val in enumerate(makeiter(G("MoleculeBQNsym")))])
     result.extend([
             "</case:QNs>",
             "</Case>\n"])
@@ -1146,9 +1148,9 @@ def XsamsBSBuild(MoleculeBasisState):
     if cont:
         yield ret
     else:
-        yield makePrimaryType("BasisState", "BasisState", G,
+        yield makePrimaryType("BasisState", "MoleculeBasisState", G,
             extraAttr={"basisStateID":'SB%s-%s' % (G('NodeID'),
-                                                   G('BasisStateID')),})
+                                                   G('MoleculeBasisStateID')),})
         cont, ret = checkXML(G("BasisStateQuantumNumbers"))
         if cont:
             yield ret
@@ -1176,7 +1178,7 @@ def XsamsMolecules(Molecules):
             yield MCS
 
         if hasattr(Molecule, 'BasisStates'):
-            yield makePrimaryType('BasisStates', 'BasisStates', G)
+            yield makePrimaryType('BasisStates', 'MoleculeBasisStates', G)
             for MoleculeBasisState in Molecule.BasisStates:
                 for BS in XsamsBSBuild(MoleculeBasisState):
                     yield BS
@@ -1204,7 +1206,7 @@ def XsamsSolids(Solids):
             yield ret
             continue
         G = lambda name: GetValue(name, Solid=Solid)
-        makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
+        yield makePrimaryType("Solid", "Solid", G, extraAttr={"speciesID":"S%s-%s" % (NODEID, G("SolidSpeciesID"))})
         if hasattr(Solid, "Layers"):
             for Layer in makeiter(Solid.Layers):
                 GL = lambda name: GetValue(name, Layer=Layer)
@@ -1242,7 +1244,9 @@ def XsamsParticles(Particles):
             yield ret
             continue
         G = lambda name: GetValue(name, Particle=Particle)
-        yield """<Particle speciesID="X%s-%s" name="%s">""" % (G('NodeID'), G('ParticleSpeciesID'), G('ParticleName'))
+        yield makePrimaryType("Particle", "Particle", G,
+         extraAttr={'speciesID':"X%s-%s"%(G('NodeID'), G('ParticleSpeciesID')),
+                    'name':"%s"%G('ParticleName')})
         yield "<ParticleProperties>"
         charge = G("ParticleCharge")
         if charge :
@@ -1405,7 +1409,10 @@ def XsamsRadTrans(RadTrans):
         yield makeSourceRefs(G('RadTransRefs'))
         yield '<EnergyWavelength>'
         yield makeDataType('Wavenumber', 'RadTransWavenumber', G)
-        yield makeDataType('Wavelength', 'RadTransWavelength', G)
+        yield makeDataType('Wavelength', 'RadTransWavelength', G,
+                extraAttr={'envRef':G('RadTransWavelengthEnv'),
+                    'vacuum':G('RadTransWavelengthVacuum')},
+                extraElem={'AirToVacuum':G('RadTransWavelengthAirToVac')})
         yield makeDataType('Frequency', 'RadTransFrequency', G)
         yield makeDataType('Energy', 'RadTransEnergy', G)
         yield '</EnergyWavelength>'
@@ -1685,6 +1692,7 @@ def XsamsCollTrans(CollTrans):
                 yield "</Product>"
 
         yield makeDataType("Threshold", "CollisionThreshold", G)
+        yield makeDataType("BranchingRatio", "CollisionBranchingRatio", G)
 
         if hasattr(CollTran, "DataSets"):
             yield "<DataSets>"
@@ -1963,6 +1971,28 @@ def generatorError(where):
     log.warn('Generator error in%s!' % where, exc_info=sys.exc_info())
     return where
 
+def XsamsHeader(HeaderInfo):
+    head = ['<?xml version="1.0" encoding="UTF-8"?>\n']
+    head.append('<XSAMSData xmlns="http://vamdc.org/xml/xsams/%s"' % XSAMS_VERSION )
+    head.append(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+    head.append(' xmlns:cml="http://www.xml-cml.org/schema"')
+    head.append(' xsi:schemaLocation="http://vamdc.org/xml/xsams/%s %s">'\
+            % (XSAMS_VERSION, SCHEMA_LOCATION) )
+
+    if HeaderInfo:
+        HeaderInfo = CaselessDict(HeaderInfo)
+        if HeaderInfo.has_key('Truncated'):
+            if HeaderInfo['Truncated'] != None: # note: allow 0 percent
+                head.append( """
+<!--
+   ATTENTION: The amount of data returned may have been truncated by the node.
+   The data below represent %s percent of all available data at this node that
+   matched the query.
+-->
+""" % HeaderInfo['Truncated'] )
+
+    return ''.join(head)
+
 def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
           Environments=None, Atoms=None, Molecules=None, Solids=None, Particles=None,
           CollTrans=None, RadTrans=None, RadCross=None, NonRadTrans=None):
@@ -1974,24 +2004,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     and not to be looped over beforehand.
     """
 
-    yield '<?xml version="1.0" encoding="UTF-8"?>\n'
-    yield '<XSAMSData xmlns="http://vamdc.org/xml/xsams/%s"' % XSAMS_VERSION
-    yield ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
-    yield ' xmlns:cml="http://www.xml-cml.org/schema"'
-    yield ' xsi:schemaLocation="http://vamdc.org/xml/xsams/%s %s">'\
-            % (XSAMS_VERSION, SCHEMA_LOCATION)
-
-    if HeaderInfo:
-        HeaderInfo = CaselessDict(HeaderInfo)
-        if HeaderInfo.has_key('Truncated'):
-            if HeaderInfo['Truncated'] != None: # note: allow 0 percent
-                yield """
-<!--
-   ATTENTION: The amount of data returned may have been truncated by the node.
-   The data below represent %s percent of all available data at this node that
-   matched the query.
--->
-""" % HeaderInfo['Truncated']
+    yield XsamsHeader(HeaderInfo)
 
     errs=''
 

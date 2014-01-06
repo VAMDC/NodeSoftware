@@ -103,11 +103,12 @@ def test_constant(const):
     """
     def fu(r,op,rhs):
         if op not in ('=','==','IN'): raise Exception
-        if not hasattr(const,'__iter__'): const = [const]
-        for c in const:
+        if not hasattr(const,'__iter__'): consts = [const]
+        else: consts = const
+        for c in consts:
             c=str(c)
             c=c.strip('"').strip("'")
-            print c , rhs
+            rhs=rhs.strip().strip('"').strip("'")
             if rhs == c:
                 return QTrue
         return QFalse

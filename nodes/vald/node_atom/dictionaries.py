@@ -78,8 +78,6 @@ RETURNABLES = {\
 
 'RadTransBroadeningPressureNeutralLineshapeParameter':'RadTran.get_waals()',
 'RadTransBroadeningPressureNeutralLineshapeName':'lorentzian',
-'RadTransBroadeningPressureNeutralLineshapeParameterName':'log(gamma)',
-'RadTransBroadeningPressureNeutralLineshapeParameterUnit':'1/cm3/s',
 'RadTransBroadeningPressureNeutralLineshapeParameterName':'RadTran.get_waals_name()',  #'log(gamma)',
 'RadTransBroadeningPressureNeutralLineshapeParameterUnit':'RadTran.get_waals_units()', #'cm3/s',
 'RadTransBroadeningPressureNeutralRef':'RadTran.waals_ref_id',

@@ -46,18 +46,6 @@ class SpeciesComp(Model):
     class Meta:
         db_table = u'species_components'
 
-## removed, maybe solving this differently.
-#class TransRef(Model):
-#    """
-#    This is the intermediary model so that transitions can
-#    refer to references
-#    """
-#    trans_id = BigIntegerField(db_index=False) # note - index is created in sql. Note for next import: Not really needing a BigIntegerField.
-#    ref_id = CharField(max_length=7)
-#    class Meta:
-#        db_table = u"transitions_references"
-
-
 class Reference(Model):
     id = CharField(max_length=7, primary_key=True, db_index=True)
     bibtex = TextField(null=True)
@@ -107,10 +95,10 @@ EnvGeneral="""<Environment envID="%s">
 <Comments>%s</Comments>
 <Temperature><Value units="K">1.0E4</Value></Temperature>
 <TotalNumberDensity><Comments>The broadening parameters are given in
-Hz per number density (i.e. 1/cm^3/s), so they can simply
+Hz per number density (i.e. 1/cm3/s), so they can simply
 be scaled with the number density. Note that unless otherwise noted,
 log10(gamma) is given.</Comments>
-<Value units="1/cm3">1</Value>
+<Value units="1/cm3/s">1</Value>
 </TotalNumberDensity>
 </Environment>
 """
@@ -194,7 +182,7 @@ waalsbfunc = FuncClass(r"""<Function functionID="Fvald-waals-barklem">
     </Argument>
 </Arguments>
 <Parameters>
-    <Parameter name="sigma" units="m">
+    <Parameter name="sigma" units="unitless">
        <Description>Broadening cross section in atomic size units (Bohr radii)</Description>
     </Parameter>
     <Parameter name="alpha" units="unitless">
