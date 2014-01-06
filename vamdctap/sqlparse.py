@@ -58,7 +58,6 @@ from django.utils.importlib import import_module
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
 from caselessdict import CaselessDict
 RESTRICTABLES=CaselessDict(DICTS.RESTRICTABLES)
-PREFIXES=DICTS.PREFIXES
 
 from types import TupleType, FunctionType
 from django.db.models.query_utils import Q as QType
@@ -136,29 +135,18 @@ def checkLen1(x):
         return x[0].strip('\'"')
 
 
-def restriction2Q(rs, restrictables=RESTRICTABLES, prefixes=PREFIXES):
+def restriction2Q(rs, restrictables=RESTRICTABLES):
     if isinstance(rs,QType): # we are done because it is already a Q-object
         return rs
 
     r, op, foo = rs[0], rs[1], rs[2:]
-    prefixed=False
-    
     if r not in restrictables:
-        if 'lower.' in r or 'upper.' in r :
-            prefixed = True
-        else :
-            if r not in prefixes :
-                log.debug('Restrictable "%s" not supported!'%r)
-                raise Exception('Restrictable "%s" not supported!'%r)
+        log.debug('Restrictable "%s" not supported!'%r)
+        raise Exception('Restrictable "%s" not supported!'%r)
 
-    if prefixed : 
-        if type(prefixes[r]) == tuple:
-            rest_rhs = prefixes[r][0]
-        else: rest_rhs = prefixes[r] 
-    else :
-        if type(restrictables[r]) == tuple:
-            rest_rhs = restrictables[r][0]
-        else: rest_rhs = restrictables[r]      
+    if type(restrictables[r]) == tuple:
+        rest_rhs = restrictables[r][0]
+    else: rest_rhs = restrictables[r]
 
     if op=='in':
         if not (foo[0]=='(' and foo[-1]==')'):
