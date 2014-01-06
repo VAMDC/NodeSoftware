@@ -35,7 +35,7 @@ def setupResults(sql):
 	"""
 	result = None
 	# return all species
-	if str(sql) == 'select species': 
+	if str(sql).strip().lower() == 'select species': 
 		result = setupSpecies()
 	# all other requests
 	else:		
@@ -69,7 +69,7 @@ def setupVssRequest(sql, limit=2000):
 
     result = util_models.Result()
     q = sql2Q(sql)    
-
+    log.debug(q)
     #select transitions : combination of density/temperature
     transs = models.Radiativetransition.objects.filter(q)
     ntranss=transs.count()

@@ -119,13 +119,15 @@ RESTRICTABLES = {\
 'StateEnergy':'lowerstate__energy',
 'RadTransWavenumber':'wavenumber_calculated',
 'InchiKey':'inchikey',
+'lower.StateEnergy':'lowerstate__energy',
+'upper.StateEnergy':'upperstate__energy',
 #'RadTransWavenumber':'vavenum',
 #'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 #'AtomIonCharge':'species__ion'
 }
 
 PREFIXES = {\
-'lower.StateEnergy':'lowerstate__energy',
-'upper.StateEnergy':'upperstate__energy',
+#'lower.StateEnergy':'lowerstate__energy',
+#'upper.StateEnergy':'upperstate__energy',
 }
 
