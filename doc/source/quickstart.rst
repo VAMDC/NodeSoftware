@@ -50,14 +50,13 @@ optimized for the hardware they were created on, but can be hard to
 maintain, update and keep secure in the long run. Especially
 when the original creators have moved on.
 
-VAMDC:s open-source *NodeSoftware* package is downloadable via GIT using
-`these <http://www.vamdc.org/documents/nodesoftware/prereqs.html>`_
+VAMDC's open-source *NodeSoftware* package is downloadable via GIT using
+`these <http://www.vamdc.org/documents/nodesoftware/prereq.html>`_
 instructions. There are also tarballs to be found `here <http://www.vamdc.eu/software>`_.
-The default NodeSoftware is Python based and uses the `Django <https://www.djangoproject.com/>`_
-`Python <http://www.python.org/>`_ framework and a few more dependencies outlined on
-`these <http://www.vamdc.org/documents/nodesoftware/prereqs.html>`_.
-pages. All documentation referes to the Python version of the
-software.
+The default NodeSoftware is `Python <http://www.python.org/>`_ based and uses the `Django <https://www.djangoproject.com/>`_
+framework and a few more dependencies outlined on the
+`prerequisites <http://www.vamdc.org/documents/nodesoftware/prereq.html>`_ page. All documentation
+referes to the Python version of the software.
 
 The NodeSoftware contains all tools for setting up and running a
 VAMDC node. It also offers import tools for converting existing data.
@@ -81,14 +80,14 @@ get it set up, in brief:
   * If your data is stored in some other form you need to define your database
     scheme yourself. See examples in the ExampleNode.
 
-The NodeSoftware can help you import legacy data from ASCII files on
+The NodeSoftware can help you import legacy data from text files on
 almost any format. The included import tool (in the ``imptools/``
 directory) converts from such raw data into a format possible to directly import into a
 modern database. The process is summarized below (in more detail in
-the `imptool documentation <http://www.vamdc.org/documents/nodesoftware/prereqs.html>`_).
+the `imptool documentation <http://www.vamdc.org/documents/nodesoftware/prereq.html>`_).
 
 #. Prepare your raw data as text files (they can be gzipped if very
-   large)
+   large).
 #. Describe the format of your text in a *mapping file*. This tells
    the import tool how it should read your input data and how this maps to the
    new database structure you are creating. You can find an example
@@ -100,13 +99,13 @@ the `imptool documentation <http://www.vamdc.org/documents/nodesoftware/prereqs.
    suitable for your database (such as ``LOAD DATA INFILE`` for MySQL).
 
 To test your new Node you can start it with Django's in-built
-webserver (``manage.py runserver``). This will start your node locally
+testserver (``manage.py runserver``). This will start your node locally
 on port `8000` by default. You can then download the JAVA-based validation
 tool from http://www.vamdc.org/software and try sending some queries.
 
-Also test that ``<URL>/availability`` and ``<URL>/capabilities``
+Test that ``<URL>/availability`` and ``<URL>/capabilities``
 work as they should. Remember to set up some sample queries in your
-settings file - once you register with VAMDC these will be used to
+settings file (see examples in the file) - once you register with VAMDC these will be used to
 test your node's status.
 
 The Django test server should *never* be used for anything but
