@@ -167,7 +167,7 @@ class Source(Model):
     doi = CharField(max_length=100, verbose_name='DOI', blank=True)
     pagestart = CharField(max_length=5, verbose_name='Starting Page')
     pageend = CharField(max_length=5, verbose_name='Ending Page')
-    url = URLField(verify_exists=False, max_length=200, blank=True)
+    url = URLField(max_length=200, blank=True)
     title = CharField(max_length=500)
     type = CharField(max_length=17, default='journal', choices=SOURCETYPE_CHOICES)
     #define a useful unicode-expression:
