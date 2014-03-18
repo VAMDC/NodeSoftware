@@ -41,16 +41,20 @@ def attach_partionfunc(molecules):
         molecule.pfsymmetrygroup = []
         molecule.pfnsilowestrovibsym = []
 
-        #pfs = Partitionfunctions.objects.filter(eid = molecule.id, mid__isnull=False)
-        pfs = Partitionfunctions.objects.filter(specie = molecule, state="All")
+        #pfs = Partitionfunctions.objects.filter(specie = molecule, state="All")
+        pfs = PartitionfunctionsDetailed.objects.filter(specie = molecule) 
 
         # Get List of all nuclear spin isomers "None" should be included and gives
         # partition functions which do not distinguish between nuclear spin isomers.
         nsilist = pfs.values_list('nsi_id', flat=True).distinct()
 
         for nsi in nsilist:
-            temp=pfs.filter(nsi_id=nsi).values_list('temperature',flat=True)
-            pf = pfs.filter(nsi_id=nsi).values_list('partitionfunc',flat=True)
+            temp_pf_list = pfs.filter(nsi_id=nsi).values('temperature').annotate(p=Sum('partitionfunc')).order_by('temperature')
+            
+            #temp=pfs.filter(nsi_id=nsi).values_list('temperature',flat=True)
+            #pf = pfs.filter(nsi_id=nsi).values_list('partitionfunc',flat=True)
+            temp =temp_pf_list.values_list('temperature',flat=True)
+            pf =temp_pf_list.values_list('p',flat=True)
 
             # Get information on nuclear spin isomers or Null
             try:
@@ -223,7 +227,7 @@ def attach_exp_frequencies(transs):
     The calculated frequency is given anyway followed by experimental
     frequencies (db-table: Frequencies). In addition a unique list of
     methods for the experimental data is created and returned.
-
+ll
     Returns:
     - modified transitions (frequencies, ... attached as lists)
     - methods for experimental data
@@ -308,7 +312,7 @@ def setupResults(sql):
     #datasets = Datasets.objects.filter(archiveflag=0)
 
     # Query the database and get calculated transitions (TransitionsCalc)
-    transs = TransitionsCalc.objects.filter(q #specie__origin=5,
+    transs = RadiativeTransitions.objects.filter(q #specie__origin=5,
                                             #specie__archiveflag=0,
                                             #dataset__in=datasets,
                                             #dataset__archiveflag=0
@@ -345,10 +349,13 @@ def setupResults(sql):
     natoms = len(atoms) #atoms.count()
     ntranss = transs.count()
 
-    lastmodified = datetime.datetime.now()
-    for specie in chain(atoms, molecules):
-        if specie.changedate<lastmodified:
+    lastmodified = datetime.datetime(2009,12,1)
+
+    for specie in chain(atoms, molecules):        
+        if specie.changedate>lastmodified:
             lastmodified = specie.changedate
+    if lastmodified ==  datetime.datetime(2009,12,1):
+        lastmodified = datetime.datetime.now()
 
     # Calculate estimated size of xsams-file
     if ntranss+nmolecules+nsources+natoms+nstates>0:
@@ -431,7 +438,8 @@ def returnResults(tap, LIMIT=None):
     # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
     
-    transs = TransitionsCalc.objects.filter(q,specie__origin=5,specie__archiveflag=0,dataset__archiveflag=0) 
+    #transs = RadiativeTransitions.objects.filter(q,specie__origin=5,specie__archiveflag=0,dataset__archiveflag=0,energylower__gt=0)
+    transs = RadiativeTransitions.objects.filter(q,specie__archiveflag=0,dataset__archiveflag=0,energylower__gt=0) 
     ntrans = transs.count()
 
     if LIMIT is not None and ntrans > LIMIT:
@@ -465,7 +473,8 @@ def returnResults(tap, LIMIT=None):
     if (col=='ALL' or 'states' in [x.lower() for x in col] ):
         LOG('STATES')
         orderby = tap.request.get('ORDERBY','energy')
-        states = States.objects.filter(q,specie__origin=5,dataset__archiveflag=0).order_by(orderby)
+        #states = States.objects.filter(q,specie__origin=5,dataset__archiveflag=0).order_by(orderby)
+        states = States.objects.filter(q,dataset__archiveflag=0).order_by(orderby)
     else:
         LOG('NO STATES')
         states = []
@@ -555,42 +564,43 @@ def Mrg(transs):
     """
     
     for trans in transs:
-        trans.attach_exp_frequencies()
+        yield '%s ' % trans.spfitstr()
+##        trans.attach_exp_frequencies()
 
-        speciestag = trans.speciestag
+##        speciestag = trans.speciestag
 
-        if len(trans.frequencies)>1:
-            speciestag=-speciestag
-            frequency = trans.frequencies[1]
-            uncertainty = trans.uncertainties[1]
-        else:
-            frequency = trans.frequency
-            uncertainty = trans.uncertainty
+##        if len(trans.frequencies)>1:
+##            speciestag=-speciestag
+##            frequency = trans.frequencies[1]
+##            uncertainty = trans.uncertainties[1]
+##        else:
+##            frequency = trans.frequency
+##            uncertainty = trans.uncertainty
             
-        yield '%13.4lf' % frequency
-        yield '%8.4lf' % uncertainty
-        yield '%8.4lf' % trans.intensity
+##        yield '%13.4lf' % frequency
+##        yield '%8.4lf' % uncertainty
+##        yield '%8.4lf' % trans.intensity
         
-        yield '%2d' % trans.degreeoffreedom
-        yield '%10.4lf' % trans.energylower
+##        yield '%2d' % trans.degreeoffreedom
+##        yield '%10.4lf' % trans.energylower
 
-        yield '%3d' % trans.upperstatedegeneracy
-        yield '%7d' % speciestag
+##        yield '%3d' % trans.upperstatedegeneracy
+##        yield '%7d' % speciestag
         
-        yield '%4d' % trans.qntag
-        yield '%2s' % formatqn(trans.qnup1)
-        yield '%2s' % formatqn(trans.qnup2)
-        yield '%2s' % formatqn(trans.qnup3)
-        yield '%2s' % formatqn(trans.qnup4)
-        yield '%2s' % formatqn(trans.qnup5)
-        yield '%2s' % formatqn(trans.qnup6)
+##        yield '%4d' % trans.qntag
+##        yield '%2s' % formatqn(trans.qnup1)
+##        yield '%2s' % formatqn(trans.qnup2)
+##        yield '%2s' % formatqn(trans.qnup3)
+##        yield '%2s' % formatqn(trans.qnup4)
+##        yield '%2s' % formatqn(trans.qnup5)
+##        yield '%2s' % formatqn(trans.qnup6)
 
-        yield '%2s' % formatqn(trans.qnlow1)
-        yield '%2s' % formatqn(trans.qnlow2)
-        yield '%2s' % formatqn(trans.qnlow3)
-        yield '%2s' % formatqn(trans.qnlow4)
-        yield '%2s' % formatqn(trans.qnlow5)
-        yield '%2s' % formatqn(trans.qnlow6)
+##        yield '%2s' % formatqn(trans.qnlow1)
+##        yield '%2s' % formatqn(trans.qnlow2)
+##        yield '%2s' % formatqn(trans.qnlow3)
+##        yield '%2s' % formatqn(trans.qnlow4)
+##        yield '%2s' % formatqn(trans.qnlow5)
+##        yield '%2s' % formatqn(trans.qnlow6)
 
         yield '%s' % trans.specie.name
         yield '\n'
@@ -822,21 +832,26 @@ def plotLevelDiagram(states):
 
 
     spids = set( states.values_list('specie_id',flat=True) )
+    count_species = len(spids)
     spidsname = []
     species = Species.objects.filter(pk__in=spids) #,ncomp__gt=1)
     i=0
     plots=[]
     for specie in species:
+        if count_species == 0:
+            speciescolor = matplotlib.cm.jet(1.)
+        else:
+            speciescolor = matplotlib.cm.jet(1.*i/count_species)
         spidsname.append(specie.name)
         substates = states.filter(specie=specie)
 
         for state in states:
-            pl = ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color=matplotlib.cm.jet(1.*i/len(spids)))
+            pl = ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color = speciescolor)
 
         plots.append(pl)
         i=i+1
-        
-    ax.legend(plots, spidsname, loc=0)
+    if count_species > 0:
+        ax.legend(plots, spidsname, loc=0)
 #    ax.legend(bars,spidsname,loc=0)
     
 
