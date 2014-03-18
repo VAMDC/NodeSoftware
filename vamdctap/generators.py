@@ -287,7 +287,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
         string += makeSourceRefs(refs[i])
         string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
         string += makeEvaluation( keyword, G, j=i) 
-        if acc[i]:
+        if acc[i] is not None:
             string += '<Accuracy>%s</Accuracy>' % acc[i]
 
 
@@ -303,7 +303,7 @@ def makeAccuracy(keyword, G):
     to DataType.
     """
     acc = G(keyword + 'Accuracy')
-    if not acc:
+    if acc is None:
         return ''
     acc_list = makeiter(acc)
     nacc = len(acc_list)

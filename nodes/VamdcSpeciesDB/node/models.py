@@ -19,6 +19,7 @@ class VamdcMemberDatabases(models.Model):
     id = models.IntegerField(primary_key=True)
     short_name = models.CharField(max_length=60)
     description = models.CharField(max_length=765, blank=True)
+    ivo_identifier = models.CharField(max_length = 100, blank = True)
     class Meta:
         db_table = u'vamdc_member_databases'
 

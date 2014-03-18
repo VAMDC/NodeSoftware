@@ -13,9 +13,11 @@ urlpatterns = patterns('',
 
     (r'^tap/', include('vamdctap.urls')),
 #    (r'^cdms/', include('cdms.urls')),
-    (r'^jpl/', include('nodes.jpl.node.urls')),
+    (r'^portal/', include('nodes.jpl.node.urls')),
 #    (r'^cdms/static', include('nodes.cdms.node.urls')),
-    (r'^mycdmsadmin/', include('nodes.jpl.mycdmsadmin.urls')),
+
+# Uncomment this line to include mycdmsadmin if installed
+#    (r'^mycdmsadmin/', include('nodes.jpl.mycdmsadmin.urls')),
 )
 
 if settings.SERVE_STATIC:
@@ -24,8 +26,9 @@ if settings.SERVE_STATIC:
                     (r'^jpl/static/(?P<path>.*)$',
                     django.views.static.serve,
                     {'document_root': settings.BASE_PATH+'/nodes/jpl/static'}),
-                    (r'mycdmsadmin/static/(?P<path>.*)$',
-                    django.views.static.serve,
-                    {'document_root': settings.BASE_PATH+'/nodes/jpl/mycdmsadmin/static'}),                    
+# Uncomment next three lines to include mycdmsadmin if installed
+#                    (r'mycdmsadmin/static/(?P<path>.*)$',
+#                    django.views.static.serve,
+#                    {'document_root': settings.BASE_PATH+'/nodes/cdms/mycdmsadmin/static'}),                    
                     )
 

@@ -830,16 +830,21 @@ def plotLevelDiagram(states):
 
 
     spids = set( states.values_list('specie_id',flat=True) )
+    count_species = len(spids)
     spidsname = []
     species = Species.objects.filter(pk__in=spids) #,ncomp__gt=1)
     i=0
     plots=[]
     for specie in species:
+        if count_species == 0:
+            speciescolor = matplotlib.cm.jet(1.)
+        else:
+            speciescolor = matplotlib.cm.jet(1.*i/count_species)
         spidsname.append(specie.name)
         substates = states.filter(specie=specie)
 
         for state in states:
-            pl = ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color=matplotlib.cm.jet(1.*i/len(spids)))
+            pl = ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color=speciescolor)
 
         plots.append(pl)
         i=i+1

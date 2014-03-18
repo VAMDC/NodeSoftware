@@ -12,7 +12,8 @@ from django.conf import settings
 
 from cdmsportalfunc import *
 from forms import *
-
+import os
+from django.views.decorators.cache import cache_page
 #from django.views.decorators.csrf import csrf_protect
 #@csrf_protect
 
@@ -135,6 +136,7 @@ def contact(request):
     c=RequestContext(request,{})
     return render_to_response('cdmsportal/contact.html', c)
 
+@cache_page(60 * 15)
 def general(request):
     c=RequestContext(request,{})
     return render_to_response('cdmsportal/general.html', c)
@@ -269,7 +271,7 @@ def html_list(request, content='species'):
     
     return render_to_response('cdmsportal/species_table.html', c)
 
-
+@cache_page(60*15)
 def json_list(request, content='species'):
 
     response_dict={}
@@ -330,7 +332,9 @@ def catalog(request, id=None):
     otherParameters = getParameters4specie(id, "Other")
 
     pfhtml = getPartitionf4specie(id)
-    
+    nuclear_spin_isomers = NuclearSpinIsomers.objects.filter(specie=id)
+    for nsi in nuclear_spin_isomers:
+        pfhtml += "<br><br>" + getPartitionf4specie(id,nsi=nsi)
             
     # query files from database
     files = getFiles4specie(id)
@@ -474,7 +478,7 @@ def ajaxRequest(request):
             try:
                 result, speciesdata =  getspecies(url)
             except:
-                result = "<p> Invalid request </p>"
+                result, speciesdata = "<p> Invalid request </p>", []
         
             response_dict.update({'htmlcode' : result, 'speciesdata': speciesdata, 'message' : " Species ",})
         else:
@@ -530,3 +534,30 @@ def getfile(request,id):
     return response
 
 
+def download_data(request):
+    postvars = request.POST
+
+    baseurl = request.POST.get('nodeurl', settings.BASE_URL + settings.TAP_URLPATH)
+            
+    if 'url2' in request.POST:
+        return HttpResponseRedirect(request.POST['url2'])
+    else:    
+        postvars = QUERY(request.POST,baseurl = baseurl)
+        if postvars.url:
+            if  postvars.format.lower()=='xsams':
+                return HttpResponseRedirect(postvars.url)
+
+            
+
+
+def cdms_lite_download(request):
+    """
+    Returns the cdms_lite (sqlite3) database file
+    """
+#    data = open(os.path.join(settings.PROJECT_PATH,'/var/cdms/v1_0/NodeSoftware/nodes/cdms/cdms_lite_notrans.db.gz'),'r').read()
+#    return HttpResponseRedirect(settings.BASE_URL+settings.PORTAL_URLPATH +'login/?next=%s' % request.path)
+    return HttpResponseRedirect(settings.BASE_URL+'/static/cdms/cdms_lite.db.gz')
+
+
+
+    

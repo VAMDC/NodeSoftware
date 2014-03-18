@@ -282,7 +282,9 @@
 <xsl:element name="a">
   <xsl:attribute name="class">tooltip</xsl:attribute>
   <xsl:attribute name="title">
-Source: <xsl:value-of select="xsams10:SourceRef"/>
+Source: <xsl:for-each select="xsams10:EnergyWavelength/*/xsams10:SourceRef">
+<xsl:value-of select="."/><xsl:text> </xsl:text>
+</xsl:for-each>
 Method: <xsl:value-of select="xsams10:EnergyWavelength/*/@methodRef"/>
 </xsl:attribute>
         <xsl:apply-templates select="xsams10:EnergyWavelength"/>
