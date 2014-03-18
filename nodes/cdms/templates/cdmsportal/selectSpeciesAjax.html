@@ -4,15 +4,11 @@
 	  
 {% block content %}	  
 <div id="main">
-  <form name="PARAMETER" action="./{{action}}" style="background-color:transparent" class="yform full" role="application"  method="post">
+  <form name="PARAMETER" action="./{{action}}" class="yform full" role="application"  method="post">
  
 
-
-
-
-
   <!-- begin: #col1 - first float column -->
-    <div id="col1" style="background-color:white;" role="complementary">
+    <div id="col1"  role="complementary">
       <div id="col1_content" class="clearfix">      
 
 
@@ -27,7 +23,7 @@
       </div>
       <div class="type-text">
         <label for="molNameFilter">Molecule</label>
-        <input id="molNameFilter" onkeyup="applySpeciesFilter()" onblur="applySpeciesFilter()"  type="text" name="filterTag"> 
+        <input id="molNameFilter" onkeyup="applySpeciesFilter()" onmouseenter="applySpeciesFilter()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
       </div>
       <div class="type-text">
         <label for="molTrivNameFilter">Trivial&nbsp;Name</label>
@@ -53,28 +49,9 @@
   <div id="col3" role="main">
     <div id="col3_content" class="clearfix">
 
-    <!--
-      <fieldset>
-        <legend>Select Species</legend>
-    -->
-	      
       <input id="orderBy" type="hidden" name="T_OrderBy" value="E_TAG ASC">
       <input id="EID" type="hidden" name="T_EID" value="">
-      <fieldset class="full float_left" style="width:400px" >
-    <!--		
-      <h3 class="center"> 
-        <strong>SELECT</strong>&nbsp;<i>SPECIES.MOLECULES.ISOTOPOLOGS</i> 
-      </h3>
-    -->
-<!--
-	<div class='hlist'>
-          <ul>
-	  <li><a>CDMS species</a></li>
-	  <li><a>isotopologs</a></li>
-	  <li><a>molecules</a></li>
-          </ul>
-         </div>
--->
+      <fieldset class="full float_left" style="width:430px" >
 
         <div class="type-button center">  
 	  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="SPECIES" NAME="B_SPECIESLIST" onclick="displaySpeciesInfoBox('species');"> 
@@ -83,21 +60,13 @@
 	</div>
 	<br><br>
 
-      <!-- begin: #col1 - first float column -->
-
-
-<!--	{% block hint %}
-	{% endblock %}
--->		
 <script> 
 		species = [{% for specie in species_list %}'{{specie}}',{% endfor %}] 
 		isotopologs = [{% for inchikey in inchikey_list %}'{{inchikey}}',{% endfor %}] 
 		molecules = [{% for molecule in stoichio_list %}'{{molecule}}',{% endfor %}] 
 		$(document).ready(function() {
-		<!-- ajaxGetList('species'); -->
-		ajaxGetSpeciesList();
 
-<!-- ajaxGetSpeciesList(); -->
+		ajaxGetSpeciesList(-5);
 		});
 </script>
 
@@ -150,7 +119,7 @@
       </fieldset>
 
 
-	      <div class="subpage_main float_right" id="form_main" style="padding-left:10px;background-color:#F5F5F5;text-align:center;font-size:13px;-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);width:220px">
+	      <div class="subpage_main float_right" id="form_main" style="padding-left:10px;background-color:#F5F5F5;text-align:center;font-size:13px; -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);width:220px">
 <!--		<div style="margin-left:0em;padding-left:1em;padding-right:1em;background-color:#F0F0F0;width:190px" class="clearfix"> -->
 		  <div  style="text-align:left;width:180px;" class='float_left' >
 		    <div class="columnar speciesview isotopologview moleculeview" style="clear:left;min-height:2.5em">

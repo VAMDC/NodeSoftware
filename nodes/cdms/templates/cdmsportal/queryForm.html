@@ -2,16 +2,40 @@
 
 {% block menu_li_catalog %}class="active" {% endblock %}
 
+{% block second_navigation %}
+<div class="hlist" style="background:none;border-top-color:white;border-color:#e0e0e0;margin-top:0px">
+<!-- background-color:#f0f0f0;border-top-color:white;border-color:#e0e0e0;opacity:0.4">
+-->
+  <ul style="background-color:white; opacity:0.6">
+    <li><a href="#" onclick="$('.result').hide();$('#control').show();$('#nodes').hide();docShowSubpage('form_queryTrans');">Query</a></li>
+    <li><a href="#" onclick="$('#control').hide();$('.result').hide();$('#nodes').show();">Nodes</a></li>
+    <li><a href="#" onclick="$('#control').hide();$('.result').show();$('#nodes').hide();docShowSubpage('queryresult');">Result</a></li>
+ </ul>
+<ul class="result" style="display:none;background-color:white; float:right; opacity:0.5">
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_molecules').show();$('#list_atoms').show();">Species</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_states').show();">States</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_radiative').show();">Transitions</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_pfs').show();">Partition func.</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_collisions').show();">Collisions</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_functions').show();">Functions</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_sources').show();">Sources</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_methods').show();">Methods</a></li>
+  </ul>
+</div>
+{% endblock %}
+      
+{% block third_navigation %}
+      <div class="hlist result" style="display:none;background:None; background-color:white;border:solid;border-color:#f9f9f9;">
+	<ul>
+	  <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_molecules').show();$('#list_atoms').show();">Species</a></li>
+	</ul>
+      </div>
+{% endblock %}
+
+
 {% block content %}
 <form name="PARAMETER" aktion="cdms/showResults" class="yform full" method="post">
 
-<div class="hlist">
-  <ul>
-    <li><a href="#" onclick="$('#result').hide();$('#control').show();$('#nodes').hide();docShowSubpage('form_queryTrans');">Query</a></li>
-    <li><a href="#" onclick="$('#control').hide();$('#result').hide();$('#nodes').show();">Nodes</a></li>
-    <li><a href="#" onclick="$('#control').hide();$('#result').show();$('#nodes').hide();docShowSubpage('queryresult');">Result</a></li>
-  </ul>
-</div>
 
 <div id="main">
 
@@ -24,35 +48,11 @@
 </div>
 
 <!-- RESULT -->
-<div id="result" style="display:none;min-height:100ex;">
-  <!-- begin: #col1 - first float column -->
-  <div id="col1_r" style="background-color:white;width:5ex;" role="complementary">
-    <div id="col1_content" class="clearfix">
+<div id="result" class="result" style="display:none;min-height:100ex;">
 
-      <div style="width:5ex;" class="float_leftw">t
-        <div class='rotate' style='position:absolute;top:87ex;'> 
-          <div class="hlist" style='position:absolute;width:87ex;'>
-            <ul>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_functions').show();">Functions</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_sources').show();">Sources</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_methods').show();">Methods</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_pfs').show();">Partition func.</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_collisions').show();">Collisions</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_radiative').show();">Transitions</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_states').show();">States</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_molecules').show();$('#list_atoms').show();">Species</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="col3" style="margin-left:8ex;" role="main">
-    <div id="col3_content" class="clearfix">
       <div id ="queryresult" style="display:none;" class="subpage"> No query submitted yet. </div>
-    </div>
-  </div>
+
+
 
 </div>
 
@@ -169,10 +169,10 @@
    </fieldset>
 
 
-    <fieldset id="dbcontent">
-      <div class="legend">Content</div>
-<div id="nodelist" class="nodes" style="display:none;clear:both">Processing ...</div>
-    <div id="cdmsnode" class="nodes" style="clear:both">
+   <fieldset id="dbcontent">
+     <div class="legend">Content</div>
+     <div id="nodelist" class="nodes" style="display:none;clear:both">Processing ...</div>
+     <div id="jplcdmsnode" class="nodes" style="clear:both">
       <div class='vlist'><ul>
         <li id='nodehead' class='' style='height:7em;border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
             <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>Database</div>                                                         
@@ -218,6 +218,21 @@
           <div class='url' style='display:none'></div>
           <div class='' style=''>
             <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>CDMS</div>                                                         
+            <div class='status float_left' style='width:4em'></div>
+            <div class='numspecies float_left' style='width:4em'>0</div>
+            <div class='nummols float_left' style='width:4em'>0</div>
+            <div class='numstates float_left' style='width:4em'> 0</div>
+            <div class='numradtrans float_left' style='width:4em'> 0</div>
+            <div class='numcollisions float_left' style='width:4em'> 0</div>
+            <div class='numtrunc float_left' style='width:4em'> 0</div>
+          </div>
+          <div class='species' style='clear:both'></div> 
+        </li>
+        <li id='nodeJPL' class='vamdcnode' style='width:98%;border-width:1px;border-style:solid;border-color:black;padding:0.5em;margin:5px;background-color:#fafaff'>
+          <div class='nodeurl' style='display:none' id='JPL'>http://cdms.ph1.uni-koeln.de/jpl/tap/</div>
+          <div class='url' style='display:none'></div>
+          <div class='' style=''>
+            <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>JPL</div>       
             <div class='status float_left' style='width:4em'></div>
             <div class='numspecies float_left' style='width:4em'>0</div>
             <div class='nummols float_left' style='width:4em'>0</div>
