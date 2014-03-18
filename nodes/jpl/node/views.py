@@ -27,7 +27,7 @@ class QUERY(object ):
     """
 #    baseurl = "http://cdms.ph1.uni-koeln.de:8090/DjCDMS/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY="
      #sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
-    requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
+    requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&"
 
     def __init__(self, data, baseurl = settings.BASE_URL+settings.TAP_URLPATH, qformat = None):
         self.isvalid = True
@@ -73,11 +73,17 @@ class QUERY(object ):
         if len(self.url)==0:
             try:
                 self.query = self.data.get('QUERY',"").rstrip()
-                self.url = self.baseurl + self.requeststring + QueryDict(self.query).urlencode()
-            
             except:
                 self.query = ""
+            if self.query.strip() == 'SELECT ALL WHERE':
+                self.query = 'SELECT SPECIES'
+            try:
+                self.url = self.baseurl + self.requeststring + QueryDict("QUERY="+self.query).urlencode()
+            except:
                 self.url = None
+
+            print >> sys.stderr, "query = " + self.query
+            print >> sys.stderr, "url = " + self.url
 
         if len(self.orderby)>0 and 'ORDERBY' not in self.url:
             self.url += '&ORDERBY=%s' % self.orderby
@@ -155,8 +161,8 @@ def queryPage(request):
     id_list = request.POST.getlist('speciesIDs')
     inchikey_list = request.POST.getlist('inchikey')
     stoichio_list = request.POST.getlist('molecule')
-       
-    species_list = get_species_list(id_list)
+    
+    species_list = get_species_list(id_list, database = -0)
     isotopolog_list = Species.objects.filter(inchikey__in=inchikey_list)
     molecule_list = Species.objects.filter(molecule__stoichiometricformula__in=stoichio_list)
             
@@ -273,30 +279,45 @@ def html_list(request, content='species'):
 
 @cache_page(60*15)
 def json_list(request, content='species'):
+    """
+    Creates a list of species available in the database.
+    if field database is posted, the list is restricted to species with
+    origin == database
 
+    database: corresponds to origin - field in db (0:jpl, 5:cdms, <0: all)
+
+    returns type(<json>) list of species with species data.
+    """
+    try:
+        db = int(request.POST.get('database',0))
+    except ValueError:
+        db = 0
+    
     response_dict={}
     species_list=[]
-    for specie in get_species_list():
-        s = {'id':specie.id,
-             'molecule':specie.molecule.id,
-             'structuralformula':specie.molecule.structuralformula,
-             'stoichiometricformula':specie.molecule.stoichiometricformula,
-             'moleculesymbol':specie.molecule.symbol,
-             #'atom':specie.atom,             
-             'speciestag':specie.speciestag,
-             'name':specie.name,
-             'trivialname':specie.molecule.trivialname,
-             'isotopolog':specie.isotopolog,
-             'state':specie.state,
-             'state_html':specie.state_html(),
-             'inchikey':specie.inchikey,
-             'contributor':specie.contributor,
-             'version':specie.version,
-             'dateofentry':str(specie.dateofentry),
-             }
-
+    for specie in get_species_list(database = db):
+        try:
+            s = {'id':specie.id,
+                 'molecule':specie.molecule.id,
+                 'structuralformula':specie.molecule.structuralformula,
+                 'stoichiometricformula':specie.molecule.stoichiometricformula,
+                 'moleculesymbol':specie.molecule.symbol,
+                 #'atom':specie.atom,             
+                 'speciestag':specie.speciestag,
+                 'name':specie.name,
+                 'trivialname':specie.molecule.trivialname,
+                 'isotopolog':specie.isotopolog,
+                 'state':specie.state,
+                 'state_html':specie.state_html(),
+                 'inchikey':specie.inchikey,
+                 'contributor':specie.contributor,
+                 'version':specie.version,
+                 'dateofentry':str(specie.dateofentry),
+                 }
+        except:
+            pass
         species_list.append(s)
-    response_dict.update({'species' : species_list})
+    response_dict.update({'species' : species_list,'database' : db})
        
     return HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
 

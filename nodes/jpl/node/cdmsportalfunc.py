@@ -4,12 +4,15 @@ import sys
 from models import *
 from django.core.exceptions import ValidationError
 
-def get_species_list(spids = None):
+def get_species_list(spids = None, database = 0):
     """
     """
     # cdms only
-    molecules = Species.objects.filter(origin=0,archiveflag=0).order_by('speciestag')
-    #molecules = Species.objects.filter(origin=5,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
+    if database < 0:
+        molecules = Species.objects.filter(archiveflag=0).order_by('speciestag')
+    else:
+        molecules = Species.objects.filter(origin=database,archiveflag=0).order_by('speciestag')
+    #molecules = Species.objects.filter(origin=0,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
     #molecules = Species.objects.filter(archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
 
     if spids is not None:
@@ -173,7 +176,7 @@ def check_query(postvars):
         #tapxsams += "(" + " OR ".join([" InchiKey = '" + ikey + "'" for ikey in inchikeylist]) + ")"
 
         if len(id_list)>0:
-            spec_array.append( " OR ".join([" MoleculeSpeciesID = %s " % ikey  for ikey in id_list]) )
+            spec_array.append( " OR ".join([" SpeciesID = %s " % ikey  for ikey in id_list]) )
             
         if len(inchikeys)>0:
             spec_array.append( " OR ".join([" InchiKey = '%s' " % ikey  for ikey in inchikeys]) )
@@ -188,7 +191,7 @@ def check_query(postvars):
         htmlcode += "<a href='#' onclick=\"$('#a_form_species').click();$('#a_form_species').addClass('activeLink');\">"
         htmlcode += "(" + " OR ".join(spec_array) + ")"
     else:
-        htmlcode += "<a href='#' onclick=\"load_page('queryForm');\" ><p class='warning' >SPECIES: nothing selected => Click here to select species!</p></a>"
+        htmlcode += "<a href='#' onclick=\"load_page('queryForm');\" ><font style='color:red'>SPECIES: nothing selected => Click here to select species!</font></a>"
         
 
     htmlcode += "</li>"
@@ -306,8 +309,8 @@ def check_query(postvars):
 
     if not transition_filter: #if ((freqfrom is None) & (freqto is None)):
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">"
-        htmlcode += "<p style='background-color:#FFFF99' class='important'>No restrictions on transitions</p></a></li>"
-
+#        htmlcode += "<p style='background-color:#FFFF99' class='important'>No restrictions on transitions</p></a></li>"
+        htmlcode += "<i>All transitions</i></a></li>"
     #######################################
     # CREATE QUERY STRING FOR STATES
     #######################################
@@ -348,7 +351,7 @@ def check_query(postvars):
 
     if not state_filter:
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">"
-        htmlcode += "<p style='background-color:#FFFF99' class='important'>No restrictions on states</p></a></li>"
+        htmlcode += "<i>All states</i></a></li>"
     else:
         if ((energyfrom is not None) &( energyto is not None)):
             htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Energy between %s %s AND %s %s </a></li>" % (postvars['T_SEARCH_ENERGY_FROM'], 'cm<sup>-1</sup>', postvars['T_SEARCH_ENERGY_TO'], 'cm<sup>-1</sup>')
@@ -372,6 +375,8 @@ def check_query(postvars):
     else:
         tap=tapcdms
 
+    if tap.find('WHERE  AND')>-1:
+        tap = tap.replace('WHERE  AND ','WHERE ')
     htmlcode += "</ul>"
         
 #    return tapxsams, htmlcode
