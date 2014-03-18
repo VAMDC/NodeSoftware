@@ -64,10 +64,9 @@
 		species = [{% for specie in species_list %}'{{specie}}',{% endfor %}] 
 		isotopologs = [{% for inchikey in inchikey_list %}'{{inchikey}}',{% endfor %}] 
 		molecules = [{% for molecule in stoichio_list %}'{{molecule}}',{% endfor %}] 
-		$(document).ready(function() {
-
-		ajaxGetSpeciesList(-5);
-		});
+                $(document).ready(function() {
+                    ajaxGetSpeciesList(-5);
+		);
 </script>
 
         <div id="container_list" class="speciesview" style="height:380px;" >

@@ -36,7 +36,7 @@ RETURNABLES = {
 #'AtomStateRef':'AtomState.',
 #'AtomStateS':'AtomState.S',
 #'AtomStateS2':'AtomState.',
-#'AtomStateStatisticalWeight':'AtomState.',
+'AtomStateStatisticalWeight':'AtomState.degeneracy',
 'AtomStateTermLSL':'Component.L', #AtomState.attach_atomic_qn()',
 'AtomStateTermLSS':'Component.S', #AtomState.S',
 'AtomStateTotalAngMom':'AtomState.attach_atomic_qn()',

@@ -437,8 +437,6 @@ def returnResults(tap, LIMIT=None):
     # use tap.parsedSQL.columns instead of tap.requestables
     # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
-    
-    #transs = RadiativeTransitions.objects.filter(q,specie__origin=5,specie__archiveflag=0,dataset__archiveflag=0,energylower__gt=0)
     transs = RadiativeTransitions.objects.filter(q,specie__archiveflag=0,dataset__archiveflag=0,energylower__gt=0) 
     ntrans = transs.count()
 

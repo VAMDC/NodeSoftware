@@ -12,9 +12,15 @@ from django.conf import settings
 
 from cdmsportalfunc import *
 from forms import *
-
+import os
+from django.views.decorators.cache import cache_page
 #from django.views.decorators.csrf import csrf_protect
 #@csrf_protect
+
+FILENAME_XSAMS2HTML = settings.XSLT_DIR + 'convertXSAMS2html.xslt'
+FILENAME_XSAMS2RAD3D = settings.XSLT_DIR + 'convertXSAMS2Rad3d.xslt'
+FILENAME_MERGERADEX = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xslt'
+
 
 class QUERY(object ):
     """
@@ -23,7 +29,7 @@ class QUERY(object ):
      #sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
     requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY="
 
-    def __init__(self, data, baseurl = "http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/", qformat = None):
+    def __init__(self, data, baseurl = settings.BASE_URL+settings.TAP_URLPATH, qformat = None):
         self.isvalid = True
         self.errormsg = ''
         self.baseurl = baseurl.rstrip()  # remove white spaces from the right side
@@ -39,8 +45,8 @@ class QUERY(object ):
 
     def validate(self):
 
-        try: self.database = self.data.get('database','jpl')
-        except: self.database='jpl'
+        try: self.database = self.data.get('database','cdms')
+        except: self.database='cdms'
         
         try: self.freqfrom = self.data.get('T_SEARCH_FREQ_FROM',0)
         except: self.freqfrom = 0
@@ -75,7 +81,7 @@ class QUERY(object ):
 
         if len(self.orderby)>0 and 'ORDERBY' not in self.url:
             self.url += '&ORDERBY=%s' % self.orderby
-            
+
         # speciesID identifies only CDMS/JPL species
         try:
             self.speciesIDs = self.data.getlist('speciesIDs')
@@ -107,10 +113,17 @@ class QUERY(object ):
         if self.format == 'png':
             self.url = self.url.replace('XSAMS','png').replace("ALL","RadiativeTransitions")
 
+        # used only for radex:
+        if self.format == 'rad3d':
+            self.spec_url=self.data.get('spec_url','')
+            self.spec_speciesid = self.data.get('spec_speciesid','')
+            self.col_url = self.data.get('col_url','')
+            self.col_speciesid = self.data.get('col_speciesid','')
+
+#        print >> sys.stderr, self.query
         print >> sys.stderr, self.format
         print >> sys.stderr, self.url
         print >> sys.stderr, self.database
-
 
 
 def index(request):
@@ -123,6 +136,7 @@ def contact(request):
     c=RequestContext(request,{})
     return render_to_response('cdmsportal/contact.html', c)
 
+@cache_page(60 * 15)
 def general(request):
     c=RequestContext(request,{})
     return render_to_response('cdmsportal/general.html', c)
@@ -174,6 +188,7 @@ def query_form(request):
                               })
     return render_to_response('cdmsportal/querySpeciesAjax.html', c)
 
+
 def tools(request):
     """
     """
@@ -206,8 +221,8 @@ def selectSpecie(request):
     """
     species_list = get_species_list()
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
+#    return render_to_response('cdmsportal/selectSpeciesAjax.html', c)
     return render_to_response('cdmsportal/selectSpecies.html', c)
-
 
 def selectSpecie2(request):
     """
@@ -256,10 +271,41 @@ def html_list(request, content='species'):
     
     return render_to_response('cdmsportal/species_table.html', c)
 
+@cache_page(60*15)
+def json_list(request, content='species'):
+
+    response_dict={}
+    species_list=[]
+    for specie in get_species_list():
+        s = {'id':specie.id,
+             'molecule':specie.molecule.id,
+             'structuralformula':specie.molecule.structuralformula,
+             'stoichiometricformula':specie.molecule.stoichiometricformula,
+             'moleculesymbol':specie.molecule.symbol,
+             #'atom':specie.atom,             
+             'speciestag':specie.speciestag,
+             'name':specie.name,
+             'trivialname':specie.molecule.trivialname,
+             'isotopolog':specie.isotopolog,
+             'state':specie.state,
+             'state_html':specie.state_html(),
+             'inchikey':specie.inchikey,
+             'contributor':specie.contributor,
+             'version':specie.version,
+             'dateofentry':str(specie.dateofentry),
+             }
+
+        species_list.append(s)
+    response_dict.update({'species' : species_list})
+       
+    return HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
+
 
 def catalog(request, id=None):
     """
     Creates the documentation page for a specie
+
+    id: Database id of the specie
     """
 
     if id == None:
@@ -286,7 +332,9 @@ def catalog(request, id=None):
     otherParameters = getParameters4specie(id, "Other")
 
     pfhtml = getPartitionf4specie(id)
-    
+    nuclear_spin_isomers = NuclearSpinIsomers.objects.filter(specie=id)
+    for nsi in nuclear_spin_isomers:
+        pfhtml += "<br><br>" + getPartitionf4specie(id,nsi=nsi)
             
     # query files from database
     files = getFiles4specie(id)
@@ -303,50 +351,11 @@ def catalog(request, id=None):
     return render_to_response('cdmsportal/showDocumentation.html', c)
 
 
-def showResultsOld(request):
-    """
-    """
-
-    postvars = QUERY(request.POST)
-
-    if postvars.url:
-        if  postvars.format=='xsams':
-            try:
-                result = applyStylesheet(postvars.url, xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt')
-            except Exception,err:
-                result = err
-        elif  postvars.format=='rad3d':
-            result = "<pre>" + str(applyStylesheet(postvars.url, xsl = settings.BASE_PATH + "/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
-        elif postvars.format=='png':
-            result = "<img class='full' width='100%' src="+postvars.url+" alt='Stick Spectrum'>"
-        else:
-            result = "<pre>" + geturl(postvars.url) + "</pre>"
-    else:
-        result = "<p> Invalid request </p>"
-
-    try:
-        c=RequestContext(request,{"postvars": postvars, "result" : result})
-    except UnicodeError, e:
-        c=RequestContext(request,{"postvars": postvars, "result" : result.decode('utf-8')})
-        return render_to_response('cdmsportal/showResults.html', c)
-
-    except Exception, err:
-        c=RequestContext(request,{"postvars": postvars, "result" : err})
-
-    try:
-        return render_to_response('cdmsportal/showResults.html', c)
-    except UnicodeError, e:
-        c=RequestContext(request,{"postvars": postvars, "result" : result.decode('utf-8')})
-        return render_to_response('cdmsportal/showResults.html', c)
-    except Exception, err:
-        c=RequestContext(request,{"postvars": postvars, "result" : err})
-        return render_to_response('cdmsportal/showResults.html', c)
-
-
 
 
 def showResults(request):
     """
+    Returns the 'Result' - page. The result itself is retrieved via ajax request.
     """
 
     postvars = QUERY(request.POST)
@@ -388,29 +397,38 @@ def ajaxRequest(request):
             QUERYs, htmlcode = check_query(request.POST)
             response_dict.update({'QUERY' : QUERYs, 'htmlcode' : htmlcode, 'message' : " Tach "})
         elif request.POST['function'] == 'getVAMDCstats':
-            htmlcode = getHtmlNodeList()
-            response_dict.update({'htmlcode' : htmlcode, 'message' : " Statistics "})
+            htmlcode, nodes = getHtmlNodeList()            
+            response_dict.update({'htmlcode' : htmlcode, 'nodes': nodes, 'message' : " Statistics "})
         elif request.POST['function'] == 'ajaxQuery':
             ##### TEST TEST TEST TEST ###########
             # get result and return it via ajax
             #print >> sys.stderr, "url = " +request.POST['url']
             # just apply the stylesheet if a complete url has been posted
 
-            baseurl = request.POST.get('nodeurl','http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/')
+            baseurl = request.POST.get('nodeurl', settings.BASE_URL + settings.TAP_URLPATH)
             
             if 'url2' in request.POST:
                 htmlcode = str(applyStylesheet(request.POST['url2'],
-                                               xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'))
+                                               xsl = FILENAME_XSAMS2HTML))
             else:    
                 postvars = QUERY(request.POST,baseurl = baseurl)
                 print >> sys.stderr, "postvars.url = " +postvars.url
                 if postvars.url:
                     if  postvars.format.lower()=='xsams':
                         htmlcode = str(applyStylesheet(postvars.url,
-                                                       xsl = settings.BASE_PATH + '/nodes/jpl/static/xsl/convertXSAMS2html.xslt'))
-                    elif  postvars.format=='rad3d':
+                                                       xsl = FILENAME_XSAMS2HTML))
+                    elif  postvars.format=='rad3dx':
                         htmlcode = "<pre>" + str(applyStylesheet(postvars.url,
-                                                                 xsl = settings.BASE_PATH + "/nodes/jpl/static/xsl/convertXSAMS2Rad3d.xslt")) + "</pre>"
+                                                                 xsl = FILENAME_XSAMS2HTML)) + "</pre>"
+                    elif postvars.format=='rad3d':
+                        #ouput = str(applyRadex(postvars.url, xsl = FILENAME_MERGERADEX))
+#                        url4="http://batz.lpma.jussieu.fr:8080/tapservice_11_12/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29"
+                        url4="http://dev.vamdc.org/basecol/tapservice_12_07/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29"
+
+                        print >> sys.stderr, "col: %s\nspec: %s\n" % (postvars.col_url, postvars.spec_url)
+                        output = str(applyRadex(postvars.spec_url, species1=postvars.spec_speciesid, species2=postvars.col_speciesid, inurl2=postvars.col_url))
+                        
+                        htmlcode = "<pre>" + output + "</pre>"
                     elif postvars.format=='png':
                         htmlcode = "<img class='full' width='100%' src="+postvars.url+" alt='Stick Spectrum'>"
                     else:
@@ -458,11 +476,11 @@ def ajaxRequest(request):
             url=url.replace('comfort','XSAMS')
             print >> sys.stderr, "SPECQUERY: "+url
             try:
-                result =  getspecies(url)
+                result, speciesdata =  getspecies(url)
             except:
-                result = "<p> Invalid request </p>"
+                result, speciesdata = "<p> Invalid request </p>", []
         
-            response_dict.update({'htmlcode' : result, 'message' : " Species ",})
+            response_dict.update({'htmlcode' : result, 'speciesdata': speciesdata, 'message' : " Species ",})
         else:
             response_dict.update({'QUERY' : QUERYs, 'htmlcode' : "<p> HALLO </p>", 'message' : " Tach "})
     else:
@@ -478,14 +496,14 @@ def specieslist(request):
     Create the species selection - page for the admin-site from the species (model) stored in the database
     """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect('/DjJPL/cdms/login/?next=%s' % request.path)
+        return HttpResponseRedirect(settings.BASE_URL+settings.PORTAL_URLPATH +'login/?next=%s' % request.path)
 
     species_list = get_species_list()
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
     return render_to_response('cdmsadmin/selectSpecies.html', c)
 
 
-def queryspecies(request, baseurl = "http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/"):
+def queryspecies(request, baseurl = settings.BASE_URL + settings.TAP_URLPATH):
     
     requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+SPECIES"
     url = baseurl + requeststring
@@ -500,166 +518,46 @@ def queryspecies(request, baseurl = "http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/"
     return render_to_response('cdmsportal/showResults.html', c)
 
         
-def molecule(request):
 
-    if request.method == 'GET':
-        try:
-            molecule = Molecules.objects.get(pk=request.GET.get("id",0))
-            form = MoleculeForm(instance=molecule)
-        except Molecules.DoesNotExist:
-            form = MoleculeForm()
-            
-    elif request.method == 'POST':
-        molecule = Molecules.objects.get(pk=request.POST.get("id",0))        
-        form = MoleculeForm(request.POST,instance=molecule)
-        if form.is_valid():
-            form.save()
-        
-    else:
-        form = MoleculeForm()
+def getfile(request,id):
+    """
+    reads the content from an ascii-file from the database
+    and returns the file
 
-    return render_to_response('cdmsadmin/molecules.html', {
-        'form': form,
-        })
-
-
-def specie(request,id=None):
-
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect('/DjJPLdev/cdms/login/?next=%s' % request.path)
+    id: Database id of the file
+    """
+    f = Files.objects.get(pk=id)
+    response=HttpResponse(f.asciifile,mimetype='text/txt')
     
-    specie=None
-    if id: #request.method == 'GET':
-        try:
-            specie = Species.objects.get(pk=id)
-            form = SpecieForm(instance=specie)
-        except Species.DoesNotExist:
-            form = SpecieForm()
+    response['Content-Disposition'] = 'attachment; filename=%s'%(f.name)
+
+    return response
+
+
+def download_data(request):
+    postvars = request.POST
+
+    baseurl = request.POST.get('nodeurl', settings.BASE_URL + settings.TAP_URLPATH)
             
-    elif request.method == 'POST':
-        specie = Species.objects.get(pk=request.POST.get("id",0))        
-        form = SpecieForm(request.POST,instance=specie)
-        if form.is_valid():
-            form.save()
-        
-    else:
-        form = SpecieForm()
+    if 'url2' in request.POST:
+        return HttpResponseRedirect(request.POST['url2'])
+    else:    
+        postvars = QUERY(request.POST,baseurl = baseurl)
+        if postvars.url:
+            if  postvars.format.lower()=='xsams':
+                return HttpResponseRedirect(postvars.url)
 
-    if specie and specie.id:
-        datasets = Datasets.objects.filter(specie = specie.id)
-        files = Files.objects.filter(specie = specie.id)
-        atoms = AtomArray.objects.filter(specie = specie.id)
-        bonds = BondArray.objects.filter(specie = specie.id)
-        referenceids = SourcesIDRefs.objects.filter(specie = specie.id).values('referenceid')
-        references = Sources.objects.filter(pk__in=referenceids)
-        filters = QuantumNumbersFilter.objects.filter(specie = specie.id)
-
-        # query parameters from database
-        rotationalConstants = Parameter.objects.filter(specie = specie.id, type = "Rotational Constant").order_by('parameter')
-        dipoleMoments = Parameter.objects.filter(specie = specie.id, type =  "Dipole Moment").order_by('parameter')
-        partitionFunctions = Parameter.objects.filter(specie = specie.id, type =  "Partition function").order_by('parameter')
-        otherParameters = Parameter.objects.filter(specie = specie.id, type =  "Other").order_by('parameter')
-
-    else:
-        datasets = None
-        files = None
-        atoms = None
-        bonds = None
-        references = None
-        filters = None
-        rotationalConstants = None
-        dipoleMoments = None
-        partitionFunctions = None
-        otherParameters = None
-        
-    return render_to_response('cdmsadmin/species.html', {
-        'form': form,
-        'dataset_list': datasets,
-        'file_list': files,
-        'atom_list': atoms,
-        'bond_list': bonds,
-        'reference_list': references,
-        'filter_list': filters,
-        'rotconstant_list': rotationalConstants,
-        'dipolemoment_list': dipoleMoments,
-        'otherparameter_list': otherParameters,
-        'partitionfunction_list': partitionFunctions,
-        })
-
-
-def filters(request,id = None):
-    FilterFormSet = modelformset_factory(QuantumNumbersFilter, form=FilterForm, can_delete=True, extra=1)
-
-    if id: #request.method == 'GET':
-        #specieid = request.GET.get("specieid",0)
-        
-        try:
-            #filters = QuantumNumbersFilter.objects.filter(species=specieid)
-            filters = QuantumNumbersFilter.objects.filter(specie=id)
-            formset = FilterFormSet(queryset = filters)
-        except Species.DoesNotExist:
-            formset = FilterFormSet()
             
-    elif request.method == 'POST':
-        formset = FilterFormSet(request.POST, request.FILES)
-        if formset.is_valid():
-            # do something with the formset.cleaned_data
-            pass
-    else:
-        formset = FilterFormSet()
-    return render_to_response('cdmsadmin/filters.html', {'formset': formset})
+
+
+def cdms_lite_download(request):
+    """
+    Returns the cdms_lite (sqlite3) database file
+    """
+#    data = open(os.path.join(settings.PROJECT_PATH,'/var/cdms/v1_0/NodeSoftware/nodes/cdms/cdms_lite_notrans.db.gz'),'r').read()
+#    return HttpResponseRedirect(settings.BASE_URL+settings.PORTAL_URLPATH +'login/?next=%s' % request.path)
+    return HttpResponseRedirect(settings.BASE_URL+'/static/cdms/cdms_lite.db.gz')
 
 
 
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-from django.http import HttpResponseRedirect, HttpResponse
-from django.forms import Form,FileField,URLField,TextInput
-from django.core.exceptions import ValidationError
-
-from lxml import etree as e
-#xsl=e.XSLT(e.parse(open('/home/endres/Projects/vamdc/nodes/cdms/node/convertXSAMS2html.xslt')))
-xsl=e.XSLT(e.parse(open(settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt')))
-
-from urllib2 import urlopen
-
-class ConversionForm(Form):
-    infile = FileField(label='Input file',required=False)
-    inurl = URLField(label='Input URL',required=False,widget=TextInput(attrs={'size': 50, 'title': 'Paste here a URL that delivers an XSAMS document.',}))
-
-    def clean(self):
-        infile = self.cleaned_data.get('infile')
-        inurl = self.cleaned_data.get('inurl')
-        if (infile and inurl):
-            raise ValidationError('Give either input file or URL!')
-
-        if inurl:
-            try: data = urlopen(inurl)
-            except Exception,err:
-                raise ValidationError('Could not open given URL: %s'%err)
-        elif infile: data = infile
-        else:
-            raise ValidationError('Give either input file or URL!')
-
-        try: xml=e.parse(data)
-        except Exception,err:
-            raise ValidationError('Could not parse XML file: %s'%err)
-        try: self.cleaned_data['sme'] = xsl(xml)
-        except Exception,err:
-            raise ValidationError('Could not transform XML file: %s'%err)
-
-        return self.cleaned_data
-
-def xsams2html(request):
-    if request.method != 'POST':
-        ConvForm = ConversionForm()
-    else:
-        ConvForm = ConversionForm(request.POST, request.FILES)
-        if ConvForm.is_valid():
-            response=HttpResponse(ConvForm.cleaned_data['sme'],mimetype='text/csv')
-            response['Content-Disposition'] = \
-                'attachment; filename=%s.sme'% (ConvForm.cleaned_data.get('infile') or 'output')
-            return response
-
-    return render_to_response('cdmsportal/xsams2sme.html',
-            RequestContext(request,dict(conversion=ConvForm)))
+    
