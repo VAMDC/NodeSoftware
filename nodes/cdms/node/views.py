@@ -534,6 +534,22 @@ def getfile(request,id):
     return response
 
 
+def download_data(request):
+    postvars = request.POST
+
+    baseurl = request.POST.get('nodeurl', settings.BASE_URL + settings.TAP_URLPATH)
+            
+    if 'url2' in request.POST:
+        return HttpResponseRedirect(request.POST['url2'])
+    else:    
+        postvars = QUERY(request.POST,baseurl = baseurl)
+        if postvars.url:
+            if  postvars.format.lower()=='xsams':
+                return HttpResponseRedirect(postvars.url)
+
+            
+
+
 def cdms_lite_download(request):
     """
     Returns the cdms_lite (sqlite3) database file

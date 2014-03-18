@@ -655,7 +655,7 @@ Method: <xsl:value-of select="@methodRef"/>
     </dl>
   </xsl:template>
 -->
-  <xsl:template match="xsams10:PartitionFunction">
+  <xsl:template match="xsams10:PartitionFunction2">
     <table class="full" style="font-size:smaller">
     <caption> Partition functions for
 
@@ -679,6 +679,57 @@ Method: <xsl:value-of select="@methodRef"/>
     </table>
   </xsl:template>
 
+  <xsl:template match="xsams10:PartitionFunction">
+    <table class="full" style="font-size:smaller">
+    <caption> Partition functions for
+
+       <xsl:call-template name="species_name">
+         <xsl:with-param name="mol_id" select="../.."/>
+       </xsl:call-template>
+
+    </caption>
+    <thead><tr><th>T</th><th>Q</th></tr></thead>
+    <tbody>
+
+<xsl:variable name="temperatures">
+<xsl:choose>
+           <xsl:when test="xsams10:T/xsams10:LinearSequence">
+<xsl:call-template name="LinearSequence">
+         <xsl:with-param name="count" select="xsams10:T/xsams10:LinearSequence/@count"/>
+         <xsl:with-param name="initial" select="xsams10:T/xsams10:LinearSequence/@initial"/>
+         <xsl:with-param name="increment" select="xsams10:T/xsams10:LinearSequence/@increment"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="normalize-space(xsams10:T/xsams10:DataList)"/>
+</xsl:otherwise>
+</xsl:choose>  
+</xsl:variable>
+
+      <xsl:call-template name="datalist2row">
+        <xsl:with-param name="Tlist" select="normalize-space($temperatures)"/>
+        <xsl:with-param name="Qlist" select="normalize-space(xsams10:Q/xsams10:DataList)"/>
+      </xsl:call-template>
+    </tbody>
+    </table>
+  </xsl:template>
+
+  <xsl:template name="LinearSequence">
+    <xsl:param name="count"/>
+    <xsl:param name="increment"/>
+    <xsl:param name="initial"/>  
+    <xsl:value-of select="$initial"/>
+    <xsl:text> </xsl:text>
+    <xsl:if test="$count &gt; 1">
+       <xsl:call-template name="LinearSequence">
+         <xsl:with-param name="count" select="$count - 1"/>
+         <xsl:with-param name="initial" select="$initial + $increment"/>
+         <xsl:with-param name="increment" select="$increment"/>
+       </xsl:call-template>
+    </xsl:if>
+  </xsl:template>
+
+
   <xsl:template name="datalist2col">
     <xsl:param name="list"/>
     <xsl:param name="cell"/>
@@ -696,6 +747,26 @@ Method: <xsl:value-of select="@methodRef"/>
        <xsl:call-template name="datalist2col">
           <xsl:with-param name="list" select="$remaining"/>
           <xsl:with-param name="cell" select="$cell"/>
+       </xsl:call-template>
+    </xsl:if>
+  </xsl:template>
+
+
+  <xsl:template name="datalist2row">
+    <xsl:param name="Tlist"/>
+    <xsl:param name="Qlist"/>
+    <xsl:variable name="next_Tval" select="substring-before($Tlist,' ')"/>
+    <xsl:variable name="Tremaining" select="substring-after($Tlist,' ')"/>
+    <xsl:variable name="next_Qval" select="substring-before($Qlist,' ')"/>
+    <xsl:variable name="Qremaining" select="substring-after($Qlist,' ')"/>
+    <tr>
+      <td><xsl:value-of select="$next_Tval"/></td>
+      <td><xsl:value-of select="$next_Qval"/></td>
+    </tr>
+    <xsl:if test="$Tremaining">
+       <xsl:call-template name="datalist2row">
+          <xsl:with-param name="Tlist" select="$Tremaining"/>
+          <xsl:with-param name="Qlist" select="$Qremaining"/>
        </xsl:call-template>
     </xsl:if>
   </xsl:template>
