@@ -60,7 +60,7 @@ xmlns:xsl ="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/c
     -->
    <xsl:variable name="position_map_rtf">
      <xsl:call-template name="generate_statepos">
-       <xsl:with-param name="states" select="$molecule1/xsams10:Molecule/xsams10:MolecularState"/>
+       <xsl:with-param name="states" select="$molecule1/xsams10:MolecularState[not(@auxillary='true')]"/>
        </xsl:call-template>
    </xsl:variable>
    <xsl:variable name="position_map" select="exsl:node-set($position_map_rtf)"/>
@@ -76,7 +76,7 @@ xmlns:xsl ="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/c
           </xsl:when>
           <!-- slower: get SpeciesRef via UpperStateRef and StateID -->
           <xsl:otherwise>
-            <xsl:if test="key('molstate',xsams10:FinalStateRef)/../@speciesID=$species1">
+            <xsl:if test="key('molstate',xsams10:UpperStateRef)/../@speciesID=$species1">
                <xsl:copy-of select="."/> 
             </xsl:if>-
           </xsl:otherwise>
@@ -101,7 +101,7 @@ xmlns:xsl ="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/c
    <xsl:call-template name="radexoutput-radiative-header">
      <xsl:with-param name="num_transitions" select="count(//xsams10:RadiativeTransition)"/>
    </xsl:call-template>
-   <xsl:apply-templates select="//xsams10:RadiativeTransition">
+   <xsl:apply-templates select="//xsams10:RadiativeTransition[xsams10:SpeciesRef=$species1]">
      <xsl:with-param name="position_map" select="$position_map"/>
    </xsl:apply-templates>
 
@@ -138,7 +138,7 @@ xmlns:xsl ="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/c
    <!-- Get 'table' which contains a list of matches for states from species2 to states from species1 -->
    <xsl:variable name="mstates_rtf">
      <xsl:call-template name="merge-states">
-        <xsl:with-param name="states_return" select="$molecule1/xsams10:Molecule/xsams10:MolecularState"/>
+        <xsl:with-param name="states_return" select="$molecule1/xsams10:MolecularState[not(@auxillary='true')]"/>
         <xsl:with-param name="states_rest" select="$nodes2/xsams10:Species/xsams10:Molecules/xsams10:Molecule[@speciesID=$species2]/xsams10:MolecularState"/>
      </xsl:call-template>
    </xsl:variable>
@@ -147,8 +147,10 @@ xmlns:xsl ="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/c
    <!-- Output matches -->
    <xsl:message>Replace states of species2 by states of species1 </xsl:message>
    <xsl:for-each select="$mstates/replacestate">
-     <xsl:message><xsl:value-of select="which"/> by
-     <xsl:value-of select="by"/></xsl:message>
+     <xsl:message> 
+       <xsl:value-of select="which"/> by
+       <xsl:value-of select="by"/>
+     </xsl:message> 
    </xsl:for-each>
 
 
@@ -222,7 +224,7 @@ xmlns:xsl ="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/c
        </xsl:for-each>
      </xsl:variable>
  -->
-     <xsl:variable name="col_temps" select="$collisions/*[1]/xsams10:DataSets/xsams10:DataSet[@dataDescription='crossSection']/xsams10:TabulatedData/xsams10:X[@units='K']/xsams10:DataList"/>
+     <xsl:variable name="col_temps" select="$collisions/*[1]/xsams10:DataSets/xsams10:DataSet[@dataDescription='rateCoefficient']/xsams10:TabulatedData/xsams10:X[@units='K']/xsams10:DataList"/>
 
      <!-- calculate the number of temperatures. The information is taken from the first collisional transition.
         As the info is given as a list separated by spaces, some transformation is needed -->        
@@ -231,7 +233,7 @@ xmlns:xsl ="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/c
          <xsl:when test="count($collisions/*)>0">
            <xsl:call-template name="output-tokens">
              <xsl:with-param name="list">
-               <xsl:value-of select="concat('0#',$collisions/*[1]/xsams10:DataSets/xsams10:DataSet[@dataDescription='crossSection']/xsams10:TabulatedData/xsams10:X[@units='K']/xsams10:DataList)" />
+               <xsl:value-of select="concat('0#',$collisions/*[1]/xsams10:DataSets/xsams10:DataSet[@dataDescription='rateCoefficient']/xsams10:TabulatedData/xsams10:X[@units='K']/xsams10:DataList)" />
              </xsl:with-param>
            </xsl:call-template>
          </xsl:when>
@@ -273,10 +275,10 @@ xmlns:xsl ="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/c
     <xsl:value-of select="$molecule/xsams10:MolecularChemicalSpecies/xsams10:StableMolecularProperties/xsams10:MolecularWeight/xsams10:Value"/>
     <xsl:text>&#xa;</xsl:text>
     <xsl:text>!NUMBER OF ENERGY LEVELS&#xa;</xsl:text>
-    <xsl:value-of select = "count($molecule/xsams10:MolecularState)" /> 
+    <xsl:value-of select = "count($molecule/xsams10:MolecularState[not(@auxillary='true')])" /> 
     <xsl:text>&#xa;</xsl:text>
     <xsl:text>!LEVEL + ENERGIES(cm^-1) + WEIGHT + J&#xa;</xsl:text>
-        <xsl:apply-templates select="$molecule/xsams10:MolecularState"/>
+        <xsl:apply-templates select="$molecule/xsams10:MolecularState[not(@auxillary='true')]"/>
 
   </xsl:template>
 
@@ -305,24 +307,24 @@ xmlns:xsl ="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/c
 
   <xsl:template name="radexoutput-radiative" match="xsams10:RadiativeTransition">
        <xsl:param name="position_map"/>
-       <xsl:variable name="upperstate"><xsl:value-of select="xsams10:FinalStateRef"/></xsl:variable>
-       <xsl:variable name="lowerstate"><xsl:value-of select="xsams10:InitialStateRef"/></xsl:variable>
+       <xsl:variable name="upperstate"><xsl:value-of select="xsams10:UpperStateRef"/></xsl:variable>
+       <xsl:variable name="lowerstate"><xsl:value-of select="xsams10:LowerStateRef"/></xsl:variable>
 
        <xsl:value-of select="position()"/>
        <xsl:text>  </xsl:text>
        <xsl:value-of select="$position_map/*[@id=$upperstate]"/>
        <xsl:text>  </xsl:text>
-<!--       <xsl:value-of select="substring-after(xsams10:FinalStateRef,'-')"/>
+<!--       <xsl:value-of select="substring-after(xsams10:UpperStateRef,'-')"/>
        <xsl:text>  </xsl:text>-->
        <xsl:value-of select="$position_map/*[@id=$lowerstate]"/>
        <xsl:text>  </xsl:text>
-<!--       <xsl:value-of select="substring-after(xsams10:InitialStateRef,'-')"/>
+<!--       <xsl:value-of select="substring-after(xsams10:LowerStateRef,'-')"/>
        <xsl:text>  </xsl:text>-->
        <xsl:value-of select="format-number(xsams10:Probability/xsams10:TransitionProbabilityA/xsams10:Value,'0.0000000000 ')"/>
        <xsl:text>  </xsl:text>
        <xsl:value-of select="format-number(xsams10:EnergyWavelength/xsams10:Frequency/xsams10:Value * 0.001,'000000000.0000 ')"/>
        <xsl:text>  </xsl:text>
-       <xsl:value-of select="format-number(1.43877506* key('molstate',xsams10:FinalStateRef)/xsams10:MolecularStateCharacterisation/xsams10:StateEnergy/xsams10:Value,'.0000')"/>
+       <xsl:value-of select="format-number(1.43877506* key('molstate',xsams10:UpperStateRef)/xsams10:MolecularStateCharacterisation/xsams10:StateEnergy/xsams10:Value,'.0000')"/>
        <xsl:text>&#xa;</xsl:text>
 
   </xsl:template>
@@ -384,7 +386,7 @@ xmlns:xsl ="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/c
       <xsl:text>  </xsl:text>
       <xsl:value-of select="xsams10:Product[xsams10:SpeciesRef=$speciesid]/xsams10:StateRef"/>
       <xsl:text>  </xsl:text>
-      <xsl:value-of select="xsams10:DataSets/xsams10:DataSet[@dataDescription='crossSection']/xsams10:TabulatedData/xsams10:Y[@units='cm3/s']/xsams10:DataList"/>
+      <xsl:value-of select="xsams10:DataSets/xsams10:DataSet[@dataDescription='rateCoefficient']/xsams10:TabulatedData/xsams10:Y[@units='cm3/s']/xsams10:DataList"/>
       <xsl:text>&#xa;</xsl:text>
   </xsl:template>
 
