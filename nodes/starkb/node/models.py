@@ -161,6 +161,7 @@ class Transition(models.Model):
     temperature = models.FloatField()
     temperatureid = models.IntegerField(db_column='id_temperature')
     density = models.FloatField()
+    inchikey = models.CharField(max_length=27)
     class Meta:
         db_table = u'v_transitionsvamdc'    
 
@@ -172,6 +173,20 @@ class Transitiondata(models.Model):
     c = models.FloatField(null=True, blank=True)
     class Meta:
         db_table = u't_transitiondata'
+        
+        
+class FitCoefficient(models.Model):
+    id = models.IntegerField(primary_key=True)
+    transitiondata = models.ForeignKey(Transitiondata, db_column='id_transitiondata')
+    species = models.ForeignKey(Species, db_column='id_species')
+    a0 = models.FloatField(null=True, blank=True)
+    a1 = models.FloatField(null=True, blank=True)
+    a2 = models.FloatField(null=True, blank=True)
+    b0 = models.FloatField(null=True, blank=True)
+    b1 = models.FloatField(null=True, blank=True)
+    b2 = models.FloatField(null=True, blank=True)
+    class Meta:
+        db_table = u't_fitcoefficients'
 
         
 class Temperature(models.Model):

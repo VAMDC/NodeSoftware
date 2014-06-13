@@ -68,9 +68,6 @@ class Dataset(models.Model):
     class Meta:
         db_table = u't_dataset'      
 
-          
-
-
 
 class Authorsource(models.Model):
     id = models.IntegerField(primary_key=True)    
@@ -80,14 +77,6 @@ class Authorsource(models.Model):
     class Meta:
         db_table = u't_authorsource'    
 
-        
-'''class Dataset(models.Model):
-    id = models.IntegerField(primary_key=True)
-    molecule = models.ForeignKey(Molecule, db_column='id_molecule', related_name="molecule")
-    source = models.ForeignKey(Molecule, db_column='id_source')
-    class Meta:
-        db_table = u't_molecule'
-'''
 
 class Molecularstate(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -177,6 +166,7 @@ class Radiativetransition(models.Model):
     wavenumber_observed = models.FloatField()
     wavenumber_calculated = models.FloatField()
     oscillator_strength = models.FloatField()
+    inchikey = models.CharField(max_length=81)
     
     def getWavenumbers(self):      
         result = []        

@@ -53,6 +53,7 @@ RETURNABLES = {\
 'RadTransProbabilityWeightedOscillatorStrength' : 'RadTran.abs_weightedoscillatorstrength()',
 'RadTransUpperStateRef':'RadTran.upperatomicstate.id',
 'RadTransLowerStateRef':'RadTran.loweratomicstate.id',
+'RadTransSpeciesRef' : 'RadTran.version.atomicion.id', 
 'RadTransProbabilityA' : 'RadTran.transitionprobability',
 'RadTransProbabilityAUnit' : '1/s',
 
@@ -90,5 +91,6 @@ RESTRICTABLES = {\
 'IonCharge' : 'ioncharge',
 'AtomNuclearCharge' : 'nuclearcharge',
 'AtomSymbol' : 'elementsymbol',
+'InchiKey' : 'inchikey',
 }
 

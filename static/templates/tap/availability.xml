@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <?xml-stylesheet type="text/xsl" href="{{accessURL}}static/xsl/Availability.xsl"?>
 <ns3:availability xmlns:ns2="urn:astrogrid:schema:Capabilities" xmlns:ns3="http://www.ivoa.net/xml/VOSIAvailability/v1.0">
-<ns3:available>true</ns3:available>
+<ns3:available>{{ok}}</ns3:available>
 <ns3:upSince>2001-01-01T00:00:00.000+00:00</ns3:upSince>
-<ns3:note>This is a static reply, no real tests have been performed but chances are good that the service is up when you get this reply.</ns3:note>
+<ns3:note>{{message}}</ns3:note>
 </ns3:availability>
