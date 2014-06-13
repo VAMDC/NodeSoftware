@@ -1,0 +1,2 @@
+#!/bin/sh
+sudo -u vamdc gunicorn-pypy -D -t 120 -p /tmp/atom12.07-pypy.pid -w 3 -b unix:/tmp/valdgunic12.07.sock wsgi:application
