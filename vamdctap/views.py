@@ -266,8 +266,18 @@ def capabilities(request):
                                  })
     return render_to_response('tap/capabilities.xml', c, mimetype='text/xml')
 
+
+from django.db import connection
+def dbConnected():
+    try:
+        cursor=connection.cursor()
+        return ('true', 'service is available, database is connected.')
+    except:
+        return ('false', 'database is not connected')
+
 def availability(request):
-    c=RequestContext(request,{"accessURL" : getBaseURL(request)})
+    (status, message) = dbConnected()
+    c=RequestContext(request,{"accessURL" : getBaseURL(request), 'ok' : status, 'message' : message})
     return render_to_response('tap/availability.xml', c, mimetype='text/xml')
 
 def tables(request):

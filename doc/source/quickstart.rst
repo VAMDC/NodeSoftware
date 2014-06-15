@@ -109,7 +109,7 @@ settings file (see examples in the file) - once you register with VAMDC these wi
 test your node's status.
 
 The Django test server should *never* be used for anything but
-debugging. See the `documentation <http://www.vamdc.org/documents/nodesoftware/deply.html>`_
+debugging. See the `documentation <http://www.vamdc.org/documents/nodesoftware/deploy.html>`_
 for instructions on setting up a full-fledged webserver and proxy to serve your data.
 
 

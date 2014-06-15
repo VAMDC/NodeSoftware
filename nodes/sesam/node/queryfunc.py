@@ -35,7 +35,7 @@ def setupResults(sql):
 	"""
 	result = None
 	# return all species
-	if str(sql) == 'select species': 
+	if str(sql).strip().lower() == 'select species': 
 		result = setupSpecies()
 	# all other requests
 	else:		
@@ -69,7 +69,7 @@ def setupVssRequest(sql, limit=2000):
 
     result = util_models.Result()
     q = sql2Q(sql)    
-
+    log.debug(q)
     #select transitions : combination of density/temperature
     transs = models.Radiativetransition.objects.filter(q)
     ntranss=transs.count()
@@ -171,11 +171,7 @@ def getSpeciesWithStates(transs):
             up = spec_transitions.values_list('upperstate',flat=True)
             lo = spec_transitions.values_list('lowerstate',flat=True)
             sids = set(chain(up, lo))
-            getStates(specie, sids)
-            
-            #for i in range(len(specie.States)):
-            #    specie.States[i].Sources = getDatasetSources(specie.States[i].Components[0].dataset.pk)
-
+            getStates(specie, sids)            
             nstates += len(specie.States)
         except ObjectDoesNotExist as e:
             log.debug(str(e)) 
@@ -184,10 +180,22 @@ def getSpeciesWithStates(transs):
     return species, nspecies, nstates  
     
 def getStates(specie, sids):
-    states = models.Molecularstate.objects.filter( pk__in = sids )
+    states = models.Molecularstate.objects.filter(pk__in = sids)
+    datasets = states.values_list('dataset__pk',flat=True).distinct()
+    #energy origin
+    origin = models.Molecularstate.objects.filter(dataset__in = datasets, energy=0)[0]
+    
     for state in states:        
         state.Case = models.Case.objects.get( molecularstate = state.id)
         state.SubCase = state.Case.getSubCase()
-    specie.States = states   
+        state.origin = origin.pk
+        
+    origin.Case = models.Case.objects.get( molecularstate = origin.id)
+    origin.SubCase = origin.Case.getSubCase()
+    origin.origin = origin.pk       
+        
+    result_list = list(chain(states, [origin]))
+        
+    specie.States = result_list
 
     
