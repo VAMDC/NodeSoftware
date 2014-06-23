@@ -91,7 +91,9 @@ class TAPQUERY(object):
 
     def validate(self):
         try: self.lang = lower(self.request['LANG'])
-        except: self.errormsg = 'Cannot find LANG in request.\n'
+        except:
+            log.debug('LANG is empty, assuming VASS2')
+            self.lang='vss2'
         else:
             if self.lang not in ('vss1','vss2'):
                 self.errormsg += 'Only LANG=VSS1 or LANG=VSS2 is supported.\n'
@@ -100,7 +102,12 @@ class TAPQUERY(object):
         except: self.errormsg += 'Cannot find QUERY in request.\n'
 
         try: self.format=lower(self.request['FORMAT'])
-        except: self.errormsg += 'Cannot find FORMAT in request.\n'
+        except:
+            log.debug('FORMAT is empty, assuming XSAMS')
+            self.format='xsams'
+        else:
+            if self.format != 'xsams':
+                log.debug('Requested FORMAT is not XSAMS, letting it pass anyway.')
 
         try: self.parsedSQL=SQL.parseString(self.query,parseAll=True)
         except: # if this fails, we're done
@@ -229,7 +236,7 @@ def sync(request):
                     return HttpResponse('', status=204)
             except: pass
     else:
-        log.warn('Query function did not return information for HTTP-headers.')
+        log.debug('Query function did not return information for HTTP-headers.')
 
 #    elif tap.format == 'votable':
 #        transs,states,sources=QUERYFUNC.setupResults(tap)
@@ -256,11 +263,22 @@ def capabilities(request):
                                  "SOFTWARE_VERSION" : settings.NODESOFTWARE_VERSION,
                                  "EXAMPLE_QUERIES" : settings.EXAMPLE_QUERIES,
                                  "MIRRORS" : settings.MIRRORS,
+                                 "APPS" : settings.VAMDC_APPS,
                                  })
     return render_to_response('tap/capabilities.xml', c, mimetype='text/xml')
 
+
+from django.db import connection
+def dbConnected():
+    try:
+        cursor=connection.cursor()
+        return ('true', 'service is available, database is connected.')
+    except:
+        return ('false', 'database is not connected')
+
 def availability(request):
-    c=RequestContext(request,{"accessURL" : getBaseURL(request)})
+    (status, message) = dbConnected()
+    c=RequestContext(request,{"accessURL" : getBaseURL(request), 'ok' : status, 'message' : message})
     return render_to_response('tap/availability.xml', c, mimetype='text/xml')
 
 def tables(request):

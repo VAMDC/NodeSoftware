@@ -77,5 +77,11 @@ RESTRICTABLES = {\
 'IonCharge' : 'ioncharge',
 'AtomNuclearCharge' : 'nuclearcharge',
 'AtomSymbol' : 'elementsymbol',
+'target.IonCharge' : 'ioncharge',
+'target.AtomNuclearCharge' : 'nuclearcharge',
+'target.AtomSymbol' : 'elementsymbol',
+'ParticleName': 'collider__name',
+'collider.ParticleName': 'collider__name',
+#'ParticleName' : 'electron',
 }
 
