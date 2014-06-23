@@ -21,6 +21,7 @@
         {% if EXAMPLE_QUERIES %}{% for query in EXAMPLE_QUERIES %}<sampleQuery>{{query}}</sampleQuery>{% endfor %}{% endif %}
         {% if RETURNABLES %}{% for returnable in RETURNABLES %}<returnable>{{ returnable }}</returnable>{% endfor %}{% endif %}
         {% if RESTRICTABLES %}{% for restrictable in RESTRICTABLES %}<restrictable>{{ restrictable }}</restrictable>{% endfor %}{% endif %}
+        {% if APPS %}{% for app in APPS %}<application>{{ app }}</application>{% endfor %}{% endif %}
     </capability>
     <capability standardID='ivo://ivoa.net/std/TAP'>
         <interface xsi:type='vs:ParamHTTP'>

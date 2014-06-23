@@ -35,6 +35,17 @@ ADMINS = (('Thomas', 'thomas@marquart.se'),)
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
 DEPLOY_URL = 'http://vald.astro.uu.se/atoms-12.07/tap/'
 
+VAMDC_APPS = [\
+    "ivo://vamdc/atomicxsams2html",
+    "ivo://vamdc/xsams-mux",
+    "ivo://vamdc/xsams2sme",
+    "ivo://vamdc/XSAMS-bibtex",
+    "ivo://vamdc/xsams-views",
+#    "ivo://vamdc/",
+#    "ivo://vamdc/",
+#    "ivo://vamdc/",
+    ]
+
 LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode12.07.log'
 if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'
