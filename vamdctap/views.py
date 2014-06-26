@@ -157,7 +157,7 @@ class TAPQUERY(object):
     def __str__(self):
         return '%s'%self.query
 
-def addHeaders(headers,response):
+def addHeaders(headers,request,response):
     HEADS=['COUNT-SOURCES',
            'COUNT-ATOMS',
            'COUNT-MOLECULES',
@@ -171,9 +171,14 @@ def addHeaders(headers,response):
 
     headers = CaselessDict(headers)
 
+    headlist_asString=''
     for h in HEADS:
         if headers.has_key(h):
             response['VAMDC-'+h] = '%s'%headers[h]
+            headlist_asString += 'VAMDC-'+h+', '
+
+    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Expose-Headers'] = headlist_asString[:-2]
 
     lastmod = headers.get('LAST-MODIFIED')
     if not lastmod and hasattr(settings,'LAST_MODIFIED'):
@@ -188,7 +193,20 @@ def addHeaders(headers,response):
 
     return response
 
+def CORS_request(request):
+    """ Allow cross-server requests http://www.w3.org/TR/cors/ """
+    log.info('CORS-Request from %s: %s'%(request.META['REMOTE_ADDR'],request.REQUEST))
+    response = HttpResponse('', status=200)
+    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Allow-Methods'] = 'HEAD'
+    response['Access-Control-Allow-Headers'] = 'VAMDC'
+
+    return response
+
 def sync(request):
+    if request.method=='OPTIONS':
+        return CORS_request(request)
+
     log.info('Request from %s: %s'%(request.META['REMOTE_ADDR'],request.REQUEST))
     tap=TAPQUERY(request)
     if not tap.isvalid:
@@ -210,7 +228,9 @@ def sync(request):
 
     if not querysets:
         log.info('setupResults() gave something empty. Returning 204.')
-        return HttpResponse('', status=204)
+        response=HttpResponse('', status=204)
+        response['Access-Control-Allow-Origin'] = '*'
+        return response
 
     log.debug('Requestables: %s'%tap.requestables)
 
@@ -224,24 +244,17 @@ def sync(request):
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
         datetime.datetime.now().isoformat(), tap.format)
 
-    if 'HeaderInfo' in querysets:
-        response=addHeaders(querysets['HeaderInfo'],response)
-
-        # Override with empty response if result is empty
-        if 'VAMDC-APPROX-SIZE' in response:
-            try:
-                size = float(response['VAMDC-APPROX-SIZE'])
-                if size == 0.0:
-                    log.info('Empty result')
-                    return HttpResponse('', status=204)
-            except: pass
-    else:
-        log.debug('Query function did not return information for HTTP-headers.')
-
-#    elif tap.format == 'votable':
-#        transs,states,sources=QUERYFUNC.setupResults(tap)
-#        generator=votable(transs,states,sources)
-#        response=HttpResponse(generator,mimetype='text/xml')
+    headers = querysets.get('HeaderInfo') or {}
+    response=addHeaders(headers,request,response)
+    # Override with empty response if result is empty
+    if 'VAMDC-APPROX-SIZE' in response:
+        try:
+            size = float(response['VAMDC-APPROX-SIZE'])
+            if size == 0.0:
+                log.info('Empty result')
+                response.status_code=204
+                return response
+        except: pass
 
     return response
 
