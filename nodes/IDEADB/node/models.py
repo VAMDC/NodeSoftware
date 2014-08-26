@@ -24,6 +24,8 @@ re = re.compile('^([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+$')
 def validate_CAS(cas):
     sum=0
     cas_arr = cas.split('-')
+    if len(cas_arr) < 3:
+        raise ValidationError(u'%s is not a valid CAS-number!' % cas)
     length = len(cas_arr[0])+2
     for x in cas_arr[0]:
         sum = sum + length*int(x)
