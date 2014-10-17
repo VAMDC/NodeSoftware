@@ -54,6 +54,14 @@ from vamdclib.settings import *
     
 ##    return charge + num_protons
 
+def get_node_list():
+    """
+    Returns a list of all nodes which are stored in the speciesdatabase
+    """
+    nodes = VamdcMemberDatabases.objects.all()
+
+    return nodes
+
 def get_node(nodename):
     """
     Returns a node instance of the node specified by the short_name
@@ -87,8 +95,8 @@ def get_species(nodename):
     query = q.Query()
     request = r.Request()
 
-    
-    query_string = "SELECT SPECIES" 
+    query_string = "SELECT SPECIES"
+    query_string = "SELECT SPECIES WHERE ((InchiKey!='UGFAIRIUMAVXCW'))" 
     request.setnode(node)
     request.setquery(query_string)
 
@@ -200,7 +208,10 @@ def process_species(nodename, checkonly = False):
         # Insert names for the specie
         # The element ChemicalName cannot be repeated in current XSAMS versions. A list
         # of names has to be separated by ', ' therefore.
-        names = molecule.ChemicalName.split(', ')
+        try:
+            names = molecule.ChemicalName.split(', ')
+        except AttributeError:
+            names = []
         for name in names:
             insert_species_name(id, name, checkonly = checkonly)
 
@@ -265,22 +276,25 @@ def insert_molecule(molecule, member_db_id = 0, checkonly = False):
         print "DETERMINED Formula: %s" % molecule.StoichiometricFormula
 
     try:
-        if molecular_weight != int(molecule.MolecularWeight):
-            print "MISMATCH mass: %d does not match %d" % (molecular_weight, int(molecule.MolecularWeight))
+        if molecular_weight != int(float(molecule.MolecularWeight)):
+           print "MISMATCH mass: %d does not match %d" % (molecular_weight, int(float(molecule.MolecularWeight)))
     except AttributeError:
         print "DETERMINED mass: %d" % molecular_weight 
         
     if checkonly == False:
         specie = VamdcSpecies()
+ 
+        type_2 = VamdcSpeciesTypes.objects.get(id = 2)
+        member_database = VamdcMemberDatabases.objects.get(id = member_db_id)
         
         specie.id = inchikey
         specie.inchi = inchi
         specie.inchikey = inchikey
         specie.inchikey_duplicate_counter = 1
         specie.stoichiometric_formula = stoichiometricformula
-        specie.species_type = 2
+        specie.species_type = type_2
         specie.created = datetime.now()
-        specie.member_database = member_db_id
+        specie.member_database = member_database
         specie.mass_number = molecular_weight
         specie.charge = charge
 
@@ -328,6 +342,9 @@ def insert_atom(atom, member_db_id = 0, checkonly = False):
     elif len(ids) > 1:
         return None
 
+    print "Insert Atom: %s" % atom.InChIKey
+    print ids
+
     try:
         inchi = atom.InChI
     except:
@@ -350,20 +367,26 @@ def insert_atom(atom, member_db_id = 0, checkonly = False):
         if massnumber != int(atom.MassNumber):
             print "MISMATCH mass: %d does not match %d" % (massnumber, int(atom.MassNumber))
     except AttributeError:
+        atom.MassNumber = massnumber
         print "DETERMINED mass: %d" % massnumber
         
     if checkonly == False:
+        type_1 = VamdcSpeciesTypes.objects.get(id = 1)
+        member_database = VamdcMemberDatabases.objects.get(id = member_db_id)
         specie = VamdcSpecies()
         
         specie.id = atom.InChIKey
-        specie.inchi = atom.InChI
+        if atom.InChI[:6] == 'InChI=':
+            specie.inchi = atom.InChI
+        else:
+            specie.inchi = 'InChI='+atom.InChI
         specie.inchikey = atom.InChIKey
         specie.inchikey_duplicate_counter = 1
         specie.stoichiometric_formula = stoichiometricformula
-        specie.species_type = 2
+        specie.species_type = type_1
         specie.created = datetime.now()
-        specie.member_database = member_db_id
-        specie.mass_number = atom.massnumber
+        specie.member_database = member_database
+        specie.mass_number = atom.MassNumber
         specie.charge = charge
         
         #    charge = m.Charge
@@ -401,11 +424,13 @@ def insert_structural_formula(id, formula, checkonly = False):
             search_priority = 1
 
         if checkonly == False:
+            specie = VamdcSpecies.objects.get(id = id)
+            m_type_1 = VamdcMarkupTypes.objects.get(id = 1)
             structformula = VamdcSpeciesStructFormulae()
-            structformula.species = id
+            structformula.species = specie
             structformula.formula = formula
             # Currently only pure text markup-type can be retrieved via XSAMS
-            structformula.markup_type = 1
+            structformula.markup_type = m_type_1
             structformula.search_priority = search_priority
             structformula.created = datetime.now()
 
@@ -421,6 +446,8 @@ def insert_species_name(id, name, checkonly = False):
     # Check if it is already in the species-database
     names = VamdcSpeciesNames.objects.filter(species = id, name = name)
 
+    m_type_1 = VamdcMarkupTypes.objects.get(id = 1)
+
     # Insert name into the species-database if not found
     if len(names) == 0:
 
@@ -428,16 +455,17 @@ def insert_species_name(id, name, checkonly = False):
         # will be added with the highest priority
         search_priorities = VamdcSpeciesNames.objects.filter(species = id).values_list("search_priority", flat = True)
         if len(search_priorities)>0:
-            search_priority = max(search_priorities)
+            search_priority = max(search_priorities)+1
         else:
             search_priority = 1
 
         if checkonly == False:
+            specie = VamdcSpecies.objects.get(id = id)
             speciesname = VamdcSpeciesNames()
-            speciesname.species = id
+            speciesname.species = specie
             speciesname.name = name
             # Currently only pure text markup-type can be retrieved via XSAMS
-            speciesname.markup_type = 1
+            speciesname.markup_type = m_type_1 
             speciesname.search_priority = search_priority
             speciesname.created = datetime.now()
             
@@ -449,17 +477,25 @@ def insert_member_db_speciesid(id, member_db_id, speciesid, checkonly = False):
     """
     Inserts the Species-ID available at a specific database node into
     the species-database. 
+
+    id = VamdcSpeciesID (Inchikey)
+    member_db_id = id of the database node
+    speciesid = id of the specie in the database node
+    checkonly = Boolean (False if the data is inserted in the database, otherwise it is only printed)
     """
     # Check if it is already in the species-database
     dbidentifier = VamdcMemberDatabaseIdentifiers.objects.filter(species = id, member_database = member_db_id, database_species_id = speciesid)
-
-    # Insert database-species-id into the species-database if not found
+    print "%20s %2d %20s" % (id, member_db_id, speciesid)
+   # Insert database-species-id into the species-database if not found
     if len(dbidentifier) == 0:
 
         if checkonly == False:
+            specie = VamdcSpecies.objects.get(id = id)
+            member_database = VamdcMemberDatabases.objects.get(id = member_db_id)
+
             dbidentifier = VamdcMemberDatabaseIdentifiers()
-            dbidentifier.species = id
-            dbidentifier.member_database = member_db_id
+            dbidentifier.species = specie
+            dbidentifier.member_database = member_database
             dbidentifier.database_species_id = speciesid
             
             dbidentifier.save()

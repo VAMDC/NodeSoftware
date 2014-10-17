@@ -365,7 +365,7 @@ def setupResults(sql):
 
     # this header info is used in xsams-header-info (html-request)
     headerinfo={\
-        'Truncated':"100", # CDMS will not truncate data (at least for now)
+        'Truncated':"0", # CDMS will not truncate data (at least for now)
         'count-sources':nsources, 
         'count-species':nspecies,
         'count-molecules':nmolecules,
@@ -437,7 +437,7 @@ def returnResults(tap, LIMIT=None):
     # use tap.parsedSQL.columns instead of tap.requestables
     # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
-    transs = RadiativeTransitions.objects.filter(q,specie__archiveflag=0,dataset__archiveflag=0,energylower__gt=0) 
+    transs = RadiativeTransitions.objects.filter(q,specie__archiveflag=0,dataset__archiveflag=0) #,energylower__gt=0) 
     ntrans = transs.count()
 
     if LIMIT is not None and ntrans > LIMIT:

@@ -164,7 +164,9 @@
       <INPUT TYPE="HIDDEN" NAME="col_speciesid" id="col_speciesid" VALUE="">
 
       <div class="type-button float_right radexsubmit">
-        <INPUT id="button1" TYPE="button" NAME="T_SEARCH" onclick='$("#control").hide();ajaxQuery("ajaxQuery","http://cdms.ph1.uni-koeln.de/cdms/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+ALL+WHERE+%28+InchiKey+=+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27+%29&ORDERBY=frequency","http://cdms.ph1.uni-koeln.de/cdms/tap/");$("#result").show();docShowSubpage("queryresult");' VALUE="QUERY" >
+          <INPUT id="button2" TYPE="button" NAME="T_SEARCH" onclick='ajaxDownload("ajaxQuery","http://cdms.ph1.uni-koeln.de/cdms/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+ALL+WHERE+%28+InchiKey+=+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27+%29&ORDERBY=frequency","http://cdms.ph1.uni-koeln.de/cdms/tap/");' VALUE="Download" >
+
+          <INPUT id="button1" TYPE="button" NAME="T_SEARCH" onclick='$("#control").hide();ajaxQuery("ajaxQuery","http://cdms.ph1.uni-koeln.de/cdms/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+ALL+WHERE+%28+InchiKey+=+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27+%29&ORDERBY=frequency","http://cdms.ph1.uni-koeln.de/cdms/tap/");$("#result").show();docShowSubpage("queryresult");' VALUE="QUERY" >
       </div>
    </fieldset>
 

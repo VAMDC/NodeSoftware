@@ -65,7 +65,7 @@
 		isotopologs = [{% for inchikey in inchikey_list %}'{{inchikey}}',{% endfor %}] 
 		molecules = [{% for molecule in stoichio_list %}'{{molecule}}',{% endfor %}] 
                 $(document).ready(function() {
-                    ajaxGetSpeciesList(-5);
+                    ajaxGetSpeciesList(5);
                 });
 </script>
 
