@@ -215,7 +215,8 @@ def logCentral(sync):
                             ).strftime('%Y-%m-%dT%H:%M:%S%z'),
                         'serviceSource': 'NodeID: ' + NODEID,
                       }
-            librequests.post(settings.CENTRAL_LOGGER_URL,params=logdata)
+            logreq = librequests.post(settings.CENTRAL_LOGGER_URL,params=logdata)
+            log.debug('Request to central logger retuned code: %s'%logreq.status_code)
         return response
     return wrapper
 
