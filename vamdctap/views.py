@@ -158,7 +158,7 @@ class TAPQUERY(object):
     def __str__(self):
         return '%s'%self.query
 
-def addHeaders(headers,response):
+def addHeaders(headers,request,response):
     HEADS=['COUNT-SOURCES',
            'COUNT-ATOMS',
            'COUNT-MOLECULES',
@@ -172,9 +172,14 @@ def addHeaders(headers,response):
 
     headers = CaselessDict(headers)
 
+    headlist_asString=''
     for h in HEADS:
         if headers.has_key(h):
             response['VAMDC-'+h] = '%s'%headers[h]
+            headlist_asString += 'VAMDC-'+h+', '
+
+    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Expose-Headers'] = headlist_asString[:-2]
 
     lastmod = headers.get('LAST-MODIFIED')
     if not lastmod and hasattr(settings,'LAST_MODIFIED'):
