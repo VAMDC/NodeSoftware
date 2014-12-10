@@ -19,12 +19,11 @@ NODESOFTWARE_VERSION = '12.07r1-rc'
 # root path of the VAMDC install on your system (should be automatically set)
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_PATH)
-sys.path.append(BASE_PATH+'/nodes')
 NODENAME = os.path.basename(os.path.dirname(__file__))
-NODEPKG= NODENAME+'.node'
+NODEPKG = 'node'
 
 # Where to load url info from
-ROOT_URLCONF = NODENAME+'.urls'
+ROOT_URLCONF = 'urls'
 
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email).
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
