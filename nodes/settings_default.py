@@ -46,6 +46,9 @@ SERVE_STATIC = True
 # MIRROR sites
 MIRRORS = []
 
+# Preferred applications that work with the node
+VAMDC_APPS = []
+
 ###################################################
 # Database connection
 # Setting up the database type and information.
@@ -216,3 +219,6 @@ LOGGING = {
         },
     }
 }
+
+CENTRAL_LOGGER_URL = 'http://pdl-calc2.obspm.fr:8081/VamdcLog/LogWriter'
+
