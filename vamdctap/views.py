@@ -207,7 +207,7 @@ def CORS_request(request):
 def logCentral(sync):
     def wrapper(request, *args, **kwargs):
         response = sync(request, *args, **kwargs)
-        if request.method == 'GET' and response.status_code == 200:
+        if request.method == 'GET' and response.status_code == 200 and not settings.DEBUG:
             logdata = { 'clientIp': request.META['REMOTE_ADDR'],
                         'requestContent': request.GET.get('QUERY'),
                         'requestDate': datetime.datetime.now(\
@@ -216,7 +216,8 @@ def logCentral(sync):
                         'serviceSource': 'NodeID: ' + NODEID,
                       }
             logreq = librequests.post(settings.CENTRAL_LOGGER_URL,params=logdata)
-            log.debug('Request to central logger retuned code: %s'%logreq.status_code)
+            if logreq.status_code != 200:
+                log.warn('Request to central logger retuned code: %s'%logreq.status_code)
         return response
     return wrapper
 
@@ -296,7 +297,7 @@ def capabilities(request):
                                  "MIRRORS" : settings.MIRRORS,
                                  "APPS" : settings.VAMDC_APPS,
                                  })
-    return render_to_response('tap/capabilities.xml', c, mimetype='text/xml')
+    return render_to_response('tap/capabilities.xml', c, content_type='text/xml')
 
 
 from django.db import connection
@@ -310,11 +311,11 @@ def dbConnected():
 def availability(request):
     (status, message) = dbConnected()
     c=RequestContext(request,{"accessURL" : getBaseURL(request), 'ok' : status, 'message' : message})
-    return render_to_response('tap/availability.xml', c, mimetype='text/xml')
+    return render_to_response('tap/availability.xml', c, content_type='text/xml')
 
 def tables(request):
     c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
-    return render_to_response('tap/VOSI-tables.xml', c, mimetype='text/xml')
+    return render_to_response('tap/VOSI-tables.xml', c, content_type='text/xml')
 
 #def index(request):
 #    c=RequestContext(request,{})
