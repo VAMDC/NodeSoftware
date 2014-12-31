@@ -86,6 +86,8 @@ MIDDLEWARE_CLASSES = (
 #    'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
 ###################################################
 # Misc settings
 ###################################################
@@ -219,5 +221,6 @@ LOGGING = {
     }
 }
 
+LOG_CENTRALLY = False
 CENTRAL_LOGGER_URL = 'http://pdl-calc2.obspm.fr:8081/VamdcLog/LogWriter'
 

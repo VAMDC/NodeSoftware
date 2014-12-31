@@ -207,7 +207,10 @@ def CORS_request(request):
 def logCentral(sync):
     def wrapper(request, *args, **kwargs):
         response = sync(request, *args, **kwargs)
-        if request.method == 'GET' and response.status_code == 200 and not settings.DEBUG:
+        if request.method == 'GET' and \
+	   response.status_code == 200 and \
+           not settings.DEBUG and \
+           settings.LOG_CENTRALLY:
             logdata = { 'clientIp': request.META['REMOTE_ADDR'],
                         'requestContent': request.GET.get('QUERY'),
                         'requestDate': datetime.datetime.now(\
