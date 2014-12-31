@@ -13,7 +13,9 @@ import os
 import traceback
 
 # Tack on the vamdc root directory to the python path.
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#VAMDC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#print VAMDC_ROOT
+#sys.path.append(VAMDC_ROOT)
 
 _CREATED_SETTINGS = False
 
@@ -121,6 +123,6 @@ if __name__ == "__main__":
         print string
         sys.exit()
     # Run the django setup using our settings file.
-    from django.core.management import execute_manager
-    #from xml.sax import saxutils
-    execute_manager(settings)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE","settings")
+    from django.core.management import execute_from_command_line
+    execute_from_command_line(sys.argv)
