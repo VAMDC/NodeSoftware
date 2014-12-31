@@ -73,6 +73,17 @@ ADMINS = (\
             ('Admin 1 Name', 'name1@mail.net'),
             ('Admin 2 Name', 'name2@mail.net'),
         )
+SERVER_EMAIL = 'root@localhost' # FROM-address
+
+###############################################
+# DEPLOYMENT URL
+# Unless this variable is set, the NodeSoftware
+# tries to figure out its own URL, but this will
+# not always work, e.g. behind a proxy. If the
+# URLs in /tap/capabilities are wrong, set the
+# correct one here.
+###############################################
+# DEPLOY_URL='http://.../tap/'
 
 ###############################################
 # Logging
