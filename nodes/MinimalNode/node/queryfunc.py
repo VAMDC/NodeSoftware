@@ -8,14 +8,8 @@ import models
 def setupResults(sql):
     q = sql2Q(sql)
 
-    states = models.State.objects.select_related(depth=2).filter(q)
+    states = models.State.objects.select_related().filter(q)
     species = None
 
-    headerinfo = {'COUNT-SOURCES':nsources,
-                  'COUNT-SPECIES':nspecies,
-                  'COUNT-STATES':nstates,
-                  'APPROX-SIZE':states.count()*0.001 }
-
     return {'Atoms':species,
-            'HeaderInfo':headerinfo,
            }
