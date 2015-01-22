@@ -13,7 +13,9 @@ import os
 import traceback
 
 # Tack on the vamdc root directory to the python path.
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#VAMDC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#print VAMDC_ROOT
+#sys.path.append(VAMDC_ROOT)
 
 _CREATED_SETTINGS = False
 
@@ -71,6 +73,17 @@ ADMINS = (\
             ('Admin 1 Name', 'name1@mail.net'),
             ('Admin 2 Name', 'name2@mail.net'),
         )
+SERVER_EMAIL = 'root@localhost' # FROM-address
+
+###############################################
+# DEPLOYMENT URL
+# Unless this variable is set, the NodeSoftware
+# tries to figure out its own URL, but this will
+# not always work, e.g. behind a proxy. If the
+# URLs in /tap/capabilities are wrong, set the
+# correct one here.
+###############################################
+# DEPLOY_URL='http://.../tap/'
 
 ###############################################
 # Logging
@@ -121,6 +134,6 @@ if __name__ == "__main__":
         print string
         sys.exit()
     # Run the django setup using our settings file.
-    from django.core.management import execute_manager
-    #from xml.sax import saxutils
-    execute_manager(settings)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE","settings")
+    from django.core.management import execute_from_command_line
+    execute_from_command_line(sys.argv)

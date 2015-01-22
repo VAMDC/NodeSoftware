@@ -1,4 +1,4 @@
-from vald.node_common.models import *
+from node_common.models import *
 #from ..node_common.models import *
 
 class State(Model):

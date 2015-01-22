@@ -5,13 +5,13 @@ DEBUG = False
 TRANSLIM = 50000
 
 try:
-    INSTALLED_APPS.remove('vald.node')
+    INSTALLED_APPS.remove('node')
 except:
     pass
 
-NODEPKG='vald.node_atom'
-if not 'vald.node_common' in INSTALLED_APPS:
-    INSTALLED_APPS.append('vald.node_common')
+NODEPKG='node_atom'
+if not 'node_common' in INSTALLED_APPS:
+    INSTALLED_APPS.append('node_common')
 if not NODEPKG in INSTALLED_APPS:
     INSTALLED_APPS.append(NODEPKG)
 

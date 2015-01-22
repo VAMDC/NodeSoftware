@@ -1,4 +1,4 @@
-from ..node_common.queryfunc import *
+from node_common.queryfunc import *
 from models import *
 
 
