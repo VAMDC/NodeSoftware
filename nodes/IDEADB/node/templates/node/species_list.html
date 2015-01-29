@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Available Species</h2>
+    <table>
+      <tr>
+        <td><strong>Name</strong></td>
+        <td><strong>Chemical Formula</strong></td>
+        <td><strong>Nominal Mass</strong></td>
+        <td><strong>InChI</strong></td>
+        <td><strong>CAS</strong></td>
+      </tr>
+        {% for species in object_list %}
+            <tr><td>{{ species.name }}</td><td>{{ species.chemical_formula }}</td><td>{{ species.mass }}</td><td>{{ species.inchi }}</td><td>{{ species.cas }}</td></tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+
