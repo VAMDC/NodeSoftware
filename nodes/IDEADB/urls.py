@@ -1,7 +1,7 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import patterns, url, include
 
 #we need this to use djangos default views
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from node.views import *
 from node.models import *
 # Uncomment the next two lines to enable the admin:
@@ -22,6 +22,7 @@ urlpatterns = patterns('',
     (r'^compare/(\d+)/(\d+)/$', 'node.views.compare_energyscan'),
     (r'^contact/$', 'node.views.contact'),
     (r'^export/(\d+)/$', 'node.views.export_ascii'),
+    (r'^species/$',ListView.as_view(model=Species)),
 )
 
 handler500 = 'vamdctap.views.tapServerError'
