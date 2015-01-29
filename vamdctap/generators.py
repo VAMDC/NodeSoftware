@@ -2015,6 +2015,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     if requestables and Molecules and ('moleculestates' not in requestables):
         for Molecule in Molecules:
             Molecule.States = []
+            Molecule.NormalModes = []
 
     if not requestables or 'sources' in requestables:
         log.debug('Working on Sources.')

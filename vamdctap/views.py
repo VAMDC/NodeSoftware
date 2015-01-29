@@ -10,15 +10,19 @@ import os, math, sys
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 import time
-import requests as librequests
 
 import logging
 log=logging.getLogger('vamdc.tap')
 
-# Get the node-specific package!
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.utils.http import http_date
+
+if settings.LOG_CENTRALLY:
+    try:
+        import requests as librequests
+    except:
+        log.critical('settings.LOG_CENTRALLY is set but requests package is missing!')
 
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
