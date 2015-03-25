@@ -14,7 +14,7 @@ import re
 import datetime
 
 from inchivalidation import inchi2inchikey, inchikey2inchi, inchi2chemicalformula
-from chemlib import chemicalformula2nominalmass
+from chemlib import chemicalformula2nominalmass, checkatoms
 
 #we define the regex object for chemical formulas here, as it is used in two different functions
 re = re.compile('^([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+$')
@@ -24,6 +24,8 @@ re = re.compile('^([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+$')
 def validate_CAS(cas):
     sum=0
     cas_arr = cas.split('-')
+    if len(cas_arr) < 3:
+        raise ValidationError(u'%s is not a valid CAS-number!' % cas)
     length = len(cas_arr[0])+2
     for x in cas_arr[0]:
         sum = sum + length*int(x)
@@ -33,9 +35,17 @@ def validate_CAS(cas):
         raise ValidationError(u'%s is not a valid CAS-number!' % cas)
 
 def validate_chemical_formula(chemical_formula):
+    """ checks chemical formalae for plausibility """
+
+    # first we check if the formula seems like a chemical formula
     m = re.match(chemical_formula)
     if m is None:
         raise ValidationError(u'%s does not seem to be a chemical formula' % chemical_formula)
+
+    # we outsource the checking of individual atoms to the chemlib
+    result = checkatoms(chemical_formula)
+    if result != 0:
+        raise ValidationError(u'%s is not an atom' % result)
 
 def validate_name(name):
     m = re.match(name) 
@@ -45,11 +55,15 @@ def validate_name(name):
 #start defining the classes
 
 class Author(Model):
-    firstname = CharField(max_length=20)
-    lastname = CharField(max_length=20)
+    firstname = CharField(max_length=30)
+    lastname = CharField(max_length=30)
+    middlename = CharField(max_length=30, blank=True)
     email = EmailField(max_length=254, blank=True)
     def __unicode__(self):
-        return u'%s, %s'%(self.lastname, self.firstname)
+        if self.middlename != '':
+            return u'%s, %s %s'%(self.lastname, self.firstname, self.middlename)
+        else:
+            return u'%s, %s'%(self.lastname, self.firstname)
 
 class Experiment(Model):
     name = CharField(max_length=10)
@@ -57,7 +71,7 @@ class Experiment(Model):
         return u'%s'%(self.name)
 
 class Species(Model):
-    name = CharField(max_length=40, db_index=True, verbose_name='Common Name (e.g. Water for H2O)', blank = True, validators=[validate_name])
+    name = CharField(max_length=100, db_index=True, verbose_name='Common Name (e.g. Water for H2O)', blank = True, validators=[validate_name])
     chemical_formula = CharField(max_length=40, db_index=True, verbose_name='Chemical Formula', default = '', validators=[validate_chemical_formula])
     mass = PositiveIntegerField(db_index=True, verbose_name='Nominal Mass')
     isotope = BooleanField(verbose_name='Tick, if this is the most abundant isotope', default = True)
@@ -116,6 +130,20 @@ class Species(Model):
             if self.chemical_formula != inchi2chemicalformula(self.inchi):
                 raise ValidationError(u'InChI %s is not compatible with the stochiometric formula %s.' % (self.inchi, self.chemical_formula))
 
+        #we check if we already have a species with same chem formula, mass and isotope-status
+        sp_search = Species.objects.filter(chemical_formula__exact=self.chemical_formula).filter(mass__exact=self.mass).filter(isotope__exact=self.isotope)
+
+        #exclude this very instance
+        sp_search = sp_search.exclude(id__exact=self.id)
+
+        if len(sp_search) > 0:
+            #indeed we do
+            #in this case they should be isomeres and therefore have a different inchi
+            if self.inchi in sp_search.values_list('inchi'):
+                raise ValidationError(u'A species with this chemical formula and InChI already exists in the database')
+            if self.inchi == '':
+                raise ValidationError(u'Isomeres need to be distinguished via their InChI')
+
     class Meta:
         db_table = u'species'
         verbose_name_plural = u'Species'
@@ -141,7 +169,7 @@ class Source(Model):
     doi = CharField(max_length=100, verbose_name='DOI', blank=True)
     pagestart = CharField(max_length=5, verbose_name='Starting Page')
     pageend = CharField(max_length=5, verbose_name='Ending Page')
-    url = URLField(verify_exists=False, max_length=200, blank=True)
+    url = URLField(max_length=200, blank=True)
     title = CharField(max_length=500)
     type = CharField(max_length=17, default='journal', choices=SOURCETYPE_CHOICES)
     #define a useful unicode-expression:
@@ -153,6 +181,7 @@ class Energyscan(Model):
         ('1/s', '1/s'),
         ('cm2', 'cm2'),
         ('m2', 'm2'),
+        ('unitless', 'unitless'),
     )
     species = ForeignKey(Species, related_name='energyscan_species')
     origin_species = ForeignKey(Species, related_name='energyscan_origin_species')
@@ -164,9 +193,16 @@ class Energyscan(Model):
     comment = TextField(blank = True, max_length = 2000, verbose_name = 'Comment (max. 2000 chars.)')
     energyresolution = DecimalField(max_digits = 4, decimal_places = 3, verbose_name='Energy Resolution of the Experiment in eV')
     lastmodified = DateTimeField(auto_now = True, auto_now_add = True, default = datetime.datetime.now())
+    numberofpeaks = IntegerField(blank = True, verbose_name = 'Number of peaks visible (no shoulder structures)')
+
     #define a useful unicode-expression:
     def __unicode__(self):
         return u'ID %s: %s from %s'%(self.id, self.species, self.origin_species)
+
+    def clean(self):
+        #we check for -- in the numerical data, because Origin occasionally produces those
+        if self.energyscan_data.find('--') is not -1:
+            raise ValidationError(u'Energyscan data contains -- most likely due to empty lines in the Origin table.')
 
 class Resonance(Model):
     energyscan = ForeignKey(Energyscan)

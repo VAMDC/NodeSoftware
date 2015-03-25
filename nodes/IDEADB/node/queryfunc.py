@@ -31,6 +31,9 @@ from email.Utils import formatdate
 import time
 import datetime
 
+#to deal with (un)escaped URLs
+from xml.sax.saxutils import escape, unescape
+
 def LOG(s):
     """ logfunction. will be removed for final version. """
     logfilejosi = open('/var/log/vamdc_josi.log','a')
@@ -48,9 +51,7 @@ class DataSet:
     this class provides a method to make the Tabulated sub-objects out of two tuples containing the x and y values
     """
 
-    def __init__(self, sourceref, xs, ys, productiondate, y_units):
-        #put reference to source first, so we always know what it is
-        self.SourceRef = sourceref
+    def __init__(self, xs, ys, productiondate, y_units):
         self.TabData = []
 
         tabdata = GenericClass()
@@ -64,7 +65,6 @@ class DataSet:
         tabdata.X.Relative = 'false'
         tabdata.Y.Relative = 'false'
         tabdata.X.ErrorValue = float('0.1')
-        tabdata.X.SourceRef = sourceref
         #i know this is bad crap crazy, but the standards want it like this
         #uncomment the float as we do it in the energyscan-loop already when reading the data
         #tabdata.X.DataList = map(float,xs)
@@ -220,6 +220,9 @@ def setupResults(sql, limit=1000):
 
             source.author = authorlist
 
+            #unescape and escape the URL again. this prevents us from delivering ampersands and therefore creating invalid XSAMS documents
+            source.url = escape(unescape(source.url))
+
         #insert the standard-comment in addition to a possibly existing user-specific comment
         standardcomment = 'X-Values are measured with an energy resolution of %s eV. Therefore every shown peak is the original peak shape convoluted with our resolution. Energy scans are calibrated. Therefore we estimate an error of 0.1 eV' % energyscan.energyresolution 
 
@@ -254,7 +257,7 @@ def setupResults(sql, limit=1000):
 
         #create datasets
         energyscan.DataSets = []
-        dataset = DataSet(energyscan.source.id, x, y, energyscan.productiondate, energyscan.y_units)
+        dataset = DataSet(x, y, energyscan.productiondate, energyscan.y_units)
         dataset.description = 'crossSection'
         dataset.accuracytype = 'systematic'
         energyscan.DataSets.append(dataset)
