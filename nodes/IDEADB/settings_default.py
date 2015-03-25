@@ -20,10 +20,10 @@ BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 sys.path.append(BASE_PATH)
 sys.path.append(BASE_PATH+'/nodes')
 NODENAME = os.path.basename(os.path.dirname(__file__))
-NODEPKG= NODENAME+'.node'
+NODEPKG='node'
 
 # Where to load url info from
-ROOT_URLCONF = NODENAME+'.urls'
+ROOT_URLCONF = 'urls'
 
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email).
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
@@ -70,7 +70,6 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.staticfiles',
     'vamdctap',
-    'south',
     NODEPKG
 ]
 # Setup of Django middleware components (shouldn't have to change this))
@@ -213,3 +212,5 @@ LOGGING = {
         },
     }
 }
+
+LOG_CENTRALLY = False

@@ -1,192 +1,172 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db import models, migrations
 import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+import IDEADB.node.models
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'Author'
-        db.create_table('node_author', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('firstname', self.gf('django.db.models.fields.CharField')(max_length=15)),
-            ('lastname', self.gf('django.db.models.fields.CharField')(max_length=15)),
-            ('email', self.gf('django.db.models.fields.TextField')()),
-        ))
-        db.send_create_signal('node', ['Author'])
+    dependencies = [
+    ]
 
-        # Adding model 'Experiment'
-        db.create_table('node_experiment', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=10)),
-        ))
-        db.send_create_signal('node', ['Experiment'])
-
-        # Adding model 'Species'
-        db.create_table(u'species', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=20, db_index=True)),
-            ('mass', self.gf('django.db.models.fields.PositiveIntegerField')(db_index=True)),
-            ('nuclear_charge', self.gf('django.db.models.fields.SmallIntegerField')(max_length=3)),
-            ('inchi', self.gf('django.db.models.fields.CharField')(max_length=30, db_index=True)),
-            ('molecule', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal('node', ['Species'])
-
-        # Adding model 'Source'
-        db.create_table('node_source', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('journal', self.gf('django.db.models.fields.CharField')(max_length=200)),
-            ('year', self.gf('django.db.models.fields.CharField')(max_length=4)),
-            ('number', self.gf('django.db.models.fields.CharField')(max_length=6)),
-            ('volume', self.gf('django.db.models.fields.CharField')(max_length=6)),
-            ('doi', self.gf('django.db.models.fields.CharField')(max_length=40)),
-            ('pagestart', self.gf('django.db.models.fields.CharField')(max_length=5)),
-            ('pageend', self.gf('django.db.models.fields.CharField')(max_length=5)),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=200)),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=500)),
-            ('type', self.gf('django.db.models.fields.CharField')(default='journal', max_length=17)),
-        ))
-        db.send_create_signal('node', ['Source'])
-
-        # Adding M2M table for field authors on 'Source'
-        db.create_table('node_source_authors', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('source', models.ForeignKey(orm['node.source'], null=False)),
-            ('author', models.ForeignKey(orm['node.author'], null=False))
-        ))
-        db.create_unique('node_source_authors', ['source_id', 'author_id'])
-
-        # Adding model 'Energyscan'
-        db.create_table('node_energyscan', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('species', self.gf('django.db.models.fields.related.ForeignKey')(related_name='energyscan_species', to=orm['node.Species'])),
-            ('origin_species', self.gf('django.db.models.fields.related.ForeignKey')(related_name='energyscan_origin_species', to=orm['node.Species'])),
-            ('source', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['node.Source'])),
-            ('experiment', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['node.Experiment'])),
-            ('energyscan_data', self.gf('django.db.models.fields.TextField')()),
-            ('productiondate', self.gf('django.db.models.fields.DateField')()),
-            ('energyresolution', self.gf('django.db.models.fields.DecimalField')(max_digits=3, decimal_places=2)),
-        ))
-        db.send_create_signal('node', ['Energyscan'])
-
-        # Adding model 'Resonance'
-        db.create_table('node_resonance', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('energyscan', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['node.Energyscan'])),
-            ('species', self.gf('django.db.models.fields.related.ForeignKey')(related_name='resonance_species', to=orm['node.Species'])),
-            ('origin_species', self.gf('django.db.models.fields.related.ForeignKey')(related_name='resonance_origin_species', to=orm['node.Species'])),
-            ('source', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['node.Source'])),
-            ('energy', self.gf('django.db.models.fields.DecimalField')(max_digits=5, decimal_places=2)),
-            ('width', self.gf('django.db.models.fields.DecimalField')(max_digits=3, decimal_places=2)),
-        ))
-        db.send_create_signal('node', ['Resonance'])
-
-        # Adding model 'Massspec'
-        db.create_table('node_massspec', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('species', self.gf('django.db.models.fields.related.ForeignKey')(related_name='massspec_species', to=orm['node.Species'])),
-            ('source', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['node.Source'])),
-            ('energy', self.gf('django.db.models.fields.DecimalField')(max_digits=5, decimal_places=2)),
-            ('massspec_data', self.gf('django.db.models.fields.TextField')()),
-        ))
-        db.send_create_signal('node', ['Massspec'])
-
-
-    def backwards(self, orm):
-        # Deleting model 'Author'
-        db.delete_table('node_author')
-
-        # Deleting model 'Experiment'
-        db.delete_table('node_experiment')
-
-        # Deleting model 'Species'
-        db.delete_table(u'species')
-
-        # Deleting model 'Source'
-        db.delete_table('node_source')
-
-        # Removing M2M table for field authors on 'Source'
-        db.delete_table('node_source_authors')
-
-        # Deleting model 'Energyscan'
-        db.delete_table('node_energyscan')
-
-        # Deleting model 'Resonance'
-        db.delete_table('node_resonance')
-
-        # Deleting model 'Massspec'
-        db.delete_table('node_massspec')
-
-
-    models = {
-        'node.author': {
-            'Meta': {'object_name': 'Author'},
-            'email': ('django.db.models.fields.TextField', [], {}),
-            'firstname': ('django.db.models.fields.CharField', [], {'max_length': '15'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'lastname': ('django.db.models.fields.CharField', [], {'max_length': '15'})
-        },
-        'node.energyscan': {
-            'Meta': {'object_name': 'Energyscan'},
-            'energyresolution': ('django.db.models.fields.DecimalField', [], {'max_digits': '3', 'decimal_places': '2'}),
-            'energyscan_data': ('django.db.models.fields.TextField', [], {}),
-            'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['node.Experiment']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'origin_species': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'energyscan_origin_species'", 'to': "orm['node.Species']"}),
-            'productiondate': ('django.db.models.fields.DateField', [], {}),
-            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['node.Source']"}),
-            'species': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'energyscan_species'", 'to': "orm['node.Species']"})
-        },
-        'node.experiment': {
-            'Meta': {'object_name': 'Experiment'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '10'})
-        },
-        'node.massspec': {
-            'Meta': {'object_name': 'Massspec'},
-            'energy': ('django.db.models.fields.DecimalField', [], {'max_digits': '5', 'decimal_places': '2'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'massspec_data': ('django.db.models.fields.TextField', [], {}),
-            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['node.Source']"}),
-            'species': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'massspec_species'", 'to': "orm['node.Species']"})
-        },
-        'node.resonance': {
-            'Meta': {'object_name': 'Resonance'},
-            'energy': ('django.db.models.fields.DecimalField', [], {'max_digits': '5', 'decimal_places': '2'}),
-            'energyscan': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['node.Energyscan']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'origin_species': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'resonance_origin_species'", 'to': "orm['node.Species']"}),
-            'source': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['node.Source']"}),
-            'species': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'resonance_species'", 'to': "orm['node.Species']"}),
-            'width': ('django.db.models.fields.DecimalField', [], {'max_digits': '3', 'decimal_places': '2'})
-        },
-        'node.source': {
-            'Meta': {'object_name': 'Source'},
-            'authors': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['node.Author']", 'symmetrical': 'False'}),
-            'doi': ('django.db.models.fields.CharField', [], {'max_length': '40'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'journal': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'number': ('django.db.models.fields.CharField', [], {'max_length': '6'}),
-            'pageend': ('django.db.models.fields.CharField', [], {'max_length': '5'}),
-            'pagestart': ('django.db.models.fields.CharField', [], {'max_length': '5'}),
-            'title': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
-            'type': ('django.db.models.fields.CharField', [], {'default': "'journal'", 'max_length': '17'}),
-            'url': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
-            'volume': ('django.db.models.fields.CharField', [], {'max_length': '6'}),
-            'year': ('django.db.models.fields.CharField', [], {'max_length': '4'})
-        },
-        'node.species': {
-            'Meta': {'object_name': 'Species', 'db_table': "u'species'"},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'inchi': ('django.db.models.fields.CharField', [], {'max_length': '30', 'db_index': 'True'}),
-            'mass': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'}),
-            'molecule': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '20', 'db_index': 'True'}),
-            'nuclear_charge': ('django.db.models.fields.SmallIntegerField', [], {'max_length': '3'})
-        }
-    }
-
-    complete_apps = ['node']
+    operations = [
+        migrations.CreateModel(
+            name='Author',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('firstname', models.CharField(max_length=30)),
+                ('lastname', models.CharField(max_length=30)),
+                ('middlename', models.CharField(max_length=30, blank=True)),
+                ('email', models.EmailField(max_length=254, blank=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Energyscan',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('energyscan_data', models.TextField(verbose_name=b'Paste data from Origin in this field')),
+                ('y_units', models.CharField(default=b'1/s', max_length=3, verbose_name=b'Please choose units for y-axis', choices=[(b'1/s', b'1/s'), (b'cm2', b'cm2'), (b'm2', b'm2'), (b'unitless', b'unitless')])),
+                ('productiondate', models.DateField(verbose_name=b'Production Date')),
+                ('comment', models.TextField(max_length=2000, verbose_name=b'Comment (max. 2000 chars.)', blank=True)),
+                ('energyresolution', models.DecimalField(verbose_name=b'Energy Resolution of the Experiment in eV', max_digits=4, decimal_places=3)),
+                ('lastmodified', models.DateTimeField(default=datetime.datetime(2015, 3, 25, 15, 47, 17, 984783), auto_now=True, auto_now_add=True)),
+                ('numberofpeaks', models.IntegerField(verbose_name=b'Number of peaks visible (no shoulder structures)', blank=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Experiment',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=10)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Massspec',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('energy', models.DecimalField(max_digits=5, decimal_places=2)),
+                ('massspec_data', models.TextField()),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Resonance',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('energy', models.DecimalField(max_digits=5, decimal_places=2)),
+                ('width', models.DecimalField(max_digits=3, decimal_places=2)),
+                ('energyscan', models.ForeignKey(to='node.Energyscan')),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Source',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('journal', models.CharField(max_length=200)),
+                ('year', models.CharField(max_length=4)),
+                ('number', models.CharField(max_length=6, blank=True)),
+                ('volume', models.CharField(max_length=6)),
+                ('doi', models.CharField(max_length=100, verbose_name=b'DOI', blank=True)),
+                ('pagestart', models.CharField(max_length=5, verbose_name=b'Starting Page')),
+                ('pageend', models.CharField(max_length=5, verbose_name=b'Ending Page')),
+                ('url', models.URLField(blank=True)),
+                ('title', models.CharField(max_length=500)),
+                ('type', models.CharField(default=b'journal', max_length=17, choices=[(b'book', b'Book'), (b'database', b'Database'), (b'journal', b'Journal'), (b'preprint', b'Preprint'), (b'private communication', b'Private Communication'), (b'proceeding', b'Proceeding'), (b'report', b'Report'), (b'thesis', b'Thesis'), (b'vamdc node', b'VAMDC Node')])),
+                ('authors', models.ManyToManyField(to='node.Author')),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Species',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(blank=True, max_length=100, verbose_name=b'Common Name (e.g. Water for H2O)', db_index=True, validators=[IDEADB.node.models.validate_name])),
+                ('chemical_formula', models.CharField(default=b'', max_length=40, verbose_name=b'Chemical Formula', db_index=True, validators=[IDEADB.node.models.validate_chemical_formula])),
+                ('mass', models.PositiveIntegerField(verbose_name=b'Nominal Mass', db_index=True)),
+                ('isotope', models.BooleanField(default=True, verbose_name=b'Tick, if this is the most abundant isotope')),
+                ('nuclear_charge', models.PositiveSmallIntegerField(max_length=3, null=True, verbose_name=b'Number of Protons', blank=True)),
+                ('inchi', models.CharField(db_index=True, max_length=300, verbose_name=b'InChI', blank=True)),
+                ('inchikey', models.CharField(db_index=True, max_length=27, verbose_name=b'InChI-Key', blank=True)),
+                ('cas', models.CharField(blank=True, max_length=12, verbose_name=b'CAS-Number', validators=[IDEADB.node.models.validate_CAS])),
+                ('molecule', models.BooleanField(verbose_name=b'Tick, if this is a molecule')),
+            ],
+            options={
+                'ordering': ['chemical_formula', 'name'],
+                'db_table': 'species',
+                'verbose_name_plural': 'Species',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.AddField(
+            model_name='resonance',
+            name='origin_species',
+            field=models.ForeignKey(related_name='resonance_origin_species', to='node.Species'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='resonance',
+            name='source',
+            field=models.ForeignKey(to='node.Source'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='resonance',
+            name='species',
+            field=models.ForeignKey(related_name='resonance_species', to='node.Species'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='massspec',
+            name='source',
+            field=models.ForeignKey(to='node.Source'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='massspec',
+            name='species',
+            field=models.ForeignKey(related_name='massspec_species', to='node.Species'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='energyscan',
+            name='experiment',
+            field=models.ForeignKey(to='node.Experiment'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='energyscan',
+            name='origin_species',
+            field=models.ForeignKey(related_name='energyscan_origin_species', to='node.Species'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='energyscan',
+            name='source',
+            field=models.ForeignKey(to='node.Source'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='energyscan',
+            name='species',
+            field=models.ForeignKey(related_name='energyscan_species', to='node.Species'),
+            preserve_default=True,
+        ),
+    ]

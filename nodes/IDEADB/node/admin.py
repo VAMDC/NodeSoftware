@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 
 #import your models here like this:
-from IDEADB.node.models import *
+from node.models import *
 
 class SpeciesAdmin(admin.ModelAdmin):
     list_display = ('chemical_formula', 'name', 'mass')
