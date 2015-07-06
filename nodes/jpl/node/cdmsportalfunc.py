@@ -3,6 +3,7 @@
 import sys
 from models import *
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 def get_species_list(spids = None, database = 0):
     """

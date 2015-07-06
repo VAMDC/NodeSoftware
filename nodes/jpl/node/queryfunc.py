@@ -2,6 +2,7 @@
 from django.db.models import Q
 from django.conf import settings
 import sys
+import datetime
 
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s
@@ -358,12 +359,12 @@ def setupResults(sql):
     # Calculate estimated size of xsams-file
     if ntranss+nmolecules+nsources+natoms+nstates>0:
         size_estimate='%.2f' % (nstates*0.0008755624 +ntranss*0.000561003 +nmolecules*0.001910 +nsources * 0.0005+0.01)
-    else: size_estimate='0.00'
+    else: size_estimate='0.0'
 
 
     # this header info is used in xsams-header-info (html-request)
     headerinfo={\
-        'Truncated':"0", # CDMS will not truncate data (at least for now)
+        'Truncated':"100", # CDMS will not truncate data (at least for now)
         'count-sources':nsources, 
         'count-species':nspecies,
         'count-molecules':nmolecules,

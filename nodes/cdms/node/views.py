@@ -6,7 +6,7 @@ import sys
 from django.template import RequestContext
 from django.shortcuts import render_to_response,get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, QueryDict
-from django.utils import simplejson
+import json as simplejson
 
 from django.conf import settings
 
@@ -204,7 +204,7 @@ def tools(request):
         if form.is_valid():
             
             print >> sys.stderr, "IS VALID"
-            response=HttpResponse(form.cleaned_data['result'],mimetype='text/csv')
+            response=HttpResponse(form.cleaned_data['result'],content_type='text/csv')
             response['Content-Disposition'] = \
                 'attachment; filename=%s.%s'% (form.cleaned_data.get('infile') or 'output', form.cleaned_data.get('format') )
             return response
@@ -319,7 +319,7 @@ def json_list(request, content='species'):
         species_list.append(s)
     response_dict.update({'species' : species_list,'database' : db})
        
-    return HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
+    return HttpResponse(simplejson.dumps(response_dict), content_type='application/json')
 
 
 def catalog(request, id=None):
@@ -509,7 +509,7 @@ def ajaxRequest(request):
                               'htmlcode' : "Error: No function name posted! ",
                               'message' : "Error: No function name posted! "})
        
-    return HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
+    return HttpResponse(simplejson.dumps(response_dict), content_type='application/json')
 
 
 def specieslist(request):
@@ -547,7 +547,7 @@ def getfile(request,id):
     id: Database id of the file
     """
     f = Files.objects.get(pk=id)
-    response=HttpResponse(f.asciifile,mimetype='text/txt')
+    response=HttpResponse(f.asciifile,content_type='text/txt')
     
     response['Content-Disposition'] = 'attachment; filename=%s'%(f.name)
 

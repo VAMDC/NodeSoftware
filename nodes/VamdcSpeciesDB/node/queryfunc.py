@@ -48,7 +48,7 @@ def setupResults(sql):
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
-    species = models.VamdcSpecies.objects.select_related(depth=2).filter(q)
+    species = models.VamdcSpecies.objects.filter(q)
 
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)

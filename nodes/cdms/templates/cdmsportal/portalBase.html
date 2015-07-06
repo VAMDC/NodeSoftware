@@ -48,27 +48,27 @@
       <div class="hlist" style="width2:554px;background:none;border:none; background-color:#f0f0f0; opacity:0.6;">
         <ul>
           <li {% block menu_li_home %}{% endblock %} style="width:90px">
-            <a href="{% url cdms.node.views.index %}"  style="font-weight:400;">
+            <a href="{% url 'cdms.node.views.index' %}"  style="font-weight:400;">
               <div style="font-weight:bold">HOME</div>
             </a>
           </li>
           <li {% block menu_li_general %}{% endblock %} style="width:90px">
-            <a href="{% url cdms.node.views.general %}" style="font-weight:400;">
+            <a href="{% url 'cdms.node.views.general' %}" style="font-weight:400;">
               <div style="font-weight:bold">GENERAL</div>
             </a>
           </li>
           <li {% block menu_li_catalog %}{% endblock %} style="width:90px">
-            <a href="{% url cdms.node.views.query_form %}" style="font-weight:400;">
+            <a href="{% url 'cdms.node.views.query_form' %}" style="font-weight:400;">
               <div style="font-weight:bold">CATALOG</div>
             </a>
           </li>
           <li {% block menu_li_tools %}{% endblock %} style="width:90px">
-            <a href="{% url cdms.node.views.tools %}"  style="font-weight:400;">
+            <a href="{% url 'cdms.node.views.tools' %}"  style="font-weight:400;">
               <div style="font-weight:bold">TOOLS</div>
             </a>
           </li>
           <li {% block menu_li_contact %}{% endblock %} style="width:90px">
-            <a href="{% url cdms.node.views.contact %}"  style="font-weight:400;">
+            <a href="{% url 'cdms.node.views.contact' %}"  style="font-weight:400;">
               <div style="font-weight:bold">CONTACT</div>
             </a>
           </li>
