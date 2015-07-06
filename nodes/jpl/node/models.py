@@ -133,12 +133,9 @@ class Species( Model):
      cmlstring = property(CML)
      #massnumber = property(getMassNumber)
      shortcomment = property(get_shortcomment)
-          
 
      def state_html(self):
           return latex2html(self.state)
-
-
 
 class Datasets( Model):
      """
@@ -212,11 +209,10 @@ class States( Model):
      user                  = CharField(max_length=40, db_column='EGY_User')      # obsolete
      timestamp             = IntegerField(db_column='EGY_TIMESTAMP')
 
-     
      class Meta:
        db_table = u'Energies'
        ordering = ['energy']
-       
+
      def origin(self):
           return '%s-origin-%s' % (self.energyorigin, self.specie_id)
 
@@ -457,8 +453,6 @@ class AtomStates( Model):
                     return ''
           except AttributeError:
                return ''
-          
-
 
 class TransitionsCalc( Model):
      """
@@ -508,8 +502,6 @@ class TransitionsCalc( Model):
                            db_column='P_Up_EGY_ID')
      lostate =  ForeignKey(States, related_name='lowerstate',
                            db_column='P_Low_EGY_ID')
-     #frequencyArray        
-     
      def __unicode__(self):
           return u'ID:%s Tag:%s Freq: %s'%(self.id,self.speciestag,self.frequency)
 
@@ -534,7 +526,7 @@ class TransitionsCalc( Model):
                self.recommendations.append(i.recommended)
                self.evalrefs.append(i.source_id)
           return self.qualities
-     
+
      def attach_exp_frequencies(self):
          """
          Create lists of frequencies, units, sources, ... for each transition.
@@ -547,7 +539,6 @@ class TransitionsCalc( Model):
          - methods for experimental data
 
          """
-         
          # Attach the calculated frequency first
          self.frequencies=[self.frequency]
          self.units=[self.unit]
@@ -654,7 +645,6 @@ class TransitionsCalc( Model):
      class Meta:
         db_table = u'Predictions'
         
-
 class RadiativeTransitions( Model):
      """
      This class contains the calculated transition frequencies (mysql-table Predictions).
@@ -811,10 +801,7 @@ class Parameter (Model):
                return self.parameter.replace(self.parameter[u_score:u_score+2],'<sub>'+self.parameter[u_score+1:u_score+2]+'</sub>')
 #          else:
 #               return self.parameter
-          
-          
 
-        
 class TransitionsExp( Model):
      """
      This class contains the experimental transition frequencies (mysql-table Frequencies).

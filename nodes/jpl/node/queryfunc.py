@@ -172,7 +172,6 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
     return atoms,molecules,nspecies,nstates
 
 
-
 def get_sources(atoms, molecules, methods = []):
     """
     Get a complete list of sources and methods for the set of
@@ -227,7 +226,6 @@ def attach_exp_frequencies(transs):
     The calculated frequency is given anyway followed by experimental
     frequencies (db-table: Frequencies). In addition a unique list of
     methods for the experimental data is created and returned.
-ll
     Returns:
     - modified transitions (frequencies, ... attached as lists)
     - methods for experimental data
@@ -416,8 +414,6 @@ def returnResults(tap, LIMIT=None):
         response = HttpResponse(speclist, mimetype='text/plain')
         return response
 
-
-    
     LOG('And now some logs:')
     #LOG(tap.data)
         

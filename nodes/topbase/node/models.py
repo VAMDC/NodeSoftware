@@ -41,10 +41,8 @@ class Source(models.Model):
     
     def authornames(self):
         names = []
-        log.debug('test : '+str(self.id))
         authors = Authorsource.objects.filter(source=self)
         for author in authors:
-            log.debug('found : ')
             names.append(author.name)
         return names
         
@@ -152,7 +150,7 @@ class Radiativetransition(models.Model):
     wavelengthunit = models.CharField(max_length=8)
     upperatomicstate = models.ForeignKey(Atomicstate, db_column='upperatomicstateid', related_name='+')
     loweratomicstate = models.ForeignKey(Atomicstate, db_column='loweratomicstateid', related_name='+')    
-    
+    inchikey = models.CharField(max_length=27)
     def abs_weightedoscillatorstrength(self):
         return abs(self.weightedoscillatorstrength)
    

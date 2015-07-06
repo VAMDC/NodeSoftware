@@ -26,6 +26,28 @@ def bySepNr(linedata, number):
     "parse by separator"
     return string.split(linedata, ';')[number].strip()
         
+def convert_wave(linedata, to_type="wacwave"):
+    """
+    Convert wavenum/wacwave/airwave data. to_type
+    is either wavenum, wacwave or airwave. Data from
+    one of the other two types are used to fill
+    in the the other, if applicable.
+    """
+    wacwave = bySepNr(linedata, 54)
+    wavenum = bySepNr(linedata, 55)
+    airwave = bySepNr(linedata, 56)
+    
+    if to_type=='wacwave':
+        if wacwave != '\N': return float(wacwave)
+        if wavenum != '\N': return 10**8 / float(wavenum)
+        # skipping airwave for now
+    elif to_type=='wavenum':
+        if wavenum != '\N': return float(wavenum)
+        if wacwave != '\N': return 10**8 / float(wacwave)
+    elif to_type == 'airwave':
+        return airwave # this needs to be fixed with correct formula
+        
+
 # Setting up filenames
 base = "/home/vamdc/NodeSoftware/nodes/lund/"
 outbase = base + "db_indata/"
@@ -311,13 +333,13 @@ mapping = [
              'cbyte':(merge_cols_by_sep, 28, 32, 34, 33, 29),
              'cnull':'\N'},
             {'cname':'vacwave',
-             'cbyte':(bySepNr, 54),
+             'cbyte':(convert_wave, "wacwave"), #pos 54
              'cnull':'\N'},
             {'cname':'wavenum',
-             'cbyte':(bySepNr, 55),
+             'cbyte':(convert_wave, "wavenum"), #pos 55
              'cnull':'\N'},            
             {'cname':'airwave',
-             'cbyte':(bySepNr, 56),
+             'cbyte':(convert_wave, "airwave"), #pos 56
              'cnull':'\N'},
             {'cname':'species',
              'cbyte':(bySepNr, 0),

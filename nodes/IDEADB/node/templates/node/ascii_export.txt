@@ -4,5 +4,5 @@
 # It was published in "{{ es.source.title }}" in {{ es.source.journal }} in {{ es.source.year }}
 {% if es.source.doi %}# DOI: {{ es.source.doi }}{% endif %}
 # Further information: http://ideadb.uibk.ac.at/view/{{ es.id }}
-# Electron Energy	Counts per second
+# Electron Energy	{{ es.y_units }}
 {{ es.daten }}

@@ -9,8 +9,8 @@
 
 from django.db import models
 from xml.sax.saxutils import escape
-import logging
-log=logging.getLogger('vamdc.tap')
+#import logging
+#log=logging.getLogger('vamdc.tap')
 
 class Journal(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -120,12 +120,14 @@ class DatasetCollider(models.Model):
     species = models.ForeignKey(Species, db_column='id_species')
     class Meta:
         db_table = u't_datasets_colliders'
+        
 
 class Level(models.Model):
     id = models.IntegerField(primary_key=True)
     dataset = models.ForeignKey(Dataset, db_column='id_dataset')
     config = models.CharField(unique=True, max_length=60)
     term = models.CharField(unique=True, max_length=36)
+    parity = models.CharField(max_length=4)
     J = models.CharField(unique=True, max_length=15, blank=True)       
     L = models.IntegerField(null=True)    
     S = models.FloatField(null=True)    
@@ -138,6 +140,12 @@ class Level(models.Model):
         if(self.J is not None) :
             return eval(self.J+".0")
         return None
+        
+    def get_int_parity(self):
+        if self.parity == 'odd' :
+            return 1
+        else:
+            return 2
         
     class Meta:
         db_table = u't_levels'  
@@ -153,6 +161,7 @@ class Transition(models.Model):
     temperature = models.FloatField()
     temperatureid = models.IntegerField(db_column='id_temperature')
     density = models.FloatField()
+    inchikey = models.CharField(max_length=27)
     class Meta:
         db_table = u'v_transitionsvamdc'    
 
@@ -164,6 +173,20 @@ class Transitiondata(models.Model):
     c = models.FloatField(null=True, blank=True)
     class Meta:
         db_table = u't_transitiondata'
+        
+        
+class FitCoefficient(models.Model):
+    id = models.IntegerField(primary_key=True)
+    transitiondata = models.ForeignKey(Transitiondata, db_column='id_transitiondata')
+    species = models.ForeignKey(Species, db_column='id_species')
+    a0 = models.FloatField(null=True, blank=True)
+    a1 = models.FloatField(null=True, blank=True)
+    a2 = models.FloatField(null=True, blank=True)
+    b0 = models.FloatField(null=True, blank=True)
+    b1 = models.FloatField(null=True, blank=True)
+    b2 = models.FloatField(null=True, blank=True)
+    class Meta:
+        db_table = u't_fitcoefficients'
 
         
 class Temperature(models.Model):

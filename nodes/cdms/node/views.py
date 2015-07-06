@@ -539,7 +539,6 @@ def queryspecies(request, baseurl = settings.BASE_URL + settings.TAP_URLPATH):
     return render_to_response('cdmsportal/showResults.html', c)
 
         
-
 def getfile(request,id):
     """
     reads the content from an ascii-file from the database
@@ -568,9 +567,6 @@ def download_data(request):
             if  postvars.format.lower()=='xsams':
                 return HttpResponseRedirect(postvars.url)
 
-            
-
-
 def cdms_lite_download(request):
     """
     Returns the cdms_lite (sqlite3) database file
@@ -579,6 +575,3 @@ def cdms_lite_download(request):
 #    return HttpResponseRedirect(settings.BASE_URL+settings.PORTAL_URLPATH +'login/?next=%s' % request.path)
     return HttpResponseRedirect(settings.BASE_URL+'/static/cdms/cdms_lite.db.gz')
 
-
-
-    

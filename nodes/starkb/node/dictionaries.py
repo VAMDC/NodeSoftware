@@ -11,6 +11,7 @@ RETURNABLES = ({\
 'AtomNuclearCharge':'Atom.ion.nuclear_charge',
 'AtomSpeciesID':'Atom.particle_ion_id()',
 'AtomIonCharge':'Atom.ion.ion_charge',
+'AtomStateParity':'AtomState.parity',
 'AtomStateConfigurationLabel':'Component.config',
 'AtomStateTermLabel':'Component.term',
 'AtomStateTotalAngMom' : 'AtomState.totalAngularMomentum',
@@ -42,6 +43,7 @@ RETURNABLES = ({\
 'RadTransWavelengthUnit':'A',
 'RadTransRefs':'RadTran.Sources',
 'RadTransID':'RadTran.id',
+'RadTransSpeciesRef' : 'RadTran.target.particle_ion_id()', 
 
 # environments
 'EnvironmentID': 'Environment.id',
@@ -51,6 +53,7 @@ RETURNABLES = ({\
 'EnvironmentTotalNumberDensityUnit':'1/cm3',
 'EnvironmentSpeciesName':'EnvSpecies.particle_ion_name()',
 'EnvironmentSpeciesRef': 'EnvSpecies.particle_ion_id()',
+
 
 #source
 'SourceTitle':'Source.encoded_title()',
@@ -69,6 +72,29 @@ RETURNABLES = ({\
 #'ParticleMass' : 'Particle.mass',
 #'ParticleMassUnit' : 'Particle.massunit.value',
 #'ParticleCharge' : 'Particle.charge',
+
+#functions
+'FunctionArgumentDescription':'FunctionArgument.description',
+'FunctionArgumentLowerLimit':'',
+'FunctionArgumentName':'FunctionArgument.name',
+'FunctionArgumentUnits':'FunctionArgument.unit',
+'FunctionArgumentUpperLimit':'',
+'FunctionComputerLanguage':'',
+'FunctionDescription':'Function.description',
+'FunctionExpression':'',
+'FunctionID':'Function.id',
+'FunctionName':'Function.name',
+'FunctionParameterDescription':'FunctionParameter.description',
+'FunctionParameterName':'FunctionParameter.name',
+'FunctionParameterUnits':'FunctionParameter.unit',
+'FunctionReferenceFrame':'',
+'FunctionSourceCodeURL':'',
+'FunctionSourceRef':'',
+'FunctionYDescription':'',
+'FunctionYLowerLimit':'',
+'FunctionYName':'',
+'FunctionYUnits':'',
+'FunctionYUpperLimit':'',
 })
 
 RESTRICTABLES = ({\
@@ -76,5 +102,6 @@ RESTRICTABLES = ({\
 'AtomSymbol':'target__ion__symbol',
 'IonCharge':'target__ion__ion_charge',
 'EnvironmentTemperature' : 'temperature',
-'EnvironmentTotalNumberDensity':'density'
+'EnvironmentTotalNumberDensity':'density',
+'InchiKey':'inchikey'
 })

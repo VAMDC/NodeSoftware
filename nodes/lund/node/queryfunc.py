@@ -53,29 +53,28 @@ def setupResults(sql,limit=1000):
     transs = Transition.objects.select_related(depth=2).filter(q)
     ntranss=transs.count()
     
+    percentage = None
     if limit < ntranss :
+        percentage = float(limit) / ntranss * 100
         transs = transs[:limit]
-        percentage='%.1f'%(float(limit)/ntranss *100)
-    else: percentage=None
 
     sources = getRefs(transs)
-    nsources = sources.count()
-    atoms,nspecies,nstates = getSpeciesWithStates(transs)
+    atoms, nspecies, nstates = getSpeciesWithStates(transs)
     methods = getLifetimeMethods()
-    #print "atoms:", atoms
-    #print "state_filter:", atoms.States.filter(pk="4101-LS-4-1G-14790.790")
-    headerinfo={\
-            'Truncated':percentage,
-            'COUNT-SOURCES':nsources,
-            'COUNT-species':nspecies,
-            'count-states':nstates,
-            'count-radiative':ntranss
-            }
 
+    if sql.HTTPmethod == 'HEAD': 
+        headers = {'COUNT-RADIATIVE':ntranss}
+        if percentage:
+            headers['TRUNCATED'] = '%.1f' % percentage 
+        headers['APPROX-SIZE'] = ntranss and '%.2f' % (ntranss*0.0014 + 0.01) or '0.00'
+        headers['COUNT-SOURCES'] = sources.count()
+        headers['COUNT-SPECIES'] = nspecies
+        headers['COUNT-STATES'] = nstates
+        return {'HeaderInfo':headers}
+     
     return {'RadTrans':transs,
             'Atoms':atoms,
             'Sources':sources,
-            'HeaderInfo':headerinfo,
             'Methods':methods
            }
 

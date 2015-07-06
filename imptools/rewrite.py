@@ -110,8 +110,7 @@ def get_value(linedata, column_dict):
         log_trace(e, "error processing line/block '%s' - in %s%s: " % (linedata, colfunc, args))
         TOTAL_ERRS += 1
         raise
-    if not dat or (column_dict.has_key('cnull') \
-                       and dat == column_dict['cnull']):
+    if not dat or (column_dict.has_key('cnull') and dat == column_dict['cnull']):
         return None
 
     return QUOTE+str(dat)+QUOTE

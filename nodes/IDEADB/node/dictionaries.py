@@ -16,6 +16,7 @@ ExampleNode dictionary definitions.
 # look at queryfuncs.py, you'll see 'Sources' being assigned)
 
 RETURNABLES = {\
+#'XSAMSVersion' : u'1.0',
 'NodeID':'IDEADB',
 'MethodCategory':'experiment',
 'CollisionCode':'elat',
@@ -32,7 +33,7 @@ RETURNABLES = {\
 'CollisionTabulatedDataXDataListN':'TabData.Xlength',
 'CollisionTabulatedDataYDataList':'TabData.Y.DataList',
 'CollisionTabulatedDataYDataListN':'TabData.Ylength',
-'CollisionTabulatedDataYUnits':'1/s',
+'CollisionTabulatedDataYUnits':'TabData.Yunits',
 'CollisionTabulatedDataXUnits':'TabData.Xunits',
 
 'CollisionTabulatedDataYDescription':'Ion Yield',
@@ -52,6 +53,8 @@ RETURNABLES = {\
 
 
 'AtomInchi':'Atom.inchi',
+'AtomMass':'Atom.exactmass',
+'AtomMassUnit':'amu',
 'AtomMassNumber':'Atom.mass',
 'AtomSpeciesID':'Atom.id',
 'AtomSymbol':'Atom.chemical_formula',
@@ -62,6 +65,7 @@ RETURNABLES = {\
 'MoleculeMolecularWeight':'Molecule.mass',
 'MoleculeMolecularWeightUnit':'amu',
 'MoleculeInchi':'Molecule.inchi',
+'MoleculeInchiKey':'Molecule.inchikey',
 'MoleculeChemicalNameValue':'Molecule.chemical_formula',
 'MoleculeStoichiometricFormula':'Molecule.chemical_formula',
 'MoleculeCASRegistryNumber':'Molecule.cas',
@@ -93,13 +97,15 @@ RETURNABLES = {\
 # for the Species.atomic field  would be written as species__atomic.
 
 RESTRICTABLES = {\
-'MoleculeChemicalName':'species__name',
+'MoleculeChemicalName':('species__name','origin_species__name'),
 'AtomMassNumber':'species__mass',
-'MoleculeMolecularWeight':'species__mass',
+'MoleculeMolecularWeight':('species__mass','origin_species__mass'),
 'AtomSymbol':'species__chemical_formula',
-'Inchi':'species__inchi',
-'InchiKey':'species__inchikey',
-'MoleculeOrdinaryStructuralFormula':'species__chemical_formula',
-'MoleculeCASRegistryNumber':'species__cas',
+'Inchi':('species__inchi','origin_species__inchi'),
+'InchiKey':('species__inchikey','origin_species__inchikey'),
+'MoleculeStoichiometricFormula':('species__chemical_formula','origin_species__chemical_formula'),
+'MoleculeCASRegistryNumber':('species__cas','origin_species__cas'),
+'ParticleName':'electron',
+'CollisionCode':'elat',
+'SourceDOI':'source__doi',
 }
-

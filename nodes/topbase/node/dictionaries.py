@@ -41,6 +41,7 @@ RETURNABLES = {\
 'AtomStateIonizationEnergyUnit' : 'AtomState.ionizationenergyunit',
 'AtomStateTotalAngMom' : 'AtomState.totalangularmomentum',
 'AtomStateTermLabel' : 'Component.termlabel',
+'AtomStateConfigurationLabel' : 'Component.configuration',
 'AtomStateTermLSL' : 'Component.Lscoupling.l',
 'AtomStateTermLSS' : 'Component.Lscoupling.s',
 'AtomStateTermLSMultiplicity' : 'Component.Lscoupling.multiplicity',
@@ -52,6 +53,7 @@ RETURNABLES = {\
 'RadTransProbabilityWeightedOscillatorStrength' : 'RadTran.abs_weightedoscillatorstrength()',
 'RadTransUpperStateRef':'RadTran.upperatomicstate.id',
 'RadTransLowerStateRef':'RadTran.loweratomicstate.id',
+'RadTransSpeciesRef' : 'RadTran.version.atomicion.id', 
 'RadTransProbabilityA' : 'RadTran.transitionprobability',
 'RadTransProbabilityAUnit' : '1/s',
 
@@ -89,5 +91,6 @@ RESTRICTABLES = {\
 'IonCharge' : 'ioncharge',
 'AtomNuclearCharge' : 'nuclearcharge',
 'AtomSymbol' : 'elementsymbol',
+'InchiKey' : 'inchikey',
 }
 

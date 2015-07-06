@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 
 # Lund dictionary
 
@@ -46,8 +46,8 @@ RETURNABLES = {\
 'RadTransWavelengthUnit':u'A',
 'RadTransWavelengthRef':'RadTran.wave_ref_id',
 'RadTransWavelengthMethodCategory':'experiment',
-'RadTransFinalStateRef':'RadTran.lostate.id',
-'RadTransInitialStateRef':'RadTran.upstate.id',
+'RadTransLowerStateRef':'RadTran.lostate.id',
+'RadTransUpperStateRef':'RadTran.upstate.id',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
 'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
 'RadTransProbabilityLog10WeightedOscillatorStrengthRef':'RadTran.loggf_ref_id',
@@ -77,13 +77,18 @@ RETURNABLES = {\
 'RadTransEffectiveLandeFactorRef':'RadTran.lande_ref_id',
 }
 
+from vamdctap.unitconv import *
+
 RESTRICTABLES = {\
 'AtomSymbol':'species__name',
 'AtomNuclearCharge':'species__atomic',
-'AtomStateEnergy':'upstate__energy',
+'StateEnergy':bothStates,
+'Lower.StateEnergy':'lostate__energy',
+'Upper.StateEnergy':'upstate__energy',
 'RadTransWavelength':'vacwave',
 'RadTransWavenumber':'vavenum',
+'RadTransEnergy':('vacwave', eV2Angstr),
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
-'AtomIonCharge':'species__ion'
+'IonCharge':'species__ion'
 }
 

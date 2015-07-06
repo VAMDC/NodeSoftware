@@ -12,26 +12,39 @@
     <capability standardID='ivo://vamdc/std/VAMDC-TAP' xsi:type='tx:VamdcTap'>
         <interface xsi:type='vs:ParamHTTP'>
             <accessURL use='base'>{{accessURL}}</accessURL>
+                {% for mirror in MIRRORS %}
+                    <accessURL use='base'>{{mirror}}</accessURL>
+                {% endfor %}
         </interface>
         <versionOfStandards>{{STANDARDS_VERSION}}</versionOfStandards>
         <versionOfSoftware>{{SOFTWARE_VERSION}}</versionOfSoftware>
         {% if EXAMPLE_QUERIES %}{% for query in EXAMPLE_QUERIES %}<sampleQuery>{{query}}</sampleQuery>{% endfor %}{% endif %}
         {% if RETURNABLES %}{% for returnable in RETURNABLES %}<returnable>{{ returnable }}</returnable>{% endfor %}{% endif %}
         {% if RESTRICTABLES %}{% for restrictable in RESTRICTABLES %}<restrictable>{{ restrictable }}</restrictable>{% endfor %}{% endif %}
+        {% if APPS %}{% for app in APPS %}<application>{{ app }}</application>{% endfor %}{% endif %}
     </capability>
     <capability standardID='ivo://ivoa.net/std/TAP'>
         <interface xsi:type='vs:ParamHTTP'>
             <accessURL use='base'>{{accessURL}}</accessURL>
+                {% for mirror in MIRRORS %}
+                    <accessURL use='base'>{{mirror}}</accessURL>
+                {% endfor %}
         </interface>
     </capability>
     <capability standardID='ivo://ivoa.net/std/VOSI#capabilities'>
         <interface xsi:type='vs:ParamHTTP'>
             <accessURL use='base'>{{accessURL}}capabilities</accessURL>
+                {% for mirror in MIRRORS %}
+                    <accessURL use='base'>{{mirror}}capabilities</accessURL>
+                {% endfor %}
         </interface>
     </capability>
     <capability standardID="ivo://ivoa.net/std/VOSI#availability">
         <interface xsi:type="vs:ParamHTTP">
 	    <accessURL use="base">{{accessURL}}availability</accessURL>
+                {% for mirror in MIRRORS %}
+                    <accessURL use='base'>{{mirror}}availability</accessURL>
+                {% endfor %}
 	</interface>
     </capability>
 </cap:capabilities>

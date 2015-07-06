@@ -34,7 +34,7 @@ def setupResults(sql):
 	"""
 	result = None
 	# return all species
-	if str(sql) == 'select species': 
+	if str(sql).strip().lower() == 'select species': 
 		result = setupSpecies()
 	# all other requests
 	else:		
@@ -57,7 +57,7 @@ def setupSpecies():
 	result.addDataField('Atoms',species)	
 	return result
 	
-def setupVssRequest(sql, limit=1000):
+def setupVssRequest(sql, limit=500):
     """		
         Execute a vss request
         @type  sql: string
@@ -69,6 +69,7 @@ def setupVssRequest(sql, limit=1000):
     result = util_models.Result()
     q = sql2Q(sql)    
 
+    #select transitions : combination of density/temperature
     transs = django_models.Transition.objects.filter(q)
     ntranss=transs.count()
 
@@ -76,15 +77,17 @@ def setupVssRequest(sql, limit=1000):
         transs, percentage = truncateTransitions(transs, q, limit)
     else:
         percentage=None 
-    log.debug("number of transitions : "+str(ntranss))
+        
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     if ntranss > 0 :	
         species, nspecies, nstates = getSpeciesWithStates(transs)      
         transitions, environments = getTransitionsData(transs)    
         particles = getParticles(ntranss) 
+        functions = getFunctions()
         sources =  getSources(transs)
         nsources = len(sources)
+        
 
         # Create the header with some useful info. The key names here are
         # standardized and shouldn't be changed.
@@ -97,6 +100,7 @@ def setupVssRequest(sql, limit=1000):
         result.addDataField('Atoms',species)
         result.addDataField('Environments',environments)
         result.addDataField('Particles',particles)
+        result.addDataField('Functions',functions)
         result.addDataField('Sources',sources)
         
     else : # only fill header
@@ -194,7 +198,8 @@ def getSpeciesWithStates(transs):
 
             nstates += len(specie.States)
         except ObjectDoesNotExist as e:
-            log.debug(str(e)) # this species is a collider
+            pass
+            #log.debug(str(e)) # this species is a collider
 
     nspecies = len(species) # get some statistics 
     return species, nspecies, nstates  
@@ -205,6 +210,7 @@ def getStates(specie, sids):
     for component in statescomponent : 
         starkState = util_models.State()
         starkState.id = component.id
+        starkState.parity = component.get_int_parity()
         starkState.totalAngularMomentum = component.j_asFloat()
         starkState.Components.append(component)
         allStates.append(starkState)
@@ -239,7 +245,8 @@ def getTransitionsData(transs):
             # generators.py do not create broadening element when broadening.value is empty
             br = getBroadening(environment)
             if br is not None : 
-                broadenings.append(br)            
+                broadenings.append(br) 
+                #getFitBroadening(environment)           
             # shifting to be added later
             sh = getShifting(environment)
             if sh is not None : 
@@ -289,6 +296,10 @@ def getBroadening(environment):
         param.comment = getValidity(environment.w, environment.n_w)
         return param
     return None
+    
+def getFitCoefficients(environment):
+    fits = django_models.FitCoefficient.objects.filter(transitiondata=environment.temperature.transitiondata, species=environment.species)
+    broad = [fits.a0, fits.a1, fits.a2]
     
 def getShifting(environment):
     """
@@ -352,3 +363,8 @@ def getValidity(value, nvalue):
 			return 'the impact approximation reachs its limit of validity, 0.1 < NV ≤ 0.5'
             
 
+def getFunctions():
+    functions = []
+    functions.append(util_models.FunctionBuilder.widthCalculation())
+    functions.append(util_models.FunctionBuilder.shiftCalculation())
+    return functions

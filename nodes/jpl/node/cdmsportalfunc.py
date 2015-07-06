@@ -41,7 +41,7 @@ def get_isotopologs_list(inchikeys = None):
     isotopologs = species.values('inchikey','isotopolog','molecule__stoichiometricformula','molecule__trivialname').distinct().order_by('molecule__stoichiometricformula')
     
     return isotopologs
-    
+
 def getSpecie(id = None):
     """
     """
@@ -144,7 +144,6 @@ def getFiles4specie(id):
     return files
 
 
-    
 def check_query(postvars):
     """
     Creates TAP-XSAMS query and return it as a string
@@ -192,8 +191,6 @@ def check_query(postvars):
         htmlcode += "(" + " OR ".join(spec_array) + ")"
     else:
         htmlcode += "<a href='#' onclick=\"load_page('queryForm');\" ><font style='color:red'>SPECIES: nothing selected => Click here to select species!</font></a>"
-        
-
     htmlcode += "</li>"
 
 
@@ -382,8 +379,6 @@ def check_query(postvars):
 #    return tapxsams, htmlcode
     return tap, htmlcode
 
-
-
 def geturl(url, timeout=None):
     """
     Usage: {% geturl url [timeout] %}
@@ -413,7 +408,6 @@ def geturl(url, timeout=None):
     except:
         content = ''        
     return content
-
 
 def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v1.0.xslt', species1=None, species2=None, inurl2=None):
     """
@@ -530,7 +524,6 @@ def applyStylesheet2File(infile, xsl = None):
 
     #xsl = settings.XSLT_DIR + 'convertXSAMS2html.xslt'
     #xsl = settings.XSLT_DIR + 'convertXSAMS2Rad3d.xslt"
-
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
@@ -541,14 +534,12 @@ def applyStylesheet2File(infile, xsl = None):
     try: xml=e.parse(infile)
     except Exception,err:
         raise ValidationError('Could not parse XML file: %s'%err)
-    
 
     try: result = str(xsl(xml))
     except Exception,err:
         raise ValidationError('Could not transform XML file: %s'%err)
     
     return  result
-
 
 def getHtmlNodeList():
     """
@@ -627,7 +618,6 @@ def getHtmlNodeList():
     response += "</ul></div>"
     return response, nodes
 
-
 def doHeadRequest(url, timeout = 20):
     """
     Does a HEAD request on the given url.
@@ -668,7 +658,6 @@ def doHeadRequest(url, timeout = 20):
                         ("vamdc-approx-size",0),
                         ("vamdc-count-radiative",0),
                         ("vamdc-count-atoms",0)]
-
     return vamdccounts
     
 def getNodeStatistic(baseurl, inchikey, url = None):
@@ -678,7 +667,6 @@ def getNodeStatistic(baseurl, inchikey, url = None):
 
     Returns: VAMDC statistic as htmlcode (for ajax Requests)
     """
-
     orig_url = url
     
     url=url.replace('rad3d','XSAMS')

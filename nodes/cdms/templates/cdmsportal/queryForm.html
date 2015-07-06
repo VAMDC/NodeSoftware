@@ -332,6 +332,23 @@
 
   </fieldset>
 
+  <fieldset>
+    <div class="legend">Process Code</div>
+
+    <div class="type-select">      
+      <label for="T_SEARCH_HFSCODE">Hyperfine Splitting</label>      
+      <SELECT class="log"  NAME="T_SEARCH_HFSCODE" id="T_SEARCH_HFSCODE" size="1">
+        <OPTION VALUE='' selected="selected"> No filter </OPTION>
+        <OPTION VALUE='hyp0'> Without HFS </OPTION> 
+        <OPTION VALUE='hyp1'> HFS with 1 nucleus </OPTION> 
+        <OPTION VALUE='hyp2'> HFS with 2 nuclei </OPTION> 
+        <OPTION VALUE='hyp3'> HFS with 3 nuclei </OPTION> 
+      </SELECT> 
+    </div>
+
+
+  </fieldset>
+
   <div class="type-button float_right">
     <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans');ajaxQueryNodeContent();" VALUE="OK" >
   </div>
@@ -400,7 +417,7 @@
    </div>
    </fieldset>
     <div class="type-button float_right">
-      <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+      <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans');ajaxQueryNodeContent();" VALUE="OK" >
    </div>
   </div>
 

@@ -193,7 +193,6 @@ def check_query(postvars):
     else:
         htmlcode += "<a href='#' onclick=\"load_page('queryForm');\" ><font style='color:red'>SPECIES: nothing selected => Click here to select species!</font></a>"
         
-
     htmlcode += "</li>"
 
 
@@ -370,7 +369,6 @@ def check_query(postvars):
             tapcdms += " AND EnvironmentTemperature = %s " % temperature
     except:
         pass
-
 
     #######################################
     # RETURN QUERY STRING DEPENDEND ON DB

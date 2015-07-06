@@ -6,11 +6,13 @@ routines for querying the registry
 
 """
 
-REL_REG='http://registry.vamdc.eu/vamdc_registry/services/RegistryQueryv1_0'
+#REL_REG='http://registry.vamdc.eu/registry-11.12/services/RegistryQueryv1_0'
+REL_REG='http://registry.vamdc.eu/registry-12.07/services/RegistryQueryv1_0'
 DEV_REG='http://casx019-zone1.ast.cam.ac.uk/registry/services/RegistryQueryv1_0'
 REL_REG='http://registry.vamdc.eu/registry-12.07/services/RegistryQueryv1_0'
 
 REGURL=DEV_REG
+REGURL=REL_REG
 WSDL=REGURL+'?wsdl'
 
 # this is a copy of the URL above but with
@@ -18,23 +20,6 @@ WSDL=REGURL+'?wsdl'
 #WSDL = 'http://tmy.se/t/devreg_wsdl.xml'
 
 from suds.client import Client
-from suds.xsd.doctor import Doctor
-class RegistryDoctor(Doctor):
-    TNS = 'http://www.ivoa.net/wsdl/RegistrySearch/v1.0'
-    def examine(self, node):
-        tns = node.get('targetNamespace')
-        # find a specific schema
-        if tns != self.TNS:
-            return
-        for e in node.getChildren('element'):
-            # find our response element
-            if e.get('name') != 'XQuerySearchResponse':
-                continue
-            # fix the <xs:any/> by adding maxOccurs
-            any = e.childAtPath('complexType/sequence/any')
-            any.set('maxOccurs', 'unbounded')
-            break
-
 
 def getNodeList():
 
@@ -67,8 +52,6 @@ def getNodeList():
     			'url':url,
 			})
     return nameurls
-
-
 
 if __name__ == '__main__':
     print getNodeList()

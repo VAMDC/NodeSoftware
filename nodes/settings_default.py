@@ -5,12 +5,13 @@
 #
 
 import sys, os
+import datetime
 
 ###################################################
 # Software and standards version
 ###################################################
-VAMDC_STDS_VERSION = '11.12'
-NODESOFTWARE_VERSION = '11.12r3'
+VAMDC_STDS_VERSION = '12.07'
+NODESOFTWARE_VERSION = '12.07r1-rc'
 
 ###################################################
 # Basic node setup
@@ -18,12 +19,11 @@ NODESOFTWARE_VERSION = '11.12r3'
 # root path of the VAMDC install on your system (should be automatically set)
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_PATH)
-sys.path.append(BASE_PATH+'/nodes')
 NODENAME = os.path.basename(os.path.dirname(__file__))
-NODEPKG= NODENAME+'.node'
+NODEPKG = 'node'
 
 # Where to load url info from
-ROOT_URLCONF = NODENAME+'.urls'
+ROOT_URLCONF = 'urls'
 
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email).
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
@@ -34,11 +34,19 @@ EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
                    'SELECT ALL WHERE ... something else',
                    ]
 
+LAST_MODIFIED = datetime.date(1901,2,3)
+
 # This turns on/off the serving of static files
 # though Django. It is better to let the deployment
 # webserver do this, not Django. But it is on
 # by default to make things fail-safe.
 SERVE_STATIC = True
+
+# MIRROR sites
+MIRRORS = []
+
+# Preferred applications that work with the node
+VAMDC_APPS = []
 
 ###################################################
 # Database connection
@@ -132,6 +140,8 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
 )
 
+# ALLOW TO SERVER FROM ALL HOSTS
+ALLOWED_HOSTS = ['*']
 
 #########################
 #  LOGGING
@@ -149,6 +159,11 @@ LOGGING = {
             'format': '%(asctime)s %(levelname)s %(message)s'
         },
     },
+    'filters': {
+        'require_debug_false': {
+        '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
     'handlers': {
         'null': {
             'level':'DEBUG',
@@ -160,6 +175,7 @@ LOGGING = {
         },
         'mail_admins': {
             'level': 'ERROR',
+            'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
             'include_html': True,
         },
@@ -202,3 +218,6 @@ LOGGING = {
         },
     }
 }
+
+CENTRAL_LOGGER_URL = 'http://pdl-calc2.obspm.fr:8081/VamdcLog/LogWriter'
+

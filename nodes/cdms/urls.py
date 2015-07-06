@@ -1,4 +1,6 @@
-from django.conf.urls.defaults import *
+#from django.conf.urls.defaults import *
+
+from django.conf.urls import patterns, url, include
 from django.conf import settings
 
 # Uncomment the next two lines to enable the admin:
@@ -13,11 +15,11 @@ urlpatterns = patterns('',
 
     (r'^tap/', include('vamdctap.urls')),
 #    (r'^cdms/', include('cdms.urls')),
-    (r'^portal/', include('nodes.cdms.node.urls')),
+    (r'^portal/', include('cdms.node.urls')),
 #    (r'^cdms/static', include('nodes.cdms.node.urls')),
 
 # Uncomment this line to include mycdmsadmin if installed
-    (r'^mycdmsadmin/', include('nodes.cdms.mycdmsadmin.urls')),
+    (r'^mycdmsadmin/', include('cdms.mycdmsadmin.urls')),
 )
 
 if settings.SERVE_STATIC:
@@ -32,3 +34,6 @@ if settings.SERVE_STATIC:
 #                    {'document_root': settings.BASE_PATH+'/nodes/cdms/mycdmsadmin/static'}),                    
                     )
 
+
+handler500 = 'vamdctap.views.tapServerError'
+handler404 = 'vamdctap.views.tapNotFoundError'

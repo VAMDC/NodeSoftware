@@ -8,6 +8,45 @@ Changelog
     document before, since terms are used that are introduced later. It is meant
     for returning readers, especially the maintainers of VAMDC nodes.
 
+Nov 15, 2012
+---------------------
+
+**Version 12.07**. This is version 12.07 of the NodeSoftware that implements
+the VAMDC standards with equal version number. There have been no conceptual
+changes in the inner workings and upgrading should be painless. A few points
+are however worth mentioning.
+
+
+**Mirrors**. VAMDC nodes can have mirrors and each deployment should know about the others in order to convey the URLs through the ``/tap/capabilities`` endpoint. The way to do this is through a variable in ``settings.py`` like this::
+
+    MIRRORS = ['http://mirror1.domain/tap/', 'http://mirror2.domain/tap/']
+
+Note that the URL of the current node should not be repeated here and that they should end including the trailing slash.
+
+
+**Last modified**. The information on when the data that are returned in a
+query were last modified, e.g. to use a HEAD (preview) request to check for new
+data, nodes can fill the HTTP header ``Last-Modified`` to convey this
+information. It is up to each node whether this will be done on a fine-grained
+level of individual data or globally for the whole database. The values can be
+set from ``settings.py`` (variable LAST_MODIFIED) or from the node's
+``setupresults()`` function as LAST-MODIFIED in the header dictionary. As
+values, either a string (like: *Sat, 10 Nov 2012 23:00:00 GMT*) or a
+Python ``datetime.date`` instance that will be formatted automatically.
+
+**Basis States**. The dictionary keywords for the molecular basis states were
+named inconsistently. In order to keep the naming scheme somewhat sane, words
+like `BasisState*` have been renamed to `MoleculeBasisState*`. The words for
+the basis state quantum numbers like `BasisStateQN*` have been renamed to
+`MoleculeBQN*`.
+
+**License**. A file LICENSE has been added to the package and contains the agreed-upon software license, as taken from http://opensource.org/licenses/BSD-3-Clause
+
+**Django upgrade**. Lastly, please do not forget to keep the underlying
+software packages up to date. Currently Django is at version 1.4.2 and upgrading
+should not make much problems. Also upgrade the rest of your nodes' stack, like Nginx, Gunicorn or Apache.
+
+
 June 5, 2012
 ---------------------
 

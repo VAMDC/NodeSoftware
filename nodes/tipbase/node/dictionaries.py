@@ -27,6 +27,7 @@ RETURNABLES = {\
 'AtomStateIonizationEnergyUnit' : 'AtomState.ionizationenergyunit.value',
 'AtomStateTotalAngMom' : 'AtomState.totalangularmomentum',
 'AtomStateTermLabel' : 'Component.termlabel',
+'AtomStateConfigurationLabel' : 'Component.configuration',
 'AtomStateTermLSL' : 'Component.Lscoupling.l',
 'AtomStateTermLSS' : 'Component.Lscoupling.s',
 'AtomStateTermLSMultiplicity' : 'Component.Lscoupling.multiplicity',
@@ -76,5 +77,11 @@ RESTRICTABLES = {\
 'IonCharge' : 'ioncharge',
 'AtomNuclearCharge' : 'nuclearcharge',
 'AtomSymbol' : 'elementsymbol',
+'target.IonCharge' : 'ioncharge',
+'target.AtomNuclearCharge' : 'nuclearcharge',
+'target.AtomSymbol' : 'elementsymbol',
+'ParticleName': 'collider__name',
+'collider.ParticleName': 'collider__name',
+#'ParticleName' : 'electron',
 }
 

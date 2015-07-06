@@ -5,26 +5,24 @@
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.template import Context,Template
+from django.template import Context, Template
 from django.template.loader import get_template
-from django.shortcuts import render_to_response,get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404
 
 import models # this imports models.py from the same directory as this file
 
 from django.db.models import Q
 
+# this function fetches energyscan data from the db and is defined as a function
+# because it is needed several times throughout this file
 
-#def index(request):
-#    c=RequestContext(request,{})
-#    return render_to_response('index.html', c)
-
-def show_energyscan(request,id):
+def get_ES_from_db(id):
+    """ Grab energyscan data from database """
     energyscan = models.Energyscan.objects.filter(Q(id__exact=id)).get()
     ES_list = energyscan.energyscan_data.split()
     k = 0
     xs = []
     ys = []
-    stringarray=[]
     for datapoint in ES_list:
         datapoint = datapoint.replace(',','.')
         #even -> x-value
@@ -35,9 +33,18 @@ def show_energyscan(request,id):
             ys.append(float(datapoint))
         k = k + 1
 
+    #we end at this point, because the further handling of the data depends on the function
+
+    return energyscan, xs, ys
+
+def show_energyscan(request, id):
+    """ Fill the normal template to show ES on the webinterface """
+    # get data from db
+    energyscan, xs, ys = get_ES_from_db(id)
     xs = map(str, xs)
     ys = map(str, ys)
     k = 0
+    stringarray = []
     for x in xs:
         stringarray.append('[%s, %s]'%(x, ys[k]))
         k = k + 1
@@ -48,7 +55,7 @@ def show_energyscan(request,id):
     authorlist = []
     source = models.Source.objects.filter(id__exact=energyscan.source.id).get()
     for author in source.authors.all():
-        authorlist.append(u'%s, %s'%(author.lastname,author.firstname))
+        authorlist.append(u'%s, %s'%(author.lastname, author.firstname))
 
     energyscan.authorlist = "; ".join(authorlist)
 
@@ -57,41 +64,14 @@ def show_energyscan(request,id):
     html = t.render(c)
     return HttpResponse(html)
 
-def compare_energyscan(request,id1,id2):
-    energyscan1 = models.Energyscan.objects.filter(Q(id__exact=id1)).get()
-    energyscan2 = models.Energyscan.objects.filter(Q(id__exact=id2)).get()
-    ES_list1 = energyscan1.energyscan_data.split()
-    ES_list2 = energyscan2.energyscan_data.split()
+def compare_energyscan(request, id1, id2):
+    """ Compare two ES on the webinterface """
+    # get data from db
+    energyscan1, xs1, ys1 = get_ES_from_db(id1)
+    energyscan2, xs2, ys2 = get_ES_from_db(id2)
 
-    #put first energyscan in list
-    k = 0
-    xs1 = []
-    ys1 = []
     stringarray1 = []
-    for datapoint in ES_list1:
-        datapoint = datapoint.replace(',','.')
-        #even -> x-value
-        if k % 2 == 0:
-            xs1.append(float(datapoint))
-        #odd -> y-value
-        else:
-            ys1.append(float(datapoint))
-        k = k + 1
- 
-    #second
-    k = 0
-    xs2 = []
-    ys2 = []
-    stringarray2=[]
-    for datapoint in ES_list2:
-        datapoint = datapoint.replace(',','.')
-        #even -> x-value
-        if k % 2 == 0:
-            xs2.append(float(datapoint))
-        #odd -> y-value
-        else:
-            ys2.append(float(datapoint))
-        k = k + 1
+    stringarray2 = []
 
     #compare scans - multiply items of second with factor between max(1) and max(2)
     factor = max(ys1) / max(ys2)
@@ -113,9 +93,9 @@ def compare_energyscan(request,id1,id2):
 
     xs2 = map(str, xs2)
     ys2 = map(str, ys2)
-    k=0
+    k = 0
     for x in xs2:
-        stringarray2.append('[%s, %s]'%(x,ys2[k]))
+        stringarray2.append('[%s, %s]'%(x, ys2[k]))
         k = k + 1
 
     energyscan2.daten = " ,".join(stringarray2)
@@ -124,14 +104,14 @@ def compare_energyscan(request,id1,id2):
     authorlist = []
     source = models.Source.objects.filter(id__exact=energyscan1.source.id).get()
     for author in source.authors.all():
-        authorlist.append(u'%s, %s'%(author.lastname,author.firstname))
+        authorlist.append(u'%s, %s'%(author.lastname, author.firstname))
 
     energyscan1.authorlist = "; ".join(authorlist)
 
     authorlist = []
     source = models.Source.objects.filter(id__exact=energyscan2.source.id).get()
     for author in source.authors.all():
-        authorlist.append(u'%s, %s'%(author.lastname,author.firstname))
+        authorlist.append(u'%s, %s'%(author.lastname, author.firstname))
 
     energyscan2.authorlist = "; ".join(authorlist)
 
@@ -144,31 +124,18 @@ def compare_energyscan(request,id1,id2):
     return HttpResponse(html)
 
 def contact(request):
-    contact = {'name':'Johannes Postler', 'email':'johannes.postler@uibk.ac.at'}
+    contactdetails = {'name':'Johannes Postler', 'email':'johannes.postler@uibk.ac.at'}
     t = get_template('node/contact.html')
-    c = Context({'contact':contact})
+    c = Context({'contact':contactdetails})
     html = t.render(c)
     return HttpResponse(html)
 
-def export_ascii(request,id):
-    energyscan = models.Energyscan.objects.filter(Q(id__exact=id)).get()
-    ES_list = energyscan.energyscan_data.split()
-    k = 0
-    xs = []
-    ys = []
-    stringarray=[]
-    for datapoint in ES_list:
-        datapoint = datapoint.replace(',', '.')
-        #even -> x-value
-        if k % 2 == 0:
-            xs.append(float(datapoint))
-        #odd -> y-value
-        else:
-            ys.append(float(datapoint))
-        k = k + 1
-
-    #xs = map(str,xs)
-    #ys = map(str,ys)
+def export_ascii(request, id):
+    """ Export ES to ASCII file """
+    #get data from db
+    energyscan, xs, ys = get_ES_from_db(id)
+    
+    stringarray = []
     k = 0
     for x in xs:
         stringarray.append('%f\t%f'%(x, ys[k]))
@@ -181,5 +148,5 @@ def export_ascii(request,id):
     filename = "ES_" + str(energyscan.species) + "_from_" + str(energyscan.origin_species) + ".txt"
     html = t.render(c)
     resp = HttpResponse(html, content_type='text/plain')
-    resp['Content-Disposition'] = 'attachment; filename=%s'%filename
+    resp['Content-Disposition'] = 'attachment; filename=%s' % filename
     return resp

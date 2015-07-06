@@ -180,7 +180,6 @@ class NuclearSpinIsomers(Model):
      def lowestrovibstateid(self):
           return '%s-origin-%s' % (self.lowestrovibstate, self.specie_id)
 
-     
 class States( Model):
      """
      This class contains the states of each specie.
@@ -638,7 +637,6 @@ class TransitionsCalc( Model):
 ##          freqs=[self.frequency]
 ##          for trans in exptranss:
 ##               freqs.append(trans.frequency)
-
 ##          self.frequencyArray = freqs
 ##          return freqs
 
@@ -861,7 +859,6 @@ class RadiativeTransitionsT( Model):
      class Meta:
         db_table = u'RadiativeTransitionsT'
  
-
 class Sources( Model):
      """
      This class contains references 

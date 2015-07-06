@@ -390,7 +390,7 @@ def setupResults(sql):
 
     # this header info is used in xsams-header-info (html-request)
     headerinfo={\
-        'Truncated':"0", # CDMS will not truncate data (at least for now)
+        'Truncated':"100", # CDMS will not truncate data (at least for now)
         'count-sources':nsources, 
         'count-species':nspecies,
         'count-molecules':nmolecules,

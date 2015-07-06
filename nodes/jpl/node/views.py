@@ -21,7 +21,6 @@ FILENAME_XSAMS2HTML = settings.XSLT_DIR + 'convertXSAMS2html.xslt'
 FILENAME_XSAMS2RAD3D = settings.XSLT_DIR + 'convertXSAMS2Rad3d.xslt'
 FILENAME_MERGERADEX = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xslt'
 
-
 class QUERY(object ):
     """
     """
@@ -151,7 +150,6 @@ def help(request):
     c=RequestContext(request,{})
     return render_to_response('cdmsportal/help.html', c)
 
-        
 def queryPage(request):
     """
     Creates the Form to define query parameters;
@@ -161,7 +159,6 @@ def queryPage(request):
     id_list = request.POST.getlist('speciesIDs')
     inchikey_list = request.POST.getlist('inchikey')
     stoichio_list = request.POST.getlist('molecule')
-    
     species_list = get_species_list(id_list, database = -0)
     isotopolog_list = Species.objects.filter(inchikey__in=inchikey_list)
     molecule_list = Species.objects.filter(molecule__stoichiometricformula__in=stoichio_list)
@@ -193,7 +190,6 @@ def query_form(request):
                               "stoichio_list": stoichio_list,
                               })
     return render_to_response('cdmsportal/querySpeciesAjax.html', c)
-
 
 def tools(request):
     """
@@ -237,8 +233,6 @@ def selectSpecie2(request):
     #species_list = get_species_list()
     c=RequestContext(request,{"action" : "catalog"})
     return render_to_response('cdmsportal/selectSpeciesAjax.html', c)
-
-
 
 def html_list(request, content='species'):
     """
@@ -321,7 +315,6 @@ def json_list(request, content='species'):
        
     return HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
 
-
 def catalog(request, id=None):
     """
     Creates the documentation page for a specie
@@ -370,9 +363,6 @@ def catalog(request, id=None):
                               "otherparameters" : otherParameters  })
     
     return render_to_response('cdmsportal/showDocumentation.html', c)
-
-
-
 
 def showResults(request):
     """
@@ -523,7 +513,6 @@ def specieslist(request):
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
     return render_to_response('cdmsadmin/selectSpecies.html', c)
 
-
 def queryspecies(request, baseurl = settings.BASE_URL + settings.TAP_URLPATH):
     
     requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+SPECIES"
@@ -538,7 +527,6 @@ def queryspecies(request, baseurl = settings.BASE_URL + settings.TAP_URLPATH):
     c=RequestContext(request,{"result" : result})
     return render_to_response('cdmsportal/showResults.html', c)
 
-        
 
 def getfile(request,id):
     """
@@ -554,12 +542,11 @@ def getfile(request,id):
 
     return response
 
-
 def download_data(request):
     postvars = request.POST
 
     baseurl = request.POST.get('nodeurl', settings.BASE_URL + settings.TAP_URLPATH)
-            
+
     if 'url2' in request.POST:
         return HttpResponseRedirect(request.POST['url2'])
     else:    
@@ -567,9 +554,6 @@ def download_data(request):
         if postvars.url:
             if  postvars.format.lower()=='xsams':
                 return HttpResponseRedirect(postvars.url)
-
-            
-
 
 def cdms_lite_download(request):
     """
@@ -581,4 +565,3 @@ def cdms_lite_download(request):
 
 
 
-    
