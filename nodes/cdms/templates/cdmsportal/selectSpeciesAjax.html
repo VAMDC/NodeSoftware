@@ -10,13 +10,15 @@
   <!-- begin: #col1 - first float column -->
     <div id="col1"  role="complementary">
       <div id="col1_content" class="clearfix">      
-
-
         <INPUT TYPE="HIDDEN" NAME="T_PAGE" VALUE="SearchPrediction">
         <h6 class="vlist"> FILTER SPECIES LIST</h6>
         <p id="navFilterInfo" class="info center"> Use 
           <a href="#" class="tooltip" title="<div style='text-align:left;'>Examples:<br><br>'^H2O$' to find only 'H2O'<br>'^H2' to find all string beginning with 'H2' like 'H2CO'<br>'H2O' to find all strings containing 'H2O' like 'NH2OH'</div>">regular expressions</a>
-        </p>
+          </p>
+      <div class="type-check">
+         <input type="checkbox" name="db" id="select_db"/>
+         <label for="select_db">include JPL data</label>
+      </div>         
       <div class="type-text">
         <label for="eTagFilter">Tag</label>
         <input id="eTagFilter" onkeyup="applySpeciesFilter()" onblur="applySpeciesFilter()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
@@ -65,7 +67,21 @@
 		isotopologs = [{% for inchikey in inchikey_list %}'{{inchikey}}',{% endfor %}] 
 		molecules = [{% for molecule in stoichio_list %}'{{molecule}}',{% endfor %}] 
                 $(document).ready(function() {
-                    ajaxGetSpeciesList(5);
+                    if ($("#select_db").is(':checked')) {
+                        ajaxGetSpeciesList(-1);
+                        } else {
+                        ajaxGetSpeciesList(5);
+                    }
+                });
+                applySpeciesFilter();
+                $('#select_db').change(function() {
+                    if ($(this).is(':checked')) {
+                        ajaxGetSpeciesList(-1);
+                    }
+                    else {
+                        ajaxGetSpeciesList(5);
+                    }
+                    applySpeciesFilter();
                 });
 </script>
 

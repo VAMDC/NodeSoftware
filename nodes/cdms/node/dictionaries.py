@@ -268,6 +268,13 @@ def processclass(r, op, *rhs):
     except:
         return QFalse
 
+def environment(r, op, *rhs):
+    """
+    This is currently a dummy to pass the temperature as a variable to queryfunc.py
+    """
+    return Q(pk__isnull=False)
+
+
 RESTRICTABLES = { 
 #'AsOfDate':'',
 #'AtomInchi':'',
@@ -335,6 +342,7 @@ RESTRICTABLES = {
 'Lower.StateEnergy':'lowerstateref__energy',
 'Upper.StateEnergy':'upperstateref__energy',
 'StateEnergy':bothStates,
+'EnvironmentTemperature':'environmenttemp',
 }
 
 CDMSONLYRESTRICTABLES = {

@@ -277,7 +277,7 @@ def check_query(postvars):
     except:
         htmlfield = 'Intensity (lg-units)'            
         xsamsfield = 'RadTransProbabilityIdealisedIntensity'
-        
+
     if (lgint is not None): #'T_SEARCH_INT' in postvars) & (postvars['T_SEARCH_INT']>-10):
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND %s > %s </a></li>" % (htmlfield, postvars['T_SEARCH_INT'])
        # tapxsams += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
@@ -287,8 +287,6 @@ def check_query(postvars):
 #        htmlcode += """<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\"> 
 #                       <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
 #                       </a></li>\n """
-
-
     ## PROCESS CLASS (HFS-FILTERS)
     try:
         hfs = postvars['T_SEARCH_HFSCODE']
@@ -347,7 +345,6 @@ def check_query(postvars):
             nsi = None
     except KeyError:
         nsi = None
-        
 
     if not state_filter:
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">"
@@ -363,6 +360,17 @@ def check_query(postvars):
 
         if nsi is not None:
             htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Nuclear Spin Isomer = '%s' </a></li>" % (nsi)
+
+    # Enviroment settings
+    try:
+        temperature = float(postvars['T_TEMPERATURE'])
+        if temperature != 300.0:
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND EnvironmentTemperature = %s </a></li>" % (temperature)
+            tapxsams += " AND EnvironmentTemperature = %s " % temperature
+            tapcdms += " AND EnvironmentTemperature = %s " % temperature
+    except:
+        pass
+
 
     #######################################
     # RETURN QUERY STRING DEPENDEND ON DB

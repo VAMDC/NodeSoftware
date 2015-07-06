@@ -97,6 +97,7 @@
         <li><a href="#" id="a_form_species" onclick="docShowSubpage('form_species')">Species</a></li> 
         <li><a href="#" id="a_form_transitions" onclick="docShowSubpage('form_transitions')">Transitions</a></li>
         <li><a href="#" id="a_form_states" onclick="docShowSubpage('form_states')">States</a></li>
+        <li><a href="#" id="a_form_environment" onclick="docShowSubpage('form_environment')">Environment</a></li>
         <li><a href="#" onclick="docShowSubpage('form_output')">Output</a></li>
       </ul>
     </div>
@@ -312,20 +313,6 @@
         <OPTION VALUE='mu2S'> &mu;^<sup>2</sup>S </OPTION> 
       </SELECT> 
     </div>
-
-    <div class="type-select">
-      <label for="T_TEMPERATURE">Temperature </label>
-      <SELECT class="log" class="smallSelectWidth" NAME="T_TEMPERATURE" id="T_TEMPERATURE" >
-        <OPTION VALUE='300'> 300 </OPTION> 
-        <OPTION VALUE='225'> 225 </OPTION> 
-        <OPTION VALUE='150'> 150 </OPTION> 
-        <OPTION VALUE='75'> 75 </OPTION> 
-        <OPTION VALUE='37.50'> 37.50 </OPTION> 
-        <OPTION VALUE='18.75'> 18.75 </OPTION> 
-        <OPTION VALUE='9.375'> 9.375 </OPTION> 
-      </SELECT> 
-    </div> 
-
   </fieldset>
 
   <fieldset>
@@ -391,6 +378,32 @@
       <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans');ajaxQueryNodeContent();" VALUE="OK" >
    </div>
   </div>
+
+<!-- SUBPAGE ENVIRONMENT -->
+<div id="form_environment" class="subpage" style="display:none">
+    <h3><strong>SELECT</strong>&nbsp;<i>REFINE.ENVIRONMENT</i></h3>
+
+<p>&nbsp;</p>
+ <fieldset><div class="legend">Environment</div>
+    <div class="type-select">
+      <label for="T_TEMPERATURE">Temperature </label>
+      <SELECT class="log" class="smallSelectWidth" NAME="T_TEMPERATURE" id="T_TEMPERATURE" >
+        <OPTION VALUE="300"> 300 </OPTION> 
+        <OPTION VALUE="225"> 225 </OPTION> 
+        <OPTION VALUE="150"> 150 </OPTION> 
+        <OPTION VALUE="75"> 75 </OPTION> 
+        <OPTION VALUE="37.50"> 37.50 </OPTION> 
+        <OPTION VALUE="18.75"> 18.75 </OPTION> 
+        <OPTION VALUE="9.375"> 9.375 </OPTION> 
+      </SELECT> 
+    </div> 
+   </div>
+   </fieldset>
+    <div class="type-button float_right">
+      <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans')" VALUE="OK" >
+   </div>
+  </div>
+
 
 <!-- SUBPAGE OUTPUT-FORMAT -->
 <div id="form_output" class="subpage" style="display:none">

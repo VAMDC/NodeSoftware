@@ -304,20 +304,45 @@ def setupResults(sql):
     filteroninchi = "Inchi" in sql.query
     filteronmols = "Molecule" in sql.query
     filteronspecies = ("Ion" in sql.query) | filteronmols | filteroninchi | filteronatoms
-    q = sql2Q(sql)
 
+    temperature = 300.0
+    if not sql.parsedSQL.where:
+        q = Q()
+    else:
+        logic, restriction, count = splitWhere(sql.parsedSQL.where)
+        q_dict = {}
+        for i, r in restriction.items():
+           r = applyRestrictFu(r)
+           if r[0].lower() == 'environmenttemperature':
+               if r[1] in ('=', '=='):
+                   temperature = r[2]
+                   q_dict[i] = Q(pk__isnull = False)
+               else:
+                   q_dict[i] = QFalse
+           else:
+               q_dict[i] = restriction2Q(r)
+        q = mergeQwithLogic(q_dict, logic)
+#    q = sql2Q(sql)
+#    LOG(q)
     addStates = (not sql.requestables or 'atomstates' in sql.requestables or 'moleculestates' in sql.requestables)
     addTrans = (not sql.requestables or 'RadiativeTransitions' in sql.requestables)
 
     #datasets = Datasets.objects.filter(archiveflag=0)
 
     # Query the database and get calculated transitions (TransitionsCalc)
-    transs = RadiativeTransitions.objects.filter(q #specie__origin=5,
-                                            #specie__archiveflag=0,
-                                            #dataset__in=datasets,
-                                            #dataset__archiveflag=0
-                                            ) #.order_by('frequency')
+#    transs = RadiativeTransitions.objects.filter(q #specie__origin=5,
+#                                            #specie__archiveflag=0,
+#                                            #dataset__in=datasets,
+#                                            #dataset__archiveflag=0
+#                                            ) #.order_by('frequency')
+    if temperature == 300.0:
+        transs = RadiativeTransitions.objects.filter(q) 
+    else:
+        transs = RadiativeTransitionsT.objects.filter(q, temperature = temperature, intensity__gt= -99.9)
 
+    ntrans = transs.count()
+    LOG("Number of Transitions: %d" % ntrans)
+ 
     # get atoms and molecules with states which occur in transition-block
     atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates, filteronspecies)
 
@@ -417,38 +442,55 @@ def returnResults(tap, LIMIT=None):
         return response
 
 
-    
-    LOG('And now some logs:')
-    #LOG(tap.data)
-        
-    LOG(tap.parsedSQL)
-
-#    for i in tap.parsedSQL:
-#        if 'getonlycalc' in i:
-#            LOG(i)
-#        else:
-#            psql.append(i)
-#            LOG(i)
-#        c+=1
-
-    q = sql2Q(tap.parsedSQL)
-    LOG(q)
+    # Create filter manually, because temperature and intensity information
+    # has to be obtained separately in order to prepare the partition functions
+    # accordingly.
+    temperature = 300.0
+    if not tap.parsedSQL.where:
+        q = Q()
+    else:
+        logic, restriction, count = splitWhere(tap.parsedSQL.where)
+        q_dict = {}
+        # filter where intensity restriction has been removed to assure that
+        # all species will be obtained for retrieving all partitionfunctions
+        q_noint_dict = {}
+        for i, r in restriction.items():
+            r = applyRestrictFu(r)
+            if r[0].lower() == 'environmenttemperature':
+                if r[1] in ('=', '=='):
+                    temperature = r[2]
+                    q_dict[i] = Q(pk__isnull = False)
+                    q_noint_dict[i] = Q(pk__isnull = False)
+                else:
+                    q_dict[i] = QFalse
+                    q_noint_dict[i] = QFalse
+            elif r[0].lower() == 'radtransprobabilityidealisedintensity':
+                    q_dict[i] = restriction2Q(r)
+                    q_noint_dict[i] = Q(pk__isnull = False)
+            else:
+                q_dict[i] = restriction2Q(r)
+                q_noint_dict[i] = restriction2Q(r)
+        q = mergeQwithLogic(q_dict, logic)
+        q_noint = mergeQwithLogic(q_noint_dict, logic)
 
     # use tap.parsedSQL.columns instead of tap.requestables
     # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
-    transs = RadiativeTransitions.objects.filter(q,specie__archiveflag=0,dataset__archiveflag=0) #,energylower__gt=0) 
+    if temperature == 300.0:
+        transs = RadiativeTransitions.objects.filter(q,specie__archiveflag=0,dataset__archiveflag=0) #,energylower__gt=0) 
+    else:
+        transs = RadiativeTransitionsT.objects.filter(q, specie__archiveflag = 0, dataset__archiveflag = 0, temperature = temperature, intensity__gt= -99.9)
     ntrans = transs.count()
 
-    if LIMIT is not None and ntrans > LIMIT:
+#    if LIMIT is not None and ntrans > LIMIT:
         # we need to filter transs again later, so can't take a slice
         #transs = transs[:LIMIT]
         # so do this:
-        numax = transs[LIMIT].nu
-        transs = TransitionsCalc.objects.filter(q, Q(nu__lte=numax))
-        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
-    else:
-        percentage = '100'
+#        numax = transs[LIMIT].nu
+#        transs = TransitionsCalc.objects.filter(q, Q(nu__lte=numax))
+#        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+#    else:
+    percentage = '100'
 #    print 'Truncated to %s %%' % percentage
 
 
@@ -461,7 +503,28 @@ def returnResults(tap, LIMIT=None):
             transitions = transs.order_by(*orderby) 
         else:            
             transitions = transs.order_by(orderby)
-            
+        # get the partinotion functions if temperature != 300K        
+        if temperature != 300.0:
+            species = RadiativeTransitions.objects.filter(q_noint).values_list('specie_id', flat = True).distinct()
+            LOG(species)
+            # Get partitinofunctions for all species for specific temperature
+            q300 = {}
+            qrs = {}
+            cursor = connection.cursor()
+            for s in species:
+                try:
+                    q300[s] = Partitionfunctions.objects.get(specie = s, temperature = 300.0, state = 'All', nsi__isnull = True)
+                except:
+                    q300[s] = None
+                try:
+                    cursor.execute('SELECT F_GetPartitionfunctionDetailed(300, %s)', s)
+                    qrs[s] = cursor.fetchone()[0]
+                except:
+                    qrs[s] = None
+            cursor.close()
+
+
+
     else:
         LOG('NO TRANSITIONS')
         transitions = []
