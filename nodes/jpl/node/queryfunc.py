@@ -357,7 +357,7 @@ def setupResults(sql):
         lastmodified = datetime.datetime.now()
 
     # Calculate estimated size of xsams-file
-    if ntranss+nmolecules+nsources+natoms+nstates>0:
+    if ntranss+nmolecules+natoms+nstates>0:
         size_estimate='%.2f' % (nstates*0.0008755624 +ntranss*0.000561003 +nmolecules*0.001910 +nsources * 0.0005+0.01)
     else: size_estimate='0.0'
 
@@ -407,12 +407,12 @@ def returnResults(tap, LIMIT=None):
 
     if tap.format == 'list':
         speclist=specieslist()
-        response = HttpResponse(speclist, mimetype='text/plain')
+        response = HttpResponse(speclist, content_type='text/plain')
         return response
 
     if tap.format == 'species':
         speclist=plain_specieslist()
-        response = HttpResponse(speclist, mimetype='text/plain')
+        response = HttpResponse(speclist, content_type='text/plain')
         return response
 
     LOG('And now some logs:')
@@ -477,7 +477,7 @@ def returnResults(tap, LIMIT=None):
 
     if tap.format in ('spcat','xspcat','mrg'):
         generator = gener(transitions, states, format=tap.format)
-        response = HttpResponse(generator, mimetype='text/plain')
+        response = HttpResponse(generator, content_type='text/plain')
     else:
         if 'states' in tap.requestables:
             response = plotLevelDiagram(states)
@@ -841,12 +841,12 @@ def plotLevelDiagram(states):
         substates = states.filter(specie=specie)
 
         for state in states:
-            pl = ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color=speciescolor)
+            pl = ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color = speciescolor)
 
         plots.append(pl)
         i=i+1
-        
-    ax.legend(plots, spidsname, loc=0)
+    if count_species > 0:
+        ax.legend(plots, spidsname, loc=0)
 #    ax.legend(bars,spidsname,loc=0)
     
 
