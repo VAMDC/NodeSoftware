@@ -440,7 +440,7 @@ def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v1.0.xsl
     try: data = urlopen(inurl)
 
     except Exception,err:
-        raise ValidationError('Could not open given URL: %s'%err)
+        raise ValidationError('Could not open given URL %s: %s'%(inurl,err))
 
     # Save XML-File to temporary directory
     filename = settings.TMPDIR+"/xsams_download.xsams"

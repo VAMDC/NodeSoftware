@@ -22,7 +22,7 @@ def tapServerError(request=None, status=500, errmsg=''):
     # template directory to get access to it, as well...
     document = loader.get_template('tap/TAP-error-document.xml').render(
                      Context({"error_message_text" : text}))
-    return HttpResponse(document, status=status, mimetype='text/xml');
+    return HttpResponse(document, status=status, content_type='text/xml');
                                 
 
 if hasattr(settings,'TRANSLIM'):
@@ -433,12 +433,12 @@ def returnResults(tap, LIMIT=None):
 
     if tap.format == 'list':
         speclist=specieslist()
-        response = HttpResponse(speclist, mimetype='text/plain')
+        response = HttpResponse(speclist, content_type='text/plain')
         return response
 
     if tap.format == 'species':
         speclist=plain_specieslist()
-        response = HttpResponse(speclist, mimetype='text/plain')
+        response = HttpResponse(speclist, content_type='text/plain')
         return response
 
 
@@ -543,7 +543,7 @@ def returnResults(tap, LIMIT=None):
 
     if tap.format in ('spcat','xspcat','mrg'):
         generator = gener(transitions, states, format=tap.format)
-        response = HttpResponse(generator, mimetype='text/plain')
+        response = HttpResponse(generator, content_type='text/plain')
     else:
         if 'states' in tap.requestables:
             response = plotLevelDiagram(states)

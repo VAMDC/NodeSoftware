@@ -12,6 +12,8 @@ urlpatterns = patterns('',
 
     (r'^tap/', include('vamdctap.urls')),
     (r'^portal/', include('nodes.cdms.node.urls')),
+    # Uncomment this line to include mycdmsadmin if installed
+    (r'^mycdmsadmin/', include('nodes.cdms.mycdmsadmin.urls')),
 
 )
 

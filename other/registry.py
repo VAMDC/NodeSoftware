@@ -23,7 +23,7 @@ from suds.client import Client
 
 def getNodeList():
 
-    d = RegistryDoctor()
+#    d = RegistryDoctor()
     client = Client(WSDL) #,doctor=d)
 
     qr="""declare namespace ri='http://www.ivoa.net/xml/RegistryInterface/v1.0';
