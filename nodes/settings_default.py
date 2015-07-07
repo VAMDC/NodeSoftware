@@ -25,6 +25,14 @@ NODEPKG = 'node'
 # Where to load url info from
 ROOT_URLCONF = 'urls'
 
+sys.path.append(BASE_PATH+'/nodes')
+NODENAME = os.path.basename(os.path.dirname(__file__))
+NODEPKG= NODENAME+'.node'
+
+# Where to load url info from
+ROOT_URLCONF = NODENAME+'.urls'
+
+
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email).
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
 ADMINS = (('yourname', 'name@example.com'),)
