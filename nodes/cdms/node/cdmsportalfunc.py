@@ -4,7 +4,8 @@ import sys
 from models import *
 from django.core.exceptions import ValidationError
 from django.conf import settings
-
+from lxml import etree as e
+ 
 def get_species_list(spids = None, database = 5):
     """
     """
@@ -491,20 +492,15 @@ def applyStylesheet(inurl, xsl = None):
     """
     Applies a xslt-stylesheet to the given url
     """
-    from django.conf import settings
-    from lxml import etree as e
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
         xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'convertXSAMS2html.xslt')))
-
     from urllib2 import urlopen
-
     try: data = urlopen(inurl)
 
     except Exception,err:
         raise ValidationError('Could not open given URL: %s'%err)
-
     # Save XML-File to temporary directory
     filename = settings.TMPDIR+"/xsams_download.xsams"
 
@@ -516,16 +512,13 @@ def applyStylesheet(inurl, xsl = None):
     local_file = open(filename, "w")
     local_file.write(data.read())
     local_file.close()
-
     try: xml=e.parse(filename)
     except Exception,err:
         raise ValidationError('Could not parse XML file: %s'%err)
-    
 
     try: result = str(xsl(xml))
     except Exception,err:
         raise ValidationError('Could not transform XML file: %s'%err)
-    
     return  result 
 
 def applyStylesheet2File(infile, xsl = None):

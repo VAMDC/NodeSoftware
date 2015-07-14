@@ -76,6 +76,8 @@ class TAPQUERY(object):
     and triggers the SQL parser.
     """
     def __init__(self,request):
+        if request.META.has_key('X_REQUEST_METHOD'):
+            self.XRequestMethod = request.META['X_REQUEST_METHOD']
         self.HTTPmethod = request.method
         self.isvalid = True
         self.errormsg = ''
@@ -261,7 +263,6 @@ def sync(request):
     response=HttpResponse(generator,content_type='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
         datetime.datetime.now().isoformat(), tap.format)
-
     headers = querysets.get('HeaderInfo') or {}
     response=addHeaders(headers,request,response)
     # Override with empty response if result is empty

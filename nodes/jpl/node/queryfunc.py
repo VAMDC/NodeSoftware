@@ -22,7 +22,7 @@ def tapServerError(request=None, status=500, errmsg=''):
     # template directory to get access to it, as well...
     document = loader.get_template('tap/TAP-error-document.xml').render(
                      Context({"error_message_text" : text}))
-    return HttpResponse(document, status=status, mimetype='text/xml');
+    return HttpResponse(document, status=status, content_type='text/xml');
                                 
 
 if hasattr(settings,'TRANSLIM'):
@@ -375,14 +375,16 @@ def setupResults(sql):
         'last-modified':lastmodified,
     }
 
-
-    return {'RadTrans':transs,
-            'Atoms':atoms,
-            'Molecules':molecules,
-            'Sources':sources,
-            'Methods':methods,
-            'HeaderInfo':headerinfo,
-           }
+    if hasattr(sql, 'XRequestMethod') and sql.XRequestMethod == 'HEAD':
+        return {'HeaderInfo': headerinfo}
+    else:
+        return {'RadTrans':transs,
+                'Atoms':atoms,
+                'Molecules':molecules,
+                'Sources':sources,
+                'Methods':methods,
+                'HeaderInfo':headerinfo,
+                }
 
 
 
@@ -415,18 +417,6 @@ def returnResults(tap, LIMIT=None):
         response = HttpResponse(speclist, content_type='text/plain')
         return response
 
-    LOG('And now some logs:')
-    #LOG(tap.data)
-        
-    LOG(tap.parsedSQL)
-
-#    for i in tap.parsedSQL:
-#        if 'getonlycalc' in i:
-#            LOG(i)
-#        else:
-#            psql.append(i)
-#            LOG(i)
-#        c+=1
 
     q = sql2Q(tap.parsedSQL)
     LOG(q)

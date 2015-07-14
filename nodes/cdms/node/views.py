@@ -429,15 +429,19 @@ def ajaxRequest(request):
             baseurl = request.POST.get('nodeurl', settings.BASE_URL + settings.TAP_URLPATH)
             
             if 'url2' in request.POST:
+                print >> sys.stderr, 'url2'
                 htmlcode = str(applyStylesheet(request.POST['url2'],
                                                xsl = FILENAME_XSAMS2HTML))
+                print >> sys.stderr, 'htmlcode has been retrieved'
             else:    
                 postvars = QUERY(request.POST,baseurl = baseurl)
                 print >> sys.stderr, "postvars.url = " +postvars.url
                 if postvars.url:
                     if  postvars.format.lower()=='xsams':
+                        print >> sys.stderr, 'xsams-url'
                         htmlcode = str(applyStylesheet(postvars.url,
                                                        xsl = FILENAME_XSAMS2HTML))
+                        print >> sys.stderr, 'htmlcode has been retrieved'
                     elif  postvars.format=='rad3dx':
                         htmlcode = "<pre>" + str(applyStylesheet(postvars.url,
                                                                  xsl = FILENAME_XSAMS2HTML)) + "</pre>"

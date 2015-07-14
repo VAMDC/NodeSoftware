@@ -109,7 +109,7 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
         spids = set( transs.values_list('specie_id',flat=True).distinct() )
     else:
         spids = transs.values_list('specie_id',flat=True)
- 
+
     # Species object for CDMS includes Atoms AND Molecules. Both can only
     # be distinguished through numberofatoms-field
     atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic', origin=5, archiveflag=0)
@@ -173,7 +173,6 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
     return atoms,molecules,nspecies,nstates
 
 
-
 def get_sources(atoms, molecules, methods = []):
     """
     Get a complete list of sources and methods for the set of
@@ -228,7 +227,6 @@ def attach_exp_frequencies(transs):
     The calculated frequency is given anyway followed by experimental
     frequencies (db-table: Frequencies). In addition a unique list of
     methods for the experimental data is created and returned.
-ll
     Returns:
     - modified transitions (frequencies, ... attached as lists)
     - methods for experimental data
@@ -283,16 +281,13 @@ ll
         
     return transs, methods
 
-
-
-
-
 def setupResults(sql):
     """
     This method queries the database with respect to the sql-query
     and compiles everything together for the vamdctap.generator function
     which is used to generate XSAMS - output.
     """
+
     # Modify where-clause:
     # Ensure that filters on AtomMassNumber only return atoms and not also molecules
     sql.parsedSQL=SQL.parseString(sql.query.replace("AtomIonCharge","AtomSymbol>0 and AtomIonCharge"),parseAll=True)
@@ -338,10 +333,6 @@ def setupResults(sql):
         transs = RadiativeTransitions.objects.filter(q) 
     else:
         transs = RadiativeTransitionsT.objects.filter(q, temperature = temperature, intensity__gt= -99.9)
- 
-    ntrans = transs.count()
-    LOG("Number of Transitions: %d" % ntrans)
-
     # get atoms and molecules with states which occur in transition-block
     atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates, filteronspecies)
 
@@ -367,12 +358,11 @@ def setupResults(sql):
     else:
         sources=Sources.objects.none()
 
-
     nsources = sources.count()
     nmolecules = len(molecules)#molecules.count()
     natoms = len(atoms) #atoms.count()
     ntranss = transs.count()
- 
+
     lastmodified = datetime.datetime(2009,12,1)
 
     for specie in chain(atoms, molecules):        
@@ -383,10 +373,8 @@ def setupResults(sql):
 
     # Calculate estimated size of xsams-file
     if ntranss+nmolecules+natoms+nstates>0:
-#    if ntranss+nmolecules+nsources+natoms+nstates>0:
         size_estimate='%.2f' % (nstates*0.0008755624 +ntranss*0.000561003 +nmolecules*0.001910 +nsources * 0.0005+0.01)
     else: size_estimate='0.0'
-
 
     # this header info is used in xsams-header-info (html-request)
     headerinfo={\
@@ -401,14 +389,16 @@ def setupResults(sql):
         'last-modified':lastmodified,
     }
 
-
-    return {'RadTrans':transs,
-            'Atoms':atoms,
-            'Molecules':molecules,
-            'Sources':sources,
-            'Methods':methods,
-            'HeaderInfo':headerinfo,
-           }
+    if hasattr(sql, 'XRequestMethod') and sql.XRequestMethod == 'HEAD':
+        return {'HeaderInfo': headerinfo}
+    else:
+        return {'RadTrans':transs,
+                'Atoms':atoms,
+                'Molecules':molecules,
+                'Sources':sources,
+                'Methods':methods,
+                'HeaderInfo':headerinfo,
+                }
 
 
 
