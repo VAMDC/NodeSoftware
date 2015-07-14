@@ -68,8 +68,6 @@ class QUERY(object ):
         try: self.url = self.data.get('queryURL','')
         except: self.url = ''
 
-        print >> sys.stderr, "queryURL = " + self.url
-        
         if len(self.url)==0:
             try:
                 self.query = self.data.get('QUERY',"").rstrip()
@@ -81,9 +79,6 @@ class QUERY(object ):
                 self.url = self.baseurl + self.requeststring + QueryDict("QUERY="+self.query).urlencode()
             except:
                 self.url = None
-
-            print >> sys.stderr, "query = " + self.query
-            print >> sys.stderr, "url = " + self.url
 
         if len(self.orderby)>0 and 'ORDERBY' not in self.url:
             self.url += '&ORDERBY=%s' % self.orderby
@@ -125,12 +120,6 @@ class QUERY(object ):
             self.spec_speciesid = self.data.get('spec_speciesid','')
             self.col_url = self.data.get('col_url','')
             self.col_speciesid = self.data.get('col_speciesid','')
-
-#        print >> sys.stderr, self.query
-        print >> sys.stderr, self.format
-        print >> sys.stderr, self.url
-        print >> sys.stderr, self.database
-
 
 def index(request):
     c=RequestContext(request,{})
@@ -198,12 +187,10 @@ def query_form(request):
 def tools(request):
     """
     """
-    print >> sys.stderr, request.method
     if request.method == 'POST':
         form = XsamsConversionForm(request.POST, request.FILES)
         if form.is_valid():
             
-            print >> sys.stderr, "IS VALID"
             response=HttpResponse(form.cleaned_data['result'],content_type='text/csv')
             response['Content-Disposition'] = \
                 'attachment; filename=%s.%s'% (form.cleaned_data.get('infile') or 'output', form.cleaned_data.get('format') )
@@ -429,19 +416,14 @@ def ajaxRequest(request):
             baseurl = request.POST.get('nodeurl', settings.BASE_URL + settings.TAP_URLPATH)
             
             if 'url2' in request.POST:
-                print >> sys.stderr, 'url2'
                 htmlcode = str(applyStylesheet(request.POST['url2'],
                                                xsl = FILENAME_XSAMS2HTML))
-                print >> sys.stderr, 'htmlcode has been retrieved'
             else:    
                 postvars = QUERY(request.POST,baseurl = baseurl)
-                print >> sys.stderr, "postvars.url = " +postvars.url
                 if postvars.url:
                     if  postvars.format.lower()=='xsams':
-                        print >> sys.stderr, 'xsams-url'
                         htmlcode = str(applyStylesheet(postvars.url,
                                                        xsl = FILENAME_XSAMS2HTML))
-                        print >> sys.stderr, 'htmlcode has been retrieved'
                     elif  postvars.format=='rad3dx':
                         htmlcode = "<pre>" + str(applyStylesheet(postvars.url,
                                                                  xsl = FILENAME_XSAMS2HTML)) + "</pre>"
@@ -450,7 +432,6 @@ def ajaxRequest(request):
 #                        url4="http://batz.lpma.jussieu.fr:8080/tapservice_11_12/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29"
                         url4="http://dev.vamdc.org/basecol/tapservice_12_07/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29"
 
-                        print >> sys.stderr, "col: %s\nspec: %s\n" % (postvars.col_url, postvars.spec_url)
                         output = str(applyRadex(postvars.spec_url, species1=postvars.spec_speciesid, species2=postvars.col_speciesid, inurl2=postvars.col_url))
                         
                         htmlcode = "<pre>" + output + "</pre>"
@@ -470,8 +451,6 @@ def ajaxRequest(request):
 
     
             postvars = QUERY(request.POST, baseurl = nodeurl, qformat='XSAMS')
-
-            print >> sys.stderr," NODESTATURL: "+ postvars.url
             # fetch statistic for this node
             if nodeurl:
                 htmlcode, vc = getNodeStatistic(nodeurl, inchikey, url = postvars.url)
@@ -499,7 +478,6 @@ def ajaxRequest(request):
             url=url.replace('mrg','XSAMS')
             url=url.replace('png','XSAMS')
             url=url.replace('comfort','XSAMS')
-            print >> sys.stderr, "SPECQUERY: "+url
             try:
                 result, speciesdata =  getspecies(url)
             except:
