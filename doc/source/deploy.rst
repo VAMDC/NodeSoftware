@@ -86,7 +86,7 @@ There are two example files in your node directory for setting this up:
   system you would then move this file to 
   */etc/apache2/sites-available/vamdcnode* and run *a2ensite vamdcnode* to 
   activate it.
-* *django.wsgi*: This is the file that the previous one points to in its 
+* *wsgi.py*: This is the file that the previous one points to in its 
   WsgiScriptAlias. Edit the path and your node's name.
 
 Once you have set this up and re-started the Apache webserver, your node 
