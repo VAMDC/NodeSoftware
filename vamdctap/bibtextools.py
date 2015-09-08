@@ -1,8 +1,12 @@
 import re
-from StringIO import StringIO
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 from pybtex.database.input import bibtex
-from string import strip
-from caselessdict import CaselessDict
+from .caselessdict import CaselessDict
 from xml.sax.saxutils import quoteattr
 
 # get the NodeID to put it in the source key
@@ -49,8 +53,8 @@ def BibTeX2XML(bibtexstring, key=None):
         xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,e.key)
     for a in e.persons['author']:
         name = a.first() + a.middle() + a.last() + a.lineage()
-        name = map(strip,name)
-        name = map(strip,name,['{}']*len(name))
+        name = name.strip()
+        name = name.strip(['{}']*len(name))
         xml += '<Author><Name>%s</Name></Author>'%' '.join(name)
     xml += '\n</Authors>'
 
