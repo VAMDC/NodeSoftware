@@ -302,7 +302,8 @@ def setupResults(sql):
     filteronatoms = "Atom" in sql.query
     filteroninchi = "Inchi" in sql.query
     filteronmols = "Molecule" in sql.query
-    filteronspecies = ("Ion" in sql.query) | filteronmols | filteroninchi | filteronatoms
+    filteronspecieid = "SpeciesID" in sql.query
+    filteronspecies = ("Ion" in sql.query) | filteronmols | filteroninchi | filteronatoms | filteronspecieid
     q = sql2Q(sql)
 
     addStates = (not sql.requestables or 'atomstates' in sql.requestables or 'moleculestates' in sql.requestables)
@@ -319,9 +320,6 @@ def setupResults(sql):
 
     # get atoms and molecules with states which occur in transition-block
     atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates, filteronspecies)
-
-    # attach partition functions to each specie
-    attach_partionfunc(molecules)
 
     # modify filter for transitions:
     transs = transs.filter(specie__origin=0, specie__archiveflag=0, dataset__archiveflag=0)
@@ -342,7 +340,6 @@ def setupResults(sql):
     else:
         sources=Sources.objects.none()
 
-
     nsources = sources.count()
     nmolecules = len(molecules)#molecules.count()
     natoms = len(atoms) #atoms.count()
@@ -361,7 +358,6 @@ def setupResults(sql):
         size_estimate='%.2f' % (nstates*0.0008755624 +ntranss*0.000561003 +nmolecules*0.001910 +nsources * 0.0005+0.01)
     else: size_estimate='0.0'
 
-
     # this header info is used in xsams-header-info (html-request)
     headerinfo={\
         'Truncated':"100", # CDMS will not truncate data (at least for now)
@@ -377,14 +373,16 @@ def setupResults(sql):
 
     if hasattr(sql, 'XRequestMethod') and sql.XRequestMethod == 'HEAD':
         return {'HeaderInfo': headerinfo}
-    else:
-        return {'RadTrans':transs,
-                'Atoms':atoms,
-                'Molecules':molecules,
-                'Sources':sources,
-                'Methods':methods,
-                'HeaderInfo':headerinfo,
-                }
+
+    # attach partition functions to each specie and return the result
+    attach_partionfunc(molecules)
+    return {'RadTrans':transs,
+            'Atoms':atoms,
+            'Molecules':molecules,
+            'Sources':sources,
+            'Methods':methods,
+            'HeaderInfo':headerinfo,
+            }
 
 
 

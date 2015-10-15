@@ -298,7 +298,8 @@ def setupResults(sql):
     filteronatoms = "Atom" in sql.query
     filteroninchi = "Inchi" in sql.query
     filteronmols = "Molecule" in sql.query
-    filteronspecies = ("Ion" in sql.query) | filteronmols | filteroninchi | filteronatoms
+    filteronspecieid = "SpeciesID" in sql.query
+    filteronspecies = ("Ion" in sql.query) | filteronmols | filteroninchi | filteronatoms | filteronspecieid
 
     temperature = 300.0
     if not sql.parsedSQL.where:
@@ -336,10 +337,7 @@ def setupResults(sql):
     # get atoms and molecules with states which occur in transition-block
     atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates, filteronspecies)
 
-    # attach partition functions to each specie
-    attach_partionfunc(molecules)
-
-    # modify filter for transitions:
+     # modify filter for transitions:
     transs = transs.filter(specie__origin=5, specie__archiveflag=0, dataset__archiveflag=0)
 
     # Attach experimental transitions (TransitionsExp) to transitions
@@ -391,14 +389,16 @@ def setupResults(sql):
 
     if hasattr(sql, 'XRequestMethod') and sql.XRequestMethod == 'HEAD':
         return {'HeaderInfo': headerinfo}
-    else:
-        return {'RadTrans':transs,
-                'Atoms':atoms,
-                'Molecules':molecules,
-                'Sources':sources,
-                'Methods':methods,
-                'HeaderInfo':headerinfo,
-                }
+ 
+    # attach partition functions to each specie and return the result
+    attach_partionfunc(molecules)
+    return {'RadTrans':transs,
+            'Atoms':atoms,
+            'Molecules':molecules,
+            'Sources':sources,
+            'Methods':methods,
+            'HeaderInfo':headerinfo,
+            }
 
 
 
