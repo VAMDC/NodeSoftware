@@ -621,7 +621,7 @@ def makeTermType(tag, keyword, G):
         for j in j1j2:
             string += "<j>%s</j>" % j
         string += "</J1J2>"
-    K = G("%sK" % keyword)
+    K = G("%sJKK" % keyword)
     if K:
         string += "<jK>"
         j = G("%sJKJ" % keyword)
