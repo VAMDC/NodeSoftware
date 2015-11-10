@@ -18,11 +18,14 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.utils.http import http_date
 
-if settings.LOG_CENTRALLY:
+try : 
+  if settings.LOG_CENTRALLY:
     try:
-        import requests as librequests
-    except:
-        log.critical('settings.LOG_CENTRALLY is set but requests package is missing!')
+      import requests as librequests
+    except Exception as e:
+      log.debug('settings.LOG_CENTRALLY is set but requests package is missing!')
+except AttributeError as e: 
+  log.debug(e)
 
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
