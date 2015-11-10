@@ -15,12 +15,13 @@ from django.conf import settings
 from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.db import connection
-#import logging
-#log=logging.getLogger('vamdc.tap')
-
 import dictionaries
 import models as django_models
 import util_models as util_models
+
+if hasattr(settings,'LAST_MODIFIED'):
+  LAST_MODIFIED = settings.LAST_MODIFIED
+else: LAST_MODIFIED = None
 
 def replacements(sql):
     pfx = 'target.'
@@ -97,6 +98,9 @@ def setupVssRequest(sql, limit=10000):
     result.addHeaderField('COUNT-COLLISIONS',ncoll)
     result.addHeaderField('COUNT-SPECIES',nspecies)
     result.addHeaderField('COUNT-SOURCES',nsources)
+    
+    if LAST_MODIFIED is not None : 
+      result.addHeaderField('LAST-MODIFIED',LAST_MODIFIED)
     
 
     if(nstates == 0 and nspecies == 0):

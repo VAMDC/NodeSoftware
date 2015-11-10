@@ -21,6 +21,7 @@ RETURNABLES = ({\
 'AtomStateRef':'AtomState.Sources',
 'AtomStateTermJKK':'Component.K',
 'AtomStateTermJKJ':'Component.J1',
+'AtomStateTermJKS':'Component.S2',
 
 #radiative transition
 'RadTransBroadeningPressure':'RadTran',

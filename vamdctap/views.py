@@ -59,13 +59,13 @@ REQUESTABLES = map(lower, [\
 def tapNotFoundError(request):
     text = 'Resource not found: %s'%request.path;
     document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
-    return HttpResponse(document, status=404, content_type='text/xml');
+    return HttpResponse(document, status=404, mimetype='text/xml');
 
 # This turns a 500 "internal server error" into a TAP error-document
 def tapServerError(request=None, status=500, errmsg=''):
     text = 'Error in TAP service: %s'%errmsg
     document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
-    return HttpResponse(document, status=status, content_type='text/xml');
+    return HttpResponse(document, status=status, mimetype='text/xml');
 
 def getBaseURL(request):
     return getattr(settings, 'DEPLOY_URL', None) or \
@@ -266,7 +266,7 @@ def sync(request):
     else:
         generator = Xsams(tap=tap,**querysets)
     log.debug('Generator set up, handing it to HttpResponse.')
-    response=HttpResponse(generator,content_type='text/xml')
+    response=HttpResponse(generator,mimetype='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
         datetime.datetime.now().isoformat(), tap.format)
 
@@ -304,7 +304,7 @@ def capabilities(request):
                                  "MIRRORS" : settings.MIRRORS,
                                  "APPS" : settings.VAMDC_APPS,
                                  })
-    return render_to_response('tap/capabilities.xml', c, content_type='text/xml')
+    return render_to_response('tap/capabilities.xml', c, mimetype='text/xml')
 
 
 from django.db import connection
@@ -318,11 +318,11 @@ def dbConnected():
 def availability(request):
     (status, message) = dbConnected()
     c=RequestContext(request,{"accessURL" : getBaseURL(request), 'ok' : status, 'message' : message})
-    return render_to_response('tap/availability.xml', c, content_type='text/xml')
+    return render_to_response('tap/availability.xml', c, mimetype='text/xml')
 
 def tables(request):
     c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
-    return render_to_response('tap/VOSI-tables.xml', c, content_type='text/xml')
+    return render_to_response('tap/VOSI-tables.xml', c, mimetype='text/xml')
 
 #def index(request):
 #    c=RequestContext(request,{})

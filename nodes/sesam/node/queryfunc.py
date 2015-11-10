@@ -12,6 +12,7 @@
 from itertools import chain
 from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
+from django.conf import settings
 from dictionaries import *
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -21,7 +22,11 @@ import logging
 
 log = logging.getLogger("vamdc.node.queryfu")
 
-LIMIT = 1000
+if hasattr(settings,'LAST_MODIFIED'):
+  LAST_MODIFIED = settings.LAST_MODIFIED
+else: LAST_MODIFIED = None
+
+
 
 def setupResults(sql):
 	"""		
@@ -69,7 +74,7 @@ def setupVssRequest(sql, limit=2000):
 
     result = util_models.Result()
     q = sql2Q(sql)    
-    log.debug(q)
+    #log.debug(q)
     #select transitions : combination of density/temperature
     transs = models.Radiativetransition.objects.filter(q)
     ntranss=transs.count()
@@ -80,7 +85,7 @@ def setupVssRequest(sql, limit=2000):
     else:
         percentage=None 
         
-    log.debug("number of transitions : "+str(ntranss))
+    #log.debug("number of transitions : "+str(ntranss))
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     if ntranss > 0 :	
@@ -96,6 +101,9 @@ def setupVssRequest(sql, limit=2000):
         result.addHeaderField('COUNT-STATES',nstates)
         result.addHeaderField('COUNT-SOURCES',nsources)	
         result.addHeaderField('COUNT-RADIATIVE',len(transitions))	
+        
+        if LAST_MODIFIED is not None : 
+          result.addHeaderField('LAST-MODIFIED',LAST_MODIFIED)
        
         result.addDataField('RadTrans',transitions)        
         result.addDataField('Molecules',species)
@@ -107,6 +115,7 @@ def setupVssRequest(sql, limit=2000):
         result.addHeaderField('TRUNCATED',percentage)
         result.addHeaderField('COUNT-STATES',0)
         result.addHeaderField('COUNT-RADIATIVE',0)
+       
     return result	
 	
 def truncateTransitions(transitions, request, maxTransitionNumber):
@@ -174,7 +183,8 @@ def getSpeciesWithStates(transs):
             getStates(specie, sids)            
             nstates += len(specie.States)
         except ObjectDoesNotExist as e:
-            log.debug(str(e)) 
+          pass
+            #log.debug(str(e)) 
     
     nspecies = len(species) # get some statistics 
     return species, nspecies, nstates  

@@ -20,8 +20,14 @@ from django.db import connection
 import logging
 import dictionaries
 import models as django_models
-import util_models as util_models
 
+if hasattr(settings,'TRANSLIM'):
+  TRANSLIM = settings.TRANSLIM
+else: TRANSLIM = 1000
+
+if hasattr(settings,'LAST_MODIFIED'):
+  LAST_MODIFIED = settings.LAST_MODIFIED
+else: LAST_MODIFIED = None
 
 log=logging.getLogger('vamdc.tap')
 
@@ -36,69 +42,60 @@ def getSpeciesWithStates(transs):
     We also return some statistics of the result
     """    
     # get ions according to selected transitions
-    ionids = transs.values_list('version', flat=True).distinct()
+    #~ start_time = time.time()
+    #~ ionids = transs.values_list('version', flat=True).distinct()
     species = [] #django_models.Version.objects.filter(id__in=ionids)
     sourceids = []
-    nstates = 0
-    #sourceids = getTransitionSources(transs)
-    for trans in transs:
-        trans.Sources = getTransitionSources(trans)
-        sourceids.extend(trans.Sources)
+    species_map = {}
+    states_map = {}
+    states = []
     
-    for ionid in ionids:
-        new_specie = django_models.Version.objects.get(pk=ionid)
-        # get all transitions in linked to this particular species
-        spec_transitions = transs.filter(version=ionid)
-        
-        # extract reference ids for the states from the transion, combining both
-        # upper and lower unique states together
-        lower = spec_transitions.values_list('loweratomicstate',flat=True)
-        upper = spec_transitions.values_list('upperatomicstate',flat=True)
-        sids = set(chain(upper, lower))
-
-        # use the found reference ids to search the State database table
-        new_specie.States = django_models.Atomicstate.objects.filter( pk__in = sids )
-        
-        for state in new_specie.States :
-            state.Components = []
-            state.Components.append(getCoupling(state))
-            state.Sources = getStateSources(state)
-            sourceids.extend(state.Sources)
-        nstates += new_specie.States.count()
-        species.append(new_specie)
-                
-    return species, nstates, sourceids
-    
-    
-def getTransitionSources(trans):
-    """
-        get ids of sources related to a transition
-    """
-    sourceids = []
-    relatedsources = django_models.Radiativetransitionsource.objects.filter(radiativetransition=trans)    
-    for relatedsource in relatedsources :
-        sourceids.append(relatedsource.source.pk)
-    return sourceids    
-    '''
-    transids = transs.values_list('id', flat=True)  
-    relatedsources = django_models.Radiativetransitionsource.objects.filter(id__in=transids)  
-    ids = relatedsources.values_list('source', flat=True).distinct() 
-    return list(ids)
-    '''
+    #get sources, speed ok
+    allsources = django_models.Versionsource.objects.all()
+    #sources for each species version
+    version_sources = {}
+    for source in allsources :
+      if source.version_id not in version_sources :
+        version_sources[source.version_id] = [source.source_id]        
+      else : 
+        version_sources[source.version_id].append(source.source_id)
 
     
+    for trans in transs:      
+      trans.Sources = version_sources[trans.version_id]        
+      for source in version_sources[trans.version_id]:      
+        if source not in sourceids :
+          sourceids.append(source)
+          
+      if trans.version_id not in species_map : 
+          trans.version.States = []
+          species_map[trans.version_id] = trans.version
+        
+      if trans.upperatomicstate_id not in states_map : 
+        states_map[trans.upperatomicstate_id] = trans.upperatomicstate_id
+        trans.upperatomicstate.Sources = version_sources[trans.version_id]
+        trans.upperatomicstate.Components = []
+        trans.upperatomicstate.Components.append(getCoupling(trans.upperatomicstate))
+        species_map[trans.version_id].States.append(trans.upperatomicstate)
+        states.append(trans.upperatomicstate)
+        
+        
+      if trans.loweratomicstate_id not in states_map : 
+        states_map[trans.loweratomicstate_id] = trans.loweratomicstate_id
+        trans.loweratomicstate.Sources = version_sources[trans.version_id]
+        trans.loweratomicstate.Components = []
+        trans.loweratomicstate.Components.append(getCoupling(trans.loweratomicstate))        
+        species_map[trans.version_id].States.append(trans.loweratomicstate)
+        states.append(trans.loweratomicstate)
     
-def getStateSources(state):
-    """
-        get ids of sources related to an atomic state
-    """
-    sourceids = []
-    relatedsources = django_models.Atomicstatesource.objects.filter(atomicstate=state)    
-    for relatedsource in relatedsources :
-        sourceids.append(relatedsource.source.pk)
-    return sourceids
+    for key, value in species_map.iteritems():
+      species.append(value)  
+
+    #~ print("--- %s seconds ---" % (time.time() - start_time))
+    return species, states, sourceids 
     
-    
+
+   
 
 def getSources(ids):
     """
@@ -135,112 +132,118 @@ def truncateTransitions(transitions, request, maxTransitionNumber):
     newmax = transitions[maxTransitionNumber].wavelength
     return django_models.Radiativetransition.objects.filter(request,Q(wavelength__lt=newmax)), percentage
     
-'''def toLowerUpperStates(transitions):
-    for transition in transitions:
-        if(transition.initialatomicstate.stateenergy > transition.finalatomicstate.stateenergy):
-            transition.upperatomicstate = transition.initialatomicstate
-            transition.loweratomicstate = transition.finalatomicstate
-        else:
-            transition.upperatomicstate = transition.finalatomicstate
-            transition.loweratomicstate = transition.initialatomicstate    
-    return transitions
-'''
 
 #------------------------------------------------------------
 # Main function
 #------------------------------------------------------------
 def setupResults(sql):
-	"""		
-		Return results for request
-		@type  sql: string
-		@param sql: vss request
-		@type  limit: int
-		@param limit: maximum number of results
-		@rtype:   dict
-		@return:  dictionnary containig data		
-	"""
-	result = None
-	# return all species
-	if str(sql).strip().lower() == 'select species': 
-		result = setupSpecies()
-	# all other requests
-	else:		
-		result = setupVssRequest(sql)			
-
-	if isinstance(result, util_models.Result) :
-		return result.getResult()
-	else:
-		raise Exception('error while generating result')
-
-
-def setupVssRequest(sql, limit=3000):
-    """
-    This function is always called by the software.
-    """
-    # log the incoming query
-    log.debug(sql)
-
-    # convert the incoming sql to a correct django query syntax object
+  """		
+    Return results for request
+    @type  sql: string
+    @param sql: vss request
+    @type  limit: int
+    @param limit: maximum number of results
+    @rtype:   dict
+    @return:  dictionnary containig data		
+  """
+  result = None  
+  # return all species
+  if str(sql).strip().lower() == 'select species': 
+    return setupSpecies()
+    
+  # all other requests
+  else : 
     q = sql2Q(sql)
-
-    start = time.clock()
     transs = django_models.Radiativetransition.objects.filter(q)
-    ntranss=transs.count()
 
-    if limit < ntranss :
-        transs, percentage = truncateTransitions(transs, q, limit)
-    else:
-        percentage=None
+    if sql.HTTPmethod == 'HEAD':
+      return {'HeaderInfo':returnHeaders(transs)}
+    else : 
+      return setupVssRequest(transs)			
 
-    species, nstates, sourceids = getSpeciesWithStates(transs)
-
-    # cross sections
-    states = []
     
-    nspecies = len(species)
-    for specie in species:        
-        for state in specie.States : 
-            if state.xdata is not None : # do not add state without xdata/ydata
-                states.append(state)
-                
-    #transs = toLowerUpperStates(transs)
-    sources = getSources(sourceids)
-    nsources = sources.count()
+def returnHeaders(transs):
 
-    # Create the result object
-    result = util_models.Result()
-
-    result.addHeaderField('TRUNCATED', percentage)
-    result.addHeaderField('COUNT-STATES',nstates)
-    result.addHeaderField('COUNT-RADIATIVE',ntranss)
-    result.addHeaderField('COUNT-SPECIES',nspecies)
-    result.addHeaderField('COUNT-SOURCES',nsources)  
+  ntranss=transs.count()
+  headers={'COUNT-RADIATIVE': ntranss}
+  
+  if ntranss:
+      headers['APPROX-SIZE']='%.2f'%(ntranss*0.0014 + 0.01)
+  else:
+      headers['APPROX-SIZE']='0.00'
     
-    if(nstates == 0 and nspecies == 0):
-        result.addHeaderField('APPROX-SIZE', 0)
+  if TRANSLIM < ntranss:
+    headers['TRUNCATED'] = '%.1f'%(float(TRANSLIM)/ntranss *100)
 
-    result.addDataField('RadTrans',transs)
-    result.addDataField('Atoms',species)
-    result.addDataField('RadCross',states)
-    result.addDataField('Sources', sources)
+  sp_ids = transs.values_list('version').distinct()
+  headers['COUNT-SPECIES'] = len(sp_ids)
+
+  sids = transs.values_list('upperatomicstate','loweratomicstate')
+  sids = set(item for s in sids for item in s)
+  headers['COUNT-STATES'] = len(sids)
+  
+  if LAST_MODIFIED is not None : 
+    headers['LAST-MODIFIED'] = LAST_MODIFIED
+
+  return headers
+
+
+def setupVssRequest(transs):
+  """
+  This function is always called by the software.
+  """
+  ntranss=transs.count() 
+  percentage=None
+
+  if ntranss > TRANSLIM :
+    transs, percentage = truncateTransitions(transs, q, limit)    
+
+  species, states, sourceids = getSpeciesWithStates(transs)
+  nstates = len(states)
+  
+  radcross = []  
+  for state in states :
+    if state.xdata is not None : 
+      radcross.append(state)
+      
+  nspecies = len(species)              
+  sources = getSources(sourceids)
+  nsources = sources.count()
+  nstates = len(states)
+
+  headerinfo = {
+    'COUNT-RADIATIVE': ntranss,
+    'COUNT-SPECIES' : nspecies,
+    'COUNT-STATES' : nstates,
+  }
+  
+  if percentage is not None : 
+    headerinfo['TRUNCATED'] = percentage
     
-    end = time.clock()-start
-    log.debug("1 "+str(end)+  "s")
-    return result
+  if LAST_MODIFIED is not None : 
+    headerinfo['LAST-MODIFIED'] = LAST_MODIFIED
+    
+  return {
+    'HeaderInfo' : headerinfo,
+    'RadTrans':transs,
+    'Atoms':species, 
+    'RadCross':radcross,     
+    'Sources':sources,        
+  }
+
+
+  return result
     
 def setupSpecies():
-	"""		
-		Return all target species
-		@rtype:   util_models.Result
-		@return:  Result object		
-	"""
-	result = util_models.Result()
-	ids = django_models.Radiativetransition.objects.all().values_list('version', flat=True)
-	versions = django_models.Version.objects.filter(pk__in = ids)
-	result.addHeaderField('COUNT-SPECIES',len(versions))
-	result.addDataField('Atoms',versions)	
-	return result
-	
-	
-    
+  """		
+    Return all target species
+    @rtype:  dict
+    @return:  Result object		
+  """
+  ids = django_models.Radiativetransition.objects.all().values_list('version', flat=True)
+  versions = django_models.Version.objects.filter(pk__in = ids)
+  result = {'HeaderInfo':{'COUNT-SPECIES': len(versions), },
+            'Atoms':versions,  
+          }
+  return result    
 

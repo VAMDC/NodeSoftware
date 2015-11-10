@@ -57,6 +57,9 @@ RETURNABLES = {\
 'RadTransWavenumberMethod':'RadTran.getWavenumberMethods()',
 'RadTransWavenumberComment':'RadTran.getWavenumberComments()',
 'RadTransWavenumberUnit':'1/cm',
+'RadTransProbabilityA' : 'RadTran.transition_probability',
+'RadTransProbabilityAUnit' : '1/s',
+
 
 ############################################################
 'MoleculeStateEnergy':'MoleculeState.energy',
@@ -121,6 +124,7 @@ RESTRICTABLES = {\
 'InchiKey':'inchikey',
 'lower.StateEnergy':'lowerstate__energy',
 'upper.StateEnergy':'upperstate__energy',
+'RadTransProbabilityA':'transition_probability',
 #'RadTransWavenumber':'vavenum',
 #'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 #'AtomIonCharge':'species__ion'

@@ -166,6 +166,7 @@ class Radiativetransition(models.Model):
     wavenumber_observed = models.FloatField()
     wavenumber_calculated = models.FloatField()
     oscillator_strength = models.FloatField()
+    transition_probability = models.FloatField()
     inchikey = models.CharField(max_length=81)
     
     def getWavenumbers(self):      
