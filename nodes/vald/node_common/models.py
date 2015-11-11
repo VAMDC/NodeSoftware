@@ -56,7 +56,7 @@ class Reference(Model):
     class Meta:
         db_table = u'refs'
     def __unicode__(self):
-        return u'%s'%self.id
+        return u'Reference: %s'%self.id
 
 class LineList(Model):
     id = AutoField(primary_key=True, db_index=True)
