@@ -7,11 +7,12 @@ http://code.activestate.com/recipes/66315/#c8
 
 """
 
+import collections
+
 class CaselessDict(dict):
     def __init__(self, other=None):
         if other:
-            # Doesn't do keyword args
-            if isinstance(other, dict):
+            if isinstance(other, collections.Mapping):
                 for k,v in other.items():
                     dict.__setitem__(self, k.lower(), v)
             else:

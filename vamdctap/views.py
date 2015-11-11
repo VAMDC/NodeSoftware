@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse
 
-import datetime, pytz
+import datetime
 from string import lower
 from cStringIO import StringIO
 import os, math, sys
@@ -218,7 +218,6 @@ def logCentral(sync):
             logdata = { 'clientIp': request.META['REMOTE_ADDR'],
                         'requestContent': request.GET.get('QUERY'),
                         'requestDate': datetime.datetime.now(\
-                            pytz.timezone('Europe/Stockholm')\
                             ).strftime('%Y-%m-%dT%H:%M:%S%z'),
                         'serviceSource': 'NodeID: ' + NODEID,
                       }
