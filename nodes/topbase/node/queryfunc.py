@@ -159,7 +159,7 @@ def setupResults(sql):
     if sql.HTTPmethod == 'HEAD':
       return {'HeaderInfo':returnHeaders(transs)}
     else : 
-      return setupVssRequest(transs)			
+      return setupVssRequest(transs, q)			
 
     
 def returnHeaders(transs):
@@ -188,7 +188,7 @@ def returnHeaders(transs):
   return headers
 
 
-def setupVssRequest(transs):
+def setupVssRequest(transs, q):
   """
   This function is always called by the software.
   """
@@ -196,7 +196,7 @@ def setupVssRequest(transs):
   percentage=None
 
   if ntranss > TRANSLIM :
-    transs, percentage = truncateTransitions(transs, q, limit)    
+    transs, percentage = truncateTransitions(transs, q, TRANSLIM)    
 
   species, states, sourceids = getSpeciesWithStates(transs)
   nstates = len(states)
