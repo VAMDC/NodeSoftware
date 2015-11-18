@@ -59,6 +59,7 @@ RETURNABLES = {\
 'RadTransWavenumberUnit':'1/cm',
 'RadTransProbabilityA' : 'RadTran.transition_probability',
 'RadTransProbabilityAUnit' : '1/s',
+'RadTransRefs' : 'RadTran.source.id',
 
 
 ############################################################
