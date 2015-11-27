@@ -1,5 +1,5 @@
 from django.db.models import *
-from vamdctap.bibtextools import *
+#from vamdctap.bibtextools import *
 
 class RefCharField(CharField):
     description = "Subclass to CharField that returns strings split at commas"
@@ -49,9 +49,11 @@ class SpeciesComp(Model):
 class Reference(Model):
     id = CharField(max_length=7, primary_key=True, db_index=True)
     bibtex = TextField(null=True)
+    xml = TextField(null=True)
 
     def XML(self):
-        return BibTeX2XML( self.bibtex )
+        #return BibTeX2XML( self.bibtex )
+        return self.xml
 
     class Meta:
         db_table = u'refs'
