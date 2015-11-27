@@ -2,7 +2,7 @@ from settings_default import *
 
 DEBUG = False
 #DEBUG = True
-TRANSLIM = 50000
+TRANSLIM = 100000
 
 try:
     INSTALLED_APPS.remove('node')
