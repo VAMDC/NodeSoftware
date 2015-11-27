@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext, Context, loader
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse
 
 import datetime
 from string import lower
@@ -212,7 +212,7 @@ def logCentral(sync):
     def wrapper(request, *args, **kwargs):
         response = sync(request, *args, **kwargs)
         if request.method == 'GET' and \
-	   response.status_code == 200 and \
+           response.status_code == 200 and \
            not settings.DEBUG and \
            settings.LOG_CENTRALLY:
             logdata = { 'clientIp': request.META['REMOTE_ADDR'],
@@ -265,7 +265,7 @@ def sync(request):
     else:
         generator = Xsams(tap=tap,**querysets)
     log.debug('Generator set up, handing it to HttpResponse.')
-    response=HttpResponse(generator,content_type='text/xml')
+    response=StreamingHttpResponse(generator,content_type='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
         datetime.datetime.now().isoformat(), tap.format)
 
