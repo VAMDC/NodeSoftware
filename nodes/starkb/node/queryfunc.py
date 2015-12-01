@@ -105,7 +105,7 @@ def setupVssRequest(sql, limit=500):
         result.addDataField('Atoms',species)
         result.addDataField('Environments',environments)
         result.addDataField('Particles',particles)
-        result.addDataField('Functions',functions)
+        #~ result.addDataField('Functions',functions)
         result.addDataField('Sources',sources)
         
     else : # only fill header

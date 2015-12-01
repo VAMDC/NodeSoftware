@@ -32,6 +32,7 @@ class Ion(models.Model):
     nuclear_charge = models.IntegerField()    
     inchi = models.CharField(max_length=100)
     inchikey = models.CharField(max_length=27)
+    mass_number = models.IntegerField()    
     
     '''def ion_charge(self):
         return self.ionization_decimal - 1'''
