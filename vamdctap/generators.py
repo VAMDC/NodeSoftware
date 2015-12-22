@@ -7,7 +7,7 @@ from xml.sax.saxutils import escape
 
 # Get the node-specific parts
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
 DICTS = import_module(settings.NODEPKG + '.dictionaries')
 from caselessdict import CaselessDict
 RETURNABLES = CaselessDict(DICTS.RETURNABLES)

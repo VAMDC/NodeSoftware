@@ -15,7 +15,7 @@ import logging
 log=logging.getLogger('vamdc.tap')
 
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.utils.http import http_date
 
 if settings.LOG_CENTRALLY:
@@ -85,13 +85,15 @@ class TAPQUERY(object):
         self.isvalid = True
         self.errormsg = ''
         try:
-            self.request=CaselessDict(dict(request.REQUEST))
+            self.request=CaselessDict(dict(request.GET or request.POST))
         except Exception,e:
             self.isvalid = False
             self.errormsg = 'Could not read argument dict: %s'%e
             log.error(self.errormsg)
 
-        if self.isvalid: self.validate()
+        if self.isvalid:
+            self.validate()
+
         self.fullurl = getBaseURL(request) + 'sync?' + request.META.get('QUERY_STRING')
 
     def validate(self):
@@ -106,6 +108,9 @@ class TAPQUERY(object):
         try: self.query = self.request['QUERY']
         except: self.errormsg += 'Cannot find QUERY in request.\n'
 
+        if (type(self.query) == list) and (len(self.query)==1):
+            self.query = self.query[0]
+
         try: self.format=lower(self.request['FORMAT'])
         except:
             log.debug('FORMAT is empty, assuming XSAMS')
@@ -113,7 +118,6 @@ class TAPQUERY(object):
         else:
             if self.format != 'xsams':
                 log.debug('Requested FORMAT is not XSAMS, letting it pass anyway.')
-
         try: self.parsedSQL=SQL.parseString(self.query,parseAll=True)
         except: # if this fails, we're done
             self.errormsg += 'Could not parse the SQL query string: %s\n'%self.query
@@ -157,7 +161,8 @@ class TAPQUERY(object):
             self.requestables.add('functions')
             self.requestables.add('methods')
 
-        if self.errormsg: self.isvalid=False
+        if self.errormsg:
+            self.isvalid=False
 
     def __str__(self):
         return '%s'%self.query
@@ -200,7 +205,7 @@ def addHeaders(headers,request,response):
 
 def CORS_request(request):
     """ Allow cross-server requests http://www.w3.org/TR/cors/ """
-    log.info('CORS-Request from %s: %s'%(request.META['REMOTE_ADDR'],request.REQUEST))
+    log.info('CORS-Request from %s'%(request.META['REMOTE_ADDR']))
     response = HttpResponse('', status=200)
     response['Access-Control-Allow-Origin'] = '*'
     response['Access-Control-Allow-Methods'] = 'HEAD'
@@ -216,7 +221,7 @@ def logCentral(sync):
            not settings.DEBUG and \
            settings.LOG_CENTRALLY:
             logdata = { 'clientIp': request.META['REMOTE_ADDR'],
-                        'requestContent': request.GET.get('QUERY'),
+                        'requestContent': request.GET.get('QUERY') or request.POST.get('QUERY'),
                         'requestDate': datetime.datetime.now(\
                             ).strftime('%Y-%m-%dT%H:%M:%S%z'),
                         'serviceSource': 'NodeID: ' + NODEID,
@@ -232,7 +237,7 @@ def sync(request):
     if request.method=='OPTIONS':
         return CORS_request(request)
 
-    log.info('Request from %s: %s'%(request.META['REMOTE_ADDR'],request.REQUEST))
+    log.info('Request from %s: %s'%(request.META['REMOTE_ADDR'], request.GET or request.POST))
     tap=TAPQUERY(request)
     if not tap.isvalid:
         emsg = 'TAP-Request invalid: %s'%tap.errormsg
