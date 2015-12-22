@@ -75,7 +75,7 @@ class Species(Model):
     chemical_formula = CharField(max_length=40, db_index=True, verbose_name='Chemical Formula', default = '', validators=[validate_chemical_formula])
     mass = PositiveIntegerField(db_index=True, verbose_name='Nominal Mass')
     isotope = BooleanField(verbose_name='Tick, if this is the most abundant isotope', default = True)
-    nuclear_charge = PositiveSmallIntegerField(max_length=3, verbose_name='Number of Protons', blank = True, null = True)
+    nuclear_charge = PositiveSmallIntegerField(verbose_name='Number of Protons', blank = True, null = True)
     inchi = CharField(max_length=300,db_index=True,verbose_name='InChI', blank = True)
     inchikey = CharField(max_length=27, db_index=True, verbose_name='InChI-Key', blank = True)
     cas = CharField(max_length=12,verbose_name='CAS-Number', blank = True, validators = [validate_CAS])
@@ -192,7 +192,7 @@ class Energyscan(Model):
     productiondate = DateField(verbose_name='Production Date')
     comment = TextField(blank = True, max_length = 2000, verbose_name = 'Comment (max. 2000 chars.)')
     energyresolution = DecimalField(max_digits = 4, decimal_places = 3, verbose_name='Energy Resolution of the Experiment in eV')
-    lastmodified = DateTimeField(auto_now = True, auto_now_add = True, default = datetime.datetime.now())
+    lastmodified = DateTimeField(auto_now = True, default = datetime.datetime.now())
     numberofpeaks = IntegerField(blank = True, verbose_name = 'Number of peaks visible (no shoulder structures)')
 
     #define a useful unicode-expression:
