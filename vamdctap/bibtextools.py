@@ -11,7 +11,7 @@ from xml.sax.saxutils import quoteattr
 
 # get the NodeID to put it in the source key
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
 DICTS=import_module(settings.NODEPKG+'.dictionaries')
 try: NODEID = DICTS.RETURNABLES['NodeID']
 except: NODEID = 'PleaseFillTheNodeID'
