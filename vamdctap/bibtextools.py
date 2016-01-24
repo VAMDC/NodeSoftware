@@ -1,16 +1,23 @@
 import re
-from StringIO import StringIO
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 from pybtex.database.input import bibtex
-from string import strip
-from caselessdict import CaselessDict
+from .caselessdict import CaselessDict
 from xml.sax.saxutils import quoteattr
 
 # get the NodeID to put it in the source key
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
 DICTS=import_module(settings.NODEPKG+'.dictionaries')
 try: NODEID = DICTS.RETURNABLES['NodeID']
 except: NODEID = 'PleaseFillTheNodeID'
+
+import logging
+log=logging.getLogger('vamdc.bibtex')
 
 DUMMY='@article{DUMMY, Author = {No Body}, Title = {This is a dummy entry. If you see it in your XSAMS output it means that at there was a malformed BibTex entry.}, annote = {%s}}'
 
@@ -19,7 +26,8 @@ def getEntryFromString(s):
     try:
         parser.parse_stream(StringIO(s))
         key,entry = parser.data.entries.items()[0]
-    except Exception:
+    except Exception as e:
+        log.warn('BibTex parsing failed: %s'%e)
         parser.parse_stream(StringIO(DUMMY))
         key,entry = parser.data.entries.items()[0]
     return entry
@@ -49,9 +57,9 @@ def BibTeX2XML(bibtexstring, key=None):
         xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,e.key)
     for a in e.persons['author']:
         name = a.first() + a.middle() + a.last() + a.lineage()
-        name = map(strip,name)
-        name = map(strip,name,['{}']*len(name))
-        xml += '<Author><Name>%s</Name></Author>'%' '.join(name)
+        name = [n.strip().strip('{}') for n in name]
+        name = ' '.join(name)
+        xml += '<Author><Name>%s</Name></Author>'%name
     xml += '\n</Authors>'
 
     category = TYPE2CATEGORY.get(e.type)

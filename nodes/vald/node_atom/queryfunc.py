@@ -1,4 +1,4 @@
-from ..node_common.queryfunc import *
+from node_common.queryfunc import *
 from models import *
 
 
@@ -28,6 +28,14 @@ def returnHeaders(transs):
 def setupResults(sql):
     q = sql2Q(sql)
     log.debug('Just ran sql2Q(sql); setting up QuerySets now.')
+
+    log.debug('%s\n%s'%(sql.parsedSQL.columns,type(sql.where)))
+    if (len(sql.parsedSQL.columns) == 1) and (sql.where == ''):
+        log.debug('Special case of "select species"')
+        return {'Atoms':Species.objects.all(),
+                'HeaderInfo':{'COUNT-SPECIES':Species.objects.count(),
+                              'COUNT-ATOMS':Species.objects.count()}}
+
     transs = Transition.objects.filter(q)
     if sql.HTTPmethod == 'HEAD':
         return {'HeaderInfo':returnHeaders(transs)}
@@ -130,7 +138,7 @@ def XsamsRadTrans(RadTrans):
 
 
 
-def customXsams(tap, RadTrans=None, Environments=None,
+def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
         Methods=None, Functions=None, HeaderInfo=None):
     #return GEN.Xsams(tap, **kwargs)
     yield XsamsHeader(HeaderInfo)
@@ -149,11 +157,17 @@ def customXsams(tap, RadTrans=None, Environments=None,
                 yield RadTran
         except:
             errs+=generatorError(' RadTran')
+    else: # loop over transitons anyway because we now collect states & species on the fly.
+        try:
+            for RadTran in XsamsRadTrans(RadTrans):
+                pass
+        except:
+            errs+=generatorError(' RadTran')
     yield '</Radiative>\n'
     yield '</Processes>\n'
 
-
-    Atoms = Species.objects.filter(pk__in=stateIDs.keys())
+    if not Atoms: # Atoms is only pre-defined for "select species" special case
+        Atoms = Species.objects.filter(pk__in=stateIDs.keys())
     if requestables and Atoms and ('atomstates' not in requestables):
         for Atom in Atoms:
             Atom.States = []
@@ -174,9 +188,9 @@ def customXsams(tap, RadTrans=None, Environments=None,
 
     for Atom in Atoms:
         for state in Atom.States:
-            refIDs.update(state.energy_ref_id)
-            refIDs.update(state.lande_ref_id)
-            refIDs.update(state.level_ref_id)
+            refIDs.update(state.energy_ref_id or [])
+            refIDs.update(state.lande_ref_id or [])
+            refIDs.update(state.level_ref_id or [])
 
     Sources = Reference.objects.filter(pk__in=refIDs)
     if not requestables or 'sources' in requestables:

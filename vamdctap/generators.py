@@ -7,7 +7,7 @@ from xml.sax.saxutils import escape
 
 # Get the node-specific parts
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
 DICTS = import_module(settings.NODEPKG + '.dictionaries')
 from caselessdict import CaselessDict
 RETURNABLES = CaselessDict(DICTS.RETURNABLES)
@@ -466,9 +466,13 @@ def checkXML(obj,methodName='XML'):
     If the queryset has an XML method, use that and
     skip the hard-coded implementation.
     """
-    try:
+    if hasattr(obj,methodName):
+        #try:
         return True, getattr(obj,methodName, None)() #This calls the method!
-    except:
+        #except Exception as e:
+        #    log.warn('XML-method "%s" on %s failed: %s'%(methodName,obj,e))
+        #    return False, None
+    else:
         return False, None
 
 def SelfSource(tap):
@@ -621,7 +625,7 @@ def makeTermType(tag, keyword, G):
         for j in j1j2:
             string += "<j>%s</j>" % j
         string += "</J1J2>"
-    K = G("%sK" % keyword)
+    K = G("%sJKK" % keyword)
     if K:
         string += "<jK>"
         j = G("%sJKJ" % keyword)
@@ -2015,6 +2019,7 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
     if requestables and Molecules and ('moleculestates' not in requestables):
         for Molecule in Molecules:
             Molecule.States = []
+            Molecule.NormalModes = []
 
     if not requestables or 'sources' in requestables:
         log.debug('Working on Sources.')

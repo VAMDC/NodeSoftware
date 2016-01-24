@@ -1,19 +1,12 @@
 """
-This file demonstrates two different styles of tests (one doctest and one
-unittest). These will both pass when you run "manage.py test".
+This file demonstrates tests that willpass when you run "manage.py test".
 
 Replace these with more appropriate tests for your application.
 """
 
-import sys
-try:
-    from django.utils.unittest import TestCase
-except ImportError:
-    from django.test import TestCase
-try:
-    from django.utils import unittest
-except ImportError:
-    import unittest
+import unittest
+from django.test import TestCase
+
 from vamdctap import tests as vamdctests
 
 # add database-specific tests here. See example below.

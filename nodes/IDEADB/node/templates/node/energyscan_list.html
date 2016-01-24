@@ -2,9 +2,13 @@
 
 {% block content %}
     <h2>Available Energyscans</h2>
-    <ul>
+    <table>
+      <tr>
+        <td><strong>Fragment</strong></td>
+        <td><strong>Parent Molecule</strong></td>
+      </tr>
         {% for es in object_list %}
-            <li><a href="{{ es.id }}">{{ es.species }} from {{ es.origin_species }}</a></li>
+            <tr><td><a href="{{ es.id }}">{{ es.species }}</a></td><td>{{ es.origin_species }}</td></tr>
         {% endfor %}
-    </ul>
+    </table>
 {% endblock %}

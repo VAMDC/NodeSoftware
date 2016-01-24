@@ -1,3 +1,5 @@
+from vamdctap.unitconv import *
+
 # -*- coding: utf-8 -*-
 """
 ExampleNode dictionary definitions. 
@@ -39,7 +41,6 @@ RETURNABLES = {\
 'CollisionTabulatedDataYDescription':'Ion Yield',
 'CollisionTabulatedDataXDescription':'Energy of the impact electron',
 
-'CollisionDataSetRef':'DataSet.SourceRef',
 'CollisionTabulatedData':'TabData',
 
 #errors
@@ -66,7 +67,7 @@ RETURNABLES = {\
 'MoleculeMolecularWeightUnit':'amu',
 'MoleculeInchi':'Molecule.inchi',
 'MoleculeInchiKey':'Molecule.inchikey',
-'MoleculeChemicalNameValue':'Molecule.chemical_formula',
+'MoleculeChemicalName':'Molecule.name',
 'MoleculeStoichiometricFormula':'Molecule.chemical_formula',
 'MoleculeCASRegistryNumber':'Molecule.cas',
 'MoleculeIonCharge':'Molecule.ioncharge',
@@ -97,15 +98,67 @@ RETURNABLES = {\
 # for the Species.atomic field  would be written as species__atomic.
 
 RESTRICTABLES = {\
-'MoleculeChemicalName':('species__name','origin_species__name'),
-'AtomMassNumber':'species__mass',
-'MoleculeMolecularWeight':('species__mass','origin_species__mass'),
-'AtomSymbol':'species__chemical_formula',
-'Inchi':('species__inchi','origin_species__inchi'),
-'InchiKey':('species__inchikey','origin_species__inchikey'),
-'MoleculeStoichiometricFormula':('species__chemical_formula','origin_species__chemical_formula'),
-'MoleculeCASRegistryNumber':('species__cas','origin_species__cas'),
-'ParticleName':'electron',
-'CollisionCode':'elat',
+#general stuff
+'CollisionCode':test_constant(['elat']),
 'SourceDOI':'source__doi',
+
+#general: has the tuples and searches either in origin_species or in species
+'MoleculeChemicalName':'species__name',
+'AtomMassNumber':'species__mass',
+'MoleculeMolecularWeight':'species__mass',
+'AtomSymbol':'species__chemical_formula',
+'Inchi':'origin_species__inchi',
+'InchiKey':'origin_species__inchikey',
+'MoleculeStoichiometricFormula':'species__chemical_formula',
+'MoleculeCASRegistryNumber':'species__cas',
+'ParticleName':test_constant(['electron']),
+
+#only search for reactants
+'reactant0.MoleculeChemicalName':'origin_species__name',
+'reactant0.AtomMassNumber':'species__mass',
+'reactant0.MoleculeMolecularWeight':'origin_species__mass',
+'reactant0.AtomSymbol':'species__chemical_formula',
+'reactant0.Inchi':'origin_species__inchi',
+'reactant0.InchiKey':'origin_species__inchikey',
+'reactant0.MoleculeStoichiometricFormula':'origin_species__chemical_formula',
+'reactant0.MoleculeCASRegistryNumber':'origin_species__cas',
+'reactant0.ParticleName':test_constant(['electron']),
+
+
+#only search for reactants
+'reactant1.MoleculeChemicalName':'origin_species__name',
+'reactant1.AtomMassNumber':'species__mass',
+'reactant1.MoleculeMolecularWeight':'origin_species__mass',
+'reactant1.AtomSymbol':'species__chemical_formula',
+'reactant1.Inchi':'origin_species__inchi',
+'reactant1.InchiKey':'origin_species__inchikey',
+'reactant1.MoleculeStoichiometricFormula':'origin_species__chemical_formula',
+'reactant1.MoleculeCASRegistryNumber':'origin_species__cas',
+'reactant1.ParticleName':test_constant(['electron']),
+
+# collider is always an electron:
+
+'collider.ParticleName':test_constant(['electron']),
+
+# target could also be an origin_species
+'target.MoleculeChemicalName':'origin_species__name',
+'target.AtomMassNumber':'species__mass',
+'target.MoleculeMolecularWeight':'origin_species__mass',
+'target.AtomSymbol':'species__chemical_formula',
+'target.Inchi':'origin_species__inchi',
+'target.InchiKey':'origin_species__inchikey',
+'target.MoleculeStoichiometricFormula':'origin_species__chemical_formula',
+'target.MoleculeCASRegistryNumber':'origin_species__cas',
+'target.ParticleName':test_constant(['electron']),
+
+
+# only search for products
+'product0.MoleculeChemicalName':'species__name',
+'product0.AtomMassNumber':'species__mass',
+'product0.MoleculeMolecularWeight':'species__mass',
+'product0.AtomSymbol':'species__chemical_formula',
+'product0.Inchi':'species__inchi',
+'product0.InchiKey':'species__inchikey',
+'product0.MoleculeStoichiometricFormula':'species__chemical_formula',
+'product0.MoleculeCASRegistryNumber':'species__cas',
 }

@@ -1,0 +1,16 @@
+[Unit]
+Description=The gunicorn sevice that runs the VAMDC node of VALD
+After=network.target
+
+[Service]
+PIDFile=/run/vamdc/vald.pid
+User=vamdc
+Group=vamdc
+WorkingDirectory=/opt/ValdNode12.07/nodes/vald
+ExecStart=/usr/local/bin/gunicorn-pypy --pid /run/vamdc/vald.pid --workers 3 --bind unix:/run/vamdc/vald.socket wsgi
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

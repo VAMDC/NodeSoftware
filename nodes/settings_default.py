@@ -11,7 +11,7 @@ import datetime
 # Software and standards version
 ###################################################
 VAMDC_STDS_VERSION = '12.07'
-NODESOFTWARE_VERSION = '12.07r1-rc'
+NODESOFTWARE_VERSION = '12.07r1-rc2'
 
 ###################################################
 # Basic node setup
@@ -19,12 +19,11 @@ NODESOFTWARE_VERSION = '12.07r1-rc'
 # root path of the VAMDC install on your system (should be automatically set)
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_PATH)
-sys.path.append(BASE_PATH+'/nodes')
 NODENAME = os.path.basename(os.path.dirname(__file__))
-NODEPKG= NODENAME+'.node'
+NODEPKG = 'node'
 
 # Where to load url info from
-ROOT_URLCONF = NODENAME+'.urls'
+ROOT_URLCONF = 'urls'
 
 # Tuple of auto-created admin info for database. Admins are added as tuples (name, email).
 # (note: the trailing ',' is what keeps it a 1-element tuple!)
@@ -45,6 +44,9 @@ SERVE_STATIC = True
 
 # MIRROR sites
 MIRRORS = []
+
+# Preferred applications that work with the node
+VAMDC_APPS = []
 
 ###################################################
 # Database connection
@@ -83,6 +85,8 @@ MIDDLEWARE_CLASSES = (
 #    'django.contrib.sessions.middleware.SessionMiddleware',
 #    'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
+
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 ###################################################
 # Misc settings
@@ -138,6 +142,8 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
 )
 
+# ALLOW TO SERVER FROM ALL HOSTS
+ALLOWED_HOSTS = ['*']
 
 #########################
 #  LOGGING
@@ -163,7 +169,7 @@ LOGGING = {
     'handlers': {
         'null': {
             'level':'DEBUG',
-            'class':'django.utils.log.NullHandler',
+            'class':'logging.NullHandler',
         },
         'console':{
             'level':'WARNING',
@@ -214,3 +220,7 @@ LOGGING = {
         },
     }
 }
+
+LOG_CENTRALLY = False
+CENTRAL_LOGGER_URL = 'http://pdl-calc2.obspm.fr:8081/VamdcLog/LogWriter'
+

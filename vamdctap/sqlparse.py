@@ -54,7 +54,7 @@ SQL=setupSQLparser()
 
 from django.db.models import Q, F
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
 from caselessdict import CaselessDict
 RESTRICTABLES=CaselessDict(DICTS.RESTRICTABLES)
