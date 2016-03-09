@@ -1,5 +1,6 @@
  # -*- coding: utf-8 -*-
 from django.db.models import Q
+from django.db import connection
 from django.conf import settings
 import sys
 import datetime
@@ -92,8 +93,7 @@ def remap_species(datasets):
 
     return species
 
-
-def get_species_and_states(transs, addStates=True, filteronatoms=False):
+def get_species_and_states(transs, addStates = True, filteronatoms = False):
     """
     Returns list of species including all states which occur in the list
     of transitions.
@@ -120,7 +120,64 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
 
     # Intialize state-counter
     nstates = 0
-    
+
+    if addStates:
+        up = transs.values_list('upperstateref',flat=True)
+        low = transs.values_list('lowerstateref',flat=True)
+        for m in molecules:
+            states = m.states_set.filter(Q(pk__in= up) | Q(pk__in= low))
+            # get state origins and nuclear spin origins
+            state_origin = m.originstates_set.all()
+            nsi_origins = m.originstates_set(manager = 'nsi_objects').all()
+            origins = state_origin | nsi_origins
+            # modify the id to avioid dublication with regular states
+            for s in origins:
+                s.id = s.id_alias()
+                s.aux = True
+            # attach states to molecule object
+            m.States = chain(origins, states)
+
+        for a in atoms:
+            states = a.atomstates_set.filter(Q(pk__in= up) | Q(pk__in= low))
+            origins = a.atomstates_set(manager = 'energy_origin').all()
+            for s in origins:
+                s.id = s.id_alias()
+                s.aux = True
+            m.States = chain(origins, states)
+
+        # determine the number of states
+        nstates = States.objects.filter(pk__in=chain(up,low)).count()
+
+    return atoms,molecules,nspecies,nstates
+
+def get_species_and_states_old(transs, addStates=True, filteronatoms=False):
+    """
+    Returns list of species including all states which occur in the list
+    of transitions.
+    Returns:
+    - Atoms
+    - Molecules
+    - Number of species
+    - Number of states
+    """
+
+    # Get list of specie-ids which occur in transitions
+    if filteronatoms:
+        spids = set( transs.values_list('specie_id',flat=True).distinct() )
+    else:
+        spids = transs.values_list('specie_id',flat=True)
+
+    # Species object for CDMS includes Atoms AND Molecules. Both can only
+    # be distinguished through numberofatoms-field
+    atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic', origin=5, archiveflag=0)
+    molecules = Species.objects.filter(pk__in=spids, origin=5, archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
+
+    # Calculate number of species in total
+    nspecies = atoms.count() + molecules.count()
+
+    # Intialize state-counter
+    nstates = 0
+
     if addStates:
         # Loop through list of species and attach states
         for specie in chain( molecules):
@@ -134,7 +191,6 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
             lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
             states = States.objects.filter( pk__in = sids)
-            
             # Get energy origins
             origin_ids = states.values_list('energyorigin',flat=True).distinct()
             nsi_origin_ids = NuclearSpinIsomers.objects.filter(pk__in=states.values_list('nsi',flat=True)).values_list('lowestrovibstate',flat=True)
@@ -334,13 +390,12 @@ def setupResults(sql):
         transs = RadiativeTransitions.objects.filter(q) 
     else:
         transs = RadiativeTransitionsT.objects.filter(q, temperature = temperature, intensity__gt= -99.9)
-    # get atoms and molecules with states which occur in transition-block
-    atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates, filteronspecies)
-
      # modify filter for transitions:
     transs = transs.filter(specie__origin=5, specie__archiveflag=0, dataset__archiveflag=0)
 
-    # Attach experimental transitions (TransitionsExp) to transitions
+    # get atoms and molecules with states which occur in transition-block
+    atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates, filteronspecies)
+   # Attach experimental transitions (TransitionsExp) to transitions
     # and obtain their methods. Do it only if transitions will be returned
     if addTrans:
         transs = transs.order_by('frequency')
@@ -348,27 +403,24 @@ def setupResults(sql):
         methods=[]
     else:
         methods=[]
-        
+
     # get sources and methods which have been used
     # to derive predicted transitions
     if addTrans:
         sources, methods = get_sources(atoms, molecules, methods)
     else:
         sources=Sources.objects.none()
-
     nsources = sources.count()
     nmolecules = len(molecules)#molecules.count()
     natoms = len(atoms) #atoms.count()
     ntranss = transs.count()
 
     lastmodified = datetime.datetime(2009,12,1)
-
     for specie in chain(atoms, molecules):        
         if specie.changedate>lastmodified:
             lastmodified = specie.changedate
     if lastmodified ==  datetime.datetime(2009,12,1):
         lastmodified = datetime.datetime.now()
-
     # Calculate estimated size of xsams-file
     if ntranss+nmolecules+natoms+nstates>0:
         size_estimate='%.2f' % (nstates*0.0008755624 +ntranss*0.000561003 +nmolecules*0.001910 +nsources * 0.0005+0.01)
@@ -389,7 +441,6 @@ def setupResults(sql):
 
     if hasattr(sql, 'XRequestMethod') and sql.XRequestMethod == 'HEAD':
         return {'HeaderInfo': headerinfo}
- 
     # attach partition functions to each specie and return the result
     attach_partionfunc(molecules)
     return {'RadTrans':transs,

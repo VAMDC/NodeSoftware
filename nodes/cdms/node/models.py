@@ -383,6 +383,29 @@ class States( Model):
 ##               exec 'self.%s = %s' % (qn.label, value)
 ##          return self.J
 
+class StateOriginManager(Manager):
+    def get_queryset(self):
+        return super(StateOriginManager, self).get_queryset().filter(id = F('energyorigin'))
+
+class NSIStateOriginManager(Manager):
+    def get_queryset(self):
+        return super(NSIStateOriginManager, self).get_queryset().filter(id = F('nsioriginid'))
+
+class OriginStates( States):
+    molecularspecie                = ForeignKey(Species, db_column='EGY_E_ID')
+
+    objects = StateOriginManager()
+    nsi_objects = NSIStateOriginManager()
+
+    class Meta:
+        proxy = True
+
+    def aux(self):
+        return True
+
+    def id_alias(self):
+        return "%s-origin-%s" % (self.id, self.specie_id)
+
 class AtomStates( Model):
      """
      This class contains the states of each specie.
@@ -409,6 +432,10 @@ class AtomStates( Model):
      qn6                   = IntegerField(db_column='EGY_QN6') 
      user                  = CharField(max_length=40, db_column='EGY_User')      # obsolete
      timestamp             = IntegerField(db_column='EGY_TIMESTAMP')
+
+     objects = Manager()
+     energy_origin = StateOriginManager()
+
      class Meta:
        db_table = u'Energies'
 
@@ -456,7 +483,8 @@ class AtomStates( Model):
                     return ''
           except AttributeError:
                return ''
-          
+     def id_alias(self):
+         return "%s-origin-%s" % (self.id, self.specie_id)
 
 
 class TransitionsCalc( Model):
