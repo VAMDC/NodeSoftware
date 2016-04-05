@@ -52,7 +52,10 @@ class QUERY(object ):
         try: self.freqto = self.data.get('T_SEARCH_FREQ_TO',0)
         except: self.freqto = 0
         try: self.minint = self.data.get('T_SEARCH_INT',-10)
-        except: self.freqto = -10
+        except: self.minint = -10
+
+        try: self.IntUnit = self.data.get('IntUnit', 'T300')
+        except: self.IntUnit = 'T300'
 
         try: self.orderby = self.data.get('T_SORT','')
         except: self.orderby = ''
@@ -67,8 +70,6 @@ class QUERY(object ):
         try: self.url = self.data.get('queryURL','')
         except: self.url = ''
 
-        print >> sys.stderr, "queryURL = " + self.url
-        
         if len(self.url)==0:
             try:
                 self.query = self.data.get('QUERY',"").rstrip()
@@ -81,12 +82,11 @@ class QUERY(object ):
             except:
                 self.url = None
 
-            print >> sys.stderr, "query = " + self.query
-            print >> sys.stderr, "url = " + self.url
-
         if len(self.orderby)>0 and 'ORDERBY' not in self.url:
             self.url += '&ORDERBY=%s' % self.orderby
 
+        if self.data.get('IntUnit', 'T300') == 'A':
+            self.url += '&IntUnit=A'
         # speciesID identifies only CDMS/JPL species
         try:
             self.speciesIDs = self.data.getlist('speciesIDs')
@@ -124,12 +124,6 @@ class QUERY(object ):
             self.spec_speciesid = self.data.get('spec_speciesid','')
             self.col_url = self.data.get('col_url','')
             self.col_speciesid = self.data.get('col_speciesid','')
-
-#        print >> sys.stderr, self.query
-        print >> sys.stderr, self.format
-        print >> sys.stderr, self.url
-        print >> sys.stderr, self.database
-
 
 def index(request):
     c=RequestContext(request,{})
@@ -194,13 +188,11 @@ def query_form(request):
 def tools(request):
     """
     """
-    print >> sys.stderr, request.method
     if request.method == 'POST':
         form = XsamsConversionForm(request.POST, request.FILES)
         if form.is_valid():
             
-            print >> sys.stderr, "IS VALID"
-            response=HttpResponse(form.cleaned_data['result'],mimetype='text/csv')
+            response=HttpResponse(form.cleaned_data['result'],content_type='text/csv')
             response['Content-Disposition'] = \
                 'attachment; filename=%s.%s'% (form.cleaned_data.get('infile') or 'output', form.cleaned_data.get('format') )
             return response
@@ -313,7 +305,8 @@ def json_list(request, content='species'):
         species_list.append(s)
     response_dict.update({'species' : species_list,'database' : db})
        
-    return HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
+    return HttpResponse(simplejson.dumps(response_dict), content_type='application/json')
+
 
 def catalog(request, id=None):
     """
@@ -423,7 +416,6 @@ def ajaxRequest(request):
                                                xsl = FILENAME_XSAMS2HTML))
             else:    
                 postvars = QUERY(request.POST,baseurl = baseurl)
-                print >> sys.stderr, "postvars.url = " +postvars.url
                 if postvars.url:
                     if  postvars.format.lower()=='xsams':
                         htmlcode = str(applyStylesheet(postvars.url,
@@ -436,7 +428,6 @@ def ajaxRequest(request):
 #                        url4="http://batz.lpma.jussieu.fr:8080/tapservice_11_12/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29"
                         url4="http://dev.vamdc.org/basecol/tapservice_12_07/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29"
 
-                        print >> sys.stderr, "col: %s\nspec: %s\n" % (postvars.col_url, postvars.spec_url)
                         output = str(applyRadex(postvars.spec_url, species1=postvars.spec_speciesid, species2=postvars.col_speciesid, inurl2=postvars.col_url))
                         
                         htmlcode = "<pre>" + output + "</pre>"
@@ -456,8 +447,6 @@ def ajaxRequest(request):
 
     
             postvars = QUERY(request.POST, baseurl = nodeurl, qformat='XSAMS')
-
-            print >> sys.stderr," NODESTATURL: "+ postvars.url
             # fetch statistic for this node
             if nodeurl:
                 htmlcode, vc = getNodeStatistic(nodeurl, inchikey, url = postvars.url)
@@ -485,7 +474,6 @@ def ajaxRequest(request):
             url=url.replace('mrg','XSAMS')
             url=url.replace('png','XSAMS')
             url=url.replace('comfort','XSAMS')
-            print >> sys.stderr, "SPECQUERY: "+url
             try:
                 result, speciesdata =  getspecies(url)
             except:
@@ -499,7 +487,7 @@ def ajaxRequest(request):
                               'htmlcode' : "Error: No function name posted! ",
                               'message' : "Error: No function name posted! "})
        
-    return HttpResponse(simplejson.dumps(response_dict), mimetype='application/javascript')
+    return HttpResponse(simplejson.dumps(response_dict), content_type='application/json')
 
 
 def specieslist(request):
@@ -536,7 +524,7 @@ def getfile(request,id):
     id: Database id of the file
     """
     f = Files.objects.get(pk=id)
-    response=HttpResponse(f.asciifile,mimetype='text/txt')
+    response=HttpResponse(f.asciifile,content_type='text/txt')
     
     response['Content-Disposition'] = 'attachment; filename=%s'%(f.name)
 
@@ -562,6 +550,4 @@ def cdms_lite_download(request):
 #    data = open(os.path.join(settings.PROJECT_PATH,'/var/cdms/v1_0/NodeSoftware/nodes/cdms/cdms_lite_notrans.db.gz'),'r').read()
 #    return HttpResponseRedirect(settings.BASE_URL+settings.PORTAL_URLPATH +'login/?next=%s' % request.path)
     return HttpResponseRedirect(settings.BASE_URL+'/static/cdms/cdms_lite.db.gz')
-
-
 

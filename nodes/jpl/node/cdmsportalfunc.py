@@ -4,8 +4,9 @@ import sys
 from models import *
 from django.core.exceptions import ValidationError
 from django.conf import settings
-
-def get_species_list(spids = None, database = 0):
+from lxml import etree as e
+ 
+def get_species_list(spids = None, database = 5):
     """
     """
     # cdms only
@@ -275,7 +276,7 @@ def check_query(postvars):
     except:
         htmlfield = 'Intensity (lg-units)'            
         xsamsfield = 'RadTransProbabilityIdealisedIntensity'
-        
+
     if (lgint is not None): #'T_SEARCH_INT' in postvars) & (postvars['T_SEARCH_INT']>-10):
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND %s > %s </a></li>" % (htmlfield, postvars['T_SEARCH_INT'])
        # tapxsams += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
@@ -285,8 +286,6 @@ def check_query(postvars):
 #        htmlcode += """<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\"> 
 #                       <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
 #                       </a></li>\n """
-
-
     ## PROCESS CLASS (HFS-FILTERS)
     try:
         hfs = postvars['T_SEARCH_HFSCODE']
@@ -345,7 +344,6 @@ def check_query(postvars):
             nsi = None
     except KeyError:
         nsi = None
-        
 
     if not state_filter:
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">"
@@ -361,6 +359,16 @@ def check_query(postvars):
 
         if nsi is not None:
             htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Nuclear Spin Isomer = '%s' </a></li>" % (nsi)
+
+    # Enviroment settings
+    try:
+        temperature = float(postvars['T_TEMPERATURE'])
+        if temperature != 300.0:
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND EnvironmentTemperature = %s </a></li>" % (temperature)
+            tapxsams += " AND EnvironmentTemperature = %s " % temperature
+            tapcdms += " AND EnvironmentTemperature = %s " % temperature
+    except:
+        pass
 
     #######################################
     # RETURN QUERY STRING DEPENDEND ON DB
@@ -428,7 +436,7 @@ def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v1.0.xsl
     try: data = urlopen(inurl)
 
     except Exception,err:
-        raise ValidationError('Could not open given URL: %s'%err)
+        raise ValidationError('Could not open given URL %s: %s'%(inurl,err))
 
     # Save XML-File to temporary directory
     filename = settings.TMPDIR+"/xsams_download.xsams"
@@ -479,20 +487,15 @@ def applyStylesheet(inurl, xsl = None):
     """
     Applies a xslt-stylesheet to the given url
     """
-    from django.conf import settings
-    from lxml import etree as e
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
         xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'convertXSAMS2html.xslt')))
-
     from urllib2 import urlopen
-
     try: data = urlopen(inurl)
 
     except Exception,err:
         raise ValidationError('Could not open given URL: %s'%err)
-
     # Save XML-File to temporary directory
     filename = settings.TMPDIR+"/xsams_download.xsams"
 
@@ -504,16 +507,13 @@ def applyStylesheet(inurl, xsl = None):
     local_file = open(filename, "w")
     local_file.write(data.read())
     local_file.close()
-
     try: xml=e.parse(filename)
     except Exception,err:
         raise ValidationError('Could not parse XML file: %s'%err)
-    
 
     try: result = str(xsl(xml))
     except Exception,err:
         raise ValidationError('Could not transform XML file: %s'%err)
-    
     return  result 
 
 def applyStylesheet2File(infile, xsl = None):

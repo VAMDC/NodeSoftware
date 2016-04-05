@@ -53,7 +53,10 @@ class QUERY(object ):
         try: self.freqto = self.data.get('T_SEARCH_FREQ_TO',0)
         except: self.freqto = 0
         try: self.minint = self.data.get('T_SEARCH_INT',-10)
-        except: self.freqto = -10
+        except: self.minint = -10
+
+        try: self.IntUnit = self.data.get('IntUnit', 'T300')
+        except: self.IntUnit = 'T300'
 
         try: self.orderby = self.data.get('T_SORT','')
         except: self.orderby = ''
@@ -83,6 +86,8 @@ class QUERY(object ):
         if len(self.orderby)>0 and 'ORDERBY' not in self.url:
             self.url += '&ORDERBY=%s' % self.orderby
 
+        if self.data.get('IntUnit', 'T300') == 'A':
+            self.url += '&IntUnit=A'
         # speciesID identifies only CDMS/JPL species
         try:
             self.speciesIDs = self.data.getlist('speciesIDs')
@@ -470,8 +475,10 @@ def ajaxRequest(request):
             inchikey = request.POST.get('inchikey',"")
             
             postvars = QUERY(request.POST, baseurl = nodeurl, qformat='XSAMS')
-            
-            url = postvars.url.replace('ALL','SPECIES').replace('RadiativeTransitions','SPECIES')
+            if not ('hitran' in postvars.url or 'umist3' in postvars.url): 
+                url = postvars.url.replace('ALL','SPECIES').replace('RadiativeTransitions','SPECIES')
+            else:
+                url = postvars.url
             url=url.replace('rad3d','XSAMS')
             url=url.replace('xspcat','XSAMS')
             url=url.replace('spcat','XSAMS')
@@ -505,7 +512,6 @@ def specieslist(request):
     c=RequestContext(request,{"action" : "catalog", "species_list" : species_list})
     return render_to_response('cdmsadmin/selectSpecies.html', c)
 
-
 def queryspecies(request, baseurl = settings.BASE_URL + settings.TAP_URLPATH):
     
     requeststring = "sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+SPECIES"
@@ -520,7 +526,7 @@ def queryspecies(request, baseurl = settings.BASE_URL + settings.TAP_URLPATH):
     c=RequestContext(request,{"result" : result})
     return render_to_response('cdmsportal/showResults.html', c)
 
-        
+
 def getfile(request,id):
     """
     reads the content from an ascii-file from the database
@@ -540,7 +546,7 @@ def download_data(request):
     postvars = request.POST
 
     baseurl = request.POST.get('nodeurl', settings.BASE_URL + settings.TAP_URLPATH)
-            
+
     if 'url2' in request.POST:
         return HttpResponseRedirect(request.POST['url2'])
     else:    

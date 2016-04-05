@@ -9,6 +9,7 @@
 from django.db.models import *
 #from vamdctap.bibtextools import *
 from latex2html import *
+import numpy as np
 
 FILTER_DICT={}
 # References which will always be returned
@@ -746,7 +747,7 @@ class RadiativeTransitions( Model):
 #     def process_class(self):
 #          return eval(self.processclass)
      
-     def spfitstr(self):
+     def spfitstr(self, print_einsteina = False):
           if self.frequencymethod == 4:
                speciestag = -self.speciestag
           else:
@@ -756,10 +757,14 @@ class RadiativeTransitions( Model):
           if egy_lower=='   -0.0000':
                egy_lower = '    0.0000'
                
+          if print_einsteina:
+              intensity = formatstring(np.log10(self.einsteina), '%8.4lf', '%8s')
+          else:
+              intensity = formatstring(self.intensity, '%8.4lf', '%8s')
           return '%s%s%s%s%s%3s%s%s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s'\
                  % (formatstring(self.frequency,'%13.4lf','%13s'),
                     formatstring(self.uncertainty,'%8.4lf','%8s'),
-                    formatstring(self.intensity,'%8.4lf','%8s'),
+                    intensity,
                     formatstring(self.degreeoffreedom,'%2d','%s'),
                     egy_lower,
                     format_degeneracy(self.upperstatedegeneracy),
@@ -851,7 +856,7 @@ class RadiativeTransitionsT( Model):
 #     def process_class(self):
 #          return eval(self.processclass)
      
-     def spfitstr(self):
+     def spfitstr(self, print_einsteina = False):
           if self.frequencymethod == 4:
                speciestag = -self.speciestag
           else:
@@ -860,11 +865,16 @@ class RadiativeTransitionsT( Model):
           egy_lower = formatstring(self.energylower,'%10.4lf','%10s')
           if egy_lower=='   -0.0000':
                egy_lower = '    0.0000'
+ 
+          if print_einsteina:
+              intensity = formatstring(np.log10(self.einsteina), '%8.4lf', '%8s')
+          else:
+              intensity = formatstring(self.intensity, '%8.4lf', '%8s')
                
           return '%s%s%s%s%s%3s%s%s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s'\
                  % (formatstring(self.frequency,'%13.4lf','%13s'),
                     formatstring(self.uncertainty,'%8.4lf','%8s'),
-                    formatstring(self.intensity,'%8.4lf','%8s'),
+                    intensity,
                     formatstring(self.degreeoffreedom,'%2d','%s'),
                     egy_lower,
                     format_degeneracy(self.upperstatedegeneracy),

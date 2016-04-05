@@ -467,6 +467,7 @@ def returnResults(tap, LIMIT=None):
     RESTRICTABLES.update(CDMSONLYRESTRICTABLES)
 
     SUPPORTED_FORMATS=['spcat','png','list','xspcat','mrg','species']
+    print_einsteina = False
 
     if tap.format not in SUPPORTED_FORMATS:
         emsg = 'Currently, only FORMATs PNG, SPCAT and XSAMS are supported.\n'
@@ -539,6 +540,9 @@ def returnResults(tap, LIMIT=None):
     if (col=='ALL' or 'radiativetransitions' in [x.lower() for x in col]):
         LOG('TRANSITIONS')
         orderby = tap.request.get('ORDERBY','frequency')
+        if tap.request.get('IntUnit', 'T') == 'A':
+            print_einsteina = True
+         
         if ',' in orderby:
             orderby=orderby.split(',')
             transitions = transs.order_by(*orderby) 
@@ -583,7 +587,7 @@ def returnResults(tap, LIMIT=None):
 
 
     if tap.format in ('spcat','xspcat','mrg'):
-        generator = gener(transitions, states, format=tap.format)
+        generator = gener(transitions, states, format=tap.format, print_einsteina = print_einsteina)
         response = HttpResponse(generator, content_type='text/plain')
     else:
         if 'states' in tap.requestables:
@@ -616,13 +620,13 @@ def formatqn(value):
     else:
         return str(value)
 
-def gener(transs=None, states=None, format='spcat'):
+def gener(transs=None, states=None, format='spcat', print_einsteina = False):
 
     if format=='xspcat':
         for trans in xCat(transs):
             yield trans
     elif format == 'mrg':
-        for trans in Mrg(transs):
+        for trans in Mrg(transs, print_einsteina = print_einsteina):
             yield trans
     else:
         for trans in Cat(transs):
@@ -661,12 +665,12 @@ def Cat(transs):
         yield '\n'
 
 
-def Mrg(transs):
+def Mrg(transs, print_einsteina = False):
     """
     """
     
     for trans in transs:
-        yield '%s ' % trans.spfitstr()
+        yield '%s ' % trans.spfitstr(print_einsteina = print_einsteina)
 ##        trans.attach_exp_frequencies()
 
 ##        speciestag = trans.speciestag

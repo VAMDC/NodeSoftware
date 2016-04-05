@@ -191,7 +191,6 @@ def get_species_and_states_old(transs, addStates=True, filteronatoms=False):
             lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
             states = States.objects.filter( pk__in = sids)
-            
             # Get energy origins
             origin_ids = states.values_list('energyorigin',flat=True).distinct()
             nsi_origin_ids = NuclearSpinIsomers.objects.filter(pk__in=states.values_list('nsi',flat=True)).values_list('lowestrovibstate',flat=True)
@@ -338,10 +337,6 @@ def attach_exp_frequencies(transs):
         
     return transs, methods
 
-
-
-
-
 def setupResults(sql):
     """
     This method queries the database with respect to the sql-query
@@ -384,7 +379,6 @@ def setupResults(sql):
 #    LOG(q)
     addStates = (not sql.requestables or 'atomstates' in sql.requestables or 'moleculestates' in sql.requestables)
     addTrans = (not sql.requestables or 'RadiativeTransitions' in sql.requestables)
-
     #datasets = Datasets.objects.filter(archiveflag=0)
 
     # Query the database and get calculated transitions (TransitionsCalc)
@@ -417,20 +411,17 @@ def setupResults(sql):
         sources, methods = get_sources(atoms, molecules, methods)
     else:
         sources=Sources.objects.none()
-
     nsources = sources.count()
     nmolecules = len(molecules)#molecules.count()
     natoms = len(atoms) #atoms.count()
     ntranss = transs.count()
 
     lastmodified = datetime.datetime(2009,12,1)
-
     for specie in chain(atoms, molecules):        
         if specie.changedate>lastmodified:
             lastmodified = specie.changedate
     if lastmodified ==  datetime.datetime(2009,12,1):
         lastmodified = datetime.datetime.now()
-
     # Calculate estimated size of xsams-file
     if ntranss+nmolecules+natoms+nstates>0:
         size_estimate='%.2f' % (nstates*0.0008755624 +ntranss*0.000561003 +nmolecules*0.001910 +nsources * 0.0005+0.01)
@@ -451,7 +442,6 @@ def setupResults(sql):
 
     if hasattr(sql, 'XRequestMethod') and sql.XRequestMethod == 'HEAD':
         return {'HeaderInfo': headerinfo}
-
     # attach partition functions to each specie and return the result
     attach_partionfunc(molecules)
     return {'RadTrans':transs,
@@ -478,6 +468,7 @@ def returnResults(tap, LIMIT=None):
     RESTRICTABLES.update(CDMSONLYRESTRICTABLES)
 
     SUPPORTED_FORMATS=['spcat','png','list','xspcat','mrg','species']
+    print_einsteina = False
 
     if tap.format not in SUPPORTED_FORMATS:
         emsg = 'Currently, only FORMATs PNG, SPCAT and XSAMS are supported.\n'
@@ -549,8 +540,10 @@ def returnResults(tap, LIMIT=None):
     # Prepare Transitions
     if (col=='ALL' or 'radiativetransitions' in [x.lower() for x in col]):
         LOG('TRANSITIONS')
-        LOG(ntrans)
         orderby = tap.request.get('ORDERBY','frequency')
+        if tap.request.get('IntUnit', 'T') == 'A':
+            print_einsteina = True
+         
         if ',' in orderby:
             orderby=orderby.split(',')
             transitions = transs.order_by(*orderby) 
@@ -595,7 +588,7 @@ def returnResults(tap, LIMIT=None):
 
 
     if tap.format in ('spcat','xspcat','mrg'):
-        generator = gener(transitions, states, format=tap.format)
+        generator = gener(transitions, states, format=tap.format, print_einsteina = print_einsteina)
         response = HttpResponse(generator, content_type='text/plain')
     else:
         if 'states' in tap.requestables:
@@ -628,13 +621,13 @@ def formatqn(value):
     else:
         return str(value)
 
-def gener(transs=None, states=None, format='spcat'):
+def gener(transs=None, states=None, format='spcat', print_einsteina = False):
 
     if format=='xspcat':
         for trans in xCat(transs):
             yield trans
     elif format == 'mrg':
-        for trans in Mrg(transs):
+        for trans in Mrg(transs, print_einsteina = print_einsteina):
             yield trans
     else:
         for trans in Cat(transs):
@@ -673,12 +666,12 @@ def Cat(transs):
         yield '\n'
 
 
-def Mrg(transs):
+def Mrg(transs, print_einsteina = False):
     """
     """
     
     for trans in transs:
-        yield '%s ' % trans.spfitstr()
+        yield '%s ' % trans.spfitstr(print_einsteina = print_einsteina)
 ##        trans.attach_exp_frequencies()
 
 ##        speciestag = trans.speciestag
