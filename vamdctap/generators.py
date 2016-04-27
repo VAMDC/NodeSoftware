@@ -7,7 +7,7 @@ from xml.sax.saxutils import escape
 
 # Get the node-specific parts
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
 DICTS = import_module(settings.NODEPKG + '.dictionaries')
 from caselessdict import CaselessDict
 RETURNABLES = CaselessDict(DICTS.RETURNABLES)
@@ -466,9 +466,13 @@ def checkXML(obj,methodName='XML'):
     If the queryset has an XML method, use that and
     skip the hard-coded implementation.
     """
-    try:
+    if hasattr(obj,methodName):
+        #try:
         return True, getattr(obj,methodName, None)() #This calls the method!
-    except:
+        #except Exception as e:
+        #    log.warn('XML-method "%s" on %s failed: %s'%(methodName,obj,e))
+        #    return False, None
+    else:
         return False, None
 
 def SelfSource(tap):

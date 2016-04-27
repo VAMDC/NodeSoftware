@@ -148,6 +148,13 @@ class Level(models.Model):
             return 1
         else:
             return 2
+      
+    def encoded_config(self):
+      """
+        some data files contains <> characters in this field
+        not correct when exporting in xml
+      """
+      return self.config.replace("<", "&lt;").replace(">", "&gt;")
         
     class Meta:
         db_table = u't_levels'  

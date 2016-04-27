@@ -11,7 +11,7 @@ import datetime
 # Software and standards version
 ###################################################
 VAMDC_STDS_VERSION = '12.07'
-NODESOFTWARE_VERSION = '12.07r1-rc'
+NODESOFTWARE_VERSION = '12.07r1-rc2'
 
 ###################################################
 # Basic node setup
@@ -169,7 +169,7 @@ LOGGING = {
     'handlers': {
         'null': {
             'level':'DEBUG',
-            'class':'django.utils.log.NullHandler',
+            'class':'logging.NullHandler',
         },
         'console':{
             'level':'WARNING',
