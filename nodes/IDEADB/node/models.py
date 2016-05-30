@@ -14,7 +14,7 @@ import re
 import datetime
 
 from inchivalidation import inchi2inchikey, inchikey2inchi, inchi2chemicalformula
-from chemlib import chemicalformula2nominalmass, checkatoms
+from chemlib import chemicalformula2nominalmass, checkatoms, atommasses
 
 #we define the regex object for chemical formulas here, as it is used in two different functions
 re = re.compile('^([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+$')
@@ -96,6 +96,15 @@ class Species(Model):
         if self.isotope is True:
             if self.mass != chemicalformula2nominalmass(self.chemical_formula):
                 raise ValidationError(u'Nominal mass and chemical formula are not compatible.')
+
+
+        # check whether the chemical formula and the information about molecule status fit each other
+        if self.molecule is False:
+            if self.chemical_formula not in atommasses:
+                raise ValidationError(u'%s seems not to be an atom. Please tick whether this is a molecule.' % self.chemical_formula)
+        else:
+            if self.chemical_formula in atommasses:
+                raise ValidationError(u'%s seems to be an atom. Please tick whether this is a molecule or an atom.' % self.chemical_formula)
 
         #check if either inchi or inchikey are there and either complete the other one or verify
         if self.inchi == '':
