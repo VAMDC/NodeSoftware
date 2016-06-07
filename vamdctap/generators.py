@@ -935,11 +935,11 @@ def XsamsMCSBuild(Molecule):
         yield ret
         yield '</NormalModes>\n'
     elif hasattr(Molecule, 'NormalModes'):
-        yield '<NormalModes>\n'
-        for NormalMode in Molecule.NormalModes:
-            GN = lambda name: GetValue(name, NormalMode=NormalMode)
-            yield makeNormalMode(GN)
-        yield '</NormalModes>\n'
+        NMlist = [makeNormalMode(lambda name: GetValue(name, NormalMode=NormalMode)) \
+                    for NormalMode in Molecule.NormalModes]
+        NMstring = '\n'.join(NMlist)
+        if NMstring:
+            yield '<NormalModes>\n%s</NormalModes>\n'%NMstring
 
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
     if G("MoleculeComment"):
