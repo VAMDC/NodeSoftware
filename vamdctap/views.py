@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response,get_object_or_404
 from django.template import RequestContext, Context, loader
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse
 
-import datetime, pytz
+import datetime
 from string import lower
 from cStringIO import StringIO
 import os, math, sys
@@ -15,7 +15,7 @@ import logging
 log=logging.getLogger('vamdc.tap')
 
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.utils.http import http_date
 
 if settings.LOG_CENTRALLY:
@@ -59,13 +59,13 @@ REQUESTABLES = map(lower, [\
 def tapNotFoundError(request):
     text = 'Resource not found: %s'%request.path;
     document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
-    return HttpResponse(document, status=404, mimetype='text/xml');
+    return HttpResponse(document, status=404, content_type='text/xml');
 
 # This turns a 500 "internal server error" into a TAP error-document
 def tapServerError(request=None, status=500, errmsg=''):
     text = 'Error in TAP service: %s'%errmsg
     document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
-    return HttpResponse(document, status=status, mimetype='text/xml');
+    return HttpResponse(document, status=status, content_type='text/xml');
 
 def getBaseURL(request):
     return getattr(settings, 'DEPLOY_URL', None) or \
@@ -85,13 +85,15 @@ class TAPQUERY(object):
         self.isvalid = True
         self.errormsg = ''
         try:
-            self.request=CaselessDict(dict(request.REQUEST))
+            self.request=CaselessDict(dict(request.GET or request.POST))
         except Exception,e:
             self.isvalid = False
             self.errormsg = 'Could not read argument dict: %s'%e
             log.error(self.errormsg)
 
-        if self.isvalid: self.validate()
+        if self.isvalid:
+            self.validate()
+
         self.fullurl = getBaseURL(request) + 'sync?' + request.META.get('QUERY_STRING')
 
     def validate(self):
@@ -106,6 +108,9 @@ class TAPQUERY(object):
         try: self.query = self.request['QUERY']
         except: self.errormsg += 'Cannot find QUERY in request.\n'
 
+        if (type(self.query) == list) and (len(self.query)==1):
+            self.query = self.query[0]
+
         try: self.format=lower(self.request['FORMAT'])
         except:
             log.debug('FORMAT is empty, assuming XSAMS')
@@ -113,7 +118,6 @@ class TAPQUERY(object):
         else:
             if self.format != 'xsams':
                 log.debug('Requested FORMAT is not XSAMS, letting it pass anyway.')
-
         try: self.parsedSQL=SQL.parseString(self.query,parseAll=True)
         except: # if this fails, we're done
             self.errormsg += 'Could not parse the SQL query string: %s\n'%self.query
@@ -157,7 +161,8 @@ class TAPQUERY(object):
             self.requestables.add('functions')
             self.requestables.add('methods')
 
-        if self.errormsg: self.isvalid=False
+        if self.errormsg:
+            self.isvalid=False
 
     def __str__(self):
         return '%s'%self.query
@@ -200,7 +205,7 @@ def addHeaders(headers,request,response):
 
 def CORS_request(request):
     """ Allow cross-server requests http://www.w3.org/TR/cors/ """
-    log.info('CORS-Request from %s: %s'%(request.META['REMOTE_ADDR'],request.REQUEST))
+    log.info('CORS-Request from %s'%(request.META['REMOTE_ADDR']))
     response = HttpResponse('', status=200)
     response['Access-Control-Allow-Origin'] = '*'
     response['Access-Control-Allow-Methods'] = 'HEAD'
@@ -212,13 +217,12 @@ def logCentral(sync):
     def wrapper(request, *args, **kwargs):
         response = sync(request, *args, **kwargs)
         if request.method == 'GET' and \
-	   response.status_code == 200 and \
+           response.status_code == 200 and \
            not settings.DEBUG and \
            settings.LOG_CENTRALLY:
             logdata = { 'clientIp': request.META['REMOTE_ADDR'],
-                        'requestContent': request.GET.get('QUERY'),
+                        'requestContent': request.GET.get('QUERY') or request.POST.get('QUERY'),
                         'requestDate': datetime.datetime.now(\
-                            pytz.timezone('Europe/Stockholm')\
                             ).strftime('%Y-%m-%dT%H:%M:%S%z'),
                         'serviceSource': 'NodeID: ' + NODEID,
                       }
@@ -233,7 +237,7 @@ def sync(request):
     if request.method=='OPTIONS':
         return CORS_request(request)
 
-    log.info('Request from %s: %s'%(request.META['REMOTE_ADDR'],request.REQUEST))
+    log.info('Request from %s: %s'%(request.META['REMOTE_ADDR'], request.GET or request.POST))
     tap=TAPQUERY(request)
     if not tap.isvalid:
         emsg = 'TAP-Request invalid: %s'%tap.errormsg
@@ -266,7 +270,7 @@ def sync(request):
     else:
         generator = Xsams(tap=tap,**querysets)
     log.debug('Generator set up, handing it to HttpResponse.')
-    response=HttpResponse(generator,mimetype='text/xml')
+    response=StreamingHttpResponse(generator,content_type='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
         datetime.datetime.now().isoformat(), tap.format)
 
@@ -304,7 +308,7 @@ def capabilities(request):
                                  "MIRRORS" : settings.MIRRORS,
                                  "APPS" : settings.VAMDC_APPS,
                                  })
-    return render_to_response('tap/capabilities.xml', c, mimetype='text/xml')
+    return render_to_response('tap/capabilities.xml', c, content_type='text/xml')
 
 
 from django.db import connection
@@ -318,11 +322,11 @@ def dbConnected():
 def availability(request):
     (status, message) = dbConnected()
     c=RequestContext(request,{"accessURL" : getBaseURL(request), 'ok' : status, 'message' : message})
-    return render_to_response('tap/availability.xml', c, mimetype='text/xml')
+    return render_to_response('tap/availability.xml', c, content_type='text/xml')
 
 def tables(request):
     c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
-    return render_to_response('tap/VOSI-tables.xml', c, mimetype='text/xml')
+    return render_to_response('tap/VOSI-tables.xml', c, content_type='text/xml')
 
 #def index(request):
 #    c=RequestContext(request,{})
