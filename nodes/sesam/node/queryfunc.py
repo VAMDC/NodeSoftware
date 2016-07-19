@@ -181,16 +181,17 @@ def getSpeciesWithStates(transs):
             lo = spec_transitions.values_list('lowerstate',flat=True)
             sids = set(chain(up, lo))
             getStates(specie, sids)            
-            nstates += len(specie.States)
+            
         except ObjectDoesNotExist as e:
           pass
             #log.debug(str(e)) 
-    
+    specie.States = list(set(specie.States))        
+    nstates = len(specie.States)
     nspecies = len(species) # get some statistics 
     return species, nspecies, nstates  
     
 def getStates(specie, sids):
-    states = models.Molecularstate.objects.filter(pk__in = sids)
+    states = models.Molecularstate.objects.filter(pk__in = sids).distinct()
     datasets = states.values_list('dataset__pk',flat=True).distinct()
     #energy origin
     origin = models.Molecularstate.objects.filter(dataset__in = datasets, energy=0)[0]

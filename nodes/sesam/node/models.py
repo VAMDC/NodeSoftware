@@ -20,6 +20,7 @@ class Molecule(models.Model):
     ordinary_structural_formula = models.CharField(max_length=60)
     stoichiometric_formula = models.CharField(max_length=60)
     inchikey = models.CharField(max_length=81)
+    inchi = models.CharField(max_length=30)
     class Meta:
         db_table = u't_molecule'
         

@@ -33,6 +33,7 @@ RETURNABLES = {\
 'MoleculeStoichiometricFormula':'Molecule.stoichiometric_formula',
 'MoleculeOrdinaryStructuralFormula':'Molecule.ordinary_structural_formula',
 'MoleculeInchiKey':'Molecule.inchikey',
+'MoleculeInchi':'Molecule.inchi',
 'MoleculeSpeciesID':'Molecule.id',
 ############################################################
 #Sources
@@ -44,8 +45,6 @@ RETURNABLES = {\
 'SourceURI':'Source.uri',
 'SourceAuthorName':'Source.authornames()',
 ############################################################
-#'RadTransSpeciesRef':'RadTran.species_id',
-#'RadTransComments':'Wavelength is for vacuum.',
 'RadTransID':'RadTran.id',
 'RadTransWavelength':'RadTran.wavelength',
 'RadTransWavelengthUnit':u'A',
@@ -86,29 +85,6 @@ RETURNABLES = {\
 'MoleculeQNSpinComponentLabel':'MoleculeState.SubCase.spin_component_label',
 'MoleculeQNF1':'MoleculeState.SubCase.f1',
 'MoleculeQNKronigParity':'MoleculeState.SubCase.kronig_parity',
-
-############################################################
-#'FunctionID':'Function.id',
-#'FunctionName':'Function.name',
-#'FunctionSourceRef': "",
-#'FunctionComputerLanguage': "",
-#'FunctionExpression':"Function.expression",
-#'FunctionYName':"Function.y",
-#'FunctionYUnits':"unitless",
-#'FunctionYDescription':"",
-#'FunctionYLowerLimit':"0.0",
-#'FunctionYUpperLimit':"1.0",
-#'FunctionArgumentName':'FunctionArgument.name',
-#'FunctionArgumentUnits': "unitless",
-#'FunctionArgumentDescription': "",
-#'FunctionArgumentLowerLimit':"FunctionArgument.lower_limit",
-#'FunctionArgumentUpperLimit':"FunctionArgument.upper_limit",
-#'FunctionParameterName':"FunctionParameter.name",
-#'FunctionParameterUnits':"unitless",
-#'FunctionParameterDescription':"",
-#'FunctionReferenceFrame':"",
-#'FunctionDescription':"",
-#'FunctionSourceCodeURL': ""
 }
 
 # The restrictable dictionary defines limitations to the search.
@@ -118,6 +94,7 @@ RETURNABLES = {\
 
 RESTRICTABLES = {\
 'MoleculeChemicalName':'ordinarystructuralformula',
+'MoleculeStoichiometricFormula':'molecule__stoichiometric_formula',
 'RadTransWavelength':'wavelength',
 'RadTransProbabilityOscillatorStrength':'oscillator_strength',
 'StateEnergy':'lowerstate__energy',
@@ -126,9 +103,6 @@ RESTRICTABLES = {\
 'lower.StateEnergy':'lowerstate__energy',
 'upper.StateEnergy':'upperstate__energy',
 'RadTransProbabilityA':'transition_probability',
-#'RadTransWavenumber':'vavenum',
-#'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
-#'AtomIonCharge':'species__ion'
 }
 
 PREFIXES = {\
