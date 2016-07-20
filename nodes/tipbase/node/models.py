@@ -220,11 +220,11 @@ class Dataset(models.Model):
     class Meta:
         db_table = u't_dataset'
 
-class DataseVersion(models.Model):
+class DatasetVersion(models.Model):
     datasetid = models.ForeignKey(Dataset, db_column='datasetid')
     versionid = models.ForeignKey(Version, db_column='versionid')
     class Meta:
-        db_table = u't_dataseVersion'
+        db_table = u't_datasetversion'
 
 class Lscoupling(models.Model):
     id = models.IntegerField(primary_key=True)

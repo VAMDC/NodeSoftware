@@ -149,7 +149,7 @@ class Atomicstatesource(models.Model):
 class Radiativetransition(models.Model):
     id = models.IntegerField(primary_key=True)
     version = models.ForeignKey(Version, db_column='versionid')
-    version_int = models.IntegerField(db_column='versionid')
+    #~ version_int = models.IntegerField(db_column='versionid')
     atomicion = models.IntegerField(db_column='atomicionid')
     elementsymbol = models.CharField(max_length=9)
     nuclearcharge =  models.IntegerField()
@@ -160,9 +160,9 @@ class Radiativetransition(models.Model):
     wavelength = models.FloatField()
     wavelengthunit = models.CharField(max_length=8)
     upperatomicstate = models.ForeignKey(Atomicstate, db_column='upperatomicstateid', related_name='+')
-    upperatomicstate_int = models.IntegerField(db_column='upperatomicstateid')
+    #~ upperatomicstate_int = models.IntegerField(db_column='upperatomicstateid')
     loweratomicstate = models.ForeignKey(Atomicstate, db_column='loweratomicstateid', related_name='+')    
-    loweratomicstate_int = models.IntegerField(db_column='loweratomicstateid')
+    #~ loweratomicstate_int = models.IntegerField(db_column='loweratomicstateid')
     inchikey = models.CharField(max_length=27)   
     collider = models.CharField(max_length=8, default="photon")
      

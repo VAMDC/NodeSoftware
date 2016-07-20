@@ -44,9 +44,8 @@ def setupResults(sql):
     """
 
     result = None
-    sql.request['QUERY'] = replacements(sql.request['QUERY'])
     # return all species
-    if str(sql.request['QUERY']).strip().lower() == 'select species': 
+    if str(sql).strip().lower() == 'select species': 
         result = setupSpecies()
     # all other requests
     else:		
@@ -116,17 +115,22 @@ def setupVssRequest(sql, limit=10000):
     return result
     
 def setupSpecies():
-	"""		
-		Return all target species
-		@rtype:   util_models.Result
-		@return:  Result object		
-	"""
-	result = util_models.Result()
-	ids = django_models.Collisionaltransition.objects.all().values_list('version', flat=True)
-	versions = django_models.Version.objects.filter(pk__in = ids)
-	result.addHeaderField('COUNT-SPECIES',versions.count())
-	result.addDataField('Atoms',versions)	
-	return result
+  """		
+    Return all target species
+    @rtype:   util_models.Result
+    @return:  Result object		
+  """
+  
+  # get recommended dataset
+  dataset = django_models.Dataset.objects.filter(isrecommended="1").get()
+  # get all species in this set
+  ids = django_models.DatasetVersion.objects.filter(datasetid=dataset).values_list('versionid', flat=True)
+  versions = django_models.Version.objects.filter(pk__in = ids)
+  
+  result = util_models.Result()
+  result.addHeaderField('COUNT-SPECIES',versions.count())
+  result.addDataField('Atoms',versions)	
+  return result
 	
 	
 def truncateTransitions(transitions, request, maxTransitionNumber):

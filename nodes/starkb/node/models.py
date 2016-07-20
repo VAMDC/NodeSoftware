@@ -209,7 +209,12 @@ class Temperature(models.Model):
 
 class TemperatureCollider(models.Model):
     id = models.IntegerField(primary_key=True)
-    temperature = models.ForeignKey(Temperature, db_column='id_temperature', unique=True)
+    #~ temperature = models.ForeignKey(Temperature, db_column='id_temperature', unique=True)
+    temperature = models.OneToOneField(
+      Temperature,
+      db_column='id_temperature',
+      #~ related_name='temperature_id'
+    )
     species = models.ForeignKey(Species, db_column='id_species')
     n_w = models.CharField(max_length=24, blank=True)
     w = models.FloatField(null=True, blank=True)
