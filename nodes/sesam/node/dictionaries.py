@@ -32,6 +32,7 @@ RETURNABLES = {\
 #Molecule
 'MoleculeStoichiometricFormula':'Molecule.stoichiometric_formula',
 'MoleculeOrdinaryStructuralFormula':'Molecule.ordinary_structural_formula',
+'MoleculeChemicalName':'Molecule.chemical_name',
 'MoleculeInchiKey':'Molecule.inchikey',
 'MoleculeInchi':'Molecule.inchi',
 'MoleculeSpeciesID':'Molecule.id',

@@ -19,6 +19,7 @@ class Molecule(models.Model):
     id = models.IntegerField(primary_key=True)
     ordinary_structural_formula = models.CharField(max_length=60)
     stoichiometric_formula = models.CharField(max_length=60)
+    chemical_name = models.CharField(max_length=120)
     inchikey = models.CharField(max_length=81)
     inchi = models.CharField(max_length=30)
     class Meta:
