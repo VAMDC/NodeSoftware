@@ -129,19 +129,25 @@ class Level(models.Model):
     config = models.CharField(unique=True, max_length=60)
     term = models.CharField(unique=True, max_length=36)
     parity = models.CharField(max_length=4)
+    coupling = models.CharField(max_length=4)
     J = models.CharField(unique=True, max_length=15, blank=True)       
-    L = models.IntegerField(null=True)    
-    S = models.FloatField(null=True)    
+    LS_L = models.IntegerField(null=True)    
+    LS_S = models.FloatField(null=True)    
     LS_multiplicity = models.IntegerField(null=True)    
-    K = models.FloatField(null=True)    
-    J1 = models.FloatField(null=True)   
-    S2 = models.FloatField(null=True) 
+    jK_K = models.FloatField(null=True)    
+    jK_J1 = models.FloatField(null=True)   
+    jK_S2 = models.FloatField(null=True) 
+    jj_j1 = models.FloatField(null=True)   
+    jj_j2 = models.FloatField(null=True)   
     
     def j_asFloat(self):
         #add .0 to "1/2" or "3/2" to get float value
         if(self.J is not None) :
             return eval(self.J+".0")
         return None
+        
+    def getjj(self):
+      return [self.jj_j1, self.jj_j2]
         
     def get_int_parity(self):
         if self.parity == 'odd' :

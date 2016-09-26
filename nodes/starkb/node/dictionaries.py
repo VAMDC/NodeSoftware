@@ -16,13 +16,14 @@ RETURNABLES = ({\
 'AtomStateConfigurationLabel':'Component.encoded_config()',
 'AtomStateTermLabel':'Component.term',
 'AtomStateTotalAngMom' : 'AtomState.totalAngularMomentum',
-'AtomStateTermLSL':'Component.L',
-'AtomStateTermLSS':'Component.S',
+'AtomStateTermLSL':'Component.LS_L',
+'AtomStateTermLSS':'Component.LS_S',
 'AtomStateTermLSMultiplicity':'Component.LS_multiplicity',
 'AtomStateRef':'AtomState.Sources',
-'AtomStateTermJKK':'Component.K',
-'AtomStateTermJKJ':'Component.J1',
-'AtomStateTermJKS':'Component.S2',
+'AtomStateTermJKK':'Component.jK_K',
+'AtomStateTermJKJ':'Component.jK_J1',
+'AtomStateTermJKS':'Component.jK_S2',
+'AtomStateCoreTermJJ':'Component.getjj()',
 
 
 #radiative transition
