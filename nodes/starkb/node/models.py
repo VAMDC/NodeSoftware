@@ -147,7 +147,14 @@ class Level(models.Model):
         return None
         
     def getjj(self):
-      return [self.jj_j1, self.jj_j2]
+      result = []
+      if self.jj_j1 is not None : 
+        return result.append([self.jj_j1])
+
+      if self.jj_j2 is not None : 
+        return result.append([self.jj_j2])   
+        
+      return result
         
     def get_int_parity(self):
         if self.parity == 'odd' :
