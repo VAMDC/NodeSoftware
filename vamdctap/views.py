@@ -97,21 +97,19 @@ class TAPQUERY(object):
         self.fullurl = getBaseURL(request) + 'sync?' + request.META.get('QUERY_STRING')
 
     def validate(self):
-        try: self.lang = lower(self.request['LANG'])
+        print self.request['LANG']
+        try: self.lang = lower(self.request['LANG'][0])
         except:
-            log.debug('LANG is empty, assuming VASS2')
+            log.debug('LANG is empty, assuming VSS2')
             self.lang='vss2'
         else:
             if self.lang not in ('vss1','vss2'):
                 self.errormsg += 'Only LANG=VSS1 or LANG=VSS2 is supported.\n'
 
-        try: self.query = self.request['QUERY']
+        try: self.query = self.request['QUERY'][0]
         except: self.errormsg += 'Cannot find QUERY in request.\n'
 
-        if (type(self.query) == list) and (len(self.query)==1):
-            self.query = self.query[0]
-
-        try: self.format=lower(self.request['FORMAT'])
+        try: self.format=lower(self.request['FORMAT'][0])
         except:
             log.debug('FORMAT is empty, assuming XSAMS')
             self.format='xsams'
@@ -335,4 +333,3 @@ def tables(request):
 #def async(request):
 #    c=RequestContext(request,{})
 #    return render_to_response('tap/index.html', c)
-
