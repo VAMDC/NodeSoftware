@@ -4,6 +4,7 @@ from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse
 
 import datetime
+import uuid
 from string import lower
 from cStringIO import StringIO
 import os, math, sys
@@ -211,27 +212,51 @@ def CORS_request(request):
     return response
 
 # Decorator for sync() for logging to the central service
-def logCentral(sync):
-    def wrapper(request, *args, **kwargs):
+def logCentral(sync):    
+    def wrapper(request, *args, **kwargs):       
         response = sync(request, *args, **kwargs)
-        if request.method == 'GET' and \
-           response.status_code == 200 and \
-           not settings.DEBUG and \
+        taprequest = TAPQUERY(request)
+        #log the request in the query store
+        #if the request comes from the query store it is ignored
+        if request.method in ['GET', 'HEAD'] and \
+	       response.status_code == 200 and \
+           request.META['HTTP_USER_AGENT'] != settings.CENTRAL_LOGGER_USER_AGENT and \
            settings.LOG_CENTRALLY:
-            logdata = { 'clientIp': request.META['REMOTE_ADDR'],
-                        'requestContent': request.GET.get('QUERY') or request.POST.get('QUERY'),
-                        'requestDate': datetime.datetime.now(\
-                            ).strftime('%Y-%m-%dT%H:%M:%S%z'),
-                        'serviceSource': 'NodeID: ' + NODEID,
-                      }
-            logreq = librequests.post(settings.CENTRAL_LOGGER_URL,params=logdata)
+            logdata = {
+                        # request unique ID
+                       'queryToken': request.uniqueid,  
+                       'accededResource': get_tapendpoint(request),  
+                       'resourceVersion': settings.NODEVERSION,  
+                       'userEmail': '',   # not used in this context
+                       'usedClient': request.META['HTTP_USER_AGENT'],      
+                       'accessType': request.method,   # HEAD or GET
+                       'outputFormatVersion': settings.VAMDC_STDS_VERSION,  
+                       'dataURL': get_request_url(request),           
+                       'query' :  taprequest
+                       }
+                       
+            logreq = librequests.post(settings.CENTRAL_LOGGER_URL, params=logdata)
             if logreq.status_code != 200:
-                log.warn('Request to central logger retuned code: %s'%logreq.status_code)
+              log.warn('Request to central logger retuned code: %s' % logreq.status_code)
         return response
     return wrapper
 
+def get_request_url(request):
+    """Return the complete encoded request url."""
+    encoded_path = "http://%s%s" % (request.META['HTTP_HOST'], request.META['PATH_INFO'])
+    return "%s?%s" % (encoded_path, request.META['QUERY_STRING'])
+
+def get_tapendpoint(request):
+    path = "http://%s%s" % (request.META['HTTP_HOST'], request.META['PATH_INFO'])
+    result = path.split('/tap')[0]  # remove sync part
+    return result + '/tap'    
+
+
 @logCentral
 def sync(request):
+  
+    request.uniqueid = "%s:%s" % (settings.NODENAME, uuid.uuid4())
+    
     if request.method=='OPTIONS':
         return CORS_request(request)
 
@@ -273,6 +298,8 @@ def sync(request):
         datetime.datetime.now().isoformat(), tap.format)
 
     headers = querysets.get('HeaderInfo') or {}
+    headers["REQUEST-UUID"] = request.uniqueid
+    
     response=addHeaders(headers,request,response)
     # Override with empty response if result is empty
     if 'VAMDC-APPROX-SIZE' in response:

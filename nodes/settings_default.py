@@ -21,6 +21,7 @@ BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 sys.path.append(BASE_PATH)
 NODENAME = os.path.basename(os.path.dirname(__file__))
 NODEPKG = 'node'
+NODEVERSION = 1
 
 # Where to load url info from
 ROOT_URLCONF = 'urls'
@@ -222,5 +223,5 @@ LOGGING = {
 }
 
 LOG_CENTRALLY = False
-CENTRAL_LOGGER_URL = 'http://pdl-calc2.obspm.fr:8081/VamdcLog/LogWriter'
-
+CENTRAL_LOGGER_URL = 'http://vm-calc-lerma01.obspm.fr:8080/QSNotificationListener/NotificationListener'
+CENTRAL_LOGGER_USER_AGENT = 'VAMDC Query store'
