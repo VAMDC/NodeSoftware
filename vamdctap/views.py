@@ -97,7 +97,6 @@ class TAPQUERY(object):
         self.fullurl = getBaseURL(request) + 'sync?' + request.META.get('QUERY_STRING')
 
     def validate(self):
-        print self.request['LANG']
         try: self.lang = lower(self.request['LANG'][0])
         except:
             log.debug('LANG is empty, assuming VSS2')
