@@ -9,19 +9,20 @@ class Result:
 	def __init__(self):
 		self.header = {}   
 		self._headerFields = {	'COUNT-SOURCES':None,
-                                'COUNT-ATOMS' : None,
-                                'COUNT-MOLECULES':None,
+                'COUNT-ATOMS' : None,
+                'COUNT-MOLECULES':None,
 								'COUNT-SPECIES':None,
 								'COUNT-STATES':None,
 								'COUNT-RADIATIVE':None,
 								'COUNT-COLLISIONS' : None,
-                                'COUNT-NONRADIATIVE':None,
-                                'TRUNCATED':None,
-                                'APPROX-SIZE':None                                
+                'COUNT-NONRADIATIVE':None,
+                'TRUNCATED':None,
+                'APPROX-SIZE':None,
+                'LAST-MODIFIED':None                             
 							}
 		self.data = {}
 		self._dataFields = {'RadTrans':None,
-                            'Molecules':None,
+              'Molecules':None,
 							'Atoms':None,
 							'Environments':None,
 							'Particles' : None,
@@ -29,7 +30,7 @@ class Result:
 							'Methods':None,
 							'Functions':None,
 							'CollTrans':None,
-                            'RadCross':None
+              'RadCross':None
 							}
 		
 	def addHeaderField(self, key, value):

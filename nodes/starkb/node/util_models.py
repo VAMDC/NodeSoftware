@@ -2,15 +2,16 @@ class Result:
 	def __init__(self):
 		self.header = {}
 		self._headerFields = {	'COUNT-SOURCES':None,
-                                'COUNT-ATOMS' : None,
-                                'COUNT-MOLECULES':None,
+                'COUNT-ATOMS' : None,
+                'COUNT-MOLECULES':None,
 								'COUNT-SPECIES':None,
 								'COUNT-STATES':None,
 								'COUNT-RADIATIVE':None,
 								'COUNT-COLLISIONS' : None,
-                                'COUNT-NONRADIATIVE':None,
-                                'TRUNCATED':None,
-                                'APPROX-SIZE':None  
+                'COUNT-NONRADIATIVE':None,
+                'TRUNCATED':None,
+                'APPROX-SIZE':None,
+                'LAST-MODIFIED':None
 							}
 		self.data = {}
 		self._dataFields = {'RadTrans':None,
@@ -48,6 +49,68 @@ class Result:
 			result[key] = self.data[key]
 			
 		return result
+        
+        
+class FunctionBuilder():
+    @staticmethod
+    def widthCalculation():
+        f = Function()
+        f.id = 1
+        f.name = 'width'
+        f.description="log(w)"
+        f.addArg('T', 'K', 'Temperature')
+        f.addParam('a0', '', '')
+        f.addParam('a1', '', '')
+        f.addParam('a2', '', '')
+        return f
+        
+    @staticmethod
+    def shiftCalculation():
+        f = Function()
+        f.id = 2
+        f.name = 'shift'
+        f.description="d/w"
+        f.addArg('T', 'K', 'Temperature')
+        f.addParam('b0', '', '')
+        f.addParam('b1', '', '')
+        f.addParam('b2', '', '')
+        return f
+        
+        
+class Function():
+    def __init__(self):
+        self.id = None
+        self.comments = None
+        self.name = None
+        self.expression = None
+        self.language = None
+        self.Arguments = []
+        self.Parameters = []
+        
+    def cleanArgs(self):
+        del(self.args[:])
+        
+    def cleanParams(self):
+        del(self.params[:])
+        
+    def addArg(self, name, unit, description):
+        self.Arguments.append(Argument(name, unit, description))
+        
+    def addParam(self, name, unit, description):
+        self.Parameters.append(Parameter(name, unit, description))
+        
+class Argument():
+    def __init__(self, name, unit, descr):
+        self.name = name
+        self.unit = unit
+        self.description = descr
+    
+class Parameter():
+    def __init__(self, name, unit, descr):
+        self.name = name
+        self.unit = unit
+        self.description = descr
+    
 
 class State():
     def __init__(self):
