@@ -81,7 +81,7 @@ class DictAtoms( Model):
      nuclearcharge         = IntegerField(db_column='DA_NuclearCharge', blank=True)
      class Meta:
        db_table = u'Dict_Atoms'
-       
+
 
 class Species( Model):
      """
@@ -90,6 +90,13 @@ class Species( Model):
      archived entries related to outdated versions of the specie (outdated versions are kept and
      not deleted).
      """
+
+     RECOMMENDATION_CHOICES = (
+             (0, 'recommended'),
+             (1, 'same entry as recommended one'),
+             (99, 'not recommended'),
+             )
+
      id                    = IntegerField(primary_key=True, db_column='E_ID')
      molecule              = ForeignKey(Molecules, db_column='E_M_ID')
      atom                  = ForeignKey(DictAtoms, db_column='E_DA_ID')
@@ -108,6 +115,7 @@ class Species( Model):
      dateofentry           = DateField(db_column='E_DateOfEntry')
      comment               = TextField(db_column='E_Comment')
      archiveflag           = IntegerField(db_column='E_Archive')
+     recommendationflag    = IntegerField(db_column='E_Recommendationflag', choices = RECOMMENDATION_CHOICES)
      dateactivated         = DateField(db_column='E_DateActivated')
      datearchived          = DateField(db_column='E_DateArchived')
      changedate            = DateTimeField(db_column='E_ChangeDate')

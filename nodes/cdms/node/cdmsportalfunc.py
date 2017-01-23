@@ -775,3 +775,30 @@ def getspecies(url):
 
     html += "</tbody></table>"
     return  html, data
+
+
+def listRecommendedEntries():
+    """
+    Lists all recommended entries (JPL/CDMS)
+    """
+    s = Species.objects.filter(recommendationflag = 0)
+    for species in s:
+        if species.origin == 5:
+            yield "XCDMS-%s\n" % species.id
+        elif species.origin == 0:
+            yield "XJPL-%s\n" % species.id
+
+def isRecommended(id):
+    """
+    Checks if an entry is recommended.
+
+    :param id: Species-id
+    :type id: integer
+
+    returns Boolean
+    """
+    s = Species.objects.get(id=id)
+    if s.recommendationflag == 0:
+        return True
+    else:
+        return False

@@ -563,3 +563,19 @@ def cdms_lite_download(request):
 #    return HttpResponseRedirect(settings.BASE_URL+settings.PORTAL_URLPATH +'login/?next=%s' % request.path)
     return HttpResponseRedirect(settings.BASE_URL+'/static/cdms/cdms_lite.db.gz')
 
+def recommendation_list(request):
+    """
+    Returns a list of recommended entries (JPL - CDMS)
+    """
+    s = listRecommendedEntries()
+
+    return HttpResponse(s, content_type='text/plain')
+
+def is_recommended(request, id):
+    """
+    Checks if an entry is recommended.
+    """
+
+    ret_value = isRecommended(id)
+
+    return HttpResponse(ret_value, content_type = 'text/plain')

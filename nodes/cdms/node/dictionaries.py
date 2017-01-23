@@ -238,7 +238,6 @@ def processclass(r, op, *rhs):
     stored in a single field in the database. 
     """
     try:
-
         if op=='in':
             if not (rhs[0]=='(' and rhs[-1]==')'):
                 log.error('Values for IN not bracketed: %s'%rhs)
@@ -265,7 +264,8 @@ def processclass(r, op, *rhs):
             
             
         return QFalse
-    except:
+    except Exception as e:
+        print >> sys.stderr, str(e)
         return QFalse
 
 def environment(r, op, *rhs):
