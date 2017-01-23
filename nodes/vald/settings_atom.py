@@ -23,7 +23,7 @@ DATABASES = {
     'PASSWORD': 'V@ld',
   },
 }
-LAST_MODIFIED = datetime.date(2012,12,18)
+LAST_MODIFIED = datetime.date(2017,1,20)
 
 EXAMPLE_QUERIES = [\
     "SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4000.01",

@@ -47,13 +47,13 @@ RETURNABLES = {\
 'AtomStateTermLSMultiplicity' : 'Component.Lscoupling.multiplicity',
 
 'RadTransID':'RadTran.id',
-'RadTransRefs' : 'RadTran.Sources',
+#~ 'RadTransRefs' : 'RadTran.Sources',
 'RadTransWavelength':'RadTran.wavelength',
 'RadTransWavelengthUnit':'RadTran.wavelengthunit',
 'RadTransProbabilityWeightedOscillatorStrength' : 'RadTran.abs_weightedoscillatorstrength()',
-'RadTransUpperStateRef':'RadTran.upperatomicstate.id',
-'RadTransLowerStateRef':'RadTran.loweratomicstate.id',
-'RadTransSpeciesRef' : 'RadTran.version.atomicion.id', 
+'RadTransUpperStateRef':'RadTran.upperatomicstate_id',
+'RadTransLowerStateRef':'RadTran.loweratomicstate_id',
+'RadTransSpeciesRef' : 'RadTran.atomicion', 
 'RadTransProbabilityA' : 'RadTran.transitionprobability',
 'RadTransProbabilityAUnit' : '1/s',
 
@@ -61,11 +61,13 @@ RETURNABLES = {\
 'CrossSectionState' : 'RadCros.id',
 'CrossSectionID' : 'RadCros.id',
 'CrossSectionX' : 'RadCros.xdata',
+#~ 'CrossSectionXDataFile' : 'RadCros.xdata_file()',
 'CrossSectionXUnit' : 'RadCros.xdataunit',
-'CrossSectionXN' : 'len(RadCros.xdata.split(" "))',
+'CrossSectionXN' : 'RadCros.xdata_count()',
 'CrossSectionY' : 'RadCros.ydata',
 'CrossSectionYUnit' : 'RadCros.ydataunit',
-'CrossSectionYN' : 'len(RadCros.ydata.split(" "))',
+'CrossSectionYN' : 'RadCros.ydata_count()',
+#~ 'CrossSectionYDataFile' : 'RadCros.ydata_file()',
 
 #source
 'SourceTitle':'Source.title',

@@ -15,12 +15,14 @@ from django.conf import settings
 from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-import logging
-log=logging.getLogger('vamdc.tap')
 from django.db import connection
 import dictionaries
 import models as django_models
 import util_models as util_models # utility classes
+
+if hasattr(settings,'LAST_MODIFIED'):
+  LAST_MODIFIED = settings.LAST_MODIFIED
+else: LAST_MODIFIED = None
 
 def setupResults(sql):
 	"""		
@@ -95,12 +97,15 @@ def setupVssRequest(sql, limit=500):
         result.addHeaderField('COUNT-SPECIES',nspecies)
         result.addHeaderField('COUNT-STATES',nstates)
         result.addHeaderField('COUNT-RADIATIVE',len(transitions))	
+        
+        if LAST_MODIFIED is not None : 
+          result.addHeaderField('LAST-MODIFIED',LAST_MODIFIED)
        
         result.addDataField('RadTrans',transitions)        
         result.addDataField('Atoms',species)
         result.addDataField('Environments',environments)
         result.addDataField('Particles',particles)
-        result.addDataField('Functions',functions)
+        #~ result.addDataField('Functions',functions)
         result.addDataField('Sources',sources)
         
     else : # only fill header

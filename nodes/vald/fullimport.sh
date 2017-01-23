@@ -61,3 +61,22 @@ echo -n "Creating database indexes... "
 ./manage.py sqlindexes $Node | mysql --verbose -u "$VUSR" -p"$VPWD" "$VDB"
 ./manage.py sqlindexes node_common | mysql --verbose -u "$VUSR" -p"$VPWD" "$VDB"
 echo "done."
+
+# remove species without transitions as last step!
+# e.g. in python shell
+# from node_atom.models import *
+# for spec in Species.objects.all():
+#    if Transition.objects.filter(species=spec).count() == 0:
+#            spec.delete()
+#
+#
+# also fill the xml column in refs tabe with pre-compiled
+# versions of the references
+# from pybtex.database.input import bibtex
+# parser = bibtex.Parser()
+# from vamdctap.bibtextools import *
+# from node_atom import models
+# rs=models.Reference.objects.all()
+# for r in rs:
+#    r.xml=BibTeX2XML(r.bibtex)
+#         r.save()

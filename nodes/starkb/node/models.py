@@ -32,6 +32,7 @@ class Ion(models.Model):
     nuclear_charge = models.IntegerField()    
     inchi = models.CharField(max_length=100)
     inchikey = models.CharField(max_length=27)
+    mass_number = models.IntegerField()    
     
     '''def ion_charge(self):
         return self.ionization_decimal - 1'''
@@ -128,12 +129,16 @@ class Level(models.Model):
     config = models.CharField(unique=True, max_length=60)
     term = models.CharField(unique=True, max_length=36)
     parity = models.CharField(max_length=4)
+    coupling = models.CharField(max_length=4)
     J = models.CharField(unique=True, max_length=15, blank=True)       
-    L = models.IntegerField(null=True)    
-    S = models.FloatField(null=True)    
+    LS_L = models.IntegerField(null=True)    
+    LS_S = models.FloatField(null=True)    
     LS_multiplicity = models.IntegerField(null=True)    
-    K = models.FloatField(null=True)    
-    J1 = models.FloatField(null=True)   
+    jK_K = models.FloatField(null=True)    
+    jK_J1 = models.FloatField(null=True)   
+    jK_S2 = models.FloatField(null=True) 
+    jj_j1 = models.FloatField(null=True)   
+    jj_j2 = models.FloatField(null=True)   
     
     def j_asFloat(self):
         #add .0 to "1/2" or "3/2" to get float value
@@ -141,11 +146,28 @@ class Level(models.Model):
             return eval(self.J+".0")
         return None
         
+    def getjj(self):
+      result = []
+      if self.jj_j1 is not None : 
+        return result.append([self.jj_j1])
+
+      if self.jj_j2 is not None : 
+        return result.append([self.jj_j2])   
+        
+      return result
+        
     def get_int_parity(self):
         if self.parity == 'odd' :
             return 1
         else:
             return 2
+      
+    def encoded_config(self):
+      """
+        some data files contains <> characters in this field
+        not correct when exporting in xml
+      """
+      return self.config.replace("<", "&lt;").replace(">", "&gt;")
         
     class Meta:
         db_table = u't_levels'  
@@ -200,7 +222,12 @@ class Temperature(models.Model):
 
 class TemperatureCollider(models.Model):
     id = models.IntegerField(primary_key=True)
-    temperature = models.ForeignKey(Temperature, db_column='id_temperature', unique=True)
+    #~ temperature = models.ForeignKey(Temperature, db_column='id_temperature', unique=True)
+    temperature = models.OneToOneField(
+      Temperature,
+      db_column='id_temperature',
+      #~ related_name='temperature_id'
+    )
     species = models.ForeignKey(Species, db_column='id_species')
     n_w = models.CharField(max_length=24, blank=True)
     w = models.FloatField(null=True, blank=True)

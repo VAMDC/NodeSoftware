@@ -4,6 +4,7 @@ from django.template import RequestContext, Context, loader
 from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse
 
 import datetime
+import uuid
 from string import lower
 from cStringIO import StringIO
 import os, math, sys
@@ -97,21 +98,18 @@ class TAPQUERY(object):
         self.fullurl = getBaseURL(request) + 'sync?' + request.META.get('QUERY_STRING')
 
     def validate(self):
-        try: self.lang = lower(self.request['LANG'])
+        try: self.lang = lower(self.request['LANG'][0])
         except:
-            log.debug('LANG is empty, assuming VASS2')
+            log.debug('LANG is empty, assuming VSS2')
             self.lang='vss2'
         else:
             if self.lang not in ('vss1','vss2'):
                 self.errormsg += 'Only LANG=VSS1 or LANG=VSS2 is supported.\n'
 
-        try: self.query = self.request['QUERY']
+        try: self.query = self.request['QUERY'][0]
         except: self.errormsg += 'Cannot find QUERY in request.\n'
 
-        if (type(self.query) == list) and (len(self.query)==1):
-            self.query = self.query[0]
-
-        try: self.format=lower(self.request['FORMAT'])
+        try: self.format=lower(self.request['FORMAT'][0])
         except:
             log.debug('FORMAT is empty, assuming XSAMS')
             self.format='xsams'
@@ -216,24 +214,38 @@ def CORS_request(request):
 def logCentral(sync):
     def wrapper(request, *args, **kwargs):
         response = sync(request, *args, **kwargs)
-        if request.method == 'GET' and \
+        taprequest = TAPQUERY(request)
+        #log the request in the query store
+        #if the request comes from the query store it is ignored
+        if request.method in ['GET', 'HEAD'] and \
            response.status_code == 200 and \
-           not settings.DEBUG and \
+           request.META['HTTP_USER_AGENT'] != settings.QUERY_STORE_USER_AGENT and \
            settings.LOG_CENTRALLY:
-            logdata = { 'clientIp': request.META['REMOTE_ADDR'],
-                        'requestContent': request.GET.get('QUERY') or request.POST.get('QUERY'),
-                        'requestDate': datetime.datetime.now(\
-                            ).strftime('%Y-%m-%dT%H:%M:%S%z'),
-                        'serviceSource': 'NodeID: ' + NODEID,
-                      }
-            logreq = librequests.post(settings.CENTRAL_LOGGER_URL,params=logdata)
+            logdata = {
+                        # request unique ID
+                       'queryToken': request.uniqueid,
+                       'accededResource': getBaseURL(request),
+                       'resourceVersion': settings.NODEVERSION,
+                       'userEmail': '',   # not used in this context
+                       'usedClient': request.META['HTTP_USER_AGENT'],
+                       'accessType': request.method,   # HEAD or GET
+                       'outputFormatVersion': settings.VAMDC_STDS_VERSION,
+                       'dataURL': "%ssync?%s"%(getBaseURL(request), request.META['QUERY_STRING']),
+                       'query' :  taprequest
+                       }
+
+            logreq = librequests.post(settings.QUERY_STORE_URL, params=logdata)
             if logreq.status_code != 200:
-                log.warn('Request to central logger retuned code: %s'%logreq.status_code)
+              log.warn('Request to central logger retuned code: %s' % logreq.status_code)
         return response
     return wrapper
 
+
 @logCentral
 def sync(request):
+
+    request.uniqueid = "%s:%s" % (settings.NODENAME, uuid.uuid4())
+
     if request.method=='OPTIONS':
         return CORS_request(request)
 
@@ -275,6 +287,8 @@ def sync(request):
         datetime.datetime.now().isoformat(), tap.format)
 
     headers = querysets.get('HeaderInfo') or {}
+    headers["REQUEST-TOKEN"] = request.uniqueid
+
     response=addHeaders(headers,request,response)
     # Override with empty response if result is empty
     if 'VAMDC-APPROX-SIZE' in response:
@@ -335,4 +349,3 @@ def tables(request):
 #def async(request):
 #    c=RequestContext(request,{})
 #    return render_to_response('tap/index.html', c)
-

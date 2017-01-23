@@ -85,7 +85,7 @@ def GetValue(returnable_key, **kwargs):
     #log.debug("getvalue, returnable_key : " + returnable_key)
     try:
         #obtain the RHS of the RETURNABLES dictionary
-        getcode = RETURNABLES[returnable_key]
+        name = RETURNABLES[returnable_key]
     except Exception, e:
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
@@ -93,31 +93,21 @@ def GetValue(returnable_key, **kwargs):
         #log.debug(e)
         return ''
 
-    # whenever the right-hand-side is not a string, treat
-    # it as if the node has prepared the thing beforehand
-    # for example a list of constant strings
-    #print kwargs
-    if not isinstance(getcode, basestring): # use instead of type(name)!=str; also handles unicode
-        #print "string return:", getcode
-        return getcode
+    if not name:
+        # the key was in the dict, but the value was empty or None.
+        return ''
 
-    # now we get the current object
-    # from which to get the attributes.
-    objname, obj = kwargs.popitem()
-    exec('%s = obj' % objname)
-    try:
-        # here, the RHS of the RETURNABLES dict is executed.
-        #log.debug(" try eval : " + name)
-        value = eval(getcode) # this works, if the dict-value is named
-                               # correctly as the query-set attribute
-    except Exception, e:
-        # this catches the case where the dict-value is a string or mistyped.
-        #print obj.__dict__
-        #print traceback.format_exc()
-        #err = 'ERROR GetValue(%s,%s=<%s>): %s:%s {%s:%s}' % (returnable_key, objname, obj, e.__class__.__name__, str(e), returnable_key, getcode)
-        #print err
-        #log.debug(err)
-        value = getcode
+    # strip all the prefixes, keep only last part
+    lastname = name.split('.')[-1]
+
+    #get the current structure, throw away its name
+    bla,obj = kwargs.popitem()
+
+    if lastname.endswith('()'):
+        lastname = lastname[:-2]
+        value = getattr(obj,lastname)()
+    else:
+        value = getattr(obj,lastname,name)
 
     if value == None:
         # the database returned NULL

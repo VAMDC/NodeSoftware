@@ -11,7 +11,7 @@ import datetime
 # Software and standards version
 ###################################################
 VAMDC_STDS_VERSION = '12.07'
-NODESOFTWARE_VERSION = '12.07r1-rc2'
+NODESOFTWARE_VERSION = '12.07-github-master'
 
 ###################################################
 # Basic node setup
@@ -21,6 +21,7 @@ BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 sys.path.append(BASE_PATH)
 NODENAME = os.path.basename(os.path.dirname(__file__))
 NODEPKG = 'node'
+NODEVERSION = 1
 
 # Where to load url info from
 ROOT_URLCONF = 'urls'
@@ -34,7 +35,7 @@ EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
                    'SELECT ALL WHERE ... something else',
                    ]
 
-LAST_MODIFIED = datetime.date(1901,2,3)
+LAST_MODIFIED = datetime.date(1911,2,3)
 
 # This turns on/off the serving of static files
 # though Django. It is better to let the deployment
@@ -222,5 +223,5 @@ LOGGING = {
 }
 
 LOG_CENTRALLY = False
-CENTRAL_LOGGER_URL = 'http://pdl-calc2.obspm.fr:8081/VamdcLog/LogWriter'
-
+QUERY_STORE_URL = 'http://vm-calc-lerma01.obspm.fr:8080/QSNotificationListener/NotificationListener'
+QUERY_STORE_USER_AGENT = 'VAMDC Query store'

@@ -23,3 +23,7 @@ update transitions t, states s set t.einsteina=(0.667025*POWER(10,16) * POWER(10
 -- an index over these two tables speeds up usual queries
 create index speciesid_wave on transitions (species_id, wave);
 
+
+-- add column for pre-assembled XML
+alter table refs add column `xml` longtext COLLATE utf8_bin;
+
