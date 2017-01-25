@@ -223,5 +223,5 @@ LOGGING = {
 }
 
 LOG_CENTRALLY = False
-QUERY_STORE_URL = 'http://vm-calc-lerma01.obspm.fr:8080/QSNotificationListener/NotificationListener'
+QUERY_STORE_URL = 'http://querystore.vamdc.eu/NotificationListener'
 QUERY_STORE_USER_AGENT = 'VAMDC Query store'
