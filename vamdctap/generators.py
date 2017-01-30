@@ -97,6 +97,10 @@ def GetValue(returnable_key, **kwargs):
         # the key was in the dict, but the value was empty or None.
         return ''
 
+    if not '.' in name:
+        # No dot means it is a static string!
+        return name
+
     # strip the prefix
     attribs = name.split('.')[1:]
     attribs.reverse() # to later pop() from the front
