@@ -97,17 +97,24 @@ def GetValue(returnable_key, **kwargs):
         # the key was in the dict, but the value was empty or None.
         return ''
 
-    # strip all the prefixes, keep only last part
-    lastname = name.split('.')[-1]
+    # strip the prefix
+    attribs = name.split('.')[1:]
+    attribs.reverse() # to later pop() from the front
 
     #get the current structure, throw away its name
     bla,obj = kwargs.popitem()
 
-    if lastname.endswith('()'):
-        lastname = lastname[:-2]
-        value = getattr(obj,lastname)()
+    # Go through the cascade of foreignKeys/attributes to get to the leaf object
+    while len(attribs) >1:
+        att = attribs.pop()
+        obj = getattr(obj,att)
+
+    att = attribs.pop() # this is the last one now, can be either attribute or function
+
+    if att.endswith('()'):
+        value = getattr(obj,att[:-2])() # RUN IT!
     else:
-        value = getattr(obj,lastname,name)
+        value = getattr(obj,att,name)
 
     if value == None:
         # the database returned NULL
