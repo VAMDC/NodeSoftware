@@ -3,6 +3,7 @@ from settings_default import *
 DEBUG = False
 DEBUG = True
 TRANSLIM = 100000
+QUERY_STORE_ACTIVE = True
 
 try:
     INSTALLED_APPS.remove('node')

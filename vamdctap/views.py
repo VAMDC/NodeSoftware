@@ -19,11 +19,11 @@ from django.conf import settings
 from importlib import import_module
 from django.utils.http import http_date
 
-if settings.LOG_CENTRALLY:
+if settings.QUERY_STORE_ACTIVE:
     try:
         import requests as librequests
     except:
-        log.critical('settings.LOG_CENTRALLY is set but requests package is missing!')
+        log.critical('settings.QUERY_STORE_ACTIVE is True but requests package is missing!')
 
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
@@ -217,17 +217,18 @@ def logCentral(sync):
         taprequest = TAPQUERY(request)
         #log the request in the query store
         #if the request comes from the query store it is ignored
+        user_agent = request.META.get('HTTP_USER_AGENT')
         if request.method in ['GET', 'HEAD'] and \
            response.status_code == 200 and \
-           request.META['HTTP_USER_AGENT'] != settings.QUERY_STORE_USER_AGENT and \
-           settings.LOG_CENTRALLY:
+           user_agent not in (settings.QUERY_STORE_USER_AGENT, None) and \
+           settings.QUERY_STORE_ACTIVE:
             logdata = {
                         # request unique ID
                        'queryToken': request.uniqueid,
                        'accededResource': getBaseURL(request),
                        'resourceVersion': settings.NODEVERSION,
                        'userEmail': '',   # not used in this context
-                       'usedClient': request.META['HTTP_USER_AGENT'],
+                       'usedClient': user_agent,
                        'accessType': request.method,   # HEAD or GET
                        'outputFormatVersion': settings.VAMDC_STDS_VERSION,
                        'dataURL': "%ssync?%s"%(getBaseURL(request), request.META['QUERY_STRING']),
