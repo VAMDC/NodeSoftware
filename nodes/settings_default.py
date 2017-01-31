@@ -222,6 +222,6 @@ LOGGING = {
     }
 }
 
-LOG_CENTRALLY = False
+QUERY_STORE_ACTIVE = False
 QUERY_STORE_URL = 'http://querystore.vamdc.eu/NotificationListener'
 QUERY_STORE_USER_AGENT = 'VAMDC Query store'
