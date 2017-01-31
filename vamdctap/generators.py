@@ -167,7 +167,7 @@ def makePartitionfunc(keyword, G):
     unit = G(keyword+'Unit')
     partitionfunc = G(keyword+'Q')
     comments = G(keyword+'Comments')
-    # Nuclear Spin Isomer Information
+    # Nuclear Spin Isomer Information 
     nsilowrovibsym = G(keyword+'NSILowestRoVibSym')
     nsiname = G(keyword+'NSIName')
     nsisymgroup = G(keyword+'NSISymGroup')
@@ -179,7 +179,7 @@ def makePartitionfunc(keyword, G):
         unit = [unit]
         partitionfunc = [partitionfunc]
         comments = [comments]
-        # Nuclear Spin Isomer Information
+        # Nuclear Spin Isomer Information 
         nsilowrovibsym = [nsilowrovibsym]
         nsiname = [nsiname]
         nsisymgroup = [nsisymgroup]
@@ -253,7 +253,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     value = G(keyword)
     if not value:
         return ''
-
+    
     unit = G(keyword + 'Unit')
     method = G(keyword + 'Method')
     comment = G(keyword + 'Comment')
@@ -288,7 +288,7 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
         string += makeSourceRefs(refs[i])
         string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
         string += makeEvaluation( keyword, G, j=i)
-        if acc[i]:
+        if acc[i] is not None:
             string += '<Accuracy>%s</Accuracy>' % acc[i]
 
 
@@ -304,7 +304,7 @@ def makeAccuracy(keyword, G):
     to DataType.
     """
     acc = G(keyword + 'Accuracy')
-    if not acc:
+    if acc is None:
         return ''
     acc_list = makeiter(acc)
     nacc = len(acc_list)
@@ -802,6 +802,7 @@ def XsamsAtoms(Atoms):
                 yield ret
                 continue
             G = lambda name: GetValue(name, AtomState=AtomState)
+#            yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
             yield makePrimaryType("AtomicState", "AtomicState", G,
                                   extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('AtomStateID')),
                                              "auxillary":G("AtomStateAuxillary")})
@@ -944,7 +945,7 @@ def XsamsMCSBuild(Molecule):
 
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
     if G("MoleculeComment"):
-        yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
+        yield '<Comment>%s</Comment>\n' % escape(G("MoleculeComment"))
     yield '</MolecularChemicalSpecies>\n'
 
 def makeCaseQNs(G):

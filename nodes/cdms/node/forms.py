@@ -4,10 +4,12 @@ from django.forms.formsets import BaseFormSet
 from django.forms.models import modelformset_factory
 from cdmsportalfunc import *
 from django.core.exceptions import ValidationError
+from django import forms
 
 class MoleculeForm(ModelForm):
     class Meta:
         model = Molecules
+        fields = '__all__'
 
 class SpecieForm(ModelForm):
     datearchived  = forms.DateField(
@@ -21,11 +23,12 @@ class SpecieForm(ModelForm):
     
     class Meta:
         model = Species
+        fields = '__all__'
 
 class FilterForm(ModelForm):
     class Meta:
         model = QuantumNumbersFilter
-
+        fields = '__all__'
 
 class XsamsConversionForm(forms.Form):
 

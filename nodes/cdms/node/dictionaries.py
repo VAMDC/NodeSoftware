@@ -36,7 +36,7 @@ RETURNABLES = {
 #'AtomStateRef':'AtomState.',
 #'AtomStateS':'AtomState.S',
 #'AtomStateS2':'AtomState.',
-#'AtomStateStatisticalWeight':'AtomState.',
+'AtomStateStatisticalWeight':'AtomState.degeneracy',
 'AtomStateTermLSL':'Component.L', #AtomState.attach_atomic_qn()',
 'AtomStateTermLSS':'Component.S', #AtomState.S',
 'AtomStateTotalAngMom':'AtomState.attach_atomic_qn()',
@@ -134,14 +134,14 @@ RETURNABLES = {
 'RadTransUpperStateRef':'RadTran.upperstateref_id',
 'RadTransLowerStateRef':'RadTran.lowerstateref_id',
 #'RadTransFrequency':'RadTran.get_exp_transitions()', #frequencyArray',
-'RadTransFrequency':'RadTran.attach_exp_frequencies()',
-#'RadTransFrequency':'RadTran.frequencies',
-'RadTransFrequencyUnit':'RadTran.units',
-'RadTransFrequencyAccuracy':'RadTran.uncertainties',
-'RadTransFrequencyRef':'RadTran.refs',
+#'RadTransFrequency':'RadTran.attach_exp_frequencies()',
+'RadTransFrequency':'eval(RadTran.frequencies)',
+'RadTransFrequencyUnit':'MHz', #RadTran.units',
+'RadTransFrequencyAccuracy':'eval(RadTran.uncertainties)',
+'RadTransFrequencyRef':'eval(RadTran.references)',
 #'RadTransFrequencyMethod':'RadTran.freqmethodref_id',
 #'RadTransFrequencyMethod':'RadTran.species_id',
-'RadTransFrequencyMethod':'RadTran.methods',
+'RadTransFrequencyMethod':'eval(RadTran.methods)',
 'RadTransProbabilityA':'RadTran.einsteina',
 'RadTransProbabilityAUnit':'1/cm', # <-New
 'RadTransProbabilityIdealisedIntensity':'RadTran.intensity',
@@ -155,11 +155,11 @@ RETURNABLES = {
 'RadTransSpeciesRef':'RadTran.specie_id',
 #'RadTransWavelength':'RadTran.',
 #'RadTransWavenumber':'RadTran.',
-'RadTransFrequencyEval':'RadTran.evaluations',
-'RadTransFrequencyEvalRecommended':'RadTran.recommendations',
-'RadTransFrequencyEvalRef':'RadTran.evalrefs',
+#'RadTransFrequencyEval':'RadTran.evaluations',
+#'RadTransFrequencyEvalRecommended':'RadTran.recommendations',
+#'RadTransFrequencyEvalRef':'RadTran.evalrefs',
 
-'RadTransCode':'RadTran.process_class()',
+'RadTransCode':'eval(str(RadTran.processclass))',
 
 'SourceAuthorName':'Source.getAuthorList()',
 'SourceCategory':'Source.category',
@@ -238,7 +238,6 @@ def processclass(r, op, *rhs):
     stored in a single field in the database. 
     """
     try:
-
         if op=='in':
             if not (rhs[0]=='(' and rhs[-1]==')'):
                 log.error('Values for IN not bracketed: %s'%rhs)
@@ -265,8 +264,16 @@ def processclass(r, op, *rhs):
             
             
         return QFalse
-    except:
+    except Exception as e:
+        print >> sys.stderr, str(e)
         return QFalse
+
+def environment(r, op, *rhs):
+    """
+    This is currently a dummy to pass the temperature as a variable to queryfunc.py
+    """
+    return Q(pk__isnull=False)
+
 
 RESTRICTABLES = { 
 #'AsOfDate':'',
@@ -303,6 +310,7 @@ RESTRICTABLES = {
 #'MoleculeStateCharacLifeTime':'',
 #'MoleculeStateCharacNuclearSpinSymmetry':'',
 'MoleculeStateNSIName':'lowerstateref__nsi__name', #nuclearspinisomer',
+'MoleculeStateNuclearSpinIsomer':'lowerstateref__nsi__name',
 'MoleculeStateEnergy':'lowerstateref__energy',
 #'MoleculeStateID':'',
 'MoleculeStoichiometricFormula':'specie__molecule__stoichiometricformula',
@@ -330,9 +338,11 @@ RESTRICTABLES = {
 #'SourceCategory':'',
 #'SourceYear':'',
 'MoleculeSpeciesID':'specie',
+'SpeciesID':'specie',
 'Lower.StateEnergy':'lowerstateref__energy',
 'Upper.StateEnergy':'upperstateref__energy',
 'StateEnergy':bothStates,
+'EnvironmentTemperature':'environmenttemp',
 }
 
 CDMSONLYRESTRICTABLES = {

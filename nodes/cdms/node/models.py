@@ -9,11 +9,41 @@
 from django.db.models import *
 #from vamdctap.bibtextools import *
 from latex2html import *
+import numpy as np
 
 FILTER_DICT={}
 # References which will always be returned
 DATABASE_REFERENCES = [1921]
 
+
+def formatstring(value, format, noneformat):
+     if value is not None:
+          return format % value
+     else:
+          return noneformat % ""
+
+
+def formatqn(value):
+    if value == None:
+        return ''
+    elif value > 99 and value < 360:
+        return chr(55+value/10)+ "%01d" % ( value % 10)
+    elif value < -9 and value > -260:
+        return chr(95-(value-1)/10)+ "%01d" % -( value % -10)
+    else:
+        return str(value)
+
+
+def format_degeneracy(value):
+     if value == None:
+          return ''
+     elif value>999 and value < 3600:
+          return chr(55+value/100) + "%02d" % (value % 100)
+     else:
+          return str(value)
+
+
+     
 class Molecules( Model):
      """
      The Molecules class contains general information of the species. It is on top of
@@ -51,7 +81,7 @@ class DictAtoms( Model):
      nuclearcharge         = IntegerField(db_column='DA_NuclearCharge', blank=True)
      class Meta:
        db_table = u'Dict_Atoms'
-       
+
 
 class Species( Model):
      """
@@ -60,6 +90,13 @@ class Species( Model):
      archived entries related to outdated versions of the specie (outdated versions are kept and
      not deleted).
      """
+
+     RECOMMENDATION_CHOICES = (
+             (0, 'recommended'),
+             (1, 'same entry as recommended one'),
+             (99, 'not recommended'),
+             )
+
      id                    = IntegerField(primary_key=True, db_column='E_ID')
      molecule              = ForeignKey(Molecules, db_column='E_M_ID')
      atom                  = ForeignKey(DictAtoms, db_column='E_DA_ID')
@@ -78,6 +115,7 @@ class Species( Model):
      dateofentry           = DateField(db_column='E_DateOfEntry')
      comment               = TextField(db_column='E_Comment')
      archiveflag           = IntegerField(db_column='E_Archive')
+     recommendationflag    = IntegerField(db_column='E_Recommendationflag', choices = RECOMMENDATION_CHOICES)
      dateactivated         = DateField(db_column='E_DateActivated')
      datearchived          = DateField(db_column='E_DateArchived')
      changedate            = DateTimeField(db_column='E_ChangeDate')
@@ -151,7 +189,6 @@ class NuclearSpinIsomers(Model):
      def lowestrovibstateid(self):
           return '%s-origin-%s' % (self.lowestrovibstate, self.specie_id)
 
-     
 class States( Model):
      """
      This class contains the states of each specie.
@@ -200,7 +237,7 @@ class States( Model):
      def auxillary(self):
           try:
                if self.aux:
-                    return 'True'
+                    return 'true'
                else:
                     return ''
           except AttributeError:
@@ -213,7 +250,8 @@ class States( Model):
 	"""Yield the XML for the state quantum numbers"""
         # remove "-origin" in order to retrieve also qns for state-origins
         try:
-             sid = self.id.replace('-origin-%s' % self.specie_id,'')
+             #sid = self.id.replace('-origin-%s' % self.specie_id,'')
+             sid = self.id.split('-')[0]
         except:
              sid = self.id
              
@@ -354,6 +392,29 @@ class States( Model):
 ##               exec 'self.%s = %s' % (qn.label, value)
 ##          return self.J
 
+class StateOriginManager(Manager):
+    def get_queryset(self):
+        return super(StateOriginManager, self).get_queryset().filter(id = F('energyorigin'))
+
+class NSIStateOriginManager(Manager):
+    def get_queryset(self):
+        return super(NSIStateOriginManager, self).get_queryset().filter(id = F('nsioriginid'))
+
+class OriginStates( States):
+    molecularspecie                = ForeignKey(Species, db_column='EGY_E_ID')
+
+    objects = StateOriginManager()
+    nsi_objects = NSIStateOriginManager()
+
+    class Meta:
+        proxy = True
+
+    def aux(self):
+        return True
+
+    def id_alias(self):
+        return "%s-origin-%s" % (self.id, self.specie_id)
+
 class AtomStates( Model):
      """
      This class contains the states of each specie.
@@ -380,6 +441,10 @@ class AtomStates( Model):
      qn6                   = IntegerField(db_column='EGY_QN6') 
      user                  = CharField(max_length=40, db_column='EGY_User')      # obsolete
      timestamp             = IntegerField(db_column='EGY_TIMESTAMP')
+
+     objects = Manager()
+     energy_origin = StateOriginManager()
+
      class Meta:
        db_table = u'Energies'
 
@@ -427,7 +492,8 @@ class AtomStates( Model):
                     return ''
           except AttributeError:
                return ''
-          
+     def id_alias(self):
+         return "%s-origin-%s" % (self.id, self.specie_id)
 
 
 class TransitionsCalc( Model):
@@ -561,7 +627,39 @@ class TransitionsCalc( Model):
 
          return self.frequencies
 
+     def spfitstr(self):
+          if self.frequencyexp:
+               frequency = self.frequencyexp
+               speciestag = -self.speciestag
+          else:
+               frequency = self.frequency
+               speciestag = self.speciestag
 
+          egy_lower = formatstring(self.energylower,'%10.4lf','%10s')
+          if egy_lower=='   -0.0000':
+               egy_lower = '    0.0000'
+               
+          return '%s%s%s%s%s%3s%s%s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s'\
+                 % (formatstring(frequency,'%13.4lf','%13s'),
+                    formatstring(self.uncertainty,'%8.4lf','%8s'),
+                    formatstring(self.intensity,'%8.4lf','%8s'),
+                    formatstring(self.degreeoffreedom,'%2d','%s'),
+                    egy_lower,
+                    format_degeneracy(self.upperstatedegeneracy),
+                    formatstring(speciestag,'%7d','%7s'),
+                    formatstring(self.qntag,'%4d','%4s'),
+                    formatqn(self.qnup1),
+                    formatqn(self.qnup2),
+                    formatqn(self.qnup3),
+                    formatqn(self.qnup4),
+                    formatqn(self.qnup5),
+                    formatqn(self.qnup6),
+                    formatqn(self.qnlow1),
+                    formatqn(self.qnlow2),
+                    formatqn(self.qnlow3),
+                    formatqn(self.qnlow4),
+                    formatqn(self.qnlow5),
+                    formatqn(self.qnlow6))
 
 ##     def get_exp_transitions(self):
 ##          exptranss = TransitionsExp.objects.filter(species=self.species,
@@ -576,7 +674,6 @@ class TransitionsCalc( Model):
 ##          freqs=[self.frequency]
 ##          for trans in exptranss:
 ##               freqs.append(trans.frequency)
-
 ##          self.frequencyArray = freqs
 ##          return freqs
 
@@ -593,8 +690,221 @@ class TransitionsCalc( Model):
         db_table = u'Predictions'
         
 
+class RadiativeTransitions( Model):
+     """
+     This class contains the calculated transition frequencies (mysql-table Predictions).
+     """
+     id                    = IntegerField(primary_key=True, db_column='RadiativeTransitionID')
+     specie                = ForeignKey(Species, db_column='SpeciesID')
+     speciestag            = IntegerField(db_column='SpeciesTag')
+     frequency             =  FloatField(null=True, db_column='FrequencyValue')
+     intensity             =  FloatField(null=True, db_column='IdealisedIntensity')
+     einsteina             =  FloatField(null=True, db_column='EinsteinA')
+     #smu2                  =  FloatField(null=True, db_column='P_Smu2')
+     uncertainty           =  FloatField(null=True, db_column='EnergyWavelengthAccuracy')
+     energylower           =  FloatField(null=True, db_column='LowerStateEnergyValue')
+     #energyupper           =  FloatField(null=True, db_column='P_Energy_Upper')
+     qntag                 = IntegerField(db_column='CaseQN')
+     qnup1                 = IntegerField(db_column='QN_Up_1')
+     qnup2                 = IntegerField(db_column='QN_Up_2')
+     qnup3                 = IntegerField(db_column='QN_Up_3')
+     qnup4                 = IntegerField(db_column='QN_Up_4')
+     qnup5                 = IntegerField(db_column='QN_Up_5')
+     qnup6                 = IntegerField(db_column='QN_Up_6')
+     qnlow1                = IntegerField(db_column='QN_Low_1')
+     qnlow2                = IntegerField(db_column='QN_Low_2')
+     qnlow3                = IntegerField(db_column='QN_Low_3')
+     qnlow4                = IntegerField(db_column='QN_Low_4')
+     qnlow5                = IntegerField(db_column='QN_Low_5')
+     qnlow6                = IntegerField(db_column='QN_Low_6')
+     #dummy                 = CharField(max_length=20, db_column ='P_Dummy')
+     unit                  = CharField(max_length=200, db_column='FrequencyUnit')
+     degreeoffreedom       = IntegerField(db_column='Degree_Of_Freedom')
+     upperstatedegeneracy  = IntegerField(db_column='UpperStateNuclearStatisticalWeight')
+     originid              = IntegerField(db_column='Resource')
+     hfsflag               = IntegerField(db_column='hfsflag')
+     #userid                = IntegerField(db_column='P_U_ID')
+     dataset               = ForeignKey(Datasets, db_column='DAT_ID')
+     #qualityflag           = IntegerField(db_column='P_Quality')
+     #archiveflag           = IntegerField(db_column='P_Archive')
+     timestamp             = DateTimeField(db_column='Createdate')
+     frequencies = CharField (db_column = 'FrequencyList')
+     uncertainties = CharField (db_column = 'UncertaintyList')
+     methods = CharField (db_column = 'MethodList')
+     references = CharField (db_column = 'ReferenceList')
+     frequencymethod = IntegerField(db_column = 'FrequencyMethodRef')
+     processclass = CharField(max_length=100, db_column='ProcessClass')
+     
+     upperstateref =  ForeignKey(States, related_name='upperstate',
+                                 db_column='UpperStateRef')
+     lowerstateref =  ForeignKey(States, related_name='lowerstate',
+                                 db_column='LowerStateRef')
+     
+     upstate =  ForeignKey(States, related_name='upperstate',
+                           db_column='UpperStateRef')
+     lostate =  ForeignKey(States, related_name='lowerstate',
+                           db_column='LowerStateRef')
+     #frequencyArray        
+     
+     def __unicode__(self):
+          return u'ID:%s Tag:%s Freq: %s'%(self.id,self.speciestag,self.frequency)
 
+     def specieid(self):
+          return '%s-hyp%s' % (self.specie_id,self.hfsflag)
 
+#     def process_class(self):
+#          return eval(self.processclass)
+     
+     def spfitstr(self, print_einsteina = False):
+          if self.frequencymethod == 4:
+               speciestag = -self.speciestag
+          else:
+               speciestag = self.speciestag
+
+          egy_lower = formatstring(self.energylower,'%10.4lf','%10s')
+          if egy_lower=='   -0.0000':
+               egy_lower = '    0.0000'
+               
+          if print_einsteina:
+              intensity = formatstring(np.log10(self.einsteina), '%8.4lf', '%8s')
+          else:
+              intensity = formatstring(self.intensity, '%8.4lf', '%8s')
+          return '%s%s%s%s%s%3s%s%s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s'\
+                 % (formatstring(self.frequency,'%13.4lf','%13s'),
+                    formatstring(self.uncertainty,'%8.4lf','%8s'),
+                    intensity,
+                    formatstring(self.degreeoffreedom,'%2d','%s'),
+                    egy_lower,
+                    format_degeneracy(self.upperstatedegeneracy),
+                    formatstring(speciestag,'%7d','%7s'),
+                    formatstring(self.qntag,'%4d','%4s'),
+                    formatqn(self.qnup1),
+                    formatqn(self.qnup2),
+                    formatqn(self.qnup3),
+                    formatqn(self.qnup4),
+                    formatqn(self.qnup5),
+                    formatqn(self.qnup6),
+                    formatqn(self.qnlow1),
+                    formatqn(self.qnlow2),
+                    formatqn(self.qnlow3),
+                    formatqn(self.qnlow4),
+                    formatqn(self.qnlow5),
+                    formatqn(self.qnlow6))
+     
+        
+     class Meta:
+        db_table = u'RadiativeTransitions'
+        
+class RadiativeTransitionsT( Model):
+     """
+     This class contains the calculated transition frequencies (mysql-view RadiativeTransitionsT) 
+     with temperature dependend intensities.
+     """
+     id                    = IntegerField(primary_key=True, db_column='RadiativeTransitionID')
+     specie                = ForeignKey(Species, db_column='SpeciesID')
+     speciestag            = IntegerField(db_column='SpeciesTag')
+     frequency             =  FloatField(null=True, db_column='FrequencyValue')
+     intensity             =  FloatField(null=True, db_column='IdealisedIntensityT')
+     einsteina             =  FloatField(null=True, db_column='EinsteinA')
+     #smu2                  =  FloatField(null=True, db_column='P_Smu2')
+     uncertainty           =  FloatField(null=True, db_column='EnergyWavelengthAccuracy')
+     energylower           =  FloatField(null=True, db_column='LowerStateEnergyValue')
+     #energyupper           =  FloatField(null=True, db_column='P_Energy_Upper')
+     qntag                 = IntegerField(db_column='CaseQN')
+     qnup1                 = IntegerField(db_column='QN_Up_1')
+     qnup2                 = IntegerField(db_column='QN_Up_2')
+     qnup3                 = IntegerField(db_column='QN_Up_3')
+     qnup4                 = IntegerField(db_column='QN_Up_4')
+     qnup5                 = IntegerField(db_column='QN_Up_5')
+     qnup6                 = IntegerField(db_column='QN_Up_6')
+     qnlow1                = IntegerField(db_column='QN_Low_1')
+     qnlow2                = IntegerField(db_column='QN_Low_2')
+     qnlow3                = IntegerField(db_column='QN_Low_3')
+     qnlow4                = IntegerField(db_column='QN_Low_4')
+     qnlow5                = IntegerField(db_column='QN_Low_5')
+     qnlow6                = IntegerField(db_column='QN_Low_6')
+     #dummy                 = CharField(max_length=20, db_column ='P_Dummy')
+     unit                  = CharField(max_length=200, db_column='FrequencyUnit')
+     degreeoffreedom       = IntegerField(db_column='Degree_Of_Freedom')
+     upperstatedegeneracy  = IntegerField(db_column='UpperStateNuclearStatisticalWeight')
+     originid              = IntegerField(db_column='Resource')
+     hfsflag               = IntegerField(db_column='hfsflag')
+     #userid                = IntegerField(db_column='P_U_ID')
+     dataset               = ForeignKey(Datasets, db_column='DAT_ID')
+     #qualityflag           = IntegerField(db_column='P_Quality')
+     #archiveflag           = IntegerField(db_column='P_Archive')
+     timestamp             = DateTimeField(db_column='Createdate')
+     temperature           = FloatField(db_column = 'Temperature')
+     partitionfunc300      = FloatField(db_column = 'Partitionfunction300K')
+     partitionfuncT        = FloatField(db_column = 'PartitionfunctionT')
+     frequencies = CharField (db_column = 'FrequencyList')
+     uncertainties = CharField (db_column = 'UncertaintyList')
+     methods = CharField (db_column = 'MethodList')
+     references = CharField (db_column = 'ReferenceList')
+     frequencymethod = IntegerField(db_column = 'FrequencyMethodRef')
+     processclass = CharField(max_length=100, db_column='ProcessClass')
+     
+     upperstateref =  ForeignKey(States, related_name='upperstate',
+                                 db_column='UpperStateRef')
+     lowerstateref =  ForeignKey(States, related_name='lowerstate',
+                                 db_column='LowerStateRef')
+     
+     upstate =  ForeignKey(States, related_name='upperstate',
+                           db_column='UpperStateRef')
+     lostate =  ForeignKey(States, related_name='lowerstate',
+                           db_column='LowerStateRef')
+     #frequencyArray        
+     
+     def __unicode__(self):
+          return u'ID:%s Tag:%s Freq: %s'%(self.id,self.speciestag,self.frequency)
+
+     def specieid(self):
+          return '%s-hyp%s' % (self.specie_id,self.hfsflag)
+
+#     def process_class(self):
+#          return eval(self.processclass)
+     
+     def spfitstr(self, print_einsteina = False):
+          if self.frequencymethod == 4:
+               speciestag = -self.speciestag
+          else:
+               speciestag = self.speciestag
+
+          egy_lower = formatstring(self.energylower,'%10.4lf','%10s')
+          if egy_lower=='   -0.0000':
+               egy_lower = '    0.0000'
+ 
+          if print_einsteina:
+              intensity = formatstring(np.log10(self.einsteina), '%8.4lf', '%8s')
+          else:
+              intensity = formatstring(self.intensity, '%8.4lf', '%8s')
+               
+          return '%s%s%s%s%s%3s%s%s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s%2s'\
+                 % (formatstring(self.frequency,'%13.4lf','%13s'),
+                    formatstring(self.uncertainty,'%8.4lf','%8s'),
+                    intensity,
+                    formatstring(self.degreeoffreedom,'%2d','%s'),
+                    egy_lower,
+                    format_degeneracy(self.upperstatedegeneracy),
+                    formatstring(speciestag,'%7d','%7s'),
+                    formatstring(self.qntag,'%4d','%4s'),
+                    formatqn(self.qnup1),
+                    formatqn(self.qnup2),
+                    formatqn(self.qnup3),
+                    formatqn(self.qnup4),
+                    formatqn(self.qnup5),
+                    formatqn(self.qnup6),
+                    formatqn(self.qnlow1),
+                    formatqn(self.qnlow2),
+                    formatqn(self.qnlow3),
+                    formatqn(self.qnlow4),
+                    formatqn(self.qnlow5),
+                    formatqn(self.qnlow6))
+     
+        
+     class Meta:
+        db_table = u'RadiativeTransitionsT'
+ 
 class Sources( Model):
      """
      This class contains references 
@@ -886,7 +1196,29 @@ class Partitionfunctions( Model):
           db_table = u'Partitionfunctions' 
                      
                          
+class PartitionfunctionsDetailed( Model):
+     """
+     This class contains partition function (mysql-table: Partitionfunctions) for each specie
+     which have been calculated based on the state energy listing and include contributions
+     from other vibrational states (other specie).
+     """
+     id  =  AutoField(primary_key=True, db_column='PFD_ID')
+     specie =  ForeignKey(Species, db_column='PFD_E_ID')
+     inchikey =  CharField(max_length=30, db_column='PFD_Inchikey', blank=True, null = True)
+     state = CharField(max_length=100, db_column = 'PFD_State')
+     loweststateenergy = FloatField(db_column='PFD_LowestStateEnergy')
+     nsi =  ForeignKey(NuclearSpinIsomers, db_column='PFD_NSI', blank=True, null = True)
+     temperature = FloatField(db_column='PFD_Temperature')
+     partitionfunc = FloatField(db_column='PFD_Partitionfunction')
+     comment = CharField(max_length=150, db_column='PFD_Comment')
+     createdate = DateTimeField(db_column='PFD_Createdate')
+     changedate = DateTimeField(db_column='PFD_Changedate')
 
+     class Meta:
+          db_table = u'PartitionFunctionsDetailed' 
+
+     def __unicode__(self):
+          return "%6d %20s %9.3lf %20.6lf" % (self.specie.id, self.state, self.temperature, self.partitionfunc)
 
 class Method:
      """

@@ -1,13 +1,21 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-
+import sys
 from models import *
 from django.core.exceptions import ValidationError
-
-def get_species_list(spids = None):
+from django.conf import settings
+from lxml import etree as e
+ 
+def get_species_list(spids = None, database = 5):
     """
     """
-    molecules = Species.objects.filter(origin=0,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
+    # cdms only
+    if database < 0:
+        molecules = Species.objects.filter(archiveflag=0).order_by('speciestag')
+    else:
+        molecules = Species.objects.filter(origin=database,archiveflag=0).order_by('speciestag')
+    #molecules = Species.objects.filter(origin=0,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
+    #molecules = Species.objects.filter(archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
 
     if spids is not None:
         molecules = molecules.filter(pk__in=spids)
@@ -86,7 +94,7 @@ def getParameters4specie(id, paramtype=None):
     return parameters
 
 
-def getPartitionf4specie(id, format='html'):
+def getPartitionf4specie(id, nsi=None, format='html'):
     """
     Queries the partition functions for this specie and creates a html-table.
     (This is done because it seems to be simpler than using a template; issue: ordering)
@@ -96,10 +104,19 @@ def getPartitionf4specie(id, format='html'):
     returns:
        string with html-table as content
     """
+
+    if nsi is None:
+        nsiid=None
+        tablename = ''
+    else:
+        nsiid = nsi.id
+        tablename = "Partitionfunctions for %s states only" % nsi.name
     partitionFunctions = Partitionfunctions.objects.filter(specie=id)
     temps=partitionFunctions.values_list("temperature", flat=True).distinct().order_by("temperature")
     states=partitionFunctions.values_list("state", flat=True).distinct().order_by("state")
-    pftableHtml = "<table class='full'><thead><tr><th>&nbsp;</th>"
+    pftableHtml = "<table class='full'>"
+    pftableHtml += "<caption><div class='float_left'>%s</div></caption>" % tablename
+    pftableHtml += "<thead><tr><th>&nbsp;</th>"
 
     for s in states:
         pftableHtml += "<th> %s </th>" % s
@@ -110,7 +127,7 @@ def getPartitionf4specie(id, format='html'):
         pftableHtml+= "<tr><th scope='row' class='sub'> Q(%s /K) </th>" % t
         for s in states:
             try:
-                pftableHtml += "<td>%s</td> " % partitionFunctions.get(temperature=t, state=s).partitionfunc
+                pftableHtml += "<td>%s</td> " % partitionFunctions.get(temperature=t, nsi=nsiid, state=s).partitionfunc
             except:
                 pftableHtml += "<td>&nbsp;</td>"
         pftableHtml+= "<tr>"
@@ -148,6 +165,9 @@ def check_query(postvars):
     # CREATE QUERY STRING FOR SPECIES
     ###################################
     spec_array=[]
+    htmlcode += "<ul class='vlist'>"
+    htmlcode += "<li>"
+
     if len(id_list)+len(inchikeys)+len(molecules)>0:
         #mols = get_species_list(id_list)
 
@@ -157,7 +177,7 @@ def check_query(postvars):
         #tapxsams += "(" + " OR ".join([" InchiKey = '" + ikey + "'" for ikey in inchikeylist]) + ")"
 
         if len(id_list)>0:
-            spec_array.append( " OR ".join([" MoleculeSpeciesID = %s " % ikey  for ikey in id_list]) )
+            spec_array.append( " OR ".join([" SpeciesID = %s " % ikey  for ikey in id_list]) )
             
         if len(inchikeys)>0:
             spec_array.append( " OR ".join([" InchiKey = '%s' " % ikey  for ikey in inchikeys]) )
@@ -169,34 +189,21 @@ def check_query(postvars):
         tapxsams += "(" + " OR ".join(spec_array) + ")"
         tapcdms += "(" + " OR ".join(spec_array) + ")"
 
+        htmlcode += "<a href='#' onclick=\"$('#a_form_species').click();$('#a_form_species').addClass('activeLink');\">"
+        htmlcode += "(" + " OR ".join(spec_array) + ")"
     else:
-        htmlcode += "<a href='#' onclick=\"load_page('SelectMolecule');\" ><p class='warning' >SPECIES: nothing selected => Click here to select species!</p></a>"
-        
-
-    htmlcode += "<ul class='vlist'>"
-    htmlcode += "<li><a href='#' onclick=\"$('#a_form_species').click();$('#a_form_species').addClass('activeLink');\">"
-
-#    if len(idlist)>0:
-#        htmlcode += " MoleculeSpeciesID in ( %s ) " % ', '.join ( map(str, idlist))
-#        if len(inchikeys)+len(molecules)>0:
-#            htmlcode += " OR "
-#    if len(inchikeys)>0:
-#        htmlcode += " InchiKey in ( %s ) " % ', '.join (["'%s'" % ikey for ikey in inchikeys])
-#        if len(molecules)>0:
-#            htmlcode += " OR "
-#    if len(molecules)>0:
-#        htmlcode += " MoleculeStoichiometricFormula in ( %s ) " % ', '.join (["'%s'" % ikey for ikey in molecules])
-    htmlcode += "(" + " OR ".join(spec_array) + ")"
+        htmlcode += "<a href='#' onclick=\"load_page('queryForm');\" ><font style='color:red'>SPECIES: nothing selected => Click here to select species!</font></a>"
     htmlcode += "</li>"
 
 
     #######################################
     # CREATE QUERY STRING FOR TRANSITIONS
     #######################################
+    transition_filter = False
 
+    ## FREQUECY RANGE ##
     if 'UnitNu' in postvars:
         unitNu = postvars['UnitNu']
-#        htmlcode += "<p class='info'>AND RadTransFrequencyUnit = %s </p>" % unitNu
     else:
         unitNu = "GHz"
 
@@ -206,53 +213,166 @@ def check_query(postvars):
     else:
         unitfactor = 1.0
 
-    if ('T_SEARCH_FREQ_FROM' in postvars) & ('T_SEARCH_FREQ_TO' in postvars):
-        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Frequency between %s %s AND %s %s </a></li>" % (postvars['T_SEARCH_FREQ_FROM'], unitNu, postvars['T_SEARCH_FREQ_TO'], unitNu)
-            
-    if 'T_SEARCH_FREQ_FROM' in postvars :
-        try:
-            freqfrom = unitfactor * float(postvars['T_SEARCH_FREQ_FROM'])
-        except ValueError:
-            Error = "Lower Frequency is not a number "
-            freqfrom = 0
-
+    # Get Frequency Limits
+    try:
+        freqfrom = unitfactor * float(postvars['T_SEARCH_FREQ_FROM'])
         if (freqfrom>0):
             angstromupper =  2.99792458E12 / freqfrom
             tapxsams += " AND RadTransWavelength < %lf " % angstromupper
             tapcdms += " AND RadTransWavelength < %lf " % angstromupper
-
-        #tapxsams += " AND RadTransFrequency > %lf " % freqfrom
-
-    if 'T_SEARCH_FREQ_TO' in postvars :
-        try:
-            freqto = unitfactor * float(postvars['T_SEARCH_FREQ_TO'])
-        except ValueError:
-            Error = "Lower Frequency is not a number "
-            freqto = 0
-
+            transition_filter = True
+    except KeyError:
+        freqfrom = None
+    except ValueError:
+        Error = "Lower Frequency is not a number "
+        freqfrom = None
+    except:
+        pass
+    
+    try:
+        freqto = unitfactor * float(postvars['T_SEARCH_FREQ_TO'])
         if (freqto>0):
             angstromlower = 2.99792458E12 / freqto            
             tapxsams += " AND RadTransWavelength > %lf " % angstromlower
             tapcdms += " AND RadTransWavelength > %lf " % angstromlower
+        else:
+            # do not return anything (freqto <= 0 should always be false)
+            tapxsams += " AND RadTransWavelength < 0 " 
+            tapcdms += " AND RadTransWavelength < 0 " 
+            
+        transition_filter = True
+    except KeyError:
+        freqto = None
+    except ValueError:
+        Error = "Lower Frequency is not a number "
+        freqto = None
+    except:
+        pass
 
-        #tapxsams += " AND RadTransFrequency < %s " % freqto
-
-    if ('T_SEARCH_FREQ_FROM' not in postvars) & ('T_SEARCH_FREQ_TO' not in postvars):
-        htmlcode += "<a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">"
-        htmlcode += "<p style='background-color:#FFFF99' class='important'>FREQUENCY RANGE: not specified => no restrictions</p></a>"
+    if ((freqfrom is not None) &( freqto is not None)):
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Frequency between %s %s AND %s %s </a></li>" % (postvars['T_SEARCH_FREQ_FROM'], unitNu, postvars['T_SEARCH_FREQ_TO'], unitNu)
+    elif (freqfrom is not None):
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Frequency > %s %s </a></li>" % (postvars['T_SEARCH_FREQ_FROM'], unitNu)
+    elif (freqto is not None):
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Frequency < %s %s </a></li>" % (postvars['T_SEARCH_FREQ_TO'], unitNu)
+        
                                                                                                                                                                            
-    # CHECK Intensity
-    if ('T_SEARCH_INT' in postvars) & (postvars['T_SEARCH_INT']>-10):
-        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Intensity (lg-units) > %s </a></li>" % postvars['T_SEARCH_INT']
+    ## INTENSITY LIMITS 
+    try:
+        lgint = float(postvars['T_SEARCH_INT'])
+        transition_filter = True
+    except KeyError:
+        lgint = None
+    except ValueError:
+        lgint = None
+
+    try:
+        if postvars['IntUnit']=='A':
+            htmlfield = 'Einstein A value'
+            xsamsfield = 'RadTransProbabilityA'
+        else:
+            htmlfield = 'Intensity (lg-units)'            
+            xsamsfield = 'RadTransProbabilityIdealisedIntensity'
+    except:
+        htmlfield = 'Intensity (lg-units)'            
+        xsamsfield = 'RadTransProbabilityIdealisedIntensity'
+
+    if (lgint is not None): #'T_SEARCH_INT' in postvars) & (postvars['T_SEARCH_INT']>-10):
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND %s > %s </a></li>" % (htmlfield, postvars['T_SEARCH_INT'])
        # tapxsams += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
-        tapcdms += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
+        tapcdms += " AND %s > %s " % (xsamsfield, postvars['T_SEARCH_INT'])
+        tapxsams += " AND %s > %s " % (xsamsfield, postvars['T_SEARCH_INT'])
+#    else:
+#        htmlcode += """<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\"> 
+#                       <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
+#                       </a></li>\n """
+    ## PROCESS CLASS (HFS-FILTERS)
+    try:
+        hfs = postvars['T_SEARCH_HFSCODE']
+        if hfs:
+            transition_filter=True
+            tapcdms += " AND RadTransCode = '%s' " % (hfs)
+            tapxsams += " AND RadTransCode = '%s' " % (hfs)
+        else:
+            hfs = None
+    except KeyError:
+        hfs = None
+
+    if (hfs is not None): 
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND Process code  in ( '%s' ) </a></li>" % (hfs)
+       # tapxsams += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
+
+    
+
+    if not transition_filter: #if ((freqfrom is None) & (freqto is None)):
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">"
+#        htmlcode += "<p style='background-color:#FFFF99' class='important'>No restrictions on transitions</p></a></li>"
+        htmlcode += "<i>All transitions</i></a></li>"
+    #######################################
+    # CREATE QUERY STRING FOR STATES
+    #######################################
+    state_filter = False
+    ## STATE ENERGY FILTER
+    try:
+        energyfrom = float(postvars['T_SEARCH_ENERGY_FROM'])
+        tapxsams += " AND StateEnergy > %lf " % energyfrom
+        tapcdms += " AND StateEnergy > %lf " % energyfrom
+        state_filter = True
+    except KeyError:
+        energyfrom = None
+    except ValueError:
+        energyfrom = None
+        
+    try:
+        energyto = float(postvars['T_SEARCH_ENERGY_TO'])
+        tapxsams += " AND StateEnergy < %lf " % energyto
+        tapcdms += " AND StateEnergy < %lf " % energyto
+        state_filter = True
+    except KeyError:
+        energyto = None
+    except ValueError:
+        energyto = None
+
+    ## NUCLEAR SPIN ISOMER FILTER
+    try:
+        nsi = postvars['T_SEARCH_NSI']
+        if nsi:
+            tapxsams += " AND MoleculeStateNSIName = '%s' " % nsi
+            tapcdms += " AND MoleculeStateNSIName = '%s' " % nsi
+            state_filter = True
+        else:
+            nsi = None
+    except KeyError:
+        nsi = None
+
+    if not state_filter:
+        htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">"
+        htmlcode += "<i>All states</i></a></li>"
     else:
-        htmlcode += """<a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\"> 
-                       <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
-                       </a>\n """
+        if ((energyfrom is not None) &( energyto is not None)):
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Energy between %s %s AND %s %s </a></li>" % (postvars['T_SEARCH_ENERGY_FROM'], 'cm<sup>-1</sup>', postvars['T_SEARCH_ENERGY_TO'], 'cm<sup>-1</sup>')
+        elif (energyfrom is not None):
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Energy > %s %s </a></li>" % (postvars['T_SEARCH_ENERGY_FROM'], 'cm<sup>-1</sup>')
+        elif (energyto is not None):
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Energy < %s %s </a></li>" % (postvars['T_SEARCH_ENERGY_TO'], 'cm<sup>-1</sup>')
+        
 
-    htmlcode += "</ul>"
+        if nsi is not None:
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Nuclear Spin Isomer = '%s' </a></li>" % (nsi)
 
+    # Enviroment settings
+    try:
+        temperature = float(postvars['T_TEMPERATURE'])
+        if temperature != 300.0:
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND EnvironmentTemperature = %s </a></li>" % (temperature)
+            tapxsams += " AND EnvironmentTemperature = %s " % temperature
+            tapcdms += " AND EnvironmentTemperature = %s " % temperature
+    except:
+        pass
+
+    #######################################
+    # RETURN QUERY STRING DEPENDEND ON DB
+    #######################################
     if 'database' in postvars:
         if postvars['database'] in ['cdms','jpl']:
             tap=tapcdms
@@ -260,12 +380,13 @@ def check_query(postvars):
             tap=tapxsams
     else:
         tap=tapcdms
+
+    if tap.find('WHERE  AND')>-1:
+        tap = tap.replace('WHERE  AND ','WHERE ')
+    htmlcode += "</ul>"
         
 #    return tapxsams, htmlcode
     return tap, htmlcode
-    
-
-
 
 def geturl(url, timeout=None):
     """
@@ -297,8 +418,7 @@ def geturl(url, timeout=None):
         content = ''        
     return content
 
-
-def applyStylesheet(inurl, xsl = None):
+def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v1.0.xslt', species1=None, species2=None, inurl2=None):
     """
     Applies a xslt-stylesheet to the given url
     """
@@ -307,15 +427,75 @@ def applyStylesheet(inurl, xsl = None):
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
-        xsl=e.XSLT(e.parse(open('/home/endres/Projects/vamdc/nodes/cdms/node/convertXSAMS2html.xslt')))
+        xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'speciesmergerRadex_1.0_v1.0.xslt')))
 
     from urllib2 import urlopen
 
+
+    # download and save first query-result
+    try: data = urlopen(inurl)
+
+    except Exception,err:
+        raise ValidationError('Could not open given URL %s: %s'%(inurl,err))
+
+    # Save XML-File to temporary directory
+    filename = settings.TMPDIR+"/xsams_download.xsams"
+
+    for row in data.info().headers:
+      p = row.find("filename=")
+      if p>-1:
+        filename = settings.TMPDIR+"/"+row[p+9:].rstrip()
+        
+    local_file = open(filename, "w")
+    local_file.write(data.read())
+    local_file.close()
+
+    try: xml=e.parse(filename)
+    except Exception,err:
+        raise ValidationError('Could not parse XML file: %s'%err)
+
+    if inurl2:
+        try: datacol = urlopen(inurl2)
+
+        except Exception,err:
+            raise ValidationError('Could not open given URL: %s'%err)
+
+        # Save XML-File to temporary directory
+        filename2 = settings.TMPDIR+"/xsams_col_download.xsams"
+
+        for row in datacol.info().headers:
+            p = row.find("filename=")
+            if p>-1:
+                filename2 = settings.TMPDIR+"/"+row[p+9:].rstrip()
+        
+        local_file = open(filename2, "w")
+        local_file.write(datacol.read())
+        local_file.close()
+   
+
+        try: result = str(xsl(xml, species1="'%s'" % species1, species2="'%s'" % species2, colfile="'%s'" % filename2)) #"/var/cdms/v1_0/NodeSoftware/nodes/cdms/test/basecol_co.xml"))
+        except Exception,err:
+            raise ValidationError('Could not transform XML file: %s'%err)
+    else:
+        try: result = str(xsl(xml, species1="'%s'" % species1))
+        except Exception,err:
+            raise ValidationError('Could not transform XML file: %s'%err)
+
+    return result
+
+def applyStylesheet(inurl, xsl = None):
+    """
+    Applies a xslt-stylesheet to the given url
+    """
+    if xsl:
+        xsl=e.XSLT(e.parse(open(xsl)))
+    else:
+        xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'convertXSAMS2html.xslt')))
+    from urllib2 import urlopen
     try: data = urlopen(inurl)
 
     except Exception,err:
         raise ValidationError('Could not open given URL: %s'%err)
-
     # Save XML-File to temporary directory
     filename = settings.TMPDIR+"/xsams_download.xsams"
 
@@ -327,16 +507,13 @@ def applyStylesheet(inurl, xsl = None):
     local_file = open(filename, "w")
     local_file.write(data.read())
     local_file.close()
-
     try: xml=e.parse(filename)
     except Exception,err:
         raise ValidationError('Could not parse XML file: %s'%err)
-    
 
     try: result = str(xsl(xml))
     except Exception,err:
         raise ValidationError('Could not transform XML file: %s'%err)
-    
     return  result 
 
 def applyStylesheet2File(infile, xsl = None):
@@ -346,27 +523,24 @@ def applyStylesheet2File(infile, xsl = None):
     from django.conf import settings
     from lxml import etree as e
 
-    xsl = settings.BASE_PATH + '/nodes/cdms/static/xsl/convertXSAMS2html.xslt'
-    xsl = settings.BASE_PATH + "/nodes/cdms/static/xsl/convertXSAMS2Rad3d.xslt"
-
+    #xsl = settings.XSLT_DIR + 'convertXSAMS2html.xslt'
+    #xsl = settings.XSLT_DIR + 'convertXSAMS2Rad3d.xslt"
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
-        xsl=e.XSLT(e.parse(open('/home/endres/Projects/vamdc/nodes/cdms/node/convertXSAMS2html.xslt')))
+        xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'convertXSAMS2html.xslt')))
         
     from urllib2 import urlopen
 
     try: xml=e.parse(infile)
     except Exception,err:
         raise ValidationError('Could not parse XML file: %s'%err)
-    
 
     try: result = str(xsl(xml))
     except Exception,err:
         raise ValidationError('Could not transform XML file: %s'%err)
     
     return  result
-
 
 def getHtmlNodeList():
     """
@@ -384,17 +558,45 @@ def getHtmlNodeList():
 
     response += "<div class='vlist'><ul>"
 
-    response += """<li id='nodehead' class='' style='border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
-                           <div class='' style='background-color:blue;'>
-                              <div class='nodename float_left' style='font-weight:bold;width:20em;background-color2:grey'>%s</div>                                                         
-                              <div class='status float_left' style='width:8em'>Status</div>
-                              <div class='numspecies float_left' style='width:8em'> %s</div>
-                              <div class='nummols float_left' style='width:8em'> %s</div>
-                              <div class='numstates float_left' style='width:8em'> %s</div>
-                              <div class='numradtrans float_left' style='width:8em'> %s</div>
-                              <div class='numtrunc float_left' style='width:8em'> %s</div>
-                           </div>
-                      </li>""" % ("Database","# Species","# Molecules","# States","# Trans","% Trunc.")
+    response += """<li id='nodehead' class='' style='height:7em;border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
+                              <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>%s
+                              </div>                                                         
+                              <div class='status float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='numspecies float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='nummols float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='numstates float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='numradtrans float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='numcollisions float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                              <div class='numtrunc float_left' style='width:4em'>
+                                <svg xmlns='http://www.w3.org/2000/svg'>
+                                  <text id='headdb' transform='rotate(270, 12, 0) translate(-60,0)'>%s</text>
+                                </svg>
+                              </div>
+                      </li>""" % ("Database","Status", "# Species","# Molecules","# States","# Trans","# Collis.","% Trunc.")
 
     for node in nodes:
 
@@ -402,20 +604,20 @@ def getHtmlNodeList():
                            <div class='nodeurl' style='display:none' id='%s'>%s </div>
                            <div class='url' style='display:none'></div>
                            <div class='' style=''>
-                              <div class='nodename float_left' style='font-weight:bold;width:20em;background-color2:grey'>%s</div>                                                         
-                              <div class='status float_left' style='width:8em'></div>
-                              <div class='numspecies float_left' style='width:8em'> %s</div>
-                              <div class='nummols float_left' style='width:8em'> %s</div>
-                              <div class='numstates float_left' style='width:8em'> %s</div>
-                              <div class='numradtrans float_left' style='width:8em'> %s</div>
-                              <div class='numtrunc float_left' style='width:8em'> %s</div>
+                              <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>%s</div>                                                         
+                              <div class='status float_left' style='width:4em'></div>
+                              <div class='numspecies float_left' style='width:4em'> %s</div>
+                              <div class='nummols float_left' style='width:4em'> %s</div>
+                              <div class='numstates float_left' style='width:4em'> %s</div>
+                              <div class='numradtrans float_left' style='width:4em'> %s</div>
+                              <div class='numcollisions float_left' style='width:4em'> %s</div>
+                              <div class='numtrunc float_left' style='width:4em'> %s</div>
                            </div>
                            <div class='species' style='clear:both'></div> 
-                      </li>""" % (node["name"],u'98%',node["name"], node["url"],node["name"],"0","0","0","0","0")
+                      </li>""" % (node["name"],u'98%',node["name"], node["url"],node["name"],"0","0","0","0","0","0")
 
     response += "</ul></div>"
-    return response
-
+    return response, nodes
 
 def doHeadRequest(url, timeout = 20):
     """
@@ -433,15 +635,30 @@ def doHeadRequest(url, timeout = 20):
         res = conn.getresponse()
     except:
         # error handling has to be included
-        vamdccounts = [('error', 'no response')]
+        vamdccounts = [] #[('error', 'no response')]
         return vamdccounts
         
     if res.status == 200:
         vamdccounts = [item for item in res.getheaders() if item[0][0:5]=='vamdc']
         content = [item for item in res.getheaders() if item[0][0:7]=='content']
+    elif res.status == 204:
+        vamdccounts = [ ("vamdc-count-species",0),
+                        ("vamdc-count-states",0),
+                        ("vamdc-truncated",0),
+                        ("vamdc-count-molecules",0),
+                        ("vamdc-count-sources",0),
+                        ("vamdc-approx-size",0),
+                        ("vamdc-count-radiative",0),
+                        ("vamdc-count-atoms",0)]
     else:
-        vamdccounts =  []
-
+        vamdccounts =  [("vamdc-count-species",0),
+                        ("vamdc-count-states",0),
+                        ("vamdc-truncated",0),
+                        ("vamdc-count-molecules",0),
+                        ("vamdc-count-sources",0),
+                        ("vamdc-approx-size",0),
+                        ("vamdc-count-radiative",0),
+                        ("vamdc-count-atoms",0)]
     return vamdccounts
     
 def getNodeStatistic(baseurl, inchikey, url = None):
@@ -451,7 +668,8 @@ def getNodeStatistic(baseurl, inchikey, url = None):
 
     Returns: VAMDC statistic as htmlcode (for ajax Requests)
     """
-
+    orig_url = url
+    
     url=url.replace('rad3d','XSAMS')
     url=url.replace('png','XSAMS')
     url=url.replace('xspcat','XSAMS')
@@ -459,14 +677,17 @@ def getNodeStatistic(baseurl, inchikey, url = None):
     url=url.replace('spcat','XSAMS')
     url=url.replace('mrg','XSAMS')
     
-    
     if not url:
         query = "sync?REQUEST=doQuery&LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT+All+WHERE++InchiKey='%s'" % inchikey
         url = baseurl.rstrip()+query
-
-    vamdccounts = doHeadRequest(url)
+        orig_url=url
+    try:
+        vamdccounts = doHeadRequest(url)
+    except:
+        vamdccounts = []
+        
     vc = {}
-    vc['url']=url
+    vc['url']=orig_url
     
     response = "<ul>"
     if len(vamdccounts)>0:
@@ -509,22 +730,48 @@ def getspecies(url):
     xp = "//xsams:Molecule"
     response = ""
 
+    chkbox = "<input type='checkbox' class='idselector'>"
+
     html = "<table class='full'><tbody>"
+    data = []
     try:
         for m in xml.xpath(xp ,namespaces=prefixmap):
             try:
-                stoichiometricformula = m.xpath('./xsams:MolecularChemicalSpecies/xsams:StoichiometricFormula', namespaces=prefixmap)[0].text
-                chemicalname = m.xpath('./xsams:MolecularChemicalSpecies/xsams:ChemicalName/xsams:Value', namespaces=prefixmap)[0].text
-                structuralformula = m.xpath('./xsams:MolecularChemicalSpecies/xsams:OrdinaryStructuralFormula/xsams:Value', namespaces=prefixmap)[0].text
-                inchikey = m.xpath('./xsams:MolecularChemicalSpecies/xsams:InChIKey', namespaces=prefixmap)[0].text
-                comment = m.xpath('./xsams:MolecularChemicalSpecies/xsams:Comment', namespaces=prefixmap)[0].text
+                speciesid = m.xpath('@speciesID', namespaces=prefixmap)[0]
+                try:
+                    stoichiometricformula = m.xpath('./xsams:MolecularChemicalSpecies/xsams:StoichiometricFormula', namespaces=prefixmap)[0].text
+                except:
+                    stoichiometricformula = ""
+                try:
+                    chemicalname = m.xpath('./xsams:MolecularChemicalSpecies/xsams:ChemicalName/xsams:Value', namespaces=prefixmap)[0].text
+                except:
+                    chemicalname = ""
+                try:
+                    structuralformula = m.xpath('./xsams:MolecularChemicalSpecies/xsams:OrdinaryStructuralFormula/xsams:Value', namespaces=prefixmap)[0].text
+                except:
+                    structuralformula = ""
+                try:
+                    inchikey = m.xpath('./xsams:MolecularChemicalSpecies/xsams:InChIKey', namespaces=prefixmap)[0].text
+                except:
+                    inchikey = ""
+                try:
+                    comment = m.xpath('./xsams:MolecularChemicalSpecies/xsams:Comment', namespaces=prefixmap)[0].text
+                except:
+                    comment = ""
             
                 response += "%s %s %s %s \n" % (structuralformula, stoichiometricformula, chemicalname, comment)
-                html += "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr> \n" % (structuralformula, stoichiometricformula, chemicalname, comment)
-            except:
-                pass
+                html += "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr> \n" % (chkbox, speciesid, structuralformula, stoichiometricformula, chemicalname, comment)
+                data.append({'speciesid':speciesid,
+                             'stoichiometricformula':stoichiometricformula,
+                             'chemicalname':chemicalname,
+                             'structuralformula':structuralformula,
+                             'inchikey':inchikey,
+                             'comment':comment,
+                             'url':url,})
+            except Exception, e:
+                print >> sys.stderr, "ERROR %s" % e #pass
     except:
         return "ERROR 2"
 
     html += "</tbody></table>"
-    return  html
+    return  html, data

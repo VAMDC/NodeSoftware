@@ -1,7 +1,9 @@
  # -*- coding: utf-8 -*-
 from django.db.models import Q
+from django.db import connection
 from django.conf import settings
 import sys
+import datetime
 
 def LOG(s):
     if settings.DEBUG: print >> sys.stderr, s
@@ -21,7 +23,7 @@ def tapServerError(request=None, status=500, errmsg=''):
     # template directory to get access to it, as well...
     document = loader.get_template('tap/TAP-error-document.xml').render(
                      Context({"error_message_text" : text}))
-    return HttpResponse(document, status=status, mimetype='text/xml');
+    return HttpResponse(document, status=status, content_type='text/xml');
                                 
 
 if hasattr(settings,'TRANSLIM'):
@@ -41,16 +43,20 @@ def attach_partionfunc(molecules):
         molecule.pfsymmetrygroup = []
         molecule.pfnsilowestrovibsym = []
 
-        #pfs = Partitionfunctions.objects.filter(eid = molecule.id, mid__isnull=False)
-        pfs = Partitionfunctions.objects.filter(specie = molecule, state="All")
+        #pfs = Partitionfunctions.objects.filter(specie = molecule, state="All")
+        pfs = PartitionfunctionsDetailed.objects.filter(specie = molecule) 
 
         # Get List of all nuclear spin isomers "None" should be included and gives
         # partition functions which do not distinguish between nuclear spin isomers.
         nsilist = pfs.values_list('nsi_id', flat=True).distinct()
 
         for nsi in nsilist:
-            temp=pfs.filter(nsi_id=nsi).values_list('temperature',flat=True)
-            pf = pfs.filter(nsi_id=nsi).values_list('partitionfunc',flat=True)
+            temp_pf_list = pfs.filter(nsi_id=nsi).values('temperature').annotate(p=Sum('partitionfunc')).order_by('temperature')
+            
+            #temp=pfs.filter(nsi_id=nsi).values_list('temperature',flat=True)
+            #pf = pfs.filter(nsi_id=nsi).values_list('partitionfunc',flat=True)
+            temp =temp_pf_list.values_list('temperature',flat=True)
+            pf =temp_pf_list.values_list('p',flat=True)
 
             # Get information on nuclear spin isomers or Null
             try:
@@ -87,8 +93,7 @@ def remap_species(datasets):
 
     return species
 
-
-def get_species_and_states(transs, addStates=True, filteronatoms=False):
+def get_species_and_states(transs, addStates = True, filteronatoms = False):
     """
     Returns list of species including all states which occur in the list
     of transitions.
@@ -115,7 +120,64 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
 
     # Intialize state-counter
     nstates = 0
-    
+
+    if addStates:
+        up = transs.values_list('upperstateref',flat=True)
+        low = transs.values_list('lowerstateref',flat=True)
+        for m in molecules:
+            states = m.states_set.filter(Q(pk__in= up) | Q(pk__in= low))
+            # get state origins and nuclear spin origins
+            state_origin = m.originstates_set.all()
+            nsi_origins = m.originstates_set(manager = 'nsi_objects').all()
+            origins = state_origin | nsi_origins
+            # modify the id to avioid dublication with regular states
+            for s in origins:
+                s.id = s.id_alias()
+                s.aux = True
+            # attach states to molecule object
+            m.States = chain(origins, states)
+
+        for a in atoms:
+            states = a.atomstates_set.filter(Q(pk__in= up) | Q(pk__in= low))
+            origins = a.atomstates_set(manager = 'energy_origin').all()
+            for s in origins:
+                s.id = s.id_alias()
+                s.aux = True
+            m.States = chain(origins, states)
+
+        # determine the number of states
+        nstates = States.objects.filter(pk__in=chain(up,low)).count()
+
+    return atoms,molecules,nspecies,nstates
+
+def get_species_and_states_old(transs, addStates=True, filteronatoms=False):
+    """
+    Returns list of species including all states which occur in the list
+    of transitions.
+    Returns:
+    - Atoms
+    - Molecules
+    - Number of species
+    - Number of states
+    """
+
+    # Get list of specie-ids which occur in transitions
+    if filteronatoms:
+        spids = set( transs.values_list('specie_id',flat=True).distinct() )
+    else:
+        spids = transs.values_list('specie_id',flat=True)
+
+    # Species object for CDMS includes Atoms AND Molecules. Both can only
+    # be distinguished through numberofatoms-field
+    atoms = Species.objects.filter(pk__in=spids, molecule__numberofatoms__exact='Atomic', origin=5, archiveflag=0)
+    molecules = Species.objects.filter(pk__in=spids, origin=5, archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic') #,ncomp__gt=1)
+
+    # Calculate number of species in total
+    nspecies = atoms.count() + molecules.count()
+
+    # Intialize state-counter
+    nstates = 0
+
     if addStates:
         # Loop through list of species and attach states
         for specie in chain( molecules):
@@ -129,7 +191,6 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
             lo=subtranss.values_list('lowerstateref',flat=True)
             sids = set(chain(up,lo))
             states = States.objects.filter( pk__in = sids)
-            
             # Get energy origins
             origin_ids = states.values_list('energyorigin',flat=True).distinct()
             nsi_origin_ids = NuclearSpinIsomers.objects.filter(pk__in=states.values_list('nsi',flat=True)).values_list('lowestrovibstate',flat=True)
@@ -166,7 +227,6 @@ def get_species_and_states(transs, addStates=True, filteronatoms=False):
 
                 
     return atoms,molecules,nspecies,nstates
-
 
 
 def get_sources(atoms, molecules, methods = []):
@@ -223,7 +283,6 @@ def attach_exp_frequencies(transs):
     The calculated frequency is given anyway followed by experimental
     frequencies (db-table: Frequencies). In addition a unique list of
     methods for the experimental data is created and returned.
-
     Returns:
     - modified transitions (frequencies, ... attached as lists)
     - methods for experimental data
@@ -278,10 +337,6 @@ def attach_exp_frequencies(transs):
         
     return transs, methods
 
-
-
-
-
 def setupResults(sql):
     """
     This method queries the database with respect to the sql-query
@@ -299,31 +354,48 @@ def setupResults(sql):
     filteronatoms = "Atom" in sql.query
     filteroninchi = "Inchi" in sql.query
     filteronmols = "Molecule" in sql.query
-    filteronspecies = ("Ion" in sql.query) | filteronmols | filteroninchi | filteronatoms
-    q = sql2Q(sql)
+    filteronspecieid = "SpeciesID" in sql.query
+    filteronspecies = ("Ion" in sql.query) | filteronmols | filteroninchi | filteronatoms | filteronspecieid
 
+    temperature = 300.0
+    if not sql.parsedSQL.where:
+        q = Q()
+    else:
+        logic, restriction, count = splitWhere(sql.parsedSQL.where)
+        q_dict = {}
+        for i, r in restriction.items():
+           r = applyRestrictFu(r)
+           if r[0].lower() == 'environmenttemperature':
+               if r[1] in ('=', '=='):
+                   temperature = r[2]
+                   q_dict[i] = Q(pk__isnull = False)
+               else:
+                   q_dict[i] = QFalse
+           else:
+               q_dict[i] = restriction2Q(r)
+        q = mergeQwithLogic(q_dict, logic)
+#    q = sql2Q(sql)
+#    LOG(q)
     addStates = (not sql.requestables or 'atomstates' in sql.requestables or 'moleculestates' in sql.requestables)
     addTrans = (not sql.requestables or 'RadiativeTransitions' in sql.requestables)
-
     #datasets = Datasets.objects.filter(archiveflag=0)
 
     # Query the database and get calculated transitions (TransitionsCalc)
-    transs = TransitionsCalc.objects.filter(q #specie__origin=5,
-                                            #specie__archiveflag=0,
-                                            #dataset__in=datasets,
-                                            #dataset__archiveflag=0
-                                            ) #.order_by('frequency')
+#    transs = RadiativeTransitions.objects.filter(q #specie__origin=5,
+#                                            #specie__archiveflag=0,
+#                                            #dataset__in=datasets,
+#                                            #dataset__archiveflag=0
+#                                            ) #.order_by('frequency')
+    if temperature == 300.0:
+        transs = RadiativeTransitions.objects.filter(q) 
+    else:
+        transs = RadiativeTransitionsT.objects.filter(q, temperature = temperature, intensity__gt= -99.9)
+     # modify filter for transitions:
+    transs = transs.filter(specie__origin=5, specie__archiveflag=0, dataset__archiveflag=0)
 
     # get atoms and molecules with states which occur in transition-block
     atoms, molecules,nspecies,nstates = get_species_and_states(transs, addStates, filteronspecies)
-
-    # attach partition functions to each specie
-    attach_partionfunc(molecules)
-
-    # modify filter for transitions:
-    transs = transs.filter(specie__origin=5, specie__archiveflag=0, dataset__archiveflag=0)
-
-    # Attach experimental transitions (TransitionsExp) to transitions
+   # Attach experimental transitions (TransitionsExp) to transitions
     # and obtain their methods. Do it only if transitions will be returned
     if addTrans:
         transs = transs.order_by('frequency')
@@ -331,30 +403,28 @@ def setupResults(sql):
         methods=[]
     else:
         methods=[]
-        
+
     # get sources and methods which have been used
     # to derive predicted transitions
     if addTrans:
         sources, methods = get_sources(atoms, molecules, methods)
     else:
         sources=Sources.objects.none()
-
-
     nsources = sources.count()
     nmolecules = len(molecules)#molecules.count()
     natoms = len(atoms) #atoms.count()
     ntranss = transs.count()
 
-    lastmodified = datetime.datetime.now()
-    for specie in chain(atoms, molecules):
-        if specie.changedate<lastmodified:
+    lastmodified = datetime.datetime(2009,12,1)
+    for specie in chain(atoms, molecules):        
+        if specie.changedate>lastmodified:
             lastmodified = specie.changedate
-
+    if lastmodified ==  datetime.datetime(2009,12,1):
+        lastmodified = datetime.datetime.now()
     # Calculate estimated size of xsams-file
-    if ntranss+nmolecules+nsources+natoms+nstates>0:
+    if ntranss+nmolecules+natoms+nstates>0:
         size_estimate='%.2f' % (nstates*0.0008755624 +ntranss*0.000561003 +nmolecules*0.001910 +nsources * 0.0005+0.01)
-    else: size_estimate='0.00'
-
+    else: size_estimate='0.0'
 
     # this header info is used in xsams-header-info (html-request)
     headerinfo={\
@@ -369,14 +439,17 @@ def setupResults(sql):
         'last-modified':lastmodified,
     }
 
-
+    if hasattr(sql, 'XRequestMethod') and sql.XRequestMethod == 'HEAD':
+        return {'HeaderInfo': headerinfo}
+    # attach partition functions to each specie and return the result
+    attach_partionfunc(molecules)
     return {'RadTrans':transs,
             'Atoms':atoms,
             'Molecules':molecules,
             'Sources':sources,
             'Methods':methods,
             'HeaderInfo':headerinfo,
-           }
+            }
 
 
 
@@ -394,6 +467,7 @@ def returnResults(tap, LIMIT=None):
     RESTRICTABLES.update(CDMSONLYRESTRICTABLES)
 
     SUPPORTED_FORMATS=['spcat','png','list','xspcat','mrg','species']
+    print_einsteina = False
 
     if tap.format not in SUPPORTED_FORMATS:
         emsg = 'Currently, only FORMATs PNG, SPCAT and XSAMS are supported.\n'
@@ -401,48 +475,64 @@ def returnResults(tap, LIMIT=None):
 
     if tap.format == 'list':
         speclist=specieslist()
-        response = HttpResponse(speclist, mimetype='text/plain')
+        response = HttpResponse(speclist, content_type='text/plain')
         return response
 
     if tap.format == 'species':
         speclist=plain_specieslist()
-        response = HttpResponse(speclist, mimetype='text/plain')
+        response = HttpResponse(speclist, content_type='text/plain')
         return response
 
 
-    
-    LOG('And now some logs:')
-    #LOG(tap.data)
-        
-    LOG(tap.parsedSQL)
-
-#    for i in tap.parsedSQL:
-#        if 'getonlycalc' in i:
-#            LOG(i)
-#        else:
-#            psql.append(i)
-#            LOG(i)
-#        c+=1
-
-    q = sql2Q(tap.parsedSQL)
-    LOG(q)
+    # Create filter manually, because temperature and intensity information
+    # has to be obtained separately in order to prepare the partition functions
+    # accordingly.
+    temperature = 300.0
+    if not tap.parsedSQL.where:
+        q = Q()
+    else:
+        logic, restriction, count = splitWhere(tap.parsedSQL.where)
+        q_dict = {}
+        # filter where intensity restriction has been removed to assure that
+        # all species will be obtained for retrieving all partitionfunctions
+        q_noint_dict = {}
+        for i, r in restriction.items():
+            r = applyRestrictFu(r)
+            if r[0].lower() == 'environmenttemperature':
+                if r[1] in ('=', '=='):
+                    temperature = r[2]
+                    q_dict[i] = Q(pk__isnull = False)
+                    q_noint_dict[i] = Q(pk__isnull = False)
+                else:
+                    q_dict[i] = QFalse
+                    q_noint_dict[i] = QFalse
+            elif r[0].lower() == 'radtransprobabilityidealisedintensity':
+                    q_dict[i] = restriction2Q(r)
+                    q_noint_dict[i] = Q(pk__isnull = False)
+            else:
+                q_dict[i] = restriction2Q(r)
+                q_noint_dict[i] = restriction2Q(r)
+        q = mergeQwithLogic(q_dict, logic)
+        q_noint = mergeQwithLogic(q_noint_dict, logic)
 
     # use tap.parsedSQL.columns instead of tap.requestables
     # because only the selected columns should be returned and no additional ones
     col = tap.parsedSQL.columns #.asList()
-    
-    transs = TransitionsCalc.objects.filter(q,specie__origin=5,specie__archiveflag=0,dataset__archiveflag=0) 
+    if temperature == 300.0:
+        transs = RadiativeTransitions.objects.filter(q,specie__archiveflag=0,dataset__archiveflag=0) #,energylower__gt=0) 
+    else:
+        transs = RadiativeTransitionsT.objects.filter(q, specie__archiveflag = 0, dataset__archiveflag = 0, temperature = temperature, intensity__gt= -99.9)
     ntrans = transs.count()
 
-    if LIMIT is not None and ntrans > LIMIT:
+#    if LIMIT is not None and ntrans > LIMIT:
         # we need to filter transs again later, so can't take a slice
         #transs = transs[:LIMIT]
         # so do this:
-        numax = transs[LIMIT].nu
-        transs = TransitionsCalc.objects.filter(q, Q(nu__lte=numax))
-        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
-    else:
-        percentage = '100'
+#        numax = transs[LIMIT].nu
+#        transs = TransitionsCalc.objects.filter(q, Q(nu__lte=numax))
+#        percentage = '%.1f' % (float(LIMIT)/ntrans * 100)
+#    else:
+    percentage = '100'
 #    print 'Truncated to %s %%' % percentage
 
 
@@ -450,12 +540,36 @@ def returnResults(tap, LIMIT=None):
     if (col=='ALL' or 'radiativetransitions' in [x.lower() for x in col]):
         LOG('TRANSITIONS')
         orderby = tap.request.get('ORDERBY','frequency')
+        if tap.request.get('IntUnit', 'T') == 'A':
+            print_einsteina = True
+         
         if ',' in orderby:
             orderby=orderby.split(',')
             transitions = transs.order_by(*orderby) 
         else:            
             transitions = transs.order_by(orderby)
-            
+        # get the partinotion functions if temperature != 300K        
+        if temperature != 300.0:
+            species = RadiativeTransitions.objects.filter(q_noint).values_list('specie_id', flat = True).distinct()
+            LOG(species)
+            # Get partitinofunctions for all species for specific temperature
+            q300 = {}
+            qrs = {}
+            cursor = connection.cursor()
+            for s in species:
+                try:
+                    q300[s] = Partitionfunctions.objects.get(specie = s, temperature = 300.0, state = 'All', nsi__isnull = True)
+                except:
+                    q300[s] = None
+                try:
+                    cursor.execute('SELECT F_GetPartitionfunctionDetailed(300, %s)', s)
+                    qrs[s] = cursor.fetchone()[0]
+                except:
+                    qrs[s] = None
+            cursor.close()
+
+
+
     else:
         LOG('NO TRANSITIONS')
         transitions = []
@@ -465,15 +579,16 @@ def returnResults(tap, LIMIT=None):
     if (col=='ALL' or 'states' in [x.lower() for x in col] ):
         LOG('STATES')
         orderby = tap.request.get('ORDERBY','energy')
-        states = States.objects.filter(q,specie__origin=5,dataset__archiveflag=0).order_by(orderby)
+        #states = States.objects.filter(q,specie__origin=5,dataset__archiveflag=0).order_by(orderby)
+        states = States.objects.filter(q,dataset__archiveflag=0).order_by(orderby)
     else:
         LOG('NO STATES')
         states = []
 
 
     if tap.format in ('spcat','xspcat','mrg'):
-        generator = gener(transitions, states, format=tap.format)
-        response = HttpResponse(generator, mimetype='text/plain')
+        generator = gener(transitions, states, format=tap.format, print_einsteina = print_einsteina)
+        response = HttpResponse(generator, content_type='text/plain')
     else:
         if 'states' in tap.requestables:
             response = plotLevelDiagram(states)
@@ -505,13 +620,13 @@ def formatqn(value):
     else:
         return str(value)
 
-def gener(transs=None, states=None, format='spcat'):
+def gener(transs=None, states=None, format='spcat', print_einsteina = False):
 
     if format=='xspcat':
         for trans in xCat(transs):
             yield trans
     elif format == 'mrg':
-        for trans in Mrg(transs):
+        for trans in Mrg(transs, print_einsteina = print_einsteina):
             yield trans
     else:
         for trans in Cat(transs):
@@ -550,47 +665,48 @@ def Cat(transs):
         yield '\n'
 
 
-def Mrg(transs):
+def Mrg(transs, print_einsteina = False):
     """
     """
     
     for trans in transs:
-        trans.attach_exp_frequencies()
+        yield '%s ' % trans.spfitstr(print_einsteina = print_einsteina)
+##        trans.attach_exp_frequencies()
 
-        speciestag = trans.speciestag
+##        speciestag = trans.speciestag
 
-        if len(trans.frequencies)>1:
-            speciestag=-speciestag
-            frequency = trans.frequencies[1]
-            uncertainty = trans.uncertainties[1]
-        else:
-            frequency = trans.frequency
-            uncertainty = trans.uncertainty
+##        if len(trans.frequencies)>1:
+##            speciestag=-speciestag
+##            frequency = trans.frequencies[1]
+##            uncertainty = trans.uncertainties[1]
+##        else:
+##            frequency = trans.frequency
+##            uncertainty = trans.uncertainty
             
-        yield '%13.4lf' % frequency
-        yield '%8.4lf' % uncertainty
-        yield '%8.4lf' % trans.intensity
+##        yield '%13.4lf' % frequency
+##        yield '%8.4lf' % uncertainty
+##        yield '%8.4lf' % trans.intensity
         
-        yield '%2d' % trans.degreeoffreedom
-        yield '%10.4lf' % trans.energylower
+##        yield '%2d' % trans.degreeoffreedom
+##        yield '%10.4lf' % trans.energylower
 
-        yield '%3d' % trans.upperstatedegeneracy
-        yield '%7d' % speciestag
+##        yield '%3d' % trans.upperstatedegeneracy
+##        yield '%7d' % speciestag
         
-        yield '%4d' % trans.qntag
-        yield '%2s' % formatqn(trans.qnup1)
-        yield '%2s' % formatqn(trans.qnup2)
-        yield '%2s' % formatqn(trans.qnup3)
-        yield '%2s' % formatqn(trans.qnup4)
-        yield '%2s' % formatqn(trans.qnup5)
-        yield '%2s' % formatqn(trans.qnup6)
+##        yield '%4d' % trans.qntag
+##        yield '%2s' % formatqn(trans.qnup1)
+##        yield '%2s' % formatqn(trans.qnup2)
+##        yield '%2s' % formatqn(trans.qnup3)
+##        yield '%2s' % formatqn(trans.qnup4)
+##        yield '%2s' % formatqn(trans.qnup5)
+##        yield '%2s' % formatqn(trans.qnup6)
 
-        yield '%2s' % formatqn(trans.qnlow1)
-        yield '%2s' % formatqn(trans.qnlow2)
-        yield '%2s' % formatqn(trans.qnlow3)
-        yield '%2s' % formatqn(trans.qnlow4)
-        yield '%2s' % formatqn(trans.qnlow5)
-        yield '%2s' % formatqn(trans.qnlow6)
+##        yield '%2s' % formatqn(trans.qnlow1)
+##        yield '%2s' % formatqn(trans.qnlow2)
+##        yield '%2s' % formatqn(trans.qnlow3)
+##        yield '%2s' % formatqn(trans.qnlow4)
+##        yield '%2s' % formatqn(trans.qnlow5)
+##        yield '%2s' % formatqn(trans.qnlow6)
 
         yield '%s' % trans.specie.name
         yield '\n'
@@ -822,21 +938,26 @@ def plotLevelDiagram(states):
 
 
     spids = set( states.values_list('specie_id',flat=True) )
+    count_species = len(spids)
     spidsname = []
     species = Species.objects.filter(pk__in=spids) #,ncomp__gt=1)
     i=0
     plots=[]
     for specie in species:
+        if count_species == 0:
+            speciescolor = matplotlib.cm.jet(1.)
+        else:
+            speciescolor = matplotlib.cm.jet(1.*i/count_species)
         spidsname.append(specie.name)
         substates = states.filter(specie=specie)
 
         for state in states:
-            pl = ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color=matplotlib.cm.jet(1.*i/len(spids)))
+            pl = ax.plot([state.qn1-0.3,state.qn1+0.3],[state.energy,state.energy], color = speciescolor)
 
         plots.append(pl)
         i=i+1
-        
-    ax.legend(plots, spidsname, loc=0)
+    if count_species > 0:
+        ax.legend(plots, spidsname, loc=0)
 #    ax.legend(bars,spidsname,loc=0)
     
 

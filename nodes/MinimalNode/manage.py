@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+<<<<<<< HEAD
 """ Set up the node. A first startup consists of giving the command
 'python manage'. This will create an empty settings file. Copy&paste
 variables you want to change from settings_default.py to setup your
@@ -137,3 +138,30 @@ if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE","settings")
     from django.core.management import execute_from_command_line
     execute_from_command_line(sys.argv)
+=======
+import os
+import sys
+
+if __name__ == "__main__":
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+
+    from django.core.management import execute_from_command_line
+
+    execute_from_command_line(sys.argv)
+
+
+# OLD: django 1.4
+#from django.core.management import execute_manager
+#import imp
+#try:
+#    imp.find_module('settings') # Assumed to be in the same directory.
+#except ImportError:
+#    import sys
+#    sys.stderr.write("Error: Can't find the file 'settings.py' in the directory containing %r. It appears you've customized things.\nYou'll have to run django-admin.py, passing it your settings module.\n" % __file__)
+#    sys.exit(1)
+#
+#import settings
+#
+#if __name__ == "__main__":
+#    execute_manager(settings)
+>>>>>>> fbc34dd97f5dd9bc11f0c8f592ba4655a11ff9ae

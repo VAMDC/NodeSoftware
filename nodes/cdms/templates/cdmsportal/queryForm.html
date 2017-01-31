@@ -2,16 +2,40 @@
 
 {% block menu_li_catalog %}class="active" {% endblock %}
 
+{% block second_navigation %}
+<div class="hlist" style="background:none;border-top-color:white;border-color:#e0e0e0;margin-top:0px">
+<!-- background-color:#f0f0f0;border-top-color:white;border-color:#e0e0e0;opacity:0.4">
+-->
+  <ul style="background-color:white; opacity:0.6">
+    <li><a href="#" onclick="$('.result').hide();$('#control').show();$('#nodes').hide();docShowSubpage('form_queryTrans');">Query</a></li>
+    <li><a href="#" onclick="$('#control').hide();$('.result').hide();$('#nodes').show();">Nodes</a></li>
+    <li><a href="#" onclick="$('#control').hide();$('.result').show();$('#nodes').hide();docShowSubpage('queryresult');">Result</a></li>
+ </ul>
+<ul class="result" style="display:none;background-color:white; float:right; opacity:0.5">
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_molecules').show();$('#list_atoms').show();">Species</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_states').show();">States</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_radiative').show();">Transitions</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_pfs').show();">Partition func.</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_collisions').show();">Collisions</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_functions').show();">Functions</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_sources').show();">Sources</a></li>
+    <li class="result"><a href="#" onclick="docShowSubpage('queryresult');$('#list_methods').show();">Methods</a></li>
+  </ul>
+</div>
+{% endblock %}
+      
+{% block third_navigation %}
+      <div class="hlist result" style="display:none;background:None; background-color:white;border:solid;border-color:#f9f9f9;">
+	<ul>
+	  <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_molecules').show();$('#list_atoms').show();">Species</a></li>
+	</ul>
+      </div>
+{% endblock %}
+
+
 {% block content %}
 <form name="PARAMETER" aktion="cdms/showResults" class="yform full" method="post">
 
-<div class="hlist">
-  <ul>
-    <li><a href="#" onclick="$('#result').hide();$('#control').show();$('#nodes').hide();docShowSubpage('form_queryTrans');">Query</a></li>
-    <li><a href="#" onclick="$('#control').hide();$('#result').hide();$('#nodes').show();">Nodes</a></li>
-    <li><a href="#" onclick="$('#control').hide();$('#result').show();$('#nodes').hide();docShowSubpage('queryresult');">Result</a></li>
-  </ul>
-</div>
 
 <div id="main">
 
@@ -24,35 +48,11 @@
 </div>
 
 <!-- RESULT -->
-<div id="result" style="display:none;min-height:100ex;">
-  <!-- begin: #col1 - first float column -->
-  <div id="col1_r" style="background-color:white;width:5ex;" role="complementary">
-    <div id="col1_content" class="clearfix">
+<div id="result" class="result" style="display:none;min-height:100ex;">
 
-      <div style="width:5ex;" class="float_leftw">t
-        <div class='rotate' style='position:absolute;top:87ex;'> 
-          <div class="hlist" style='position:absolute;width:87ex;'>
-            <ul>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_functions').show();">Functions</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_sources').show();">Sources</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_methods').show();">Methods</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_pfs').show();">Partition func.</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_collisions').show();">Collisions</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_radiative').show();">Transitions</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_states').show();">States</a></li>
-              <li><a href="#" onclick="docShowSubpage('queryresult');$('#list_molecules').show();$('#list_atoms').show();">Species</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="col3" style="margin-left:8ex;" role="main">
-    <div id="col3_content" class="clearfix">
       <div id ="queryresult" style="display:none;" class="subpage"> No query submitted yet. </div>
-    </div>
-  </div>
+
+
 
 </div>
 
@@ -97,6 +97,7 @@
         <li><a href="#" id="a_form_species" onclick="docShowSubpage('form_species')">Species</a></li> 
         <li><a href="#" id="a_form_transitions" onclick="docShowSubpage('form_transitions')">Transitions</a></li>
         <li><a href="#" id="a_form_states" onclick="docShowSubpage('form_states')">States</a></li>
+        <li><a href="#" id="a_form_environment" onclick="docShowSubpage('form_environment')">Environment</a></li>
         <li><a href="#" onclick="docShowSubpage('form_output')">Output</a></li>
       </ul>
     </div>
@@ -146,36 +147,35 @@
     </fieldset>
 
 
-
+<!-- CREATE CONTAINER FOR RADEX INPUT -->
    <fieldset id="RadexSelectors" style="display:none;">
-     <div class="legend">Radex Input</div>
+<!--     <div class="legend">Radex Input</div>  -->
 
-     <div>Spectroscopic data </div>
-      <div class="type-select">
-        <SELECT class="radexselect" NAME="database" id="sel_spec" onchange="">
-        </SELECT>
-        <INPUT TYPE="HIDDEN" NAME="spec_url" VALUE="">
-        <INPUT TYPE="HIDDEN" NAME="spec_speciesid" VALUE="XCDMS-83">
-      </div> 
+     <div class="legend">Spectroscopic data </div>
+      <ul class="vlist" id="list_spec">
+      </ul>
+      <INPUT TYPE="HIDDEN" NAME="spec_url" id="spec_url" VALUE="">
+      <INPUT TYPE="HIDDEN" NAME="spec_speciesid" id="spec_speciesid" VALUE="">
      
-     <div>Collisional data </div>
-      <div class="type-select">
-        <SELECT class="radexselect" NAME="sel_cols" id="sel_cols" onchange="">
-        </SELECT>
-        <INPUT TYPE="HIDDEN" NAME="col_url" VALUE="http://batz.lpma.jussieu.fr:8080/tapservice_11_12/TAP/sync?LANG=VSS2&REQUEST=doQuery&FORMAT=XSAMS&QUERY=select+*+where+%28reactant0.InchiKey+%3D+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27%29">
-        <INPUT TYPE="HIDDEN" NAME="col_speciesid" VALUE="XBAS73">
-      </div> 
+     <div class="legend">Collisional data </div>
+      <ul class="vlist" id="list_col">
+      </ul>
+
+      <INPUT TYPE="HIDDEN" NAME="col_url" id="col_url" VALUE=""> 
+      <INPUT TYPE="HIDDEN" NAME="col_speciesid" id="col_speciesid" VALUE="">
 
       <div class="type-button float_right radexsubmit">
-        <INPUT id="button1" TYPE="button" NAME="T_SEARCH" onclick='$("#control").hide();ajaxQuery("ajaxQuery","http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+ALL+WHERE+%28+InchiKey+=+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27+%29&ORDERBY=frequency","http://cdms.ph1.uni-koeln.de/DjCDMSdev/tap/");$("#result").show();docShowSubpage("queryresult");' VALUE="QUERY" >
+          <INPUT id="button2" TYPE="button" NAME="T_SEARCH" onclick='ajaxDownload("ajaxQuery","http://cdms.ph1.uni-koeln.de/cdms/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+ALL+WHERE+%28+InchiKey+=+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27+%29&ORDERBY=frequency","http://cdms.ph1.uni-koeln.de/cdms/tap/");' VALUE="Download" >
+
+          <INPUT id="button1" TYPE="button" NAME="T_SEARCH" onclick='$("#control").hide();ajaxQuery("ajaxQuery","http://cdms.ph1.uni-koeln.de/cdms/tap/sync?REQUEST=doQuery&LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT+ALL+WHERE+%28+InchiKey+=+%27UGFAIRIUMAVXCW-UHFFFAOYSA-N%27+%29&ORDERBY=frequency","http://cdms.ph1.uni-koeln.de/cdms/tap/");$("#result").show();docShowSubpage("queryresult");' VALUE="QUERY" >
       </div>
    </fieldset>
 
 
-    <fieldset>
-      <div class="legend">Content</div>
-<div id="nodelist" class="nodes" style="display:none;clear:both">Processing ...</div>
-    <div id="cdmsnode" class="nodes" style="clear:both">
+   <fieldset id="dbcontent">
+     <div class="legend">Content</div>
+     <div id="nodelist" class="nodes" style="display:none;clear:both">Processing ...</div>
+     <div id="jplcdmsnode" class="nodes" style="clear:both">
       <div class='vlist'><ul>
         <li id='nodehead' class='' style='height:7em;border-width:1px;border-style:hidden;background-color:#F0F0F0;padding:0.5em;margin:5px;'>
             <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>Database</div>                                                         
@@ -221,6 +221,21 @@
           <div class='url' style='display:none'></div>
           <div class='' style=''>
             <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>CDMS</div>                                                         
+            <div class='status float_left' style='width:4em'></div>
+            <div class='numspecies float_left' style='width:4em'>0</div>
+            <div class='nummols float_left' style='width:4em'>0</div>
+            <div class='numstates float_left' style='width:4em'> 0</div>
+            <div class='numradtrans float_left' style='width:4em'> 0</div>
+            <div class='numcollisions float_left' style='width:4em'> 0</div>
+            <div class='numtrunc float_left' style='width:4em'> 0</div>
+          </div>
+          <div class='species' style='clear:both'></div> 
+        </li>
+        <li id='nodeJPL' class='vamdcnode' style='width:98%;border-width:1px;border-style:solid;border-color:black;padding:0.5em;margin:5px;background-color:#fafaff'>
+          <div class='nodeurl' style='display:none' id='JPL'>http://cdms.ph1.uni-koeln.de/jpl/tap/</div>
+          <div class='url' style='display:none'></div>
+          <div class='' style=''>
+            <div class='nodename float_left' style='font-weight:bold;width:15em;background-color2:grey'>JPL</div>       
             <div class='status float_left' style='width:4em'></div>
             <div class='numspecies float_left' style='width:4em'>0</div>
             <div class='nummols float_left' style='width:4em'>0</div>
@@ -298,19 +313,22 @@
         <OPTION VALUE='mu2S'> &mu;^<sup>2</sup>S </OPTION> 
       </SELECT> 
     </div>
+  </fieldset>
 
-    <div class="type-select">
-      <label for="T_TEMPERATURE">Temperature </label>
-      <SELECT class="log" class="smallSelectWidth" NAME="T_TEMPERATURE" id="T_TEMPERATURE" >
-        <OPTION VALUE='300'> 300 </OPTION> 
-        <OPTION VALUE='225'> 225 </OPTION> 
-        <OPTION VALUE='150'> 150 </OPTION> 
-        <OPTION VALUE='75'> 75 </OPTION> 
-        <OPTION VALUE='37.50'> 37.50 </OPTION> 
-        <OPTION VALUE='18.75'> 18.75 </OPTION> 
-        <OPTION VALUE='9.375'> 9.375 </OPTION> 
+  <fieldset>
+    <div class="legend">Process Code</div>
+
+    <div class="type-select">      
+      <label for="T_SEARCH_HFSCODE">Hyperfine Splitting</label>      
+      <SELECT class="log"  NAME="T_SEARCH_HFSCODE" id="T_SEARCH_HFSCODE" size="1">
+        <OPTION VALUE='' selected="selected"> No filter </OPTION>
+        <OPTION VALUE='hyp0'> Without HFS </OPTION> 
+        <OPTION VALUE='hyp1'> HFS with 1 nucleus </OPTION> 
+        <OPTION VALUE='hyp2'> HFS with 2 nuclei </OPTION> 
+        <OPTION VALUE='hyp3'> HFS with 3 nuclei </OPTION> 
       </SELECT> 
-    </div> 
+    </div>
+
 
   </fieldset>
 
@@ -377,6 +395,32 @@
       <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans');ajaxQueryNodeContent();" VALUE="OK" >
    </div>
   </div>
+
+<!-- SUBPAGE ENVIRONMENT -->
+<div id="form_environment" class="subpage" style="display:none">
+    <h3><strong>SELECT</strong>&nbsp;<i>REFINE.ENVIRONMENT</i></h3>
+
+<p>&nbsp;</p>
+ <fieldset><div class="legend">Environment</div>
+    <div class="type-select">
+      <label for="T_TEMPERATURE">Temperature </label>
+      <SELECT class="log" class="smallSelectWidth" NAME="T_TEMPERATURE" id="T_TEMPERATURE" >
+        <OPTION VALUE="300"> 300 </OPTION> 
+        <OPTION VALUE="225"> 225 </OPTION> 
+        <OPTION VALUE="150"> 150 </OPTION> 
+        <OPTION VALUE="75"> 75 </OPTION> 
+        <OPTION VALUE="37.50"> 37.50 </OPTION> 
+        <OPTION VALUE="18.75"> 18.75 </OPTION> 
+        <OPTION VALUE="9.375"> 9.375 </OPTION> 
+      </SELECT> 
+    </div> 
+   </div>
+   </fieldset>
+    <div class="type-button float_right">
+      <INPUT id="button1" TYPE="BUTTON" NAME="T_SEARCH" onclick="showQueryRefinements();docShowSubpage('form_queryTrans');ajaxQueryNodeContent();" VALUE="OK" >
+   </div>
+  </div>
+
 
 <!-- SUBPAGE OUTPUT-FORMAT -->
 <div id="form_output" class="subpage" style="display:none">

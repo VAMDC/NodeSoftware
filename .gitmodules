@@ -1,0 +1,3 @@
+[submodule "vamdclib"]
+	path = vamdclib
+	url = https://github.com/cpe/vamdclib.git

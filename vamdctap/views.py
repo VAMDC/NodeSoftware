@@ -208,6 +208,7 @@ def CORS_request(request):
     response['Access-Control-Allow-Origin'] = '*'
     response['Access-Control-Allow-Methods'] = 'HEAD'
     response['Access-Control-Allow-Headers'] = 'VAMDC'
+
     return response
 
 # Decorator for sync() for logging to the central service
