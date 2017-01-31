@@ -25,6 +25,7 @@ DATABASES = {
   },
 }
 LAST_MODIFIED = datetime.date(2017,1,20)
+NODEVERSION = LAST_MODIFIED.isoformat()
 
 EXAMPLE_QUERIES = [\
     "SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4000.01",
