@@ -82,6 +82,8 @@ class TAPQUERY(object):
     and triggers the SQL parser.
     """
     def __init__(self,request):
+        if request.META.has_key('X_REQUEST_METHOD'): # workaround for mod_wsgi
+            self.XRequestMethod = request.META['X_REQUEST_METHOD']
         self.HTTPmethod = request.method
         self.isvalid = True
         self.errormsg = ''
