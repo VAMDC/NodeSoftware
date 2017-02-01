@@ -248,7 +248,7 @@ def logCentral(sync):
 @logCentral
 def sync(request):
 
-    request.uniqueid = "%s:%s" % (settings.NODENAME, uuid.uuid4())
+    request.uniqueid = "%s:%s:%s" % (settings.NODENAME, uuid.uuid4(), request.method.lower())
 
     if request.method=='OPTIONS':
         return CORS_request(request)
