@@ -177,7 +177,8 @@ def addHeaders(headers,request,response):
            'COUNT-RADIATIVE',
            'COUNT-NONRADIATIVE',
            'TRUNCATED',
-           'APPROX-SIZE']
+           'APPROX-SIZE',
+           'REQUEST-TOKEN']
 
     headers = CaselessDict(headers)
 
