@@ -120,7 +120,7 @@ class TAPQUERY(object):
                 log.debug('Requested FORMAT is not XSAMS, letting it pass anyway.')
         try: self.parsedSQL=SQL.parseString(self.query,parseAll=True)
         except: # if this fails, we're done
-            self.errormsg += 'Could not parse the SQL query string: %s\n'%self.query
+            self.errormsg += 'Could not parse the SQL query string: %s\n'%getattr(self,'query',None)
             self.isvalid=False
             return
 
