@@ -189,13 +189,13 @@
 
 	      <fieldset id="form_stickspec" class="subpage" style="display:none;clear:both;">
 		<div class="legend">Stick Spectrum</div> 
-		<img class="full" width="100%" src="http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+radiativetransitions+WHERE++MoleculeSpeciesID={{specie.id}}" alt=\Stick Spectrum">
+		<img class="full" width="100%" src="{{BASE_URL}}{{TAP_URLPATH}}sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+radiativetransitions+WHERE++MoleculeSpeciesID={{specie.id}}" alt=\Stick Spectrum">
 	      </fieldset>
 
 
 	      <fieldset id="form_energylevels" class="subpage" style="display:none;clear:both;">
 		<div class="legend">Energy Level Plot</div> 
-		<img class="full" width="100%" src="http://cdms.ph1.uni-koeln.de/DjJPLdev/tap/sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+states+WHERE++MoleculeSpeciesID={{specie.id}}" alt="Energy Level Diagram">
+		<img class="full" width="100%" src="{{BASE_URL}}{{TAP_URLPATH}}sync?REQUEST=doQuery&LANG=VSS1&FORMAT=png&QUERY=SELECT+states+WHERE++MoleculeSpeciesID={{specie.id}}" alt="Energy Level Diagram">
 	      </fieldset>
 	    </div>	    
 	  </form>

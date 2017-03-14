@@ -19,6 +19,7 @@ NODESOFTWARE_VERSION = '12.07-github-master'
 # root path of the VAMDC install on your system (should be automatically set)
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_PATH)
+sys.path.append(BASE_PATH+'/nodes')
 NODENAME = os.path.basename(os.path.dirname(__file__))
 NODEPKG = 'node'
 NODEVERSION = 1
@@ -222,6 +223,6 @@ LOGGING = {
     }
 }
 
-LOG_CENTRALLY = False
-QUERY_STORE_URL = 'http://vm-calc-lerma01.obspm.fr:8080/QSNotificationListener/NotificationListener'
+QUERY_STORE_ACTIVE = False
+QUERY_STORE_URL = 'http://querystore.vamdc.eu/NotificationListener'
 QUERY_STORE_USER_AGENT = 'VAMDC Query store'

@@ -19,7 +19,6 @@ class VamdcMemberDatabases(models.Model):
     id = models.IntegerField(primary_key=True)
     short_name = models.CharField(max_length=60)
     description = models.CharField(max_length=765, blank=True)
-    ivo_identifier = models.CharField(max_length = 100, blank = True)
     class Meta:
         db_table = u'vamdc_member_databases'
 
@@ -89,7 +88,7 @@ class VamdcSpecies(models.Model):
     def comment(self):
         """
         """
-        return self.species_foreign_ids()
+        return species_foreign_ids()
 
 class VamdcConformers(models.Model):
     id = models.IntegerField(primary_key=True)

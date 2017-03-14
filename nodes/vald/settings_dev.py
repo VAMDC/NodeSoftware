@@ -1,7 +1,7 @@
 from settings_default import *
 
 DEBUG = False
-#DEBUG = True
+DEBUG = True
 TRANSLIM = 100000
 QUERY_STORE_ACTIVE = True
 
@@ -24,8 +24,7 @@ DATABASES = {
     'PASSWORD': 'V@ld',
   },
 }
-LAST_MODIFIED = datetime.date(2017,1,20)
-NODEVERSION = LAST_MODIFIED.isoformat()
+LAST_MODIFIED = datetime.date(2017,1,24)
 
 EXAMPLE_QUERIES = [\
     "SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4000.01",
@@ -35,7 +34,7 @@ EXAMPLE_QUERIES = [\
     ]
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
-DEPLOY_URL = 'http://vald.astro.uu.se/atoms-12.07/tap/'
+DEPLOY_URL = 'http://vald.astro.uu.se/atoms-dev/tap/'
 
 VAMDC_APPS = [\
     "ivo://vamdc/atomicxsams2html",
@@ -48,7 +47,7 @@ VAMDC_APPS = [\
 #    "ivo://vamdc/",
     ]
 
-LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode12.07.log'
+LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnodeDev.log'
 if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'
 

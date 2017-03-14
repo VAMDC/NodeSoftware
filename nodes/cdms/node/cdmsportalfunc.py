@@ -3,11 +3,19 @@
 import sys
 from models import *
 from django.core.exceptions import ValidationError
-
-def get_species_list(spids = None):
+from django.conf import settings
+from lxml import etree as e
+ 
+def get_species_list(spids = None, database = 5):
     """
     """
-    molecules = Species.objects.filter(origin=5,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
+    # cdms only
+    if database < 0:
+        molecules = Species.objects.filter(archiveflag=0).order_by('speciestag')
+    else:
+        molecules = Species.objects.filter(origin=database,archiveflag=0).order_by('speciestag')
+    #molecules = Species.objects.filter(origin=5,archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
+    #molecules = Species.objects.filter(archiveflag=0).exclude(molecule__numberofatoms__exact='Atomic').order_by('molecule__stoichiometricformula','speciestag')
 
     if spids is not None:
         molecules = molecules.filter(pk__in=spids)
@@ -35,7 +43,7 @@ def get_isotopologs_list(inchikeys = None):
     isotopologs = species.values('inchikey','isotopolog','molecule__stoichiometricformula','molecule__trivialname').distinct().order_by('molecule__stoichiometricformula')
     
     return isotopologs
-    
+
 def getSpecie(id = None):
     """
     """
@@ -86,7 +94,7 @@ def getParameters4specie(id, paramtype=None):
     return parameters
 
 
-def getPartitionf4specie(id, format='html'):
+def getPartitionf4specie(id, nsi=None, format='html'):
     """
     Queries the partition functions for this specie and creates a html-table.
     (This is done because it seems to be simpler than using a template; issue: ordering)
@@ -96,10 +104,19 @@ def getPartitionf4specie(id, format='html'):
     returns:
        string with html-table as content
     """
+
+    if nsi is None:
+        nsiid=None
+        tablename = ''
+    else:
+        nsiid = nsi.id
+        tablename = "Partitionfunctions for %s states only" % nsi.name
     partitionFunctions = Partitionfunctions.objects.filter(specie=id)
     temps=partitionFunctions.values_list("temperature", flat=True).distinct().order_by("temperature")
     states=partitionFunctions.values_list("state", flat=True).distinct().order_by("state")
-    pftableHtml = "<table class='full'><thead><tr><th>&nbsp;</th>"
+    pftableHtml = "<table class='full'>"
+    pftableHtml += "<caption><div class='float_left'>%s</div></caption>" % tablename
+    pftableHtml += "<thead><tr><th>&nbsp;</th>"
 
     for s in states:
         pftableHtml += "<th> %s </th>" % s
@@ -110,7 +127,7 @@ def getPartitionf4specie(id, format='html'):
         pftableHtml+= "<tr><th scope='row' class='sub'> Q(%s /K) </th>" % t
         for s in states:
             try:
-                pftableHtml += "<td>%s</td> " % partitionFunctions.get(temperature=t, state=s).partitionfunc
+                pftableHtml += "<td>%s</td> " % partitionFunctions.get(temperature=t, nsi=nsiid, state=s).partitionfunc
             except:
                 pftableHtml += "<td>&nbsp;</td>"
         pftableHtml+= "<tr>"
@@ -129,7 +146,6 @@ def getFiles4specie(id):
     return files
 
 
-    
 def check_query(postvars):
     """
     Creates TAP-XSAMS query and return it as a string
@@ -149,6 +165,9 @@ def check_query(postvars):
     # CREATE QUERY STRING FOR SPECIES
     ###################################
     spec_array=[]
+    htmlcode += "<ul class='vlist'>"
+    htmlcode += "<li>"
+
     if len(id_list)+len(inchikeys)+len(molecules)>0:
         #mols = get_species_list(id_list)
 
@@ -158,7 +177,7 @@ def check_query(postvars):
         #tapxsams += "(" + " OR ".join([" InchiKey = '" + ikey + "'" for ikey in inchikeylist]) + ")"
 
         if len(id_list)>0:
-            spec_array.append( " OR ".join([" MoleculeSpeciesID = %s " % ikey  for ikey in id_list]) )
+            spec_array.append( " OR ".join([" SpeciesID = %s " % ikey  for ikey in id_list]) )
             
         if len(inchikeys)>0:
             spec_array.append( " OR ".join([" InchiKey = '%s' " % ikey  for ikey in inchikeys]) )
@@ -170,14 +189,10 @@ def check_query(postvars):
         tapxsams += "(" + " OR ".join(spec_array) + ")"
         tapcdms += "(" + " OR ".join(spec_array) + ")"
 
+        htmlcode += "<a href='#' onclick=\"$('#a_form_species').click();$('#a_form_species').addClass('activeLink');\">"
+        htmlcode += "(" + " OR ".join(spec_array) + ")"
     else:
-        htmlcode += "<a href='#' onclick=\"load_page('SelectMolecule');\" ><p class='warning' >SPECIES: nothing selected => Click here to select species!</p></a>"
-        
-
-    htmlcode += "<ul class='vlist'>"
-    htmlcode += "<li><a href='#' onclick=\"$('#a_form_species').click();$('#a_form_species').addClass('activeLink');\">"
-
-    htmlcode += "(" + " OR ".join(spec_array) + ")"
+        htmlcode += "<a href='#' onclick=\"load_page('queryForm');\" ><font style='color:red'>SPECIES: nothing selected => Click here to select species!</font></a>"
     htmlcode += "</li>"
 
 
@@ -261,7 +276,7 @@ def check_query(postvars):
     except:
         htmlfield = 'Intensity (lg-units)'            
         xsamsfield = 'RadTransProbabilityIdealisedIntensity'
-        
+
     if (lgint is not None): #'T_SEARCH_INT' in postvars) & (postvars['T_SEARCH_INT']>-10):
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND %s > %s </a></li>" % (htmlfield, postvars['T_SEARCH_INT'])
        # tapxsams += " AND RadTransProbabilityIdealisedIntensity > %s " % postvars['T_SEARCH_INT']
@@ -271,8 +286,6 @@ def check_query(postvars):
 #        htmlcode += """<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\"> 
 #                       <p style='background-color:#FFFF99' class='important'>INTENSITY LIMIT: not specified => no restrictions</p>
 #                       </a></li>\n """
-
-
     ## PROCESS CLASS (HFS-FILTERS)
     try:
         hfs = postvars['T_SEARCH_HFSCODE']
@@ -293,8 +306,8 @@ def check_query(postvars):
 
     if not transition_filter: #if ((freqfrom is None) & (freqto is None)):
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">"
-        htmlcode += "<p style='background-color:#FFFF99' class='important'>No restrictions on transitions</p></a></li>"
-
+#        htmlcode += "<p style='background-color:#FFFF99' class='important'>No restrictions on transitions</p></a></li>"
+        htmlcode += "<i>All transitions</i></a></li>"
     #######################################
     # CREATE QUERY STRING FOR STATES
     #######################################
@@ -331,11 +344,10 @@ def check_query(postvars):
             nsi = None
     except KeyError:
         nsi = None
-        
 
     if not state_filter:
         htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">"
-        htmlcode += "<p style='background-color:#FFFF99' class='important'>No restrictions on states</p></a></li>"
+        htmlcode += "<i>All states</i></a></li>"
     else:
         if ((energyfrom is not None) &( energyto is not None)):
             htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Energy between %s %s AND %s %s </a></li>" % (postvars['T_SEARCH_ENERGY_FROM'], 'cm<sup>-1</sup>', postvars['T_SEARCH_ENERGY_TO'], 'cm<sup>-1</sup>')
@@ -348,6 +360,16 @@ def check_query(postvars):
         if nsi is not None:
             htmlcode += "<li><a href='#' onclick=\"$('#a_form_states').click();$('#a_form_states').addClass('activeLink');\">AND Nuclear Spin Isomer = '%s' </a></li>" % (nsi)
 
+    # Enviroment settings
+    try:
+        temperature = float(postvars['T_TEMPERATURE'])
+        if temperature != 300.0:
+            htmlcode += "<li><a href='#' onclick=\"$('#a_form_transitions').click();$('#a_form_transitions').addClass('activeLink');\">AND EnvironmentTemperature = %s </a></li>" % (temperature)
+            tapxsams += " AND EnvironmentTemperature = %s " % temperature
+            tapcdms += " AND EnvironmentTemperature = %s " % temperature
+    except:
+        pass
+
     #######################################
     # RETURN QUERY STRING DEPENDEND ON DB
     #######################################
@@ -359,12 +381,12 @@ def check_query(postvars):
     else:
         tap=tapcdms
 
+    if tap.find('WHERE  AND')>-1:
+        tap = tap.replace('WHERE  AND ','WHERE ')
     htmlcode += "</ul>"
         
 #    return tapxsams, htmlcode
     return tap, htmlcode
-
-
 
 def geturl(url, timeout=None):
     """
@@ -396,8 +418,7 @@ def geturl(url, timeout=None):
         content = ''        
     return content
 
-
-def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xslt', species1=None, species2=None, inurl2=None):
+def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v1.0.xslt', species1=None, species2=None, inurl2=None):
     """
     Applies a xslt-stylesheet to the given url
     """
@@ -406,7 +427,7 @@ def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xsl
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
-        xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xslt')))
+        xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'speciesmergerRadex_1.0_v1.0.xslt')))
 
     from urllib2 import urlopen
 
@@ -415,7 +436,7 @@ def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xsl
     try: data = urlopen(inurl)
 
     except Exception,err:
-        raise ValidationError('Could not open given URL: %s'%err)
+        raise ValidationError('Could not open given URL %s: %s'%(inurl,err))
 
     # Save XML-File to temporary directory
     filename = settings.TMPDIR+"/xsams_download.xsams"
@@ -452,7 +473,7 @@ def applyRadex(inurl, xsl = settings.XSLT_DIR + 'speciesmergerRadex_1.0_v0.3.xsl
         local_file.close()
    
 
-        try: result = str(xsl(xml, species1="'%s'" % species1, species2="'%s'" % species2, colfile="'%s'" % "/var/cdms/v1_0/NodeSoftware/nodes/cdms/test/basecol_co.xml"))
+        try: result = str(xsl(xml, species1="'%s'" % species1, species2="'%s'" % species2, colfile="'%s'" % filename2)) #"/var/cdms/v1_0/NodeSoftware/nodes/cdms/test/basecol_co.xml"))
         except Exception,err:
             raise ValidationError('Could not transform XML file: %s'%err)
     else:
@@ -466,20 +487,15 @@ def applyStylesheet(inurl, xsl = None):
     """
     Applies a xslt-stylesheet to the given url
     """
-    from django.conf import settings
-    from lxml import etree as e
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
         xsl=e.XSLT(e.parse(open(settings.XSLT_DIR + 'convertXSAMS2html.xslt')))
-
     from urllib2 import urlopen
-
     try: data = urlopen(inurl)
 
     except Exception,err:
         raise ValidationError('Could not open given URL: %s'%err)
-
     # Save XML-File to temporary directory
     filename = settings.TMPDIR+"/xsams_download.xsams"
 
@@ -491,16 +507,13 @@ def applyStylesheet(inurl, xsl = None):
     local_file = open(filename, "w")
     local_file.write(data.read())
     local_file.close()
-
     try: xml=e.parse(filename)
     except Exception,err:
         raise ValidationError('Could not parse XML file: %s'%err)
-    
 
     try: result = str(xsl(xml))
     except Exception,err:
         raise ValidationError('Could not transform XML file: %s'%err)
-    
     return  result 
 
 def applyStylesheet2File(infile, xsl = None):
@@ -512,7 +525,6 @@ def applyStylesheet2File(infile, xsl = None):
 
     #xsl = settings.XSLT_DIR + 'convertXSAMS2html.xslt'
     #xsl = settings.XSLT_DIR + 'convertXSAMS2Rad3d.xslt"
-
     if xsl:
         xsl=e.XSLT(e.parse(open(xsl)))
     else:
@@ -523,14 +535,12 @@ def applyStylesheet2File(infile, xsl = None):
     try: xml=e.parse(infile)
     except Exception,err:
         raise ValidationError('Could not parse XML file: %s'%err)
-    
 
     try: result = str(xsl(xml))
     except Exception,err:
         raise ValidationError('Could not transform XML file: %s'%err)
     
     return  result
-
 
 def getHtmlNodeList():
     """
@@ -609,7 +619,6 @@ def getHtmlNodeList():
     response += "</ul></div>"
     return response, nodes
 
-
 def doHeadRequest(url, timeout = 20):
     """
     Does a HEAD request on the given url.
@@ -650,7 +659,6 @@ def doHeadRequest(url, timeout = 20):
                         ("vamdc-approx-size",0),
                         ("vamdc-count-radiative",0),
                         ("vamdc-count-atoms",0)]
-
     return vamdccounts
     
 def getNodeStatistic(baseurl, inchikey, url = None):
@@ -660,7 +668,6 @@ def getNodeStatistic(baseurl, inchikey, url = None):
 
     Returns: VAMDC statistic as htmlcode (for ajax Requests)
     """
-
     orig_url = url
     
     url=url.replace('rad3d','XSAMS')
@@ -768,3 +775,30 @@ def getspecies(url):
 
     html += "</tbody></table>"
     return  html, data
+
+
+def listRecommendedEntries():
+    """
+    Lists all recommended entries (JPL/CDMS)
+    """
+    s = Species.objects.filter(recommendationflag = 0)
+    for species in s:
+        if species.origin == 5:
+            yield "XCDMS-%s\n" % species.id
+        elif species.origin == 0:
+            yield "XJPL-%s\n" % species.id
+
+def isRecommended(id):
+    """
+    Checks if an entry is recommended.
+
+    :param id: Species-id
+    :type id: integer
+
+    returns Boolean
+    """
+    s = Species.objects.get(id=id)
+    if s.recommendationflag == 0:
+        return True
+    else:
+        return False

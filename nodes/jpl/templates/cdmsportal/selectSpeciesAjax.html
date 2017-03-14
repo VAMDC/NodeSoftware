@@ -5,10 +5,11 @@
 {% block content %}	  
 <div id="main">
   <form name="PARAMETER" action="./{{action}}" style="background-color:transparent" class="yform full" role="application"  method="post">
- 
+
   <!-- begin: #col1 - first float column -->
     <div id="col1" style="background-color:white;" role="complementary">
       <div id="col1_content" class="clearfix">      
+
         <INPUT TYPE="HIDDEN" NAME="T_PAGE" VALUE="SearchPrediction">
         <h6 class="vlist"> FILTER SPECIES LIST</h6>
         <p id="navFilterInfo" class="info center"> Use 
@@ -20,7 +21,7 @@
       </div>
       <div class="type-text">
         <label for="molNameFilter">Molecule</label>
-        <input id="molNameFilter" onkeyup="applySpeciesFilter()" onblur="applySpeciesFilter()"  type="text" name="filterTag"> 
+        <input id="molNameFilter" onkeyup="applySpeciesFilter()" onmouseenter="applySpeciesFilter()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
       </div>
       <div class="type-text">
         <label for="molTrivNameFilter">Trivial&nbsp;Name</label>
@@ -35,7 +36,7 @@
         <input id="stateFilter" onkeyup="applySpeciesFilter()" onblur="applySpeciesFilter()" onkeyPress="return disableEnterKey(event)" type="text" name="filterTag"> 
       </div>
 	    
-      {% block moleculesgroup %}
+      {% block moleculesgroupxxx %}
       {% endblock %}
     </div>
   </div>
@@ -45,7 +46,6 @@
 
   <div id="col3" role="main">
     <div id="col3_content" class="clearfix">
-	      
     <!--
       <fieldset>
         <legend>Select Species</legend>
@@ -53,39 +53,137 @@
 	      
       <input id="orderBy" type="hidden" name="T_OrderBy" value="E_TAG ASC">
       <input id="EID" type="hidden" name="T_EID" value="">
-      <fieldset class="full" >
+      <fieldset class="full float_left" style="width:400px" >
     <!--		
       <h3 class="center"> 
         <strong>SELECT</strong>&nbsp;<i>SPECIES.MOLECULES.ISOTOPOLOGS</i> 
       </h3>
     -->
+<!--
+	<div class='hlist'>
+          <ul>
+	  <li><a>CDMS species</a></li>
+	  <li><a>isotopologs</a></li>
+	  <li><a>molecules</a></li>
+          </ul>
+         </div>
+-->
+
         <div class="type-button center">  
-	  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="SPECIES" NAME="B_SPECIESLIST" onclick="ajaxGetList('species')"> 
-	  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="ISOTOPOLOGS" NAME="B_ISOLIST" onclick="ajaxGetList('isotopologs')"> 
-	  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="MOLECULES" NAME="B_MOLLIST" onclick="ajaxGetList('molecules')"> 
+	  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="SPECIES" NAME="B_SPECIESLIST" onclick="displaySpeciesInfoBox('species');"> 
+	  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="ISOTOPOLOGS" NAME="B_ISOLIST" onclick="displaySpeciesInfoBox('isotopologs');"> 
+	  <INPUT style="width:30%;" TYPE="BUTTON"  VALUE="MOLECULES" NAME="B_MOLLIST" onclick="displaySpeciesInfoBox('molecules');"> 
 	</div>
 	<br><br>
-	{% block hint %}
+
+      <!-- begin: #col1 - first float column -->
+
+
+<!--	{% block hint %}
 	{% endblock %}
-		
+-->		
 <script> 
 		species = [{% for specie in species_list %}'{{specie}}',{% endfor %}] 
 		isotopologs = [{% for inchikey in inchikey_list %}'{{inchikey}}',{% endfor %}] 
 		molecules = [{% for molecule in stoichio_list %}'{{molecule}}',{% endfor %}] 
 		$(document).ready(function() {
-		ajaxGetList('species');
+
+		<!-- ajaxGetList('species'); -->
+		ajaxGetSpeciesList(-5);
+		<!-- ajaxGetSpeciesList(); -->
 		});
 </script>
 
-        <div id="container_list" style="height:380px;" ></div>
+        <div id="container_list" class="speciesview" style="height:380px;" >
+          <div>
+            <table class="full">
+              <tr>
+                <th style="width:40px;">Tag</th>
+                <th style="width:70px">Molecule</th>
+                <th style="width:80px">Isotopolog</th>
+                <th style="width:90px">State</th>
+                <th style="width:25px;">&nbsp;</th>
+              </tr>
+            </table>
+          </div>
+
+          <div style="height:320px;overflow-y:auto;">
+            <table class="full selectMolsHead" style="table-layout: fixed;">
+              <tbody class="selectMolsHead">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+        <div id="container_isolist" class="isotopologview" style="height:380px;display:none" >
+	  <div class="entryTableHead">
+            <div class="float_left" style="margin-left:3em;font-weight:bold;min-width:50px;">Stoich.Form.</div>
+            <div class="float_left" style="font-weight:bold;min-width:100px">Isotopolog</div>
+            <div class="float_left" style="font-weight:bold;min-width:100px">Triv.Name</div> 
+          </div>
+	  <ul class="selectMolsHead vlist full" style="height:300px;overflow-y:scroll;"></ul>
+        </div> 
+
+        <div id="container_mollist" class="moleculeview" style="height:380px;display:none" >
+          <div class="entryTableHead">
+            <div class="float_left" style="margin-left:3.0em;font-weight:bold;min-width:50px;">Stoich.Form.</div>
+            <div class="float_left" style="font-weight:bold;min-width:100px">Symbol</div>
+            <div class="float_left" style="font-weight:bold;min-width:100px">Triv. Name</div> 
+          </div>
+	  <ul class="selectMolsHead vlist full" style="height:300px;overflow-y:scroll;"></ul>
+        </div> 
 
 	<div class="type-button center">  
 	{% block selectButtons %}
 	{% endblock %}
 	  <INPUT style="width:30%;float:right;" TYPE="SUBMIT"  VALUE="Confirm Selection" NAME="B_Query" onclick="submitSpecies();"> <!-- load_page('SearchPrediction');"> -->
 	</div>
+
       </fieldset>
+
+
+	      <div class="subpage_main float_right" id="form_main" style="padding-left:10px;background-color:#F5F5F5;text-align:center;font-size:13px;-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);width:220px">
+<!--		<div style="margin-left:0em;padding-left:1em;padding-right:1em;background-color:#F0F0F0;width:190px" class="clearfix"> -->
+		  <div  style="text-align:left;width:180px;" class='float_left' >
+		    <div class="columnar speciesview isotopologview moleculeview" style="clear:left;min-height:2.5em">
+		      <font style="text-transform:uppercase" id="trivialname">{{specie.molecule.trivialname}}</font>
+		    </div>
+		    <div class="columnar speciesview isotopologview moleculeview" style="clear:left;">
+		      <font style="font-size:x-large;font-weight:bold" id="isotopolog">{{specie.isotopolog}}</font>		      
+		    </div>
+		    <div class="columnar speciesview" style="clear:left;padding-bottom:2em;height:1.2em">
+		      <font style="font-style:italic;" id="state_html">{% autoescape off %}{{specie.state_html}}{% endautoescape %}</font>
+		    </div>
+
+<!--		  </div>
+		  <div class='float_left' style="text-align:left; clear:left;">
+-->		    <div class="columnar speciesview" style="clear:left">
+		      <font style="float:left;min-width:12ex;padding-right:0em;text-align:left;">Tag:</font>  
+		      <font style="font-style:italic;" id="speciestag">{{specie.speciestag}}</font>
+		    </div>
+		    <div class="columnar speciesview" style="clear:left">
+		      <font style="float:left;min-width:12ex;padding-right:0em;text-align:left;">Version:</font>  
+		      <font style="font-style:italic;" id="version">{{specie.version}}</font>
+		    </div>
+		    <div class="columnar speciesview" style="clear:left">
+		      <font style="float:left;min-width:12ex;padding-right:0em;text-align:left;">Date of Entry:</font>  
+		      <font style="font-style:italic;" id="dateofentry">{{specie.dateofentry}}</font>
+		    </div>
+		    <div class="columnar speciesview" style="clear:left;">
+		      <font style="float:left;min-width:12ex;padding-right:0em;padding-bottom:3em;text-align:left;">Contributor:</font>  
+		      <font style="font-style:italic;" id="contributor">{{specie.contributor}}</font>
+		    </div>
+		    <div class="columnar isotopologview moleculeview" style="clear:left;padding-top:2em;display:none">
+		      <font style="" id="specieslist"></font>
+		    </div>
+<!--		  </div> -->
+		</div>
+
     </div>
+
+</div>
+
   </form>
 	    
 </div>

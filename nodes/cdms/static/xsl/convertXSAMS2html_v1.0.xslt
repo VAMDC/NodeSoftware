@@ -95,7 +95,7 @@
 	<xsl:text>&#xa;</xsl:text>
 	<ul class="vlist2 full" style="list-style:none;">
 	<xsl:apply-templates select="/xsams10:XSAMSData/xsams10:Species/xsams10:Atoms/xsams10:Atom/xsams10:Isotope/xsams10:Ion/xsams10:AtomicState"/>
-        <xsl:apply-templates select="/xsams10:XSAMSData/xsams10:Species/xsams10:Molecules/xsams10:Molecule/xsams10:MolecularState"/>
+        <xsl:apply-templates select="/xsams10:XSAMSData/xsams10:Species/xsams10:Molecules/xsams10:Molecule/xsams10:MolecularState[not(@auxillary='true')]"/>
         <xsl:text>&#xa;</xsl:text>
 	</ul>
 	</fieldset>
@@ -279,22 +279,39 @@
 	<div style="float:left; min-width:27em;">
 	<ul style="list-style:none;">
 	<li style="font-weight:bold">
-
+<xsl:element name="a">
+  <xsl:attribute name="class">tooltip</xsl:attribute>
+  <xsl:attribute name="title">
+Source: <xsl:for-each select="xsams10:EnergyWavelength/*/xsams10:SourceRef">
+<xsl:value-of select="."/><xsl:text> </xsl:text>
+</xsl:for-each>
+Method: <xsl:value-of select="xsams10:EnergyWavelength/*/@methodRef"/>
+</xsl:attribute>
         <xsl:apply-templates select="xsams10:EnergyWavelength"/>
 
 	<div style="float:left;text-align:right; min-width:10ex;">
         <xsl:value-of select="format-number(xsams10:Probability/xsams10:TransitionProbabilityA/xsams10:Value,'0.00000000 ')"/>
 	</div>
-
+<!--
 	 <div style="float:left;text-align:right; min-width:15ex;margin-right:1.0em">
    	  <xsl:value-of select="xsams10:SourceRef"/>
+   	  <xsl:value-of select=""/>
 	 </div>
-
+-->
+</xsl:element>
 	</li>
 
 
 	<xsl:for-each select="xsams10:EnergyWavelength/xsams10:Frequency[position() > 1]">
 <li style="clear:left">
+
+<xsl:element name="a">
+  <xsl:attribute name="class">tooltip</xsl:attribute>
+  <xsl:attribute name="title">
+Source: <xsl:value-of select="xsams10:SourceRef"/>
+Method: <xsl:value-of select="@methodRef"/>
+</xsl:attribute>
+
  	 <div style="float:left;text-align:right; min-width:10ex;margin-right:0.5em">
 	  <xsl:value-of select="format-number(xsams10:Value,'0.0000')"/>
 	 </div>
@@ -302,14 +319,7 @@
 	 <div style="float:left;text-align:right; min-width:7ex;margin-right:0.5em">
    	  <xsl:value-of select="format-number(xsams10:Accuracy,'0.0000 ')"/>
 	 </div>
-
-	 <div style="float:left;text-align:right; min-width:10ex;margin-right:0.5ex">
-	<xsl:text>- </xsl:text>
-	 </div>
-
-	 <div style="float:left;text-align:right; min-width:15ex;margin-right:1.0em">
-   	  <xsl:value-of select="xsams10:SourceRef"/>
-	 </div>
+</xsl:element>
 
 </li>
         </xsl:for-each>
@@ -647,7 +657,7 @@
     </dl>
   </xsl:template>
 -->
-  <xsl:template match="xsams10:PartitionFunction">
+  <xsl:template match="xsams10:PartitionFunction2">
     <table class="full" style="font-size:smaller">
     <caption> Partition functions for
 
@@ -671,6 +681,57 @@
     </table>
   </xsl:template>
 
+  <xsl:template match="xsams10:PartitionFunction">
+    <table class="full" style="font-size:smaller">
+    <caption> Partition functions for
+
+       <xsl:call-template name="species_name">
+         <xsl:with-param name="mol_id" select="../.."/>
+       </xsl:call-template>
+
+    </caption>
+    <thead><tr><th>T</th><th>Q</th></tr></thead>
+    <tbody>
+
+<xsl:variable name="temperatures">
+<xsl:choose>
+           <xsl:when test="xsams10:T/xsams10:LinearSequence">
+<xsl:call-template name="LinearSequence">
+         <xsl:with-param name="count" select="xsams10:T/xsams10:LinearSequence/@count"/>
+         <xsl:with-param name="initial" select="xsams10:T/xsams10:LinearSequence/@initial"/>
+         <xsl:with-param name="increment" select="xsams10:T/xsams10:LinearSequence/@increment"/>
+</xsl:call-template>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="normalize-space(xsams10:T/xsams10:DataList)"/>
+</xsl:otherwise>
+</xsl:choose>  
+</xsl:variable>
+
+      <xsl:call-template name="datalist2row">
+        <xsl:with-param name="Tlist" select="normalize-space($temperatures)"/>
+        <xsl:with-param name="Qlist" select="normalize-space(xsams10:Q/xsams10:DataList)"/>
+      </xsl:call-template>
+    </tbody>
+    </table>
+  </xsl:template>
+
+  <xsl:template name="LinearSequence">
+    <xsl:param name="count"/>
+    <xsl:param name="increment"/>
+    <xsl:param name="initial"/>  
+    <xsl:value-of select="$initial"/>
+    <xsl:text> </xsl:text>
+    <xsl:if test="$count &gt; 1">
+       <xsl:call-template name="LinearSequence">
+         <xsl:with-param name="count" select="$count - 1"/>
+         <xsl:with-param name="initial" select="$initial + $increment"/>
+         <xsl:with-param name="increment" select="$increment"/>
+       </xsl:call-template>
+    </xsl:if>
+  </xsl:template>
+
+
   <xsl:template name="datalist2col">
     <xsl:param name="list"/>
     <xsl:param name="cell"/>
@@ -688,6 +749,26 @@
        <xsl:call-template name="datalist2col">
           <xsl:with-param name="list" select="$remaining"/>
           <xsl:with-param name="cell" select="$cell"/>
+       </xsl:call-template>
+    </xsl:if>
+  </xsl:template>
+
+
+  <xsl:template name="datalist2row">
+    <xsl:param name="Tlist"/>
+    <xsl:param name="Qlist"/>
+    <xsl:variable name="next_Tval" select="substring-before($Tlist,' ')"/>
+    <xsl:variable name="Tremaining" select="substring-after($Tlist,' ')"/>
+    <xsl:variable name="next_Qval" select="substring-before($Qlist,' ')"/>
+    <xsl:variable name="Qremaining" select="substring-after($Qlist,' ')"/>
+    <tr>
+      <td><xsl:value-of select="$next_Tval"/></td>
+      <td><xsl:value-of select="$next_Qval"/></td>
+    </tr>
+    <xsl:if test="$Tremaining">
+       <xsl:call-template name="datalist2row">
+          <xsl:with-param name="Tlist" select="$Tremaining"/>
+          <xsl:with-param name="Qlist" select="$Qremaining"/>
        </xsl:call-template>
     </xsl:if>
   </xsl:template>

@@ -20,3 +20,6 @@ doc*/build/*
 *.json
 *.dat
 *.log
+*.save
+mysqldatabase/*
+settings.py
