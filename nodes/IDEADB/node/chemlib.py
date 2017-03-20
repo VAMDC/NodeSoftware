@@ -155,10 +155,11 @@ def checkatoms(chemicalformula, atommasses = atommasses):
     """ Checks each atom in a chemical formula for validity (e.g. listing in atommasses) """
     result = 0
     match = re.findall('([A-Z]{1}[a-z]{0,2})', str(chemicalformula))
-    for atom in match:
-        try:
-            mass = atommasses[atom]
-        except KeyError:
-            result = atom
+    if match:
+        for atom in match:
+            if atom not in atommasses:
+                result = atom
+    else:
+        result = chemicalformula
 
     return result
