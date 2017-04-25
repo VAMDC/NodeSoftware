@@ -288,8 +288,11 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
         string += makeSourceRefs(refs[i])
         string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
         string += makeEvaluation( keyword, G, j=i)
-        if acc[i] is not None:
-            string += '<Accuracy>%s</Accuracy>' % acc[i]
+
+        # This is broken, makes empty <Accuracy/>.
+        # TODO: Proper solution is to add j-parameter to makeAccuracy(), similar to makeEvalution()
+        #if acc[i] is not None:
+        #    string += '<Accuracy>%s</Accuracy>' % acc[i]
 
 
         string += '</%s>' % tagname
