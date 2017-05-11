@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response,get_object_or_404
-from django.template import RequestContext, Context, loader
+from django.template import loader
 from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse
 
 import datetime
 import uuid
-from string import lower
-from cStringIO import StringIO
+from io import StringIO
 import os, math, sys
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
@@ -18,6 +17,7 @@ log=logging.getLogger('vamdc.tap')
 from django.conf import settings
 from importlib import import_module
 from django.utils.http import http_date
+from requests.utils import CaseInsensitiveDict as CaselessDict
 
 if settings.QUERY_STORE_ACTIVE:
     try:
@@ -29,12 +29,11 @@ QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
 
 # import helper modules that reside in the same directory
-from caselessdict import CaselessDict
 NODEID = CaselessDict(DICTS.RETURNABLES)['NodeID']
-from generators import *
-from sqlparse import SQL
+from .generators import *
+from .sqlparse import SQL
 
-REQUESTABLES = map(lower, [\
+REQUESTABLES = [req.lower() for req in [\
  'AtomStates',
  'Atoms',
  'Collisions',
@@ -53,19 +52,19 @@ REQUESTABLES = map(lower, [\
  'Solids',
  'Sources',
  'Species',
- 'States'] )
+ 'States'] ]
 
 
 # This turns a 404 "not found" error into a TAP error-document
 def tapNotFoundError(request):
     text = 'Resource not found: %s'%request.path;
-    document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    document = loader.get_template('tap/TAP-error-document.xml').render({"error_message_text" : text})
     return HttpResponse(document, status=404, content_type='text/xml');
 
 # This turns a 500 "internal server error" into a TAP error-document
 def tapServerError(request=None, status=500, errmsg=''):
     text = 'Error in TAP service: %s'%errmsg
-    document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    document = loader.get_template('tap/TAP-error-document.xml').render({"error_message_text" : text})
     return HttpResponse(document, status=status, content_type='text/xml');
 
 def getBaseURL(request):
@@ -82,14 +81,14 @@ class TAPQUERY(object):
     and triggers the SQL parser.
     """
     def __init__(self,request):
-        if request.META.has_key('X_REQUEST_METHOD'): # workaround for mod_wsgi
+        if 'X_REQUEST_METHOD' in request.META: # workaround for mod_wsgi
             self.XRequestMethod = request.META['X_REQUEST_METHOD']
         self.HTTPmethod = request.method
         self.isvalid = True
         self.errormsg = ''
         try:
             self.request=CaselessDict(dict(request.GET or request.POST))
-        except Exception,e:
+        except Exception as e:
             self.isvalid = False
             self.errormsg = 'Could not read argument dict: %s'%e
             log.error(self.errormsg)
@@ -100,7 +99,9 @@ class TAPQUERY(object):
         self.fullurl = getBaseURL(request) + 'sync?' + request.META.get('QUERY_STRING')
 
     def validate(self):
-        try: self.lang = lower(self.request['LANG'][0])
+        try:
+            self.lang = self.request['LANG'][0]
+            self.lang = self.lang.lower()
         except:
             log.debug('LANG is empty, assuming VSS2')
             self.lang='vss2'
@@ -111,7 +112,9 @@ class TAPQUERY(object):
         try: self.query = self.request['QUERY'][0]
         except: self.errormsg += 'Cannot find QUERY in request.\n'
 
-        try: self.format=lower(self.request['FORMAT'][0])
+        try:
+            self.format = self.request['FORMAT'][0]
+            self.format = self.format.lower()
         except:
             log.debug('FORMAT is empty, assuming XSAMS')
             self.format='xsams'
@@ -184,7 +187,7 @@ def addHeaders(headers,request,response):
 
     headlist_asString=''
     for h in HEADS:
-        if headers.has_key(h):
+        if h in headers:
             response['VAMDC-'+h] = '%s'%headers[h]
             headlist_asString += 'VAMDC-'+h+', '
 
@@ -268,7 +271,7 @@ def sync(request):
 
     # otherwise, setup the results and build the XSAMS response here
     try: querysets = QUERYFUNC.setupResults(tap)
-    except Exception, err:
+    except Exception as err:
         emsg = 'Query processing in setupResults() failed: %s'%err
         log.debug(emsg)
         return tapServerError(status=400,errmsg=emsg)
@@ -318,7 +321,7 @@ def cleandict(dict):
 
 
 def capabilities(request):
-    c = RequestContext(request, {"accessURL" : getBaseURL(request),
+    c = {"accessURL" : getBaseURL(request),
                                  "RESTRICTABLES" : cleandict(DICTS.RESTRICTABLES),
                                  "RETURNABLES" : cleandict(DICTS.RETURNABLES),
                                  "STANDARDS_VERSION" : settings.VAMDC_STDS_VERSION,
@@ -326,7 +329,7 @@ def capabilities(request):
                                  "EXAMPLE_QUERIES" : settings.EXAMPLE_QUERIES,
                                  "MIRRORS" : settings.MIRRORS,
                                  "APPS" : settings.VAMDC_APPS,
-                                 })
+                                 }
     return render_to_response('tap/capabilities.xml', c, content_type='text/xml')
 
 
@@ -340,17 +343,10 @@ def dbConnected():
 
 def availability(request):
     (status, message) = dbConnected()
-    c=RequestContext(request,{"accessURL" : getBaseURL(request), 'ok' : status, 'message' : message})
+    c={"accessURL" : getBaseURL(request), 'ok' : status, 'message' : message}
     return render_to_response('tap/availability.xml', c, content_type='text/xml')
 
 def tables(request):
-    c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
+    c={"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)}
     return render_to_response('tap/VOSI-tables.xml', c, content_type='text/xml')
 
-#def index(request):
-#    c=RequestContext(request,{})
-#    return render_to_response('tap/index.html', c)
-#
-#def async(request):
-#    c=RequestContext(request,{})
-#    return render_to_response('tap/index.html', c)

@@ -56,12 +56,10 @@ from django.db.models import Q, F
 from django.conf import settings
 from importlib import import_module
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
-from caselessdict import CaselessDict
+from requests.utils import CaseInsensitiveDict as CaselessDict
 RESTRICTABLES=CaselessDict(DICTS.RESTRICTABLES)
 
-from types import TupleType, FunctionType
 from django.db.models.query_utils import Q as QType
-from string import strip
 import logging
 log = logging.getLogger('vamdc.tap.sql')
 
@@ -100,17 +98,17 @@ def splitWhere(ws, counter=0):
 def applyRestrictFu(rs,restrictables=RESTRICTABLES):
     r, op, foo = rs[0], rs[1], rs[2:]
     if r not in restrictables: return rs
-    if isinstance(restrictables[r], FunctionType):
+    if callable(restrictables[r]):
         return restrictables[r](*rs) # this runs the function!
 
-    if not isinstance(restrictables[r], TupleType): return rs
+    if not isinstance(restrictables[r], tuple): return rs
     if len(foo) != 1:
         log.debug('Applying a function to a Restrictable works only on a single value')
         return rs
     try:
         bla, fu = restrictables[r]
         rs = [r] + fu(op,foo[0])
-    except Exception,e:
+    except Exception as e:
         log.debug('Could not apply function %s to Restrictable %s. Therefore interpreting the tuple as two search possibilities.'%(fu,r))
 
     return rs
@@ -122,7 +120,7 @@ def mergeQwithLogic(qdict,logic):
     for r in qdict: exec('r%s=qdict[r]'%r)
     try:
         return eval(logic)
-    except Exception,e:
+    except Exception as e:
         log.error('Eval of logic with Qs failed: %s'%e)
 
 
@@ -152,7 +150,7 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
         if not (foo[0]=='(' and foo[-1]==')'):
             log.error('Values for IN not bracketed: %s'%foo)
         else: foo=foo[1:-1]
-        ins = map(strip,foo,('\'"',)*len(foo))
+        ins = [i.strip('\'"') for i in foo]
         return Q(**{rest_rhs+'__in':ins})
     if op=='like':
         foo=checkLen1(foo)
