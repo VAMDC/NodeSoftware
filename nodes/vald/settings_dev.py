@@ -1,7 +1,7 @@
 from settings_default import *
 
 DEBUG = False
-DEBUG = True
+#DEBUG = True
 TRANSLIM = 100000
 QUERY_STORE_ACTIVE = True
 
@@ -34,7 +34,7 @@ EXAMPLE_QUERIES = [\
     ]
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
-DEPLOY_URL = 'http://vald.astro.uu.se/atoms-dev/tap/'
+DEPLOY_URL = 'https://sslvamdc.tmy.se/tap/'
 
 VAMDC_APPS = [\
     "ivo://vamdc/atomicxsams2html",

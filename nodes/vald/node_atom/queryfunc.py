@@ -1,5 +1,5 @@
 from node_common.queryfunc import *
-from models import *
+from .models import *
 
 
 def returnHeaders(transs):
@@ -68,7 +68,7 @@ def XsamsRadTrans(RadTrans):
     global refIDs
 
     for RadTran in RadTrans:
-        if not stateIDs.has_key(RadTran.species_id):
+        if not RadTran.species_id in stateIDs:
             stateIDs[RadTran.species_id] = set()
         stateIDs[RadTran.species_id].add(RadTran.upstate_id)
         stateIDs[RadTran.species_id].add(RadTran.lostate_id)
