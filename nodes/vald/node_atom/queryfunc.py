@@ -53,8 +53,9 @@ def setupResults(sql):
 ### Custom generator hack below here
 
 from vamdctap.generators import *
+from collections import defaultdict
 # collect references and state IDs in global variables
-stateIDs = {}
+stateIDs = defaultdict(set)
 refIDs = set()
 
 def XsamsRadTrans(RadTrans):
@@ -68,8 +69,6 @@ def XsamsRadTrans(RadTrans):
     global refIDs
 
     for RadTran in RadTrans:
-        if not RadTran.species_id in stateIDs:
-            stateIDs[RadTran.species_id] = set()
         stateIDs[RadTran.species_id].add(RadTran.upstate_id)
         stateIDs[RadTran.species_id].add(RadTran.lostate_id)
         refIDs.update(RadTran.wave_ref_id or [])
