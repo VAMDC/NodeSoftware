@@ -1991,7 +1991,7 @@ def XsamsHeader(HeaderInfo):
 
     if HeaderInfo:
         HeaderInfo = CaselessDict(HeaderInfo)
-        if HeaderInfo.has_key('Truncated'):
+        if 'Truncated' in HeaderInfo:
             if HeaderInfo['Truncated'] != None: # note: allow 0 percent
                 head.append( """
 <!--
