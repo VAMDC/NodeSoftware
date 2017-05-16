@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from vamdctap.caselessdict import CaselessDict
+from requests.utils import CaseInsensitiveDict as CaselessDict
 from vamdctap.unitconv import *
 
 from methane.node.MyFunctions import *

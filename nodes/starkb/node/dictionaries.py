@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from vamdctap.caselessdict import CaselessDict
 RETURNABLES = ({\
 'NodeID':'starkb',
 
