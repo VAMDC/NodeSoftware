@@ -201,7 +201,7 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
 
 
     # reset them for the next query!
-    stateIDs = {}
+    stateIDs = defaultdict(set)
     refIDs = set()
 
 
