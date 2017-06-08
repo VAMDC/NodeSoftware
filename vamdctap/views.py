@@ -242,9 +242,13 @@ def logCentral(sync):
                        'query' :  taprequest
                        }
 
-            logreq = librequests.post(settings.QUERY_STORE_URL, params=logdata)
-            if logreq.status_code != 200:
-              log.warn('Request to central logger retuned code: %s' % logreq.status_code)
+            try:
+                logreq = librequests.post(settings.QUERY_STORE_URL, params=logdata, timeout=2000)
+            except:
+                log.warn('Query Store unreachable!')
+            else:
+                if logreq.status_code != 200:
+                  log.warn('Query Store retuned code: %s' % logreq.status_code)
         return response
     return wrapper
 
@@ -289,6 +293,7 @@ def sync(request):
         generator = QUERYFUNC.customXsams(tap=tap,**querysets)
     else:
         generator = Xsams(tap=tap,**querysets)
+
     log.debug('Generator set up, handing it to HttpResponse.')
     response=StreamingHttpResponse(generator,content_type='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
@@ -310,14 +315,13 @@ def sync(request):
 
     return response
 
-def cleandict(dict):
+
+
+def cleandict(indict):
     """
-    throw out keys where the value is ''
+    throw out some keys
     """
-    ret={}
-    for key in dict.keys():
-        if dict[key] and not '.' in key: ret[key]=dict[key]
-    return ret
+    return {k:v for k,v in indict.items() if (v and not '.' in k)}
 
 
 def capabilities(request):
