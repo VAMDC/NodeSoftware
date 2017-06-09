@@ -492,7 +492,8 @@ def SelfSource(tap):
     The full URL is given in the tag UniformResourceIdentifier but you need
     to unescape ampersands and angle brackets to re-use it.
     Query was: %s
-    </Comments>""" % escape(tap.query))
+    Query Store Link: https://querystore.vamdc.eu/GetUUIDByToken?queryToken=%s
+    </Comments>""" % (escape(tap.query), tap.token) )
     result.append('<Year>%s</Year>'%now.year)
     result.append('<Category>database</Category>')
     result.append('<UniformResourceIdentifier>')

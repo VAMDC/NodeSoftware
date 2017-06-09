@@ -86,6 +86,7 @@ class TAPQUERY(object):
         self.HTTPmethod = request.method
         self.isvalid = True
         self.errormsg = ''
+        self.token = request.token
         try:
             self.request=CaselessDict(dict(request.GET or request.POST))
         except Exception as e:
@@ -231,7 +232,8 @@ def logCentral(sync):
            settings.QUERY_STORE_ACTIVE:
             logdata = {
                         # request unique ID
-                       'queryToken': request.uniqueid,
+                       'secret': 'vamdcQS',
+                       'queryToken': request.token,
                        'accededResource': getBaseURL(request),
                        'resourceVersion': settings.NODEVERSION,
                        'userEmail': '',   # not used in this context
@@ -243,12 +245,15 @@ def logCentral(sync):
                        }
 
             try:
-                logreq = librequests.post(settings.QUERY_STORE_URL, params=logdata, timeout=2000)
-            except:
-                log.warn('Query Store unreachable!')
+                # SEND THE ACTUAL REQUEST
+                logreq = librequests.post(settings.QUERY_STORE_URL,
+                    params=logdata, timeout=2000)
+            except Exception as e:
+                log.warn('Query Store unreachable! %s'%e)
             else:
                 if logreq.status_code != 200:
-                  log.warn('Query Store retuned code: %s' % logreq.status_code)
+                  log.warn('Query Store returned code: %s' % logreq.status_code)
+                  log.debug('QS reply text:\n%s' % logreq.text)
         return response
     return wrapper
 
@@ -256,7 +261,7 @@ def logCentral(sync):
 @logCentral
 def sync(request):
 
-    request.uniqueid = "%s:%s:%s" % (settings.NODENAME, uuid.uuid4(), request.method.lower())
+    request.token = "%s:%s:%s" % (settings.NODENAME, uuid.uuid4(), request.method.lower())
 
     if request.method=='OPTIONS':
         return CORS_request(request)
@@ -300,7 +305,7 @@ def sync(request):
         datetime.datetime.now().isoformat(), tap.format)
 
     headers = querysets.get('HeaderInfo') or {}
-    headers["REQUEST-TOKEN"] = request.uniqueid
+    headers["REQUEST-TOKEN"] = request.token
 
     response=addHeaders(headers,request,response)
     # Override with empty response if result is empty
