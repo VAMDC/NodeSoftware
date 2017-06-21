@@ -177,6 +177,13 @@ class Tabulateddata(models.Model):
     ydata = models.TextField(null=True) 
     xdataunit = models.ForeignKey(Unit, db_column='xdataunitid', related_name='+', null=True)
     ydataunit = models.ForeignKey(Unit, db_column='ydataunitid', related_name='+', null=True)  
+    
+    def get_xdata_length(self):
+      return len(self.xdata.split(" "))
+    
+    def get_ydata_length(self):
+      return len(self.ydata.split(" "))
+    
     class Meta:
         db_table = u't_tabulateddata'   
         

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 RETURNABLES = {\
 'NodeID':'Tipbase',
-                           
 'AtomStateID':'AtomState.id',
 
 'AtomSymbol':'Atom.atomicion.isotope.chemicalelement.elementsymbol',
@@ -35,11 +34,11 @@ RETURNABLES = {\
 'CollisionTabulatedDataRef' : 'TabData.Sources',
 'CollisionTabulatedDataXDataList' : 'TabData.xdata',
 'CollisionTabulatedDataXUnits' : 'TabData.xdataunit.value',
-'CollisionTabulatedDataXDataListN' : 'len(TabData.xdata.split(" "))',
+'CollisionTabulatedDataXDataListN' : 'TabData.get_xdata_length()',
 'CollisionTabulatedDataXParameter' : 'undef',
 'CollisionTabulatedDataYDataList' : 'TabData.ydata',
 'CollisionTabulatedDataYUnits' : 'TabData.ydataunit.value',
-'CollisionTabulatedDataYDataListN' : 'len(TabData.ydata.split(" "))',
+'CollisionTabulatedDataYDataListN' : 'TabData.get_ydata_length()',
 'CollisionTabulatedDataYParameter' : 'undef',
 
 'CollisionDataSetDescription' : 'DataSet.dataDescription',
