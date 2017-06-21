@@ -26,12 +26,12 @@ RETURNABLES = ({\
 
 
 #radiative transition
-'RadTransBroadeningPressure':'RadTran',
-'RadTransBroadeningPressureLineshapeName':'Lorentzian',
-'RadTransBroadeningPressureLineshapeParameterName':'gammaL',
-'RadTransBroadeningPressureLineshapeParameterComment':'Broadening.comment',
-'RadTransBroadeningPressureLineshapeParameterUnit':'A',
-'RadTransBroadeningPressureLineshapeParameter':'Broadening.value',
+'RadTransBroadeningPressure':'RadTran.Broadenings', 
+'RadTransBroadeningPressureLineshapeName':'Lorentzian', 
+'RadTransBroadeningPressureLineshapeParameterName':'gammaL', 
+'RadTransBroadeningPressureLineshapeParameterComment':'Broadening.comment', 
+'RadTransBroadeningPressureLineshapeParameterUnit':'A', 
+'RadTransBroadeningPressureLineshapeParameter':'Broadening.value', 
 'RadTransBroadeningPressureEnvironment':'Broadening.environment',
 
 'RadTransShiftingName':'Shifting.name',
