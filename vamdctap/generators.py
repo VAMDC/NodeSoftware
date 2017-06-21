@@ -32,7 +32,7 @@ import logging
 log = logging.getLogger('vamdc.tap.generator')
 
 # Helper function to test if an object is a list or tuple
-isiterable = lambda obj: not isinstance(obj, str) and isinstance(obj, Iterable)
+isiterable = lambda obj: not isinstance(obj, basestring) and isinstance(obj, Iterable)
 
 def makeiter(obj, n=0):
     """
