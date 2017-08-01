@@ -17,17 +17,16 @@ from vamdctap.sqlparse import sql2Q
 
 from math import sqrt
 
-import dictionaries
-import models # this imports models.py from the same directory as this file
+import node.dictionaries
+import node.models as models # this imports models.py from the same directory as this file
 
 from django.db.models import Q
 import re
 
-from inchivalidation import inchikey2chemicalformula
-import chemlib
+from node.inchivalidation import inchikey2chemicalformula
+import node.chemlib as chemlib
 
 #in order to deal with the Last Modified header
-from email.Utils import formatdate
 import time
 import datetime
 
@@ -108,7 +107,7 @@ def setupResults(sql, limit=1000):
     LOG(sql)
 
     #x_internal is the list for the iteration over one search result, x the overall list (which is deduplicated in the end)
-    
+
     molecules = []
     molecules_internal = []
     atoms = []
@@ -121,7 +120,7 @@ def setupResults(sql, limit=1000):
     inchiconvertedsearch = False
 
     #define the last modified header with an old date. we will compare all timestamps to this and take the most recent one
-    lastmodifiedheader = datetime.datetime(1970, 01, 01, 01, 01)
+    lastmodifiedheader = datetime.datetime(1970, 1, 1, 1, 1)
 
     #use the function sql2Q provided by vamdctap to translate from query to Q-object
     q = sql2Q(sql)
@@ -131,7 +130,7 @@ def setupResults(sql, limit=1000):
 
     # count the number of matches
     nenergyscans = energyscans.count()
-    
+
     #in case somebody is searching for a InchiKey and it didn't bring up any results:
     #convert the inchikey to an inchi, extract the sum formula and try again
     if nenergyscans == 0:
@@ -144,7 +143,7 @@ def setupResults(sql, limit=1000):
             for matchitem in match:
                 chemical_formula = inchikey2chemicalformula(matchitem)
                 if chemical_formula is not None:
-	            strsql = strsql.replace(matchitem,chemical_formula)
+                    strsql = strsql.replace(matchitem, chemical_formula)
 
             #if we had found one, we now replace the query
             if match is not None:
@@ -184,7 +183,7 @@ def setupResults(sql, limit=1000):
         #afterwards, we append the newly created electron instance of the class species
 
         #keep in mind, that we actually defined the particle electron further up in the Particle() class. it was instanciated in the beginning of this function under the object electron_particle
-        
+
         electron = models.Species('electron', '', '', '', '')
         energyscan.Reactants = list(energyscan.Reactants.all())
         energyscan.Reactants.append(electron)
@@ -195,7 +194,7 @@ def setupResults(sql, limit=1000):
                 if product.id == molecule.id:
                     molecule.ioncharge = -1
                 else:
-                    molecule.ioncharge = 0                    
+                    molecule.ioncharge = 0
             for atom in atoms_internal:
                 if product.id == atom.id:
                     atom.ioncharge = -1
@@ -248,7 +247,7 @@ def setupResults(sql, limit=1000):
             if k % 2 == 0:
                 x.append(float(datapoint))
             #odd -> y-value
-            else: 
+            else:
                 y.append(float(datapoint))
             k = k + 1
 
@@ -279,9 +278,6 @@ def setupResults(sql, limit=1000):
     #the header must not be newer than now!
     if lastmodifiedheader > datetime.datetime.now():
         lastmodifiedheader = datetime.datetime.now()
-
-    #not necessary any more, since t. marquart changed the behaviour of the NS
-    #lastmodifiedheader = formatdate(time.mktime(lastmodifiedheader.timetuple()))
 
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.

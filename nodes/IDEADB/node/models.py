@@ -13,8 +13,8 @@ from vamdctap import bibtextools
 import re
 import datetime
 
-from inchivalidation import inchi2inchikey, inchikey2inchi, inchi2chemicalformula
-from chemlib import chemicalformula2nominalmass, checkatoms, atommasses
+from node.inchivalidation import inchi2inchikey, inchikey2inchi, inchi2chemicalformula
+from node.chemlib import chemicalformula2nominalmass, checkatoms, atommasses
 
 #we define the regex object for chemical formulas here, as it is used in two different functions
 re = re.compile('^([A-Z]{1}[a-z]{0,2}[0-9]{0,3})+$')
@@ -81,7 +81,7 @@ class Species(Model):
     cas = CharField(max_length=12,verbose_name='CAS-Number', blank = True, validators = [validate_CAS])
     molecule = BooleanField(verbose_name='Tick, if this is a molecule')
     # defines some optional meta-options for viewing and storage
-    def __unicode__(self):
+    def __str__(self):
         if self.name != '':
             return u'%s (%s)'%(self.name, self.chemical_formula)
         else:
@@ -192,8 +192,18 @@ class Energyscan(Model):
         ('m2', 'm2'),
         ('unitless', 'unitless'),
     )
+
+    NEUTRAL = 0
+    ANIONIC = -1
+    CATIONIC = 1
+    CHARGE_CHOICES = (
+        (NEUTRAL, 'Neutral'),
+        (ANIONIC, 'Anionic'),
+        (CATIONIC, 'Cationic'),
+    )
     species = ForeignKey(Species, related_name='energyscan_species')
     origin_species = ForeignKey(Species, related_name='energyscan_origin_species')
+    product_charge = IntegerField(default = ANIONIC, choices = CHARGE_CHOICES)
     source = ForeignKey(Source)
     experiment = ForeignKey(Experiment)
     energyscan_data = TextField(verbose_name='Paste data from Origin in this field')
@@ -201,7 +211,7 @@ class Energyscan(Model):
     productiondate = DateField(verbose_name='Production Date')
     comment = TextField(blank = True, max_length = 2000, verbose_name = 'Comment (max. 2000 chars.)')
     energyresolution = DecimalField(max_digits = 4, decimal_places = 3, verbose_name='Energy Resolution of the Experiment in eV')
-    lastmodified = DateTimeField(auto_now = True, default = datetime.datetime.now())
+    lastmodified = DateTimeField(auto_now = True)
     numberofpeaks = IntegerField(blank = True, verbose_name = 'Number of peaks visible (no shoulder structures)')
 
     #define a useful unicode-expression:
