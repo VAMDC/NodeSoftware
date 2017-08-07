@@ -201,9 +201,21 @@ class Energyscan(Model):
         (ANIONIC, 'Anionic'),
         (CATIONIC, 'Cationic'),
     )
+
+    ELAT = 'elat'
+    DISS = 'diss'
+    IONI = 'ioni'
+    PC_CHOICES = (
+        (ELAT, 'Electron Attachment'),
+        (DISS, 'Dissociation'),
+        (IONI, 'Ionization'),
+    )
+
     species = ForeignKey(Species, related_name='energyscan_species')
     origin_species = ForeignKey(Species, related_name='energyscan_origin_species')
     product_charge = IntegerField(default = ANIONIC, choices = CHARGE_CHOICES)
+    process_code = CharField(default = ELAT, choices = PC_CHOICES, max_length=4)
+    process_code_2 = CharField(choices = PC_CHOICES, blank = True, max_length=4)
     source = ForeignKey(Source)
     experiment = ForeignKey(Experiment)
     energyscan_data = TextField(verbose_name='Paste data from Origin in this field')

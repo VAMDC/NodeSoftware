@@ -178,6 +178,10 @@ def setupResults(sql, limit=1000):
         energyscan.Products = models.Species.objects.filter(id__exact=energyscan.species.id)
         energyscan.Reactants = models.Species.objects.filter(id__exact=energyscan.origin_species.id)
 
+        # check if we have two process codes. if so, we should spit them out as a list:
+        if energyscan.process_code_2 is not None:
+            energyscan.process_codes = [energyscan.process_code, energyscan.process_code_2]
+
         #this part is a bit tricky: we make a new species-object which we give the ID 'electron'. otherwise it is empty
         #then we use list on the queryset energyscan.Reactants to force it to be executed.
         #afterwards, we append the newly created electron instance of the class species

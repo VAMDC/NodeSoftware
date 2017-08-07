@@ -21,7 +21,7 @@ RETURNABLES = {\
 #'XSAMSVersion' : u'1.0',
 'NodeID':'IDEADB',
 'MethodCategory':'experiment',
-'CollisionCode':'elat',
+'CollisionCode':'CollTran.process_codes',
 'CollisionIAEACode':'EDA',
 'CollisionID':'CollTran.id',
 'CollisionRef':'CollTran.source.id',
