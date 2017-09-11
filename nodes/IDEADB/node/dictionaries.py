@@ -22,7 +22,7 @@ RETURNABLES = {\
 'NodeID':'IDEADB',
 'MethodCategory':'experiment',
 'CollisionCode':'CollTran.process_codes',
-'CollisionIAEACode':'EDA',
+'CollisionIAEACode':'CollTran.IAEA_codes',
 'CollisionID':'CollTran.id',
 'CollisionRef':'CollTran.source.id',
 'CollisionComment':'CollTran.comment',
@@ -61,6 +61,7 @@ RETURNABLES = {\
 'AtomSymbol':'Atom.chemical_formula',
 'AtomNuclearCharge':'Atom.nuclear_charge',
 'AtomIonCharge':'Atom.ioncharge',
+'AtomInchiKey':'Atom.inchikey',
 
 'MoleculeSpeciesID':'Molecule.id',
 'MoleculeMolecularWeight':'Molecule.mass',
@@ -99,7 +100,7 @@ RETURNABLES = {\
 
 RESTRICTABLES = {\
 #general stuff
-'CollisionCode':test_constant(['elat']),
+'CollisionCode':('process_code', 'process_code_2'),
 'SourceDOI':'source__doi',
 
 #general: has the tuples and searches either in origin_species or in species
@@ -109,7 +110,7 @@ RESTRICTABLES = {\
 'AtomSymbol':'species__chemical_formula',
 'Inchi':'origin_species__inchi',
 'InchiKey':'origin_species__inchikey',
-'MoleculeStoichiometricFormula':'species__chemical_formula',
+'MoleculeStoichiometricFormula':('origin_species__chemical_formula', 'species__chemical_formula'),
 'MoleculeCASRegistryNumber':'species__cas',
 'ParticleName':test_constant(['electron']),
 
@@ -161,4 +162,6 @@ RESTRICTABLES = {\
 'product0.InchiKey':'species__inchikey',
 'product0.MoleculeStoichiometricFormula':'species__chemical_formula',
 'product0.MoleculeCASRegistryNumber':'species__cas',
+
+'product1.ParticleName':test_constant(['electron']),
 }

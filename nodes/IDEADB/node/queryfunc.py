@@ -70,7 +70,7 @@ class DataSet:
         #tabdata.Y.DataList = map(float,ys)
         tabdata.X.DataList = map(str, xs)
         tabdata.Y.DataList = map(str, ys)
-        
+
         tabdata.Xlength = len(xs)
         tabdata.Ylength = len(ys)
 
@@ -99,7 +99,7 @@ class Particle:
 # Main function 
 #------------------------------------------------------------
 
-def setupResults(sql, limit=1000):
+def setupResults(sql, limit=1000, es_id = None):
     """
     This function is always called by the software.
     """
@@ -182,6 +182,12 @@ def setupResults(sql, limit=1000):
         if energyscan.process_code_2 is not None:
             energyscan.process_codes = [energyscan.process_code, energyscan.process_code_2]
 
+        # adjust IAEA process codes
+        if 'elat' in energyscan.process_codes:
+            energyscan.IAEA_codes = 'EDA'
+        elif 'ioni' in energyscan.process_codes:
+            energyscan.IAEA_codes = 'EIN'
+
         #this part is a bit tricky: we make a new species-object which we give the ID 'electron'. otherwise it is empty
         #then we use list on the queryset energyscan.Reactants to force it to be executed.
         #afterwards, we append the newly created electron instance of the class species
@@ -192,18 +198,38 @@ def setupResults(sql, limit=1000):
         energyscan.Reactants = list(energyscan.Reactants.all())
         energyscan.Reactants.append(electron)
 
-        #make products negative
+        # adjust product charges
         for product in energyscan.Products:
             for molecule in molecules_internal:
-                if product.id == molecule.id:
-                    molecule.ioncharge = -1
+                if product.id is molecule.id:
+                    if energyscan.product_charge is models.Energyscan.NEUTRAL:
+                        molecule.ioncharge = 0
+                        molecule.inchikey = product.inchikey_neutral
+                    elif energyscan.product_charge is models.Energyscan.ANIONIC:
+                        molecule.ioncharge = -1
+                        molecule.inchikey = product.inchikey_negative
+                    elif energyscan.product_charge is models.Energyscan.CATIONIC:
+                        molecule.ioncharge = 1
+                        molecule.inchikey = product.inchikey_positive
+                # reactant, neutral
                 else:
                     molecule.ioncharge = 0
+                    molecule.inchikey = product.inchikey_neutral
             for atom in atoms_internal:
-                if product.id == atom.id:
-                    atom.ioncharge = -1
+                if product.id is atom.id:
+                    if energyscan.product_charge is models.Energyscan.NEUTRAL:
+                        atom.ioncharge = 0
+                        atom.inchikey = product.inchikey_neutral
+                    elif energyscan.product_charge is models.Energyscan.ANIONIC:
+                        atom.ioncharge = -1
+                        atom.inchikey = product.inchikey_negative
+                    elif energyscan.product_charge is models.Energyscan.CATIONIC:
+                        atom.ioncharge = 1
+                        atom.inchikey = product.inchikey_positive
+                # reactant, neutral
                 else:
                     atom.ioncharge = 0
+                    atom.inchikey = product.inchikey_neutral
 
         #calculate exact / nominal masses
         for atom in atoms_internal:
