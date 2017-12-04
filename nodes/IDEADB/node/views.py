@@ -18,7 +18,7 @@ from django.db.models import Q
 
 def get_ES_from_db(id):
     """ Grab energyscan data from database """
-    energyscan = models.Energyscan.objects.filter(Q(id__exact=id)).get()
+    energyscan = get_object_or_404(models.Energyscan, pk=id)
     ES_list = energyscan.energyscan_data.split()
     k = 0
     xs = []
