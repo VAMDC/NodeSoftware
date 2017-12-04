@@ -152,7 +152,7 @@ class Species(Model):
         if len(sp_search) > 0:
             #indeed we do
             #in this case they should be isomeres and therefore have a different inchi
-            if self.inchi_neutral in sp_search.values_list('inchi'):
+            if self.inchi_neutral in sp_search.values_list('inchi_neutral'):
                 raise ValidationError(u'A species with this chemical formula and InChI already exists in the database')
             if self.inchi_neutral == '':
                 raise ValidationError(u'Isomeres need to be distinguished via their InChI')
@@ -187,8 +187,8 @@ class Source(Model):
     number = CharField(max_length=6, blank=True)
     volume = CharField(max_length=6)
     doi = CharField(max_length=100, verbose_name='DOI', blank=True)
-    pagestart = CharField(max_length=5, verbose_name='Starting Page')
-    pageend = CharField(max_length=5, verbose_name='Ending Page')
+    pagestart = CharField(max_length=7, verbose_name='Starting Page')
+    pageend = CharField(max_length=7, verbose_name='Ending Page')
     url = URLField(max_length=200, blank=True)
     title = CharField(max_length=500)
     type = CharField(max_length=17, default='journal', choices=SOURCETYPE_CHOICES)
