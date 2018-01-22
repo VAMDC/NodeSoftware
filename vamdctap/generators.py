@@ -4,7 +4,6 @@
 import sys
 import datetime
 from xml.sax.saxutils import escape
-from collections import Iterable
 
 # Get the node-specific parts
 from django.conf import settings
@@ -32,7 +31,10 @@ import logging
 log = logging.getLogger('vamdc.tap.generator')
 
 # Helper function to test if an object is a list or tuple
-isiterable = lambda obj: not isinstance(obj, basestring) and isinstance(obj, Iterable)
+import six # for python 2 and 3
+from collections import Iterable
+isiterable = lambda obj: not isinstance(obj, six.string_types) \
+                and isinstance(obj, Iterable)
 
 def makeiter(obj, n=0):
     """

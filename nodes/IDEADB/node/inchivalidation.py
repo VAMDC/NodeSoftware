@@ -9,8 +9,8 @@ try:
     client = Client(url)
 #except WebFault, f:
 #    print f
-except Exception, e:
-    print e 
+except Exception as e:
+    print(e)
 
 def inchi2inchikey(inchi):
     """Convert InChI to InChI-Key"""
