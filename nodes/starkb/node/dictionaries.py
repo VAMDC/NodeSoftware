@@ -59,10 +59,10 @@ RETURNABLES = ({\
 
 
 #source
-'SourceTitle':'Source.encoded_title()',
+'SourceTitle':'Source.title',
 'SourceAuthorName':'Source.authors_list()',
 'SourceCategory':'journal',
-'SourceName' : 'Source.journal.encoded_name()',
+'SourceName' : 'Source.journal.name',
 'SourceVolume' : 'Source.volume',
 'SourceYear' : 'Source.publication_year',
 'SourceURI': 'Source.ads_reference',

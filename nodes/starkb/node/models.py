@@ -16,8 +16,8 @@ class Journal(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=225)
     
-    def encoded_name(self):
-        return escape(self.name)
+    #~ def encoded_name(self):
+        #~ return escape(self.name)
     
     class Meta:
         db_table = u't_journals'    
@@ -99,8 +99,8 @@ class Article(models.Model):
     doi_reference = models.TextField(blank=True)
     other_reference = models.TextField(blank=True)
     
-    def encoded_title(self):
-        return escape(self.title)
+    #~ def encoded_title(self):
+        #~ return escape(self.title)
         
     def authors_list(self):
         return self.authors.rsplit(',')
