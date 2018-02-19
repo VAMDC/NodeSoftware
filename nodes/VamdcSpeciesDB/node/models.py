@@ -119,7 +119,6 @@ class VamdcSpecies(models.Model):
   def nuclear_charge(self):
     try:
       ns = VamdcDictAtoms.objects.filter(symbol=self.symbol()).values_list('nuclear_charge',flat=True)[0]
-      print("ns : %s"%ns)
     except IndexError:
       ns=None
     return ns
