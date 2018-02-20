@@ -71,8 +71,8 @@ def setupResults(sql):
     nspecies = species.count()
     nstates = 0
     ntranss = 0
-    molecules = species.filter(species_type__name='Molecule')
-    atoms = species.filter(species_type__name='Atom')
+    molecules = species.filter(species_type=models.SpeciesType.MOLECULE)
+    atoms = species.filter(species_type=models.SpeciesType.ATOM)
     
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.

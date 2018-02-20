@@ -10,3 +10,8 @@
 #    c=RequestContext(request,{})
 #    return render_to_response('index.html', c)
 
+from django.views.generic import ListView
+from models import VamdcNodes
+
+class NodeSpeciesView(ListView):
+    model = VamdcNodes

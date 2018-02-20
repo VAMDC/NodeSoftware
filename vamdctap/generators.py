@@ -132,14 +132,26 @@ def GetValue(returnable_key, **kwargs):
     return value
 
 def makeOptionalTag(tagname, keyword, G, extraAttr={}):
+    return buildOptionalTag(tagname, keyword, G, extraAttr, False)
+
+def makeEscapedOptionalTag(tagname, keyword, G, extraAttr={}):
+    return buildOptionalTag(tagname, keyword, G, extraAttr, True)
+
+def buildOptionalTag(tagname, keyword, G, extraAttr={}, escaped=False):
     content = G(keyword)
+
+    if escaped is True :
+      content = escape(content)
 
     if not content:
         return ''
     elif isiterable(content):
         s = []
         for c in content:
-            s.append( '<%s>%s</%s>'%(tagname,c,tagname) )
+            iter_content = c
+            if escaped is True :
+              iter_content = escape(c)
+            s.append( '<%s>%s</%s>'%(tagname,iter_content,tagname) )
         return ''.join(s)
     else:
         extra = "".join([' %s="%s"'% (k, v) for k, v in extraAttr.items()])
@@ -536,13 +548,13 @@ def XsamsSources(Sources, tap):
 <Year>%s</Year>""" % ( G('SourceTitle'), G('SourceCategory'),
                        G('SourceYear') )
 
-        yield makeOptionalTag('SourceName','SourceName',G)
+        yield makeEscapedOptionalTag('SourceName','SourceName',G)
         yield makeOptionalTag('Volume','SourceVolume',G)
         yield makeOptionalTag('PageBegin','SourcePageBegin',G)
         yield makeOptionalTag('PageEnd','SourcePageEnd',G)
         yield makeOptionalTag('ArticleNumber','SourceArticleNumber',G)
-        yield makeOptionalTag('UniformResourceIdentifier','SourceURI',G)
-        yield makeOptionalTag('DigitalObjectIdentifier','SourceDOI',G)
+        yield makeEscapedOptionalTag('UniformResourceIdentifier','SourceURI',G)
+        yield makeEscapedOptionalTag('DigitalObjectIdentifier','SourceDOI',G)
         yield makeOptionalTag('Comments','SourceComments',G)
         yield '</Source>\n'
     yield '</Sources>\n'
@@ -1333,19 +1345,14 @@ def XsamsRadTranBroadening(G):
      Each broadening object can also optionally hold an iterable property "Broadening" for
      subclassing.
     """
-    s=[]
-    broadenings = ('Natural', 'Instrument', 'Doppler', 'Pressure', 'PressureNeutral', 'PressureCharged')
-    for broadening in broadenings :
-        if hasattr(G('RadTransBroadening'+broadening), "Broadenings"):
-            for Broadening in  makeiter(G('RadTransBroadening'+broadening).Broadenings):
-                GB = lambda name: GetValue(name, Broadening=Broadening)
-                s.append( makeBroadeningType(GB, name=broadening) )
-        else:
-            s.append( makeBroadeningType(G, name=broadening) )
+    s=[] 
+    broadenings = ('Natural', 'Instrument', 'Doppler', 'Pressure', 'PressureNeutral', 'PressureCharged') 
+    for broadening in broadenings : 
+      for Broadening in (G('RadTransBroadening'+broadening)): 
+        GB = lambda name: GetValue(name, Broadening=Broadening) 
+        s.append( makeBroadeningType(GB, name=broadening) ) 
     return ''.join(s)
-
-
-
+    
 def XsamsRadTranShifting(RadTran):
     """
     Shifting type

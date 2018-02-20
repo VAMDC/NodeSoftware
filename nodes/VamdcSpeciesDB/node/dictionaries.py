@@ -33,7 +33,7 @@ RETURNABLES = {\
     # Sources are handled by XML method on model.
     'AtomInchi':'Atom.inchi',
     'AtomInchiKey':'Atom.inchikey',
-    #'AtomVamdcSpeciesID':'Atom.id',
+    'AtomVamdcSpeciesID':'Atom.id',
     'AtomSymbol':'Atom.symbol()',
     'AtomSpeciesID':'Atom.id',
     'AtomNuclearCharge':'Atom.nuclear_charge()',
@@ -50,11 +50,11 @@ RETURNABLES = {\
     'MoleculeMolecularWeight':'Molecule.mass_number',
     'MoleculeSpeciesID':'Molecule.id',
     
-    #'MoleculeStructure': 'Molecule',    # we have an XML() method for this
+    'MoleculeStructure': 'Molecule',    # we have an XML() method for this
     
     'MoleculeStoichiometricFormula':'Molecule.stoichiometric_formula',
     'MoleculeOrdinaryStructuralFormula':'Molecule.structural_formula()',
-    'MoleculeComment': 'Molecule.comment()', #'Molecule.name',
+    #~ 'MoleculeComment': 'Molecule.comment()', #'Molecule.name',
     
 
 }
