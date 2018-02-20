@@ -62,7 +62,7 @@ RETURNABLES = ({\
 'SourceTitle':'Source.escaped_title()',
 'SourceAuthorName':'Source.authors_list()',
 'SourceCategory':'journal',
-'SourceName' : 'Source.journal.name',
+'SourceName' : 'Source.journal.escaped_name()',
 'SourceVolume' : 'Source.volume',
 'SourceYear' : 'Source.publication_year',
 'SourceURI': 'Source.escaped_ads_reference()',

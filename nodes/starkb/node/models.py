@@ -16,8 +16,8 @@ class Journal(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=225)
     
-    #~ def encoded_name(self):
-        #~ return escape(self.name)
+    def escaped_name(self):
+        return escape(self.name)
     
     class Meta:
         db_table = u't_journals'    
