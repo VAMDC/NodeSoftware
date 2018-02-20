@@ -132,26 +132,14 @@ def GetValue(returnable_key, **kwargs):
     return value
 
 def makeOptionalTag(tagname, keyword, G, extraAttr={}):
-    return buildOptionalTag(tagname, keyword, G, extraAttr, False)
-
-def makeEscapedOptionalTag(tagname, keyword, G, extraAttr={}):
-    return buildOptionalTag(tagname, keyword, G, extraAttr, True)
-
-def buildOptionalTag(tagname, keyword, G, extraAttr={}, escaped=False):
     content = G(keyword)
-
-    if escaped is True :
-      content = escape(content)
 
     if not content:
         return ''
     elif isiterable(content):
         s = []
         for c in content:
-            iter_content = c
-            if escaped is True :
-              iter_content = escape(c)
-            s.append( '<%s>%s</%s>'%(tagname,iter_content,tagname) )
+            s.append( '<%s>%s</%s>'%(tagname,c,tagname) )
         return ''.join(s)
     else:
         extra = "".join([' %s="%s"'% (k, v) for k, v in extraAttr.items()])
@@ -548,13 +536,13 @@ def XsamsSources(Sources, tap):
 <Year>%s</Year>""" % ( G('SourceTitle'), G('SourceCategory'),
                        G('SourceYear') )
 
-        yield makeEscapedOptionalTag('SourceName','SourceName',G)
+        yield makeOptionalTag('SourceName','SourceName',G)
         yield makeOptionalTag('Volume','SourceVolume',G)
         yield makeOptionalTag('PageBegin','SourcePageBegin',G)
         yield makeOptionalTag('PageEnd','SourcePageEnd',G)
         yield makeOptionalTag('ArticleNumber','SourceArticleNumber',G)
-        yield makeEscapedOptionalTag('UniformResourceIdentifier','SourceURI',G)
-        yield makeEscapedOptionalTag('DigitalObjectIdentifier','SourceDOI',G)
+        yield makeOptionalTag('UniformResourceIdentifier','SourceURI',G)
+        yield makeOptionalTag('DigitalObjectIdentifier','SourceDOI',G)
         yield makeOptionalTag('Comments','SourceComments',G)
         yield '</Source>\n'
     yield '</Sources>\n'
