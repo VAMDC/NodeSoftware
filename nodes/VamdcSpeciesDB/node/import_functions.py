@@ -17,7 +17,6 @@ import sys
 from pprint import pprint
 from itertools import chain
 
-
 def fill_species_names():
     """Add species names in index table."""
     not_deprecated_names = \
@@ -106,6 +105,7 @@ def update_nodes():
             db_node.contact_email = node.maintainer
             db_node.reference_url = node.referenceUrl
             db_node.status = RecordStatus.NEW
+            db_node.update_status = UpdateStatus.NEW
             db_node.last_update_date = nowtime
             set_node_topics(db_node, node)
         else:
@@ -119,7 +119,6 @@ def set_node_topics(db_node, node):
     """
     #add a list of topics to a keyword according to its returnables
     """
-
     print "adding keyword topics"
     node_topics = []
     topics = VamdcTopics.objects.all()
@@ -139,8 +138,9 @@ def query_active_nodes():
     #Update species for nodes that are marked active
     """
     vl_nl = vl_registry.Nodelist()
-
-    for db_node in VamdcNodes.objects.filter(status=RecordStatus.ACTIVE):
+    updated_nodes = VamdcNodes.objects.filter(update_status=UpdateStatus.ACTIVE)
+    print("%s node(s) have update_status = active and will be updated."%len(updated_nodes))   
+    for db_node in updated_nodes:
         try:
             vl_node = vl_nl.getnode(db_node.ivo_identifier)
             print "Process species for node " + vl_node.name
@@ -288,6 +288,7 @@ def update_atom(vl_atom, db_node):
         db_atom.stoichiometric_formula = vl_atom.ChemicalElementSymbol
         db_atom.species_type = species_type
         db_atom.status = RecordStatus.NEW
+        db_atom.update_status = UpdateStatus.NEW
         print ("adding atom %s %s" % (db_atom.stoichiometric_formula, db_atom.charge))
         db_atom.save()
     else:
@@ -406,6 +407,7 @@ def update_molecule(vl_molecule, db_node):
         db_molecule.stoichiometric_formula = vl_molecule.StoichiometricFormula
         db_molecule.species_type = species_type
         db_molecule.status = RecordStatus.NEW
+        db_molecule.update_status = UpdateStatus.NEW
         print ("adding molecule %s %s" % (db_molecule.stoichiometric_formula, db_molecule.charge))
         db_molecule.save()
     else:

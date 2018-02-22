@@ -19,6 +19,15 @@ class RecordStatus():
     (ACTIVE,	'Active'),
     (DISABLED,	'Disabled'))
 
+class UpdateStatus():
+  NEW = 0
+  ACTIVE = 1
+  DISABLED = 2
+  UPDATE_STATUS_CHOICES = (
+    (NEW,		'New'),
+    (ACTIVE,	'Active'),
+    (DISABLED,	'Disabled'))
+
 class SpeciesType():
   ATOM = 1
   MOLECULE = 2
@@ -79,6 +88,7 @@ class VamdcNodes(models.Model):
   ivo_identifier = models.CharField(max_length = 100, blank = False, unique=True)
   reference_url = models.CharField(max_length = 100, blank = True)
   status = models.IntegerField(default=RecordStatus.NEW, blank = False, choices=RecordStatus.RECORD_STATUS_CHOICES)
+  update_status = models.IntegerField(default=UpdateStatus.NEW, blank = False, choices=UpdateStatus.UPDATE_STATUS_CHOICES)
   last_update_date = models.DateTimeField(auto_now = False, editable=False, default = datetime.now)
   #The last update by the cron job, may be thought as last seen date
   class Meta:
