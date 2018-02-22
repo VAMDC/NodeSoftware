@@ -93,7 +93,6 @@ def update_nodes():
 
     print "query the registry for active nodes"
     nodelist = vl_registry.Nodelist()
-    print nodelist
     nowtime = datetime.now()
 
     # Add new nodes or update the existing ones
