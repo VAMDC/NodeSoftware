@@ -108,6 +108,8 @@ def update_nodes():
             db_node.last_update_date = nowtime
             set_node_topics(db_node, node)
         else:
+          # update only if update_status asks to do it
+          if db_node.update_status == 1 :
             print "Updating the node information for " + db_node.short_name
             db_node.contact_email = node.maintainer
             db_node.last_update_date = nowtime
