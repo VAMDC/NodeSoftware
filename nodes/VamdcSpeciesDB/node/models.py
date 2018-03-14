@@ -82,7 +82,7 @@ class VamdcSpeciesTypes(models.Model):
 
 class VamdcNodes(models.Model):
   id = models.AutoField(primary_key=True)
-  short_name = models.CharField(max_length=60, blank = False)
+  short_name = models.CharField(max_length=100, blank = False)
   description = models.CharField(max_length=765, blank=True)
   contact_email = models.CharField(max_length = 100, blank = False)
   ivo_identifier = models.CharField(max_length = 100, blank = False, unique=True)
