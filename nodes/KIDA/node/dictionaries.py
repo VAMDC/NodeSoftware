@@ -147,5 +147,5 @@ RETURNABLES={\
 
 # ne fonctionne pas (pas dans les returnables de XSAMS)
 'CollisionFitDataEval':'Evaluation.quality',
-'CollisionFitDataEvalRecommended':'Evaluation.recommended',             
+'CollisionFitDataEvalRecommended':'Evaluation.recommended',     
 }

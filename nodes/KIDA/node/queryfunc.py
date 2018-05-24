@@ -655,9 +655,9 @@ def parseComplexQuery(q):
             
             Evaluations = []
             Evaluation = EmptyClass()
-            Evaluation.recommended = False
+            Evaluation.recommended = 'False'
             if bimo.expertize == 3:
-                Evaluation.recommended = True
+                Evaluation.recommended = 'True'
             Evaluation.quality = str(bimo.expertize)
             Evaluations.append(Evaluation)
             
@@ -739,9 +739,9 @@ def parseComplexQuery(q):
             
             Evaluations = []
             Evaluation = EmptyClass()
-            Evaluation.recommended = False
+            Evaluation.recommended = 'False'
             if cosmic.expertize == 3:
-                Evaluation.recommended = True
+                Evaluation.recommended = 'True'
             Evaluation.quality = str(cosmic.expertize)
             Evaluations.append(Evaluation)
             
