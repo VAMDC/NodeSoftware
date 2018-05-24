@@ -1758,6 +1758,11 @@ def XsamsCollTrans(CollTrans):
                                     if hilim:
                                         yield "<UpperLimit>%s</UpperLimit>" % hilim
                                     yield "</FitArgument>"
+                                    
+                            #if hasattr(FitData, "Evaluations"):
+                            #    for Argument in FitData.Arguments:
+                            #        yield "<Evaluation></Evaluation>" 
+                            
                             if hasattr(FitData, "Parameters"):
                                 for Parameter in FitData.Parameters:
 
