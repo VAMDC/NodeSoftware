@@ -1,0 +1,16 @@
+
+README
+------
+
+
+1) Cloner le git de VAMDC
+
+https://github.com/VAMDC/NodeSoftware
+
+2) Cloner ce dêpot dans le dossier notes de NodeSoftware
+
+  $ git clone git@forge.oasu.u-bordeaux.fr:/webapp/KIDA_VAMDC.git KIDA
+
+
+
+ http://YourURL/node/Yournode/tap/capabilities/ to test if things work.
