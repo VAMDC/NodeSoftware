@@ -1760,7 +1760,7 @@ def XsamsCollTrans(CollTrans):
                                     yield "</FitArgument>"
 
                             if hasattr(FitData, "Evaluations"):
-                                for Evaluation in FitData.Evaluation:
+                                for Evaluation in FitData.Evaluations:
                                     cont, ret = checkXML(Evaluation)
                                     if cont:
                                         yield ret
@@ -1768,7 +1768,7 @@ def XsamsCollTrans(CollTrans):
 
 
                                     GDFE = lambda name: GetValue(name, Evaluation=Evaluation)
-                                    yield "<Evaluation recommended='%s'><Quality>'%s'</Quality></Evaluation>" % (GDFE("CollisionFitDataArgumentEvalRecommended"), GDFE("CollisionFitDataArgumentEval"))
+                                    yield "<Evaluation recommended='%s'><Quality>%s</Quality></Evaluation>" % (GDFE("CollisionFitDataEvalRecommended"), GDFE("CollisionFitDataEval"))
 
 
                             if hasattr(FitData, "Parameters"):
