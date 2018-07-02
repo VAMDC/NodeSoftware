@@ -1,9 +1,9 @@
 from settings_default import *
 
 DEBUG = False
-#DEBUG = True
-TRANSLIM = 100000
-QUERY_STORE_ACTIVE = True
+DEBUG = True
+TRANSLIM = 10000
+QUERY_STORE_ACTIVE = False
 
 try:
     INSTALLED_APPS.remove('node')

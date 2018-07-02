@@ -8,7 +8,12 @@ def returnHeaders(transs):
     headers={'COUNT-RADIATIVE': ntranss}
 
     if TRANSLIM < ntranss:
-        headers['TRUNCATED'] = '%.1f'%(float(TRANSLIM)/ntranss *100)
+        headers['TRUNCATED-PERCENT'] = '%.1f'%(float(TRANSLIM)/ntranss *100)
+        headers['TRUNCATED-LIMIT'] = '%d'%TRANSLIM
+
+        headers['TRUNCATED-NAME'] = 'RadTransWavelength'
+        headers['TRUNCATED-LASTVALUE'] = transs[TRANSLIM-1].wave
+
 
     if ntranss:
         headers['APPROX-SIZE']='%.2f'%(ntranss*0.0014 + 0.01)
@@ -40,13 +45,14 @@ def setupResults(sql):
     if sql.HTTPmethod == 'HEAD':
         return {'HeaderInfo':returnHeaders(transs)}
 
+    #head=returnHeaders(transs) # make headers before truncation
     transs = transs[:TRANSLIM]
     log.debug('Returning from setupResults()')
     return {'RadTrans':transs,
             'Environments':Environments, #set up statically in node_common.models
             'Methods':getMethods(),      #defined in node_common.queryfuncs
             'Functions':Functions,        #set up statically in node_common.models
-            #'HeaderInfo':returnHeaders(transs),
+            #'HeaderInfo':head,
            }
 
 

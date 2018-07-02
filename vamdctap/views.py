@@ -172,25 +172,16 @@ class TAPQUERY(object):
         return '%s'%self.query
 
 def addHeaders(headers,request,response):
-    HEADS=['COUNT-SOURCES',
-           'COUNT-ATOMS',
-           'COUNT-MOLECULES',
-           'COUNT-SPECIES',
-           'COUNT-STATES',
-           'COUNT-COLLISIONS',
-           'COUNT-RADIATIVE',
-           'COUNT-NONRADIATIVE',
-           'TRUNCATED',
-           'APPROX-SIZE',
-           'REQUEST-TOKEN']
-
-    headers = CaselessDict(headers)
+    # derive URL for next page in case if truncation
+    tname, tval = headers.get('TRUNCATED-NAME'), headers.get('TRUNCATED-LASTVALUE')
+    if tname and tval:
+        extra = '+and+%s+>+%s'%(tname,tval)
+        headers['TRUNCATED-NEXTPAGE'] = settings.DEPLOY_URL + 'sync?' + request.META['QUERY_STRING'] + extra
 
     headlist_asString=''
-    for h in HEADS:
-        if h in headers:
-            response['VAMDC-'+h] = '%s'%headers[h]
-            headlist_asString += 'VAMDC-'+h+', '
+    for h in headers:
+        response['VAMDC-'+h.upper()] = '%s'%headers[h]
+        headlist_asString += 'VAMDC-'+h.upper()+', '
 
     response['Access-Control-Allow-Origin'] = '*'
     response['Access-Control-Expose-Headers'] = headlist_asString[:-2]
