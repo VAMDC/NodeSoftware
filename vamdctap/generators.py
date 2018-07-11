@@ -170,7 +170,7 @@ def makePartitionfunc(keyword, G):
     unit = G(keyword+'Unit')
     partitionfunc = G(keyword+'Q')
     comments = G(keyword+'Comments')
-    # Nuclear Spin Isomer Information 
+    # Nuclear Spin Isomer Information
     nsilowrovibsym = G(keyword+'NSILowestRoVibSym')
     nsiname = G(keyword+'NSIName')
     nsisymgroup = G(keyword+'NSISymGroup')
@@ -182,7 +182,7 @@ def makePartitionfunc(keyword, G):
         unit = [unit]
         partitionfunc = [partitionfunc]
         comments = [comments]
-        # Nuclear Spin Isomer Information 
+        # Nuclear Spin Isomer Information
         nsilowrovibsym = [nsilowrovibsym]
         nsiname = [nsiname]
         nsisymgroup = [nsisymgroup]
@@ -1753,6 +1753,19 @@ def XsamsCollTrans(CollTrans):
                                     if hilim:
                                         yield "<UpperLimit>%s</UpperLimit>" % hilim
                                     yield "</FitArgument>"
+
+                            if hasattr(FitData, "Evaluations"):
+                                for Evaluation in FitData.Evaluations:
+                                    cont, ret = checkXML(Evaluation)
+                                    if cont:
+                                        yield ret
+                                        continue
+
+
+                                    GDFE = lambda name: GetValue(name, Evaluation=Evaluation)
+                                    yield "<Evaluation recommended='%s'><Quality>%s</Quality></Evaluation>" % (GDFE("CollisionFitDataEvalRecommended"), GDFE("CollisionFitDataEval"))
+
+
                             if hasattr(FitData, "Parameters"):
                                 for Parameter in FitData.Parameters:
 
