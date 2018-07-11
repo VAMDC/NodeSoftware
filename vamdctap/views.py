@@ -298,11 +298,17 @@ def sync(request):
         generator = QUERYFUNC.customXsams(tap=tap,**querysets)
     else:
         generator = Xsams(tap=tap,**querysets)
-
+ 
     log.debug('Generator set up, handing it to HttpResponse.')
-    response=StreamingHttpResponse(generator,content_type='text/xml')
-    response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
-        datetime.datetime.now().isoformat(), tap.format)
+    if request.method in ['GET', 'POST']:
+        response = StreamingHttpResponse(generator,content_type = 'text/xml')
+        response['Content-Disposition'] = 'attachment; filename=%s-%s.%s' % (NODEID,
+            datetime.datetime.now().isoformat(), tap.format)
+    else if request.method == 'HEAD':
+        response = HttpResponse('')
+    else:
+        emsg = 'Unauthorized method %s' % request.method
+        return tapServerError(status=405,errmsg=emsg)
 
     headers = querysets.get('HeaderInfo') or {}
     headers["REQUEST-TOKEN"] = request.token
