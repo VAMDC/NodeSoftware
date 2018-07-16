@@ -1333,14 +1333,19 @@ def XsamsRadTranBroadening(G):
      Each broadening object can also optionally hold an iterable property "Broadening" for
      subclassing.
     """
-    s=[] 
-    broadenings = ('Natural', 'Instrument', 'Doppler', 'Pressure', 'PressureNeutral', 'PressureCharged') 
-    for broadening in broadenings : 
-      for Broadening in (G('RadTransBroadening'+broadening)): 
-        GB = lambda name: GetValue(name, Broadening=Broadening) 
-        s.append( makeBroadeningType(GB, name=broadening) ) 
+    
+    s=[]
+    broadenings = ('Natural', 'Instrument', 'Doppler', 'Pressure', 'PressureNeutral', 'PressureCharged')
+    for broadening in broadenings :
+        if hasattr(G('RadTransBroadening'+broadening), "Broadenings"):
+            for Broadening in  makeiter(G('RadTransBroadening'+broadening).Broadenings):
+                GB = lambda name: GetValue(name, Broadening=Broadening)
+                s.append( makeBroadeningType(GB, name=broadening) )
+        else:
+            s.append( makeBroadeningType(G, name=broadening) )
     return ''.join(s)
     
+
 def XsamsRadTranShifting(RadTran):
     """
     Shifting type
