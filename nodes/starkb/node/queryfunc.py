@@ -9,14 +9,11 @@
 #
 
 # library imports 
-import sys
 from itertools import chain
 from django.conf import settings
 from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import connection
-import dictionaries
 import models as django_models
 import util_models as util_models # utility classes
 
@@ -59,7 +56,7 @@ def setupSpecies():
 	result.addDataField('Atoms',species)	
 	return result
 	
-def setupVssRequest(sql, limit=500):
+def setupVssRequest(sql, limit=None):
     """		
         Execute a vss request
         @type  sql: string
@@ -75,7 +72,7 @@ def setupVssRequest(sql, limit=500):
     transs = django_models.Transition.objects.filter(q)
     ntranss=transs.count()
 
-    if limit < ntranss :
+    if limit is not None and limit < ntranss :
         transs, percentage = truncateTransitions(transs, q, limit)
     else:
         percentage=None 
@@ -86,9 +83,7 @@ def setupVssRequest(sql, limit=500):
         species, nspecies, nstates = getSpeciesWithStates(transs)      
         transitions, environments = getTransitionsData(transs)    
         particles = getParticles(ntranss) 
-        functions = getFunctions()
         sources =  getSources(transs)
-        nsources = len(sources)
         
 
         # Create the header with some useful info. The key names here are
@@ -202,7 +197,7 @@ def getSpeciesWithStates(transs):
                 specie.States[i].Sources = getDatasetSources(specie.States[i].Components[0].dataset.pk)
 
             nstates += len(specie.States)
-        except ObjectDoesNotExist as e:
+        except ObjectDoesNotExist:
             pass
             #log.debug(str(e)) # this species is a collider
 
@@ -241,7 +236,7 @@ def getTransitionsData(transs):
         broadenings = []
         shiftings = []
         environments = django_models.TemperatureCollider.objects.filter(temperature__pk = trans.temperatureid)
-
+        # same transitions has multiple environments
         for environment in environments : 
             collider = environment.species
             environment.Species = []             
@@ -256,17 +251,19 @@ def getTransitionsData(transs):
             sh = getShifting(environment)
             if sh is not None : 
                 shiftings.append(sh)
-            allenvironments.append(environment)
-        trans.Broadenings = broadenings
-        trans.Sources = getDatasetSources(trans.dataset.pk)
+        allenvironments.append(environment)
+
+        trans.Broadenings = util_models.Broadenings(broadenings)        
         trans.Shiftings = shiftings  
 
         # check if this transitions already exists and extract informations if it is the case
         if trans.id not in uniquetransitions :
+
+            trans.Sources = getDatasetSources(trans.dataset.pk)
             uniquetransitions[trans.id] = trans
         else :
-            uniquetransitions[trans.id] .Broadenings.extend(trans.Broadenings)
-            uniquetransitions[trans.id] .Shiftings.extend(trans.Shiftings)
+            uniquetransitions[trans.id].Broadenings.Broadenings.extend(trans.Broadenings.Broadenings)
+            uniquetransitions[trans.id].Shiftings.extend(trans.Shiftings)
 
     transitions = uniquetransitions.values()
     return transitions, allenvironments
@@ -302,9 +299,9 @@ def getBroadening(environment):
         return param
     return None
     
-def getFitCoefficients(environment):
-    fits = django_models.FitCoefficient.objects.filter(transitiondata=environment.temperature.transitiondata, species=environment.species)
-    broad = [fits.a0, fits.a1, fits.a2]
+# def getFitCoefficients(environment):
+#     fits = django_models.FitCoefficient.objects.filter(transitiondata=environment.temperature.transitiondata, species=environment.species)
+#     broad = [fits.a0, fits.a1, fits.a2]
     
 def getShifting(environment):
     """
