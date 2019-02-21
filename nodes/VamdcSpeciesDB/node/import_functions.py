@@ -91,7 +91,7 @@ def update_nodes():
     #Search for nodes in the registry, update or create records in the database
     """
 
-    print "query the registry for active nodes"
+    print("query the registry for active nodes")
     nodelist = vl_registry.Nodelist()
     nowtime = datetime.now()
 
@@ -99,7 +99,7 @@ def update_nodes():
     for node in nodelist:
         db_node, created = VamdcNodes.objects.get_or_create(ivo_identifier=node.identifier)
         if created:
-            print "Adding new node " + node.identifier + " nn" + node.name + " nu" + node.url + " em" + node.maintainer + "\n"
+            print("Adding new node " + node.identifier + " nn" + node.name + " nu" + node.url + " em" + node.maintainer + "\n")
             db_node.short_name = node.name
             db_node.contact_email = node.maintainer
             db_node.reference_url = node.referenceUrl
@@ -110,7 +110,7 @@ def update_nodes():
         else:
           # update only if update_status asks to do it
           if db_node.update_status == 1 :
-            print "Updating the node information for " + db_node.short_name
+            print("Updating the node information for " + db_node.short_name)
             db_node.contact_email = node.maintainer
             db_node.last_update_date = nowtime
             #~ set_node_topics(db_node, node)
@@ -120,7 +120,7 @@ def set_node_topics(db_node, node):
     """
     #add a list of topics to a keyword according to its returnables
     """
-    print "adding keyword topics"
+    print("adding keyword topics")
     node_topics = []
     topics = VamdcTopics.objects.all()
 
@@ -144,10 +144,11 @@ def query_active_nodes():
     for db_node in updated_nodes:
         try:
             vl_node = vl_nl.getnode(db_node.ivo_identifier)
-            print "Process species for node " + vl_node.name
+            print(vl_node)
+            print("Process species for node " + vl_node.name)
             load_species(vl_node)
-        except Exception, e:
-            print "failed to process the node %s (%s)" % (db_node.short_name, db_node.ivo_identifier)
+        except Exception as e:
+            print("failed to process the node %s (%s)" % (db_node.short_name, db_node.ivo_identifier))
             traceback.print_exc(file=sys.stdout)
 
 
@@ -168,8 +169,9 @@ def load_species(vl_node):
             db_atom = update_atom(vl_atom, db_node)
             species_name = update_atom_names(db_atom, vl_atom)
             update_species_in_node(db_node, db_atom, vl_atom, species_name)
-        except Exception, e:
-            print "Failed to load atom:", e
+        except Exception as e:
+            print("Failed to load atom:")
+            print(e)
             pprint(vl_atom)
             traceback.print_exc(file=sys.stdout)
 
@@ -182,8 +184,9 @@ def load_species(vl_node):
             species_name = update_molecule_names(db_molecule, vl_molecule)
             species_formula = update_structural_formula(db_molecule, vl_molecule.OrdinaryStructuralFormula)
             update_species_in_node(db_node, db_molecule, vl_molecule, species_name, species_formula)
-        except  Exception, e:
-            print "Failed to load molecule:", e
+        except  Exception as e:
+            print("Failed to load molecule:")
+            print(e)
             pprint(vl_molecule)
             traceback.print_exc(file=sys.stdout)
 
@@ -218,13 +221,13 @@ def update_structural_formula(db_molecule, formula, checkonly = False):
             structformula.save()
             return structformula
         else:
-            print "%s %s" % (id, formula)
+            print("%s %s" % (id, formula))
     else:
       if len(structformulae) == 1:
         return structformulae.first()
       else:
         #raise Exception("error")
-        print "### ERROR : struct formula size : %s" % len(structformulae)
+        print("### ERROR : struct formula size : %s" % len(structformulae))
         sys.exit()
 
 
@@ -480,7 +483,7 @@ def get_species(vl_node):
     try:
         result.populate_model()
     except Exception as e:
-        print " Error: Could not process data "
+        print(" Error: Could not process data ")
     # ------------------------------------------------------------------
     # Return Molecules and Atoms
     try:
