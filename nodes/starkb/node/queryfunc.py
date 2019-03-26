@@ -56,7 +56,7 @@ def setupSpecies():
 	result.addDataField('Atoms',species)	
 	return result
 	
-def setupVssRequest(sql, limit=None):
+def setupVssRequest(sql, limit=1000):
     """		
         Execute a vss request
         @type  sql: string
@@ -237,7 +237,7 @@ def getTransitionsData(transs):
         shiftings = []
         environments = django_models.TemperatureCollider.objects.filter(temperature__pk = trans.temperatureid)
         # same transitions has multiple environments
-        for environment in environments : 
+        for environment in environments :             
             collider = environment.species
             environment.Species = []             
             environment.Species.append(collider)       
@@ -251,7 +251,8 @@ def getTransitionsData(transs):
             sh = getShifting(environment)
             if sh is not None : 
                 shiftings.append(sh)
-        allenvironments.append(environment)
+            allenvironments.append(environment)
+
 
         trans.Broadenings = util_models.Broadenings(broadenings)        
         trans.Shiftings = shiftings  
