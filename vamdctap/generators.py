@@ -1333,6 +1333,7 @@ def XsamsRadTranBroadening(G):
      Each broadening object can also optionally hold an iterable property "Broadening" for
      subclassing.
     """
+    
     s=[]
     broadenings = ('Natural', 'Instrument', 'Doppler', 'Pressure', 'PressureNeutral', 'PressureCharged')
     for broadening in broadenings :
@@ -1343,8 +1344,7 @@ def XsamsRadTranBroadening(G):
         else:
             s.append( makeBroadeningType(G, name=broadening) )
     return ''.join(s)
-
-
+    
 
 def XsamsRadTranShifting(RadTran):
     """
