@@ -24,7 +24,7 @@ DATABASES = {
     'PASSWORD': 'V@ld',
   },
 }
-LAST_MODIFIED = datetime.date(2017,1,20)
+LAST_MODIFIED = datetime.date(2020,1,24)
 NODEVERSION = LAST_MODIFIED.isoformat()
 
 EXAMPLE_QUERIES = [\
