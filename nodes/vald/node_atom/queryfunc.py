@@ -191,7 +191,13 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
             refIDs.update(state.lande_ref_id or [])
             refIDs.update(state.level_ref_id or [])
 
-    Sources = Reference.objects.filter(pk__in=refIDs)
+
+    log.debug(refIDs)
+
+    if len(refIDs) == 0:
+        Sources = Reference.objects.all()
+    else:
+        Sources = Reference.objects.filter(pk__in=refIDs)
     if not requestables or 'sources' in requestables:
         log.debug('Working on Sources.')
         try:
