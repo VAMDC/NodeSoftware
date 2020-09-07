@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+from django.conf.urls.defaults import url, include
 from django.conf import settings
 import django.views.static
 from vamdctap.views import sync, availability, capabilities, tables
