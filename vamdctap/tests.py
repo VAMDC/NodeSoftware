@@ -34,7 +34,7 @@ from vamdctap import generators, views
 # node-specific
 from django.conf import settings
 
-from caselessdict import CaselessDict
+from requests.utils import CaseInsensitiveDict as CaselessDict
 DICTS = import_module(settings.NODEPKG + ".dictionaries")
 RETURNABLES = CaselessDict(DICTS.RETURNABLES)
 try:

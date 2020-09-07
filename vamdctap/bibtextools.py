@@ -6,7 +6,7 @@ except ImportError:
     from io import StringIO
 
 from pybtex.database.input import bibtex
-from .caselessdict import CaselessDict
+from requests.utils import CaseInsensitiveDict as CaselessDict
 from xml.sax.saxutils import quoteattr
 
 # get the NodeID to put it in the source key

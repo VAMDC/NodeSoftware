@@ -9,7 +9,7 @@ from xml.sax.saxutils import escape
 from django.conf import settings
 from importlib import import_module
 DICTS = import_module(settings.NODEPKG + '.dictionaries')
-from caselessdict import CaselessDict
+from requests.utils import CaseInsensitiveDict as CaselessDict
 RETURNABLES = CaselessDict(DICTS.RETURNABLES)
 
 # This must always be set.
@@ -31,7 +31,10 @@ import logging
 log = logging.getLogger('vamdc.tap.generator')
 
 # Helper function to test if an object is a list or tuple
-isiterable = lambda obj: hasattr(obj, '__iter__')
+import six # for python 2 and 3
+from collections import Iterable
+isiterable = lambda obj: not isinstance(obj, six.string_types) \
+                and isinstance(obj, Iterable)
 
 def makeiter(obj, n=0):
     """
@@ -85,39 +88,40 @@ def GetValue(returnable_key, **kwargs):
     #log.debug("getvalue, returnable_key : " + returnable_key)
     try:
         #obtain the RHS of the RETURNABLES dictionary
-        getcode = RETURNABLES[returnable_key]
-    except Exception, e:
+        name = RETURNABLES[returnable_key]
+    except Exception as e:
         # The value is not in the dictionary for the node.  This is
         # fine.  Note that this is also used by if-clauses below since
         # the empty string evaluates as False.
         #log.debug(e)
         return ''
 
-    # whenever the right-hand-side is not a string, treat
-    # it as if the node has prepared the thing beforehand
-    # for example a list of constant strings
-    #print kwargs
-    if not isinstance(getcode, basestring): # use instead of type(name)!=str; also handles unicode
-        #print "string return:", getcode
-        return getcode
+    if not name:
+        # the key was in the dict, but the value was empty or None.
+        return ''
 
-    # now we get the current object
-    # from which to get the attributes.
-    objname, obj = kwargs.popitem()
-    exec('%s = obj' % objname)
-    try:
-        # here, the RHS of the RETURNABLES dict is executed.
-        #log.debug(" try eval : " + name)
-        value = eval(getcode) # this works, if the dict-value is named
-                               # correctly as the query-set attribute
-    except Exception, e:
-        # this catches the case where the dict-value is a string or mistyped.
-        #print obj.__dict__
-        #print traceback.format_exc()
-        #err = 'ERROR GetValue(%s,%s=<%s>): %s:%s {%s:%s}' % (returnable_key, objname, obj, e.__class__.__name__, str(e), returnable_key, getcode)
-        #print err
-        #log.debug(err)
-        value = getcode
+    if not '.' in name:
+        # No dot means it is a static string!
+        return name
+
+    # strip the prefix
+    attribs = name.split('.')[1:]
+    attribs.reverse() # to later pop() from the front
+
+    #get the current structure, throw away its name
+    bla,obj = kwargs.popitem()
+
+    # Go through the cascade of foreignKeys/attributes to get to the leaf object
+    while len(attribs) >1:
+        att = attribs.pop()
+        obj = getattr(obj,att)
+
+    att = attribs.pop() # this is the last one now, can be either attribute or function
+
+    if att.endswith('()'):
+        value = getattr(obj,att[:-2])() # RUN IT!
+    else:
+        value = getattr(obj,att,name)
 
     if value == None:
         # the database returned NULL
@@ -287,8 +291,11 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
         string += makeSourceRefs(refs[i])
         string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
         string += makeEvaluation( keyword, G, j=i)
-        if acc[i]:
-            string += '<Accuracy>%s</Accuracy>' % acc[i]
+
+        # This is broken, makes empty <Accuracy/>.
+        # TODO: Proper solution is to add j-parameter to makeAccuracy(), similar to makeEvalution()
+        #if acc[i] is not None:
+        #    string += '<Accuracy>%s</Accuracy>' % acc[i]
 
 
         string += '</%s>' % tagname
@@ -303,7 +310,7 @@ def makeAccuracy(keyword, G):
     to DataType.
     """
     acc = G(keyword + 'Accuracy')
-    if not acc:
+    if acc is None:
         return ''
     acc_list = makeiter(acc)
     nacc = len(acc_list)
@@ -487,7 +494,8 @@ def SelfSource(tap):
     The full URL is given in the tag UniformResourceIdentifier but you need
     to unescape ampersands and angle brackets to re-use it.
     Query was: %s
-    </Comments>""" % escape(tap.query))
+    Query Store Link: https://querystore.vamdc.eu/GetUUIDByToken?queryToken=%s
+    </Comments>""" % (escape(tap.query), tap.token) )
     result.append('<Year>%s</Year>'%now.year)
     result.append('<Category>database</Category>')
     result.append('<UniformResourceIdentifier>')
@@ -801,6 +809,7 @@ def XsamsAtoms(Atoms):
                 yield ret
                 continue
             G = lambda name: GetValue(name, AtomState=AtomState)
+#            yield '<AtomicState stateID="S%s-%s">'% (G('NodeID'), G('AtomStateID'))
             yield makePrimaryType("AtomicState", "AtomicState", G,
                                   extraAttr={"stateID":'S%s-%s' % (G('NodeID'), G('AtomStateID')),
                                              "auxillary":G("AtomStateAuxillary")})
@@ -935,15 +944,15 @@ def XsamsMCSBuild(Molecule):
         yield ret
         yield '</NormalModes>\n'
     elif hasattr(Molecule, 'NormalModes'):
-        yield '<NormalModes>\n'
-        for NormalMode in Molecule.NormalModes:
-            GN = lambda name: GetValue(name, NormalMode=NormalMode)
-            yield makeNormalMode(GN)
-        yield '</NormalModes>\n'
+        NMlist = [makeNormalMode(lambda name: GetValue(name, NormalMode=NormalMode)) \
+                    for NormalMode in Molecule.NormalModes]
+        NMstring = '\n'.join(NMlist)
+        if NMstring:
+            yield '<NormalModes>\n%s</NormalModes>\n'%NMstring
 
     yield '<StableMolecularProperties>\n%s</StableMolecularProperties>\n' % makeDataType('MolecularWeight', 'MoleculeMolecularWeight', G)
     if G("MoleculeComment"):
-        yield '<Comment>%s</Comment>\n' % G("MoleculeComment")
+        yield '<Comment>%s</Comment>\n' % escape(G("MoleculeComment"))
     yield '</MolecularChemicalSpecies>\n'
 
 def makeCaseQNs(G):
@@ -1749,6 +1758,19 @@ def XsamsCollTrans(CollTrans):
                                     if hilim:
                                         yield "<UpperLimit>%s</UpperLimit>" % hilim
                                     yield "</FitArgument>"
+
+                            if hasattr(FitData, "Evaluations"):
+                                for Evaluation in FitData.Evaluations:
+                                    cont, ret = checkXML(Evaluation)
+                                    if cont:
+                                        yield ret
+                                        continue
+
+
+                                    GDFE = lambda name: GetValue(name, Evaluation=Evaluation)
+                                    yield "<Evaluation recommended='%s'><Quality>%s</Quality></Evaluation>" % (GDFE("CollisionFitDataEvalRecommended"), GDFE("CollisionFitDataEval"))
+
+
                             if hasattr(FitData, "Parameters"):
                                 for Parameter in FitData.Parameters:
 
@@ -1985,7 +2007,7 @@ def XsamsHeader(HeaderInfo):
 
     if HeaderInfo:
         HeaderInfo = CaselessDict(HeaderInfo)
-        if HeaderInfo.has_key('Truncated'):
+        if 'Truncated' in HeaderInfo:
             if HeaderInfo['Truncated'] != None: # note: allow 0 percent
                 head.append( """
 <!--

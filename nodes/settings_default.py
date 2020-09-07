@@ -11,7 +11,7 @@ import datetime
 # Software and standards version
 ###################################################
 VAMDC_STDS_VERSION = '12.07'
-NODESOFTWARE_VERSION = '12.07r1-rc2'
+NODESOFTWARE_VERSION = '12.07-github-master'
 
 ###################################################
 # Basic node setup
@@ -19,8 +19,10 @@ NODESOFTWARE_VERSION = '12.07r1-rc2'
 # root path of the VAMDC install on your system (should be automatically set)
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_PATH)
+sys.path.append(BASE_PATH+'/nodes')
 NODENAME = os.path.basename(os.path.dirname(__file__))
 NODEPKG = 'node'
+NODEVERSION = 1
 
 # Where to load url info from
 ROOT_URLCONF = 'urls'
@@ -34,7 +36,7 @@ EXAMPLE_QUERIES = ['SELECT ALL WHERE ... something',
                    'SELECT ALL WHERE ... something else',
                    ]
 
-LAST_MODIFIED = datetime.date(1901,2,3)
+LAST_MODIFIED = datetime.date(1911,2,3)
 
 # This turns on/off the serving of static files
 # though Django. It is better to let the deployment
@@ -131,19 +133,22 @@ USE_I18N = False
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '=4nk7k_v3p@gin!bgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
 
-# Web template locations
-TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-    os.path.join(BASE_PATH,'static', 'templates'),
-)
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_PATH,'static', 'templates')],
+    },
+]
 
-# ALLOW TO SERVER FROM ALL HOSTS
+# OLD
+#TEMPLATE_DIRS = (
+#    os.path.join(BASE_PATH,'static', 'templates'),
+#)
+#TEMPLATE_LOADERS = (
+#    'django.template.loaders.filesystem.Loader',
+#)
+
+# ALLOW TO SERVE FROM ALL HOSTS
 ALLOWED_HOSTS = ['*']
 
 #########################
@@ -216,6 +221,6 @@ LOGGING = {
     }
 }
 
-LOG_CENTRALLY = False
-CENTRAL_LOGGER_URL = 'http://pdl-calc2.obspm.fr:8081/VamdcLog/LogWriter'
-
+QUERY_STORE_ACTIVE = False
+QUERY_STORE_URL = 'https://querystore.vamdc.eu/NotificationListener'
+QUERY_STORE_USER_AGENT = 'VAMDC Query store'

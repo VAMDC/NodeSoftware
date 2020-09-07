@@ -1,0 +1,17 @@
+[Unit]
+Description=Caddy HTTP/2 web server
+Documentation=https://caddyserver.com/docs
+After=network.target
+
+[Service]
+Type=simple
+User=vamdc
+Environment=STNORESTART=yes
+ExecStart=/opt/caddy/caddy -agree=true -log=stderr -email=vamdc@example.com -conf=/opt/caddy/caddy.conf -pidfile=/opt/caddy/caddy.pid
+PIDFile=/opt/caddy/caddy.pid
+Restart=always
+LimitNOFILE=8192
+
+[Install]
+WantedBy=multi-user.target
+

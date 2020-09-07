@@ -3,6 +3,7 @@
 
 import periodictable
 import re
+from node.inchivalidation import inchi2inchikey
 
 #list of nominal mass of most abundant isotopes
 #taken from http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl
@@ -155,10 +156,51 @@ def checkatoms(chemicalformula, atommasses = atommasses):
     """ Checks each atom in a chemical formula for validity (e.g. listing in atommasses) """
     result = 0
     match = re.findall('([A-Z]{1}[a-z]{0,2})', str(chemicalformula))
-    for atom in match:
-        try:
-            mass = atommasses[atom]
-        except KeyError:
-            result = atom
+    if match:
+        for atom in match:
+            if atom not in atommasses:
+                result = atom
+    else:
+        result = chemicalformula
 
     return result
+
+def add_charge_layer(inchi, charge):
+    """ expects a standard inchi and adds the charge layer
+    inchi ... string
+    charge ... integer
+    """
+    # check inchi for validity
+    if inchi2inchikey(inchi) is '':
+        raise ValueError('Not an InChI')
+    # add charge layer
+    if inchi.find('/h') is not -1:
+        h_layer = inchi.find('/h')
+        # last layer?
+        post_h_layer = inchi.find('/', h_layer + 1)
+        if post_h_layer is not -1:
+            insertion_index = post_h_layer
+        else:
+            insertion_index = len(inchi)
+    else:
+       # no h layer, insert after c layer
+       c_layer = inchi.find('/c')
+       if c_layer is -1:
+           # not even c-layer - maybe atom
+           insertion_index = len(inchi)
+       else:
+           post_c_layer = inchi.find('/', c_layer + 1)
+           if post_c_layer is not -1:
+               insertion_index = post_c_layer
+           else:
+               insertion_index = len(inchi)
+
+    # insert charge
+    q_layer = '/q{:+d}'.format(charge)
+
+    inchi = inchi[:insertion_index] + q_layer + inchi[insertion_index:]
+    if inchi2inchikey(inchi) is '':
+        raise ValueError('Operation failed')
+
+    return inchi
+

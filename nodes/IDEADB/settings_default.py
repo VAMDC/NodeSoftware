@@ -11,6 +11,7 @@ import sys, os
 ###################################################
 VAMDC_STDS_VERSION = '12.07'
 NODESOFTWARE_VERSION = '12.07'
+NODEVERSION = 1
 
 ###################################################
 # Basic node setup
@@ -124,23 +125,48 @@ ADMIN_MEDIA_PREFIX = '/admin-static/'
 SECRET_KEY = '=4nkfghdfghdfghjzuk7u6je7k_v3p@gin!bgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
 
 # Web template locations
-TEMPLATE_DIRS = (
+#TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(BASE_PATH,'static', 'templates'),
-    os.path.join(BASE_PATH,'nodes','IDEADB','node','templates'),
-)
+#    os.path.join(BASE_PATH,'static', 'templates'),
+#    os.path.join(BASE_PATH,'nodes','IDEADB','node','templates'),
+#)
 # List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
+#TEMPLATE_LOADERS = (
     #uncomment the old version of django 1.3 and earlier. see https://code.djangoproject.com/changeset/11862
     #'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.filesystem.Loader',
+#    'django.template.loaders.filesystem.Loader',
     #'django.template.loaders.app_directories.load_template_source',
-    'django.template.loaders.app_directories.Loader',
+#    'django.template.loaders.app_directories.Loader',
     #'django.template.loaders.eggs.load_template_source',
-    'django.template.loaders.eggs.Loader',
-)
+#    'django.template.loaders.eggs.Loader',
+#)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            'templates',
+            os.path.join(BASE_PATH,'static', 'templates'),
+            os.path.join(BASE_PATH,'nodes','IDEADB','node','templates'),
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                # Insert your TEMPLATE_CONTEXT_PROCESSORS here or use this
+                # list if you haven't customized them:
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.template.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 
 #########################

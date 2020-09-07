@@ -65,7 +65,7 @@ RESTRICTABLES = {
 
 
 # Do not edit or remove these three lines
-from vamdctap.caselessdict import CaselessDict #modified
+from requests.utils import CaseInsensitiveDict as CaselessDict
 RETURNABLES = CaselessDict(RETURNABLES)
 RESTRICTABLES = CaselessDict(RESTRICTABLES)
 

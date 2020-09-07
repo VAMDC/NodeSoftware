@@ -8,6 +8,7 @@ from node.models import *
 class SpeciesAdmin(admin.ModelAdmin):
     list_display = ('chemical_formula', 'name', 'mass')
     search_fields = ('chemical_formula', 'name', 'mass')
+    list_filter = ('molecule',)
 
     actions = ['create_new_species_based_on_existing_one']
 

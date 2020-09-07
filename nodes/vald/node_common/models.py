@@ -3,7 +3,6 @@ from django.db.models import *
 
 class RefCharField(CharField):
     description = "Subclass to CharField that returns strings split at commas"
-    __metaclass__ = SubfieldBase
     def to_python(self, value):
         #tmp = super(RefCharField, self).to_python(self, value)
         if hasattr(value,'split'):

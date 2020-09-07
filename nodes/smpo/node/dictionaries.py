@@ -16,7 +16,7 @@ ExampleNode dictionary definitions.
 # database object, from which we extract everything we need (if you
 # look at queryfuncs.py, you'll see 'Sources' being assigned)
 
-from vamdctap.caselessdict import CaselessDict
+from requests.utils import CaseInsensitiveDict as CaselessDict
 from vamdctap.unitconv import *
 
 import logging

@@ -1,5 +1,5 @@
 from node_common.queryfunc import *
-from models import *
+from .models import *
 
 
 def returnHeaders(transs):
@@ -53,8 +53,9 @@ def setupResults(sql):
 ### Custom generator hack below here
 
 from vamdctap.generators import *
+from collections import defaultdict
 # collect references and state IDs in global variables
-stateIDs = {}
+stateIDs = defaultdict(set)
 refIDs = set()
 
 def XsamsRadTrans(RadTrans):
@@ -68,16 +69,14 @@ def XsamsRadTrans(RadTrans):
     global refIDs
 
     for RadTran in RadTrans:
-        if not stateIDs.has_key(RadTran.species_id):
-            stateIDs[RadTran.species_id] = set()
         stateIDs[RadTran.species_id].add(RadTran.upstate_id)
         stateIDs[RadTran.species_id].add(RadTran.lostate_id)
-        refIDs.update(RadTran.wave_ref_id)
-        refIDs.update(RadTran.waveritz_ref_id)
-        refIDs.update(RadTran.loggf_ref_id)
-        refIDs.update(RadTran.gammarad_ref_id)
-        refIDs.update(RadTran.gammastark_ref_id)
-        refIDs.update(RadTran.waals_ref_id)
+        refIDs.update(RadTran.wave_ref_id or [])
+        refIDs.update(RadTran.waveritz_ref_id or [])
+        refIDs.update(RadTran.loggf_ref_id or [])
+        refIDs.update(RadTran.gammarad_ref_id or [])
+        refIDs.update(RadTran.gammastark_ref_id or [])
+        refIDs.update(RadTran.waals_ref_id or [])
 
         G = lambda name: GetValue(name, RadTran=RadTran)
         group = G('RadTransGroup')
@@ -192,7 +191,13 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
             refIDs.update(state.lande_ref_id or [])
             refIDs.update(state.level_ref_id or [])
 
-    Sources = Reference.objects.filter(pk__in=refIDs)
+
+    log.debug(refIDs)
+
+    if len(refIDs) == 0:
+        Sources = Reference.objects.all()
+    else:
+        Sources = Reference.objects.filter(pk__in=refIDs)
     if not requestables or 'sources' in requestables:
         log.debug('Working on Sources.')
         try:
@@ -202,7 +207,7 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
 
 
     # reset them for the next query!
-    stateIDs = {}
+    stateIDs = defaultdict(set)
     refIDs = set()
 
 

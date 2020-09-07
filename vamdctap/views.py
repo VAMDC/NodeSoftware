@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response,get_object_or_404
-from django.template import RequestContext, Context, loader
+from django.template import loader
 from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse
 
 import datetime
-from string import lower
-from cStringIO import StringIO
+import uuid
+from io import StringIO
 import os, math, sys
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
@@ -17,23 +17,23 @@ log=logging.getLogger('vamdc.tap')
 from django.conf import settings
 from importlib import import_module
 from django.utils.http import http_date
+from requests.utils import CaseInsensitiveDict as CaselessDict
 
-if settings.LOG_CENTRALLY:
+if settings.QUERY_STORE_ACTIVE:
     try:
         import requests as librequests
     except:
-        log.critical('settings.LOG_CENTRALLY is set but requests package is missing!')
+        log.critical('settings.QUERY_STORE_ACTIVE is True but requests package is missing!')
 
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
 
 # import helper modules that reside in the same directory
-from caselessdict import CaselessDict
 NODEID = CaselessDict(DICTS.RETURNABLES)['NodeID']
-from generators import *
-from sqlparse import SQL
+from .generators import *
+from .sqlparse import SQL
 
-REQUESTABLES = map(lower, [\
+REQUESTABLES = [req.lower() for req in [\
  'AtomStates',
  'Atoms',
  'Collisions',
@@ -52,19 +52,19 @@ REQUESTABLES = map(lower, [\
  'Solids',
  'Sources',
  'Species',
- 'States'] )
+ 'States'] ]
 
 
 # This turns a 404 "not found" error into a TAP error-document
 def tapNotFoundError(request):
     text = 'Resource not found: %s'%request.path;
-    document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    document = loader.get_template('tap/TAP-error-document.xml').render({"error_message_text" : text})
     return HttpResponse(document, status=404, content_type='text/xml');
 
 # This turns a 500 "internal server error" into a TAP error-document
 def tapServerError(request=None, status=500, errmsg=''):
     text = 'Error in TAP service: %s'%errmsg
-    document = loader.get_template('tap/TAP-error-document.xml').render(Context({"error_message_text" : text}))
+    document = loader.get_template('tap/TAP-error-document.xml').render({"error_message_text" : text})
     return HttpResponse(document, status=status, content_type='text/xml');
 
 def getBaseURL(request):
@@ -81,12 +81,15 @@ class TAPQUERY(object):
     and triggers the SQL parser.
     """
     def __init__(self,request):
+        if 'X_REQUEST_METHOD' in request.META: # workaround for mod_wsgi
+            self.XRequestMethod = request.META['X_REQUEST_METHOD']
         self.HTTPmethod = request.method
         self.isvalid = True
         self.errormsg = ''
+        self.token = request.token
         try:
             self.request=CaselessDict(dict(request.GET or request.POST))
-        except Exception,e:
+        except Exception as e:
             self.isvalid = False
             self.errormsg = 'Could not read argument dict: %s'%e
             log.error(self.errormsg)
@@ -97,21 +100,22 @@ class TAPQUERY(object):
         self.fullurl = getBaseURL(request) + 'sync?' + request.META.get('QUERY_STRING')
 
     def validate(self):
-        try: self.lang = lower(self.request['LANG'])
+        try:
+            self.lang = self.request['LANG'][0]
+            self.lang = self.lang.lower()
         except:
-            log.debug('LANG is empty, assuming VASS2')
+            log.debug('LANG is empty, assuming VSS2')
             self.lang='vss2'
         else:
             if self.lang not in ('vss1','vss2'):
                 self.errormsg += 'Only LANG=VSS1 or LANG=VSS2 is supported.\n'
 
-        try: self.query = self.request['QUERY']
+        try: self.query = self.request['QUERY'][0]
         except: self.errormsg += 'Cannot find QUERY in request.\n'
 
-        if (type(self.query) == list) and (len(self.query)==1):
-            self.query = self.query[0]
-
-        try: self.format=lower(self.request['FORMAT'])
+        try:
+            self.format = self.request['FORMAT'][0]
+            self.format = self.format.lower()
         except:
             log.debug('FORMAT is empty, assuming XSAMS')
             self.format='xsams'
@@ -120,7 +124,7 @@ class TAPQUERY(object):
                 log.debug('Requested FORMAT is not XSAMS, letting it pass anyway.')
         try: self.parsedSQL=SQL.parseString(self.query,parseAll=True)
         except: # if this fails, we're done
-            self.errormsg += 'Could not parse the SQL query string: %s\n'%self.query
+            self.errormsg += 'Could not parse the SQL query string: %s\n'%getattr(self,'query',None)
             self.isvalid=False
             return
 
@@ -177,13 +181,14 @@ def addHeaders(headers,request,response):
            'COUNT-RADIATIVE',
            'COUNT-NONRADIATIVE',
            'TRUNCATED',
-           'APPROX-SIZE']
+           'APPROX-SIZE',
+           'REQUEST-TOKEN']
 
     headers = CaselessDict(headers)
 
     headlist_asString=''
     for h in HEADS:
-        if headers.has_key(h):
+        if h in headers:
             response['VAMDC-'+h] = '%s'%headers[h]
             headlist_asString += 'VAMDC-'+h+', '
 
@@ -210,30 +215,54 @@ def CORS_request(request):
     response['Access-Control-Allow-Origin'] = '*'
     response['Access-Control-Allow-Methods'] = 'HEAD'
     response['Access-Control-Allow-Headers'] = 'VAMDC'
+
     return response
 
 # Decorator for sync() for logging to the central service
 def logCentral(sync):
     def wrapper(request, *args, **kwargs):
         response = sync(request, *args, **kwargs)
-        if request.method == 'GET' and \
+        taprequest = TAPQUERY(request)
+        #log the request in the query store
+        #if the request comes from the query store it is ignored
+        user_agent = request.META.get('HTTP_USER_AGENT')
+        if request.method in ['GET', 'HEAD'] and \
            response.status_code == 200 and \
-           not settings.DEBUG and \
-           settings.LOG_CENTRALLY:
-            logdata = { 'clientIp': request.META['REMOTE_ADDR'],
-                        'requestContent': request.GET.get('QUERY') or request.POST.get('QUERY'),
-                        'requestDate': datetime.datetime.now(\
-                            ).strftime('%Y-%m-%dT%H:%M:%S%z'),
-                        'serviceSource': 'NodeID: ' + NODEID,
-                      }
-            logreq = librequests.post(settings.CENTRAL_LOGGER_URL,params=logdata)
-            if logreq.status_code != 200:
-                log.warn('Request to central logger retuned code: %s'%logreq.status_code)
+           user_agent not in (settings.QUERY_STORE_USER_AGENT, None) and \
+           settings.QUERY_STORE_ACTIVE:
+            logdata = {
+                        # request unique ID
+                       'secret': 'vamdcQS',
+                       'queryToken': request.token,
+                       'accededResource': getBaseURL(request),
+                       'resourceVersion': settings.NODEVERSION,
+                       'userEmail': '',   # not used in this context
+                       'usedClient': user_agent,
+                       'accessType': request.method,   # HEAD or GET
+                       'outputFormatVersion': settings.VAMDC_STDS_VERSION,
+                       'dataURL': "%ssync?%s"%(getBaseURL(request), request.META['QUERY_STRING']),
+                       'query' :  taprequest
+                       }
+
+            try:
+                # SEND THE ACTUAL REQUEST
+                logreq = librequests.post(settings.QUERY_STORE_URL,
+                    params=logdata, timeout=2000)
+            except Exception as e:
+                log.warn('Query Store unreachable! %s'%e)
+            else:
+                if logreq.status_code != 200:
+                  log.warn('Query Store returned code: %s' % logreq.status_code)
+                  log.debug('QS reply text:\n%s' % logreq.text)
         return response
     return wrapper
 
+
 @logCentral
 def sync(request):
+
+    request.token = "%s:%s:%s" % (settings.NODENAME, uuid.uuid4(), request.method.lower())
+
     if request.method=='OPTIONS':
         return CORS_request(request)
 
@@ -251,7 +280,7 @@ def sync(request):
 
     # otherwise, setup the results and build the XSAMS response here
     try: querysets = QUERYFUNC.setupResults(tap)
-    except Exception, err:
+    except Exception as err:
         emsg = 'Query processing in setupResults() failed: %s'%err
         log.debug(emsg)
         return tapServerError(status=400,errmsg=emsg)
@@ -269,12 +298,15 @@ def sync(request):
         generator = QUERYFUNC.customXsams(tap=tap,**querysets)
     else:
         generator = Xsams(tap=tap,**querysets)
+
     log.debug('Generator set up, handing it to HttpResponse.')
     response=StreamingHttpResponse(generator,content_type='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
         datetime.datetime.now().isoformat(), tap.format)
 
     headers = querysets.get('HeaderInfo') or {}
+    headers["REQUEST-TOKEN"] = request.token
+
     response=addHeaders(headers,request,response)
     # Override with empty response if result is empty
     if 'VAMDC-APPROX-SIZE' in response:
@@ -288,18 +320,17 @@ def sync(request):
 
     return response
 
-def cleandict(dict):
+
+
+def cleandict(indict):
     """
-    throw out keys where the value is ''
+    throw out some keys
     """
-    ret={}
-    for key in dict.keys():
-        if dict[key] and not '.' in key: ret[key]=dict[key]
-    return ret
+    return {k:v for k,v in indict.items() if (v and not '.' in k)}
 
 
 def capabilities(request):
-    c = RequestContext(request, {"accessURL" : getBaseURL(request),
+    c = {"accessURL" : getBaseURL(request),
                                  "RESTRICTABLES" : cleandict(DICTS.RESTRICTABLES),
                                  "RETURNABLES" : cleandict(DICTS.RETURNABLES),
                                  "STANDARDS_VERSION" : settings.VAMDC_STDS_VERSION,
@@ -307,7 +338,7 @@ def capabilities(request):
                                  "EXAMPLE_QUERIES" : settings.EXAMPLE_QUERIES,
                                  "MIRRORS" : settings.MIRRORS,
                                  "APPS" : settings.VAMDC_APPS,
-                                 })
+                                 }
     return render_to_response('tap/capabilities.xml', c, content_type='text/xml')
 
 
@@ -321,18 +352,10 @@ def dbConnected():
 
 def availability(request):
     (status, message) = dbConnected()
-    c=RequestContext(request,{"accessURL" : getBaseURL(request), 'ok' : status, 'message' : message})
+    c={"accessURL" : getBaseURL(request), 'ok' : status, 'message' : message}
     return render_to_response('tap/availability.xml', c, content_type='text/xml')
 
 def tables(request):
-    c=RequestContext(request,{"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)})
+    c={"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)}
     return render_to_response('tap/VOSI-tables.xml', c, content_type='text/xml')
-
-#def index(request):
-#    c=RequestContext(request,{})
-#    return render_to_response('tap/index.html', c)
-#
-#def async(request):
-#    c=RequestContext(request,{})
-#    return render_to_response('tap/index.html', c)
 

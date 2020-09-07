@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-""" Set up the node. A first startup consists of giving the command 
-'python manage'. This will create an empty settings file. Copy&paste 
-variables you want to change from settings_default.py to setup your 
-node. Next define your models. You'll need to add the folder containing 
-the 'models' directory to the INSTALLED_APPS tuple at least. Don't edit 
-settings_default.py directly. Next run 'python manage.py syncdb'. This 
-will read your settings file and create an empty database using your 
+""" Set up the node. A first startup consists of giving the command
+'python manage'. This will create an empty settings file. Copy&paste
+variables you want to change from settings_default.py to setup your
+node. Next define your models. You'll need to add the folder containing
+the 'models' directory to the INSTALLED_APPS tuple at least. Don't edit
+settings_default.py directly. Next run 'python manage.py syncdb'. This
+will read your settings file and create an empty database using your
 models. If you change the models you need to run syncdb again. """
 
 import sys
@@ -13,7 +13,9 @@ import os
 import traceback
 
 # Tack on the vamdc root directory to the python path.
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#VAMDC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#print VAMDC_ROOT
+#sys.path.append(VAMDC_ROOT)
 
 _CREATED_SETTINGS = False
 
@@ -28,11 +30,11 @@ if not os.path.exists('settings.py'):
     """#
 # VAMDC-node config file
 #
-# You may customize your setup by copy&pasting the variables you want to 
-# change from the default config file in nodes/settings_default.py to 
-# this file. Try to only copy over things you really need to customize 
-# and do *not* make any changes to settings_defaults.py directly. That 
-# way you'll always have a sane default to fall back on (also, the 
+# You may customize your setup by copy&pasting the variables you want to
+# change from the default config file in nodes/settings_default.py to
+# this file. Try to only copy over things you really need to customize
+# and do *not* make any changes to settings_defaults.py directly. That
+# way you'll always have a sane default to fall back on (also, the
 # master file may change with updates).
 
 from settings_default import *
@@ -41,6 +43,10 @@ from settings_default import *
 # As long as this is set to True there will be additional
 # logging output and performance will be slower.
 DEBUG=True
+
+# Remove this for any other node than the ExampleNode
+# It is simply a flag needed to run the tests.
+EXAMPLENODE=True
 
 ###################################################
 # Database connection
@@ -67,6 +73,17 @@ ADMINS = (\
             ('Admin 1 Name', 'name1@mail.net'),
             ('Admin 2 Name', 'name2@mail.net'),
         )
+SERVER_EMAIL = 'root@localhost' # FROM-address
+
+###############################################
+# DEPLOYMENT URL
+# Unless this variable is set, the NodeSoftware
+# tries to figure out its own URL, but this will
+# not always work, e.g. behind a proxy. If the
+# URLs in /tap/capabilities are wrong, set the
+# correct one here.
+###############################################
+# DEPLOY_URL='http://.../tap/'
 
 ###############################################
 # Logging
@@ -108,7 +125,7 @@ containing %r. There can be two reasons for this:
     sys.stderr.write(string % __file__)
     sys.exit(1)
 
-# At this point we have an imported settings module, although it may be empty.            
+# At this point we have an imported settings module, although it may be empty.
 if __name__ == "__main__":
     if _CREATED_SETTINGS:
         string =  "\n Edit your new settings.py file as needed, then run\n"
@@ -117,6 +134,6 @@ if __name__ == "__main__":
         print string
         sys.exit()
     # Run the django setup using our settings file.
-    from django.core.management import execute_manager
-    #from xml.sax import saxutils
-    execute_manager(settings)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE","settings")
+    from django.core.management import execute_from_command_line
+    execute_from_command_line(sys.argv)

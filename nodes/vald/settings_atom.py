@@ -3,6 +3,7 @@ from settings_default import *
 DEBUG = False
 #DEBUG = True
 TRANSLIM = 100000
+QUERY_STORE_ACTIVE = True
 
 try:
     INSTALLED_APPS.remove('node')
@@ -23,7 +24,8 @@ DATABASES = {
     'PASSWORD': 'V@ld',
   },
 }
-LAST_MODIFIED = datetime.date(2012,12,18)
+LAST_MODIFIED = datetime.date(2020,1,24)
+NODEVERSION = LAST_MODIFIED.isoformat()
 
 EXAMPLE_QUERIES = [\
     "SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4000.01",
