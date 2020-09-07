@@ -133,20 +133,21 @@ USE_I18N = False
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '=4nk7k_v3p@gin!bgp*oh2_t@(_hfdvuza27g1&_r4j3(2!+i1'
 
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_PATH,'static', 'templates')],
-    },
-]
+#TEMPLATES = [
+#    {
+#        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+#        #'DIRS': [os.path.join(BASE_PATH,'static', 'templates'),
+#        'DIRS': ['/users/guy/vamdc/NodeSoftware/static/templates'],
+#    },
+#]
 
 # OLD
-#TEMPLATE_DIRS = (
-#    os.path.join(BASE_PATH,'static', 'templates'),
-#)
-#TEMPLATE_LOADERS = (
-#    'django.template.loaders.filesystem.Loader',
-#)
+TEMPLATE_DIRS = (
+    os.path.join(BASE_PATH,'static', 'templates'),
+)
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+)
 
 # ALLOW TO SERVE FROM ALL HOSTS
 ALLOWED_HOSTS = ['*']
@@ -168,54 +169,41 @@ LOGGING = {
         },
     },
     'handlers': {
-        'null': {
-            'level':'DEBUG',
-            'class':'logging.NullHandler',
-        },
         'console':{
-            'level':'WARNING',
+            'level':'DEBUG',
             'class':'logging.StreamHandler',
         },
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
-            'include_html': True,
-        },
-        'logfile':{
-                'level': 'DEBUG',
-                'class': 'logging.FileHandler',
-                'filename': TMPDIR+'/node.log',
-                'formatter': 'simple'
-        }
     },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },    
     'loggers': {
         'django': {
-            'handlers':['null'],
-            'propagate': True,
-            'level':'INFO',
-        },
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': False,
+            'handlers':['console'],
+            'level':'DEBUG',
         },
         'vamdc': {
-            'handlers': ['console','logfile','mail_admins'],
+            'handlers': ['console'],
             'level': 'DEBUG',
         },
         'vamdc.tap': {
+            'handlers': ['console'],
             'level': 'DEBUG',
         },
         'vamdc.tap.sql': {
+            'handlers': ['console'],
             'level': 'DEBUG',
         },
         'vamdc.tap.generator': {
+            'handlers': ['console'],
             'level': 'DEBUG',
         },
         'vamdc.node': {
             'level': 'DEBUG',
         },
         'vamdc.node.queryfu': {
+            'handlers': ['console'],
             'level': 'DEBUG',
         },
     }
