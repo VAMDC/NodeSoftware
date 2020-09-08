@@ -21,7 +21,7 @@ import models # this imports models.py from the same directory as this file
 
 def LOG(s):
     "Simple logger function"
-    if settings.DEBUG: print >> sys.stderr, s
+    print >> sys.stderr, s
 
 #------------------------------------------------------------
 # Helper functions (called from setupResults)
@@ -170,6 +170,7 @@ def getSources(species):
 #------------------------------------------------------------
 
 def setupResults(sql, limit=100000):
+    LOG('setupResults()')
     try:
         return query(sql, limit)
     except Exception as oops:
