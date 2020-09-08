@@ -23,7 +23,7 @@ if not os.path.exists('settings.py'):
     # If settings.py doesn't already exist, create it
     string = "-"*50 + "\n Welcome to the VAMDC node setup."
     string += "\n\n Created a fresh settings.py file for you."
-    print string
+    print(string)
     settings_file = open('settings.py', 'w')
     _CREATED_SETTINGS = True
     string = \
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         string =  "\n Edit your new settings.py file as needed, then run\n"
         string += " 'python manage syncdb'.\n"
         string += "-"*50
-        print string
+        print(string)
         sys.exit()
     # Run the django setup using our settings file.
     os.environ.setdefault("DJANGO_SETTINGS_MODULE","settings")
