@@ -28,6 +28,9 @@ class Species(models.Model):
 
 
 class States(models.Model):
+    def _get_statistical_weight(self):
+        return (2 * self.atomstatetotalangmom) + 1
+ 
     id = models.IntegerField(null=False, primary_key=True, blank=False)
     chiantiiontype = models.CharField(max_length=3, db_column='ChiantiIonType', blank=True)
     atomsymbol = models.CharField(max_length=6, db_column='AtomSymbol', blank=True)
@@ -41,6 +44,7 @@ class States(models.Model):
     parity = models.CharField(max_length=4, db_column='parity', null=False, blank=False)
     energy = models.FloatField(null=True, db_column='AtomStateEnergy', blank=True)
     energyMethod = models.CharField(max_length=4, db_column='AtomStateEnergyMethod', null=False, blank=False)
+    statisticalweight = property(_get_statistical_weight)
 
     def allEnergies(self):
         energies = []
@@ -143,7 +147,7 @@ class Sources(models.Model):
     bibtex = models.TextField(null=True)
 
     def XML(self):
-        print "source ", self.id, " ", self.bibtex
+        print('%s %s %s'%(source, self.id, self.bibtex))
         return BibTeX2XML(self.bibtex, self.id)
 
     class Meta:
