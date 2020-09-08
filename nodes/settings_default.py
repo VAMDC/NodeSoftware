@@ -182,29 +182,36 @@ LOGGING = {
         'django': {
             'handlers':['console'],
             'level':'DEBUG',
+            'propagate': False,
         },
         'vamdc': {
             'handlers': ['console'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'vamdc.tap': {
             'handlers': ['console'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'vamdc.tap.sql': {
             'handlers': ['console'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'vamdc.tap.generator': {
             'handlers': ['console'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'vamdc.node': {
             'level': 'DEBUG',
+            'propagate': False,
         },
         'vamdc.node.queryfu': {
             'handlers': ['console'],
             'level': 'DEBUG',
+            'propagate': False,
         },
     }
 }
