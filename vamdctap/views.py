@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render_to_response,get_object_or_404
+from django.shortcuts import render,get_object_or_404
 from django.template import loader
 from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse
 
@@ -56,7 +56,7 @@ REQUESTABLES = [req.lower() for req in [\
 
 
 # This turns a 404 "not found" error into a TAP error-document
-def tapNotFoundError(request):
+def tapNotFoundError(request, exception):
     text = 'Resource not found: %s'%request.path;
     document = loader.get_template('tap/TAP-error-document.xml').render({"error_message_text" : text})
     return HttpResponse(document, status=404, content_type='text/xml');
@@ -130,8 +130,8 @@ class TAPQUERY(object):
 
         self.requestables = set()
         self.where = self.parsedSQL.where
-        if self.parsedSQL.columns not in ('*', 'ALL'):
-            for r in self.parsedSQL.columns:
+        if self.parsedSQL.columns[0] not in ('*', 'ALL'):
+            for r in self.parsedSQL.columns[0]:
                 r = r.lower()
                 if r not in REQUESTABLES:
                     self.errormsg += 'Unknown Requestable: %s\n' % r
@@ -339,7 +339,7 @@ def capabilities(request):
                                  "MIRRORS" : settings.MIRRORS,
                                  "APPS" : settings.VAMDC_APPS,
                                  }
-    return render_to_response('tap/capabilities.xml', c, content_type='text/xml')
+    return render(request, template_name='tap/capabilities.xml', context=c, content_type='text/xml')
 
 
 from django.db import connection
@@ -353,9 +353,9 @@ def dbConnected():
 def availability(request):
     (status, message) = dbConnected()
     c={"accessURL" : getBaseURL(request), 'ok' : status, 'message' : message}
-    return render_to_response('tap/availability.xml', c, content_type='text/xml')
+    return render(request, template_name='tap/availability.xml', context=c, content_type='text/xml')
 
 def tables(request):
     c={"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)}
-    return render_to_response('tap/VOSI-tables.xml', c, content_type='text/xml')
+    return render(request, template_name='tap/VOSI-tables.xml', context=c, content_type='text/xml')
 
