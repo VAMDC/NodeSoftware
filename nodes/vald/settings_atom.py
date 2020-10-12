@@ -1,9 +1,9 @@
 from settings_default import *
 
 DEBUG = False
-#DEBUG = True
+DEBUG = True
 TRANSLIM = 100000
-QUERY_STORE_ACTIVE = True
+QUERY_STORE_ACTIVE = False
 
 try:
     INSTALLED_APPS.remove('node')
@@ -18,10 +18,10 @@ if not NODEPKG in INSTALLED_APPS:
 
 DATABASES = {
   'default': {
-    'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'vald_atom',
-    'USER': 'vald',
-    'PASSWORD': 'V@ld',
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': 'vald_atom.sqlite',
+#    'USER': 'vamdc',
+#    'PASSWORD': 'V@ld',
   },
 }
 LAST_MODIFIED = datetime.date(2020,1,24)
@@ -48,10 +48,10 @@ VAMDC_APPS = [\
 #    "ivo://vamdc/",
     ]
 
-LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode12.07.log'
-if not DEBUG:
-    LOGGING['handlers']['logfile']['level'] = 'INFO'
-
+#LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode12.07.log'
+#if not DEBUG:
+#    LOGGING['handlers']['logfile']['level'] = 'INFO'
+LOGGING={}
 
 # Query inspecting as of https://github.com/dobarkod/django-queryinspect
 #MIDDLEWARE_CLASSES = (
