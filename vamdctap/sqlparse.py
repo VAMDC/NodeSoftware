@@ -116,6 +116,7 @@ def applyRestrictFu(rs,restrictables=RESTRICTABLES):
 
 def mergeQwithLogic(qdict,logic):
     logic = ' '.join(logic).replace('and','&').replace('not','~').replace('or','|')
+    print(qdict)
     log.debug('Joined logic before inserting Qs: %s'%logic)
     for r in qdict: exec('r%s=qdict[r]'%r)
     try:

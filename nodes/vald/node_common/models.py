@@ -40,8 +40,8 @@ class SpeciesComp(Model):
     This is just the intermediary model so that species can refer
     to itself to build molecules.
     """
-    molecule = ForeignKey(Species,related_name='molec')
-    atom = ForeignKey(Species,related_name='atom')
+    molecule = ForeignKey(Species,related_name='molec', on_delete=DO_NOTHING)
+    atom = ForeignKey(Species,related_name='atom', on_delete=DO_NOTHING)
     class Meta:
         db_table = u'species_components'
 
@@ -64,8 +64,8 @@ class LineList(Model):
     references = ManyToManyField(Reference) # handled by external script
     srcfile = CharField(max_length=128)
     srcfile_ref = CharField(max_length=128, null=True)
-    speclo = ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True, db_index=False)
-    spechi = ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi',null=True, db_index=False)
+    speclo = ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True, db_index=False, on_delete=DO_NOTHING)
+    spechi = ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi',null=True, db_index=False, on_delete=DO_NOTHING)
     listtype = PositiveSmallIntegerField(null=True)
     # vald category mapping = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5
     # vald->xsams mapping = {0:'experiment', 1:'semiempirical', 2:'derived', 3:'theory',4:'semiempirical',5:'compilation'}
