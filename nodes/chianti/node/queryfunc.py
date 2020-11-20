@@ -194,9 +194,9 @@ def query(sql, limit):
         transs = {}
         percentage = None
     
-    sources = getSources(species)
+    #sources = getSources(species)
     #sources = models.Sources.objects.all()
-    #sources = None;
+    sources = None;
 
     # Adjust the counts of things returned according to the requestables.
     # The caller will choose what actually to return, but we have to set
