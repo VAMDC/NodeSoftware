@@ -147,7 +147,6 @@ class Sources(models.Model):
     bibtex = models.TextField(null=True)
 
     def XML(self):
-        print('%s %s %s'%(source, self.id, self.bibtex))
         return BibTeX2XML(self.bibtex, self.id)
 
     class Meta:
