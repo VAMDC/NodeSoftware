@@ -103,6 +103,7 @@ class TAPQUERY(object):
         try:
             self.lang = self.request['LANG'][0]
             self.lang = self.lang.lower()
+            log.info(self.lang)
         except:
             log.debug('LANG is empty, assuming VSS2')
             self.lang='vss2'
@@ -110,8 +111,10 @@ class TAPQUERY(object):
             if self.lang not in ('vss1','vss2'):
                 self.errormsg += 'Only LANG=VSS1 or LANG=VSS2 is supported.\n'
 
-        try: self.query = self.request['QUERY'][0]
-        except: self.errormsg += 'Cannot find QUERY in request.\n'
+        try: 
+            self.query = self.request['QUERY'][0]
+        except: 
+            self.errormsg += 'Cannot find QUERY in request.\n'
 
         try:
             self.format = self.request['FORMAT'][0]

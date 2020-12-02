@@ -21,7 +21,7 @@ import models # this imports models.py from the same directory as this file
 
 def LOG(s):
     "Simple logger function"
-    if settings.DEBUG: print >> sys.stderr, s
+    print >> sys.stderr, s
 
 #------------------------------------------------------------
 # Helper functions (called from setupResults)
@@ -59,9 +59,11 @@ def getSpeciesWithStates(transs, sql):
     # get the reference ids for the 'species' ForeignKey field 
     # (see getRefs comment for more info)
     spids = set( transs.values_list('finalstateindex__species',flat=True) )
+    #print spids
     # use the reference ids to query the Species database table 
     species = models.Species.objects.filter(pk__in=spids)
     nspecies = species.count() # get some statistics 
+    #print 'nspecies = %d\n'%nspecies
 
     # List the IDs (i.e. keys from the states table) of all the states 
     # connected with all the selected transitions.
@@ -70,7 +72,7 @@ def getSpeciesWithStates(transs, sql):
     # get all states. Note that when building a queryset like this,
     # (using objects.filter() etc) will usually not hit the database
     # until it's really necessary, making this very efficient. 
-    LOG("Getting states")
+    #LOG("Getting states")
     nstates = 0
     if statesRequired(sql):
         for spec in species:
@@ -80,11 +82,11 @@ def getSpeciesWithStates(transs, sql):
             # software (all RETURNABLES AtomState* will try to loop over this
             # nested queryset). 
             spec.States = models.States.objects.filter(species=spec).filter(pk__in=stateIds)
-            for state in spec.States:
-                 state.Components = models.Components.objects.filter(pk=state.id)
-                 for comp in state.Components:
-                     comp.Shells = models.Subshells.objects.filter(state=state.id)
-                 nstates += spec.States.count()
+            #for state in spec.States:
+            #     state.Components = models.Components.objects.filter(pk=state.id)
+            #     for comp in state.Components:
+            #         comp.Shells = models.Subshells.objects.filter(state=state.id)
+            nstates += spec.States.count()
 
     return species, nspecies, nstates
 
@@ -168,6 +170,7 @@ def getSources(species):
 #------------------------------------------------------------
 
 def setupResults(sql, limit=100000):
+    LOG('setupResults()')
     try:
         return query(sql, limit)
     except Exception as oops:
@@ -196,9 +199,9 @@ def query(sql, limit):
         transs = {}
         percentage = None
     
-    sources = getSources(species)
+    #sources = getSources(species)
     #sources = models.Sources.objects.all()
-    #sources = None;
+    sources = None;
 
     # Adjust the counts of things returned according to the requestables.
     # The caller will choose what actually to return, but we have to set
@@ -242,14 +245,14 @@ def genericQuery(sql, q, limit):
     table; the query sets cannot work on directly on the other tables.
     """
 
-    LOG("Generic query")
+    #LOG("Generic query")
 
     # We build a queryset of database matches on the Transision model
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
-    LOG("getting transitions")
-    transs = models.Transitions.objects.select_related(depth=2).filter(q)
+    #LOG("getting transitions")
+    transs = models.Transitions.objects.filter(q)
 
     # count the number of matches, make a simple truncation if there are
     # too many (record the coverage in the returned header)
@@ -265,12 +268,12 @@ def genericQuery(sql, q, limit):
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     #sources = getRefs(transs)
-    LOG("Getting species")
+    #LOG("Getting species")
     species, nspecies, nstates = getSpeciesWithStates(transs, sql)
-    LOG(species)
+    #LOG(species)
 
     return species, nstates, transs, percentage
 
 def allSpeciesQuery(sql, q, limit):
-    LOG("All-species query")
+    #LOG("All-species query")
     return models.Species.objects.all()

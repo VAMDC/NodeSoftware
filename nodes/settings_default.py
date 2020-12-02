@@ -72,12 +72,13 @@ DATABASES = {
 #Copy this field to settings and append the path to
 # the node that you want to run.
 INSTALLED_APPS = [
-#    'django.contrib.contenttypes',
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
 #    'django.contrib.sessions',
 #    'django.contrib.sites',
 #    'django.contrib.admin',
 #    'django.contrib.admindocs',
-#    'django.contrib.staticfiles',
+    'django.contrib.staticfiles',
     'vamdctap',
     NODEPKG
 ]
@@ -166,11 +167,6 @@ LOGGING = {
             'format': '%(asctime)s %(levelname)s %(message)s'
         },
     },
-    'filters': {
-        'require_debug_false': {
-        '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
     'handlers': {
         'null': {
             'level':'DEBUG',
@@ -182,7 +178,6 @@ LOGGING = {
         },
         'mail_admins': {
             'level': 'ERROR',
-            'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
             'include_html': True,
         },
