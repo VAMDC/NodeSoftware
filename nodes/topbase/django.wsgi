@@ -1,10 +1,11 @@
 import os
 import sys
-
-# EDIT THE FOLLOWING TWO LINES
-sys.path.append('/home/tom/py/vamdc/')
-os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.YourNode.settings'
+import site
 
 
-import django.core.handlers.wsgi
-application = django.core.handlers.wsgi.WSGIHandler()
+# Add the app's directory to the PYTHONPATH
+os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.topbase.settings'
+
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+

@@ -28,7 +28,7 @@ class Sourcecategory(models.Model):
         
 class Source(models.Model):
     id = models.IntegerField(primary_key=True)
-    sourcecategory = models.ForeignKey(Sourcecategory, db_column='sourcecategoryid')
+    sourcecategory = models.ForeignKey(Sourcecategory, db_column='sourcecategoryid', on_delete=models.DO_NOTHING)
     title = models.TextField(null=True)
     year = models.IntegerField(null=True)
     volume = models.IntegerField(null=True)    
@@ -61,17 +61,17 @@ class Chemicalelement(models.Model):
 
 class Isotope(models.Model):
     id = models.IntegerField(primary_key=True)
-    chemicalelement = models.ForeignKey(Chemicalelement, db_column='chemicalelementid')
+    chemicalelement = models.ForeignKey(Chemicalelement, db_column='chemicalelementid', on_delete=models.DO_NOTHING)
     massnumber = models.IntegerField(unique=True)
     mass = models.FloatField()
-    massunitid = models.ForeignKey(Unit, db_column='massunitid')
+    massunitid = models.ForeignKey(Unit, db_column='massunitid', on_delete=models.DO_NOTHING)
     class Meta:
         db_table = u't_isotope'
 
 
 class Atomicion(models.Model):
     id = models.IntegerField(primary_key=True)
-    isotope = models.ForeignKey(Isotope, null=True, db_column='isotopeid', blank=True)
+    isotope = models.ForeignKey(Isotope, null=True, db_column='isotopeid', blank=True, on_delete=models.DO_NOTHING)
     ioncharge = models.IntegerField()
     inchi = models.CharField(max_length=100)
     inchikey = models.CharField(max_length=27)
@@ -83,7 +83,7 @@ class Atomicion(models.Model):
 
 class Version(models.Model):
     id = models.IntegerField(primary_key=True)
-    atomicion = models.ForeignKey(Atomicion, null=True, db_column='atomicionid', blank=True)
+    atomicion = models.ForeignKey(Atomicion, null=True, db_column='atomicionid', blank=True, on_delete=models.DO_NOTHING)
     ionversion = models.IntegerField(unique=True)
     creationdate = models.DateField()
     class Meta:
@@ -105,7 +105,7 @@ class Mixingclass(models.Model):
         
 class Atomicstate(models.Model):
     id = models.IntegerField(primary_key=True)
-    version = models.ForeignKey(Version, db_column='versionid')
+    version = models.ForeignKey(Version, db_column='versionid', on_delete=models.DO_NOTHING)
     totalangularmomentum = models.FloatField()
     lifetime = models.FloatField()
     #lifetimeunit = models.ForeignKey(Unit, db_column='lifetimeunitid', related_name='+')
@@ -119,7 +119,7 @@ class Atomicstate(models.Model):
     statisticalweight = models.IntegerField()
     #statisticalweightunit = models.ForeignKey(Unit, db_column='statisticalweightunitid', related_name='+')
     statisticalweightunit = models.CharField(max_length=8)
-    parity = models.ForeignKey(Parity, db_column='parityid')
+    parity = models.ForeignKey(Parity, db_column='parityid', on_delete=models.DO_NOTHING)
     xdata = models.TextField(null=True)
     ydata = models.TextField(null=True)
     xdataunit = models.CharField(max_length=8)
@@ -133,22 +133,17 @@ class Atomicstate(models.Model):
     def ydata_count(self):
       return len(self.ydata.split(" "))
         
-    #~ def xdata_file(self):
-      #~ return "http://localhost:8001/topbase/get_xdata?id_level=%s"%self.id
-      #~ 
-    #~ def ydata_file(self):
-      #~ return "http://localhost:8001/topbase/get_ydata?id_level=%s"%self.id
         
 class Atomicstatesource(models.Model):
     id = models.IntegerField(primary_key=True)
-    atomicstate = models.ForeignKey(Atomicstate, db_column='atomicstateid')
-    source = models.ForeignKey(Source, db_column='sourceid')
+    atomicstate = models.ForeignKey(Atomicstate, db_column='atomicstateid', on_delete=models.DO_NOTHING)
+    source = models.ForeignKey(Source, db_column='sourceid', on_delete=models.DO_NOTHING)
     class Meta:
         db_table = u't_atomicstatesource'
  
 class Radiativetransition(models.Model):
     id = models.IntegerField(primary_key=True)
-    version = models.ForeignKey(Version, db_column='versionid')
+    version = models.ForeignKey(Version, db_column='versionid', on_delete=models.DO_NOTHING)
     #~ version_int = models.IntegerField(db_column='versionid')
     atomicion = models.IntegerField(db_column='atomicionid')
     elementsymbol = models.CharField(max_length=9)
@@ -159,9 +154,9 @@ class Radiativetransition(models.Model):
     transitionprobability = models.IntegerField()
     wavelength = models.FloatField()
     wavelengthunit = models.CharField(max_length=8)
-    upperatomicstate = models.ForeignKey(Atomicstate, db_column='upperatomicstateid', related_name='+')
+    upperatomicstate = models.ForeignKey(Atomicstate, db_column='upperatomicstateid', related_name='+', on_delete=models.DO_NOTHING)
     #~ upperatomicstate_int = models.IntegerField(db_column='upperatomicstateid')
-    loweratomicstate = models.ForeignKey(Atomicstate, db_column='loweratomicstateid', related_name='+')    
+    loweratomicstate = models.ForeignKey(Atomicstate, db_column='loweratomicstateid', related_name='+', on_delete=models.DO_NOTHING)    
     #~ loweratomicstate_int = models.IntegerField(db_column='loweratomicstateid')
     inchikey = models.CharField(max_length=27)   
     collider = models.CharField(max_length=8, default="photon")
@@ -175,16 +170,16 @@ class Radiativetransition(models.Model):
    
 class Versionsource(models.Model):
     id = models.IntegerField(primary_key=True)
-    version = models.ForeignKey(Atomicstate, db_column='versionid')
-    source = models.ForeignKey(Source, db_column='sourceid')
+    version = models.ForeignKey(Atomicstate, db_column='versionid', on_delete=models.DO_NOTHING)
+    source = models.ForeignKey(Source, db_column='sourceid', on_delete=models.DO_NOTHING)
     class Meta:
         db_table = u't_versionsource'
 
 class Atomiccomponent(models.Model):
     id = models.IntegerField(primary_key=True)
-    atomicstate = models.ForeignKey(Atomicstate, db_column='atomicstateid', related_name='atomiccomponent')
+    atomicstate = models.ForeignKey(Atomicstate, db_column='atomicstateid', related_name='atomiccomponent', on_delete=models.DO_NOTHING)
     mixingcoefficient = models.FloatField()
-    mixingclass = models.ForeignKey(Mixingclass, db_column='mixingclassid')
+    mixingclass = models.ForeignKey(Mixingclass, db_column='mixingclassid', on_delete=models.DO_NOTHING)
     termlabel = models.CharField(max_length=30)
     configuration = models.CharField(max_length=40)
     class Meta:
@@ -200,8 +195,8 @@ class Author(models.Model):
 
 class Authorsource(models.Model):
     id = models.IntegerField(primary_key=True)
-    author = models.ForeignKey(Author, db_column='authorid')
-    source = models.ForeignKey(Source, db_column='sourceid')
+    author = models.ForeignKey(Author, db_column='authorid', on_delete=models.DO_NOTHING)
+    source = models.ForeignKey(Source, db_column='sourceid', on_delete=models.DO_NOTHING)
     rank = models.IntegerField()
     class Meta:
         db_table = u't_authorsource'
@@ -214,8 +209,8 @@ class Dataset(models.Model):
         db_table = u't_dataset'
 
 class DatasetVersion(models.Model):
-    datasetid = models.ForeignKey(Dataset, db_column='datasetid')
-    versionid = models.ForeignKey(Version, db_column='versionid')
+    datasetid = models.ForeignKey(Dataset, db_column='datasetid', on_delete=models.DO_NOTHING)
+    versionid = models.ForeignKey(Version, db_column='versionid', on_delete=models.DO_NOTHING)
     class Meta:
         db_table = u't_dataseVersion'
 
@@ -223,7 +218,7 @@ class DatasetVersion(models.Model):
 
 class Lscoupling(models.Model):
     id = models.IntegerField(primary_key=True)
-    atomiccomponent = models.ForeignKey(Atomiccomponent, db_column='atomiccomponentid')
+    atomiccomponent = models.ForeignKey(Atomiccomponent, db_column='atomiccomponentid', on_delete=models.DO_NOTHING)
     l = models.IntegerField()
     s = models.FloatField()
     multiplicity = models.IntegerField()
