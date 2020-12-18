@@ -16,13 +16,20 @@ from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
-import dictionaries
-import models as django_models
-import util_models as util_models # utility classes
+import node.dictionaries
+import node.models as django_models
+import node.util_models as util_models # utility classes
+
+import time
 
 if hasattr(settings,'LAST_MODIFIED'):
   LAST_MODIFIED = settings.LAST_MODIFIED
 else: LAST_MODIFIED = None
+
+def print_time(start, message):
+   import logging
+   log=logging.getLogger('vamdc.tap')
+   log.debug("%s : %s"%(message,time.time() - start))
 
 def setupResults(sql):
 	"""		
@@ -38,6 +45,8 @@ def setupResults(sql):
 	# return all species
 	if str(sql).strip().lower() == 'select species': 
 		result = setupSpecies()
+	elif str(sql).strip().lower() == 'select sources': 
+		result = setupSources()
 	# all other requests
 	else:		
 		result = setupVssRequest(sql)			
@@ -58,8 +67,20 @@ def setupSpecies():
 	result.addHeaderField('COUNT-SPECIES',len(species))
 	result.addDataField('Atoms',species)	
 	return result
+
+def setupSources():
+	"""		
+		Return all sources
+		@rtype:   util_models.Result
+		@return:  Result object		
+	"""
+	result = util_models.Result()
+	sources = django_models.Article.objects.all()
+	result.addHeaderField('COUNT-SOURCES',len(sources))
+	result.addDataField('Sources',sources)	
+	return result
 	
-def setupVssRequest(sql, limit=500):
+def setupVssRequest(sql, limit=1000):
     """		
         Execute a vss request
         @type  sql: string
@@ -67,9 +88,10 @@ def setupVssRequest(sql, limit=500):
         @rtype:   util_models.Result
         @return:  Result object		
     """
-
+    start = time.time()
     result = util_models.Result()
     q = sql2Q(sql)    
+    #print_time(start, "total time 1: ")
 
     #select transitions : combination of density/temperature
     transs = django_models.Transition.objects.filter(q)
@@ -79,13 +101,15 @@ def setupVssRequest(sql, limit=500):
         transs, percentage = truncateTransitions(transs, q, limit)
     else:
         percentage=None 
-        
+
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     if ntranss > 0 :	
         species, nspecies, nstates = getSpeciesWithStates(transs)      
+
         transitions, environments = getTransitionsData(transs)    
         particles = getParticles(ntranss) 
+
         functions = getFunctions()
         sources =  getSources(transs)
         nsources = len(sources)
@@ -113,6 +137,9 @@ def setupVssRequest(sql, limit=500):
         result.addHeaderField('TRUNCATED',percentage)
         result.addHeaderField('COUNT-STATES',0)
         result.addHeaderField('COUNT-RADIATIVE',0)
+
+    #print_time(start, "total time : ")
+
     return result	
 	
 def truncateTransitions(transitions, request, maxTransitionNumber):
@@ -234,12 +261,15 @@ def getTransitionsData(transs):
         @rtype:   list
         @return:  a list of Transitions
     """
+    start = time.time()
     allenvironments = []
     #dictionnary of transition, key is transition id
     uniquetransitions = {}
+
     for trans in transs :
         broadenings = []
         shiftings = []
+
         environments = django_models.TemperatureCollider.objects.filter(temperature__pk = trans.temperatureid)
 
         for environment in environments : 
@@ -257,6 +287,7 @@ def getTransitionsData(transs):
             if sh is not None : 
                 shiftings.append(sh)
             allenvironments.append(environment)
+
         trans.Broadenings = broadenings
         trans.Sources = getDatasetSources(trans.dataset.pk)
         trans.Shiftings = shiftings  
@@ -269,6 +300,7 @@ def getTransitionsData(transs):
             uniquetransitions[trans.id] .Shiftings.extend(trans.Shiftings)
 
     transitions = uniquetransitions.values()
+
     return transitions, allenvironments
 
 def getIonCollidersByTransitions(transs): 
@@ -339,9 +371,8 @@ def getParticles(ntranss):
 	
 def getSpecies():
 	"""
-		returns list of particle perturbers (only electron for now)
+		returns list of targets
 		@type  ntranss: int
-		@param transs: number of transitions found
 		@rtype: list
 		@return:  list of Species        
 	"""

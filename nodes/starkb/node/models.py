@@ -16,7 +16,7 @@ class Journal(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=225)
     
-    def encoded_name(self):
+    def escaped_name(self):
         return escape(self.name)
     
     class Meta:
@@ -56,8 +56,8 @@ class Particle(models.Model):
         
 class Species(models.Model):
     id = models.IntegerField(primary_key=True)
-    ion = models.ForeignKey(Ion, db_column="id_ion", null=True)
-    particle = models.ForeignKey(Particle,  db_column="id_particle", null=True)    
+    ion = models.ForeignKey(Ion, db_column="id_ion", null=True, on_delete=models.DO_NOTHING)
+    particle = models.ForeignKey(Particle,  db_column="id_particle", null=True, on_delete=models.DO_NOTHING)    
     
     def particle_ion_id(self):
         if self.ion is not None : 
@@ -78,7 +78,7 @@ class Species(models.Model):
 
 class Dataset(models.Model):
     id = models.IntegerField(primary_key=True)
-    target = models.ForeignKey(Species, db_column='id_target')
+    target = models.ForeignKey(Species, db_column='id_target', on_delete=models.DO_NOTHING)
     has_proton = models.IntegerField()
     filename = models.TextField()
     creation_date = models.DateField()
@@ -90,7 +90,7 @@ class Article(models.Model):
     id = models.IntegerField(primary_key=True)
     authors = models.TextField()
     publication_year = models.DecimalField(max_digits=5, decimal_places=0)
-    journal = models.ForeignKey(Journal, db_column='id_journal')
+    journal = models.ForeignKey(Journal, db_column='id_journal', on_delete=models.DO_NOTHING)
     volume = models.IntegerField()
     pages = models.CharField(max_length=120)
     title = models.TextField()
@@ -99,33 +99,52 @@ class Article(models.Model):
     doi_reference = models.TextField(blank=True)
     other_reference = models.TextField(blank=True)
     
-    def encoded_title(self):
+    def escaped_title(self):
         return escape(self.title)
+
+    def escaped_ads_reference(self):
+        if self.ads_reference is not None:
+            return escape(self.ads_reference)
+        return ""
+
+    def escaped_doi_reference(self):
+        return escape(self.doi_reference)
+
+    def escaped_other_reference(self):
+        if self.other_reference is not None : 
+            return escape(self.other_reference)
+        return ""
         
     def authors_list(self):
         return self.authors.rsplit(',')
+
+    def escaped_authors_list(self):
+        authors = self.authors.rsplit(',')
+        print(authors)
+        return authors
+        #return [escape(author) for author in authors ]
         
     class Meta:
         db_table = u't_articles'
 
 class ArticleDataset(models.Model):
     id = models.IntegerField(primary_key=True)
-    article = models.ForeignKey(Article, db_column='id_article')
-    dataset = models.ForeignKey(Dataset, db_column='id_dataset')
+    article = models.ForeignKey(Article, db_column='id_article', on_delete=models.DO_NOTHING)
+    dataset = models.ForeignKey(Dataset, db_column='id_dataset', on_delete=models.DO_NOTHING)
     class Meta:
         db_table = u't_articles_datasets'
 
 
 class DatasetCollider(models.Model):
-    dataset = models.ForeignKey(Dataset, db_column='id_dataset')
-    species = models.ForeignKey(Species, db_column='id_species')
+    dataset = models.ForeignKey(Dataset, db_column='id_dataset', on_delete=models.DO_NOTHING)
+    species = models.ForeignKey(Species, db_column='id_species', on_delete=models.DO_NOTHING)
     class Meta:
         db_table = u't_datasets_colliders'
         
 
 class Level(models.Model):
     id = models.IntegerField(primary_key=True)
-    dataset = models.ForeignKey(Dataset, db_column='id_dataset')
+    dataset = models.ForeignKey(Dataset, db_column='id_dataset', on_delete=models.DO_NOTHING)
     config = models.CharField(unique=True, max_length=60)
     term = models.CharField(unique=True, max_length=36)
     parity = models.CharField(max_length=4)
@@ -175,10 +194,10 @@ class Level(models.Model):
         
 class Transition(models.Model):
     id = models.IntegerField(primary_key=True)
-    dataset = models.ForeignKey(Dataset, db_column='id_dataset')
-    target = models.ForeignKey(Species, db_column='id_species')
-    lower_level = models.ForeignKey(Level, db_column='lower_level', related_name='lower_level')
-    upper_level = models.ForeignKey(Level, db_column='upper_level', related_name='upper_level')
+    dataset = models.ForeignKey(Dataset, db_column='id_dataset', on_delete=models.DO_NOTHING)
+    target = models.ForeignKey(Species, db_column='id_species', on_delete=models.DO_NOTHING)
+    lower_level = models.ForeignKey(Level, db_column='lower_level', related_name='lower_level', on_delete=models.DO_NOTHING)
+    upper_level = models.ForeignKey(Level, db_column='upper_level', related_name='upper_level', on_delete=models.DO_NOTHING)
     wavelength = models.FloatField()
     temperature = models.FloatField()
     temperatureid = models.IntegerField(db_column='id_temperature')
@@ -190,7 +209,7 @@ class Transition(models.Model):
   
 class Transitiondata(models.Model):
     id = models.IntegerField(primary_key=True)
-    transition = models.ForeignKey(Transition, db_column='id_transition')
+    transition = models.ForeignKey(Transition, db_column='id_transition', on_delete=models.DO_NOTHING)
     density = models.FloatField(unique=True)
     c = models.FloatField(null=True, blank=True)
     class Meta:
@@ -199,8 +218,8 @@ class Transitiondata(models.Model):
         
 class FitCoefficient(models.Model):
     id = models.IntegerField(primary_key=True)
-    transitiondata = models.ForeignKey(Transitiondata, db_column='id_transitiondata')
-    species = models.ForeignKey(Species, db_column='id_species')
+    transitiondata = models.ForeignKey(Transitiondata, db_column='id_transitiondata', on_delete=models.DO_NOTHING)
+    species = models.ForeignKey(Species, db_column='id_species', on_delete=models.DO_NOTHING)
     a0 = models.FloatField(null=True, blank=True)
     a1 = models.FloatField(null=True, blank=True)
     a2 = models.FloatField(null=True, blank=True)
@@ -213,7 +232,7 @@ class FitCoefficient(models.Model):
         
 class Temperature(models.Model):
     id = models.IntegerField(primary_key=True)
-    transitiondata = models.ForeignKey(Transitiondata, db_column='id_transitiondata')
+    transitiondata = models.ForeignKey(Transitiondata, db_column='id_transitiondata', on_delete=models.DO_NOTHING)
     temperature = models.IntegerField(unique=True)
     a = models.FloatField(null=True, blank=True)
     class Meta:
@@ -226,12 +245,14 @@ class TemperatureCollider(models.Model):
     temperature = models.OneToOneField(
       Temperature,
       db_column='id_temperature',
+      on_delete=models.DO_NOTHING
       #~ related_name='temperature_id'
     )
-    species = models.ForeignKey(Species, db_column='id_species')
+    species = models.ForeignKey(Species, db_column='id_species', on_delete=models.DO_NOTHING)
     n_w = models.CharField(max_length=24, blank=True)
     w = models.FloatField(null=True, blank=True)
     n_d = models.CharField(max_length=24, blank=True)
     d = models.FloatField(null=True, blank=True)
     class Meta:
         db_table = u't_temperatures_colliders'
+

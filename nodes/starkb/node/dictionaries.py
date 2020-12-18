@@ -26,12 +26,12 @@ RETURNABLES = ({\
 
 
 #radiative transition
-'RadTransBroadeningPressure':'RadTran',
-'RadTransBroadeningPressureLineshapeName':'Lorentzian',
-'RadTransBroadeningPressureLineshapeParameterName':'gammaL',
-'RadTransBroadeningPressureLineshapeParameterComment':'Broadening.comment',
-'RadTransBroadeningPressureLineshapeParameterUnit':'A',
-'RadTransBroadeningPressureLineshapeParameter':'Broadening.value',
+'RadTransBroadeningPressure':'RadTran.Broadenings', 
+'RadTransBroadeningPressureLineshapeName':'Lorentzian', 
+'RadTransBroadeningPressureLineshapeParameterName':'gammaL', 
+'RadTransBroadeningPressureLineshapeParameterComment':'Broadening.comment', 
+'RadTransBroadeningPressureLineshapeParameterUnit':'A', 
+'RadTransBroadeningPressureLineshapeParameter':'Broadening.value', 
 'RadTransBroadeningPressureEnvironment':'Broadening.environment',
 
 'RadTransShiftingName':'Shifting.name',
@@ -59,13 +59,13 @@ RETURNABLES = ({\
 
 
 #source
-'SourceTitle':'Source.encoded_title()',
-'SourceAuthorName':'Source.authors_list()',
+'SourceTitle':'Source.escaped_title()',
+'SourceAuthorName':'Source.escaped_authors_list()',
 'SourceCategory':'journal',
-'SourceName' : 'Source.journal.encoded_name()',
+'SourceName' : 'Source.journal.escaped_name()',
 'SourceVolume' : 'Source.volume',
 'SourceYear' : 'Source.publication_year',
-'SourceURI': 'Source.ads_reference',
+'SourceURI': 'Source.escaped_ads_reference()',
 'SourceVolume' : 'Source.volume',
 'SourceID' : 'Source.id',
 
@@ -108,3 +108,4 @@ RESTRICTABLES = ({\
 'EnvironmentTotalNumberDensity':'density',
 'InchiKey':'inchikey'
 })
+
