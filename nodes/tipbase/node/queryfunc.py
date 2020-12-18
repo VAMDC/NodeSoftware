@@ -15,9 +15,9 @@ from django.conf import settings
 from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.db import connection
-import dictionaries
-import models as django_models
-import util_models as util_models
+import node.dictionaries
+import node.models as django_models
+import node.util_models as util_models
 
 if hasattr(settings,'LAST_MODIFIED'):
   LAST_MODIFIED = settings.LAST_MODIFIED
@@ -47,6 +47,8 @@ def setupResults(sql):
     # return all species
     if str(sql).strip().lower() == 'select species': 
         result = setupSpecies()
+    elif str(sql).strip().lower() == 'select sources': 
+        result = setupSources()
     # all other requests
     else:		
         result = setupVssRequest(sql)			
@@ -130,6 +132,21 @@ def setupSpecies():
   result = util_models.Result()
   result.addHeaderField('COUNT-SPECIES',versions.count())
   result.addDataField('Atoms',versions)	
+  return result
+
+def setupSources():
+  """		
+    Return all sources
+    @rtype:   util_models.Result
+    @return:  Result object		
+  """
+  
+  # get recommended dataset
+  sources = django_models.Source.objects.all()
+
+  result = util_models.Result()
+  result.addHeaderField('COUNT-SOURCES',sources.count())
+  result.addDataField('Sources',sources)	
   return result
 	
 	
