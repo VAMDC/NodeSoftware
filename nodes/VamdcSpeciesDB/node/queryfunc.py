@@ -14,9 +14,9 @@ import logging
 from itertools import chain
 
 from vamdctap.sqlparse import sql2Q
-from dictionaries import *
+from node.dictionaries import *
 
-import models
+import node.models as models
 
 log = logging.getLogger("vamdc.node.queryfu")
 
@@ -71,8 +71,8 @@ def setupResults(sql):
     nspecies = species.count()
     nstates = 0
     ntranss = 0
-    molecules = species.filter(species_type__name='Molecule')
-    atoms = species.filter(species_type__name='Atom')
+    molecules = species.filter(species_type=models.SpeciesType.MOLECULE)
+    atoms = species.filter(species_type=models.SpeciesType.ATOM)
     
     # Create the header with some useful info. The key names here are
     # standardized and shouldn't be changed.

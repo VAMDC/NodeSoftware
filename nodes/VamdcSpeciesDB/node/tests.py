@@ -6,36 +6,43 @@ Replace these with more appropriate tests for your application.
 """
 
 import sys
-try:
-    from django.utils.unittest import TestCase
-except ImportError:
-    from django.test import TestCase
-try:
-    from django.utils import unittest
-except ImportError:
-    import unittest
-from vamdctap import tests as vamdctests
+from os import listdir
+from os.path import isfile, join
+
+from django.test import TestCase
+from pprint import pprint
+
+from vamdclib.results import Result
 
 # add database-specific tests here. See example below.
 
 class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
-
-
-# Don't edit the following. It allows this module and the vamdc
-# software tests to be run through the Django test runner.
-
-def suite():
+  
+  def test_basic_addition(self):
     """
-    This function is called automatically by the django test runner.
-    This also runs the command tests defined in src/commands/default/tests.py.
+    Tests that 1 + 1 always equals 2.
     """
-    tsuite = unittest.TestSuite()
-    tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]))
-    tsuite.addTest(unittest.defaultTestLoader.loadTestsFromModule(vamdctests))
+    self.failUnlessEqual(1 + 1, 2)
 
-    return tsuite
+
+  def test_chianti_atoms(self):
+    """
+    Tests reading typical Chianti select species output
+    """
+     #onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+    #f=open('node/species_test/chianti-carbon.xsams', 'r')
+    res=Result()
+    res.load_file('node/species_test/chianti-carbon.xsams')
+    
+    #xml=f.read()
+    #res=Result(xml)
+    #res.populate_model()
+    pprint(res.data)
+    
+    atoms = res.data['Atoms']
+    
+    for atomid in atoms:
+      atom=atoms[atomid]
+      atom.IonCharge = int(atom.IonCharge)
+      self.assertTrue(atom.IonCharge>0)
+    
