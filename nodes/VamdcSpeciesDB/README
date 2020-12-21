@@ -2,48 +2,20 @@
 README
 ------
 
-The ExampleNode is intended as a starting point for setting up your own VAMDC node from 
-scratch. The node contains a basic setup and contains some mock data (in example_data) 
-to test the data import and setup tools on.
+The VAMDC Species Database node,
 
-More verbose information can be found in the online documentation.
-You can also build the documentation from the vamdc/doc/ directory.
+Data ingestion cron job script:
+python2 node/cronjob.py
 
 
-Basic steps for testing the examplenode 
-(assuming you have all dependencies): 
----------------------------------------
 
-1) Copy folder ExampleNode to a new name and do everything from that 
+Exporting the data into sqlite database:
+export_sqlite.sh in the VamdcSpeciesDB directory, using the helper scripts and export model in the export/ directory.
 
-2) Setup mysql database (the default used in the example)
+Once the export model is changed, please remove export/migrations contents and run
+    ./manage.py makemigrations export to recreate the exported data model.
 
-3) Configure Django
+The data is exported into speciesdb.sqlite
 
- $ cd <yournode>
- $ python manage.py
 
-Edit the created settings.py file to add all database details
 
-4) Edit mapping_examplenode.py so that all paths given match your actual path
-
-5) Run the database rewrite
-
- $ cd ../importtools
- $ python run_export.py ../node/<YourNode>/mapping_examplenode.py
-
-This will parse the raw data files in example_data and creates new 
-files *.in in node/<YourNode>. 
-
-6) Import preprocessed data into database 
-
- $ cd ../node/<YourNode> 
- $ mysql -d <YourDatabaseName> -u <YourDBusername> -p < load.sql
-
-The preprocessed data should be loaded into the database. 
-
-7) Startup web services
-
-Follow the online manual to start a webserver, then, depending
-on how you set it up, point a webbrowser to something like  
- http://YourURL/node/Yournode/tap/capabilities/ to test if things work.

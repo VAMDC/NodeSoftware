@@ -60,7 +60,7 @@ RETURNABLES = {\
 }
 
 from vamdctap.unitconv import *
-from string import strip
+#from string import strip
 import sys
 # Q-objects for always True / False
 QTrue = Q(pk=F('pk'))

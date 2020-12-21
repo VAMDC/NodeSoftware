@@ -13,11 +13,11 @@ from itertools import chain
 from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.conf import settings
-from dictionaries import *
+from node.dictionaries import *
 from django.core.exceptions import ObjectDoesNotExist
 
-import models as models
-import util_models as util_models # utility classes
+import node.models as models
+import node.util_models as util_models # utility classes
 import logging
 
 log = logging.getLogger("vamdc.node.queryfu")
@@ -42,6 +42,8 @@ def setupResults(sql):
 	# return all species
 	if str(sql).strip().lower() == 'select species': 
 		result = setupSpecies()
+	elif str(sql).strip().lower() == 'select sources': 
+		result = setupSources()
 	# all other requests
 	else:		
 		result = setupVssRequest(sql)			
@@ -58,9 +60,21 @@ def setupSpecies():
 		@return:  Result object		
 	"""
 	result = util_models.Result()
-	species = getSpecies()
+	species = models.Molecule.objects.all()
 	result.addHeaderField('COUNT-SPECIES',len(species))
 	result.addDataField('Molecules',species)	
+	return result
+
+def setupSources():
+	"""		
+		Return all sources
+		@rtype:   util_models.Result
+		@return:  Result object		
+	"""
+	result = util_models.Result()
+	sources = models.Source.objects.all()
+	result.addHeaderField('COUNT-SOURCES',len(sources))
+	result.addDataField('Sources',sources)	
 	return result
 	
 def setupVssRequest(sql, limit=2000):
@@ -71,7 +85,6 @@ def setupVssRequest(sql, limit=2000):
         @rtype:   util_models.Result
         @return:  Result object		
     """
-
     result = util_models.Result()
     q = sql2Q(sql)    
     #log.debug(q)
@@ -84,7 +97,6 @@ def setupVssRequest(sql, limit=2000):
         transs, percentage = truncateTransitions(transs, q, limit)
     else:
         percentage=None 
-        
     #log.debug("number of transitions : "+str(ntranss))
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
@@ -115,7 +127,6 @@ def setupVssRequest(sql, limit=2000):
         result.addHeaderField('TRUNCATED',percentage)
         result.addHeaderField('COUNT-STATES',0)
         result.addHeaderField('COUNT-RADIATIVE',0)
-       
     return result	
 	
 def truncateTransitions(transitions, request, maxTransitionNumber):
@@ -134,16 +145,6 @@ def truncateTransitions(transitions, request, maxTransitionNumber):
 	transitions = transitions.order_by('wavelength')
 	newmax = transitions[maxTransitionNumber].wavelength
 	return models.Radiativetransition.objects.filter(request,Q(wavelength__lt=newmax)), percentage
-    
-def getSpecies():
-	"""
-		returns list of particle perturbers (only electron for now)
-		@type  ntranss: int
-		@param transs: number of transitions found
-		@rtype: list
-		@return:  list of Species        
-	"""
-	return models.Molecule.objects.all()
     
 def getSources(transs):
     sourceids = transs.values_list('source', flat=True).distinct()
