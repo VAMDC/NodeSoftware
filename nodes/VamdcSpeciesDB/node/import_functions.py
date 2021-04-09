@@ -92,12 +92,6 @@ def update_nodes():
 
     # Add new nodes or update the existing ones
     for node in nodelist:
-        print("### node infos : ")
-        print(node.name)
-        print(node.identifier)
-        print(node.url)
-        print(node.maintainer)
-        print(node.referenceUrl)
         db_node, created = VamdcNodes.objects.get_or_create(ivo_identifier=node.identifier)
         if created:
             print("Adding new node %s %s nn %s nu %s em"%(node.identifier, node.name, node.url, node.maintainer))            
@@ -338,16 +332,8 @@ def verify_molecule(vl_molecule):
     except Exception as e :
       print(e)
 
-    print("### INCHIKEY")
-    print(vl_molecule.InChIKey)
-    
-    print("### SPECIES ID 1")
-    print(speciesid)
-
     if speciesid is None or len(speciesid) < 27:
         speciesid = vl_molecule.InChIKey
-        print("### SPECIES ID 2")
-        print(speciesid)
         #TODO: handle multiple inchikeys/conformers here?
         if speciesid is None or len(speciesid) < 27:
             raise ValueError("Bad speciesid for molecule '%s'" % vl_molecule.StoichiometricFormula)
@@ -376,7 +362,9 @@ def verify_molecule(vl_molecule):
         print (
         "Warning: molecular weight from Inchi (%d) does not match the XSAMS weight %d" % (int(inchiinfo.weight), mass))
     vl_molecule.MolecularWeight = mass
-
+    print("inchiinfo.weight   %s "% inchiinfo.weight)
+    print("vl_molecule.MolecularWeight    %s" % vl_molecule.MolecularWeight)
+    print("mass   %s" % mass)
     try:
         charge = int(vl_molecule.IonCharge)
     except:
