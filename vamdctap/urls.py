@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.urls import path
 from django.conf import settings
 import django.views.static
-from vamdctap.views import sync, asynch, availability, capabilities, tables, job, result, jobs
+from vamdctap.views import sync, asynch, availability, capabilities, tables, job, result, jobs, form
 
 urlpatterns = [url(r'^sync[/]?$', sync),
                url(r'^async[/]?$', asynch),
@@ -11,7 +11,8 @@ urlpatterns = [url(r'^sync[/]?$', sync),
                url(r'^tables[/]?$', tables),
                path('async/jobs/<id>', job),
                path('async/jobs/<id>/result', result),
-               path('async/jobs', jobs)
+               path('async/jobs', jobs),
+               path('async/form', form)
                ]
 
 if settings.SERVE_STATIC:

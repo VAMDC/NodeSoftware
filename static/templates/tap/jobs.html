@@ -15,12 +15,13 @@ padding-bottom: 0px;
 <h1>Known query-jobs</h1>
 <table>
 <tr><th>Name</th><th>State</th><th>Expires</th><th>Discard</th><th>Query</th></tr>
-{% for row in jobs %}
+{% for j in jobs %}
     <tr>
-    <td><a href="jobs/{{row.0}}">{{row.0}}</a></td>
-    <td>{{row.1}}</td><td>{{row.3}}</td>
-    <td><form action="jobs/{{row.0}}" method="post"><input type="submit" value="Delete"/></form></td>
-    <td>{{row.2}}</td>
+    <td><a href="jobs/{{j.id}}">{{j.id}}</a></td>
+    <td>{{j.phase}}</td>
+    <td>{{j.expiry}}</td>
+    <td><form action="jobs/{{j.id}}" method="post"><input type="submit" value="Delete"/></form></td>
+    <td>{{j.query}}</td>
     </tr>
 {% endfor %}
 </table>

@@ -1,11 +1,11 @@
 <html>
 <body>
-<h1>Query job {{id}}</h1>
-<p>State: {{state}} (reload the page to poll for completion)</p>
-<p>Query: {{query}}</p>
-<p>Result: <a href="{{id}}/result">{{file}}</a></p>
-<p>Available until: {{expiry}}</p>
-<form action="{{id}}" method="POST">
+<h1>Query job {{job.id}}</h1>
+<p>State: {{job.phase}} (reload the page to poll for completion)</p>
+<p>Query: {{job.query}}</p>
+<p>Result: <a href="{{job.id}}/result">{{job.file}}</a></p>
+<p>Available until: {{job.expiry}}</p>
+<form action="{{job.id}}" method="POST">
 <input type="hidden" name="ACTION" value="delete"/>
 <p><input type="submit" value="Delete job and its results"></p>
 </form>

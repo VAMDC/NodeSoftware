@@ -136,6 +136,18 @@ class Transitions(models.Model):
         if self.wavelengththeoretical:
             methods.append("THEO")
         return methods
+        
+    def bestWavelength(self):
+        if self.wavelengthexperimental:
+            return self.wavelengthexperimental
+        else:
+        	return self.wavelengththeoretical
+        	
+    def bestWavelengthMethod(self):
+        if self.wavelengthexperimental:
+            return "EXP"
+        else:
+        	return "THEO"
 
     class Meta:
         db_table = u'transitions'

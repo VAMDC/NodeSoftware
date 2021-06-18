@@ -24,8 +24,8 @@ import sqlite3
 
 import threading
 
-from vamdctap.asynchronous import asyncTapQuery, getJobState, getDetailsAllJobs, forgetJob
-
+from vamdctap.asynchronous import asyncTapQuery
+from vamdctap.models import Job
 
 
 if settings.QUERY_STORE_ACTIVE:
@@ -368,12 +368,21 @@ def asynch(request):
 
     # Submit the query for asynchronous execution
     id = uuid.uuid4()
+    expiry = datetime.datetime.now()
+    expiry += datetime.timedelta(days=1)
+    j = Job()
+    j.id = str(id)
+    j.query = tap.query
+    j.phase = 'pending'
+    j.expiry = str(expiry)
+    j.file = j.id + '.sqlite3'
+    j.save()
     dir = settings.RESULTS_CACHE_DIR
-    job = threading.Thread(target=asyncTapQuery, args=(id, tap, dir,))
-    job.start()
+    thread = threading.Thread(target=asyncTapQuery, args=(str(id), tap, dir,))
+    thread.start()
     
     # Redirect to job page
-    job_url = request.path_info + '/jobs/' + str(id)
+    job_url = '/tap/async/jobs/' + str(id)
     return redirect(job_url)
     
     
@@ -492,14 +501,15 @@ def tables(request):
 def job(request, id=None):
     if id:
         if request.method == 'GET':
-            (state, query, expiry) = getJobState(id)
-            log.debug(state)
-            log.debug(query)
-            fileName = str(id) + '.sqlite3'
-            c = {'id': id, 'state': state, 'file': fileName, 'query': query, 'expiry': expiry}
+            j = Job.objects.filter(id=id)[0]
+            #(state, query, expiry) = getJobState(id)
+            #log.debug(state)
+            #log.debug(query)
+            j.file = j.id + '.sqlite3'
+            c = {'job': j}
             return render(request, template_name='tap/job.html', context=c, content_type='text/html')
         elif (request.method == 'POST') or (request.method == 'DELETE'):
-            forgetJob(id)
+            Job.objects.filter(id=id).delete()
             return redirect('/tap/async/jobs')
         else:
             return HttpResponse(status=400)
@@ -514,8 +524,9 @@ def result(request, id=None):
         return HttpResponse(status=404);
         
 def jobs(request):
-    c = {'jobs': getDetailsAllJobs()}
+    c = {'jobs': Job.objects.all()}
     return render(request, template_name='tap/jobs.html', context=c, content_type='text/html')
     
-    
+def form(request):
+    return render(request, template_name='tap/async-query.html', content_type='text/html')
 
