@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render,get_object_or_404
 from django.template import loader
-from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, StreamingHttpResponse, FileResponse
+from django.shortcuts import redirect
 
 import datetime
 import uuid
@@ -18,6 +19,14 @@ from django.conf import settings
 from importlib import import_module
 from django.utils.http import http_date
 from requests.utils import CaseInsensitiveDict as CaselessDict
+
+import sqlite3
+
+import threading
+
+from vamdctap.asynchronous import asyncTapQuery, getJobState, getDetailsAllJobs, forgetJob
+
+
 
 if settings.QUERY_STORE_ACTIVE:
     try:
@@ -277,7 +286,7 @@ def sync(request):
         return tapServerError(status=400,errmsg=emsg)
 
     # if the requested format is not XSAMS, hand over to the node QUERYFUNC
-    if tap.format != 'xsams' and hasattr(QUERYFUNC,'returnResults'):
+    if tap.format != 'xsams' and tap.format != 'sqlite' and hasattr(QUERYFUNC,'returnResults'):
         log.debug("using custom QUERYFUNC.returnResults(tap)")
         return QUERYFUNC.returnResults(tap)
 
@@ -296,33 +305,150 @@ def sync(request):
 
     log.debug('Requestables: %s'%tap.requestables)
 
-    if hasattr(QUERYFUNC,'customXsams'):
-        log.debug("using QUERYFUNC.customXsams as generator")
-        generator = QUERYFUNC.customXsams(tap=tap,**querysets)
-    else:
-        generator = Xsams(tap=tap,**querysets)
+    if tap.format == 'xsams':
+        if hasattr(QUERYFUNC,'customXsams'):
+            log.debug("using QUERYFUNC.customXsams as generator")
+            generator = QUERYFUNC.customXsams(tap=tap,**querysets)
+        else:
+            generator = Xsams(tap=tap,**querysets)
 
-    log.debug('Generator set up, handing it to HttpResponse.')
-    response=StreamingHttpResponse(generator,content_type='text/xml')
-    response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
-        datetime.datetime.now().isoformat(), tap.format)
+        log.debug('Generator set up, handing it to HttpResponse.')
+        response=StreamingHttpResponse(generator,content_type='text/xml')
+        response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
+            datetime.datetime.now().isoformat(), tap.format)
 
-    headers = querysets.get('HeaderInfo') or {}
-    headers["REQUEST-TOKEN"] = request.token
+        headers = querysets.get('HeaderInfo') or {}
+        headers["REQUEST-TOKEN"] = request.token
 
-    response=addHeaders(headers,request,response)
-    # Override with empty response if result is empty
-    if 'VAMDC-APPROX-SIZE' in response:
-        try:
-            size = float(response['VAMDC-APPROX-SIZE'])
-            if size == 0.0:
-                log.info('Empty result')
-                response.status_code=204
-                return response
-        except: pass
+        response=addHeaders(headers,request,response)
+        # Override with empty response if result is empty
+        if 'VAMDC-APPROX-SIZE' in response:
+            try:
+                size = float(response['VAMDC-APPROX-SIZE'])
+                if size == 0.0:
+                    log.info('Empty result')
+                    response.status_code=204
+                    return response
+            except: pass
 
-    return response
+        return response
 
+    elif tap.format == 'sqlite':
+    
+        # Pick a unique ID for this request.
+        id = uuid.uuid4()
+        
+        # Form a unique file-name for the results.
+        filePath = settings.RESULTS_CACHE_DIR + os.path.sep + str(id)
+        fileName = 'vamdc-tap-result.sqlite3'
+        
+        # Run the query and put the results into the file.
+        generateSqlite(filePath, tap, **querysets)
+        
+        # Stream the file to the client.
+        # Adapted from https://stackoverflow.com/questions/1156246/having-django-serve-downloadable-files
+        response = FileResponse(open(filePath, 'rb'), content_type="application/x-sqlite3")
+        response['Content-Disposition'] = 'attachment; filename="%s"'%fileName
+        return response
+
+
+def asynch(request):
+
+    request.token = "%s:%s:%s" % (settings.NODENAME, uuid.uuid4(), request.method.lower())
+
+    if request.method=='OPTIONS':
+        return CORS_request(request)
+
+    log.info('Request from %s: %s'%(request.META['REMOTE_ADDR'], request.GET or request.POST))
+    tap=TAPQUERY(request)
+    if not tap.isvalid:
+        emsg = 'TAP-Request invalid: %s'%tap.errormsg
+        log.error(emsg)
+        return tapServerError(status=400,errmsg=emsg)
+
+    # Submit the query for asynchronous execution
+    id = uuid.uuid4()
+    dir = settings.RESULTS_CACHE_DIR
+    job = threading.Thread(target=asyncTapQuery, args=(id, tap, dir,))
+    job.start()
+    
+    # Redirect to job page
+    job_url = request.path_info + '/jobs/' + str(id)
+    return redirect(job_url)
+    
+    
+        
+def generateSqlite(filePath, tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
+          Environments=None, Atoms=None, Molecules=None, Solids=None, Particles=None,
+          CollTrans=None, RadTrans=None, RadCross=None, NonRadTrans=None):
+          
+    try:
+        log.debug('Connecting SQLite to %s...'%filePath)
+        conn = sqlite3.connect(filePath)
+        log.debug('...connected')
+        ATOMS_FIELDS = [
+            'AtomSpeciesId',
+            'AtomSymbol',
+            'AtomNuclearCharge',
+            'AtomIonCharge',
+            'AtomInchi',
+            'AtomInchiKey',
+        ]
+        ATOMS_CREATE = 'CREATE TABLE Atoms(AtomSpeciesId INTEGER PRIMARY KEY, AtomSymbol CHAR(2), AtomNuclearCharge INTEGER, AtomIonCharge INTEGER, AtomInchi VARCHAR(64), AtomInchiKey VARCHAR(32))'
+        if Atoms:
+            c = conn.cursor()
+            c.execute(ATOMS_CREATE)
+            ATOMS_INSERT = ''' INSERT INTO Atoms(
+                'AtomSpeciesId',
+                'AtomSymbol',
+                'AtomNuclearCharge',
+                'AtomIonCharge',
+                'AtomInchi',
+                'AtomInchiKey')
+                VALUES(?,?,?,?,?,?) '''
+            for a in Atoms:
+                c.execute(ATOMS_INSERT, (a.id, a.atomsymbol, a.atomnuclearcharge, a.atomioncharge, a.inchi, a.inchikey))
+            conn.commit()
+            
+        ATOMSTATE_FIELDS = [
+            'AtomStateId',
+            'AtomRef',
+            'AtomStateTotalAngMom',
+            'AtomStateParity',
+            'AtomStateStatisticalWeight',
+            'AtomStateEnergy',
+            'AtomStateDescription'
+        ]    
+        ATOMSTATE_CREATE = '''CREATE TABLE AtomicStates(
+            AtomStateId INTEGER PRIMARY KEY, 
+            AtomRef INTEGER REFERENCES Atoms(AtomSpeciesId),
+            AtomStateTotalAngMom FLOAT, 
+            AtomStateParity INTEGER, 
+            AtomStateStatisticalWeight FLOAT,
+            AtomStateEnergy DOUBLE PRECISION, 
+            AtomStateDescription VARCHAR(128))'''
+        c.execute(ATOMSTATE_CREATE)
+        if Atoms:
+            ATOMSTATE_INSERT = ''' INSERT INTO AtomicStates(
+                'AtomStateId',
+                'AtomRef',
+                'AtomStateTotalAngMom',
+                'AtomStateParity',
+                'AtomStateStatisticalWeight',
+                'AtomStateEnergy',
+                'AtomStateDescription')
+                VALUES(?,?,?,?,?,?,?) '''
+            for a in Atoms:
+                if not hasattr(a,'States'):
+                    a.States = []
+                for s in a.States:
+                    c.execute(ATOMSTATE_INSERT,
+                        (s.id, a.id, s.atomstatetotalangmom, s.parity, s.statisticalweight, s.energy, s.atomstateconfigurationlabel)
+                    )
+                conn.commit()
+    finally:
+        if conn:
+            conn.close()
 
 
 def cleandict(indict):
@@ -350,7 +476,8 @@ def dbConnected():
     try:
         cursor=connection.cursor()
         return ('true', 'service is available, database is connected.')
-    except:
+    except Exception as oops:
+        log.error(oops)
         return ('false', 'database is not connected')
 
 def availability(request):
@@ -361,4 +488,34 @@ def availability(request):
 def tables(request):
     c={"column_names_list" : DICTS.RETURNABLES.keys(), 'baseURL' : getBaseURL(request)}
     return render(request, template_name='tap/VOSI-tables.xml', context=c, content_type='text/xml')
+    
+def job(request, id=None):
+    if id:
+        if request.method == 'GET':
+            (state, query, expiry) = getJobState(id)
+            log.debug(state)
+            log.debug(query)
+            fileName = str(id) + '.sqlite3'
+            c = {'id': id, 'state': state, 'file': fileName, 'query': query, 'expiry': expiry}
+            return render(request, template_name='tap/job.html', context=c, content_type='text/html')
+        elif (request.method == 'POST') or (request.method == 'DELETE'):
+            forgetJob(id)
+            return redirect('/tap/async/jobs')
+        else:
+            return HttpResponse(status=400)
+    else:
+        return HttpResponse(status=404);
+        
+def result(request, id=None):
+    if id:
+        filePath = settings.RESULTS_CACHE_DIR + os.path.sep + str(id) + '.sqlite3'
+        return FileResponse(open(filePath, 'rb'))
+    else:
+        return HttpResponse(status=404);
+        
+def jobs(request):
+    c = {'jobs': getDetailsAllJobs()}
+    return render(request, template_name='tap/jobs.html', context=c, content_type='text/html')
+    
+    
 

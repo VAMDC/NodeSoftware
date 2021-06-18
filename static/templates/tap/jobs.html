@@ -1,0 +1,27 @@
+<html>
+
+<head>
+<style type="text/css" media="screen">
+td {
+padding-left: 5px;
+padding-right: 5px;
+padding-top: 0px;
+padding-bottom: 0px;
+}
+</style>
+</head>
+
+<body>
+<h1>Known query-jobs</h1>
+<table>
+<tr><th>Name</th><th>State</th><th>Expires</th><th>Discard</th><th>Query</th></tr>
+{% for row in jobs %}
+    <tr>
+    <td><a href="jobs/{{row.0}}">{{row.0}}</a></td>
+    <td>{{row.1}}</td><td>{{row.3}}</td>
+    <td><form action="jobs/{{row.0}}" method="post"><input type="submit" value="Delete"/></form></td>
+    <td>{{row.2}}</td>
+    </tr>
+{% endfor %}
+</table>
+</body>

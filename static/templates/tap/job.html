@@ -1,0 +1,13 @@
+<html>
+<body>
+<h1>Query job {{id}}</h1>
+<p>State: {{state}} (reload the page to poll for completion)</p>
+<p>Query: {{query}}</p>
+<p>Result: <a href="{{id}}/result">{{file}}</a></p>
+<p>Available until: {{expiry}}</p>
+<form action="{{id}}" method="POST">
+<input type="hidden" name="ACTION" value="delete"/>
+<p><input type="submit" value="Delete job and its results"></p>
+</form>
+<p><a href="/tap/async/jobs">Back to list of query-jobs</a></p>
+</body>

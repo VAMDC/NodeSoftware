@@ -1,14 +1,17 @@
-from django.conf.urls import url, include
+from django.conf.urls import url
+from django.urls import path
 from django.conf import settings
 import django.views.static
-from vamdctap.views import sync, availability, capabilities, tables
-#import vamdctap
+from vamdctap.views import sync, asynch, availability, capabilities, tables, job, result, jobs
 
 urlpatterns = [url(r'^sync[/]?$', sync),
-               #(r'^async/', 'async'),
+               url(r'^async[/]?$', asynch),
                url(r'^availability[/]?$', availability),
                url(r'^capabilities[/]?$', capabilities),
                url(r'^tables[/]?$', tables),
+               path('async/jobs/<id>', job),
+               path('async/jobs/<id>/result', result),
+               path('async/jobs', jobs)
                ]
 
 if settings.SERVE_STATIC:
