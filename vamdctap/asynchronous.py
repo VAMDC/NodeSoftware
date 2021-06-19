@@ -25,21 +25,6 @@ DICTS = import_module(settings.NODEPKG+'.dictionaries')
 
 
     
-def forgetJob(id):
-    db = settings.RESULTS_CACHE_DIR + os.path.sep + 'jobs.db'
-    conn = sqlite3.connect(db)
-    c = conn.cursor()
-    sql = 'DELETE FROM jobs WHERE id=?'
-    c.execute(sql, (str(id),))
-    conn.commit()
-    conn.close()
-    fileName = settings.RESULTS_CACHE_DIR + os.path.sep + str(id) + '.sqlite3'
-    os.remove(fileName)
-    
-
-
-
-
 '''
 Runs one query. Requires keyword arguments tap, a TAPQUERY instance,
 id, a UUID for the job, and directory, the absolute path to a cache
@@ -48,7 +33,7 @@ directory in which the resutls of the query will be stored.
 def asyncTapQuery(*args, **kwargs):
     (id, tap, directory) = args
     j = Job.objects.filter(id=id)[0]
-    j.state='ACTIVE'
+    j.phase='ACTIVE'
     j.save()
     
     filePath = directory + os.path.sep + j.file
