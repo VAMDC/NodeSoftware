@@ -54,12 +54,11 @@ def getSpeciesWithStates(transs, sql):
     # get the reference ids for the 'species' ForeignKey field 
     # (see getRefs comment for more info)
     spids = set( transs.values_list('finalstateindex__species',flat=True) )
-    #print spids
+
     # use the reference ids to query the Species database table 
     species = models.Species.objects.filter(pk__in=spids)
     nspecies = species.count() # get some statistics 
-    #print 'nspecies = %d\n'%nspecies
-
+    
     # List the IDs (i.e. keys from the states table) of all the states 
     # connected with all the selected transitions.
     stateIds = set().union(transs.values_list('initialstateindex', flat=True), transs.values_list('finalstateindex', flat=True))
@@ -70,6 +69,7 @@ def getSpeciesWithStates(transs, sql):
     logging.debug("Getting states")
     nstates = 0
     if statesRequired(sql):
+        logger.debug('Really getting states')
         for spec in species:
             # use the found reference ids to search the State database table 
             # Note that we store a new queryset called 'States' on the species queryset. 
@@ -82,6 +82,7 @@ def getSpeciesWithStates(transs, sql):
             #     for comp in state.Components:
             #         comp.Shells = models.Subshells.objects.filter(state=state.id)
             nstates += spec.States.count()
+    logging.debug("Finished getting states")
 
     return species, nspecies, nstates
 
@@ -141,6 +142,7 @@ def getMethods():
 
 
 def everythingRequired(sql):
+    logging.debug(sql.requestables)
     return len(sql.requestables) == 0
 
 
@@ -149,6 +151,7 @@ def transitionsRequired(sql):
 
 
 def statesRequired(sql):
+    logging.debug(sql.requestables)
     return 'atomstates' in sql.requestables or everythingRequired(sql)
 
 def constraintsPresent(sql):
@@ -177,6 +180,7 @@ def query(sql, limit):
 
     # log the incoming query
     logging.debug(sql)
+    logging.debug(sql.requestables)
 
     # convert the incoming sql to a correct django query syntax object 
     # based on the RESTRICTABLES dictionary in dictionaries.py
@@ -233,7 +237,7 @@ def query(sql, limit):
 
 def genericQuery(sql, q, limit):
     """
-    When query constraints are present, this for mof query is used.
+    When query constraints are present, this form of query is used.
     The query initially selects the transitions and then builds matching
     sets of species and states. It has to be done this way because the
     retrictables dictionary contains object references from the Transitions
@@ -247,7 +251,8 @@ def genericQuery(sql, q, limit):
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
     logging.debug("getting transitions")
-    transs = models.Transitions.objects.filter(q)
+    transs = models.Transitions.objects.select_related('finalstateindex__species').filter(q)
+    logging.debug('finished getting transitions')
 
     # count the number of matches, make a simple truncation if there are
     # too many (record the coverage in the returned header)
@@ -265,7 +270,6 @@ def genericQuery(sql, q, limit):
     #sources = getRefs(transs)
     logging.debug("Getting species")
     species, nspecies, nstates = getSpeciesWithStates(transs, sql)
-    logging.debug(species)
 
     return species, nstates, transs, percentage
 
