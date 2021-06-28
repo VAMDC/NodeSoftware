@@ -1,13 +1,11 @@
 class TapRouter:
     def db_for_read(self, model, **hints):
-        print(model._meta.label)
         if model._meta.label == 'vamdctap.Job':
             return 'vamdctap'
         else:
             return 'default'
 
     def db_for_write(self, model, **hints):
-        print(model._meta.label)
         if model._meta.label == 'vamdctap.Job':
             return 'vamdctap'
         else:
