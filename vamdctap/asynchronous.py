@@ -53,6 +53,8 @@ def asyncTapQuery(*args, **kwargs):
         j.save()
         return 
         
+    
+        
     # Run the query and put the results into the file.
     log.debug('Copying to SQLite at %s ...'%filePath)
     generateSqlite(filePath, tap, **querysets)

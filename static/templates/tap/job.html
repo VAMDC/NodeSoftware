@@ -1,13 +1,20 @@
 <html>
+<head>
+	<meta charset="utf-8"/>
+	{% load tz %}
+</head>
 <body>
 <h1>Query job {{job.id}}</h1>
-<p>State: {{job.phase}} (reload the page to poll for completion)</p>
-<p>Query: {{job.query}}</p>
-<p>Result: <a href="{{job.id}}/result">{{job.file}}</a></p>
-<p>Available until: {{job.expiry}}</p>
+<table>
+	<tr><td>State:</td><td>{{job.phase}} (reload the page to poll for completion)</td></tr>
+	<tr><td>Query:</td><td>{{job.query}}</td></tr>
+	<tr><td>Result:</td><td><a href="{{job.id}}/result">{{job.file}}</a> ({{ file_bytes|filesizeformat }})</td></tr>
+	<tr><td>Submitted:</td><td>{{job.submitted|utc}} UTC</td></tr>
+	<tr><td>Available until:</td><td>{{job.expiry|utc}} UTC</td></tr>
+</table>
 <form action="{{job.id}}" method="POST">
-<input type="hidden" name="ACTION" value="delete"/>
-<p><input type="submit" value="Delete job and its results"></p>
+	<input type="hidden" name="ACTION" value="delete"/>
+	<p><input type="submit" value="Delete job and its results"></p>
 </form>
 <p><a href="/tap/async/jobs">Back to list of query-jobs</a></p>
 </body>

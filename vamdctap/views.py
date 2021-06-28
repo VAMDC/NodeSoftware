@@ -18,6 +18,7 @@ log=logging.getLogger('vamdc.tap')
 from django.conf import settings
 from importlib import import_module
 from django.utils.http import http_date
+from django.utils import timezone
 from requests.utils import CaseInsensitiveDict as CaselessDict
 
 import sqlite3
@@ -368,13 +369,13 @@ def asynch(request):
 
     # Submit the query for asynchronous execution
     id = uuid.uuid4()
-    expiry = datetime.datetime.now()
+    expiry = timezone.now()
     expiry += datetime.timedelta(days=1)
     j = Job()
     j.id = str(id)
     j.query = tap.query
     j.phase = 'pending'
-    j.expiry = str(expiry)
+    j.expiry = expiry
     j.file = j.id + '.sqlite3'
     j.save()
     dir = settings.RESULTS_CACHE_DIR
@@ -395,39 +396,15 @@ def generateSqlite(filePath, tap, HeaderInfo=None, Sources=None, Methods=None, F
         log.debug('Connecting SQLite to %s...'%filePath)
         conn = sqlite3.connect(filePath)
         log.debug('...connected')
-        ATOMS_FIELDS = [
-            'AtomSpeciesId',
-            'AtomSymbol',
-            'AtomNuclearCharge',
-            'AtomIonCharge',
-            'AtomInchi',
-            'AtomInchiKey',
-        ]
-        ATOMS_CREATE = 'CREATE TABLE Atoms(AtomSpeciesId INTEGER PRIMARY KEY, AtomSymbol CHAR(2), AtomNuclearCharge INTEGER, AtomIonCharge INTEGER, AtomInchi VARCHAR(64), AtomInchiKey VARCHAR(32))'
-        if Atoms:
-            c = conn.cursor()
-            c.execute(ATOMS_CREATE)
-            ATOMS_INSERT = ''' INSERT INTO Atoms(
-                'AtomSpeciesId',
-                'AtomSymbol',
-                'AtomNuclearCharge',
-                'AtomIonCharge',
-                'AtomInchi',
-                'AtomInchiKey')
-                VALUES(?,?,?,?,?,?) '''
-            for a in Atoms:
-                c.execute(ATOMS_INSERT, (a.id, a.atomsymbol, a.atomnuclearcharge, a.atomioncharge, a.inchi, a.inchikey))
-            conn.commit()
-            
-        ATOMSTATE_FIELDS = [
-            'AtomStateId',
-            'AtomRef',
-            'AtomStateTotalAngMom',
-            'AtomStateParity',
-            'AtomStateStatisticalWeight',
-            'AtomStateEnergy',
-            'AtomStateDescription'
-        ]    
+        c = conn.cursor()
+        ATOMS_CREATE = '''CREATE TABLE Atoms(
+            AtomSpeciesId INTEGER PRIMARY KEY,
+            AtomSymbol CHAR(2),
+            AtomNuclearCharge INTEGER,
+            AtomIonCharge INTEGER,
+            AtomInchi VARCHAR(64),
+            AtomInchiKey VARCHAR(32))'''
+        c.execute(ATOMS_CREATE)
         ATOMSTATE_CREATE = '''CREATE TABLE AtomicStates(
             AtomStateId INTEGER PRIMARY KEY, 
             AtomRef INTEGER REFERENCES Atoms(AtomSpeciesId),
@@ -437,8 +414,19 @@ def generateSqlite(filePath, tap, HeaderInfo=None, Sources=None, Methods=None, F
             AtomStateEnergy DOUBLE PRECISION, 
             AtomStateDescription VARCHAR(128))'''
         c.execute(ATOMSTATE_CREATE)
-        if Atoms:
-            ATOMSTATE_INSERT = ''' INSERT INTO AtomicStates(
+        conn.commit()
+        
+        if Atoms: 
+            c = conn.cursor()   
+            ATOMS_INSERT = ''' INSERT INTO Atoms(
+                'AtomSpeciesId',
+                'AtomSymbol',
+                'AtomNuclearCharge',
+                'AtomIonCharge',
+                'AtomInchi',
+                'AtomInchiKey')
+                VALUES(?,?,?,?,?,?) '''
+            ATOMSTATE_INSERT = '''INSERT INTO AtomicStates(
                 'AtomStateId',
                 'AtomRef',
                 'AtomStateTotalAngMom',
@@ -446,8 +434,9 @@ def generateSqlite(filePath, tap, HeaderInfo=None, Sources=None, Methods=None, F
                 'AtomStateStatisticalWeight',
                 'AtomStateEnergy',
                 'AtomStateDescription')
-                VALUES(?,?,?,?,?,?,?) '''
-            for a in Atoms:
+                VALUES(?,?,?,?,?,?,?)'''
+            for a in Atoms.all().iterator():
+                c.execute(ATOMS_INSERT, (a.id, a.atomsymbol, a.atomnuclearcharge, a.atomioncharge, a.inchi, a.inchikey))
                 if not hasattr(a,'States'):
                     a.States = []
                 for s in a.States:
@@ -502,11 +491,12 @@ def job(request, id=None):
     if id:
         if request.method == 'GET':
             j = Job.objects.filter(id=id)[0]
-            #(state, query, expiry) = getJobState(id)
-            #log.debug(state)
-            #log.debug(query)
-            j.file = j.id + '.sqlite3'
-            c = {'job': j}
+            try:
+                filePath = settings.RESULTS_CACHE_DIR + os.path.sep + j.file
+                sizeInBytes = int(os.path.getsize(filePath))
+            except:
+                sizeInBytes = 0
+            c = {'job': j, 'file_bytes': sizeInBytes}
             return render(request, template_name='tap/job.html', context=c, content_type='text/html')
         elif (request.method == 'POST') or (request.method == 'DELETE'):
             Job.objects.filter(id=id).delete()

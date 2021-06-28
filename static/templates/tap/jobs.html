@@ -14,15 +14,24 @@ padding-bottom: 0px;
 <body>
 <h1>Known query-jobs</h1>
 <table>
-<tr><th>Name</th><th>State</th><th>Expires</th><th>Discard</th><th>Query</th></tr>
+<tr>
+	<th>Name</th>
+	<th>State</th>
+	<th>Submitted</th>
+	<th>Expires</th>
+	<th>Discard</th>
+	<th>Query</th>
+</tr>
 {% for j in jobs %}
     <tr>
     <td><a href="jobs/{{j.id}}">{{j.id}}</a></td>
     <td>{{j.phase}}</td>
+    <td>{{j.submitted}}</td>
     <td>{{j.expiry}}</td>
     <td><form action="jobs/{{j.id}}" method="post"><input type="submit" value="Delete"/></form></td>
     <td>{{j.query}}</td>
     </tr>
 {% endfor %}
 </table>
+<p><a href="/tap/async/form">Enter a new query</a></p>
 </body>
