@@ -105,7 +105,7 @@ TIME_ZONE = 'Europe/Berlin'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 # Give debug messages
-DEBUG = False
+DEBUG = True
 # For web templates, use Python traceback instead of Server Error message.
 TEMPLATE_DEBUG = DEBUG
 # site id number (you shouldn't have to change this)
@@ -152,6 +152,8 @@ TEMPLATES = [
 # ALLOW TO SERVE FROM ALL HOSTS
 ALLOWED_HOSTS = ['*']
 
+DEBUG=True
+
 #########################
 #  LOGGING
 ########################
@@ -159,7 +161,7 @@ import tempfile
 TMPDIR = tempfile.gettempdir()
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
@@ -172,6 +174,7 @@ LOGGING = {
         'console':{
             'level':'DEBUG',
             'class':'logging.StreamHandler',
+            'formatter': 'verbose'
         },
     },
     'root': {
@@ -184,6 +187,11 @@ LOGGING = {
             'level':'INFO',
             'propagate': False,
         },
+        #'django.db.backends': {
+        #    'handlers':['console'],
+        #    'level':'DEBUG',
+        #    'propagate': False,
+        #},
         'vamdc': {
             'handlers': ['console'],
             'level': 'DEBUG',
