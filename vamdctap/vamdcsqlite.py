@@ -59,7 +59,7 @@ def generateSqlite(filePath, tap, HeaderInfo=None, Sources=None, Methods=None, F
                 'AtomInchiKey')
                 VALUES(?,?,?,?,?,?) '''
             for a in Atoms:
-                log.debug('Inserting atom %s'%str(a.id))
+                #log.debug('Inserting atom %s'%str(a.id))
                 c.execute(ATOMS_INSERT, (a.id, a.atomsymbol, a.atomnuclearcharge, a.atomioncharge, a.inchi, a.inchikey))
                 ATOMSTATE_INSERT = ''' INSERT INTO AtomicStates(
                     'AtomStateId',
@@ -72,12 +72,12 @@ def generateSqlite(filePath, tap, HeaderInfo=None, Sources=None, Methods=None, F
                     VALUES(?,?,?,?,?,?,?) '''
                 if hasattr(a, 'States'):
                     for s in a.States.all().iterator():
-                        log.debug('Inserting state %s'%str(s.id))
+                        #log.debug('Inserting state %s'%str(s.id))
                         c.execute(ATOMSTATE_INSERT,
                             (s.id, a.id, s.atomstatetotalangmom, s.parity, s.statisticalweight, s.energy, s.atomstateconfigurationlabel)
                         )
                 conn.commit()
-                log.debug('Finished atoms and states')
+                #log.debug('Finished atoms and states')
        
         if RadTrans:
             RADTRANS_INSERT = '''INSERT INTO RadTrans(

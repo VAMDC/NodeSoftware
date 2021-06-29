@@ -25,7 +25,7 @@ import sqlite3
 
 import threading
 
-from vamdctap.asynchronous import asyncTapQuery
+from vamdctap.asynchronous import asyncTapQuery, purgeJobs
 from vamdctap.models import Job
 
 
@@ -354,6 +354,7 @@ def sync(request):
 
 
 def asynch(request):
+    purgeJobs()
 
     request.token = "%s:%s:%s" % (settings.NODENAME, uuid.uuid4(), request.method.lower())
 
@@ -514,6 +515,7 @@ def result(request, id=None):
         return HttpResponse(status=404);
         
 def jobs(request):
+    purgeJobs()
     c = {'jobs': Job.objects.all()}
     return render(request, template_name='tap/jobs.html', context=c, content_type='text/html')
     

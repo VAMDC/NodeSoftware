@@ -1,23 +1,19 @@
 # -*- coding: utf-8 -*-
-import datetime
 import os
-import time
-
 import logging
-log=logging.getLogger('vamdc.tap')
-
-import sqlite3
+import threading
 
 # These are needed to get the node settings.
 from django.conf import settings
 from importlib import import_module
 
-
-import threading
+from django.utils import timezone
 
 from vamdctap.vamdcsqlite import generateSqlite
 from vamdctap.models import Job
 
+
+log=logging.getLogger('vamdc.tap')
 
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
 DICTS = import_module(settings.NODEPKG+'.dictionaries')
@@ -63,3 +59,9 @@ def asyncTapQuery(*args, **kwargs):
     j.save()
 
 
+def purgeJobs():
+    for j in Job.objects.all():
+        if timezone.now() > j.expiry:
+            j.delete()
+            
+            
