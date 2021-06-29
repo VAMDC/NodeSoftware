@@ -8,7 +8,7 @@
 # into your database.
 
 from django.db import models
-import util_models as util_models
+import node.util_models as util_models
 #from django.core.exceptions import DoesNotExist
 
 import logging
@@ -40,7 +40,7 @@ class Author(models.Model):
         
 class Source(models.Model):
     id = models.IntegerField(primary_key=True)
-    sourcecategory = models.ForeignKey(Sourcecategory, db_column='id_sourcecategory')
+    sourcecategory = models.ForeignKey(Sourcecategory, db_column='id_sourcecategory', on_delete=models.DO_NOTHING)
     title = models.TextField(null=True)
     year = models.IntegerField(null=True)
     volume = models.IntegerField(null=True)    
@@ -64,8 +64,8 @@ class Source(models.Model):
         
 class Dataset(models.Model):
     id = models.IntegerField(primary_key=True)
-    molecule =  models.ForeignKey(Molecule, db_column='id_molecule')
-    source = models.ForeignKey(Source, db_column='id_source')
+    molecule =  models.ForeignKey(Molecule, db_column='id_molecule', on_delete=models.DO_NOTHING)
+    source = models.ForeignKey(Source, db_column='id_source', on_delete=models.DO_NOTHING)
     title = models.CharField(max_length=255)
     class Meta:
         db_table = u't_dataset'      
@@ -73,8 +73,8 @@ class Dataset(models.Model):
 
 class Authorsource(models.Model):
     id = models.IntegerField(primary_key=True)    
-    author = models.ForeignKey(Author, db_column='id_author')
-    source = models.ForeignKey(Source, db_column='id_source')
+    author = models.ForeignKey(Author, db_column='id_author', on_delete=models.DO_NOTHING)
+    source = models.ForeignKey(Source, db_column='id_source', on_delete=models.DO_NOTHING)
     rank = models.IntegerField()
     class Meta:
         db_table = u't_authorsource'    
@@ -82,7 +82,7 @@ class Authorsource(models.Model):
 
 class Molecularstate(models.Model):
     id = models.IntegerField(primary_key=True)
-    dataset = models.ForeignKey(Dataset, db_column='id_dataset')
+    dataset = models.ForeignKey(Dataset, db_column='id_dataset', on_delete=models.DO_NOTHING)
     fully_assigned = models.IntegerField()
     energy = models.FloatField(db_column='state_energy')
     total_statistical_weight = models.IntegerField()
@@ -92,7 +92,7 @@ class Molecularstate(models.Model):
 
 class Case(models.Model):
     id = models.IntegerField(primary_key=True)
-    molecularstate = models.ForeignKey(Molecularstate, db_column='id_molecularstate')
+    molecularstate = models.ForeignKey(Molecularstate, db_column='id_molecularstate', on_delete=models.DO_NOTHING)
     elec_state_label = models.CharField(max_length=9, blank=True)
     j = models.IntegerField(null=True, db_column='J', blank=True) # Field name made lowercase.
     parity = models.CharField(max_length=3, blank=True)
@@ -123,7 +123,7 @@ class Case(models.Model):
 
 class Dcscase(models.Model):
     id = models.IntegerField(primary_key=True)
-    case = models.ForeignKey(Case, db_column='id_case')
+    case = models.ForeignKey(Case, db_column='id_case', on_delete=models.DO_NOTHING)
     v = models.IntegerField()
     f1 = models.FloatField(null=True, db_column='F1', blank=True) # Field name made lowercase.
     as_sym = models.CharField(max_length=3, blank=True)
@@ -137,7 +137,7 @@ class Dcscase(models.Model):
 
 class Hundbcase(models.Model):
     id = models.IntegerField(primary_key=True)
-    case = models.ForeignKey(Case, db_column='id_case')
+    case = models.ForeignKey(Case, db_column='id_case', on_delete=models.DO_NOTHING)
     elec_inv = models.CharField(max_length=3, blank=True)
     elec_refl = models.CharField(max_length=3, blank=True)
     lambda_field = models.IntegerField(null=True, db_column='lambda', blank=True) # Field renamed because it was a Python reserved word.
@@ -158,12 +158,12 @@ class Hundbcase(models.Model):
 
 class Radiativetransition(models.Model):
     id = models.IntegerField(primary_key=True)
-    dataset = models.ForeignKey(Dataset, db_column='id_dataset')
-    molecule = models.ForeignKey(Molecule, db_column='id_molecule')
+    dataset = models.ForeignKey(Dataset, db_column='id_dataset', on_delete=models.DO_NOTHING)
+    molecule = models.ForeignKey(Molecule, db_column='id_molecule', on_delete=models.DO_NOTHING)
     ordinarystructuralformula = models.CharField(max_length=20, db_column='ordinary_structural_formula')
-    source = models.ForeignKey(Source, db_column='id_source')
-    upperstate = models.ForeignKey(Molecularstate, db_column='id_upperstate', related_name="upperstate")
-    lowerstate = models.ForeignKey(Molecularstate, db_column='id_lowerstate', related_name="lowerstate")
+    source = models.ForeignKey(Source, db_column='id_source', on_delete=models.DO_NOTHING)
+    upperstate = models.ForeignKey(Molecularstate, db_column='id_upperstate', related_name="upperstate", on_delete=models.DO_NOTHING)
+    lowerstate = models.ForeignKey(Molecularstate, db_column='id_lowerstate', related_name="lowerstate", on_delete=models.DO_NOTHING)
     wavelength = models.FloatField()
     wavenumber_observed = models.FloatField()
     wavenumber_calculated = models.FloatField()

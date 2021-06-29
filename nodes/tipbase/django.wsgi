@@ -1,10 +1,10 @@
 import os
 import sys
+import site
 
-# EDIT THE FOLLOWING TWO LINES
-sys.path.append('/home/tom/py/vamdc/')
-os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.YourNode.settings'
+# Add the app's directory to the PYTHONPATH
+os.environ['DJANGO_SETTINGS_MODULE'] = 'nodes.tipbase.settings'
 
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
 
-import django.core.handlers.wsgi
-application = django.core.handlers.wsgi.WSGIHandler()

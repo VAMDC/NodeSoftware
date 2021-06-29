@@ -62,6 +62,7 @@ def getSpeciesWithStates(transs, sql):
     # use the reference ids to query the Species database table 
     species = models.Species.objects.filter(pk__in=spids)
     nspecies = species.count() # get some statistics 
+    #print 'nspecies = %d\n'%nspecies
 
     # List the IDs (i.e. keys from the states table) of all the states 
     # connected with all the selected transitions.
@@ -70,6 +71,7 @@ def getSpeciesWithStates(transs, sql):
     # get all states. Note that when building a queryset like this,
     # (using objects.filter() etc) will usually not hit the database
     # until it's really necessary, making this very efficient. 
+
     nstates = 0
     if statesRequired(sql):
         for spec in species:

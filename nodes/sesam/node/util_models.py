@@ -50,16 +50,8 @@ class Result:
 			
 		return result
         
-class Test:
-    def __init__(self):
-        self.text = "youpi"
-        
-    def text(self):
-        return self.text
-        
 class Methods:
     def __init__(self):
-        pass
         self._methodsDict = self.__initMethods()
         self._methodsList = self.__dictToList(self._methodsDict)
         
@@ -86,7 +78,7 @@ class Methods:
         
     def __dictToList(self, dic):
         result = []
-        for key, value in dic.iteritems():            
+        for key, value in dic.items():            
             result.append(value)            
         return result
     

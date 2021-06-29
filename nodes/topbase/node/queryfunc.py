@@ -18,8 +18,8 @@ from vamdctap.sqlparse import sql2Q
 from django.db.models import Q
 from django.db import connection
 import logging
-import dictionaries
-import models as django_models
+import node.dictionaries
+import node.models as django_models
 
 if hasattr(settings,'TRANSLIM'):
   TRANSLIM = settings.TRANSLIM
@@ -88,7 +88,7 @@ def getSpeciesWithStates(transs):
         species_map[trans.version_id].States.append(trans.loweratomicstate)
         states.append(trans.loweratomicstate)
     
-    for key, value in species_map.iteritems():
+    for key, value in species_map.items():
       species.append(value)  
 
     #~ print("--- %s seconds ---" % (time.time() - start_time))
@@ -150,6 +150,9 @@ def setupResults(sql):
   # return all species
   if str(sql).strip().lower() == 'select species': 
     return setupSpecies()
+  # return all sources
+  elif str(sql).strip().lower() == 'select sources': 
+    return setupSources()
     
   # all other requests
   else : 
@@ -246,4 +249,21 @@ def setupSpecies():
             'Atoms':versions,  
           }
   return result    
+
+
+def setupSources():
+  """		
+    Return all sources
+    @rtype:   util_models.Result
+    @return:  Result object		
+  """
+  
+  # get  all sources
+  sources = django_models.Source.objects.all()
+  result = {'HeaderInfo':{'COUNT-SOURCES': len(sources), },
+            'Sources':sources,  
+          }
+  return result    
+
+	
 
