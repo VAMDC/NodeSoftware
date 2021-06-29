@@ -69,7 +69,7 @@ def getSpeciesWithStates(transs, sql):
     logging.debug("Getting states")
     nstates = 0
     if statesRequired(sql):
-        logger.debug('Really getting states')
+        logging.debug('Really getting states')
         for spec in species:
             # use the found reference ids to search the State database table 
             # Note that we store a new queryset called 'States' on the species queryset. 
@@ -142,7 +142,6 @@ def getMethods():
 
 
 def everythingRequired(sql):
-    logging.debug(sql.requestables)
     return len(sql.requestables) == 0
 
 
@@ -151,7 +150,6 @@ def transitionsRequired(sql):
 
 
 def statesRequired(sql):
-    logging.debug(sql.requestables)
     return 'atomstates' in sql.requestables or everythingRequired(sql)
 
 def constraintsPresent(sql):
@@ -251,7 +249,7 @@ def genericQuery(sql, q, limit):
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
     logging.debug("getting transitions")
-    transs = models.Transitions.objects.select_related('finalstateindex__species').filter(q)
+    transs = models.Transitions.objects.select_related().filter(q)
     logging.debug('finished getting transitions')
 
     # count the number of matches, make a simple truncation if there are
