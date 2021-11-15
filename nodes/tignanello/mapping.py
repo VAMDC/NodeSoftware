@@ -147,8 +147,8 @@ def speciesFk(linedata, sep):
 # The names of the files
 # There is an input file and output file
 # for each table of the database.
-basepath = "/users/guy/vamdc/tignanillo/"
-outpath  = "/users/guy/vamdc/tignanillo/"
+basepath = "/users/guy/vamdc/NodeSoftware/nodes/tignanello/"
+outpath  = "/users/guy/vamdc/NodeSoftware/nodes/tignanello/"
 statesInFile  = basepath + 'states.in'
 statesOutFile = outpath + 'states.out'
 linesInFile  = basepath + 'lines.in'
