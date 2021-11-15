@@ -16,8 +16,8 @@ from django.conf import settings
 from django.db.models import Q 
 from vamdctap.sqlparse import sql2Q
 
-import dictionaries
-import models # this imports models.py from the same directory as this file
+from . import dictionaries
+from . import models
 
 def LOG(s):
     "Simple logger function"
