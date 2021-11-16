@@ -11,6 +11,7 @@
 # library imports 
 
 import sys
+import logging
 from itertools import chain
 from django.conf import settings
 from django.db.models import Q 
@@ -19,9 +20,7 @@ from vamdctap.sqlparse import sql2Q
 from . import dictionaries
 from . import models
 
-def LOG(s):
-    "Simple logger function"
-    if settings.DEBUG: print >> sys.stderr, s
+log = logging.getLogger('tignanello_queryfunc')
 
 #------------------------------------------------------------
 # Helper functions (called from setupResults)
@@ -49,7 +48,7 @@ def getSpeciesWithStates(transs, sql):
     # get all states. Note that when building a queryset like this,
     # (using objects.filter() etc) will usually not hit the database
     # until it's really necessary, making this very efficient. 
-    LOG("Getting states")
+    log.debug("Getting states")
     nstates = 0
     if statesRequired(sql):
         for spec in species:
@@ -87,14 +86,14 @@ def setupResults(sql, limit=100000):
     try:
         return query(sql, limit)
     except Exception as oops:
-        LOG(oops)
+        log.error(oops)
         raise oops
 
 
 def query(sql, limit):
 
     # log the incoming query
-    LOG(sql)
+    log.debug(sql)
 
     # convert the incoming sql to a correct django query syntax object 
     # based on the RESTRICTABLES dictionary in dictionaries.py
@@ -130,7 +129,7 @@ def query(sql, limit):
             'count-radiative':ntranss,
             'last-modified' : '2013-08-31T21:30:00+00:00'
             }
-    LOG(headerinfo)
+    log.info(headerinfo)
             
     # Return the data. The keynames are standardized.
     if (nspecies > 0 or nstates > 0 or ntranss > 0):
@@ -153,14 +152,14 @@ def genericQuery(sql, q, limit):
     table; the query sets cannot work on directly on the other tables.
     """
 
-    LOG("Generic query")
+    log.debug("Generic query")
 
     # We build a queryset of database matches on the Transision model
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
-    LOG("getting transitions")
-    transs = models.Transitions.objects.select_related(depth=2).filter(q)
+    log.debug("getting transitions")
+    transs = models.Transitions.objects.select_related().filter(q)
 
     # count the number of matches, make a simple truncation if there are
     # too many (record the coverage in the returned header)
@@ -176,12 +175,12 @@ def genericQuery(sql, q, limit):
     # Through the transition-matches, use our helper functions to extract 
     # all the relevant database data for our query. 
     #sources = getRefs(transs)
-    LOG("Getting species")
+    log.debug("Getting species")
     species, nspecies, nstates = getSpeciesWithStates(transs, sql)
-    LOG(species)
+    log.debug(species)
 
     return species, nstates, transs, percentage
 
 def allSpeciesQuery(sql, q, limit):
-    LOG("All-species query")
+    log.debug("All-species query")
     return models.Species.objects.all()
