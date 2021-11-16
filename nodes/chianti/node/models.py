@@ -34,7 +34,7 @@ class States(models.Model):
     id = models.IntegerField(null=False, primary_key=True, blank=False)
     chiantiiontype = models.CharField(max_length=3, db_column='ChiantiIonType', blank=True)
     atomsymbol = models.CharField(max_length=6, db_column='AtomSymbol', blank=True)
-    species = models.ForeignKey(Species, related_name='+', db_column='species')
+    species = models.ForeignKey(Species, related_name='+', db_column='species', on_delete=models.CASCADE)
     atomnuclearcharge = models.IntegerField(null=True, db_column='AtomNuclearCharge', blank=True)
     atomioncharge = models.IntegerField(null=True, db_column='AtomIonCharge', blank=True)
     atomstateconfigurationlabel = models.CharField(max_length=96, db_column='AtomStateConfigurationLabel', blank=True)
@@ -99,8 +99,8 @@ class Transitions(models.Model):
     id = models.IntegerField(db_column='id', null=False, blank=False, primary_key=True)
     chiantiradtranstype = models.CharField(max_length=3, db_column='ChiantiRadTransType', blank=True)
     atomsymbol = models.CharField(max_length=24, db_column='AtomSymbol', blank=True)
-    finalstateindex = models.ForeignKey(States, related_name='+', db_column='chiantiradtransfinalstateindex')
-    initialstateindex = models.ForeignKey(States, related_name='+', db_column='chiantiradtransinitialstateindex')
+    finalstateindex = models.ForeignKey(States, related_name='+', db_column='chiantiradtransfinalstateindex', on_delete=models.CASCADE)
+    initialstateindex = models.ForeignKey(States, related_name='+', db_column='chiantiradtransinitialstateindex', on_delete=models.CASCADE)
     wavelengthexperimental = models.FloatField(null=True, db_column='wavelengthexperimental', blank=True)
     wavelengththeoretical = models.FloatField(null=True, db_column='wavelengththeoretical', blank=True)
     wavelength = models.FloatField(null=True, db_column='wavelength', blank=True)
@@ -109,15 +109,15 @@ class Transitions(models.Model):
 
     def upperStateRef(self):
         if self.finalstateindex.energy > self.initialstateindex.energy:
-            return self.finalstateindex.id
+            return self.finalstateindex
         else:
-            return self.initialstateindex.id
+            return self.initialstateindex
 
     def lowerStateRef(self):
         if self.finalstateindex.energy < self.initialstateindex.energy:
-            return self.finalstateindex.id
+            return self.finalstateindex
         else:
-            return self.initialstateindex.id
+            return self.initialstateindex
 
 
 
@@ -143,7 +143,7 @@ class Transitions(models.Model):
 # This is copied from the VALD node.
 class Sources(models.Model):
     id = models.CharField(max_length=7, primary_key=True, db_index=True)
-    species = models.ForeignKey(Species, related_name='+')
+    species = models.ForeignKey(Species, related_name='+', on_delete=models.CASCADE)
     bibtex = models.TextField(null=True)
 
     def XML(self):

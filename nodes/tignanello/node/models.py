@@ -12,7 +12,7 @@ class Species(models.Model):
 
 class States(models.Model):
     id = models.IntegerField(null=False, primary_key=True, blank=False)
-    species = models.ForeignKey(Species, related_name='+', db_column='species')
+    species = models.ForeignKey(Species, related_name='+', db_column='species', on_delete=models.CASCADE,)
     configuration = models.CharField(max_length=96, db_column='configuration', blank=True)
     s = models.FloatField(null=True, db_column='s', blank=True)
     l = models.IntegerField(null=True, db_column='l', blank=True)
@@ -24,8 +24,8 @@ class States(models.Model):
 
 class Transitions(models.Model):
     #id = models.IntegerField(db_column='id', null=False, blank=False, primary_key=True)
-    finalstateindex = models.ForeignKey(States, related_name='+', db_column='finalstate')
-    initialstateindex = models.ForeignKey(States, related_name='+', db_column='initialstate')
+    finalstateindex = models.ForeignKey(States, related_name='+', db_column='finalstate', on_delete=models.CASCADE,)
+    initialstateindex = models.ForeignKey(States, related_name='+', db_column='initialstate', on_delete=models.CASCADE,)
     wavelength = models.FloatField(null=True, db_column='wavelength', blank=True)
     weightedoscillatorstrength = models.FloatField(null=True, db_column='log10wosc', blank=True)
     probabilitya = models.FloatField(null=True, db_column='a', blank=True)
