@@ -393,6 +393,9 @@ def generateSqlite(filePath, tap, HeaderInfo=None, Sources=None, Methods=None, F
           Environments=None, Atoms=None, Molecules=None, Solids=None, Particles=None,
           CollTrans=None, RadTrans=None, RadCross=None, NonRadTrans=None):
           
+    for q in DICTS.RETURNABLES:
+        log.debug(q)
+          
     try:
         log.debug('Connecting SQLite to %s...'%filePath)
         conn = sqlite3.connect(filePath)

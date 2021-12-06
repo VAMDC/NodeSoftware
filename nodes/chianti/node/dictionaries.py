@@ -70,6 +70,35 @@ RETURNABLES = {\
 }
 
 
+ATOMS_COLUMNS = {
+    'AtomId': ('INTEGER', 'id'),
+    'AtomSymbol': ('CHAR(2)', 'atomsymbol'),
+    'AtomNuclearCharge': ('INTEGER', 'atomnuclearcharge'),
+    'AtomIonCharge': ('INTEGER', 'atomioncharge'),
+    'InChI': ('TEXT', 'inchi'),
+    'InChIkey': ('TEXT', 'inchikey'),
+}
+
+ATOMSTATES_COLUMNS = {
+    'AtomStateId': ('INTEGER', 'id'),
+    'AtomRef': ('INTEGER', 'species.id'),
+    'AtomStateTotalAngMom': ('FLOAT', 'atomstatetotalangmom'), 
+    'AtomStateParity': ('INTEGER', 'parity'), 
+    'AtomStateStatisticalWeight': ('FLOAT', 'statisticalweight'),
+    'AtomStateEnergy': ('FLOAT', 'energy'), 
+    'AtomStateDescription': ('TEXT', 'atomstateconfigurationlabel')
+}
+
+RADTRANS_COLUMNS = {
+    'RadTransId': ('INTEGER', 'id'),
+    'RadTransWavelength': ('FLOAT', 'bestWavelength()'),
+    'RadTransWavelengthMethod': ('TEXT', 'bestWavelengthMethod()'),
+    'RadTransProbabilityWeightedOscillatorStrength': ('FLOAT', 'weightedoscillatorstrength'),
+    'RadTransProbabilityA': ('FLOAT', 'probabilitya'),
+    'RadTransLowerStateRef': ('INTEGER', 'lowerStateRef().id'),
+    'RadTransUpperStateRef': ('INTEGER', 'upperStateRef().id'),
+}
+
 def radTransWavelength(r):
   return [r.wavelengthexperimental, r.wavelengththeoretical]
 
