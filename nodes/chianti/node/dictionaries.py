@@ -81,6 +81,7 @@ ATOMS_COLUMNS = {
 
 ATOMSTATES_COLUMNS = {
     'AtomStateId': ('INTEGER', 'id'),
+    'label': ('TEXT', 'label()'),
     'AtomRef': ('INTEGER', 'species.id'),
     'AtomStateTotalAngMom': ('FLOAT', 'atomstatetotalangmom'), 
     'AtomStateParity': ('INTEGER', 'parity'), 
@@ -91,6 +92,7 @@ ATOMSTATES_COLUMNS = {
 
 RADTRANS_COLUMNS = {
     'RadTransId': ('INTEGER', 'id'),
+    'label': ('TEXT', 'label()'),
     'RadTransWavelength': ('FLOAT', 'bestWavelength()'),
     'RadTransWavelengthMethod': ('TEXT', 'bestWavelengthMethod()'),
     'RadTransProbabilityWeightedOscillatorStrength': ('FLOAT', 'weightedoscillatorstrength'),

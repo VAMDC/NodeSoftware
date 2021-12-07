@@ -69,6 +69,12 @@ class States(models.Model):
         # Find all the ojects in the source model linked to the species; return a list of their ID numbers.
         sources = Sources.objects.filter(species = speciesId)
         return Sources.objects.filter(species = speciesId).values_list('id', flat=True)
+        
+    def label(self):
+        return '%s J=%d %s'%(
+            self.atomstateconfigurationlabel,
+            self.atomstatetotalangmom,
+            self.parity)
 
     class Meta:
         db_table = u'states'
@@ -148,6 +154,10 @@ class Transitions(models.Model):
         else:
         	return "THEO"
 
+    def label(self):
+        return '%s %s -> %s'%(self.atomsymbol, self.initialstateindex.label(), self.finalstateindex.label())
+
+            
     class Meta:
         db_table = u'transitions'
 
