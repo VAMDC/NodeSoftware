@@ -25,7 +25,7 @@ import sqlite3
 
 import threading
 
-from vamdctap.asynchronous import asyncTapQuery, purgeJobs
+from vamdctap.asynchronous import async_tap_query, purge_jobs
 from vamdctap.models import Job
 
 
@@ -354,7 +354,7 @@ def sync(request):
 
 
 def asynch(request):
-    purgeJobs()
+    purge_jobs()
 
     request.token = "%s:%s:%s" % (settings.NODENAME, uuid.uuid4(), request.method.lower())
 
@@ -380,7 +380,7 @@ def asynch(request):
     j.file = j.id + '.sqlite3'
     j.save()
     dir = settings.RESULTS_CACHE_DIR
-    thread = threading.Thread(target=asyncTapQuery, args=(str(id), tap, dir,))
+    thread = threading.Thread(target=async_tap_query, args=(str(id), tap, dir,))
     thread.start()
     
     # Redirect to job page
@@ -518,7 +518,7 @@ def result(request, id=None):
         return HttpResponse(status=404);
         
 def jobs(request):
-    purgeJobs()
+    purge_jobs()
     c = {'jobs': Job.objects.all()}
     return render(request, template_name='tap/jobs.html', context=c, content_type='text/html')
     

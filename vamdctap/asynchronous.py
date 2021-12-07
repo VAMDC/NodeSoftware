@@ -9,7 +9,7 @@ from importlib import import_module
 
 from django.utils import timezone
 
-from vamdctap.vamdcsqlite import generateSqlite
+from vamdctap.vamdcsqlite import generate_sqlite
 from vamdctap.models import Job
 
 
@@ -26,13 +26,13 @@ Runs one query. Requires keyword arguments tap, a TAPQUERY instance,
 id, a UUID for the job, and directory, the absolute path to a cache
 directory in which the resutls of the query will be stored.
 '''       
-def asyncTapQuery(*args, **kwargs):
+def async_tap_query(*args, **kwargs):
     (id, tap, directory) = args
     j = Job.objects.filter(id=id)[0]
     j.phase='ACTIVE'
     j.save()
     
-    filePath = directory + os.path.sep + j.file
+    file_path = directory + os.path.sep + j.file
         
     try: 
         querysets = QUERYFUNC.setupResults(tap)
@@ -52,14 +52,14 @@ def asyncTapQuery(*args, **kwargs):
     
         
     # Run the query and put the results into the file.
-    log.debug('Copying to SQLite at %s ...'%filePath)
-    generateSqlite(filePath, tap, **querysets)
+    log.debug('Copying to SQLite at %s ...'%file_path)
+    generate_sqlite(file_path, tap, **querysets)
     log.debug('...done.')
     j.phase = 'finished'
     j.save()
 
 
-def purgeJobs():
+def purge_jobs():
     for j in Job.objects.all():
         if timezone.now() > j.expiry:
             j.delete()
