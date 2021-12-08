@@ -19,11 +19,11 @@ from django.db.models.query import QuerySet
 
 '''
 Generates an SQLite database on the given file-path.
-The set of tables is hard-coded in this method.
-The columns for each table are specified by dictionaries
-supplied by specialisation of this software to a particular node.
-The data for the tables comes from the other arguments which are
-Django QuerySets.
+The super-set of tables is hard-coded in this method,
+but the set of those actually written is determined by the
+node's dictionaries. The columns for each table are also specified 
+by the node's dictionaries. The data for the tables comes from 
+other arguments of this function, which are Django QuerySets.
 '''
 def generate_sqlite(file_path, tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
           Environments=None, Atoms=None, Molecules=None, Solids=None, Particles=None,
@@ -36,28 +36,54 @@ def generate_sqlite(file_path, tap, HeaderInfo=None, Sources=None, Methods=None,
         conn = sqlite3.connect(file_path)
         log.debug('...connected')
 
-        if Atoms and DICTS.ATOMS_COLUMNS:
-            create_table(conn, 'Atoms', DICTS.ATOMS_COLUMNS)
-            write_rows(conn, 'Atoms', DICTS.ATOMS_COLUMNS, Atoms)
-            conn.commit()
+        if Atoms and hasattr(DICTS, 'ATOMS_COLUMNS'):
+            write_plain_table(conn, 'Atoms', DICTS.ATOMS_COLUMNS, Atoms)
 
-        if Atoms:
-            create_table(conn, 'Atomstates', DICTS.ATOMSTATES_COLUMNS)
-            for a in Atoms:
-                if hasattr(a, 'States'):
-                    write_rows(conn, 'Atomstates', DICTS.ATOMSTATES_COLUMNS, a.States)
-                    conn.commit()
-            conn.commit()
+        if Atoms and hasattr(DICTS, 'ATOMSTATES_COLUMNS'):
+            write_states_table(conn, 'Atomstates', DICTS.ATOMSTATES_COLUMNS, Atoms)
             
-        if RadTrans and DICTS.RADTRANS_COLUMNS:
-            create_table(conn, 'Radtrans', DICTS.RADTRANS_COLUMNS)
-            write_rows(conn, 'Radtrans', DICTS.RADTRANS_COLUMNS, RadTrans)
-            conn.commit()
+        if Molecules and hasattr(DICTS, 'MOLECULES_COLUMNS'):
+            write_plain_table(conn, 'Molecules', DICTS.MOLECULES_COLUMNS, Molecules)
+            
+        if Molecules and hasattr(DICTS, 'MOLECULESTATES_COLUMNS'):
+            write_states_table(conn, 'Moleculestates', DICTS.MOLECULESTATES_COLUMNS, Molecules)
+            
+        if RadTrans and hasattr(DICTS, 'RADTRANS_COLUMNS'):
+            write_plain_table(conn, 'Radtrans', DICTS.RADTRANS_COLUMNS, RadTrans)
+            
+        if Particles and hasattr(DICTS, 'PARTICLES_COLUMNS'):
+            write_plain_table(conn, 'Particles', DICTS.PARTICLES_COLUMNS, Particles)
+            
+        if Sources and hasattr(DICTS, 'SOURCES_COLUMNS'):
+            write_plain_table(conn, 'Sources', DICTS.SOURCES_COLUMNS, Sources)
         
     finally:
         if conn:
             conn.close()
             
+'''
+Creates and writes an SQLite table directly from the given data-source.
+The data-source must be a Django QuerySet.
+'''
+def write_plain_table(conn, table_name, columns, data_source):
+    create_table(conn, table_name, columns)
+    write_rows(conn, table_name, columns, data_source)
+    conn.commit()
+    
+    
+'''
+Creates and writes an SQLite table from the Django QuerySets nested
+as the .states attributes of the objects found by iterating
+over the given data-source.
+'''
+def write_states_table(conn, table_name, columns, data_source):
+    create_table(conn, table_name, columns)
+    for q in data_source:
+        if hasattr(q, 'States'):
+            write_rows(conn, table_name, columns, q.States)
+            conn.commit()
+    conn.commit()
+    
 
 '''
 Creates an SQLite table based on the column names and types given
