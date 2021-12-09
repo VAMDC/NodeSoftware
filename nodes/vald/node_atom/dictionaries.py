@@ -1,5 +1,20 @@
 # -*- coding: utf-8 -*-
 
+#        ATOMSTATES_COLUMNS,
+#        RADTRANS_COLUMNS,
+#        SOURCES_COLUMNS. 
+        
+
+ATOMS_COLUMNS = {
+    'AtomId': ('INTEGER', 'id'),
+    'AtomSymbol': ('CHAR(2)', 'name'),
+    'AtomNuclearCharge': ('INTEGER', 'atomic'),
+    'AtomIonCharge': ('INTEGER', 'ion'),
+    'InChI': ('TEXT', 'inchi'),
+    'InChIkey': ('TEXT', 'inchikey'),
+}
+
+
 RETURNABLES = {\
 'NodeID':'vald',
 #############################################################

@@ -40,6 +40,7 @@ class SpeciesComp(Model):
     This is just the intermediary model so that species can refer
     to itself to build molecules.
     """
+    id = AutoField(primary_key=True, db_index=True)
     molecule = ForeignKey(Species,related_name='molec', on_delete=DO_NOTHING)
     atom = ForeignKey(Species,related_name='atom', on_delete=DO_NOTHING)
     class Meta:
@@ -164,7 +165,6 @@ waalsfunc = FuncClass("""<Function functionID="Fvald-waals">
 </Parameters>
 <Description>This function gives the temperature dependence of Van der Waals broadening.</Description>
 </Function>""")
-import cgi
 waalsbfunc = FuncClass(r"""<Function functionID="Fvald-waals-barklem">
 <Name>Waals broadening, Barklem correction</Name>
 <Expression computerLanguage="LaTeX">
@@ -193,6 +193,6 @@ waalsbfunc = FuncClass(r"""<Function functionID="Fvald-waals-barklem">
 <Description>%s</Description>
 <SourceCodeURL>http://www.astro.uu.se/~barklem/howto.html</SourceCodeURL>
 </Function>
-""" % cgi.escape("This function gives the temperature dependence of Van der Waals broadening using a more exact formula by Anstee, Barklem & O'Mara."))
+""" % "This function gives the temperature dependence of Van der Waals broadening using a more exact formula by Anstee, Barklem & O'Mara.")
 
 Functions = [starkfunc, waalsfunc, waalsbfunc]
