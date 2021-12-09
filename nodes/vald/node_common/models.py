@@ -40,6 +40,7 @@ class SpeciesComp(Model):
     This is just the intermediary model so that species can refer
     to itself to build molecules.
     """
+    id = AutoField(primary_key=True, db_index=True)
     molecule = ForeignKey(Species,related_name='molec', on_delete=DO_NOTHING)
     atom = ForeignKey(Species,related_name='atom', on_delete=DO_NOTHING)
     class Meta:

@@ -24,6 +24,7 @@ DATABASES = {
     'NAME': 'vald_atom',
     'USER': 'vald',
     'PASSWORD': 'V@ld',
+    'OPTIONS': {'sql_mode':'STRICT_TRANS_TABLES'}
   },
 }
 LAST_MODIFIED = datetime.date(2017,1,24)
