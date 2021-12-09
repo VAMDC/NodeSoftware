@@ -6,6 +6,7 @@ TRANSLIM = 100000
 QUERY_STORE_ACTIVE = True
 
 RESULTS_CACHE_DIR='/opt/vamdc-async-cache'
+DATABASE_ROUTERS = ['vamdctap.taprouter.TapRouter']
 
 try:
     INSTALLED_APPS.remove('node')
@@ -26,6 +27,10 @@ DATABASES = {
     'PASSWORD': 'V@ld',
     'OPTIONS': {'sql_mode':'STRICT_TRANS_TABLES'}
   },
+  'vamdctap': {
+      'ENGINE': 'django.db.backends.sqlite3',
+      'NAME': os.path.join(RESULTS_CACHE_DIR, 'jobs.sqlite3'),
+      }
 }
 LAST_MODIFIED = datetime.date(2017,1,24)
 
