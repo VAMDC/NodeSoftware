@@ -1,9 +1,11 @@
 from settings_default import *
 
 DEBUG = False
-#DEBUG = True
+DEBUG = True
 TRANSLIM = 100000
 QUERY_STORE_ACTIVE = True
+
+RESULTS_CACHE_DIR='/opt/vamdc-async-cache'
 
 try:
     INSTALLED_APPS.remove('node')
@@ -34,8 +36,8 @@ EXAMPLE_QUERIES = [\
     ]
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
-DEPLOY_URL = 'https://sslvamdc.tmy.se/tap/'
-
+DEPLOY_URL = 'http://localhost:8000/tap/'
+STATIC_URL = 'http://localhost:8000/tap/'
 VAMDC_APPS = [\
     "ivo://vamdc/atomicxsams2html",
     "ivo://vamdc/xsams-mux",
@@ -47,9 +49,9 @@ VAMDC_APPS = [\
 #    "ivo://vamdc/",
     ]
 
-LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnodeDev.log'
-if not DEBUG:
-    LOGGING['handlers']['logfile']['level'] = 'INFO'
+#LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnodeDev.log'
+#if not DEBUG:
+#    LOGGING['handlers']['logfile']['level'] = 'INFO'
 
 
 # Query inspecting as of https://github.com/dobarkod/django-queryinspect
