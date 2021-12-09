@@ -13,9 +13,9 @@ Process:
 	2.	Ensure that your node works in this environment for traditional — synchronous/XSAMS — query before trying the new stuff.
 	3.	Install some SQLite tools for looking at the results. Command-line tools from https://www.sqlite.org/download.html. GUI from https://sqlitebrowser.org.
 	4.	Update settings.py to set the cache directory (see below for details).
-	5.	Update settings.py to set the DB router module (see below for details).
+	5.	Update settings.py to enable the vamdctap DB for job control (see below for how).
 	6.	Update dictionaries.py to set the columns for the tables (see below for details).
-	7.	Create the local database that keeps track of jobs (see below for how).
+	7.	Create the vamdctap DB (see below for how).
 	8.	Run the node for local test: python manage.py runserver.
 	9.	Using Firefox, go to http://localhost:8000/tap/async/form to enter your query. The rest of the async operation can be driven from the browser. If you have the DB-browser GUI configured to open .sqlite files, Firefox will open results in that tool when you click a results link. This is very nice for a quick look at results.
 	10.	Please don’t put this version into production!
@@ -29,10 +29,35 @@ In settings.py, set the variable RESULTS_CACHE_DIR to the absolute path of a dir
 Create the directory. This should be allowed to hold up to a few 100 MB of results for test, and rather more for production. The node software creates in here files named with UUIDs and the file-name extension .sqlite: each one is the result of one query. The node software deletes queriy results after 24 hours to reclaim space.
 
 
-Setting the DB router:
-A router module in Django directs DB commands to the right DB if you have more than one. The asynchronous node has a science DB holding the A&M data and a working DB that tracks query progress, so it needs a router. The router is provided for you as a Python module, but you need to activate it in settings,py:
+Enabling the vamdc DB:
+The asynchronous code uses a little DB called "vamdctap" to keep track of queries. You need to enabled it in settings.py.
+
+First, add vamdctap to the DATABASES dictionary:
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'chianti7',                      # Or path to database file if using sqlite3.
+        'USER': 'vamdc',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
+        'HOST': '127.0.0.1',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+    },
+    'vamdctap': {
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': '../../../cache/jobs.db',   # Or path to database file if using sqlite3.
+    },
+}
+
+Change the 'NAME' field for vamdctap to point wherever you want to keep this DB; I keep mine in the cache directory, but it's small enough to fit almost anywhere.
+
+The "default" DB is the science DB holding your A&M data; you should already have this and you don't need to reconfigure its connection (make sure its key in teh dictionary actually is 'default', else Django won't be able to see it any more).
+
+Now you have two DBs for Django to manage, you have to declare a router module to separate their queries. The router is provided for you as a Python module, but you need to activate it in settings,py:
 
 	DATABASE_ROUTERS = ['vamdctap.taprouter.TapRouter']
+
+This router assumes that the two DBs are called 'default' and 'vamdctap'. If you're already using a router, and have a different name for your science DB, then you'll need to recode things to suit. If you've customised the node software to that advanced level already, you know how to do this. If you're using the normal form of the node software then you haven't had any router up to now.
 
 
 Filling the dictionaries:
