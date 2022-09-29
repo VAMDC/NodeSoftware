@@ -23,3 +23,6 @@ doc*/build/*
 *.save
 mysqldatabase/*
 settings.py
+.Python
+nodes/chianti/chianti7.sql
+nodes/chianti/test-service.py

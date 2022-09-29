@@ -332,8 +332,21 @@ def verify_molecule(vl_molecule):
     except Exception as e :
       print(e)
 
+<<<<<<< HEAD
     if speciesid is None or len(speciesid) < 27:
         speciesid = vl_molecule.InChIKey
+=======
+    print("### INCHIKEY")
+    print(vl_molecule.InChIKey)
+    
+    print("### SPECIES ID 1")
+    print(speciesid)
+
+    if speciesid is None or len(speciesid) < 27:
+        speciesid = vl_molecule.InChIKey
+        print("### SPECIES ID 2")
+        print(speciesid)
+>>>>>>> f9071ecb848fe5092c57031f5e69701d21d3b8ca
         #TODO: handle multiple inchikeys/conformers here?
         if speciesid is None or len(speciesid) < 27:
             raise ValueError("Bad speciesid for molecule '%s'" % vl_molecule.StoichiometricFormula)
@@ -362,9 +375,13 @@ def verify_molecule(vl_molecule):
         print (
         "Warning: molecular weight from Inchi (%d) does not match the XSAMS weight %d" % (int(inchiinfo.weight), mass))
     vl_molecule.MolecularWeight = mass
+<<<<<<< HEAD
     print("inchiinfo.weight   %s "% inchiinfo.weight)
     print("vl_molecule.MolecularWeight    %s" % vl_molecule.MolecularWeight)
     print("mass   %s" % mass)
+=======
+
+>>>>>>> f9071ecb848fe5092c57031f5e69701d21d3b8ca
     try:
         charge = int(vl_molecule.IonCharge)
     except:

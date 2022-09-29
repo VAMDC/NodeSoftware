@@ -1759,18 +1759,6 @@ def XsamsCollTrans(CollTrans):
                                         yield "<UpperLimit>%s</UpperLimit>" % hilim
                                     yield "</FitArgument>"
 
-                            if hasattr(FitData, "Evaluations"):
-                                for Evaluation in FitData.Evaluations:
-                                    cont, ret = checkXML(Evaluation)
-                                    if cont:
-                                        yield ret
-                                        continue
-
-
-                                    GDFE = lambda name: GetValue(name, Evaluation=Evaluation)
-                                    yield "<Evaluation recommended='%s'><Quality>%s</Quality></Evaluation>" % (GDFE("CollisionFitDataEvalRecommended"), GDFE("CollisionFitDataEval"))
-
-
                             if hasattr(FitData, "Parameters"):
                                 for Parameter in FitData.Parameters:
 
@@ -1783,16 +1771,27 @@ def XsamsCollTrans(CollTrans):
                                     yield makeNamedDataType("FitParameter", "CollisionFitDataParameter", GDFP)
                                 yield "</FitParameters>"
 
-                                accur = GDF("CollisionFitDataAccuracy")
-                                if accur:
-                                    yield "<FitAccuracy>%s</FitAccuracy>" % accur
-                                physun = GDF("CollisionFitDataPhysicalUncertainty")
-                                if physun:
-                                    yield "<PhysicalUncertainty>%s</PhysicalUncertainty>" % physun
-                                pdate = GDF("CollisionFitDataProductionDate")
-                                if pdate:
-                                    yield "<ProductionDate>%s</ProductionDate>" % pdate
-                                yield "</FitData>"
+                            accur = GDF("CollisionFitDataAccuracy")
+                            if accur:
+                                yield "<FitAccuracy>%s</FitAccuracy>" % accur
+                            physun = GDF("CollisionFitDataPhysicalUncertainty")
+                            if physun:
+                                yield "<PhysicalUncertainty>%s</PhysicalUncertainty>" % physun
+                            pdate = GDF("CollisionFitDataProductionDate")
+                            if pdate:
+                                yield "<ProductionDate>%s</ProductionDate>" % pdate
+
+                            if hasattr(FitData, "Evaluations"):
+                                for Evaluation in FitData.Evaluations:
+                                    cont, ret = checkXML(Evaluation)
+                                    if cont:
+                                        yield ret
+                                        continue
+
+                                    GDFE = lambda name: GetValue(name, Evaluation=Evaluation)
+                                    yield "<Evaluation recommended='%s'><Quality>%s</Quality></Evaluation>" % (GDFE("CollisionFitDataEvalRecommended"), GDFE("CollisionFitDataEval"))
+
+                            yield "</FitData>"
 
                 # Tabulated data
                 if hasattr(DataSet, "TabData"):
