@@ -287,8 +287,10 @@ def getTransitionsData(transs):
             if sh is not None : 
                 shiftings.append(sh)
             allenvironments.append(environment)
-
-        trans.Broadenings = broadenings
+        broadeningPressure = util_models.BroadeningPressure()
+        broadeningPressure.Broadenings = broadenings
+        trans.BroadeningPressure = broadeningPressure
+        #trans.BroadeningPressure.Broadenings = broadenings
         trans.Sources = getDatasetSources(trans.dataset.pk)
         trans.Shiftings = shiftings  
 
@@ -296,8 +298,8 @@ def getTransitionsData(transs):
         if trans.id not in uniquetransitions :
             uniquetransitions[trans.id] = trans
         else :
-            uniquetransitions[trans.id] .Broadenings.extend(trans.Broadenings)
-            uniquetransitions[trans.id] .Shiftings.extend(trans.Shiftings)
+            uniquetransitions[trans.id].BroadeningPressure.Broadenings.extend(trans.BroadeningPressure.Broadenings)
+            uniquetransitions[trans.id].Shiftings.extend(trans.Shiftings)
 
     transitions = uniquetransitions.values()
 

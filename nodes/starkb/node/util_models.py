@@ -119,6 +119,10 @@ class State():
         self.id = None
         self.totalAngularMomentum = None
 
+class BroadeningPressure():
+    def __init__(self):
+        self.Broadenings = []
+
 
 class Shifting():
     def __init__(self):
