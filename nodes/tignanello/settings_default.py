@@ -154,71 +154,27 @@ ALLOWED_HOSTS = ['*']
 #########################
 #  LOGGING
 ########################
-import tempfile
-TMPDIR = tempfile.gettempdir()
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
-        },
-        'simple': {
-            'format': '%(asctime)s %(levelname)s %(message)s'
-        },
-    },
+    'disable_existing_loggers': False,
     'handlers': {
-        'null': {
-            'level':'DEBUG',
-            'class':'logging.NullHandler',
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
         },
-        'console':{
-            'level':'WARNING',
-            'class':'logging.StreamHandler',
-        },
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
-            'include_html': True,
-        },
-        'logfile':{
-                'level': 'DEBUG',
-                'class': 'logging.FileHandler',
-                'filename': TMPDIR+'/node.log',
-                'formatter': 'simple'
-        }
     },
-    'loggers': {
-        'django': {
-            'handlers':['null'],
-            'propagate': True,
-            'level':'INFO',
-        },
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-        'vamdc': {
-            'handlers': ['console','logfile','mail_admins'],
-            'level': 'DEBUG',
-        },
-        'vamdc.tap': {
-            'level': 'DEBUG',
-        },
-        'vamdc.tap.sql': {
-            'level': 'DEBUG',
-        },
-        'vamdc.tap.generator': {
-            'level': 'DEBUG',
-        },
-        'vamdc.node': {
-            'level': 'DEBUG',
-        },
-        'vamdc.node.queryfu': {
-            'level': 'DEBUG',
-        },
-    }
+    '': {
+        'handlers': ['console'],
+        'level': DEBUG,
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+    'django.request': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
 }
 
 QUERY_STORE_ACTIVE = False
