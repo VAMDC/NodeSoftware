@@ -53,7 +53,7 @@ class Reference(Model):
 
 class State(Model):
     id = CharField(max_length=255, primary_key=True, db_index=True)
-    species = ForeignKey(Species)
+    species = ForeignKey(Species, on_delete=CASCADE)
 
     energy = DecimalField(max_digits=16, decimal_places=5,null=True,blank=True, db_index=True)
     config = CharField(max_length=46, null=True, blank=True)
@@ -73,11 +73,11 @@ class State(Model):
     # half-time
     tau_exp = DecimalField(max_digits=8, decimal_places=4,db_column=u'tau_exp', null=True,blank=True)
     tau_calc = DecimalField(max_digits=8, decimal_places=4,db_column=u'tau_calc', null=True,blank=True)
-    tau_exp_ref = ForeignKey(Reference, related_name='istau_exp_state', null=True)
-    tau_calc_ref = ForeignKey(Reference, related_name='istau_calc_state',null=True)
-    energy_ref = ForeignKey(Reference, related_name='isenergyref_state', null=True)
-    lande_ref = ForeignKey(Reference, related_name='islanderef_state', null=True)
-    level_ref = ForeignKey(Reference, related_name='islevelref_state', null=True)
+    tau_exp_ref = ForeignKey(Reference, related_name='istau_exp_state', null=True, on_delete=CASCADE)
+    tau_calc_ref = ForeignKey(Reference, related_name='istau_calc_state',null=True, on_delete=CASCADE)
+    energy_ref = ForeignKey(Reference, related_name='isenergyref_state', null=True, on_delete=CASCADE)
+    lande_ref = ForeignKey(Reference, related_name='islanderef_state', null=True, on_delete=CASCADE)
+    level_ref = ForeignKey(Reference, related_name='islevelref_state', null=True, on_delete=CASCADE)
 
     # Helper methods for accessing one of the fields. These are called from
     # the RETURNABLES dictionary
@@ -107,11 +107,11 @@ class State(Model):
 
 class Transition(Model):
     id = AutoField(primary_key=True)
-    upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True)
-    lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True)
+    upstate = ForeignKey(State,related_name='isupperstate_trans',db_column='upstate',null=True, on_delete=CASCADE)
+    lostate = ForeignKey(State,related_name='islowerstate_trans',db_column='lostate',null=True, on_delete=CASCADE)
 
     vacwave = DecimalField(max_digits=20, decimal_places=8, db_index=True, null=True)
-    species = ForeignKey(Species,db_column='species')
+    species = ForeignKey(Species,db_column='species', on_delete=CASCADE)
     loggf = DecimalField(max_digits=8, decimal_places=3,null=True,blank=True)
     landeff = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
     gammarad = DecimalField(max_digits=6, decimal_places=2,null=True,blank=True)
@@ -122,12 +122,12 @@ class Transition(Model):
     loggf_accur = DecimalField(max_digits = 9, decimal_places=4,db_column=u'loggf_accur', null=True,blank=True)
     comment = CharField(max_length=128, null=True,blank=True)
 
-    wave_ref = ForeignKey(Reference, related_name='iswaveref_trans',null=True)
-    loggf_ref = ForeignKey(Reference, related_name='isloggf_ref_trans',null=True)
-    lande_ref = ForeignKey(Reference, related_name='islanderef_trans',null=True)
-    gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans',null=True)
-    gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans',null=True)
-    waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans',null=True)
+    wave_ref = ForeignKey(Reference, related_name='iswaveref_trans',null=True, on_delete=CASCADE)
+    loggf_ref = ForeignKey(Reference, related_name='isloggf_ref_trans',null=True, on_delete=CASCADE)
+    lande_ref = ForeignKey(Reference, related_name='islanderef_trans',null=True, on_delete=CASCADE)
+    gammarad_ref = ForeignKey(Reference, related_name='isgammaradref_trans',null=True, on_delete=CASCADE)
+    gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans',null=True, on_delete=CASCADE)
+    waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans',null=True, on_delete=CASCADE)
 
     def __unicode__(self):
         return u'ID:%s Wavel: %s'%(self.id,self.vacwave)
