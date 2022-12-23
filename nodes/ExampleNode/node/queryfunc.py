@@ -14,9 +14,7 @@ import logging
 from itertools import chain
 
 from vamdctap.sqlparse import sql2Q
-from dictionaries import *
-
-import models
+from . import models
 
 log = logging.getLogger("vamdc.node.queryfu")
 
