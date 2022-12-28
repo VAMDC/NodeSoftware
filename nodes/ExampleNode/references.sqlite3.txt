@@ -1,0 +1,28 @@
+REF1;@ARTICLE{REF1,
+   author = {{Tester}, T. and {Tester2}, H. and {Tester3}, L. and {Tester4}, H. and                
+	{Tester5}, C. and {Tester6}, V. and {Tester7}, P. and {Tester8}, P. and                                     
+	{Tester9}, A.},                                                                                 
+    title = "{Interesting Transition probabilities}",
+  journal = {\aap},                                                                                       
+ keywords = {atomic data, atomic processes, stars: abundances},                          
+     year = 2032,                                                                                         
+    month = feb,                                                                                          
+   volume = 1000,                                                                                          
+    pages = {34-44},                                                                                       
+      doi = {10.1051/0004-6361/203213574},                                                                
+   adsurl = {http://adsabs.harvard.edu/abs/2032A%26A...1000A..34R},                                        
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System}                                           
+}
+|REF2;@ARTICLE{REF2,
+       author = {{Tester10}, A.~N. and {Tester11}, S.~S. and {Tester12}, U.},                                                                  
+         title = "{Analysis of Interesting Nb II Spectra}",
+      journal = {\physscr},                                                  
+     keywords = {32.30.Jc},                                                  
+         year = 2032,                                                        
+       volume = 150,                                                          
+        pages = {368-374},                                                   
+          doi = {10.1238/Physica.Regular.062a32368},                         
+       adsurl = {http://adsabs.harvard.edu/abs/2032hyS...150..368R},         
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}          
+}
+
