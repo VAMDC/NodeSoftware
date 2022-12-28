@@ -3,8 +3,20 @@ README
 ------
 
 The ExampleNode is intended as a starting point for setting up your own VAMDC node from 
-scratch. The node contains a basic setup and contains some mock data (in example_data) 
-to test the data import and setup tools on.
+scratch. The node contains a basic setup and contains some mock data (the files *.sqlite3.txt)
+
+This example uses SQLite as a database engine. That's a library called directly from
+the Python code; there is no separate RDBMS server to install and configure. The database is
+persisted as the file node.db, which is created during the setup sequence below, and can be backed
+up as a normal file for data security.
+
+You may have sqlite on your computer already. If the command sqlite3 works then it's there.
+Otherwise, see https://www.sqlite.org/download.html from which page you should typically
+install the "precompiled binaries" matching your OS. Note that you need the command-line tool
+sqlite3 as well as the libraries to make the node using the procedure below.
+
+This example further assumes that you'll let Django create an an empty database, with all the
+columns of tables define, and then you will load appropriate data into the DB.
 
 More verbose information can be found in the online documentation.
 You can also build the documentation from the vamdc/doc/ directory.
@@ -14,33 +26,97 @@ Basic steps for testing the examplenode
 (assuming you have all dependencies): 
 ---------------------------------------
 
-1) Copy folder ExampleNode to a new name and do everything from that 
+1) Copy folder ExampleNode in the checke3d-out source to a new folder, cd to it and do everything from there.
+This is necessary if you want to commit your new-born node back into the source repository; it
+must not overwrite the existing files for ExampleNode. If you don't want to commit your changes
+(implying that this node is a disposable experiment), then you can work in the ExampleNode directory.
 
-2) Setup mysql database (the default used in the example)
+2) Install sqlite if you don't already have it.
 
-3) Configure Django
+3) Ask Django to make your empty database:
 
- $ cd <yournode>
- $ python manage.py
+$ cp settings_default.py settings.py
+$ python manage.py makemigrations node
+$ python manage.py migrate node
 
-Edit the created settings.py file to add all database details
+Translation: there is a Django application called "node", built in the "node" folder under where you're
+working, and you'd like Django to "migrate" the database structure to match it, please. Don't worry that
+the name "node" is generic and doesn't match the chosen name of your node; it just lets Django find the
+files defining the data model.
 
-4) Edit mapping_examplenode.py so that all paths given match your actual path
+"manage.py" is the Python program by which you set up and test-run your node; it's a standard
+thing in Django. The Python module settings.py contains the Django configuration for the node.
+Notably, it tells Django to use an SQLite database in the file node.db found in the current directory.
 
-5) Run the database rewrite
+4) Arrange input data to the form needed for ingestion to the database. One file of data is needed
+per database table, and those files have ASCII formats.
 
- $ cd ../importtools
- $ python run_export.py ../node/<YourNode>/mapping_examplenode.py
+This work could be done using the imptools package in the NodeSoftware tree;
+or you could write your own converter; or you can use the files *.sqlite3.txt in which some example
+data are already converted. These latter files contain the same data as the .dat files in the
+example_data folder.
 
-This will parse the raw data files in example_data and creates new 
-files *.in in node/<YourNode>. 
+5) Ingest the data using the sqlite3 command-line tool that comes with the SQLite libraries. In the
+following sequence the first line is a shell command to start the tool and connect the DB, and the
+rest are commands given within sqlite3; note that they all start with a dot to distinguish them from
+SQL statements.
 
-6) Import preprocessed data into database 
+$ sqlite3
+sqlite> .mode list
+sqlite> .separator ; |
+sqlite> .import references.sqlite3.txt refs
+sqlite> .nullvalue NULL
+sqlite> .separator ; \n
+sqlite> .import species.sqlite3.txt species
+sqlite> .import states.sqlite3.txt states
+sqlite> .import transitions.sqlite3.txt transitions
 
- $ cd ../node/<YourNode> 
- $ mysql -d <YourDatabaseName> -u <YourDBusername> -p < load.sql
+Setting mode to list tells the tool to read files in which fields and lines are separated by named separators.
+It's distinct from csv mode where the tool assumes the separators; the supplied files don't match CSV format.
 
-The preprocessed data should be loaded into the database. 
+The file of bibliographic references contains records split over multiple file-lines, so the line separator is
+| rather than \n and we let the bibtex parser eat the linebreaks later. C.f. the other files where each record
+is on one line.
+
+6) Test-run the node in a local, temporary web-server:
+
+$ python manage.py runserver
+
+You can now find your web-server at http://localhost:8000/tap although that page won't have much to express in a web-browser.
+Try http://localhost:8000/tap/availability and http://localhost:8000/tap/capabilities to quickly test from a browser
+that the node is alive.
+
+You can actually make queries on the node from the browser if you know how to embed the query text in the URL.
+The simplest test-query is:
+
+http://localhost:8000/tap/sync?LANG=vss2&FORMAT=xsams&QUERY=select+species.
+
+You might want to run VAMDC's Tap Validator tool against your now for further tests.
+
+Cnrl-C the temporary server to stop it when your finished testing.
+
+7) Replace the test data with your own data. If the set of columns in the example suit your data, just make up new
+input files and ingest them as above. You can use SQL statements in the sqlite tool to wipe the old data, e.g.
+
+$sqlite3 node.db
+sqlite> delete from transitions;
+
+If you need to change the set of columns, look in the node folder and edit the models.py file to what you need.
+At this point, you'll need to consult the Django documentation to see how to alter the DB-table-model,s and the main
+documentation of this node software to see how your specialised columns can be used in VAMDC queries.
+Good luck!
+
+8) Back up your files! As soon as you start customising the node you have something unique to preserve. Remember to
+preserve node.db along with the Python files as that is your database.
+
+9) When you have a working node that you want to share on VAMDC, you'll need to run it in a proper web-server. The
+built-in one from Dango, which you used in step 6, is not good for production.
+
+There are many ways to put the node into a web server, with a huge number of subtle variations. The node-software
+documentation discusses a few, and your local sysadmins may require a particular approach. If you have freedom of
+choice, a gunicorn server to run the Python code with an nginx reverse-proxy to protect gunicorn are good choices.
+Some sample configuration-files are included in the example node.
+
 
 7) Startup web services
 
