@@ -45,13 +45,13 @@ def mod_import(mod_path):
     try:
         result = imp.find_module(modname, [path])
     except ImportError:
-        print "Could not find module '%s' (%s.py) at path '%s'" % (modname, modname, path)
+        print("Could not find module '%s' (%s.py) at path '%s'" % (modname, modname, path))
         return None
     try:
         mod = imp.load_module(modname, *result)
-    except ImportError,e:
-        print "Could not find or import module %s at path '%s'" % (modname, path)
-        print e
+    except ImportError as e:
+        print("Could not find or import module %s at path '%s'" % (modname, path))
+        print(e)
         return None
     finally:
         # we have to close the file handle manually
@@ -67,7 +67,7 @@ def do_rewrite():
                       help="activate verbose debug messages")
     options, args = parser.parse_args()
     if len(args) < 1:
-        print "Usage: import.py <mapping file>"
+        print("Usage: import.py <mapping file>")
         return
 
     # import the mapping from the given filename
@@ -75,7 +75,7 @@ def do_rewrite():
     try:
         mapping = eval("mapping_module.mapping")
     except AttributeError:
-        print "ERROR: The mapping file must contain a variable called 'mapping'!"
+        print("ERROR: The mapping file must contain a variable called 'mapping'!")
         return
 
     # check for old output files and warn if they were found
@@ -89,10 +89,10 @@ def do_rewrite():
         except IOError:
             pass
     if found_files:
-        print "  Warning: output files already exists:"
-        print "  " + ", ".join(found_files)
-        print "  You should remove these before continuing (or they will be appended to)!"
-        inp = raw_input("Continue Y/[N]? > ")
+        print("  Warning: output files already exists:")
+        print("  " + ", ".join(found_files))
+        print("  You should remove these before continuing (or they will be appended to)!")
+        inp = input("Continue Y/[N]? > ")
         if not inp.lower() == 'y':
             sys.exit()
 
@@ -105,7 +105,7 @@ def do_rewrite():
     ProcPool = Pool(nProc)
     ProcPool.map(R.make_outfile,mapping)
 
-    print "Total time used: %s" % R.ftime(t0, time())
+    print("Total time used: %s" % R.ftime(t0, time()))
 
 
 if __name__ == '__main__':

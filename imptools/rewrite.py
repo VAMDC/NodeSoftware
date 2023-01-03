@@ -10,15 +10,17 @@ controlled from a mapping file.
 
 import sys
 import gzip
+import collections
+import six
 from time import time
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
-is_iter = lambda iterable: hasattr(iterable, '__iter__')
+is_iter = lambda iterable: isinstance(iterable, collections.Iterable) and not isinstance(iterable, six.string_types)
 
 DELIM = ';'
 QUOTE = '"'
-NULL = '\N'
+NULL = '\\N'
 
 
 def ftime(t0, t1):
@@ -44,13 +46,13 @@ def read_mapping(fname):
     try:
         f=open(fname)
     except IOError:
-        print "Error: File name '%s' not found." % fname
+        print("Error: File name '%s' not found." % fname)
         return None
     exec(f.read()) # this should define a variable "mapping"
     try:
         return mapping
     except NameError:
-        print "Error: mapping_file must contain a global variable called 'mapping'."
+        print("Error: mapping_file must contain a global variable called 'mapping'.")
         return None
 
 def validate_mapping(mapping):
@@ -105,12 +107,12 @@ def get_value(linedata, column_dict):
     except RuntimeError:
         # this is let through, it should be a controlled raise to skip this line
         raise
-    except Exception, e:
+    except Exception as e:
         # a general error
         log_trace(e, "error processing line/block '%s' - in %s%s: " % (linedata, colfunc, args))
         TOTAL_ERRS += 1
         raise
-    if not dat or (column_dict.has_key('cnull') and dat == column_dict['cnull']):
+    if not dat or ('cnull' in column_dict and dat == column_dict['cnull']):
         return None
 
     return QUOTE+str(dat)+QUOTE
@@ -145,7 +147,7 @@ class MappingFile(object):
 
         # block generator
         block = ""
-        for line in self.file.xreadlines():
+        for line in self.file:  # Previously used .xreadlines():
             if startblock[0] != None:
                 if block:
                     # we are already in a block, so ignore startblock
@@ -200,9 +202,9 @@ class MappingFile(object):
             self.file = open(filepath, 'r')
         self.blocks = self.block_generator(self.file, startblock, endblock) # a generator
         for i in range(headblocks + blockoffset):
-            self.blocks.next()
+            next(self.blocks)
         while True:
-            self.block = self.blocks.next()
+            self.block = next(self.blocks)
             if not self.block.startswith(self.commentchar):
                 break
         self.counter = -blockstep
@@ -224,12 +226,12 @@ class MappingFile(object):
             # only step if counter equals an even block
             for i in range(max(1, self.blockstep)):
                 while True:
-                    self.block = self.blocks.next()
+                    self.block = next(self.blocks)
                     if not self.block.startswith(self.commentchar):
                         break
         if self.block.startswith(self.errblock):
             self.block = ""
-        #print self.block
+        # print(self.block)
         return self.block
 
 def make_outfile(file_dict, global_debug=False):
@@ -280,13 +282,14 @@ def make_outfile(file_dict, global_debug=False):
     # -----
 
     if len(filenames) == 1:
-        print 'Working on %s ...' % filenames[0]
+        print('Working on %s ...' % filenames[0])
     else:
-        print "Working on " + " + ".join(filenames) + " ..."
+        print("Working on " + " + ".join(filenames) + " ...")
 
     # open file handles
     mapfiles = []
     for fnum, filepath in enumerate(filepaths):
+        # print(filepath)
         mapfiles.append(MappingFile(filepath, headlines[fnum], commentchars[fnum],
                                     lineoffsets[fnum], linesteps[fnum], errlines[fnum],
                                     startblock=startblock, endblock=endblock))
@@ -313,7 +316,7 @@ def make_outfile(file_dict, global_debug=False):
 
                 # check if debug flag is set for this line
 
-                debug = global_debug or linedef.has_key('debug') and linedef['debug']
+                debug = global_debug or 'debug' in linedef and linedef['debug']
 
                 # do not stop or log on errors (this does not hide debug messages if debug is active)
                 #skiperrors = linedef.has_key("skiperrors") and linedef["skip_errors"]
@@ -321,7 +324,7 @@ def make_outfile(file_dict, global_debug=False):
                 # parse the mapping for this line(s)
                 dat = get_value(lines, linedef)
                 if debug:
-                    print "DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat)
+                    print("DEBUG: get_value on %s returns '%s'" % (linedef['cname'],dat))
 
                 data.append(dat or NULL)
             outf.write(';'.join(data) +'\n')
@@ -332,7 +335,7 @@ def make_outfile(file_dict, global_debug=False):
 
     outf.close()
 
-    print '  %s -> %s: %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), file_dict['outfile'], total, errors)
+    print('  %s -> %s: %s lines processed. %s collisions/errors/nomatches.' % (" + ".join(filenames), file_dict['outfile'], total, errors))
 
     global TOTAL_LINES, TOTAL_ERRS
     TOTAL_LINES += total
@@ -352,13 +355,13 @@ def parse_mapping(mapping, debug=False):
     for file_dict in mapping:
         t1 = time()
         make_outfile(file_dict, global_debug=debug)
-        print "Time used: %s" % ftime(t1, time())
+        print("Time used: %s" % ftime(t1, time()))
         #pdb.set_trace()
         #print gc.garbage
         #print gc.get_count()
 
-    print "Total time used: %s" % ftime(t0, time())
-    print "Total number of errors/fails/skips: %s/%s (%g%%)" % (TOTAL_ERRS,
+    print("Total time used: %s" % ftime(t0, time()))
+    print("Total number of errors/fails/skips: %s/%s (%g%%)" % (TOTAL_ERRS,
                                                                 TOTAL_LINES,
-                                                                100*float(TOTAL_ERRS)/TOTAL_LINES)
+                                                                100*float(TOTAL_ERRS)/TOTAL_LINES))
 

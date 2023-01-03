@@ -31,9 +31,9 @@ class LocalResolver(etree.Resolver):
 				try:
 					self.checkHTTPContent(newURL)
 					url = newURL
-				except Exception, e:
+				except Exception as e:
 					if url == newURL:
-						print e
+						print(e)
 			elif os.path.exists(newURL):
 				url = newURL
 
@@ -41,8 +41,8 @@ class LocalResolver(etree.Resolver):
 			if url.find('http://') > -1:
 				try:
 					self.checkHTTPContent(url)
-				except Exception, e:
-					print e
+				except Exception as e:
+					print(e)
 
 		return self.resolve_filename(url, context)
 

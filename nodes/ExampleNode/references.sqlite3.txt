@@ -1,4 +1,4 @@
-"REF1";"@ARTICLE{REF1,                                                                             
+REF1;@ARTICLE{REF1,
    author = {{Tester}, T. and {Tester2}, H. and {Tester3}, L. and {Tester4}, H. and                
 	{Tester5}, C. and {Tester6}, V. and {Tester7}, P. and {Tester8}, P. and                                     
 	{Tester9}, A.},                                                                                 
@@ -13,11 +13,9 @@
    adsurl = {http://adsabs.harvard.edu/abs/2032A%26A...1000A..34R},                                        
   adsnote = {Provided by the SAO/NASA Astrophysics Data System}                                           
 }
-    
-"
-"REF2";"@ARTICLE{REF2,                                                                                                                        
+|REF2;@ARTICLE{REF2,
        author = {{Tester10}, A.~N. and {Tester11}, S.~S. and {Tester12}, U.},                                                                  
-         title = "{Analysis of Interesting Nb II Spectra}", 
+         title = "{Analysis of Interesting Nb II Spectra}",
       journal = {\physscr},                                                  
      keywords = {32.30.Jc},                                                  
          year = 2032,                                                        
@@ -27,4 +25,4 @@
        adsurl = {http://adsabs.harvard.edu/abs/2032hyS...150..368R},         
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}          
 }
-"
+

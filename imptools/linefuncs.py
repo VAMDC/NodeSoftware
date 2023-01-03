@@ -39,8 +39,8 @@ def charrange(linedata, start, end):
     """
     try:
         return linedata[start:end].strip()
-    except Exception, e:
-        print "charrange skipping '%s': %s (%s)" % (linedata, e)
+    except Exception as e:
+        print("charrange skipping '%s': %s (%s)" % (linedata, e))
         raise
 
 def charrange2int(linedata, start, end):
@@ -55,15 +55,21 @@ def charrange2int(linedata, start, end):
     """
     try:
         return int(round(float(linedata[start:end].strip())))
-    except Exception, e:
-        print "ERROR: charrange2int: %s: %s" % (linedata, e)
+    except Exception as e:
+        print("ERROR: charrange2int: %s: %s" % (linedata, e))
         raise
 
 def bySepNr(linedata, number, sep=','):
     try:
-        return string.split(linedata,sep)[number].strip()
-    except Exception, e:
-        print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
+        words = linedata.strip().split(sep)
+        if len(words) <= number:
+            print(f'number = {number}')
+            print(f'n words = {len(words)}, sep = {sep}')
+            for i, q in enumerate(words):
+                print(f'{i} -> {q}')
+        return words[number]
+    except Exception as e:
+        print("ERROR: bySepNr skipping line '%s': %s" % (linedata, e))
         raise
 
 def bySepNr2(linedata, number, sep=','):
@@ -80,8 +86,8 @@ def bySepNr2(linedata, number, sep=','):
 
     try:
         return linedata.split(sep)[number].strip()
-    except Exception, e:
-        print "ERROR: bySepNr skipping line '%s': %s" % (linedata, e)
+    except Exception as e:
+        print("ERROR: bySepNr skipping line '%s': %s" % (linedata, e))
         raise
 
 def bySepNr2int(linedata, number, sep=','):
@@ -95,8 +101,8 @@ def bySepNr2int(linedata, number, sep=','):
     """
     try:
         return int(round(float(linedata.split(sep)[number].strip())))
-    except Exception, e:
-        print "ERROR: bySepNr2int skipping line '%s':%s" %(linedata, e)
+    except Exception as e:
+        print("ERROR: bySepNr2int skipping line '%s':%s" %(linedata, e))
         raise
 
 def lineSplit(linedata, splitsep=','):
@@ -113,7 +119,7 @@ def lineSplit(linedata, splitsep=','):
 
     try:
         return [string.strip() for string in linedata.split(splitsep)]
-    except Exception, e:
+    except Exception as e:
         #print "ERROR: linesplit %s: %s" % (linedata, e)
         raise
 
