@@ -32,7 +32,7 @@ log = logging.getLogger('vamdc.tap.generator')
 
 # Helper function to test if an object is a list or tuple
 import six # for python 2 and 3
-from collections import Iterable
+from collections.abc import Iterable
 isiterable = lambda obj: not isinstance(obj, six.string_types) \
                 and isinstance(obj, Iterable)
 
