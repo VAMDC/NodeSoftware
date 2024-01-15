@@ -45,7 +45,7 @@ except:
 from nodes.ExampleNode.node import queryfunc
 
 if not hasattr(settings, "EXAMPLENODE") or not settings.EXAMPLENODE:
-    print "Error: The NodeSoftware unit tests must be run from nodes/ExampleNode."
+    print("Error: The NodeSoftware unit tests must be run from nodes/ExampleNode.")
     sys.exit()
 
 #------------------------------------------------------------
@@ -396,4 +396,4 @@ class TestBibTex(TestCase):
 
 
 if __name__ == "__main__":
-    print "You should usually run this module from the ExampleNode node with 'manage.py test'."
+    print("You should usually run this module from the ExampleNode node with 'manage.py test'.")

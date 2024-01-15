@@ -14,9 +14,7 @@ import logging
 from itertools import chain
 
 from vamdctap.sqlparse import sql2Q
-from dictionaries import *
-
-import models
+from . import models
 
 log = logging.getLogger("vamdc.node.queryfu")
 
@@ -147,17 +145,18 @@ def setupResults(sql):
     This function is always called by the NodeSoftware.
     """
     # log the incoming query
-    log.debug(sql)
+    log.info(sql)
 
     # convert the incoming sql to a correct django query syntax object
     # (sql2Q is a helper function to do this for us).
     q = sql2Q(sql)
+    log.info(q)
 
     # We build a queryset of database matches on the Transision model
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
-    transs = models.Transition.objects.select_related(depth=2).filter(q)
+    transs = models.Transition.objects.select_related().filter(q)
 
     # count the number of matches, make a simple trunkation if there are
     # too many (record the coverage in the returned header)

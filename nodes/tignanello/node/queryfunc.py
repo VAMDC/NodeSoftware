@@ -83,6 +83,7 @@ def constraintsPresent(sql):
 #------------------------------------------------------------
 
 def setupResults(sql, limit=100000):
+    log.warning('queryfunc')
     try:
         return query(sql, limit)
     except Exception as oops:

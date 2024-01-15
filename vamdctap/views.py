@@ -350,7 +350,8 @@ def dbConnected():
     try:
         cursor=connection.cursor()
         return ('true', 'service is available, database is connected.')
-    except:
+    except Exception as e:
+        log.error('DB connection failed: ' + str(e))
         return ('false', 'database is not connected')
 
 def availability(request):
