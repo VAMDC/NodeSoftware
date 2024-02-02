@@ -1,9 +1,8 @@
 #
 # rewrite of update_functions.py
 #
-
 from datetime import datetime
-import time
+from copy import copy
 from node.models import *
 import vamdclib.query     as vl_query
 import vamdclib.results   as vl_results
@@ -15,74 +14,66 @@ from node.InchiInfo import InchiInfo
 import traceback
 import sys
 from pprint import pprint
-from itertools import chain
 
-def fill_species_names():
-    """Add species names in index table."""
-    not_deprecated_names = \
-        VamdcNodeSpecies.objects.filter(deprecated=0).values_list(
-                "database_species_name_id", flat=True)
+def get_clean_inchi(inchi):
+    """ Adds correct prefix to inchi for openbabel parsing
+    
+    params:
+        inchi : string
+                a molecule inchi
 
-    species1 = VamdcSpeciesNames.objects.all().values_list(
-                "name", 'species_id', 'id')
+    returns : 
+        inchi prefixed by InChI=
 
-    for value in species1:
-        if value[0] != "" and value[2] in not_deprecated_names:
-            VamdcSpeciesSearch.objects.get_or_create(
-                value=value[0], species=VamdcSpecies.objects.get(pk=value[1]))
+    """
+    if inchi[0:6] != "InChI=":
+        return "InChI="+inchi.strip()
+    else:
+        return "InChI="+inchi[6:].strip()
+    
+def get_species_mass(speciesWeight, inchiinfo):
+    """ Returns the mass of a species
 
+    params:
+        speciesWeight : float
+                        value provided by the source database
 
-def fill_species_formula():
-    """Add species formula in index table."""
-    not_deprecated_formula = \
-        VamdcNodeSpecies.objects.filter(deprecated=0).values_list(
-            "database_species_formula_id", flat=True)
+        inchiinfo : object
+                    data read from inchi by openbabel
 
-    species2 = VamdcSpeciesStructFormulae.objects.all().values_list(
-            "formula", 'species_id', 'id')
+    returns : 
+        providerSpeciesWeight if it is > 0 or the value deduced from the inchi if providerSpeciesWeight == 0
 
-    for value in species2:
-        if value[0] != "" and value[2] in not_deprecated_formula:
-            VamdcSpeciesSearch.objects.get_or_create(
-                value=value[0], species=VamdcSpecies.objects.get(pk=value[1]))
+    """
+    try :
+        source_mass = round(float(speciesWeight))
+    except Exception as e:
+        source_mass = 0
+        print(" Warning : an exception occurred with {}: {} ".
+              format(inchiinfo.formula,e ))
 
+    computed_mass = round(inchiinfo.weight)  
 
-def fill_species_stoichiometry():
-    """Add species stoichiometry in index table."""
-    species3 = VamdcSpecies.objects.all().values_list(
-            "stoichiometric_formula", 'id')
+    # computed and provided values do not match : warning is raised
+    if source_mass != computed_mass :
+        print(" Warning : mass provided for {} does not match with computed value : {} != {}".
+              format(inchiinfo.formula, source_mass, computed_mass ))
 
-    for value in species3:
-        if value[0] != "":
-            VamdcSpeciesSearch.objects.get_or_create(
-                value=value[0], species=VamdcSpecies.objects.get(pk=value[1]))
+    if source_mass != 0:
+        print ("return %s"%source_mass)
+        return source_mass
+    elif inchiinfo is not None:
+        print ("return %s"%computed_mass)
+        return computed_mass
+    else: 
+        print ("Warning: no molecular mass information\
+            and no inchi present, setting weight to zero for %s" % inchiinfo.formula)
+        print ("return 0")
+        return 0          
 
-
-def fill_search_table():
-    """Create and populate the index table to provide search functions."""
-    VamdcSpeciesSearch.objects.all().delete()
-    fill_species_names()
-    fill_species_formula()
-    fill_species_stoichiometry()
-
-
-def check_deprecated_species():
-    """Verify if a species has been updated."""
-    species = VamdcNodeSpecies.objects.all()   
-   
-    for sp in species:      
-      last_species_seen_timestamp = time.mktime(datetime.strptime(sp.last_seen_dateTime.strftime("%y-%m-%d"), "%y-%m-%d").timetuple())
-      last_node_update_timestamp =  time.mktime(datetime.strptime(sp.member_database.last_update_date.strftime("%y-%m-%d"), "%y-%m-%d").timetuple())
-      
-      # deprecated after one week
-      if last_node_update_timestamp > last_species_seen_timestamp + 1209600 :
-        sp.deprecated = True
-        sp.save()
-  
 
 def update_nodes():
-    """
-    #Search for nodes in the registry, update or create records in the database
+    """  Search for nodes in the registry, update or create records in the database
     """
 
     print("### query the registry for active nodes")
@@ -112,8 +103,7 @@ def update_nodes():
         db_node.save()
 
 def set_node_topics(db_node, node):
-    """
-    #add a list of topics to a keyword according to its returnables
+    """ Add a list of topics to a keyword according to its returnables
     """
     print("adding keyword topics")
     node_topics = []
@@ -130,17 +120,19 @@ def set_node_topics(db_node, node):
           node_topics.append(topic.name)
 
 def query_active_nodes():
-    """
-    #Update species for nodes that are marked active
+    """ Update species for nodes that are marked active
     """
     vl_nl = vl_registry.Nodelist()
     updated_nodes = VamdcNodes.objects.filter(update_status=UpdateStatus.ACTIVE)
     print("%s node(s) have update_status = active and will be updated."%len(updated_nodes))   
+    
     for db_node in updated_nodes:
+        print("%s"%(db_node.ivo_identifier))   
         try:
             vl_node = vl_nl.getnode(db_node.ivo_identifier)
             print("Process species for node %s" % vl_node.name)
             load_species(vl_node)
+            print("done")
         except Exception as e:
             print("failed to process the node %s (%s)" % (db_node.short_name, db_node.ivo_identifier))
             print(e)
@@ -148,10 +140,8 @@ def query_active_nodes():
 
 
 def load_species(vl_node):
+    """ Load and update node species
     """
-    Load and update node species
-    """
-    # ---------------------------------------------------------------------------------
     # Retrieve the data from the node using SELECT SPECIES
     vl_atoms, vl_molecules = get_species(vl_node)
     db_node = VamdcNodes.objects.get(ivo_identifier=vl_node.identifier)
@@ -163,7 +153,7 @@ def load_species(vl_node):
             verify_atom(vl_atom)
             db_atom = update_atom(vl_atom, db_node)
             species_name = update_atom_names(db_atom, vl_atom)
-            update_species_in_node(db_node, db_atom, vl_atom, species_name)
+            update_species_in_node(db_node, db_atom, vl_atom, species_name, vl_atom.OriginalMassNumber)
         except Exception as e:
             print("Failed to load atom:", e)
             pprint(vl_atom)
@@ -172,12 +162,12 @@ def load_species(vl_node):
     # Update or insert the molecules
     for moleculeid in vl_molecules:
         vl_molecule = vl_molecules[moleculeid]
-        try:
+        try:            
             vl_molecule = verify_molecule(vl_molecule)
             db_molecule = update_molecule(vl_molecule, db_node)
             species_name = update_molecule_names(db_molecule, vl_molecule)
             species_formula = update_structural_formula(db_molecule, vl_molecule.OrdinaryStructuralFormula)
-            update_species_in_node(db_node, db_molecule, vl_molecule, species_name, species_formula)
+            update_species_in_node(db_node, db_molecule, vl_molecule, species_name, vl_molecule.OriginalMolecularWeight, species_formula)
         except  Exception as e:
             print("Failed to load molecule:", e)
             pprint(vl_molecule)
@@ -220,10 +210,8 @@ def update_structural_formula(db_molecule, formula, checkonly = False):
         return structformulae.first()
       else:
         #raise Exception("error")
-        print("### ERROR : struct formula size : %s" % len(structformulae))
+        print("ERROR : struct formula size : %s" % len(structformulae))
         sys.exit()
-
-
 
 
 def verify_atom(vl_atom):
@@ -243,6 +231,23 @@ def verify_atom(vl_atom):
             raise ValueError("Atom '%s' not found in the atoms dictionary." % symbol)
     except:
         raise ValueError("Atom '%s' not found in the atoms dictionary." % symbol)
+    
+
+    try:        
+        inchiinfo = InchiInfo(vl_atom.InChI)     
+    except:
+        print ("Unable to load the inchi information for atom '%s'" % vl_atom.ChemicalElementSymbol )
+        traceback.print_exc(file=sys.stdout)
+        inchiinfo = None
+
+    
+    try :         
+        vl_atom.MassNumber = get_species_mass(vl_atom.MassNumber, inchiinfo)
+        vl_atom.OriginalMassNumber = copy(vl_atom.MassNumber)
+    except :
+        vl_atom.MassNumber = get_species_mass(0, inchiinfo)
+        vl_atom.OriginalMassNumber = None
+
     return vl_atom
 
 
@@ -256,10 +261,12 @@ def update_atom(vl_atom, db_node):
     speciesid = vl_atom.VAMDCSpeciesID
     species_type = VamdcSpeciesTypes.objects.get(name="ATOM")
     try:
-      ioncharge = int(vl_atom.IonCharge)
+      ioncharge = round(vl_atom.IonCharge)
     except:
       print("ion charge %s is not an integer" % vl_atom.IonCharge)
 
+    massnumber = vl_atom.MassNumber
+    """
     try:
         massnumber = vl_atom.MassNumber
     except:
@@ -268,6 +275,7 @@ def update_atom(vl_atom, db_node):
             massnumber = db_dict_atom.mass_number
         except:
             massnumber = 0
+    """
 
     db_atom, created = VamdcSpecies.objects.get_or_create(
         defaults={
@@ -280,22 +288,29 @@ def update_atom(vl_atom, db_node):
     )
 
     if created:
-        db_atom.inchi = vl_atom.InChI
+        db_atom.inchi = get_clean_inchi(vl_atom.InChI)
         db_atom.inchikey = vl_atom.InChIKey
         db_atom.stoichiometric_formula = vl_atom.ChemicalElementSymbol
         db_atom.species_type = species_type
         db_atom.status = RecordStatus.NEW
         db_atom.update_status = UpdateStatus.NEW
-        print ("adding atom %s %s" % (db_atom.stoichiometric_formula, db_atom.charge))
         db_atom.save()
     else:
-        print ("found atom %s %d" % (db_atom.stoichiometric_formula, db_atom.charge))
+        # update inchi prefix if it is not correctly defined
+        if db_atom.inchi.startswith('InChI=') == False :
+            try :     
+                db_atom.inchi = get_clean_inchi(vl_atom.InChI)  
+                db_atom.save()
+            except Exception as e:
+                print ("Error while updating Species mass")
+                print(e)
+
 
     return db_atom
 
 def update_atom_names(db_atom, vl_atom):
     symbol = db_atom.stoichiometric_formula
-    mass = int(db_atom.mass_number)
+    mass = round(db_atom.mass_number)
     markup_type = VamdcMarkupTypes.objects.get(name="TEXT")
     try:
       atomname = VamdcDictAtoms.objects.filter(symbol=symbol, mass_number=mass)[0]
@@ -331,59 +346,39 @@ def verify_molecule(vl_molecule):
     # VAMDCSpeciesID field does not exist 
     except Exception as e :
       print(e)
-
-<<<<<<< HEAD
+   
     if speciesid is None or len(speciesid) < 27:
         speciesid = vl_molecule.InChIKey
-=======
-    print("### INCHIKEY")
-    print(vl_molecule.InChIKey)
-    
-    print("### SPECIES ID 1")
-    print(speciesid)
-
-    if speciesid is None or len(speciesid) < 27:
-        speciesid = vl_molecule.InChIKey
-        print("### SPECIES ID 2")
-        print(speciesid)
->>>>>>> f9071ecb848fe5092c57031f5e69701d21d3b8ca
         #TODO: handle multiple inchikeys/conformers here?
         if speciesid is None or len(speciesid) < 27:
             raise ValueError("Bad speciesid for molecule '%s'" % vl_molecule.StoichiometricFormula)
 
     vl_molecule.VAMDCSpeciesID = speciesid
+    vl_molecule.InChI = get_clean_inchi(vl_molecule.InChI.strip())
 
-    try:
-        inchiinfo = InchiInfo(vl_molecule.InChI)
+    try:        
+        inchiinfo = InchiInfo(vl_molecule.InChI)     
     except:
         print ("Unable to load the inchi information for molecule '%s'" % vl_molecule.StoichiometricFormula )
         traceback.print_exc(file=sys.stdout)
         inchiinfo = None
 
-    try:
-        mass = int(round(float(vl_molecule.MolecularWeight)))
-    except:
-        if (inchiinfo is None):
-            mass = 0
-            print ("Warning: no molecular mass information\
-                    and no inchi present, setting weight to zero")
-        else:
-            mass = int(inchiinfo.weight)
+    try : 
+        mass = get_species_mass(vl_molecule.MolecularWeight, inchiinfo)
+        vl_molecule.OriginalMolecularWeight = copy(vl_molecule.MolecularWeight)
+    except :
+        mass = get_species_mass(0, inchiinfo)
+        vl_molecule.OriginalMolecularWeight = None
 
-
-    if (inchiinfo is not None and int(inchiinfo.weight) != mass):
+    if (inchiinfo is not None and round(inchiinfo.weight) != mass):
         print (
         "Warning: molecular weight from Inchi (%d) does not match the XSAMS weight %d" % (int(inchiinfo.weight), mass))
-    vl_molecule.MolecularWeight = mass
-<<<<<<< HEAD
-    print("inchiinfo.weight   %s "% inchiinfo.weight)
-    print("vl_molecule.MolecularWeight    %s" % vl_molecule.MolecularWeight)
-    print("mass   %s" % mass)
-=======
 
->>>>>>> f9071ecb848fe5092c57031f5e69701d21d3b8ca
+
+    vl_molecule.MolecularWeight = mass
+
     try:
-        charge = int(vl_molecule.IonCharge)
+        charge = round(vl_molecule.IonCharge)
     except:
         if (inchiinfo is None):
             charge = 0
@@ -403,7 +398,7 @@ def update_molecule(vl_molecule, db_node):
     molecularweight = vl_molecule.MolecularWeight
     species_type = VamdcSpeciesTypes.objects.get(name="molecule")
     try:
-      charge = int(vl_molecule.IonCharge)
+      charge = round(vl_molecule.IonCharge)
     except:
       print("charge value %s is not an integer" % vl_molecule.IonCharge)
 
@@ -417,6 +412,8 @@ def update_molecule(vl_molecule, db_node):
         id=speciesid,
     )
 
+    print("get_or_create : %s" % db_molecule.mass_number)
+
     if created:
         db_molecule.inchi = vl_molecule.InChI
         db_molecule.inchikey = vl_molecule.InChIKey
@@ -424,12 +421,32 @@ def update_molecule(vl_molecule, db_node):
         db_molecule.species_type = species_type
         db_molecule.status = RecordStatus.NEW
         db_molecule.update_status = UpdateStatus.NEW
-        print ("adding molecule %s %s" % (db_molecule.stoichiometric_formula, db_molecule.charge))
         db_molecule.save()
     else:
-        print ("found molecule %s %d" % (db_molecule.stoichiometric_formula, db_molecule.charge))
+        # update molecule mass if it is not defined
+        if db_molecule.mass_number == 0 :
+            try :   
+                print('##try to update mass')  
+                db_molecule.inchi = get_clean_inchi( db_molecule.inchi)     
+                inchiinfo = InchiInfo(db_molecule.inchi)
+                db_molecule.mass_number = get_species_mass(db_molecule.mass_number, inchiinfo)
+                db_molecule.save()
+            except Exception as e:
+                print ("Error while updating Species mass")
+                print(e)
+        elif db_molecule.inchi.startswith('InChI=') == False :
+            try :     
+                db_molecule.inchi = get_clean_inchi( db_molecule.inchi)     
+                db_molecule.save()
+            except Exception as e:
+                print ("Error while updating Species mass")
+                print(e)
+
+
+
 
     assert isinstance(db_molecule, VamdcSpecies)
+    print("return molecule")
     return db_molecule
 
 
@@ -454,16 +471,22 @@ def update_molecule_names(db_molecule, vl_molecule):
     return db_speciesname
 
 
-def update_species_in_node(db_node, db_species, vl_species, species_name, species_formula=None):
+def update_species_in_node(db_node, db_species, vl_species, species_name, mass_number, species_formula=None):
     """
     Insert or update the information on the species contained in the node
     """
+
+    if mass_number is not None:
+        mass_number = round(float(mass_number))
+
     db_nodeSpecies, created = VamdcNodeSpecies.objects.get_or_create(
         species=db_species,
         member_database=db_node,
         database_species_id=vl_species.SpeciesID,
         database_species_name=species_name,
-        database_species_formula=species_formula)
+        database_species_formula=species_formula,
+        member_database_mass_number = mass_number
+        )
 
     if not created:
         db_nodeSpecies.last_seen_dateTime = datetime.now()
