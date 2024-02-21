@@ -42,7 +42,8 @@ def get_species_mass(speciesWeight, inchiinfo):
                     data read from inchi by openbabel
 
     returns : 
-        providerSpeciesWeight if it is > 0 or the value deduced from the inchi if providerSpeciesWeight == 0
+        providerSpeciesWeight if it is > 0 or the value deduced from the inchi if 
+        providerSpeciesWeight == 0
 
     """
     try :
@@ -85,7 +86,8 @@ def update_nodes():
     for node in nodelist:
         db_node, created = VamdcNodes.objects.get_or_create(ivo_identifier=node.identifier)
         if created:
-            print("Adding new node %s %s nn %s nu %s em"%(node.identifier, node.name, node.url, node.maintainer))            
+            print("Adding new node %s %s nn %s nu %s em"%(node.identifier, node.name, 
+                                                          node.url, node.maintainer))            
             db_node.short_name = node.name
             db_node.contact_email = node.maintainer
             db_node.reference_url = node.referenceUrl
@@ -104,6 +106,14 @@ def update_nodes():
 
 def set_node_topics(db_node, node):
     """ Add a list of topics to a keyword according to its returnables
+
+    params:
+        db_node : object
+                  VamdcNode Django object
+
+        node : object
+               node object from vamdclib
+
     """
     print("adding keyword topics")
     node_topics = []
@@ -152,7 +162,7 @@ def load_species(vl_node):
         try:
             verify_atom(vl_atom)
             db_atom = update_atom(vl_atom, db_node)
-            species_name = update_atom_names(db_atom, vl_atom)
+            species_name = update_atom_names(db_atom)
             update_species_in_node(db_node, db_atom, vl_atom, species_name, vl_atom.OriginalMassNumber)
         except Exception as e:
             print("Failed to load atom:", e)
@@ -166,8 +176,11 @@ def load_species(vl_node):
             vl_molecule = verify_molecule(vl_molecule)
             db_molecule = update_molecule(vl_molecule, db_node)
             species_name = update_molecule_names(db_molecule, vl_molecule)
-            species_formula = update_structural_formula(db_molecule, vl_molecule.OrdinaryStructuralFormula)
-            update_species_in_node(db_node, db_molecule, vl_molecule, species_name, vl_molecule.OriginalMolecularWeight, species_formula)
+            species_formula = update_structural_formula(db_molecule, 
+                                                        vl_molecule.OrdinaryStructuralFormula)
+            update_species_in_node(db_node, db_molecule, vl_molecule, 
+                                   species_name, vl_molecule.OriginalMolecularWeight, 
+                                   species_formula)
         except  Exception as e:
             print("Failed to load molecule:", e)
             pprint(vl_molecule)
@@ -175,10 +188,23 @@ def load_species(vl_node):
 
 
 def update_structural_formula(db_molecule, formula, checkonly = False):
-    """
+    """ Update structural formula of a molecule
+
+    params:
+        db_molecule : object
+                      VamdcSpecies Django object
+
+        formula : string
+                  OrdinaryStructuralFormula of a species
+
+        checkonly : boolean
+                    change are not recorded if False
+
+
     """
     # Check if it is already in the species-database
-    structformulae = VamdcSpeciesStructFormulae.objects.filter(species = db_molecule.id, formula = formula)
+    structformulae = VamdcSpeciesStructFormulae.objects.filter(species = db_molecule.id, 
+                                                               formula = formula)
     markup_type = VamdcMarkupTypes.objects.get(name="TEXT")
 
     # Insert formula into the species-database if not found
@@ -186,7 +212,8 @@ def update_structural_formula(db_molecule, formula, checkonly = False):
         # determine the search-priority. There is no automatic way
         # to determine it, so new entries
         # will be added with the highest priority
-        search_priorities = VamdcSpeciesStructFormulae.objects.filter(species = db_molecule.id).values_list("search_priority", flat = True)
+        search_priorities = VamdcSpeciesStructFormulae.objects.filter(species = db_molecule.id)\
+                            .values_list("search_priority", flat = True)
         if len(search_priorities) > 0:
             search_priority = max(search_priorities)
         else:
@@ -215,6 +242,15 @@ def update_structural_formula(db_molecule, formula, checkonly = False):
 
 
 def verify_atom(vl_atom):
+    """ Verify the content of an atom object, set the MassNumber and OriginalMassNumber value
+
+    params:
+        vl_atom : object
+                  vamdclib Atom object
+
+    returns : well formatted vamdclib Atom object
+
+    """
     speciesid = None
     try :
       speciesid = vl_atom.VAMDCSpeciesID
@@ -241,12 +277,13 @@ def verify_atom(vl_atom):
         inchiinfo = None
 
     
-    try :         
+    try :   
+        vl_atom.OriginalMassNumber = copy(vl_atom.MassNumber)      
         vl_atom.MassNumber = get_species_mass(vl_atom.MassNumber, inchiinfo)
-        vl_atom.OriginalMassNumber = copy(vl_atom.MassNumber)
     except :
-        vl_atom.MassNumber = get_species_mass(0, inchiinfo)
         vl_atom.OriginalMassNumber = None
+        vl_atom.MassNumber = get_species_mass(0, inchiinfo)
+
 
     return vl_atom
 
@@ -255,8 +292,12 @@ def update_atom(vl_atom, db_node):
     """
     Insert or update the atom record, coming for the node
 
-    Args:
-        vl_atom (vamdclib atom):
+    params:
+        vl_atom : object
+                  vamdclib Atom object
+
+    returns: updated VamdcSpecies Django object
+
     """
     speciesid = vl_atom.VAMDCSpeciesID
     species_type = VamdcSpeciesTypes.objects.get(name="ATOM")
@@ -266,16 +307,6 @@ def update_atom(vl_atom, db_node):
       print("ion charge %s is not an integer" % vl_atom.IonCharge)
 
     massnumber = vl_atom.MassNumber
-    """
-    try:
-        massnumber = vl_atom.MassNumber
-    except:
-        try:
-            db_dict_atom = VamdcDictAtoms.objects.get(symbol=vl_atom.ChemicalElementSymbol, most_abundant=1)
-            massnumber = db_dict_atom.mass_number
-        except:
-            massnumber = 0
-    """
 
     db_atom, created = VamdcSpecies.objects.get_or_create(
         defaults={
@@ -308,7 +339,17 @@ def update_atom(vl_atom, db_node):
 
     return db_atom
 
-def update_atom_names(db_atom, vl_atom):
+def update_atom_names(db_atom):
+    """
+    Update atom name by indicating if this is a positive or negative ion
+
+    params:
+        vl_atom : object
+                  VamdcSpecies Django object
+
+    returns: updated VamdcSpeciesNames Django object
+
+    """
     symbol = db_atom.stoichiometric_formula
     mass = round(db_atom.mass_number)
     markup_type = VamdcMarkupTypes.objects.get(name="TEXT")
@@ -340,6 +381,15 @@ def update_atom_names(db_atom, vl_atom):
 
 
 def verify_molecule(vl_molecule):
+    """ Verify the content of a molecule object, set the MassNumber and OriginalMassNumber value
+
+    params:
+        vl_atom : object
+                  vamdclib Atom object
+
+    returns : well formatted vamdclib Molecule object
+
+    """
     speciesid = None
     try :
       speciesid = vl_molecule.VAMDCSpeciesID
@@ -351,7 +401,8 @@ def verify_molecule(vl_molecule):
         speciesid = vl_molecule.InChIKey
         #TODO: handle multiple inchikeys/conformers here?
         if speciesid is None or len(speciesid) < 27:
-            raise ValueError("Bad speciesid for molecule '%s'" % vl_molecule.StoichiometricFormula)
+            raise ValueError("Bad speciesid for molecule '%s'" % 
+                             vl_molecule.StoichiometricFormula)
 
     vl_molecule.VAMDCSpeciesID = speciesid
     vl_molecule.InChI = get_clean_inchi(vl_molecule.InChI.strip())
@@ -359,7 +410,8 @@ def verify_molecule(vl_molecule):
     try:        
         inchiinfo = InchiInfo(vl_molecule.InChI)     
     except:
-        print ("Unable to load the inchi information for molecule '%s'" % vl_molecule.StoichiometricFormula )
+        print ("Unable to load the inchi information for molecule '%s'" % 
+               vl_molecule.StoichiometricFormula )
         traceback.print_exc(file=sys.stdout)
         inchiinfo = None
 
@@ -372,7 +424,8 @@ def verify_molecule(vl_molecule):
 
     if (inchiinfo is not None and round(inchiinfo.weight) != mass):
         print (
-        "Warning: molecular weight from Inchi (%d) does not match the XSAMS weight %d" % (int(inchiinfo.weight), mass))
+        "Warning: molecular weight from Inchi (%d) does not match the XSAMS weight %d" % 
+        (int(inchiinfo.weight), mass))
 
 
     vl_molecule.MolecularWeight = mass
@@ -387,13 +440,28 @@ def verify_molecule(vl_molecule):
         else:
             charge = inchiinfo.totalCharge
     if (inchiinfo is not None and inchiinfo.totalCharge != charge):
-        print ("Warning: charge from Inchi (%d) does not match XSAMS charge %d" % (inchiinfo.totalCharge, charge))
+        print ("Warning: charge from Inchi (%d) does not match XSAMS charge %d" % 
+               (inchiinfo.totalCharge, charge))
     vl_molecule.IonCharge=charge
 
     return vl_molecule
 
 
 def update_molecule(vl_molecule, db_node):
+    """
+    Insert or update the molecule record, coming from the node
+
+    params:
+        vl_molecule : object
+                      vamdclib Molecule object
+                    
+        db_node : object
+                  VamdcNodes Django object
+
+    returns: updated VamdcSpecies Django object
+
+
+    """
     speciesid = vl_molecule.VAMDCSpeciesID
     molecularweight = vl_molecule.MolecularWeight
     species_type = VamdcSpeciesTypes.objects.get(name="molecule")
@@ -451,6 +519,18 @@ def update_molecule(vl_molecule, db_node):
 
 
 def update_molecule_names(db_molecule, vl_molecule):
+    """
+    Update molecule name by indicating the markup type and creation date
+    params:
+        db_molecule : object
+                      VamdcSpecies Django object
+
+        vl_molecule : object
+                      vamdclib Molecule object
+
+    returns: updated VamdcSpeciesNames Django object
+
+    """
     db_speciesname = None
     markup_type = VamdcMarkupTypes.objects.get(name="TEXT")
     try:
@@ -471,9 +551,12 @@ def update_molecule_names(db_molecule, vl_molecule):
     return db_speciesname
 
 
-def update_species_in_node(db_node, db_species, vl_species, species_name, mass_number, species_formula=None):
+def update_species_in_node(db_node, db_species, vl_species, species_name, 
+                           mass_number, species_formula=None):
     """
-    Insert or update the information on the species contained in the node
+    Insert or update the information for a species record in a given node (VamdcNodeSpecies)
+
+    
     """
 
     if mass_number is not None:
@@ -499,7 +582,15 @@ def update_species_in_node(db_node, db_species, vl_species, species_name, mass_n
 
 def get_species(vl_node):
     """
-    Retrieves a dictionary with species available at the specified node
+    Retrieves a ilst with species available at the specified node
+    by performing a select species request on the given node
+
+    params:
+        vl_node : object
+                  node object from vamdclib
+
+    returns : list, list
+              a list of atoms and a list of molecules
 
     """
 

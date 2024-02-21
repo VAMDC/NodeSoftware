@@ -20,14 +20,10 @@ import post_processing as postproc
 
 
 #Do the work on database
-#print ("### update nodes")
-#update.update_nodes()       #Search for new nodes in the registry&update registered ones
-#print ("### query actives nodes")
-#update.query_active_nodes() #Update species for nodes that are marked active
+print ("### update nodes")
+update.update_nodes()       #Search for new nodes in the registry & update registered ones
+print ("### query actives nodes")
+update.query_active_nodes() #Update species for nodes that are marked active
 
-#postproc.check_deprecated_species()
-#postproc.fill_search_table()
-
-# This is executed only once to update values in vamdc_species table where mass_number == 0 
-# and wrongly written inchi
-postproc.fix_species_values()
+postproc.check_deprecated_species()
+postproc.fill_search_table()
