@@ -25,5 +25,7 @@ update.update_nodes()       #Search for new nodes in the registry & update regis
 print ("### query actives nodes")
 update.query_active_nodes() #Update species for nodes that are marked active
 
+print("### check_deprecated_species")
 postproc.check_deprecated_species()
+print("### fill_search_table")
 postproc.fill_search_table()
