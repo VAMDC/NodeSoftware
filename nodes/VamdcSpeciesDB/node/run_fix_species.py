@@ -1,5 +1,12 @@
-# This is executed only once to update values in vamdc_species table where mass_number == 0 
-# and wrongly written inchi before the february 2024 service update
+import util
+
+#Add path to settings.py to system path
+util.append_base_path(2)
+
+#Initialize django
+import django
+django.setup()
+
 import post_processing as postproc
 
 postproc.fix_species_values()
