@@ -302,7 +302,7 @@ def update_atom(vl_atom, db_node):
     speciesid = vl_atom.VAMDCSpeciesID
     species_type = VamdcSpeciesTypes.objects.get(name="ATOM")
     try:
-      ioncharge = round(vl_atom.IonCharge)
+      ioncharge = round(float(vl_atom.IonCharge))
     except:
       print("ion charge %s is not an integer" % vl_atom.IonCharge)
 
@@ -556,7 +556,7 @@ def update_species_in_node(db_node, db_species, vl_species, species_name,
     """
     Insert or update the information for a species record in a given node (VamdcNodeSpecies)
 
-    
+
     """
 
     if mass_number is not None:
