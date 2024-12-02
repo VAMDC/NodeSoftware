@@ -100,8 +100,13 @@ def getSpeciesWithStates(transs):
 def getSources(ids):
     """
         get a list of source objects from their ids    
+
+        Returns all sources if ids == None
     """
-    sources = django_models.Source.objects.filter(pk__in=ids)    
+    if ids is None : 
+      sources = django_models.Source.objects.all()
+    else : 
+      sources = django_models.Source.objects.filter(pk__in=ids)    
     for source in sources : 
         names=[]
         adresses=[]
@@ -259,7 +264,7 @@ def setupSources():
   """
   
   # get  all sources
-  sources = django_models.Source.objects.all()
+  sources = getSources(None)
   result = {'HeaderInfo':{'COUNT-SOURCES': len(sources), },
             'Sources':sources,  
           }

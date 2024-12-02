@@ -142,7 +142,7 @@ def setupSources():
   """
   
   # get recommended dataset
-  sources = django_models.Source.objects.all()
+  sources = getSources(None)
 
   result = util_models.Result()
   result.addHeaderField('COUNT-SOURCES',sources.count())
@@ -221,7 +221,10 @@ def getSources(ids):
     """
         get a list of source objects from their ids    
     """
-    sources = django_models.Source.objects.filter(pk__in=ids)    
+    if ids is None : 
+        sources = django_models.Source.objects.all()
+    else : 
+        sources = django_models.Source.objects.filter(pk__in=ids)
     for source in sources : 
         names=[]
         adresses=[]

@@ -277,6 +277,7 @@ class VamdcNodeSpecies(models.Model):
     species = models.ForeignKey(VamdcSpecies, on_delete=models.DO_NOTHING)
     database_species_id = models.CharField(max_length=255)#, unique=True!!!!It should not be marked unique, since collisions are possible
     member_database = models.ForeignKey(VamdcNodes, on_delete=models.DO_NOTHING)
+    member_database_mass_number = models.IntegerField()
     last_seen_dateTime = models.DateTimeField(auto_now = False, editable=False, default = datetime.now)
     database_species_name = models.ForeignKey(VamdcSpeciesNames, null=True, on_delete=models.DO_NOTHING)
     database_species_formula = models.ForeignKey(VamdcSpeciesStructFormulae, null=True, on_delete=models.DO_NOTHING)# atoms do not have formula
@@ -310,4 +311,4 @@ class VamdcSpeciesSearch(models.Model):
 
 
     class Meta:
-        db_table = u'vamdc_species_search'
+        db_table = u'vamdc_merged_fields_vals'
