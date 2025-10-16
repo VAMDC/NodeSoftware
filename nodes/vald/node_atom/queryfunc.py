@@ -19,9 +19,10 @@ def returnHeaders(transs):
         headers['COUNT-ATOMS'] = \
             len(transs.values_list('species_id',flat=True).distinct())
         headers['COUNT-SPECIES'] = headers['COUNT-ATOMS']
-        sids = transs.values_list('upstate_id','lostate_id')
-        sids = set(item for s in sids for item in s)
-        headers['COUNT-STATES'] = len(sids)
+        # Skip state counting - it's expensive and not critical for HEAD requests
+        # sids = transs.values_list('upstate_id','lostate_id')
+        # sids = set(item for s in sids for item in s)
+        # headers['COUNT-STATES'] = len(sids)
 
     return headers
 
