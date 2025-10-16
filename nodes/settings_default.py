@@ -91,8 +91,8 @@ MIDDLEWARE = [
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
-# Default primary key field type for models (required in Django 3.2+)
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Keep using AutoField for legacy database compatibility
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 ###################################################
 # Misc settings
