@@ -1,6 +1,6 @@
 # Below are common suffixes and things to be ignored by git.
 # Feel free to add stuff here, e.g. temporary files that your editor
-# creates. 
+# creates.
 #
 *~
 *.pyc
@@ -26,3 +26,10 @@ settings.py
 .Python
 nodes/chianti/chianti7.sql
 nodes/chianti/test-service.py
+
+# Python package management
+__pycache__/
+*.egg-info/
+.venv/
+venv/
+uv.lock
