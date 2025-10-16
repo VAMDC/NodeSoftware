@@ -19,7 +19,7 @@ from django.db.models.query import EmptyQuerySet
 from vamdctap.sqlparse import sql2Q
 import other.verification.http
 from django.db.models import Q
-import cgi
+import html
 
 import models
 
@@ -48,11 +48,11 @@ def getSources(items):
 			biblio.biblioyear = biblio.biblioyear if biblio.biblioyear > 1000 else 1000 + biblio.biblioyear
 			biblio.biblioTypeName = 'journal'
 			if biblio.biblioname:
-				biblio.biblioname = cgi.escape(biblio.biblioname)
+				biblio.biblioname = html.escape(biblio.biblioname)
 			if biblio.bibliodigest:
-				biblio.bibliodigest = cgi.escape(biblio.bibliodigest)
+				biblio.bibliodigest = html.escape(biblio.bibliodigest)
 			if biblio.biblioannotation:
-				biblio.biblioannotation = cgi.escape(biblio.biblioannotation)
+				biblio.biblioannotation = html.escape(biblio.biblioannotation)
 
 			if biblio.bibliotype == 1:
 				if biblio.getThesisPattern().search(biblio.biblioname) is not None:

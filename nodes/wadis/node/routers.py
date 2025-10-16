@@ -34,11 +34,14 @@ class MultipleDBRouter(object):
 		return None
 
 
-	def allow_syncdb(self, db, model):
+	def allow_migrate(self, db, app_label, model_name=None, **hints):
 		try:
-			database = model.__module__.split('.')[-1]
-			if database in connections:
-				return db == database
-		except IndexError:
+			if model_name:
+				model = hints.get('model')
+				if model:
+					database = model.__module__.split('.')[-1]
+					if database in connections:
+						return db == database
+		except (IndexError, AttributeError):
 			pass
 		return None
