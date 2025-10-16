@@ -1,4 +1,5 @@
 from node_common.models import *
+from django.db.models import Index
 #from ..node_common.models import *
 
 class State(Model):
@@ -134,6 +135,9 @@ class Transition(Model):
         return u'ID:%s Wavel: %s' % (self.id, self.wave)
     class Meta:
         db_table = u'transitions'
+        indexes = [
+            Index(fields=['species', 'wave'], name='speciesid_wave'),
+        ]
 
 
 

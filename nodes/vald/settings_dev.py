@@ -1,9 +1,9 @@
 from settings_default import *
 
 DEBUG = False
-#DEBUG = True
+DEBUG = True
 TRANSLIM = 100000
-QUERY_STORE_ACTIVE = True
+QUERY_STORE_ACTIVE = False
 
 try:
     INSTALLED_APPS.remove('node')
@@ -18,13 +18,12 @@ if not NODEPKG in INSTALLED_APPS:
 
 DATABASES = {
   'default': {
-    'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'vald_atom',
-    'USER': 'vald',
-    'PASSWORD': 'V@ld',
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': 'vald_atom.sqlite',
   },
 }
-LAST_MODIFIED = datetime.date(2017,1,24)
+LAST_MODIFIED = datetime.date(2020,1,24)
+NODEVERSION = LAST_MODIFIED.isoformat()
 
 EXAMPLE_QUERIES = [\
     "SELECT ALL WHERE RadTransWavelength > 4000 AND RadTransWavelength < 4000.01",
@@ -34,7 +33,8 @@ EXAMPLE_QUERIES = [\
     ]
 ADMINS = (('Thomas', 'thomas@marquart.se'),)
 SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
-DEPLOY_URL = 'https://sslvamdc.tmy.se/tap/'
+DEPLOY_URL = 'http://localhost:8000/tap/'
+STATIC_URL = '/static/'
 
 VAMDC_APPS = [\
     "ivo://vamdc/atomicxsams2html",
@@ -47,9 +47,15 @@ VAMDC_APPS = [\
 #    "ivo://vamdc/",
     ]
 
-LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnodeDev.log'
+LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode12.07.log'
 if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'
+
+LOGGING['loggers']['django.db.backends'] = {
+      'handlers': ['console', 'logfile'],
+      'level': 'DEBUG',
+      'propagate': False,
+  }
 
 
 # Query inspecting as of https://github.com/dobarkod/django-queryinspect
