@@ -246,7 +246,7 @@ Django will use to create the database, using the connection information in
 ``settings.py``. If you do not know SQL, you can ignore the output and move
 straight on to creating the database::
 
-    $ ./manage.py syncdb
+    $ ./manage.py migrate
 
 Now you have a fresh empty database. You can test it with the same commands as
 mentioned at the end of Case 1 above, replacing "Species" and "State" by your
@@ -256,10 +256,9 @@ own model names.
 
     There is no harm in deleting the database and re-creating it after
     improving your models. After all, the database is still empty at this stage
-    and `syncdb` will always create it for you from the models, even if you
+    and `migrate` will always create it for you from the models, even if you
     change your database engine in ``settings.py``. The command for re-creating
-    the tables in the database (deleting all data!) is ``./manage.py reset
-    node``.
+    the tables in the database (deleting all data!) is ``./manage.py flush``.
 
 .. note::
 
