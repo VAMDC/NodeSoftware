@@ -4,9 +4,9 @@
 variables you want to change from settings_default.py to setup your 
 node. Next define your models. You'll need to add the folder containing 
 the 'models' directory to the INSTALLED_APPS tuple at least. Don't edit 
-settings_default.py directly. Next run 'python manage.py syncdb'. This 
+settings_default.py directly. Next run 'python manage.py migrate'. This 
 will read your settings file and create an empty database using your 
-models. If you change the models you need to run syncdb again. """
+models. If you change the models you need to run migrate again. """
 
 import sys
 import os
@@ -112,7 +112,7 @@ containing %r. There can be two reasons for this:
 if __name__ == "__main__":
     if _CREATED_SETTINGS:
         string =  "\n Edit your new settings.py file as needed, then run\n"
-        string += " 'python manage syncdb'.\n"
+        string += " 'python manage.py migrate'.\n"
         string += "-"*50
         print string
         sys.exit()
