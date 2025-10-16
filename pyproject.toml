@@ -1,0 +1,52 @@
+[project]
+name = "vamdc-node-software"
+version = "12.07.0"
+description = "VAMDC Node Software - API for accessing atomic and molecular data"
+readme = "README"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+
+dependencies = [
+    "django>=4.2,<4.3",
+    "pybtex>=0.24.0",
+    "latexcodec>=2.0.1",
+    "requests>=2.31.0",
+    "pyyaml>=6.0",
+    "gunicorn>=21.0.0",
+    "pyparsing>=3.0.0",
+    "six>=1.16.0",
+]
+
+[project.optional-dependencies]
+mysql = [
+    "mysqlclient>=2.2.0",
+]
+postgres = [
+    "psycopg2-binary>=2.9.0",
+]
+dev = [
+    "ipython>=8.0.0",
+    "pytest>=7.0.0",
+    "pytest-django>=4.5.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["vamdctap", "imptools", "vamdclib"]
+
+[tool.setuptools.package-data]
+vamdctap = ["*.py"]
+imptools = ["*.py"]
+
+[tool.django]
+settings_module = "settings"
+
+[dependency-groups]
+dev = [
+    "ipython>=8.0.0",
+    "pytest>=7.0.0",
+    "pytest-django>=4.5.0",
+]
