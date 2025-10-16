@@ -83,13 +83,16 @@ INSTALLED_APPS = [
     NODEPKG
 ]
 # Setup of Django middleware components (shouldn't have to change this))
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 #    'django.contrib.sessions.middleware.SessionMiddleware',
 #    'django.contrib.auth.middleware.AuthenticationMiddleware',
-)
+]
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
+# Default primary key field type for models (required in Django 3.2+)
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ###################################################
 # Misc settings
@@ -106,8 +109,6 @@ TIME_ZONE = 'Europe/Berlin'
 LANGUAGE_CODE = 'en-us'
 # Give debug messages
 DEBUG = False
-# For web templates, use Python traceback instead of Server Error message.
-TEMPLATE_DEBUG = DEBUG
 # site id number (you shouldn't have to change this)
 SITE_ID = 1
 # If you set this to False, Django will make some optimizations so as not
@@ -137,6 +138,16 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_PATH,'static', 'templates')],
+        'APP_DIRS': False,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+            ],
+            'loaders': [
+                'django.template.loaders.filesystem.Loader',
+            ],
+        },
     },
 ]
 
