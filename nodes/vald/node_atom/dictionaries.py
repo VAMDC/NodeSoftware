@@ -102,7 +102,7 @@ RESTRICTABLES = {\
 'AtomMassNumber':'species__massno',
 'AtomNuclearCharge':'species__atomic',
 'IonCharge':'species__ion',
-'InchiKey':'species__inchi',
+'Inchi':'species__inchi',
 'InchiKey':'species__inchikey',
 'StateEnergy':bothStates,
 'Lower.StateEnergy':'lostate__energy',
