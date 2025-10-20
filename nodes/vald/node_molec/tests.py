@@ -6,14 +6,9 @@ Replace these with more appropriate tests for your application.
 """
 
 import sys
-try:
-    from django.utils.unittest import TestCase
-except ImportError:
-    from django.test import TestCase
-try:    
-    from django.utils import unittest
-except ImportError:
-    import unittest
+import unittest
+
+from django.test import TestCase
 from vamdctap import tests as vamdctests
 
 
@@ -21,10 +16,8 @@ from vamdctap import tests as vamdctests
 
 class SimpleTest(TestCase):
     def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
+        """Basic sanity check."""
+        self.assertEqual(1 + 1, 2)
 
 
 # Don't edit the following. It allows this module and the vamdc
