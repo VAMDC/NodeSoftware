@@ -42,12 +42,9 @@ VAMDC_APPS = [\
     "ivo://vamdc/xsams2sme",
     "ivo://vamdc/XSAMS-bibtex",
     "ivo://vamdc/xsams-views",
-#    "ivo://vamdc/",
-#    "ivo://vamdc/",
-#    "ivo://vamdc/",
     ]
 
-LOGGING['handlers']['logfile']['filename'] = '/tmp/atomnode12.07.log'
+LOGGING['handlers']['logfile']['filename'] = 'devnode.log'
 if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'
 
@@ -57,21 +54,3 @@ LOGGING['loggers']['django.db.backends'] = {
       'propagate': False,
   }
 
-
-# Query inspecting as of https://github.com/dobarkod/django-queryinspect
-#MIDDLEWARE_CLASSES = (
-#    'django.middleware.common.CommonMiddleware',
-#    'qinspect.middleware.QueryInspectMiddleware',
-#    )
-# Whether the Query Inspector should do anything (default: False)
-#QUERY_INSPECT_ENABLED = True
-# Whether to log the stats via Django logging (default: True)
-#QUERY_INSPECT_LOG_STATS = True
-# Whether to add stats headers (default: True)
-#QUERY_INSPECT_HEADER_STATS = True
-# Whether to log duplicate queries (default: False)
-#QUERY_INSPECT_LOG_QUERIES = True
-# Whether to include tracebacks in the logs (default: False)
-#QUERY_INSPECT_LOG_TRACEBACKS = False
-# Project root (one or several colon-separated directories, default empty)
-#QUERY_INSPECT_TRACEBACK_ROOTS = '/path/to/my/django/project/'
