@@ -5,7 +5,7 @@ from django.db.models import Index, UniqueConstraint
 class State(Model):
     id = IntegerField(primary_key=True, db_index=True)
 
-    species = ForeignKey(Species, db_index=False, on_delete=DO_NOTHING, null=True, blank=True)
+    species = ForeignKey(Species, db_index=False, on_delete=DO_NOTHING)
 
     energy = DecimalField(max_digits=15, decimal_places=4,null=True, db_index=True)
     lande = DecimalField(max_digits=6, decimal_places=2,null=True)
@@ -84,7 +84,7 @@ class Transition(Model):
     gammastark_ref_id = RefCharField(max_length=7, null=True)
     waals_ref_id = RefCharField(max_length=7, null=True)
 
-    wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False, on_delete=DO_NOTHING, null=True, blank=True) # needed for population
+    wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False, on_delete=DO_NOTHING) # needed for population
     #loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
     #gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans', db_index=False)
     #gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
