@@ -189,14 +189,14 @@ def open_input(filename: Optional[str] = None) -> TextIO:
 # DATABASE OPERATIONS
 # =============================================================================
 
-def bulk_insert_optimized(model, batch: list, batch_size: int = 10000):
+def bulk_insert_optimized(model, batch: list, batch_size: int = 10000, ignore_conflicts: bool = False):
     """
     Use fastest bulk insert method for each database.
 
     Performance:
     - PostgreSQL: COPY FROM STDIN (~50k rows/sec)
+    - SQLite: executemany (~30k rows/sec)
     - MySQL: bulk_create (~20k rows/sec)
-    - SQLite: bulk_create (~10k rows/sec)
     """
     from django.db import connection
 
@@ -222,13 +222,33 @@ def bulk_insert_optimized(model, batch: list, batch_size: int = 10000):
                 null=''
             )
 
+    elif connection.vendor == 'sqlite':
+        # SQLite: Use raw executemany for speed
+        field_names = [f.column for f in model._meta.fields if not f.primary_key]
+        placeholders = ','.join(['?'] * len(field_names))
+
+        insert_cmd = "INSERT OR IGNORE" if ignore_conflicts else "INSERT"
+        sql = f"{insert_cmd} INTO {model._meta.db_table} ({','.join(field_names)}) VALUES ({placeholders})"
+
+        rows = []
+        for obj in batch:
+            row = []
+            for field in model._meta.fields:
+                if field.primary_key:
+                    continue
+                value = getattr(obj, field.attname)
+                row.append(value)
+            rows.append(row)
+
+        with connection.cursor() as cursor:
+            cursor.executemany(sql, rows)
+
     else:
-        # MySQL and SQLite: Use Django's bulk_create
-        # Note: ignore_conflicts requires Django 4.1+ and PostgreSQL/SQLite 3.24+
+        # MySQL: Use Django's bulk_create
         model.objects.bulk_create(
             batch,
             batch_size=batch_size,
-            ignore_conflicts=True  # For deduplication in Pass 1
+            ignore_conflicts=ignore_conflicts
         )
 
 
@@ -238,9 +258,8 @@ def bulk_insert_optimized(model, batch: list, batch_size: int = 10000):
 
 class StateCache:
     """
-    LRU cache for state lookups.
-    First ~10M lookups will be cache misses (DB queries).
-    Subsequent 245M will be cache hits (no DB queries).
+    Batch-prefetching cache for state lookups.
+    Prefetches states in bulk to minimize database queries.
     """
 
     def __init__(self, max_size: int = 100000):
@@ -249,36 +268,70 @@ class StateCache:
         self.hits = 0
         self.misses = 0
 
+    def prefetch_states(self, state_keys):
+        """
+        Prefetch states in batch for given keys using temp table.
+        Keys should be tuples of (species_id, energy, j, term_desc).
+        """
+        from django.db import connection
+
+        uncached = [key for key in state_keys if key not in self.cache]
+        if not uncached:
+            return
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                CREATE TEMP TABLE IF NOT EXISTS temp_state_lookup (
+                    species_id INTEGER,
+                    energy REAL,
+                    j REAL,
+                    term_desc TEXT
+                )
+            """)
+
+            cursor.execute("DELETE FROM temp_state_lookup")
+
+            cursor.executemany(
+                "INSERT INTO temp_state_lookup VALUES (?, ?, ?, ?)",
+                uncached
+            )
+
+            cursor.execute("""
+                SELECT s.id, s.species_id, s.energy, s.j, s.term_desc
+                FROM states s
+                INNER JOIN temp_state_lookup t
+                ON s.species_id = t.species_id
+                   AND s.energy = t.energy
+                   AND (s.j = t.j OR (s.j IS NULL AND t.j IS NULL))
+                   AND s.term_desc = t.term_desc
+            """)
+
+            for row in cursor.fetchall():
+                state_id, species_id, energy, j, term_desc = row
+                key = (
+                    species_id,
+                    float(energy) if energy is not None else None,
+                    float(j) if j is not None else None,
+                    term_desc
+                )
+                self.cache[key] = state_id
+
+        if len(self.cache) > self.max_size:
+            self.cache.clear()
+
     def get_state_id(self, species_id, energy, j, term):
-        """Get state ID with caching"""
+        """Get state ID from cache (assumes prefetch_states was called)"""
         key = (species_id, energy, j, term)
 
         if key in self.cache:
             self.hits += 1
             return self.cache[key]
 
-        # Cache miss - query database
         self.misses += 1
-        from node_atom.models import State
-        try:
-            state_id = State.objects.get(
-                species_id=species_id,
-                energy=energy,
-                j=j,
-                term_desc=term
-            ).id
-        except State.DoesNotExist:
-            raise ValueError(
-                f"State not found: species={species_id}, "
-                f"energy={energy}, j={j}, term={term}"
-            )
-
-        # Simple LRU: clear cache if too big
-        if len(self.cache) > self.max_size:
-            self.cache.clear()
-
-        self.cache[key] = state_id
-        return state_id
+        raise ValueError(
+            f"State not found in cache: species={species_id}, "
+            f"energy={energy}, j={j}, term={term}"
+        )
 
     @property
     def hit_rate(self):
@@ -351,7 +404,7 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
             # Bulk insert with deduplication
             with transaction.atomic():
                 initial_count = State.objects.count()
-                bulk_insert_optimized(State, states, batch_size)
+                bulk_insert_optimized(State, states, batch_size, ignore_conflicts=True)
                 final_count = State.objects.count()
                 inserted = final_count - initial_count
 
@@ -400,8 +453,14 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
     with progress_bar(desc="Importing transitions", unit=" lines", disable=not verbose) as pbar:
         for batch in batch_iterator(records, batch_size):
-            transitions = []
+            state_keys = set()
+            for row in batch:
+                state_keys.add((row['species_id'], row['lower_energy'], row['lower_j'], row['lower_term']))
+                state_keys.add((row['species_id'], row['upper_energy'], row['upper_j'], row['upper_term']))
 
+            state_cache.prefetch_states(state_keys)
+
+            transitions = []
             for row in batch:
                 try:
                     transitions.append(Transition(
