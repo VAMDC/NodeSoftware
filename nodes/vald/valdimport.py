@@ -451,14 +451,26 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
         if verbose:
             print('Calculating Einstein A coefficients...')
 
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                UPDATE transitions t
-                SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, t.loggf))
-                              / ((2.0 * s.j + 1.0) * POWER(t.wave, 2))
-                FROM states s
-                WHERE t.upstate_id = s.id AND t.einsteina IS NULL
-            """)
+        if connection.vendor == 'sqlite':
+            # SQLite: simpler SQL syntax
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE transitions
+                    SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, loggf))
+                                  / ((2.0 * (SELECT j FROM states WHERE states.id = upstate) + 1.0)
+                                     * POWER(wave, 2))
+                    WHERE einsteina IS NULL AND loggf IS NOT NULL
+                """)
+        else:
+            # PostgreSQL/MySQL: JOIN syntax
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE transitions t
+                    SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, t.loggf))
+                                  / ((2.0 * s.j + 1.0) * POWER(t.wave, 2))
+                    FROM states s
+                    WHERE t.upstate = s.id AND t.einsteina IS NULL
+                """)
 
         if verbose:
             print('Einstein A calculated')
