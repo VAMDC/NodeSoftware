@@ -19,17 +19,12 @@ output tests - checks so the total output from generator matches what's expected
 # safely import test framework (django-version non-specific)
 
 import re, sys
+import unittest
 from datetime import datetime
-try:
-    from django.utils.unittest import TestCase
-except ImportError:
-    from django.test import TestCase
-try:
-    from django.utils import unittest
-except ImportError:
-    import unittest
+from importlib import import_module
+
+from django.test import TestCase
 from django.test.client import Client
-from django.utils.importlib import import_module
 from vamdctap import generators, views
 # node-specific
 from django.conf import settings
