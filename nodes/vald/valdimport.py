@@ -566,8 +566,6 @@ def import_species(input_file, batch_size=10000, verbose=True):
                 pbar.update(len(species_list))
 
     inserted_count = Species.objects.count()
-    if verbose:
-        print(f'Done! Processed {total_processed} lines, inserted {inserted_count} total species')
 
     return total_processed, inserted_count
 
