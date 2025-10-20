@@ -479,6 +479,100 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
 
 # =============================================================================
+# SPECIES IMPORT
+# =============================================================================
+
+def import_species(input_file, batch_size=10000, verbose=True):
+    """
+    Import species from CSV file (VALD List of Species format)
+
+    Format: comma-separated with header
+    Use,Index,Name,Charge,InChI,InChIkey,Mass,Ion. en.,Fract.,Num. comp.,N1,N2,N3,N4,Dummy
+
+    Returns: (total_processed, total_inserted)
+    """
+    try:
+        from tqdm import tqdm
+        progress_bar = tqdm
+    except ImportError:
+        class DummyBar:
+            def __init__(self, *args, **kwargs): pass
+            def update(self, n): pass
+            def set_postfix(self, d): pass
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+        progress_bar = DummyBar
+
+    from node_common.models import Species
+    from django.db import transaction
+    import csv
+
+    with open(input_file, 'r') as f:
+        # Skip comment line
+        first_line = f.readline()
+        if first_line.startswith('#VER'):
+            pass
+        else:
+            f.seek(0)
+
+        reader = csv.DictReader(f)
+        species_list = []
+        total_processed = 0
+
+        with progress_bar(desc="Importing species", unit=" lines", disable=not verbose) as pbar:
+            for row in reader:
+                try:
+                    use = row.get('Use', '1').strip()
+                    if use != '1':
+                        continue
+
+                    species = Species(
+                        id=int(row['Index']),
+                        name=row['Name'].strip(),
+                        ion=int(row['Charge']) if row['Charge'].strip() else None,
+                        inchi=row['InChI'].strip() if row['InChI'].strip() else None,
+                        inchikey=row['InChIkey'].strip() if row['InChIkey'].strip() else None,
+                        mass=float(row['Mass']) if row['Mass'].strip() else None,
+                        massno=int(float(row['Mass'])) if row['Mass'].strip() else None,
+                        ionen=float(row['Ion. en.']) if row['Ion. en.'].strip() else None,
+                        solariso=float(row['Fract.']) if row['Fract.'].strip() else None,
+                        ncomp=int(row['Num. comp.']) if row['Num. comp.'].strip() else None,
+                    )
+                    species_list.append(species)
+                    total_processed += 1
+
+                    if len(species_list) >= batch_size:
+                        with transaction.atomic():
+                            Species.objects.bulk_create(
+                                species_list,
+                                batch_size=batch_size,
+                                ignore_conflicts=True
+                            )
+                        pbar.update(len(species_list))
+                        species_list = []
+
+                except (ValueError, KeyError) as e:
+                    if verbose and total_processed < 5:
+                        print(f"Warning: Skipping row: {e}", file=sys.stderr)
+                    continue
+
+            if species_list:
+                with transaction.atomic():
+                    Species.objects.bulk_create(
+                        species_list,
+                        batch_size=batch_size,
+                        ignore_conflicts=True
+                    )
+                pbar.update(len(species_list))
+
+    inserted_count = Species.objects.count()
+    if verbose:
+        print(f'Done! Processed {total_processed} lines, inserted {inserted_count} total species')
+
+    return total_processed, inserted_count
+
+
+# =============================================================================
 # STANDALONE CLI
 # =============================================================================
 
@@ -504,6 +598,13 @@ def main():
     trans_parser.add_argument('--skip-header', type=int, default=2)
     trans_parser.add_argument('--skip-calc', action='store_true',
                             help='Skip Einstein A calculation')
+
+    # Species import command
+    species_parser = subparsers.add_parser('import-species',
+                                          help='Import species from CSV')
+    species_parser.add_argument('--file', type=str, required=True,
+                              help='Species CSV file')
+    species_parser.add_argument('--batch-size', type=int, default=10000)
 
     args = parser.parse_args()
 
@@ -534,6 +635,13 @@ def main():
             skip_calc=args.skip_calc
         )
         print(f'Done! Imported {processed} transitions')
+
+    elif args.command == 'import-species':
+        processed, inserted = import_species(
+            input_file=args.file,
+            batch_size=args.batch_size
+        )
+        print(f'Done! Processed {processed} lines, inserted {inserted} total species')
 
 
 if __name__ == '__main__':
