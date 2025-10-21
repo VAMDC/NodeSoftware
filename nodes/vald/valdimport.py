@@ -102,22 +102,74 @@ VALD_FIELDS = [
     FieldDef('upper_term', 217, 303, str.strip),
 
     # === Accuracy ===
-    # 1X,A1,A7 = skip, accurflag, accuracy
+    # 1X,A1,A7,1X,A16,9I4 = skip, accurflag, accuracy, skip, comment, 9 reference indices
+    # FORTRAN 1X means skip 1 position
     FieldDef('accurflag', 304, 305, str.strip),
     FieldDef('accuracy', 305, 312, str.strip),
+    # Position 312-313 is 1X (skip)
+    FieldDef('comment', 313, 329, str.strip),
 
-    # === References and metadata ===
-    # A16,9I4 = comment, then 9 reference indices
-    FieldDef('comment', 312, 328, str.strip),
+    # === Reference indices (9I4) ===
+    # Each I4 is 4 characters, right-justified
+    FieldDef('r1', 329, 333, int, null_values=('', '0', '   0')),
+    FieldDef('r2', 333, 337, int, null_values=('', '0', '   0')),
+    FieldDef('r3', 337, 341, int, null_values=('', '0', '   0')),
+    FieldDef('r4', 341, 345, int, null_values=('', '0', '   0')),
+    FieldDef('r5', 345, 349, int, null_values=('', '0', '   0')),
+    FieldDef('r6', 349, 353, int, null_values=('', '0', '   0')),
+    FieldDef('r7', 353, 357, int, null_values=('', '0', '   0')),
+    FieldDef('r8', 357, 361, int, null_values=('', '0', '   0')),
+    FieldDef('r9', 361, 365, int, null_values=('', '0', '   0')),
 ]
 
 
 def parse_vald_line(line: str) -> dict:
-    """Parse a VALD line using field definitions"""
-    return {
-        field.name: field.parse(line)
-        for field in VALD_FIELDS
-    }
+    """
+    Parse a VALD line using field definitions.
+    Catches parsing errors per-field and sets to None instead of failing entire line.
+    """
+    result = {}
+    for field in VALD_FIELDS:
+        try:
+            result[field.name] = field.parse(line)
+        except (ValueError, IndexError):
+            # Field parsing failed, set to None and continue
+            # This allows states import to succeed even if reference indices are malformed
+            result[field.name] = None
+    return result
+
+
+def parse_reference_line(ref_line: str) -> dict:
+    """
+    Parse VALD reference line.
+    Format: "wl:K07 gf:K07 K07 K07 K07 K07 K07 K07 K07"
+    Returns dict with 'wave_ref' and 'refs' (list of 9 reference strings)
+    """
+    parts = ref_line.strip().split()
+    refs = {}
+
+    # First part should be "wl:XXX"
+    if parts and ':' in parts[0]:
+        wave_ref = parts[0].split(':', 1)[1]
+        refs['wave_ref'] = wave_ref
+    else:
+        refs['wave_ref'] = None
+
+    # Collect all reference codes (there should be 9 total)
+    ref_codes = []
+    for part in parts:
+        if ':' in part:
+            ref_codes.append(part.split(':', 1)[1])
+        else:
+            ref_codes.append(part)
+
+    # Pad to 9 refs if needed
+    while len(ref_codes) < 9:
+        ref_codes.append(None)
+
+    refs['ref_codes'] = ref_codes[:9]
+
+    return refs
 
 
 # =============================================================================
@@ -130,33 +182,63 @@ def parse_vald_stream(input_stream: TextIO,
     Generator that yields parsed VALD records.
     Works with files, stdin, gzipped files, or shell pipes.
     VALD format has 2 lines per record: data line + reference line.
+
+    Yields dict with both data fields and reference info.
     """
 
     # Skip header lines
     for _ in range(skip_header_lines):
         next(input_stream, None)
 
-    for line_num, line in enumerate(input_stream, start=1):
-        line = line.rstrip('\n')
+    # Convert to iterator for manual line reading
+    line_iter = iter(input_stream)
+    line_num = 0
 
-        # Skip comments and empty lines
-        if not line or line.startswith('#'):
-            continue
-
-        # Skip reference lines (start with lowercase, e.g., "wl:", "gf:", etc.)
-        if line and line[0].islower():
-            continue
-
-        # Skip error lines
-        if 'Unknown' in line:
-            continue
-
+    while True:
         try:
-            yield parse_vald_line(line)
-        except Exception as e:
-            print(f"Warning: Failed to parse line {line_num}: {e}",
-                  file=sys.stderr)
-            continue
+            # Read data line
+            data_line = next(line_iter)
+            line_num += 1
+            data_line = data_line.rstrip('\n')
+
+            # Skip comments and empty lines
+            if not data_line or data_line.startswith('#'):
+                continue
+
+            # Skip reference lines that appear out of sequence
+            if data_line and data_line[0].islower():
+                continue
+
+            # Skip error lines
+            if 'Unknown' in data_line:
+                continue
+
+            # Parse data line
+            try:
+                data = parse_vald_line(data_line)
+            except Exception as e:
+                print(f"Warning: Failed to parse data line {line_num}: {e}",
+                      file=sys.stderr)
+                continue
+
+            # Read reference line
+            ref_line = next(line_iter, '')
+            line_num += 1
+            ref_line = ref_line.rstrip('\n')
+
+            # Parse reference line if it exists
+            if ref_line and ref_line[0].islower():
+                try:
+                    ref_data = parse_reference_line(ref_line)
+                    data.update(ref_data)
+                except Exception as e:
+                    print(f"Warning: Failed to parse reference line {line_num}: {e}",
+                          file=sys.stderr)
+
+            yield data
+
+        except StopIteration:
+            break
 
 
 def batch_iterator(iterable: Iterator, batch_size: int = 10000) -> Iterator[list]:
@@ -339,6 +421,62 @@ class StateCache:
         return (self.hits / total * 100) if total > 0 else 0
 
 
+class LineListCache:
+    """
+    Cache for linelist lookups and creation.
+    Creates linelist records on-the-fly as needed.
+    """
+
+    def __init__(self):
+        self.cache = {}  # (wave_ref, r1...r9) -> linelist_id
+        self.hits = 0
+        self.misses = 0
+
+    def _make_key(self, wave_ref, r1, r2, r3, r4, r5, r6, r7, r8, r9):
+        """Create cache key from reference data"""
+        return (wave_ref, r1, r2, r3, r4, r5, r6, r7, r8, r9)
+
+    def get_or_create_linelist(self, wave_ref, r1, r2, r3, r4, r5, r6, r7, r8, r9):
+        """
+        Get or create linelist record.
+        Returns linelist_id.
+        """
+        from node_common.models import LineList
+        from django.db import transaction
+
+        key = self._make_key(wave_ref, r1, r2, r3, r4, r5, r6, r7, r8, r9)
+
+        if key in self.cache:
+            self.hits += 1
+            return self.cache[key]
+
+        self.misses += 1
+
+        # Create new linelist
+        with transaction.atomic():
+            linelist = LineList.objects.create(
+                srcfile=wave_ref or 'unknown',
+                r1=r1,
+                r2=r2,
+                r3=r3,
+                r4=r4,
+                r5=r5,
+                r6=r6,
+                r7=r7,
+                r8=r8,
+                r9=r9,
+            )
+            linelist_id = linelist.id
+
+        self.cache[key] = linelist_id
+        return linelist_id
+
+    @property
+    def hit_rate(self):
+        total = self.hits + self.misses
+        return (self.hits / total * 100) if total > 0 else 0
+
+
 # =============================================================================
 # IMPORT FUNCTIONS
 # =============================================================================
@@ -447,6 +585,7 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
     input_stream = open_input(input_file)
     state_cache = StateCache()
+    linelist_cache = LineListCache()
     records = parse_vald_stream(input_stream, skip_header)
 
     total_processed = 0
@@ -463,6 +602,20 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
             transitions = []
             for row in batch:
                 try:
+                    # Get or create linelist for this transition
+                    linelist_id = linelist_cache.get_or_create_linelist(
+                        wave_ref=row.get('wave_ref'),
+                        r1=row.get('r1'),
+                        r2=row.get('r2'),
+                        r3=row.get('r3'),
+                        r4=row.get('r4'),
+                        r5=row.get('r5'),
+                        r6=row.get('r6'),
+                        r7=row.get('r7'),
+                        r8=row.get('r8'),
+                        r9=row.get('r9'),
+                    )
+
                     transitions.append(Transition(
                         upstate_id=state_cache.get_state_id(
                             row['species_id'],
@@ -484,8 +637,7 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
                         gammastark=row.get('gammastark'),
                         gammawaals=row.get('gammawaals'),
                         accurflag=row.get('accurflag'),
-                        # wave_linelist_id omitted for now (will handle in separate pass)
-                        # TODO: Add remaining transition fields
+                        wave_linelist_id=linelist_id,
                     ))
                 except ValueError as e:
                     print(f"Warning: Skipping row: {e}", file=sys.stderr)
@@ -503,7 +655,9 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
     if verbose:
         print(f'Done! Imported {total_processed} transitions.')
-        print(f'Cache stats: {state_cache.hits} hits, {state_cache.misses} misses')
+        print(f'State cache stats: {state_cache.hits} hits, {state_cache.misses} misses')
+        print(f'Linelist cache stats: {linelist_cache.hits} hits, {linelist_cache.misses} misses')
+        print(f'Created {linelist_cache.misses} unique linelists')
 
     # Calculate derived fields
     if not skip_calc:
