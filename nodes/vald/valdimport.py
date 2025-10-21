@@ -15,6 +15,8 @@ Usage via Django:
 
 import sys
 import gzip
+import threading
+import queue
 from dataclasses import dataclass
 from typing import Callable, Optional, Iterator, TextIO
 from io import StringIO
@@ -692,7 +694,7 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
 
 def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
-                         skip_calc=False, verbose=True):
+                         skip_calc=False, read_ahead=True, verbose=True):
     """
     Combined single-pass import of states and transitions from VALD format.
 
@@ -702,6 +704,10 @@ def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
     3. Create and insert transitions using those state IDs
 
     Memory-efficient for large datasets - only one batch in memory at a time.
+
+    Args:
+        read_ahead: If True, read and parse in separate thread to keep extraction
+                   tool running at full speed. Safe with SQLite (no locking issues).
 
     Returns: (total_processed, total_states_inserted, total_transitions_inserted)
     """
@@ -727,14 +733,43 @@ def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
     input_stream = open_input(input_file)
     state_cache = StateCache()
     linelist_cache = LineListCache()
-    records = parse_vald_stream(input_stream, skip_header)
 
     total_processed = 0
     total_states_inserted = 0
     total_transitions_inserted = 0
 
+    # Setup batch source (either direct or via read-ahead thread)
+    if read_ahead:
+        batch_queue = queue.Queue(maxsize=3)
+        reader_error = []
+
+        def reader_thread():
+            try:
+                records = parse_vald_stream(input_stream, skip_header)
+                for batch in batch_iterator(records, batch_size):
+                    batch_queue.put(batch)
+            except Exception as e:
+                reader_error.append(e)
+            finally:
+                batch_queue.put(None)
+
+        reader = threading.Thread(target=reader_thread, daemon=True)
+        reader.start()
+
+        def batch_source():
+            while True:
+                if reader_error:
+                    raise reader_error[0]
+                batch = batch_queue.get()
+                if batch is None:
+                    break
+                yield batch
+    else:
+        records = parse_vald_stream(input_stream, skip_header)
+        batch_source = lambda: batch_iterator(records, batch_size)
+
     with progress_bar(desc="Importing VALD data", unit=" lines", disable=not verbose) as pbar:
-        for batch in batch_iterator(records, batch_size):
+        for batch in batch_source():
             # === STEP 1: Extract and insert states ===
             states = []
             for row in batch:
@@ -997,6 +1032,8 @@ def main():
     combined_parser.add_argument('--skip-header', type=int, default=2)
     combined_parser.add_argument('--skip-calc', action='store_true',
                                help='Skip Einstein A calculation')
+    combined_parser.add_argument('--no-read-ahead', action='store_true',
+                               help='Disable read-ahead thread (enabled by default)')
 
     # Species import command
     species_parser = subparsers.add_parser('import-species',
@@ -1040,7 +1077,8 @@ def main():
             input_file=args.file,
             batch_size=args.batch_size,
             skip_header=args.skip_header,
-            skip_calc=args.skip_calc
+            skip_calc=args.skip_calc,
+            read_ahead=not args.no_read_ahead
         )
         print(f'Done! Processed {processed} lines')
         print(f'Inserted {states_inserted} unique states')

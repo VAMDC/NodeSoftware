@@ -11,6 +11,8 @@ class Command(BaseCommand):
         parser.add_argument('--skip-header', type=int, default=2)
         parser.add_argument('--skip-calc', action='store_true',
                           help='Skip Einstein A calculation')
+        parser.add_argument('--no-read-ahead', action='store_true',
+                          help='Disable read-ahead thread (enabled by default)')
 
     def handle(self, *args, **options):
         processed, states_inserted, trans_inserted = import_vald_combined(
@@ -18,6 +20,7 @@ class Command(BaseCommand):
             batch_size=options['batch_size'],
             skip_header=options['skip_header'],
             skip_calc=options['skip_calc'],
+            read_ahead=not options['no_read_ahead'],
             verbose=True
         )
         self.stdout.write(
