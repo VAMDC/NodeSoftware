@@ -48,9 +48,10 @@ LOGGING['handlers']['logfile']['filename'] = 'devnode.log'
 if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'
 
-LOGGING['loggers']['django.db.backends'] = {
-      'handlers': ['console', 'logfile'],
-      'level': 'DEBUG',
-      'propagate': False,
-  }
+
+#LOGGING['loggers']['django.db.backends'] = {
+#      'handlers': ['console', 'logfile'],
+#      'level': 'DEBUG',
+#      'propagate': False,
+#  }
 
