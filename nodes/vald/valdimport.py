@@ -691,6 +691,185 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
     return total_processed
 
 
+def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
+                         skip_calc=False, verbose=True):
+    """
+    Combined single-pass import of states and transitions from VALD format.
+
+    For each batch:
+    1. Extract and insert states (lower and upper)
+    2. Prefetch just-inserted state IDs
+    3. Create and insert transitions using those state IDs
+
+    Memory-efficient for large datasets - only one batch in memory at a time.
+
+    Returns: (total_processed, total_states_inserted, total_transitions_inserted)
+    """
+    try:
+        from tqdm import tqdm
+        progress_bar = tqdm
+    except ImportError:
+        class DummyBar:
+            def __init__(self, *args, **kwargs): pass
+            def update(self, n): pass
+            def set_postfix(self, d): pass
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+        progress_bar = DummyBar
+
+    from node_atom.models import State, Transition
+    from django.db import transaction, connection
+
+    # Temporarily disable foreign key constraints for import
+    with connection.cursor() as cursor:
+        cursor.execute("PRAGMA foreign_keys = OFF")
+
+    input_stream = open_input(input_file)
+    state_cache = StateCache()
+    linelist_cache = LineListCache()
+    records = parse_vald_stream(input_stream, skip_header)
+
+    total_processed = 0
+    total_states_inserted = 0
+    total_transitions_inserted = 0
+
+    with progress_bar(desc="Importing VALD data", unit=" lines", disable=not verbose) as pbar:
+        for batch in batch_iterator(records, batch_size):
+            # === STEP 1: Extract and insert states ===
+            states = []
+            for row in batch:
+                # Extract lower state
+                states.append(State(
+                    species_id=row.get('species_id'),
+                    energy=row['lower_energy'],
+                    j=row['lower_j'],
+                    lande=row['lower_lande'],
+                    term_desc=row['lower_term'],
+                ))
+
+                # Extract upper state
+                states.append(State(
+                    species_id=row.get('species_id'),
+                    energy=row['upper_energy'],
+                    j=row['upper_j'],
+                    lande=row['upper_lande'],
+                    term_desc=row['upper_term'],
+                ))
+
+            # Bulk insert states with deduplication
+            with transaction.atomic():
+                initial_state_count = State.objects.count()
+                bulk_insert_optimized(State, states, batch_size, ignore_conflicts=True)
+                final_state_count = State.objects.count()
+                states_inserted = final_state_count - initial_state_count
+
+            total_states_inserted += states_inserted
+
+            # === STEP 2: Prefetch state IDs for this batch ===
+            state_keys = set()
+            for row in batch:
+                state_keys.add((row['species_id'], row['lower_energy'], row['lower_j'], row['lower_term']))
+                state_keys.add((row['species_id'], row['upper_energy'], row['upper_j'], row['upper_term']))
+
+            state_cache.prefetch_states(state_keys)
+
+            # === STEP 3: Create and insert transitions ===
+            transitions = []
+            for row in batch:
+                try:
+                    # Get or create linelist for this transition
+                    linelist_id = linelist_cache.get_or_create_linelist(
+                        wave_ref=row.get('wave_ref'),
+                        r1=row.get('r1'),
+                        r2=row.get('r2'),
+                        r3=row.get('r3'),
+                        r4=row.get('r4'),
+                        r5=row.get('r5'),
+                        r6=row.get('r6'),
+                        r7=row.get('r7'),
+                        r8=row.get('r8'),
+                        r9=row.get('r9'),
+                    )
+
+                    transitions.append(Transition(
+                        upstate_id=state_cache.get_state_id(
+                            row['species_id'],
+                            row['upper_energy'],
+                            row['upper_j'],
+                            row['upper_term']
+                        ),
+                        lostate_id=state_cache.get_state_id(
+                            row['species_id'],
+                            row['lower_energy'],
+                            row['lower_j'],
+                            row['lower_term']
+                        ),
+                        species_id=row.get('species_id'),
+                        wave=row['wave'],
+                        waveritz=row['wave_ritz'],
+                        loggf=row['loggf'],
+                        gammarad=row.get('gammarad'),
+                        gammastark=row.get('gammastark'),
+                        gammawaals=row.get('gammawaals'),
+                        accurflag=row.get('accurflag'),
+                        wave_linelist_id=linelist_id,
+                    ))
+                except ValueError as e:
+                    print(f"Warning: Skipping transition: {e}", file=sys.stderr)
+                    continue
+
+            # Bulk insert transitions
+            with transaction.atomic():
+                bulk_insert_optimized(Transition, transitions, batch_size)
+
+            total_transitions_inserted += len(transitions)
+            total_processed += len(batch)
+
+            pbar.update(len(batch))
+            pbar.set_postfix({
+                'states': total_states_inserted,
+                'transitions': total_transitions_inserted,
+                'cache_hit': f'{state_cache.hit_rate:.1f}%'
+            })
+
+    if verbose:
+        print(f'Processed {total_processed} lines')
+        print(f'Inserted {total_states_inserted} unique states')
+        print(f'Inserted {total_transitions_inserted} transitions')
+        print(f'State cache: {state_cache.hits} hits, {state_cache.misses} misses')
+        print(f'Linelist cache: {linelist_cache.hits} hits, {linelist_cache.misses} misses')
+        print(f'Created {linelist_cache.misses} unique linelists')
+
+    # Calculate derived fields
+    if not skip_calc:
+        if verbose:
+            print('Calculating Einstein A coefficients...')
+
+        if connection.vendor == 'sqlite':
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE transitions
+                    SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, loggf))
+                                  / ((2.0 * (SELECT j FROM states WHERE states.id = upstate) + 1.0)
+                                     * POWER(wave, 2))
+                    WHERE einsteina IS NULL AND loggf IS NOT NULL
+                """)
+        else:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE transitions t
+                    SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, t.loggf))
+                                  / ((2.0 * s.j + 1.0) * POWER(t.wave, 2))
+                    FROM states s
+                    WHERE t.upstate = s.id AND t.einsteina IS NULL
+                """)
+
+        if verbose:
+            print('Einstein A calculated')
+
+    return total_processed, total_states_inserted, total_transitions_inserted
+
+
 # =============================================================================
 # SPECIES IMPORT
 # =============================================================================
@@ -810,6 +989,15 @@ def main():
     trans_parser.add_argument('--skip-calc', action='store_true',
                             help='Skip Einstein A calculation')
 
+    # Combined import command
+    combined_parser = subparsers.add_parser('import-combined',
+                                           help='Combined single-pass import (states + transitions)')
+    combined_parser.add_argument('--file', type=str, help='Input file (or use stdin)')
+    combined_parser.add_argument('--batch-size', type=int, default=10000)
+    combined_parser.add_argument('--skip-header', type=int, default=2)
+    combined_parser.add_argument('--skip-calc', action='store_true',
+                               help='Skip Einstein A calculation')
+
     # Species import command
     species_parser = subparsers.add_parser('import-species',
                                           help='Import species from CSV')
@@ -846,6 +1034,17 @@ def main():
             skip_calc=args.skip_calc
         )
         print(f'Done! Imported {processed} transitions')
+
+    elif args.command == 'import-combined':
+        processed, states_inserted, trans_inserted = import_vald_combined(
+            input_file=args.file,
+            batch_size=args.batch_size,
+            skip_header=args.skip_header,
+            skip_calc=args.skip_calc
+        )
+        print(f'Done! Processed {processed} lines')
+        print(f'Inserted {states_inserted} unique states')
+        print(f'Inserted {trans_inserted} transitions')
 
     elif args.command == 'import-species':
         processed, inserted = import_species(
