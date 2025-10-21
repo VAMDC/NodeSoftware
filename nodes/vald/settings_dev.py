@@ -19,7 +19,7 @@ if not NODEPKG in INSTALLED_APPS:
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': 'vald_atom.sqlite',
+    'NAME': 'vald_dev.sqlite',
   },
 }
 LAST_MODIFIED = datetime.date(2020,1,24)
