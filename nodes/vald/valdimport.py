@@ -385,9 +385,9 @@ class StateCache:
                 FROM states s
                 INNER JOIN temp_state_lookup t
                 ON s.species_id = t.species_id
-                   AND s.energy = t.energy
+                   AND ABS(s.energy - t.energy) < 0.0001
                    AND (s.j = t.j OR (s.j IS NULL AND t.j IS NULL))
-                   AND s.term_desc = t.term_desc
+                   AND (s.term_desc = t.term_desc OR (s.term_desc IS NULL AND t.term_desc IS NULL))
             """)
 
             for row in cursor.fetchall():
@@ -527,7 +527,7 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
                     energy=row['lower_energy'],
                     j=row['lower_j'],
                     lande=row['lower_lande'],
-                    term_desc=row['lower_term'],
+                    term_desc=row['lower_term'] or None,
                     # TODO: Add remaining state fields
                 ))
 
@@ -537,7 +537,7 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
                     energy=row['upper_energy'],
                     j=row['upper_j'],
                     lande=row['upper_lande'],
-                    term_desc=row['upper_term'],
+                    term_desc=row['upper_term'] or None,
                     # TODO: Add remaining state fields
                 ))
 
@@ -596,8 +596,8 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
         for batch in batch_iterator(records, batch_size):
             state_keys = set()
             for row in batch:
-                state_keys.add((row['species_id'], row['lower_energy'], row['lower_j'], row['lower_term']))
-                state_keys.add((row['species_id'], row['upper_energy'], row['upper_j'], row['upper_term']))
+                state_keys.add((row['species_id'], row['lower_energy'], row['lower_j'], row['lower_term'] or None))
+                state_keys.add((row['species_id'], row['upper_energy'], row['upper_j'], row['upper_term'] or None))
 
             state_cache.prefetch_states(state_keys)
 
@@ -623,13 +623,13 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
                             row['species_id'],
                             row['upper_energy'],
                             row['upper_j'],
-                            row['upper_term']
+                            row['upper_term'] or None
                         ),
                         lostate_id=state_cache.get_state_id(
                             row['species_id'],
                             row['lower_energy'],
                             row['lower_j'],
-                            row['lower_term']
+                            row['lower_term'] or None
                         ),
                         species_id=row.get('species_id'),
                         wave=row['wave'],
@@ -780,7 +780,7 @@ def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
                 # Lower state
                 lower_energy, lower_j, lower_lande, lower_term = (
                     row['lower_energy'], row['lower_j'],
-                    row['lower_lande'], row['lower_term']
+                    row['lower_lande'], row['lower_term'] or None
                 )
                 state_keys.add((species_id, lower_energy, lower_j, lower_term))
                 state_rows.append((species_id, lower_energy, lower_j, lower_lande, lower_term))
@@ -788,7 +788,7 @@ def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
                 # Upper state
                 upper_energy, upper_j, upper_lande, upper_term = (
                     row['upper_energy'], row['upper_j'],
-                    row['upper_lande'], row['upper_term']
+                    row['upper_lande'], row['upper_term'] or None
                 )
                 state_keys.add((species_id, upper_energy, upper_j, upper_term))
                 state_rows.append((species_id, upper_energy, upper_j, upper_lande, upper_term))
@@ -826,11 +826,11 @@ def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
                     # Get state IDs
                     upstate_id = state_cache.get_state_id(
                         species_id, row['upper_energy'],
-                        row['upper_j'], row['upper_term']
+                        row['upper_j'], row['upper_term'] or None
                     )
                     lostate_id = state_cache.get_state_id(
                         species_id, row['lower_energy'],
-                        row['lower_j'], row['lower_term']
+                        row['lower_j'], row['lower_term'] or None
                     )
 
                     transition_rows.append((
