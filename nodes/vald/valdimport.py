@@ -141,6 +141,16 @@ def parse_vald_line(line: str) -> dict:
     return result
 
 
+ENERGY_SCALE_FACTOR = 10000
+
+
+def scale_energy(value: Optional[float]) -> Optional[int]:
+    """Convert energy value to scaled integer (energy * 1e4)"""
+    if value is None:
+        return None
+    return int(round(value * ENERGY_SCALE_FACTOR))
+
+
 def parse_reference_line(ref_line: str) -> dict:
     """
     Parse VALD reference line.
@@ -346,8 +356,8 @@ class StateCache:
     Prefetches states in bulk to minimize database queries.
     """
 
-    def __init__(self, max_size: int = 100000):
-        self.cache = {}  # (species, energy, j, term) -> state_id
+    def __init__(self, max_size: Optional[int] = None):
+        self.cache = {}  # (species, energy_scaled, j, term) -> state_id
         self.max_size = max_size
         self.hits = 0
         self.misses = 0
@@ -355,11 +365,14 @@ class StateCache:
     def prefetch_states(self, state_keys):
         """
         Prefetch states in batch for given keys using temp table.
-        Keys should be tuples of (species_id, energy, j, term_desc).
+        Keys should be tuples of (species_id, energy_scaled, j, term_desc).
         """
         from django.db import connection
 
-        uncached = [key for key in state_keys if key not in self.cache]
+        uncached = [
+            key for key in state_keys
+            if key[1] is not None and key not in self.cache
+        ]
         if not uncached:
             return
 
@@ -367,7 +380,7 @@ class StateCache:
             cursor.execute("""
                 CREATE TEMP TABLE IF NOT EXISTS temp_state_lookup (
                     species_id INTEGER,
-                    energy REAL,
+                    energy_scaled INTEGER,
                     j REAL,
                     term_desc TEXT
                 )
@@ -381,31 +394,31 @@ class StateCache:
             )
 
             cursor.execute("""
-                SELECT s.id, s.species_id, s.energy, s.j, s.term_desc
+                SELECT s.id, s.species_id, s.energy_scaled, s.j, s.term_desc
                 FROM states s
                 INNER JOIN temp_state_lookup t
                 ON s.species_id = t.species_id
-                   AND ABS(s.energy - t.energy) < 0.0001
+                   AND s.energy_scaled = t.energy_scaled
                    AND (s.j = t.j OR (s.j IS NULL AND t.j IS NULL))
                    AND (s.term_desc = t.term_desc OR (s.term_desc IS NULL AND t.term_desc IS NULL))
             """)
 
             for row in cursor.fetchall():
-                state_id, species_id, energy, j, term_desc = row
+                state_id, species_id, energy_scaled, j, term_desc = row
                 key = (
                     species_id,
-                    float(energy) if energy is not None else None,
+                    energy_scaled,
                     float(j) if j is not None else None,
                     term_desc
                 )
                 self.cache[key] = state_id
 
-        if len(self.cache) > self.max_size:
+        if self.max_size and len(self.cache) > self.max_size:
             self.cache.clear()
 
-    def get_state_id(self, species_id, energy, j, term):
+    def get_state_id(self, species_id, energy_scaled, j, term):
         """Get state ID from cache (assumes prefetch_states was called)"""
-        key = (species_id, energy, j, term)
+        key = (species_id, energy_scaled, j, term)
 
         if key in self.cache:
             self.hits += 1
@@ -414,7 +427,7 @@ class StateCache:
         self.misses += 1
         raise ValueError(
             f"State not found in cache: species={species_id}, "
-            f"energy={energy}, j={j}, term={term}"
+            f"energy_scaled={energy_scaled}, j={j}, term={term}"
         )
 
     @property
@@ -521,10 +534,16 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
             states = []
 
             for row in batch:
+                lower_energy = row['lower_energy']
+                lower_energy_scaled = scale_energy(lower_energy)
+                upper_energy = row['upper_energy']
+                upper_energy_scaled = scale_energy(upper_energy)
+
                 # Extract lower state
                 states.append(State(
                     species_id=row.get('species_id'),
-                    energy=row['lower_energy'],
+                    energy=lower_energy,
+                    energy_scaled=lower_energy_scaled,
                     j=row['lower_j'],
                     lande=row['lower_lande'],
                     term_desc=row['lower_term'] or None,
@@ -534,7 +553,8 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
                 # Extract upper state
                 states.append(State(
                     species_id=row.get('species_id'),
-                    energy=row['upper_energy'],
+                    energy=upper_energy,
+                    energy_scaled=upper_energy_scaled,
                     j=row['upper_j'],
                     lande=row['upper_lande'],
                     term_desc=row['upper_term'] or None,
@@ -596,8 +616,13 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
         for batch in batch_iterator(records, batch_size):
             state_keys = set()
             for row in batch:
-                state_keys.add((row['species_id'], row['lower_energy'], row['lower_j'], row['lower_term'] or None))
-                state_keys.add((row['species_id'], row['upper_energy'], row['upper_j'], row['upper_term'] or None))
+                lower_energy_scaled = scale_energy(row['lower_energy'])
+                upper_energy_scaled = scale_energy(row['upper_energy'])
+                row['_lower_energy_scaled'] = lower_energy_scaled
+                row['_upper_energy_scaled'] = upper_energy_scaled
+
+                state_keys.add((row['species_id'], lower_energy_scaled, row['lower_j'], row['lower_term'] or None))
+                state_keys.add((row['species_id'], upper_energy_scaled, row['upper_j'], row['upper_term'] or None))
 
             state_cache.prefetch_states(state_keys)
 
@@ -621,13 +646,13 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
                     transitions.append(Transition(
                         upstate_id=state_cache.get_state_id(
                             row['species_id'],
-                            row['upper_energy'],
+                            row['_upper_energy_scaled'],
                             row['upper_j'],
                             row['upper_term'] or None
                         ),
                         lostate_id=state_cache.get_state_id(
                             row['species_id'],
-                            row['lower_energy'],
+                            row['_lower_energy_scaled'],
                             row['lower_j'],
                             row['lower_term'] or None
                         ),
@@ -782,23 +807,27 @@ def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
                     row['lower_energy'], row['lower_j'],
                     row['lower_lande'], row['lower_term'] or None
                 )
-                state_keys.add((species_id, lower_energy, lower_j, lower_term))
-                state_rows.append((species_id, lower_energy, lower_j, lower_lande, lower_term))
+                lower_energy_scaled = scale_energy(lower_energy)
+                row['_lower_energy_scaled'] = lower_energy_scaled
+                state_keys.add((species_id, lower_energy_scaled, lower_j, lower_term))
+                state_rows.append((species_id, lower_energy, lower_energy_scaled, lower_j, lower_lande, lower_term))
 
                 # Upper state
                 upper_energy, upper_j, upper_lande, upper_term = (
                     row['upper_energy'], row['upper_j'],
                     row['upper_lande'], row['upper_term'] or None
                 )
-                state_keys.add((species_id, upper_energy, upper_j, upper_term))
-                state_rows.append((species_id, upper_energy, upper_j, upper_lande, upper_term))
+                upper_energy_scaled = scale_energy(upper_energy)
+                row['_upper_energy_scaled'] = upper_energy_scaled
+                state_keys.add((species_id, upper_energy_scaled, upper_j, upper_term))
+                state_rows.append((species_id, upper_energy, upper_energy_scaled, upper_j, upper_lande, upper_term))
 
             # Direct SQL insert (faster than Django ORM)
             with transaction.atomic():
                 initial_state_count = State.objects.count()
                 with connection.cursor() as cursor:
                     cursor.executemany(
-                        "INSERT OR IGNORE INTO states (species_id, energy, j, lande, term_desc) VALUES (?, ?, ?, ?, ?)",
+                        "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, j, lande, term_desc) VALUES (?, ?, ?, ?, ?, ?)",
                         state_rows
                     )
                 final_state_count = State.objects.count()
@@ -825,11 +854,11 @@ def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
 
                     # Get state IDs
                     upstate_id = state_cache.get_state_id(
-                        species_id, row['upper_energy'],
+                        species_id, row['_upper_energy_scaled'],
                         row['upper_j'], row['upper_term'] or None
                     )
                     lostate_id = state_cache.get_state_id(
-                        species_id, row['lower_energy'],
+                        species_id, row['_lower_energy_scaled'],
                         row['lower_j'], row['lower_term'] or None
                     )
 
