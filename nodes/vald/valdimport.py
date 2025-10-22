@@ -770,94 +770,88 @@ def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
 
     with progress_bar(desc="Importing VALD data", unit=" lines", disable=not verbose) as pbar:
         for batch in batch_source():
-            # === STEP 1: Extract and insert states ===
-            states = []
+            # === STEP 1: Insert states directly (bypass Django ORM) ===
+            state_keys = set()
+            state_rows = []
+
             for row in batch:
-                # Extract lower state
-                states.append(State(
-                    species_id=row.get('species_id'),
-                    energy=row['lower_energy'],
-                    j=row['lower_j'],
-                    lande=row['lower_lande'],
-                    term_desc=row['lower_term'],
-                ))
+                species_id = row['species_id']
 
-                # Extract upper state
-                states.append(State(
-                    species_id=row.get('species_id'),
-                    energy=row['upper_energy'],
-                    j=row['upper_j'],
-                    lande=row['upper_lande'],
-                    term_desc=row['upper_term'],
-                ))
+                # Lower state
+                lower_energy, lower_j, lower_lande, lower_term = (
+                    row['lower_energy'], row['lower_j'],
+                    row['lower_lande'], row['lower_term']
+                )
+                state_keys.add((species_id, lower_energy, lower_j, lower_term))
+                state_rows.append((species_id, lower_energy, lower_j, lower_lande, lower_term))
 
-            # Bulk insert states with deduplication
+                # Upper state
+                upper_energy, upper_j, upper_lande, upper_term = (
+                    row['upper_energy'], row['upper_j'],
+                    row['upper_lande'], row['upper_term']
+                )
+                state_keys.add((species_id, upper_energy, upper_j, upper_term))
+                state_rows.append((species_id, upper_energy, upper_j, upper_lande, upper_term))
+
+            # Direct SQL insert (faster than Django ORM)
             with transaction.atomic():
                 initial_state_count = State.objects.count()
-                bulk_insert_optimized(State, states, batch_size, ignore_conflicts=True)
+                with connection.cursor() as cursor:
+                    cursor.executemany(
+                        "INSERT OR IGNORE INTO states (species_id, energy, j, lande, term_desc) VALUES (?, ?, ?, ?, ?)",
+                        state_rows
+                    )
                 final_state_count = State.objects.count()
                 states_inserted = final_state_count - initial_state_count
 
             total_states_inserted += states_inserted
 
             # === STEP 2: Prefetch state IDs for this batch ===
-            state_keys = set()
-            for row in batch:
-                state_keys.add((row['species_id'], row['lower_energy'], row['lower_j'], row['lower_term']))
-                state_keys.add((row['species_id'], row['upper_energy'], row['upper_j'], row['upper_term']))
-
             state_cache.prefetch_states(state_keys)
 
-            # === STEP 3: Create and insert transitions ===
-            transitions = []
+            # === STEP 3: Insert transitions directly (bypass Django ORM) ===
+            transition_rows = []
             for row in batch:
                 try:
+                    # Cache lookups once
+                    species_id = row['species_id']
+
                     # Get or create linelist for this transition
                     linelist_id = linelist_cache.get_or_create_linelist(
-                        wave_ref=row.get('wave_ref'),
-                        r1=row.get('r1'),
-                        r2=row.get('r2'),
-                        r3=row.get('r3'),
-                        r4=row.get('r4'),
-                        r5=row.get('r5'),
-                        r6=row.get('r6'),
-                        r7=row.get('r7'),
-                        r8=row.get('r8'),
-                        r9=row.get('r9'),
+                        row.get('wave_ref'), row.get('r1'), row.get('r2'), row.get('r3'),
+                        row.get('r4'), row.get('r5'), row.get('r6'),
+                        row.get('r7'), row.get('r8'), row.get('r9')
                     )
 
-                    transitions.append(Transition(
-                        upstate_id=state_cache.get_state_id(
-                            row['species_id'],
-                            row['upper_energy'],
-                            row['upper_j'],
-                            row['upper_term']
-                        ),
-                        lostate_id=state_cache.get_state_id(
-                            row['species_id'],
-                            row['lower_energy'],
-                            row['lower_j'],
-                            row['lower_term']
-                        ),
-                        species_id=row.get('species_id'),
-                        wave=row['wave'],
-                        waveritz=row['wave_ritz'],
-                        loggf=row['loggf'],
-                        gammarad=row.get('gammarad'),
-                        gammastark=row.get('gammastark'),
-                        gammawaals=row.get('gammawaals'),
-                        accurflag=row.get('accurflag'),
-                        wave_linelist_id=linelist_id,
+                    # Get state IDs
+                    upstate_id = state_cache.get_state_id(
+                        species_id, row['upper_energy'],
+                        row['upper_j'], row['upper_term']
+                    )
+                    lostate_id = state_cache.get_state_id(
+                        species_id, row['lower_energy'],
+                        row['lower_j'], row['lower_term']
+                    )
+
+                    transition_rows.append((
+                        upstate_id, lostate_id, species_id,
+                        row['wave'], row['wave_ritz'], row['loggf'],
+                        row.get('gammarad'), row.get('gammastark'), row.get('gammawaals'),
+                        row.get('accurflag'), linelist_id
                     ))
                 except ValueError as e:
                     print(f"Warning: Skipping transition: {e}", file=sys.stderr)
                     continue
 
-            # Bulk insert transitions
+            # Direct SQL insert (faster than Django ORM)
             with transaction.atomic():
-                bulk_insert_optimized(Transition, transitions, batch_size)
+                with connection.cursor() as cursor:
+                    cursor.executemany(
+                        "INSERT INTO transitions (upstate, lostate, species_id, wave, waveritz, loggf, gammarad, gammastark, gammawaals, accurflag, wave_linelist_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        transition_rows
+                    )
 
-            total_transitions_inserted += len(transitions)
+            total_transitions_inserted += len(transition_rows)
             total_processed += len(batch)
 
             pbar.update(len(batch))
