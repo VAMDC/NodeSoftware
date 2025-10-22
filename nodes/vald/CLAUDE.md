@@ -6,6 +6,13 @@ rm vald_dev.sqlite
 uv run manage.py migrate
 uv run valdimport.py import-species --file=VALD_list_of_species.csv
 
+## model changes
+When the Django model changes, don't make a migration. Instead
+remove migrations/0001*py and run
+uv run manage.py makemigrations
+before migrate as above.
+
+
 ## the import of states and transitions
 In the incoming data, the states info is inlined within each record of transitions.
 Therefore we need two passes on the import, first extract the states and write to db (deduplication) and then the transitions with the correct foreignkeys to its upper and lower states.

@@ -22,7 +22,7 @@ DATABASES = {
     'NAME': 'vald_dev.sqlite',
   },
 }
-LAST_MODIFIED = datetime.date(2020,1,24)
+LAST_MODIFIED = datetime.date(2025,10,22)
 NODEVERSION = LAST_MODIFIED.isoformat()
 
 EXAMPLE_QUERIES = [\
@@ -31,8 +31,8 @@ EXAMPLE_QUERIES = [\
     "SELECT ALL WHERE ( AtomSymbol = 'Mg' ) AND (RadTransWavelength >= 5100 AND RadTransWavelength <= 5200)",
     "SELECT SPECIES",
     ]
-ADMINS = (('Thomas', 'thomas@marquart.se'),)
-SERVER_EMAIL = 'vamdc@vald.astro.uu.se'
+ADMINS = (('Thomas', 'thomas.marquart@astro.uu.se'),)
+SERVER_EMAIL = 'thomas.marquart.astro.uu.se'
 DEPLOY_URL = 'http://localhost:8000/tap/'
 STATIC_URL = '/static/'
 
@@ -49,9 +49,9 @@ if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'
 
 
-#LOGGING['loggers']['django.db.backends'] = {
-#      'handlers': ['console', 'logfile'],
-#      'level': 'DEBUG',
-#      'propagate': False,
-#  }
+LOGGING['loggers']['django.db.backends'] = {
+      'handlers': ['console', 'logfile'],
+      'level': 'DEBUG',
+      'propagate': False,
+  }
 
