@@ -8,6 +8,7 @@ class State(Model):
     species = ForeignKey(Species, db_index=False, on_delete=DO_NOTHING)
 
     energy = DecimalField(max_digits=15, decimal_places=4,null=True, db_index=True)
+    energy_scaled = BigIntegerField(null=True, db_index=True)
     lande = DecimalField(max_digits=6, decimal_places=2,null=True)
     term_desc = CharField(max_length=86, null=True)
 
@@ -46,12 +47,12 @@ class State(Model):
         db_table = u'states'
         constraints = [
             UniqueConstraint(
-                fields=['species', 'energy', 'j', 'term_desc'],
+                fields=['species', 'energy_scaled', 'j', 'term_desc'],
                 name='unique_state'
             )
         ]
         indexes = [
-            Index(fields=['species', 'energy']),
+            Index(fields=['species', 'energy_scaled']),
         ]
 
 
@@ -147,6 +148,5 @@ class Transition(Model):
         indexes = [
             Index(fields=['species', 'wave'], name='speciesid_wave'),
         ]
-
 
 
