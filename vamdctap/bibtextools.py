@@ -25,11 +25,11 @@ def getEntryFromString(s):
     parser = bibtex.Parser()
     try:
         parser.parse_stream(StringIO(s))
-        key,entry = parser.data.entries.items()[0]
+        key,entry = list(parser.data.entries.items())[0]
     except Exception as e:
         log.warn('BibTex parsing failed: %s'%e)
         parser.parse_stream(StringIO(DUMMY))
-        key,entry = parser.data.entries.items()[0]
+        key,entry = list(parser.data.entries.items())[0]
     return entry
 
 TYPE2CATEGORY=CaselessDict({\
@@ -55,7 +55,7 @@ def BibTeX2XML(bibtexstring, key=None):
         xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,key)
     else:
         xml = u'<Source sourceID="B%s-%s">\n<Authors>\n'%(NODEID,e.key)
-    for a in e.persons['author']:
+    for a in e.persons.get('author', []):
         name = a.first() + a.middle() + a.last() + a.lineage()
         name = [n.strip().strip('{}') for n in name]
         name = ' '.join(name)
