@@ -1,4 +1,0 @@
-#!/bin/sh
-
-sudo kill $(cat /tmp/atom12.07-pypy.pid)
-
