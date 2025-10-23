@@ -2047,28 +2047,28 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
         try:
             for Source in XsamsSources(Sources, tap):
                 yield Source
-        except: errs+=generatorError(' Sources')
+        except Exception: errs+=generatorError(' Sources')
 
     if not requestables or 'methods' in requestables:
         log.debug('Working on Methods.')
         try:
             for Method in XsamsMethods(Methods):
                 yield Method
-        except: errs+=generatorError(' Methods')
+        except Exception: errs+=generatorError(' Methods')
 
     if not requestables or 'functions' in requestables:
         log.debug('Working on Functions.')
         try:
             for Function in XsamsFunctions(Functions):
                 yield Function
-        except: errs+=generatorError(' Functions')
+        except Exception: errs+=generatorError(' Functions')
 
     if not requestables or 'environments' in requestables:
         log.debug('Working on Environments.')
         try:
             for Environment in XsamsEnvironments(Environments):
                 yield Environment
-        except: errs+=generatorError(' Environments')
+        except Exception: errs+=generatorError(' Environments')
 
     yield '<Species>\n'
     if not requestables or 'atoms' in requestables:
@@ -2076,28 +2076,28 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
         try:
             for Atom in XsamsAtoms(Atoms):
                 yield Atom
-        except: errs+=generatorError(' Atoms')
+        except Exception: errs+=generatorError(' Atoms')
 
     if not requestables or 'molecules' in requestables:
         log.debug('Working on Molecules.')
         try:
             for Molecule in XsamsMolecules(Molecules):
                 yield Molecule
-        except: errs+=generatorError(' Molecules')
+        except Exception: errs+=generatorError(' Molecules')
 
     if not requestables or 'solids' in requestables:
         log.debug('Working on Solids.')
         try:
             for Solid in XsamsSolids(Solids):
                 yield Solid
-        except: errs += generatorError(' Solids')
+        except Exception: errs += generatorError(' Solids')
 
     if not requestables or 'particles' in requestables:
         log.debug('Working on Particles.')
         try:
             for Particle in XsamsParticles(Particles):
                 yield Particle
-        except: errs += generatorError(' Particles')
+        except Exception: errs += generatorError(' Particles')
 
     yield '</Species>\n'
 
@@ -2109,13 +2109,13 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
         try:
             for RadCros in XsamsRadCross(RadCross):
                 yield RadCros
-        except: errs+=generatorError(' RadCross')
+        except Exception: errs+=generatorError(' RadCross')
 
     if not requestables or 'radiativetransitions' in requestables:
         try:
             for RadTran in XsamsRadTrans(RadTrans):
                 yield RadTran
-        except:
+        except Exception:
             errs+=generatorError(' RadTran')
 
     yield '</Radiative>\n'
@@ -2124,13 +2124,13 @@ def Xsams(tap, HeaderInfo=None, Sources=None, Methods=None, Functions=None,
         try:
             for CollTran in XsamsCollTrans(CollTrans):
                 yield CollTran
-        except: errs+=generatorError(' CollTran')
+        except Exception: errs+=generatorError(' CollTran')
 
     if not requestables or 'nonradiativetransitions' in requestables:
         try:
             for NonRadTran in XsamsNonRadTrans(NonRadTrans):
                 yield NonRadTran
-        except: errs+=generatorError(' NonRadTran')
+        except Exception: errs+=generatorError(' NonRadTran')
 
     yield '</Processes>\n'
 
