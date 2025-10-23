@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from typing import Callable, Optional, Iterator, TextIO
 from io import StringIO
 import csv
+import re
 
 # =============================================================================
 # VALD FORMAT DEFINITIONS
@@ -718,8 +719,8 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
     return total_processed
 
 
-def import_vald_combined(input_file=None, batch_size=10000, skip_header=2,
-                         skip_calc=False, read_ahead=True, verbose=True):
+def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
+                              skip_calc=False, read_ahead=True, verbose=True):
     """
     Combined single-pass import of states and transitions from VALD format.
 
@@ -1021,6 +1022,150 @@ def import_species(input_file, batch_size=10000, verbose=True):
 
 
 # =============================================================================
+# BIBTEX IMPORT
+# =============================================================================
+
+def import_bibtex(input_file, batch_size=1000, verbose=True):
+    """
+    Import references from BibTeX file.
+
+    For each BibTeX entry:
+    - Uses the BibTeX key as the Reference.id
+    - Stores the raw BibTeX text in Reference.bibtex
+    - Converts to XML using BibTeX2XML() and stores in Reference.xml
+
+    Returns: (total_processed, total_inserted)
+    """
+    try:
+        from tqdm import tqdm
+        progress_bar = tqdm
+    except ImportError:
+        class DummyBar:
+            def __init__(self, *args, **kwargs): pass
+            def update(self, n): pass
+            def set_postfix(self, d): pass
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+        progress_bar = DummyBar
+
+    from node_common.models import Reference
+    from vamdctap.bibtextools import BibTeX2XML
+    from django.db import transaction
+
+    bibtex_pattern = re.compile(r'^@\w+\{([^,]+),', re.MULTILINE)
+
+    with open(input_file, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    references = []
+    total_processed = 0
+
+    entry_start = None
+    current_entry = []
+    brace_count = 0
+    lines = content.split('\n')
+
+    with progress_bar(desc="Importing references", unit=" refs", disable=not verbose) as pbar:
+        for i, line in enumerate(lines):
+            if line.strip().startswith('@'):
+                if current_entry:
+                    bibtex_text = '\n'.join(current_entry)
+                    match = bibtex_pattern.search(bibtex_text)
+                    if match:
+                        bibtex_key = match.group(1).strip()
+                        try:
+                            xml_text = BibTeX2XML(bibtex_text, key=bibtex_key)
+                            ref = Reference(
+                                id=bibtex_key,
+                                bibtex=bibtex_text,
+                                xml=xml_text
+                            )
+                            references.append(ref)
+                            total_processed += 1
+
+                            if len(references) >= batch_size:
+                                with transaction.atomic():
+                                    Reference.objects.bulk_create(
+                                        references,
+                                        batch_size=batch_size,
+                                        ignore_conflicts=True
+                                    )
+                                pbar.update(len(references))
+                                references = []
+                        except Exception as e:
+                            if verbose:
+                                print(f"Warning: Failed to process entry {bibtex_key}: {e}", file=sys.stderr)
+
+                current_entry = [line]
+                brace_count = line.count('{') - line.count('}')
+            elif current_entry:
+                current_entry.append(line)
+                brace_count += line.count('{') - line.count('}')
+
+                if brace_count == 0 and line.strip().endswith('}'):
+                    bibtex_text = '\n'.join(current_entry)
+                    match = bibtex_pattern.search(bibtex_text)
+                    if match:
+                        bibtex_key = match.group(1).strip()
+                        try:
+                            xml_text = BibTeX2XML(bibtex_text, key=bibtex_key)
+                            ref = Reference(
+                                id=bibtex_key,
+                                bibtex=bibtex_text,
+                                xml=xml_text
+                            )
+                            references.append(ref)
+                            total_processed += 1
+
+                            if len(references) >= batch_size:
+                                with transaction.atomic():
+                                    Reference.objects.bulk_create(
+                                        references,
+                                        batch_size=batch_size,
+                                        ignore_conflicts=True
+                                    )
+                                pbar.update(len(references))
+                                references = []
+                        except Exception as e:
+                            if verbose:
+                                print(f"Warning: Failed to process entry {bibtex_key}: {e}", file=sys.stderr)
+
+                    current_entry = []
+                    brace_count = 0
+
+        if current_entry and brace_count == 0:
+            bibtex_text = '\n'.join(current_entry)
+            match = bibtex_pattern.search(bibtex_text)
+            if match:
+                bibtex_key = match.group(1).strip()
+                try:
+                    xml_text = BibTeX2XML(bibtex_text, key=bibtex_key)
+                    ref = Reference(
+                        id=bibtex_key,
+                        bibtex=bibtex_text,
+                        xml=xml_text
+                    )
+                    references.append(ref)
+                    total_processed += 1
+                except Exception as e:
+                    if verbose:
+                        print(f"Warning: Failed to process entry {bibtex_key}: {e}", file=sys.stderr)
+
+        if references:
+            with transaction.atomic():
+                Reference.objects.bulk_create(
+                    references,
+                    batch_size=batch_size,
+                    ignore_conflicts=True
+                )
+            pbar.update(len(references))
+
+    inserted_count = Reference.objects.count()
+
+    return total_processed, inserted_count
+
+
+# =============================================================================
 # STANDALONE CLI
 # =============================================================================
 
@@ -1048,7 +1193,7 @@ def main():
                             help='Skip Einstein A calculation')
 
     # Combined import command
-    combined_parser = subparsers.add_parser('import-combined',
+    combined_parser = subparsers.add_parser('import-states-transitions',
                                            help='Combined single-pass import (states + transitions)')
     combined_parser.add_argument('--file', type=str, help='Input file (or use stdin)')
     combined_parser.add_argument('--batch-size', type=int, default=10000)
@@ -1064,6 +1209,13 @@ def main():
     species_parser.add_argument('--file', type=str, required=True,
                               help='Species CSV file')
     species_parser.add_argument('--batch-size', type=int, default=10000)
+
+    # BibTeX import command
+    bibtex_parser = subparsers.add_parser('import-bibtex',
+                                         help='Import references from BibTeX file')
+    bibtex_parser.add_argument('--file', type=str, required=True,
+                              help='BibTeX file')
+    bibtex_parser.add_argument('--batch-size', type=int, default=1000)
 
     args = parser.parse_args()
 
@@ -1095,8 +1247,8 @@ def main():
         )
         print(f'Done! Imported {processed} transitions')
 
-    elif args.command == 'import-combined':
-        processed, states_inserted, trans_inserted = import_vald_combined(
+    elif args.command == 'import-states-transitions':
+        processed, states_inserted, trans_inserted = import_states_transitions(
             input_file=args.file,
             batch_size=args.batch_size,
             skip_header=args.skip_header,
@@ -1113,6 +1265,13 @@ def main():
             batch_size=args.batch_size
         )
         print(f'Done! Processed {processed} lines, inserted {inserted} total species')
+
+    elif args.command == 'import-bibtex':
+        processed, inserted = import_bibtex(
+            input_file=args.file,
+            batch_size=args.batch_size
+        )
+        print(f'Done! Processed {processed} BibTeX entries, inserted {inserted} total references')
 
 
 if __name__ == '__main__':

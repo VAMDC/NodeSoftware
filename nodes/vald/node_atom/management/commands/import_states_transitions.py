@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from valdimport import import_vald_combined
+from valdimport import import_states_transitions
 
 
 class Command(BaseCommand):
@@ -15,7 +15,7 @@ class Command(BaseCommand):
                           help='Disable read-ahead thread (enabled by default)')
 
     def handle(self, *args, **options):
-        processed, states_inserted, trans_inserted = import_vald_combined(
+        processed, states_inserted, trans_inserted = import_states_transitions(
             input_file=options['file'],
             batch_size=options['batch_size'],
             skip_header=options['skip_header'],
