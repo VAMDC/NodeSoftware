@@ -152,6 +152,275 @@ def scale_energy(value: Optional[float]) -> Optional[int]:
     return int(round(value * ENERGY_SCALE_FACTOR))
 
 
+def parse_fraction(s: str) -> Optional[float]:
+    """
+    Parse string that may contain fraction like '3/2' or decimal like '1.5'.
+    Returns float value, dividing by 2 if fraction is present.
+    Returns None if string cannot be parsed as number.
+    """
+    if not s or s.strip() == '':
+        return None
+    s = s.strip()
+
+    # Remove trailing non-numeric characters (like +, -, ?, etc.)
+    while s and not s[-1].isdigit():
+        s = s[:-1]
+
+    if not s:
+        return None
+
+    try:
+        if '/' in s:
+            return float(s.split('/')[0]) / 2.0
+        return float(s)
+    except (ValueError, IndexError):
+        return None
+
+
+def detect_coupling(term_desc: str) -> str:
+    """
+    Detect coupling scheme from term description structure.
+    Returns 'LS', 'JJ', 'JK', 'LK', or 'Unknown'.
+    """
+    if not term_desc or not term_desc.strip():
+        return 'Unknown'
+
+    term = term_desc.strip()
+
+    # JJ coupling: (J1,J2) format
+    if re.search(r'\([^)]*,', term):
+        return 'JJ'
+
+    # JK/LK coupling: [K] format
+    if '[' in term:
+        # LK has \ in electronic config, but we can't always distinguish
+        # Default to JK for bracket notation
+        return 'JK'
+
+    # LS coupling: has letter S,P,D,F,G,H,I,K,L,M,N with multiplicity
+    # Remove trailing *, ?, X, a, b, c, +, digits, A, B
+    term_clean = term.rstrip('*?Xabc+0123456789AB')
+    if term_clean and term_clean[-1] in 'SPDFGHIKLMN':
+        return 'LS'
+
+    return 'Unknown'
+
+
+def parse_quantum_numbers(species_id: int, j: Optional[float],
+                         coupling: str, term_desc: str,
+                         level_desc: str = None) -> dict:
+    """
+    Parse VALD term description to extract quantum numbers.
+
+    Based on parse_vald_term.c logic from VALD.
+
+    Args:
+        species_id: Species identifier (for H/He special case)
+        j: Total angular momentum J
+        coupling: Coupling scheme flag ('LS', 'JJ', 'JK', 'LK', or other)
+        term_desc: Term name/description (e.g., '2F*', '(6,7/2)*', '2[11/2]')
+                   Can be full level (config + term) - will be split automatically
+        level_desc: Full level description including electronic config (needed for JK/LK Jc extraction)
+
+    Returns:
+        dict with keys: l, s, p, j1, j2, k, s2, jc, sn, n
+        Only non-None values are included.
+    """
+    if not term_desc or not term_desc.strip():
+        return {}
+
+    full_level = term_desc.strip()
+
+    # Split electronic configuration from term name (C code: find first space after backslash-spaces)
+    # In VALD format, config and term are separated by space(s)
+    # But backslash-space (\ ) is an escaped space within config
+    # For simplicity: split on last space to get term name
+    if ' ' in full_level and not full_level.startswith('('):
+        # Split on last space group to separate config from term
+        parts = full_level.rsplit(maxsplit=1)
+        if len(parts) > 1:
+            config, term = parts
+        else:
+            term = full_level
+            config = ''
+    else:
+        term = full_level
+        config = ''
+
+    result = {}
+
+    # Auto-detect coupling if not provided or empty
+    if not coupling or coupling.strip() == '':
+        coupling = detect_coupling(term)
+
+    # Check for H/He special case: n=X pattern
+    if species_id <= 3:
+        n_match = re.search(r'n=(\d+)', term_desc)
+        if n_match:
+            result['n'] = int(n_match.group(1))
+            # Also parse parity
+            if term.endswith('*'):
+                result['p'] = 1
+            else:
+                result['p'] = 2
+            return result
+
+    # Parse parity (odd parity marked with *)
+    parity = 2
+    if term.endswith('*'):
+        parity = 1
+        term = term[:-1].strip()
+
+    # LS COUPLING
+    if coupling == 'LS':
+        # Find the last occurrence of multiplicity+letter pattern
+        # Pattern: optional lowercase/parens + digit(s) + capital letter
+        # e.g., "Q(5D)5G518" -> need to find "5G"
+
+        term_clean = term
+
+        # Skip trailing '?', 'X', 'a', 'b', 'c', '+'
+        while term_clean and term_clean[-1] in '?Xabc+':
+            term_clean = term_clean[:-1]
+
+        # Check for second parity marker
+        if term_clean.endswith('*'):
+            parity = 1
+            term_clean = term_clean[:-1]
+
+        # Parse seniority (trailing digits or A/B)
+        seniority = None
+        # Strip trailing digits and A/B for seniority
+        while term_clean and (term_clean[-1].isdigit() or term_clean[-1] in 'AB'):
+            if not seniority:
+                # Only capture first character as seniority
+                seniority = term_clean[-1]
+            term_clean = term_clean[:-1]
+
+        # Now find the last capital letter that could be L quantum number
+        # Scan backwards for pattern: digit(s) + letter
+        l_idx = -1
+        for i in range(len(term_clean) - 1, -1, -1):
+            if term_clean[i] in 'SPDFGHIKLMN':
+                # Found a potential L letter, check if preceded by digit
+                if i > 0 and term_clean[i-1].isdigit():
+                    l_idx = i
+                    break
+
+        if l_idx >= 0:
+            l_char = term_clean[l_idx]
+            l_map = {'S': 0, 'P': 1, 'D': 2, 'F': 3, 'G': 4,
+                    'H': 5, 'I': 6, 'K': 7, 'L': 8, 'M': 9, 'N': 10}
+
+            if l_char in l_map:
+                result['l'] = l_map[l_char]
+
+                # Parse multiplicity (digits before L letter)
+                mult_start = l_idx - 1
+                while mult_start > 0 and term_clean[mult_start-1].isdigit():
+                    mult_start -= 1
+
+                multiplicity_str = term_clean[mult_start:l_idx]
+                if multiplicity_str and multiplicity_str.isdigit():
+                    multiplicity = int(multiplicity_str)
+                    result['s'] = (multiplicity - 1) / 2.0
+
+        if seniority:
+            result['sn'] = ord(seniority) if seniority in 'AB' else int(seniority)
+
+        result['p'] = parity
+        return result
+
+    # JJ COUPLING
+    elif coupling == 'JJ':
+        # Format: (J1,J2) or (J1,J2)*
+        # Extract values between parentheses
+        match = re.search(r'\(([^,]+),([^)]+)\)', term)
+        if match:
+            j1_str = match.group(1).strip()
+            j2_str = match.group(2).strip()
+            result['j1'] = parse_fraction(j1_str)
+            result['j2'] = parse_fraction(j2_str)
+            result['p'] = parity
+        return result
+
+    # JK COUPLING
+    elif coupling == 'JK':
+        # Format: multiplicity[K] or (S2)[K]
+        # K is in square brackets, S2 is either in parentheses or derived from multiplicity
+
+        # Parse K from [K]
+        k_match = re.search(r'\[([^\]]+)\]', term)
+        if k_match:
+            k_str = k_match.group(1)
+            result['k'] = parse_fraction(k_str)
+
+        # Parse S2 from (S2) or from multiplicity
+        s2_match = re.search(r'\(([^\)]+)\)', term)
+        if s2_match:
+            s2_str = s2_match.group(1)
+            result['s2'] = parse_fraction(s2_str)
+        else:
+            # Parse multiplicity at start
+            mult_match = re.match(r'^(\d+)', term)
+            if mult_match:
+                multiplicity = int(mult_match.group(1))
+                result['s2'] = (multiplicity - 1) / 2.0
+
+        # Parse Jc from <Jc> in level description (use full_level if level_desc not provided)
+        search_str = level_desc if level_desc else full_level
+        if search_str:
+            jc_match = re.search(r'<([^>]+)>', search_str)
+            if jc_match:
+                jc_str = jc_match.group(1)
+                result['jc'] = parse_fraction(jc_str)
+
+        result['p'] = parity
+        return result
+
+    # LK COUPLING
+    elif coupling == 'LK':
+        # Similar to JK but L is parsed from electronic config after '\ '
+
+        # Parse K from [K]
+        k_match = re.search(r'\[([^\]]+)\]', term)
+        if k_match:
+            k_str = k_match.group(1)
+            result['k'] = parse_fraction(k_str)
+
+        # Parse S2 from (S2) or from multiplicity
+        s2_match = re.search(r'\(([^\)]+)\)', term)
+        if s2_match:
+            s2_str = s2_match.group(1)
+            result['s2'] = parse_fraction(s2_str)
+        else:
+            # Parse multiplicity at start
+            mult_match = re.match(r'^(\d+)', term)
+            if mult_match:
+                multiplicity = int(mult_match.group(1))
+                result['s2'] = (multiplicity - 1) / 2.0
+
+        # Parse L from level description after '\ ' (use full_level if level_desc not provided)
+        search_str = level_desc if level_desc else full_level
+        if search_str:
+            backslash_match = re.search(r'\\ ([A-Z])', search_str)
+            if backslash_match:
+                l_char = backslash_match.group(1)
+                l_map = {'S': 0, 'P': 1, 'D': 2, 'F': 3, 'G': 4,
+                        'H': 5, 'I': 6, 'K': 7, 'L': 8, 'M': 9, 'N': 10}
+                if l_char in l_map:
+                    result['l'] = l_map[l_char]
+
+        result['p'] = parity
+        return result
+
+    # Unknown coupling - just return parity if we found it
+    if parity == 1:
+        result['p'] = parity
+
+    return result
+
+
 def parse_reference_line(ref_line: str) -> dict:
     """
     Parse VALD reference line.
@@ -540,26 +809,64 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
                 upper_energy = row['upper_energy']
                 upper_energy_scaled = scale_energy(upper_energy)
 
+                species_id = row.get('species_id')
+
+                # Parse quantum numbers for lower state
+                lower_qn = parse_quantum_numbers(
+                    species_id=species_id,
+                    j=row['lower_j'],
+                    coupling=row['lower_term_flag'],
+                    term_desc=row['lower_term'],
+                    level_desc=row['lower_term']
+                )
+
+                # Parse quantum numbers for upper state
+                upper_qn = parse_quantum_numbers(
+                    species_id=species_id,
+                    j=row['upper_j'],
+                    coupling=row['upper_term_flag'],
+                    term_desc=row['upper_term'],
+                    level_desc=row['upper_term']
+                )
+
                 # Extract lower state
                 states.append(State(
-                    species_id=row.get('species_id'),
+                    species_id=species_id,
                     energy=lower_energy,
                     energy_scaled=lower_energy_scaled,
                     j=row['lower_j'],
                     lande=row['lower_lande'],
                     term_desc=row['lower_term'] or None,
-                    # TODO: Add remaining state fields
+                    l=lower_qn.get('l'),
+                    s=lower_qn.get('s'),
+                    p=lower_qn.get('p'),
+                    j1=lower_qn.get('j1'),
+                    j2=lower_qn.get('j2'),
+                    k=lower_qn.get('k'),
+                    s2=lower_qn.get('s2'),
+                    jc=lower_qn.get('jc'),
+                    sn=lower_qn.get('sn'),
+                    n=lower_qn.get('n'),
                 ))
 
                 # Extract upper state
                 states.append(State(
-                    species_id=row.get('species_id'),
+                    species_id=species_id,
                     energy=upper_energy,
                     energy_scaled=upper_energy_scaled,
                     j=row['upper_j'],
                     lande=row['upper_lande'],
                     term_desc=row['upper_term'] or None,
-                    # TODO: Add remaining state fields
+                    l=upper_qn.get('l'),
+                    s=upper_qn.get('s'),
+                    p=upper_qn.get('p'),
+                    j1=upper_qn.get('j1'),
+                    j2=upper_qn.get('j2'),
+                    k=upper_qn.get('k'),
+                    s2=upper_qn.get('s2'),
+                    jc=upper_qn.get('jc'),
+                    sn=upper_qn.get('sn'),
+                    n=upper_qn.get('n'),
                 ))
 
             # Bulk insert with deduplication
@@ -810,8 +1117,23 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 )
                 lower_energy_scaled = scale_energy(lower_energy)
                 row['_lower_energy_scaled'] = lower_energy_scaled
+
+                # Parse quantum numbers for lower state
+                lower_qn = parse_quantum_numbers(
+                    species_id=species_id,
+                    j=lower_j,
+                    coupling=row['lower_term_flag'],
+                    term_desc=lower_term,
+                    level_desc=lower_term
+                )
+
                 state_keys.add((species_id, lower_energy_scaled, lower_j, lower_term))
-                state_rows.append((species_id, lower_energy, lower_energy_scaled, lower_j, lower_lande, lower_term))
+                state_rows.append((
+                    species_id, lower_energy, lower_energy_scaled, lower_j, lower_lande, lower_term,
+                    lower_qn.get('l'), lower_qn.get('s'), lower_qn.get('p'),
+                    lower_qn.get('j1'), lower_qn.get('j2'), lower_qn.get('k'),
+                    lower_qn.get('s2'), lower_qn.get('jc'), lower_qn.get('sn'), lower_qn.get('n')
+                ))
 
                 # Upper state
                 upper_energy, upper_j, upper_lande, upper_term = (
@@ -820,15 +1142,30 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 )
                 upper_energy_scaled = scale_energy(upper_energy)
                 row['_upper_energy_scaled'] = upper_energy_scaled
+
+                # Parse quantum numbers for upper state
+                upper_qn = parse_quantum_numbers(
+                    species_id=species_id,
+                    j=upper_j,
+                    coupling=row['upper_term_flag'],
+                    term_desc=upper_term,
+                    level_desc=upper_term
+                )
+
                 state_keys.add((species_id, upper_energy_scaled, upper_j, upper_term))
-                state_rows.append((species_id, upper_energy, upper_energy_scaled, upper_j, upper_lande, upper_term))
+                state_rows.append((
+                    species_id, upper_energy, upper_energy_scaled, upper_j, upper_lande, upper_term,
+                    upper_qn.get('l'), upper_qn.get('s'), upper_qn.get('p'),
+                    upper_qn.get('j1'), upper_qn.get('j2'), upper_qn.get('k'),
+                    upper_qn.get('s2'), upper_qn.get('jc'), upper_qn.get('sn'), upper_qn.get('n')
+                ))
 
             # Direct SQL insert (faster than Django ORM)
             with transaction.atomic():
                 initial_state_count = State.objects.count()
                 with connection.cursor() as cursor:
                     cursor.executemany(
-                        "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, j, lande, term_desc) VALUES (?, ?, ?, ?, ?, ?)",
+                        "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, J, lande, term_desc, L, S, P, J1, J2, K, S2, Jc, Sn, n) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                         state_rows
                     )
                 final_state_count = State.objects.count()
