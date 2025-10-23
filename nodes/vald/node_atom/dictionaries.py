@@ -26,6 +26,11 @@ RETURNABLES = {\
 'AtomStateParity':'AtomState.p',
 'AtomStateTotalAngMom':'AtomState.j',
 
+'AtomStateHyperfineConstantA':'AtomState.hfs_a',
+'AtomStateHyperfineConstantAAccuracy':'AtomState.hfs_a_error',
+'AtomStateHyperfineConstantB':'AtomState.hfs_b',
+'AtomStateHyperfineConstantBAccuracy':'AtomState.hfs_b_error',
+
 'AtomStateTermLSL':'Component.l',
 'AtomStateTermLSS':'Component.s',
 'AtomStateTermMultiplicity':'Component.multiplicity()',
