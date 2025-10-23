@@ -12,6 +12,11 @@ class State(Model):
     lande = DecimalField(max_digits=6, decimal_places=2,null=True)
     term_desc = CharField(max_length=86, null=True)
 
+    hfs_a = FloatField(null=True, db_column=u'hfs_A')
+    hfs_a_error = FloatField(null=True, db_column=u'hfs_dA')
+    hfs_b = FloatField(null=True, db_column=u'hfs_B')
+    hfs_b_error = FloatField(null=True, db_column=u'hfs_dB')
+
     energy_ref_id= RefCharField(max_length=7, null=True)
     lande_ref_id = RefCharField(max_length=7, null=True)
     level_ref_id = RefCharField(max_length=7, null=True)

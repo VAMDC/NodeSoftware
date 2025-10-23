@@ -1359,6 +1359,169 @@ def import_species(input_file, batch_size=10000, verbose=True):
 
 
 # =============================================================================
+# HYPERFINE STRUCTURE CONSTANTS IMPORT
+# =============================================================================
+
+def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=0.01):
+    """
+    Import hyperfine structure constants (A and B) from AB.db SQLite database.
+
+    Matches AB.db records to existing states using:
+    - SPEID -> species_id
+    - E (energy) with small tolerance
+    - J (total angular momentum)
+    - TERM (for disambiguation when multiple matches exist)
+
+    Updates existing State records with hfs_a, hfs_a_error, hfs_b, hfs_b_error.
+
+    Args:
+        input_file: Path to AB.db SQLite database
+        batch_size: Number of updates per transaction
+        verbose: Print progress messages
+        energy_tolerance: Maximum energy difference for matching (cm⁻¹)
+
+    Returns: (total_processed, matched_unique, matched_ambiguous, no_match)
+    """
+    try:
+        from tqdm import tqdm
+        progress_bar = tqdm
+    except ImportError:
+        class DummyBar:
+            def __init__(self, *args, **kwargs): pass
+            def update(self, n): pass
+            def set_postfix(self, d): pass
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+        progress_bar = DummyBar
+
+    from node_atom.models import State
+    from django.db import transaction, connection
+    import sqlite3
+
+    ab_conn = sqlite3.connect(input_file)
+    ab_cursor = ab_conn.cursor()
+
+    ab_cursor.execute("SELECT COUNT(*) FROM AB")
+    total_records = ab_cursor.fetchone()[0]
+
+    ab_cursor.execute("""
+        SELECT ID, SPEID, E, J, TERM, A, dA, B, dB
+        FROM AB
+        ORDER BY ID
+    """)
+
+    stats = {
+        'total': 0,
+        'matched_unique': 0,
+        'matched_ambiguous': 0,
+        'no_match': 0,
+        'updated': 0
+    }
+
+    update_queue = []
+
+    def normalize_term(term):
+        """Normalize term description for fuzzy matching"""
+        if not term:
+            return ''
+        return term.strip().replace(' ', '').replace('.', '').lower()
+
+    with progress_bar(desc="Importing HFS constants", unit=" records", total=total_records, disable=not verbose) as pbar:
+        for row in ab_cursor:
+            ab_id, speid, energy, j, term, a, da, b, db = row
+            stats['total'] += 1
+
+            candidates = State.objects.filter(
+                species_id=speid,
+                j=j
+            ).extra(
+                where=[f"ABS(energy - {energy}) < {energy_tolerance}"]
+            )
+
+            candidate_count = candidates.count()
+
+            if candidate_count == 0:
+                stats['no_match'] += 1
+            elif candidate_count == 1:
+                state = candidates.first()
+                stats['matched_unique'] += 1
+                update_queue.append({
+                    'state_id': state.id,
+                    'a': a,
+                    'da': da,
+                    'b': b,
+                    'db': db
+                })
+            else:
+                ab_term_norm = normalize_term(term)
+                best_match = None
+
+                for candidate in candidates:
+                    vald_term_norm = normalize_term(candidate.term_desc)
+                    if ab_term_norm in vald_term_norm or vald_term_norm in ab_term_norm:
+                        if best_match is None:
+                            best_match = candidate
+                        else:
+                            best_match = None
+                            break
+
+                if best_match:
+                    stats['matched_ambiguous'] += 1
+                    update_queue.append({
+                        'state_id': best_match.id,
+                        'a': a,
+                        'da': da,
+                        'b': b,
+                        'db': db
+                    })
+                else:
+                    stats['matched_ambiguous'] += 1
+                    if verbose:
+                        print(f"\nWarning: Multiple ambiguous matches for AB.ID={ab_id}, skipping", file=sys.stderr)
+
+            if len(update_queue) >= batch_size:
+                with transaction.atomic():
+                    for update in update_queue:
+                        State.objects.filter(id=update['state_id']).update(
+                            hfs_a=update['a'],
+                            hfs_a_error=update['da'],
+                            hfs_b=update['b'],
+                            hfs_b_error=update['db']
+                        )
+                        stats['updated'] += 1
+                update_queue = []
+
+            pbar.update(1)
+            pbar.set_postfix({
+                'matched': stats['matched_unique'] + stats['matched_ambiguous'],
+                'updated': stats['updated']
+            })
+
+        if update_queue:
+            with transaction.atomic():
+                for update in update_queue:
+                    State.objects.filter(id=update['state_id']).update(
+                        hfs_a=update['a'],
+                        hfs_a_error=update['da'],
+                        hfs_b=update['b'],
+                        hfs_b_error=update['db']
+                    )
+                    stats['updated'] += 1
+
+    ab_conn.close()
+
+    if verbose:
+        print(f"\nHFS Import Summary:")
+        print(f"  Total AB records: {stats['total']}")
+        print(f"  Unique matches: {stats['matched_unique']}")
+        print(f"  Ambiguous matches (term-based): {stats['matched_ambiguous']}")
+        print(f"  No match: {stats['no_match']}")
+        print(f"  States updated: {stats['updated']}")
+
+    return stats['total'], stats['matched_unique'], stats['matched_ambiguous'], stats['no_match']
+
+
+# =============================================================================
 # BIBTEX IMPORT
 # =============================================================================
 
@@ -1554,6 +1717,15 @@ def main():
                               help='BibTeX file')
     bibtex_parser.add_argument('--batch-size', type=int, default=1000)
 
+    # HFS import command
+    hfs_parser = subparsers.add_parser('import-hfs',
+                                       help='Import hyperfine structure constants from AB.db')
+    hfs_parser.add_argument('--file', type=str, required=True,
+                           help='AB.db SQLite database file')
+    hfs_parser.add_argument('--batch-size', type=int, default=1000)
+    hfs_parser.add_argument('--energy-tolerance', type=float, default=0.01,
+                           help='Energy matching tolerance in cm-1 (default: 0.01)')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -1609,6 +1781,15 @@ def main():
             batch_size=args.batch_size
         )
         print(f'Done! Processed {processed} BibTeX entries, inserted {inserted} total references')
+
+    elif args.command == 'import-hfs':
+        total, unique, ambiguous, no_match = import_hfs(
+            input_file=args.file,
+            batch_size=args.batch_size,
+            energy_tolerance=args.energy_tolerance
+        )
+        print(f'Done! Processed {total} HFS records')
+        print(f'Unique matches: {unique}, Ambiguous matches: {ambiguous}, No match: {no_match}')
 
 
 if __name__ == '__main__':
