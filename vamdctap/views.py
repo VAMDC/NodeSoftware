@@ -302,8 +302,16 @@ def sync(request):
     else:
         generator = Xsams(tap=tap,**querysets)
 
+    def safe_generator():
+        try:
+            for chunk in generator:
+                yield chunk
+        except GeneratorExit:
+            log.info("Client disconnected during XML generation")
+            return
+
     log.debug('Generator set up, handing it to HttpResponse.')
-    response=StreamingHttpResponse(generator,content_type='text/xml')
+    response=StreamingHttpResponse(safe_generator(),content_type='text/xml')
     response['Content-Disposition'] = 'attachment; filename=%s-%s.%s'%(NODEID,
         datetime.datetime.now().isoformat(), tap.format)
 
