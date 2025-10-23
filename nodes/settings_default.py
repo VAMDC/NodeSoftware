@@ -6,12 +6,6 @@
 
 import sys, os
 import datetime
-import decimal
-
-# Increase decimal precision to handle DecimalFields with high max_digits
-# (e.g., einsteina with max_digits=20). Default precision of 28 is insufficient
-# for Django's quantize operations on values stored in scientific notation.
-decimal.getcontext().prec = 50
 
 ###################################################
 # Software and standards version
