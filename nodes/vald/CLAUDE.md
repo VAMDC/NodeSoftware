@@ -5,6 +5,7 @@
 rm vald_dev.sqlite
 uv run manage.py migrate
 uv run valdimport.py import-species --file=VALD_list_of_species.csv
+uv run valdimport.py import-bibtex --file=VALD_ref.bib
 
 ## model changes
 When the Django model changes, don't make a migration. Instead
@@ -18,9 +19,11 @@ In the incoming data, the states info is inlined within each record of transitio
 Therefore we need two passes on the import, first extract the states and write to db (deduplication) and then the transitions with the correct foreignkeys to its upper and lower states.
 
 The "combined import" does both passes on each chunk of data, to allow piping data to the import only once.
-Python 3.14 gives a speed bump.
 
-uv run -p 3.14 valdimport.py import-combined --file=dump
+uv run valdimport.py import-combined --file=dump
 
 ## info on the incoming data format
 The FORTRAN code that produces the data is available in presformat5.f
+
+## further info
+see also VALD_IMPORT.md , if needed

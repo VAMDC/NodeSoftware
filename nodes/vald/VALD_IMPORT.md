@@ -5,32 +5,37 @@ Modern streaming import system for VALD atomic/molecular data into Django databa
 ## Quick Start
 
 ```bash
-# Full import pipeline (species → states → transitions)
+# Full import pipeline (species → states+transitions → bibtex → hyperfine)
 python valdimport.py import-species --file=VALD_list_of_species.csv
-python valdimport.py import-states --file=vald3_atoms_all.dat
-python valdimport.py import-transitions --file=vald3_atoms_all.dat
+python valdimport.py import-combined --file=vald3_atoms_all.dat
+python valdimport.py import-bibtex --file=VALD_ref.bib
+python valdimport.py import-hfs --file=AB.db
 ```
 
 ## Architecture
 
-### Two-Pass Streaming Design
+### Import Architecture
 
-**Pass 1: States Extraction**
-- Parse inline upper/lower state data from transition lines
-- Extract ~510M state records (2 per transition)
-- Deduplicate via database UNIQUE constraint → ~10M unique states
-- Database handles deduplication automatically
+**Combined Import (Recommended)**
+- Single-pass streaming with batch processing
+- Extract states → insert → prefetch IDs → insert transitions
+- Memory-efficient: only one batch in memory at a time
+- Background reader thread keeps extraction running at full speed
+- Direct SQL for maximum performance
 
-**Pass 2: Transitions with Cached Lookups**
-- Parse transition data
-- Look up state IDs via LRU cache (100k size)
-- Bulk insert transitions with foreign keys
-- Calculate Einstein A coefficients
+**Two-Pass Import (Legacy)**
+- **Pass 1**: Extract all states, deduplicate via UNIQUE constraint
+- **Pass 2**: Import transitions with cached state lookups
+- Can resume Pass 2 if interrupted
 
 **Pre-import: Species Setup**
 - Load 775 species from CSV (VALD List of Species format)
 - Maps CSV columns to database fields
 - Creates foreign key relationships for validation
+
+**Post-import: References & Hyperfine Structure**
+- BibTeX references converted to XSAMS XML
+- Hyperfine constants matched to existing states by quantum numbers
 
 ### Performance
 
@@ -45,23 +50,70 @@ Expected on production data (255M lines):
 - PostgreSQL: ~4 hours (with COPY optimization)
 - MySQL: ~5.5 hours
 
-## Modes of Operation
+## Import Commands
 
-### Standalone Mode
+### import-species
+Import species from VALD List of Species CSV file.
 
 ```bash
-# Import species
-python valdimport.py import-species --file=species.csv
-
-# Pass 1: Extract and deduplicate states
-python valdimport.py import-states --file=vald.dat
-
-# Pass 2: Import transitions with state lookups
-python valdimport.py import-transitions --file=vald.dat
-
-# Skip Einstein A calculation for manual post-processing
-python valdimport.py import-transitions --file=vald.dat --skip-calc
+python valdimport.py import-species --file=VALD_list_of_species.csv [--batch-size=10000]
 ```
+
+### import-states (Pass 1)
+Extract and deduplicate states from VALD transition data.
+
+```bash
+python valdimport.py import-states --file=vald.dat [--batch-size=10000] [--skip-header=2]
+```
+
+### import-transitions (Pass 2)
+Import transitions with cached state lookups.
+
+```bash
+python valdimport.py import-transitions --file=vald.dat [--batch-size=10000] [--skip-calc]
+```
+
+### import-combined (Recommended)
+Single-pass import of both states and transitions. More efficient for large datasets.
+
+```bash
+python valdimport.py import-combined --file=vald.dat [--batch-size=10000] [--skip-calc] [--no-read-ahead]
+```
+
+Options:
+- `--skip-calc`: Skip Einstein A coefficient calculation
+- `--no-read-ahead`: Disable background reader thread (enabled by default)
+
+### import-bibtex
+Import references from BibTeX file.
+
+```bash
+python valdimport.py import-bibtex --file=VALD_ref.bib [--batch-size=1000]
+```
+
+Converts BibTeX entries to:
+- Reference.id = BibTeX key
+- Reference.bibtex = raw BibTeX text
+- Reference.xml = XSAMS XML format (via BibTeX2XML)
+
+### import-hfs
+Import hyperfine structure constants from AB.db SQLite database.
+
+```bash
+python valdimport.py import-hfs --file=AB.db [--batch-size=1000] [--energy-tolerance=0.01]
+```
+
+Matches AB.db records to existing states using:
+- Species ID
+- Energy (with tolerance, default ±0.01 cm⁻¹)
+- Total angular momentum J
+- Term description (for disambiguation)
+
+Updates State records with:
+- hfs_a: Hyperfine constant A (MHz)
+- hfs_a_error: Error in A
+- hfs_b: Hyperfine constant B (MHz)
+- hfs_b_error: Error in B
 
 ### Django Management Commands
 
@@ -132,10 +184,14 @@ Parser skips reference lines (start with lowercase).
 - id: Primary key
 - species_id: Foreign key to Species
 - energy: Energy in cm⁻¹ (indexed with species)
+- energy_scaled: Energy × 10⁴ as integer (for fast matching)
 - j: Total angular momentum quantum number
 - lande: Landé g-factor
 - term_desc: Term symbol (e.g., "3(3G)5H 46*")
-- **Constraint**: UNIQUE(species_id, energy, j, term_desc)
+- l, s, p, j1, j2, k, s2, jc, sn, n: Quantum numbers (parsed from term)
+- hfs_a, hfs_a_error: Hyperfine constant A and error (MHz)
+- hfs_b, hfs_b_error: Hyperfine constant B and error (MHz)
+- **Constraint**: UNIQUE(species_id, energy_scaled, j, term_desc)
 
 **Transition** (node_atom/models.py):
 - id: Primary key (auto-increment)
@@ -159,36 +215,50 @@ Parser skips reference lines (start with lowercase).
 
 ```bash
 # 1. Create fresh database
-python manage.py migrate --settings settings_dev
+rm vald_dev.sqlite
+python manage.py migrate
 
 # 2. Import species (775 records)
 python valdimport.py import-species --file=VALD_list_of_species.csv
 
-# 3. Pass 1: Extract 60k states → deduplicate to 10M unique
-python valdimport.py import-states --file=vald3_atoms_all.dat
+# 3. Import states and transitions (combined, single pass)
+# Using Python 3.14 for speed boost
+uv run -p 3.14 valdimport.py import-combined --file=vald3_atoms_all.dat
 
-# 4. Pass 2: Import 255M transitions with cached state lookups
-python valdimport.py import-transitions --file=vald3_atoms_all.dat
+# OR use two-pass import:
+# python valdimport.py import-states --file=vald3_atoms_all.dat
+# python valdimport.py import-transitions --file=vald3_atoms_all.dat
 
-# 5. Verify import
+# 4. Import BibTeX references
+python valdimport.py import-bibtex --file=VALD_ref.bib
+
+# 5. Import hyperfine structure constants (optional)
+python valdimport.py import-hfs --file=AB.db
+
+# 6. Verify import
 python manage.py shell
 >>> from node_atom.models import State, Transition
->>> State.objects.count()  # Should be ~10M
+>>> from node_common.models import Reference
+>>> State.objects.count()  # Should be ~1.3M
 >>> Transition.objects.count()  # Should be ~255M
+>>> Reference.objects.count()  # Should match BibTeX entries
+>>> State.objects.exclude(hfs_a__isnull=True).count()  # States with HFS data
 ```
 
 ### Development/Testing
 
 ```bash
 # Test with small sample (100 lines)
-head -200 vald.dat | python valdimport.py import-states
-head -200 vald.dat | python valdimport.py import-transitions
+head -200 vald.dat | python valdimport.py import-combined
 
 # Import with custom batch size
-python valdimport.py import-states --file=vald.dat --batch-size=5000
+python valdimport.py import-combined --file=vald.dat --batch-size=5000
 
 # Skip header lines (if format differs)
-python valdimport.py import-states --file=vald.dat --skip-header=3
+python valdimport.py import-combined --file=vald.dat --skip-header=3
+
+# Test HFS import on existing database
+python valdimport.py import-hfs --file=AB.db --energy-tolerance=0.05
 ```
 
 ### Troubleshooting
@@ -271,15 +341,18 @@ LRU cache for state lookups:
 
 | Feature | Old (2012) | New (2025) |
 |---------|-----------|-----------|
-| **Language** | Python 2 + Fortran | Python 3 |
+| **Language** | Python 2 + Fortran | Python 3.10+ |
 | **Database** | MySQL only | SQLite/PostgreSQL/MySQL |
 | **Architecture** | Multi-file mapping DSL | Single file, dataclass fields |
-| **Memory Usage** | 10M+ shared dict | 100k LRU cache |
-| **Speed** | 48+ hours | 4-5 hours |
+| **Memory Usage** | 10M+ shared dict | Batch streaming |
+| **Speed** | 48+ hours | 4-5 hours (faster with Python 3.14) |
 | **Dev/Prod** | Different approaches | Same code everywhere |
 | **Progress Tracking** | None | Real-time with tqdm |
-| **Error Recovery** | Start over | Resume Pass 2 |
+| **Error Recovery** | Start over | Resume or single-pass |
 | **Testing** | Full dataset required | `head -1000` samples work |
+| **Quantum Numbers** | Not parsed | Fully parsed (LS, JJ, JK, LK) |
+| **References** | Manual SQL | BibTeX → XML conversion |
+| **Hyperfine** | Not supported | A & B constants with errors |
 
 ## Maintenance
 
