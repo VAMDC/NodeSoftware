@@ -1362,7 +1362,7 @@ def import_species(input_file, batch_size=10000, verbose=True):
 # HYPERFINE STRUCTURE CONSTANTS IMPORT
 # =============================================================================
 
-def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=0.01):
+def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
     """
     Import hyperfine structure constants (A and B) from AB.db SQLite database.
 
@@ -1399,6 +1399,7 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=0.01)
     import sqlite3
 
     ab_conn = sqlite3.connect(input_file)
+    ab_conn.text_factory = lambda b: b.decode(errors='ignore')
     ab_cursor = ab_conn.cursor()
 
     ab_cursor.execute("SELECT COUNT(*) FROM AB")
@@ -1454,21 +1455,29 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=0.01)
                 })
             else:
                 ab_term_norm = normalize_term(term)
-                best_match = None
+                exact_matches = []
+                partial_matches = []
 
                 for candidate in candidates:
                     vald_term_norm = normalize_term(candidate.term_desc)
-                    if ab_term_norm in vald_term_norm or vald_term_norm in ab_term_norm:
-                        if best_match is None:
-                            best_match = candidate
-                        else:
-                            best_match = None
-                            break
+                    if ab_term_norm == vald_term_norm:
+                        exact_matches.append(candidate)
+                    elif ab_term_norm in vald_term_norm or vald_term_norm in ab_term_norm:
+                        partial_matches.append(candidate)
 
-                if best_match:
+                if len(exact_matches) == 1:
                     stats['matched_ambiguous'] += 1
                     update_queue.append({
-                        'state_id': best_match.id,
+                        'state_id': exact_matches[0].id,
+                        'a': a,
+                        'da': da,
+                        'b': b,
+                        'db': db
+                    })
+                elif len(exact_matches) == 0 and len(partial_matches) == 1:
+                    stats['matched_ambiguous'] += 1
+                    update_queue.append({
+                        'state_id': partial_matches[0].id,
                         'a': a,
                         'da': da,
                         'b': b,
@@ -1477,7 +1486,8 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=0.01)
                 else:
                     stats['matched_ambiguous'] += 1
                     if verbose:
-                        print(f"\nWarning: Multiple ambiguous matches for AB.ID={ab_id}, skipping", file=sys.stderr)
+                        match_type = "exact" if len(exact_matches) > 1 else "partial"
+                        print(f"\nWarning: Multiple {match_type} matches for AB.ID={ab_id}, skipping", file=sys.stderr)
 
             if len(update_queue) >= batch_size:
                 with transaction.atomic():
@@ -1723,8 +1733,8 @@ def main():
     hfs_parser.add_argument('--file', type=str, required=True,
                            help='AB.db SQLite database file')
     hfs_parser.add_argument('--batch-size', type=int, default=1000)
-    hfs_parser.add_argument('--energy-tolerance', type=float, default=0.01,
-                           help='Energy matching tolerance in cm-1 (default: 0.01)')
+    hfs_parser.add_argument('--energy-tolerance', type=float, default=1.0,
+                           help='Energy matching tolerance in cm-1 (default: 1.0)')
 
     args = parser.parse_args()
 
