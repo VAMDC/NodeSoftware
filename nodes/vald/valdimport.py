@@ -1366,11 +1366,12 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
     """
     Import hyperfine structure constants (A and B) from AB.db SQLite database.
 
-    Matches AB.db records to existing states using:
-    - SPEID -> species_id
-    - E (energy) with small tolerance
-    - J (total angular momentum)
-    - TERM (for disambiguation when multiple matches exist)
+    Matches AB.db records to existing states using the same criteria as Fortran code:
+    - SPEID -> species_id (exact match)
+    - J -> J (exact match)
+    - abs(E - energy) < energy_tolerance (default: 1.0 cm⁻¹)
+
+    When multiple states match, takes the last one (mimics Fortran behavior).
 
     Updates existing State records with hfs_a, hfs_a_error, hfs_b, hfs_b_error.
 
@@ -1380,7 +1381,7 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
         verbose: Print progress messages
         energy_tolerance: Maximum energy difference for matching (cm⁻¹)
 
-    Returns: (total_processed, matched_unique, matched_ambiguous, no_match)
+    Returns: (total_processed, matched, multiple_matches, no_match)
     """
     try:
         from tqdm import tqdm
@@ -1413,19 +1414,13 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
 
     stats = {
         'total': 0,
-        'matched_unique': 0,
-        'matched_ambiguous': 0,
+        'matched': 0,
+        'multiple_matches': 0,
         'no_match': 0,
         'updated': 0
     }
 
     update_queue = []
-
-    def normalize_term(term):
-        """Normalize term description for fuzzy matching"""
-        if not term:
-            return ''
-        return term.strip().replace(' ', '').replace('.', '').lower()
 
     with progress_bar(desc="Importing HFS constants", unit=" records", total=total_records, disable=not verbose) as pbar:
         for row in ab_cursor:
@@ -1443,9 +1438,12 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
 
             if candidate_count == 0:
                 stats['no_match'] += 1
-            elif candidate_count == 1:
-                state = candidates.first()
-                stats['matched_unique'] += 1
+            else:
+                if candidate_count > 1:
+                    stats['multiple_matches'] += 1
+
+                state = candidates.last()
+                stats['matched'] += 1
                 update_queue.append({
                     'state_id': state.id,
                     'a': a,
@@ -1453,41 +1451,6 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
                     'b': b,
                     'db': db
                 })
-            else:
-                ab_term_norm = normalize_term(term)
-                exact_matches = []
-                partial_matches = []
-
-                for candidate in candidates:
-                    vald_term_norm = normalize_term(candidate.term_desc)
-                    if ab_term_norm == vald_term_norm:
-                        exact_matches.append(candidate)
-                    elif ab_term_norm in vald_term_norm or vald_term_norm in ab_term_norm:
-                        partial_matches.append(candidate)
-
-                if len(exact_matches) == 1:
-                    stats['matched_ambiguous'] += 1
-                    update_queue.append({
-                        'state_id': exact_matches[0].id,
-                        'a': a,
-                        'da': da,
-                        'b': b,
-                        'db': db
-                    })
-                elif len(exact_matches) == 0 and len(partial_matches) == 1:
-                    stats['matched_ambiguous'] += 1
-                    update_queue.append({
-                        'state_id': partial_matches[0].id,
-                        'a': a,
-                        'da': da,
-                        'b': b,
-                        'db': db
-                    })
-                else:
-                    stats['matched_ambiguous'] += 1
-                    if verbose:
-                        match_type = "exact" if len(exact_matches) > 1 else "partial"
-                        print(f"\nWarning: Multiple {match_type} matches for AB.ID={ab_id}, skipping", file=sys.stderr)
 
             if len(update_queue) >= batch_size:
                 with transaction.atomic():
@@ -1503,7 +1466,7 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
 
             pbar.update(1)
             pbar.set_postfix({
-                'matched': stats['matched_unique'] + stats['matched_ambiguous'],
+                'matched': stats['matched'],
                 'updated': stats['updated']
             })
 
@@ -1523,12 +1486,12 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
     if verbose:
         print(f"\nHFS Import Summary:")
         print(f"  Total AB records: {stats['total']}")
-        print(f"  Unique matches: {stats['matched_unique']}")
-        print(f"  Ambiguous matches (term-based): {stats['matched_ambiguous']}")
+        print(f"  Matched: {stats['matched']}")
+        print(f"  Multiple candidates (took last): {stats['multiple_matches']}")
         print(f"  No match: {stats['no_match']}")
         print(f"  States updated: {stats['updated']}")
 
-    return stats['total'], stats['matched_unique'], stats['matched_ambiguous'], stats['no_match']
+    return stats['total'], stats['matched'], stats['multiple_matches'], stats['no_match']
 
 
 # =============================================================================
@@ -1793,13 +1756,13 @@ def main():
         print(f'Done! Processed {processed} BibTeX entries, inserted {inserted} total references')
 
     elif args.command == 'import-hfs':
-        total, unique, ambiguous, no_match = import_hfs(
+        total, matched, multiple, no_match = import_hfs(
             input_file=args.file,
             batch_size=args.batch_size,
             energy_tolerance=args.energy_tolerance
         )
         print(f'Done! Processed {total} HFS records')
-        print(f'Unique matches: {unique}, Ambiguous matches: {ambiguous}, No match: {no_match}')
+        print(f'Matched: {matched}, Multiple candidates: {multiple}, No match: {no_match}')
 
 
 if __name__ == '__main__':
