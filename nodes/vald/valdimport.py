@@ -635,7 +635,7 @@ class StateCache:
     def prefetch_states(self, state_keys):
         """
         Prefetch states in batch for given keys using temp table.
-        Keys should be tuples of (species_id, energy_scaled, j, term_desc).
+        Keys should be tuples of (species_id, energy_scaled, j).
         """
         from django.db import connection
 
@@ -651,35 +651,32 @@ class StateCache:
                 CREATE TEMP TABLE IF NOT EXISTS temp_state_lookup (
                     species_id INTEGER,
                     energy_scaled INTEGER,
-                    j REAL,
-                    term_desc TEXT
+                    j REAL
                 )
             """)
 
             cursor.execute("DELETE FROM temp_state_lookup")
 
             cursor.executemany(
-                "INSERT INTO temp_state_lookup VALUES (?, ?, ?, ?)",
+                "INSERT INTO temp_state_lookup VALUES (?, ?, ?)",
                 uncached
             )
 
             cursor.execute("""
-                SELECT s.id, s.species_id, s.energy_scaled, s.j, s.term_desc
+                SELECT s.id, s.species_id, s.energy_scaled, s.j
                 FROM states s
                 INNER JOIN temp_state_lookup t
                 ON s.species_id = t.species_id
                    AND s.energy_scaled = t.energy_scaled
                    AND (s.j = t.j OR (s.j IS NULL AND t.j IS NULL))
-                   AND (s.term_desc = t.term_desc OR (s.term_desc IS NULL AND t.term_desc IS NULL))
             """)
 
             for row in cursor.fetchall():
-                state_id, species_id, energy_scaled, j, term_desc = row
+                state_id, species_id, energy_scaled, j = row
                 key = (
                     species_id,
                     energy_scaled,
-                    float(j) if j is not None else None,
-                    term_desc
+                    float(j) if j is not None else None
                 )
                 self.cache[key] = state_id
 
@@ -688,7 +685,7 @@ class StateCache:
 
     def get_state_id(self, species_id, energy_scaled, j, term):
         """Get state ID from cache (assumes prefetch_states was called)"""
-        key = (species_id, energy_scaled, j, term)
+        key = (species_id, energy_scaled, j)
 
         if key in self.cache:
             self.hits += 1
@@ -697,7 +694,7 @@ class StateCache:
         self.misses += 1
         raise ValueError(
             f"State not found in cache: species={species_id}, "
-            f"energy_scaled={energy_scaled}, j={j}, term={term}"
+            f"energy_scaled={energy_scaled}, j={j}"
         )
 
     @property
@@ -929,8 +926,8 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
                 row['_lower_energy_scaled'] = lower_energy_scaled
                 row['_upper_energy_scaled'] = upper_energy_scaled
 
-                state_keys.add((row['species_id'], lower_energy_scaled, row['lower_j'], row['lower_term'] or None))
-                state_keys.add((row['species_id'], upper_energy_scaled, row['upper_j'], row['upper_term'] or None))
+                state_keys.add((row['species_id'], lower_energy_scaled, row['lower_j']))
+                state_keys.add((row['species_id'], upper_energy_scaled, row['upper_j']))
 
             state_cache.prefetch_states(state_keys)
 
@@ -1127,7 +1124,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                     level_desc=lower_term
                 )
 
-                state_keys.add((species_id, lower_energy_scaled, lower_j, lower_term))
+                state_keys.add((species_id, lower_energy_scaled, lower_j))
                 state_rows.append((
                     species_id, lower_energy, lower_energy_scaled, lower_j, lower_lande, lower_term,
                     lower_qn.get('l'), lower_qn.get('s'), lower_qn.get('p'),
@@ -1152,7 +1149,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                     level_desc=upper_term
                 )
 
-                state_keys.add((species_id, upper_energy_scaled, upper_j, upper_term))
+                state_keys.add((species_id, upper_energy_scaled, upper_j))
                 state_rows.append((
                     species_id, upper_energy, upper_energy_scaled, upper_j, upper_lande, upper_term,
                     upper_qn.get('l'), upper_qn.get('s'), upper_qn.get('p'),

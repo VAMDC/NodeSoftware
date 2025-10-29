@@ -52,7 +52,7 @@ class State(Model):
         db_table = u'states'
         constraints = [
             UniqueConstraint(
-                fields=['species', 'energy_scaled', 'j', 'term_desc'],
+                fields=['species', 'energy_scaled', 'j'],
                 name='unique_state'
             )
         ]
