@@ -997,14 +997,16 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
             print('Calculating Einstein A coefficients...')
 
         if connection.vendor == 'sqlite':
-            # SQLite: simpler SQL syntax
+            # SQLite 3.33+: use UPDATE FROM for better performance
             with connection.cursor() as cursor:
                 cursor.execute("""
                     UPDATE transitions
                     SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, loggf))
-                                  / ((2.0 * (SELECT J FROM states WHERE states.id = upstate) + 1.0)
-                                     * POWER(wave, 2))
-                    WHERE einsteina IS NULL AND loggf IS NOT NULL
+                                  / ((2.0 * states.J + 1.0) * POWER(wave, 2))
+                    FROM states
+                    WHERE transitions.upstate = states.id
+                      AND transitions.einsteina IS NULL
+                      AND transitions.loggf IS NOT NULL
                 """)
         else:
             # PostgreSQL/MySQL: JOIN syntax
@@ -1239,13 +1241,16 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
             print('Calculating Einstein A coefficients...')
 
         if connection.vendor == 'sqlite':
+            # SQLite 3.33+: use UPDATE FROM for better performance
             with connection.cursor() as cursor:
                 cursor.execute("""
                     UPDATE transitions
                     SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, loggf))
-                                  / ((2.0 * (SELECT J FROM states WHERE states.id = upstate) + 1.0)
-                                     * POWER(wave, 2))
-                    WHERE einsteina IS NULL AND loggf IS NOT NULL
+                                  / ((2.0 * states.J + 1.0) * POWER(wave, 2))
+                    FROM states
+                    WHERE transitions.upstate = states.id
+                      AND transitions.einsteina IS NULL
+                      AND transitions.loggf IS NOT NULL
                 """)
         else:
             with connection.cursor() as cursor:
@@ -1307,9 +1312,10 @@ def import_species(input_file, batch_size=10000, verbose=True):
         with progress_bar(desc="Importing species", unit=" lines", disable=not verbose) as pbar:
             for row in reader:
                 try:
-                    use = row.get('Use', '1').strip()
-                    if use != '1':
-                        continue
+                    # Ignore Use field - import all species
+                    # use = row.get('Use', '1').strip()
+                    # if use != '1':
+                    #     continue
 
                     species = Species(
                         id=int(row['Index']),
