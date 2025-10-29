@@ -651,7 +651,7 @@ class StateCache:
                 CREATE TEMP TABLE IF NOT EXISTS temp_state_lookup (
                     species_id INTEGER,
                     energy_scaled INTEGER,
-                    j REAL
+                    J REAL
                 )
             """)
 
@@ -663,12 +663,12 @@ class StateCache:
             )
 
             cursor.execute("""
-                SELECT s.id, s.species_id, s.energy_scaled, s.j
+                SELECT s.id, s.species_id, s.energy_scaled, s.J
                 FROM states s
                 INNER JOIN temp_state_lookup t
                 ON s.species_id = t.species_id
                    AND s.energy_scaled = t.energy_scaled
-                   AND (s.j = t.j OR (s.j IS NULL AND t.j IS NULL))
+                   AND (s.J = t.J OR (s.J IS NULL AND t.J IS NULL))
             """)
 
             for row in cursor.fetchall():
@@ -1002,7 +1002,7 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
                 cursor.execute("""
                     UPDATE transitions
                     SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, loggf))
-                                  / ((2.0 * (SELECT j FROM states WHERE states.id = upstate) + 1.0)
+                                  / ((2.0 * (SELECT J FROM states WHERE states.id = upstate) + 1.0)
                                      * POWER(wave, 2))
                     WHERE einsteina IS NULL AND loggf IS NOT NULL
                 """)
@@ -1012,7 +1012,7 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
                 cursor.execute("""
                     UPDATE transitions t
                     SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, t.loggf))
-                                  / ((2.0 * s.j + 1.0) * POWER(t.wave, 2))
+                                  / ((2.0 * s.J + 1.0) * POWER(t.wave, 2))
                     FROM states s
                     WHERE t.upstate = s.id AND t.einsteina IS NULL
                 """)
@@ -1243,7 +1243,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 cursor.execute("""
                     UPDATE transitions
                     SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, loggf))
-                                  / ((2.0 * (SELECT j FROM states WHERE states.id = upstate) + 1.0)
+                                  / ((2.0 * (SELECT J FROM states WHERE states.id = upstate) + 1.0)
                                      * POWER(wave, 2))
                     WHERE einsteina IS NULL AND loggf IS NOT NULL
                 """)
@@ -1252,7 +1252,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 cursor.execute("""
                     UPDATE transitions t
                     SET einsteina = (0.667025 * POWER(10, 16) * POWER(10, t.loggf))
-                                  / ((2.0 * s.j + 1.0) * POWER(t.wave, 2))
+                                  / ((2.0 * s.J + 1.0) * POWER(t.wave, 2))
                     FROM states s
                     WHERE t.upstate = s.id AND t.einsteina IS NULL
                 """)
