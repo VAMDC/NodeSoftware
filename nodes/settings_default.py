@@ -72,8 +72,8 @@ DATABASES = {
 #Copy this field to settings and append the path to
 # the node that you want to run.
 INSTALLED_APPS = [
-    'django.contrib.contenttypes',
-    'django.contrib.auth',
+#    'django.contrib.contenttypes',
+#    'django.contrib.auth',
 #    'django.contrib.sessions',
 #    'django.contrib.sites',
 #    'django.contrib.admin',

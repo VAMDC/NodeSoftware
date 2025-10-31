@@ -113,16 +113,17 @@ def applyRestrictFu(rs,restrictables=RESTRICTABLES):
 
     return rs
 
-
-def mergeQwithLogic(qdict,logic):
+def mergeQwithLogic(qdict, logic):
     logic = ' '.join(logic).replace('and','&').replace('not','~').replace('or','|')
-    print(qdict)
-    log.debug('Joined logic before inserting Qs: %s'%logic)
-    for r in qdict: exec('r%s=qdict[r]'%r)
+    env = {}
+    for r in qdict:
+        env[f"r{r}"] = qdict[r]
+
     try:
-        return eval(logic)
+        return eval(logic, {}, env)
     except Exception as e:
-        log.error('Eval of logic with Qs failed: %s'%e)
+        log.error(f"Eval of logic with Qs failed: {e}")
+
 
 
 def checkLen1(x):
