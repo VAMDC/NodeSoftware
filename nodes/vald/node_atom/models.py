@@ -1,5 +1,5 @@
 from node_common.models import *
-from django.db.models import Index
+from django.db.models import Index, UniqueConstraint
 #from ..node_common.models import *
 
 class State(Model):
@@ -8,8 +8,14 @@ class State(Model):
     species = ForeignKey(Species, db_index=False, on_delete=DO_NOTHING)
 
     energy = DecimalField(max_digits=15, decimal_places=4,null=True, db_index=True)
+    energy_scaled = BigIntegerField(null=True, db_index=True)
     lande = DecimalField(max_digits=6, decimal_places=2,null=True)
     term_desc = CharField(max_length=86, null=True)
+
+    hfs_a = FloatField(null=True, db_column=u'hfs_A')
+    hfs_a_error = FloatField(null=True, db_column=u'hfs_dA')
+    hfs_b = FloatField(null=True, db_column=u'hfs_B')
+    hfs_b_error = FloatField(null=True, db_column=u'hfs_dB')
 
     energy_ref_id= RefCharField(max_length=7, null=True)
     lande_ref_id = RefCharField(max_length=7, null=True)
@@ -44,6 +50,15 @@ class State(Model):
 
     class Meta:
         db_table = u'states'
+        constraints = [
+            UniqueConstraint(
+                fields=['species', 'energy_scaled', 'j'],
+                name='unique_state'
+            )
+        ]
+        indexes = [
+            Index(fields=['species', 'energy_scaled']),
+        ]
 
 
 class Transition(Model):
@@ -56,7 +71,7 @@ class Transition(Model):
 
     species = ForeignKey(Species, db_index=True, on_delete=DO_NOTHING)
     loggf = DecimalField(max_digits=8, decimal_places=3, null=True)
-    einsteina = DecimalField(max_digits=20, decimal_places=3, db_index=True, null=True)
+    einsteina = FloatField(db_index=True, null=True)
     gammarad = DecimalField(max_digits=6, decimal_places=2,null=True)
     gammastark = DecimalField(max_digits=7, decimal_places=3,null=True)
     gammawaals = DecimalField(max_digits=6, decimal_places=3,null=True)
@@ -65,7 +80,8 @@ class Transition(Model):
 
     # The accur tags are populated using the methods below
     accurflag = CharField(max_length=1, null=True) # VALD flag: N,E,C or P
-    accur = DecimalField(max_digits=6, decimal_places=3, null=True)
+    accur = CharField(max_length=10, null=True)  # Can be numeric (E/C flags) or text (N flags like "A", "AA+", "D-")
+    loggf_err = DecimalField(max_digits=6, decimal_places=3, null=True)  # Numerical error for log(gf) in dex
     #comment = CharField(max_length=128, null=True)
 
     wave_ref_id = RefCharField(max_length=7, null=True)
@@ -126,6 +142,17 @@ class Transition(Model):
         "retrieve AccuracyRelative tag as true/false depending on VALD accur flag"
         return str(self.accurflag in (u"N", u"E", u"C")).lower() # returns true/false
 
+    def get_accur_comment(self):
+        "retrieve descriptive comment about the accuracy flag"
+        flag_descriptions = {
+            u'N': u'NIST quality class',
+            u'E': u'Estimated error in dex',
+            u'C': u'Cancellation factor',
+            u'P': u'Predicted line',
+            u'_': u'Quality indicator'
+        }
+        return flag_descriptions.get(self.accurflag, u'')
+
 # Don't calculate here, but directly using sql (kept here for reference)
 #    def getEinsteinA(self):
 #        "Calculate the einstein A"
@@ -138,6 +165,5 @@ class Transition(Model):
         indexes = [
             Index(fields=['species', 'wave'], name='speciesid_wave'),
         ]
-
 
 

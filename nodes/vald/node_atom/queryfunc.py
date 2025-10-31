@@ -19,10 +19,9 @@ def returnHeaders(transs):
         headers['COUNT-ATOMS'] = \
             len(transs.values_list('species_id',flat=True).distinct())
         headers['COUNT-SPECIES'] = headers['COUNT-ATOMS']
-        # Skip state counting - it's expensive and not critical for HEAD requests
-        # sids = transs.values_list('upstate_id','lostate_id')
-        # sids = set(item for s in sids for item in s)
-        # headers['COUNT-STATES'] = len(sids)
+        sids = transs.values_list('upstate_id','lostate_id')
+        sids = set(item for s in sids for item in s)
+        headers['COUNT-STATES'] = len(sids)
 
     return headers
 
@@ -155,13 +154,13 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
         try:
             for RadTran in XsamsRadTrans(RadTrans):
                 yield RadTran
-        except:
+        except Exception:
             errs+=generatorError(' RadTran')
     else: # loop over transitons anyway because we now collect states & species on the fly.
         try:
             for RadTran in XsamsRadTrans(RadTrans):
                 pass
-        except:
+        except Exception:
             errs+=generatorError(' RadTran')
     yield '</Radiative>\n'
     yield '</Processes>\n'

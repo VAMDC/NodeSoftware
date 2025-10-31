@@ -26,6 +26,11 @@ RETURNABLES = {\
 'AtomStateParity':'AtomState.p',
 'AtomStateTotalAngMom':'AtomState.j',
 
+'AtomStateHyperfineConstantA':'AtomState.hfs_a',
+'AtomStateHyperfineConstantAAccuracy':'AtomState.hfs_a_error',
+'AtomStateHyperfineConstantB':'AtomState.hfs_b',
+'AtomStateHyperfineConstantBAccuracy':'AtomState.hfs_b_error',
+
 'AtomStateTermLSL':'Component.l',
 'AtomStateTermLSS':'Component.s',
 'AtomStateTermMultiplicity':'Component.multiplicity()',
@@ -55,7 +60,6 @@ RETURNABLES = {\
 'RadTransLowerStateRef':'RadTran.lostate_id',
 #'RadTransProbabilityA':'RadTran.einsteina',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'RadTran.loggf',
-#'RadTransProbabilityLog10WeightedOscillatorStrengthEval':'RadTran.accur',
 'RadTransProbabilityLog10WeightedOscillatorStrengthUnit':'unitless',
 'RadTransProbabilityLog10WeightedOscillatorStrengthRef':'RadTran.loggf_ref_id',
 
@@ -85,9 +89,13 @@ RETURNABLES = {\
 'RadTransBroadeningPressureNeutralComment':"Van der Waals broadening",
 'RadTransBroadeningPressureNeutralLineshapeFunction':"RadTran.get_waals_function()",
 
-'RadTransProbabilityOscillatorStrengthAccuracy':'Radtran.accur',
-'RadTransProbabilityOscillatorStrengthAccuracyType':'Radtran.get_accur_type()',
-'RadTransProbabilityOscillatorStrengthAccuracyRelative':'Radtran.get_accur_relative()'
+# Numerical accuracy (for E, C, P flags with calculated loggf_err)
+'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracy':'RadTran.loggf_err',
+'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracyType':'RadTran.get_accur_type()',
+'RadTransProbabilityLog10WeightedOscillatorStrengthAccuracyRelative':'RadTran.get_accur_relative()',
+# Quality evaluation (for N flag letter grades like A, AA+, D-, and other text in accur field)
+'RadTransProbabilityLog10WeightedOscillatorStrengthEval':'RadTran.accur',
+'RadTransProbabilityLog10WeightedOscillatorStrengthEvalComment':'RadTran.get_accur_comment()'
 }
 
 # import the converter functions
