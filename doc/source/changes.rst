@@ -8,6 +8,29 @@ Changelog
     document before, since terms are used that are introduced later. It is meant
     for returning readers, especially the maintainers of VAMDC nodes.
 
+November 2025
+---------------------
+
+This is a major update of the NodeSoftware to support modern Python and Django
+versions. All documentation has been updated to reflect the current best practices.
+
+**Python 3.11+**. The NodeSoftware now requires Python 3.11 or newer (tested up
+to Python 3.13). Python 2.x is no longer supported.
+
+**Django 5.2 LTS**. Updated to Django 5.2 LTS (Long Term Support). This includes:
+
+* Migration from deprecated gunicorn_django to the WSGI application interface
+* Built-in migrations support (replaces the deprecated Django-South)
+* Updated MIDDLEWARE configuration
+* All documentation URLs updated to Django 5.2 docs
+
+**Package Management**. Added documentation for ``uv`` as the recommended modern
+Python package manager, providing faster dependency resolution and better virtual
+environment management. Traditional pip3 installation methods are still supported.
+
+**Documentation Updates**. All references to Django 1.3/1.4 have been updated to
+Django 5.2. All Python 2.x references updated to Python 3.11+.
+
 Nov 15, 2012
 ---------------------
 
@@ -223,8 +246,6 @@ and the standards version it implements at *tap/capabilities*. You might want
 to make the VAMDC Registry re-read this information (click "Edit metadata" and
 "Update the registry entry").
 
-**Virtual Machine**. The virutal machine has been updated to include Django 1.3
-and NodeSoftware 11.5r1.
 
 May 26, 2011
 ------------------
@@ -310,9 +331,6 @@ somewhat. This means that **you will probably need to update your query
 function and dictionaries when you update the NodeSoftware.**
 
 :ref:`newnode` has been updated and extended accordingly.
-
-A new version of the :ref:`virtmach` has also been uploaded,
-containing the latest NodeSoftware and operating system.
 
 February 2011
 -----------------

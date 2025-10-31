@@ -76,7 +76,7 @@ get it set up, in brief:
 
   * If you already store data in a relational database, you can let Django create the
     database models automatically as described on the
-    `Django homepage <https://docs.djangoproject.com/en/dev/howto/legacy-databases/#auto-generate-the-models>`_.
+    `Django homepage <https://docs.djangoproject.com/en/5.2/howto/legacy-databases/#auto-generate-the-models>`_.
   * If your data is stored in some other form you need to define your database
     scheme yourself. See examples in the ExampleNode.
 
@@ -135,35 +135,22 @@ documentation. Thmere is also a `list of all VAMDC keywords <http://dictionary.v
 The NodeSoftware contains many examples of creating your dictionaries.
 
 The final step consists of registering your node with
-the central VAMDC repository.
+the central VAMDC registry.
 
-#. Go to the development VAMDC repository at
-   http://casx019-zone1.ast.cam.ac.uk:/registry/.
-#. Choose to create a new Entry in the side bar. In the login
-   requester, enter user ``vamdc`` and password ``deploy-ws``.
-#. Name your new entry (read the Help link first) and pick the registry type
-   as "catalogue service".
-#. You will next be asked to fill in human-readable information about
-   your node. The most important parts are highlighted and there are
-   also help links to read. You should fill in as much information as you can,
-   but at least these:
+#. Go to the VAMDC registry at https://registry.vamdc.org/
+#. Follow the registration process for creating a new node entry.
+#. Provide human-readable information about your node, including:
 
-  * *Title* is used to identify your node
-  * *Contact details* should contain the email to the node maintainer
-  * *Description* is used in node listings and describe what type of
-    data users should expect to find in your node.
+  * *Title* to identify your node
+  * *Contact details* for the node maintainer
+  * *Description* of what type of data users should expect to find
 
-#. Find your registration in the registry interface (it will be visible while
-   filling in the node info earlier) and choose the *Edit* link.
-#. From the *Edit* link, choose *Edit metadata ... via VOSI* and enter
-   the ``/capabilities`` URL of your node. Remember that you must have
-   set up some sample queries in your settings file as well.
-#. Uploading/Saving completes the registration.
+#. Enter the ``/capabilities`` URL of your node. Remember that you must have
+   set up some sample queries in your settings file.
+#. Complete the registration process.
 
-Once the node has been validated in the development registry it will
-manually be transcribed to the `main registry <http://registry.vamdc.eu/>`
-where you can from then on manage it. Normal data consumers will henceforth be able to access
-it from the `main VAMDC portal <http://portal.vamdc.org//vamdc_portal/>`_.
+Once registered, data consumers will be able to access your node from the
+`VAMDC portal <http://portal.vamdc.org/vamdc_portal/>`_.
 
 Welcome the VAMDC community!
 

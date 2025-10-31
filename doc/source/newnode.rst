@@ -181,7 +181,7 @@ above you could do something like::
 
 Detailed information on how to use your models to run queries can be found in
 Django's own excellent documentation:
-http://docs.djangoproject.com/en/1.3/topics/db/queries/
+https://docs.djangoproject.com/en/5.2/topics/db/queries/
 
 Case 2: Create a new database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -225,7 +225,7 @@ the following points:
   also be used in later ascii-representations of data.
 * Use `ForeignKey()` to another class's primary key to connect your tables.
 * The full list of possible fields can be found at
-  http://docs.djangoproject.com/en/1.3/ref/models/fields/.
+  https://docs.djangoproject.com/en/5.2/ref/models/fields/.
 * If you know that a field will be empty sometimes, add `null=True`
   to the field definition inside the brackets ().
 * For fields that are frequent selection criteria (like wavelength for
@@ -239,14 +239,21 @@ the following points:
 Once you have a first draft of your data model, you test it by running (inside
 your node directory)::
 
-    $ ./manage.py sqlall node
+    $ ./manage.py makemigrations
+    # or with uv: uv run python manage.py makemigrations
 
-This will (if you have no error in the models) print the SQL statements that
-Django will use to create the database, using the connection information in
-``settings.py``. If you do not know SQL, you can ignore the output and move
-straight on to creating the database::
+This will create migration files that define how to create your database schema.
+To see the SQL that Django will execute, run::
+
+    $ ./manage.py sqlmigrate node 0001
+
+Then create the database by applying the migrations::
 
     $ ./manage.py migrate
+
+.. note::
+    If using ``uv``, prefix all ``./manage.py`` commands with ``uv run python``,
+    for example: ``uv run python manage.py migrate``
 
 Now you have a fresh empty database. You can test it with the same commands as
 mentioned at the end of Case 1 above, replacing "Species" and "State" by your
@@ -262,12 +269,10 @@ own model names.
 
 .. note::
 
-    If you use MySQL as your database engine, we recommend its internal
-    storage engine InnoDB over the standard MyISAM. You can set this in 
-    your settings.py by adding `'OPTIONS': {"init_command": 
-    "SET storage_engine=INNODB"}` to your database setup. We also
-    recommend to use UTF8 as default in your MySQL configuration or
-    create your database with `CREATE DATABASE <dbname> CHARACTER SET utf8;`
+    If you use MySQL as your database engine, InnoDB is the default storage
+    engine in modern MySQL (5.5+). We recommend using UTF8MB4 character set
+    for full Unicode support (including emojis). Create your database with:
+    `CREATE DATABASE <dbname> CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
 
 
 How you fill your database with information from ascii-files is 
@@ -472,7 +477,7 @@ Explanations on what happens here:
     the NodeSoftware. And, of course, we are willing to assist you in this
     step, so feel free to contact us about this.
 
-More comprehensive information on how to run queries within Django can be found at http://docs.djangoproject.com/en/1.3/topics/db/queries/.
+More comprehensive information on how to run queries within Django can be found at https://docs.djangoproject.com/en/5.2/topics/db/queries/.
 
 
 The dictionaries
@@ -572,17 +577,18 @@ http://dictionary.vamdc.org/returnables/ is where you can browse all the availab
 Testing the node
 ------------------------------
 
-Now you should have everything in place to run your node. If you still 
-need to fill your database with the import tool, now is the time to do 
+Now you should have everything in place to run your node. If you still
+need to fill your database with the import tool, now is the time to do
 so according to :ref:`importing`.
 
 Django comes with a built-in server for testing. You can start it
 with::
 
-$ ./manage.py runserver
+    $ ./manage.py runserver
+    # or with uv: uv run python manage.py runserver
 
-This will use port 8000 at your local machine which means that you 
-should be able to browse to http://127.0.0.1:8000/tap/availability and 
+This will use port 8000 at your local machine which means that you
+should be able to browse to http://127.0.0.1:8000/tap/availability and
 hopefully see a positive status message.
 
 You should also be able to run queries by accessing URLS like::

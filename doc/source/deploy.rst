@@ -15,7 +15,7 @@ common alternative).
 Gunicorn plus proxy
 --------------------------------
 Our recommended way for hosting your node by yourself on a server is
-Gunicorn (http://gunicorn.org/, `apt-get install gunicorn` on a Debian system) which is aware of Django and understands
+Gunicorn (http://gunicorn.org/, `sudo apt install gunicorn` on Debian/Ubuntu) which is aware of Django and understands
 its settings.
 
 You would write a `gunicorn.conf` file (you find it in `nodes/ExampleNode`)
@@ -25,7 +25,9 @@ like this:
 
 and then simply start it from within your node directory with::
 
-    $ gunicorn_django -c gunicorn.conf
+    $ gunicorn -c gunicorn.conf settings.wsgi:application
+
+(Note: In modern Django, use the WSGI application directly rather than the deprecated gunicorn_django command.)
 
 The example config makes Gunicorn listen at a unix-socket. Even though you can
 connect it to a TCP-port instead (see commented out line), you do not want
@@ -35,7 +37,7 @@ and can compress the XML output from your node before sending it.
 
 Nginx as proxy
 ~~~~~~~~~~~~~~~~~~
-Nginx (http://nginx.org/en/, `apt-get install nginx` on a Debian system) is a
+Nginx (http://nginx.org/en/, `sudo apt install nginx` on Debian/Ubuntu) is a
 fast and light-weight web server. To configure it to serve the running node
 with Gunicorn, according to the example above, you would configure it like
 this:
@@ -92,16 +94,20 @@ There are two example files in your node directory for setting this up:
 Once you have set this up and re-started the Apache webserver, your node 
 should deliver data at the configured URL.
 
-Third party hosting
+Container-based deployment
 --------------------------------
-There are several upcoming hosting solutions that support Django directly so
-that you simply would upload the code and your database and everything is
-taken care of for you. Once these services mature, they are probably a very
-good solution for nodes with relatively small volumes of data.
+Modern deployment increasingly uses containerization for consistency across
+environments. Docker containers can encapsulate your node with all dependencies,
+making deployment portable and reproducible. Container orchestration platforms
+like Kubernetes can manage scaling and availability.
 
-Searching the web for "django hosting" will point you in the right direction,
-as does this list
-https://convore.com/django-community/django-hosting-explosion/
+For cloud platforms, services like AWS ECS, Google Cloud Run, or Azure Container
+Apps provide managed container hosting. Platform-as-a-Service options like
+Heroku, Railway, or Fly.io also support Django applications with minimal
+configuration.
+
+See https://docs.docker.com/ and Django deployment documentation for container-based
+deployment patterns.
 
 .. _logging:
 
@@ -153,4 +159,4 @@ If you want to turn off the logging of debug messages, you can add the following
     if not DEBUG:
         LOGGING['handlers']['logfile']['level'] = 'INFO'
 
-For further information see https://docs.djangoproject.com/en/1.3/topics/logging/
+For further information see https://docs.djangoproject.com/en/5.2/topics/logging/

@@ -484,8 +484,9 @@ For altering existing rows in the database, the standard SQL-command *UPDATE TAB
 
 Adding data in the form of new columns to existing tables, can be done as follows. Add the empty column using SQL *ALTER TABLE*, fill it with *UPDATE TABLE* and then add the corresponding field definition in your ``models.py`` and ``dictionaries.py`` to make the NodeSoftware aware of it.
 
-The underlying Django system comes with many third-party tools for helping you
-manage your database however. We recommend you look into Django-South
-(http://south.aeracode.org/). This Django-plugin allows you to write simple
-"migration" scripts for updating an existing database schema or do data
-conversions between different versions of a live database.
+Django has built-in migration support for managing database schema changes.
+After modifying your models, create migrations with ``./manage.py makemigrations``
+and apply them with ``./manage.py migrate``. This system allows you to write
+migration scripts for updating an existing database schema or performing data
+conversions between different versions of a live database. See
+https://docs.djangoproject.com/en/5.2/topics/migrations/ for more information.

@@ -1,5 +1,5 @@
 
-This document covers the **release 12.07** of the NodeSoftware.
+This document covers the NodeSoftware running from **git master** (updated for Django 5.2 and Python 3.11+).
 
 Links to HTML-versions:
 

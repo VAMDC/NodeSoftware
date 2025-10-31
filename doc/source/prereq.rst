@@ -6,27 +6,45 @@ Software prerequisits and installation
 Quick start
 -----------------
 
-If you use a Linux-distribution like Debian (squeeze) or Ubuntu (some 
-not too old version), you can simply run the following command (with 
-root-rights) to install all software that you need::
+If you use a Linux distribution like Debian or Ubuntu, you can simply run
+the following commands to install all software that you need::
 
-   $ apt-get update && apt-get install python python-pip python-pyparsing python-mysqldb gunicorn nginx git-core ipython
-   $ pip install django
+   $ sudo apt update && sudo apt install python3 python3-pip python3-venv gunicorn nginx git ipython3
+   $ pip3 install django pyparsing
 
-This will automagically install some more packages that the above ones 
-depend upon. There are most probably similar packages for other linux 
-distributions than Debian. All software should be able to be installed 
-on Windows and OSX as well but it probably involves some more effort and 
-we unfortunately cannot give support for this.
+For Python database drivers (MySQL, PostgreSQL), install as needed::
 
-We also provide a virtual machine appliance with Debian/Linux and all required
-software installed into it. You can then run this virtual machine on a host
-computer, using VirtualBox which is available for free on most operating
-systems. See :ref:`virtmach` for more detail on this.
+   $ pip3 install mysqlclient  # for MySQL
+   $ pip3 install psycopg2-binary  # for PostgreSQL
 
-If the commands above worked or you run the virtual machine, you might want to
-skip to :ref:`testprereq`. Otherwise continue reading for a list of the
-individual software dependencies..
+**Recommended: Using uv with pyproject.toml**
+
+For modern Python development, we recommend using ``uv`` as a faster alternative
+to pip and virtual environment management. The NodeSoftware includes a
+``pyproject.toml`` file that defines all dependencies. Install uv with::
+
+   $ curl -LsSf https://astral.sh/uv/install.sh | sh
+
+Then install dependencies using::
+
+   $ uv sync  # installs dependencies from pyproject.toml
+   $ uv run python manage.py  # runs commands in the virtual environment
+
+The ``pyproject.toml`` file is the modern Python standard for declaring project
+metadata and dependencies. With uv, it automatically creates and manages a virtual
+environment, ensuring isolated and reproducible builds. See https://docs.astral.sh/uv/
+for more information.
+
+This will automatically install dependencies. Similar packages exist for other
+Linux distributions (Fedora, Arch, etc.). All software can also be installed
+on Windows and macOS, though setup details differ.
+
+**Docker Alternative**. For a consistent development environment across platforms,
+consider using Docker. A basic Dockerfile in your node directory can encapsulate
+all dependencies. See https://docs.docker.com/ for container-based deployment.
+
+If the commands above worked, you might want to skip to :ref:`testprereq`.
+Otherwise continue reading for a list of the individual software dependencies.
 
 Python plus some modules
 --------------------------------
@@ -36,7 +54,7 @@ dynamically-typed, interpreted programming language. You can read all
 about it at http://python.org and there exist installation packages
 for all operating systems and architectures.
 
-We require Python between (and including) versions 2.5 and 2.7.
+We require Python 3.11 or newer (tested up to Python 3.13).
 
 We recommend to also install IPython (http://ipython.scipy.org/), an 
 improved interactive shell for Python.
@@ -64,13 +82,14 @@ Django
 ----------------
 
 Django is the Python-based web-framework that we use to run the services (see
-:ref:`intro` and http://djangoproject.com). We currently use Django 1.3.X
-(where X is the latest bug-fix version number) but newer versions will be
-supported as they are released.
+:ref:`intro` and http://djangoproject.com). We currently use Django 5.2 LTS
+(Long Term Support release). Future LTS and stable releases will be supported
+as they become available.
 
-The packaged version of your OS is probably outdated. This is why we recommend
-to install Django using ``pip`` (see command above). Alternatively follow the
-installation instructions on the Django website.
+The packaged version of your OS may be outdated. We recommend installing
+Django using ``pip3`` (see command above) or using a virtual environment
+for better dependency management. Alternatively follow the installation
+instructions on the Django website.
 
 Database engine
 ------------------
@@ -78,8 +97,8 @@ Database engine
 If the data that your node should serve reside already in a relational 
 database, there is most probably no need to set up a new one but you 
 instead deploy the node software directly on top of the existing 
-database. The list of databases that Django can handle can be found at 
-http://docs.djangoproject.com/en/1.3/ref/databases/
+database. The list of databases that Django can handle can be found at
+https://docs.djangoproject.com/en/5.2/ref/databases/
 
 When setting up a new database, we recommend one of the following two
 
@@ -181,9 +200,9 @@ how to get the latest.
 Django
 ----------
 
-This depends on how you installed Django. With ``pip`` it is enough to run::
+This depends on how you installed Django. With ``pip3`` it is enough to run::
 
-    $ pip install --upgrade django
+    $ pip3 install --upgrade django
 
 
 Everything else
@@ -191,5 +210,5 @@ Everything else
 
 If you have installed all the prerequisites from Debian or Ubuntu packages as recommended, you can simply run the following regularly to keep your system up to date::
 
-    $ apt-get update
-    $ apt-get upgrade
+    $ sudo apt update
+    $ sudo apt upgrade
