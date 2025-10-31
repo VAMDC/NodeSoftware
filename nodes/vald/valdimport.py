@@ -152,6 +152,118 @@ def scale_energy(value: Optional[float]) -> Optional[int]:
     return int(round(value * ENERGY_SCALE_FACTOR))
 
 
+def accuracy_to_loggf_error(accurflag: Optional[str], accuracy: Optional[str]) -> Optional[float]:
+    """
+    Convert VALD accuracy information to numerical log(gf) error in dex.
+
+    Based on https://www.astro.uu.se/valdwiki/VALD3_accuracy
+
+    Args:
+        accurflag: Single character flag: 'N' (NIST), 'E' (error in dex), 'C' (cancellation), 'P' (predicted), or '_'/'None' (blank)
+        accuracy: 7-character accuracy value (NIST code, numeric error, or other)
+
+    Returns:
+        Error in dex, or None if cannot be determined
+
+    NIST Quality Classes (flag='N'):
+        AAA: ≤0.3%  -> 0.0013 dex
+        AA:  ≤1%    -> 0.0043 dex
+        A+:  ≤2%    -> 0.0087 dex
+        A:   ≤3%    -> 0.013 dex
+        B+:  ≤7%    -> 0.030 dex
+        B:   ≤10%   -> 0.043 dex
+        C+:  ≤18%   -> 0.079 dex
+        C:   ≤25%   -> 0.11 dex
+        D+:  ≤40%   -> 0.18 dex
+        D:   ≤50%   -> 0.22 dex
+        E:   >50%   -> 0.5 dex (estimated)
+
+    Error flag (flag='E'):
+        Direct numerical error in dex
+
+    Cancellation flag (flag='C'):
+        Cancellation factor - not directly an error estimate
+        Return None (could be very uncertain)
+
+    Predicted flag (flag='P'):
+        Predicted line - assume large uncertainty
+        Return None or large value
+    """
+    if not accurflag or not accuracy:
+        return None
+
+    accurflag = accurflag.strip()
+    accuracy = accuracy.strip()
+
+    if not accurflag or not accuracy:
+        return None
+
+    # NIST quality classes
+    if accurflag == 'N':
+        # Map NIST codes to percentage error, then convert to dex
+        # error_dex ≈ log10(1 + error_fraction) ≈ error_fraction / ln(10) ≈ 0.434 * error_fraction
+        nist_errors = {
+            'AAA': 0.0013,  # 0.3% -> 0.003/ln(10)
+            'AA':  0.0043,  # 1%
+            'A+':  0.0087,  # 2%
+            'A':   0.013,   # 3%
+            'B+':  0.030,   # 7%
+            'B':   0.043,   # 10%
+            'C+':  0.079,   # 18%
+            'C':   0.11,    # 25%
+            'D+':  0.18,    # 40%
+            'D':   0.22,    # 50%
+            'E':   0.5,     # >50%, estimated
+        }
+
+        # Handle variants with trailing characters (like "D-", "A ")
+        for code, error in nist_errors.items():
+            if accuracy.startswith(code):
+                return error
+
+        return None
+
+    # Direct error in dex
+    elif accurflag == 'E':
+        try:
+            return abs(float(accuracy))
+        except (ValueError, TypeError):
+            return None
+
+    # Cancellation factor - not an error estimate
+    elif accurflag == 'C':
+        return None
+
+    # Predicted line - no error estimate
+    elif accurflag == 'P':
+        return None
+
+    # Blank or underscore - sometimes has quality indicators like "A"
+    elif accurflag in ('_', ' ', ''):
+        # Try to interpret as NIST code
+        nist_errors = {
+            'AAA': 0.0013,
+            'AA':  0.0043,
+            'A+':  0.0087,
+            'A':   0.013,
+            'B+':  0.030,
+            'B':   0.043,
+            'C+':  0.079,
+            'C':   0.11,
+            'D+':  0.18,
+            'D':   0.22,
+            'E':   0.5,
+        }
+
+        for code, error in nist_errors.items():
+            if accuracy.startswith(code):
+                return error
+
+        return None
+
+    return None
+
+
 def parse_fraction(s: str) -> Optional[float]:
     """
     Parse string that may contain fraction like '3/2' or decimal like '1.5'.
@@ -948,6 +1060,11 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
                         r9=row.get('r9'),
                     )
 
+                    loggf_error = accuracy_to_loggf_error(
+                        row.get('accurflag'),
+                        row.get('accuracy')
+                    )
+
                     transitions.append(Transition(
                         upstate_id=state_cache.get_state_id(
                             row['species_id'],
@@ -969,6 +1086,8 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
                         gammastark=row.get('gammastark'),
                         gammawaals=row.get('gammawaals'),
                         accurflag=row.get('accurflag'),
+                        accur=row.get('accuracy'),
+                        loggf_err=loggf_error,
                         wave_linelist_id=linelist_id,
                     ))
                 except ValueError as e:
@@ -1199,11 +1318,16 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                         row['lower_j'], row['lower_term'] or None
                     )
 
+                    loggf_error = accuracy_to_loggf_error(
+                        row.get('accurflag'),
+                        row.get('accuracy')
+                    )
+
                     transition_rows.append((
                         upstate_id, lostate_id, species_id,
                         row['wave'], row['wave_ritz'], row['loggf'],
                         row.get('gammarad'), row.get('gammastark'), row.get('gammawaals'),
-                        row.get('accurflag'), linelist_id
+                        row.get('accurflag'), row.get('accuracy'), loggf_error, linelist_id
                     ))
                 except ValueError as e:
                     print(f"Warning: Skipping transition: {e}", file=sys.stderr)
@@ -1213,7 +1337,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
             with transaction.atomic():
                 with connection.cursor() as cursor:
                     cursor.executemany(
-                        "INSERT INTO transitions (upstate, lostate, species_id, wave, waveritz, loggf, gammarad, gammastark, gammawaals, accurflag, wave_linelist_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        "INSERT INTO transitions (upstate, lostate, species_id, wave, waveritz, loggf, gammarad, gammastark, gammawaals, accurflag, accur, loggf_err, wave_linelist_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                         transition_rows
                     )
 

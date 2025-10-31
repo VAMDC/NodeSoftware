@@ -80,7 +80,8 @@ class Transition(Model):
 
     # The accur tags are populated using the methods below
     accurflag = CharField(max_length=1, null=True) # VALD flag: N,E,C or P
-    accur = DecimalField(max_digits=6, decimal_places=3, null=True)
+    accur = CharField(max_length=10, null=True)  # Can be numeric (E/C flags) or text (N flags like "A", "AA+", "D-")
+    loggf_err = DecimalField(max_digits=6, decimal_places=3, null=True)  # Numerical error for log(gf) in dex
     #comment = CharField(max_length=128, null=True)
 
     wave_ref_id = RefCharField(max_length=7, null=True)
@@ -140,6 +141,17 @@ class Transition(Model):
     def get_accur_relative(self):
         "retrieve AccuracyRelative tag as true/false depending on VALD accur flag"
         return str(self.accurflag in (u"N", u"E", u"C")).lower() # returns true/false
+
+    def get_accur_comment(self):
+        "retrieve descriptive comment about the accuracy flag"
+        flag_descriptions = {
+            u'N': u'NIST quality class',
+            u'E': u'Estimated error in dex',
+            u'C': u'Cancellation factor',
+            u'P': u'Predicted line',
+            u'_': u'Quality indicator'
+        }
+        return flag_descriptions.get(self.accurflag, u'')
 
 # Don't calculate here, but directly using sql (kept here for reference)
 #    def getEinsteinA(self):
