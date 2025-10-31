@@ -1,0 +1,8 @@
+*.sqlite
+VALD_ref.bib
+VALD_list_of_species.csv
+SOURCE
+*.txt
+*.sav
+dump
+*.xsams
