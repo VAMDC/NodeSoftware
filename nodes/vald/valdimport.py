@@ -335,7 +335,7 @@ def parse_quantum_numbers(species_id: int, j: Optional[float],
         level_desc: Full level description including electronic config (needed for JK/LK Jc extraction)
 
     Returns:
-        dict with keys: l, s, p, j1, j2, k, s2, jc, sn, n
+        dict with keys: config, term, l, s, p, j1, j2, k, s2, jc, sn, n
         Only non-None values are included.
     """
     if not term_desc or not term_desc.strip():
@@ -343,23 +343,24 @@ def parse_quantum_numbers(species_id: int, j: Optional[float],
 
     full_level = term_desc.strip()
 
-    # Split electronic configuration from term name (C code: find first space after backslash-spaces)
-    # In VALD format, config and term are separated by space(s)
-    # But backslash-space (\ ) is an escaped space within config
-    # For simplicity: split on last space to get term name
-    if ' ' in full_level and not full_level.startswith('('):
-        # Split on last space group to separate config from term
-        parts = full_level.rsplit(maxsplit=1)
-        if len(parts) > 1:
-            config, term = parts
-        else:
-            term = full_level
-            config = ''
-    else:
-        term = full_level
-        config = ''
+    # Split electronic configuration from term name
+    # VALD format: spaces within config are escaped as backslash-space (\ )
+    # Config and term are separated by unescaped space
+    # Split on first space NOT preceded by backslash
+    config = ''
+    term = full_level
 
-    result = {}
+    if ' ' in full_level and not full_level.startswith('('):
+        # Match: (config)(unescaped space)(term)
+        match = re.match(r'^(.*?)(?<!\\)\s+(.+)$', full_level)
+        if match:
+            config = match.group(1).strip()
+            term = match.group(2).strip()
+
+    result = {
+        'config': config if config else None,
+        'term': term if term else None
+    }
 
     # Auto-detect coupling if not provided or empty
     if not coupling or coupling.strip() == '':
@@ -739,7 +740,7 @@ class StateCache:
     """
 
     def __init__(self, max_size: Optional[int] = None):
-        self.cache = {}  # (species, energy_scaled, j, term) -> state_id
+        self.cache = {}  # (species, energy_scaled, j) -> state_id
         self.max_size = max_size
         self.hits = 0
         self.misses = 0
@@ -945,7 +946,8 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
                     energy_scaled=lower_energy_scaled,
                     j=row['lower_j'],
                     lande=row['lower_lande'],
-                    term_desc=row['lower_term'] or None,
+                    config=lower_qn.get('config'),
+                    term=lower_qn.get('term'),
                     l=lower_qn.get('l'),
                     s=lower_qn.get('s'),
                     p=lower_qn.get('p'),
@@ -965,7 +967,8 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
                     energy_scaled=upper_energy_scaled,
                     j=row['upper_j'],
                     lande=row['upper_lande'],
-                    term_desc=row['upper_term'] or None,
+                    config=upper_qn.get('config'),
+                    term=upper_qn.get('term'),
                     l=upper_qn.get('l'),
                     s=upper_qn.get('s'),
                     p=upper_qn.get('p'),
@@ -1247,7 +1250,8 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
 
                 state_keys.add((species_id, lower_energy_scaled, lower_j))
                 state_rows.append((
-                    species_id, lower_energy, lower_energy_scaled, lower_j, lower_lande, lower_term,
+                    species_id, lower_energy, lower_energy_scaled, lower_j, lower_lande,
+                    lower_qn.get('config'), lower_qn.get('term'),
                     lower_qn.get('l'), lower_qn.get('s'), lower_qn.get('p'),
                     lower_qn.get('j1'), lower_qn.get('j2'), lower_qn.get('k'),
                     lower_qn.get('s2'), lower_qn.get('jc'), lower_qn.get('sn'), lower_qn.get('n')
@@ -1272,7 +1276,8 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
 
                 state_keys.add((species_id, upper_energy_scaled, upper_j))
                 state_rows.append((
-                    species_id, upper_energy, upper_energy_scaled, upper_j, upper_lande, upper_term,
+                    species_id, upper_energy, upper_energy_scaled, upper_j, upper_lande,
+                    upper_qn.get('config'), upper_qn.get('term'),
                     upper_qn.get('l'), upper_qn.get('s'), upper_qn.get('p'),
                     upper_qn.get('j1'), upper_qn.get('j2'), upper_qn.get('k'),
                     upper_qn.get('s2'), upper_qn.get('jc'), upper_qn.get('sn'), upper_qn.get('n')
@@ -1283,7 +1288,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 initial_state_count = State.objects.count()
                 with connection.cursor() as cursor:
                     cursor.executemany(
-                        "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, J, lande, term_desc, L, S, P, J1, J2, K, S2, Jc, Sn, n) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, J, lande, config, term, L, S, P, J1, J2, K, S2, Jc, Sn, n) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                         state_rows
                     )
                 final_state_count = State.objects.count()

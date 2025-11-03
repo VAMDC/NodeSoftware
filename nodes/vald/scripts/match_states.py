@@ -56,7 +56,7 @@ def match_states():
             for col in col_names:
                 if col in ['L', 'S', 'P']:
                     continue
-                if col == 'term_desc':
+                if col in ['config', 'term']:
                     normalized_values = [normalize_term(m[col]) for m in match_dicts]
                     if len(set(str(v) for v in normalized_values)) > 1:
                         differing_fields[col] = [m[col] for m in match_dicts]
@@ -87,7 +87,7 @@ def match_states():
     print(f"Total rows: {total_rows}")
     print(f"Single match: {single_match} ({100*single_match/total_rows:.1f}%)")
     print(f"No match: {no_match} ({100*no_match/total_rows:.1f}%)")
-    print(f"Multiple matches (insignificant - id/energy/term-whitespace/L/S/P only): {multiple_match_whitespace_only} ({100*multiple_match_whitespace_only/total_rows:.1f}%)")
+    print(f"Multiple matches (insignificant - id/energy/config-term-whitespace/L/S/P only): {multiple_match_whitespace_only} ({100*multiple_match_whitespace_only/total_rows:.1f}%)")
     print(f"Multiple matches (significant differences): {multiple_match} ({100*multiple_match/total_rows:.1f}%)")
 
     if no_match_by_species:

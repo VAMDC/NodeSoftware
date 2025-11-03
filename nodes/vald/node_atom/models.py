@@ -10,7 +10,8 @@ class State(Model):
     energy = DecimalField(max_digits=15, decimal_places=4,null=True, db_index=True)
     energy_scaled = BigIntegerField(null=True, db_index=True)
     lande = DecimalField(max_digits=6, decimal_places=2,null=True)
-    term_desc = CharField(max_length=86, null=True)
+    config = CharField(max_length=86, null=True)
+    term = CharField(max_length=86, null=True)
 
     hfs_a = FloatField(null=True, db_column=u'hfs_A')
     hfs_a_error = FloatField(null=True, db_column=u'hfs_dA')
@@ -39,6 +40,15 @@ class State(Model):
     def multiplicity(self):
         if self.s != None:
             return 2 * self.s + 1
+    def description(self):
+        """Combine config and term for full level description"""
+        if self.config and self.term:
+            return f"{self.config} {self.term}"
+        elif self.term:
+            return self.term
+        elif self.config:
+            return self.config
+        return None
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
 
