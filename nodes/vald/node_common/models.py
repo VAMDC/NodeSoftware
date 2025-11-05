@@ -3,12 +3,29 @@ from django.db.models import *
 
 class RefCharField(CharField):
     description = "Subclass to CharField that returns strings split at commas"
-    def to_python(self, value):
-        #tmp = super(RefCharField, self).to_python(self, value)
-        if hasattr(value,'split'):
+
+    def from_db_value(self, value, expression, connection):
+        """
+        Convert database value to Python object.
+        This is ALWAYS called when data is loaded from the database.
+        """
+        if value is None:
+            return None
+        if isinstance(value, str):
             return value.split(',')
-        else:
+        return value
+
+    def to_python(self, value):
+        """
+        Convert to Python object during deserialization/validation.
+        """
+        if value is None:
+            return None
+        if isinstance(value, list):
             return value
+        if isinstance(value, str):
+            return value.split(',')
+        return value
 
 
 class Species(Model):
@@ -60,28 +77,14 @@ class Reference(Model):
         return u'Reference: %s'%self.id
 
 class LineList(Model):
-    id = AutoField(primary_key=True, db_index=True)
-    references = ManyToManyField(Reference) # handled by external script
+    id = PositiveSmallIntegerField(primary_key=True, db_index=True)
     srcfile = CharField(max_length=128)
-    srcfile_ref = CharField(max_length=128, null=True)
-    speclo = ForeignKey(Species,related_name='islowerboundspecies_source',db_column='speclo',null=True, db_index=False, on_delete=DO_NOTHING)
-    spechi = ForeignKey(Species,related_name='isupperboundspecies_source',db_column='spechi',null=True, db_index=False, on_delete=DO_NOTHING)
-    listtype = PositiveSmallIntegerField(null=True)
-    # vald category mapping = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5
-    # vald->xsams mapping = {0:'experiment', 1:'semiempirical', 2:'derived', 3:'theory',4:'semiempirical',5:'compilation'}
+    listtype = CharField(max_length=32, null=True, blank=True)
+    # vald category mapping = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
+    # vald->xsams mapping = {0:'experiment', 1:'observed', 2:'empirical', 3:'theory', 4:'semiempirical', 5:'compilation'}
     method = PositiveSmallIntegerField(null=True, db_index=True) # 0-5
-    r1 = PositiveSmallIntegerField(null=True)
-    r2 = PositiveSmallIntegerField(null=True)
-    r3 = PositiveSmallIntegerField(null=True)
-    r4 = PositiveSmallIntegerField(null=True)
-    r5 = PositiveSmallIntegerField(null=True)
-    r6 = PositiveSmallIntegerField(null=True)
-    r7 = PositiveSmallIntegerField(null=True)
-    r8 = PositiveSmallIntegerField(null=True)
-    r9 = PositiveSmallIntegerField(null=True)
-    srcdescr = CharField(max_length=128, null=True)
     def __unicode__(self):
-        return u'ID%s: %s'%(self.id,self.srcdescr)
+        return u'ID%s: %s'%(self.id,self.srcfile)
     class Meta:
         db_table = u'linelists'
 

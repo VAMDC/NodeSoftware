@@ -22,6 +22,10 @@ class State(Model):
     lande_ref_id = RefCharField(max_length=7, null=True)
     level_ref_id = RefCharField(max_length=7, null=True)
 
+    # Method category for the energy measurement (matched via energy_ref_id to linelist)
+    # vald->xsams mapping = {0:'experiment', 1:'observed', 2:'empirical', 3:'theory', 4:'semiempirical', 5:'compilation'}
+    energy_method = PositiveSmallIntegerField(null=True, db_index=True)
+
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True)
     l = PositiveSmallIntegerField(db_column=u'L', null=True)
     s = DecimalField(max_digits=3, decimal_places=1,db_column=u'S', null=True)
@@ -101,7 +105,7 @@ class Transition(Model):
     gammastark_ref_id = RefCharField(max_length=7, null=True)
     waals_ref_id = RefCharField(max_length=7, null=True)
 
-    wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False, on_delete=DO_NOTHING) # needed for population
+    #wave_linelist = ForeignKey(LineList, related_name='iswavelinelist_trans', db_index=False, null=True, on_delete=DO_NOTHING) # legacy field, no longer populated
     #loggf_linelist = ForeignKey(LineList, related_name='isloggflinelist_trans', db_index=False)
     #gammarad_linelist = ForeignKey(LineList, related_name='isgammaradlinelist_trans', db_index=False)
     #gammastark_linelist = ForeignKey(LineList, related_name='isgammastarklinelist_trans', db_index=False)
@@ -110,22 +114,22 @@ class Transition(Model):
     transition_type = CharField(max_length=2, null=True)
     autoionized = BooleanField(default=False, null=True)
 
-    # Method information. Since some xsams method categories are represented by more than one vald equivalent,
-    # we need one field for restrictable's queries and returnable's queries respectively.
+    # Method information. Each VALD category now maps one-to-one to an XSAMS method category.
+    # This is the method category for the wavelength measurement (from wave_linelist).
     # vald category mapping = {'exp':0, 'obs':1, 'emp':2, 'pred':3, 'calc':4, 'mix':5}
-    # vald->xsams mapping = {0:'experiment', 1:'semiempirical', 2:'derived', 3:'theory',4:'semiempirical',5:'compilation'}
-    # mapping between method_return and method_restrict = {0:0, 1:1, 2:2, 3:3, 4:1, 5:5} (i.e. xsams=semiempirical is represented in vald by both obs and calc (1 and 4)).
+    # vald->xsams mapping = {0:'experiment', 1:'observed', 2:'empirical', 3:'theory', 4:'semiempirical', 5:'compilation'}
 
-    method_return = PositiveSmallIntegerField(null=True, db_index=False) # this is the method category, populated in post-processing by parsing wave_linelist field
-    method_restrict = PositiveSmallIntegerField(null=True, db_index=True) # this is the method category to restrict on, populated in post-processing.
+    wave_method = PositiveSmallIntegerField(null=True, db_index=True)
 
     # helper extraction methods
     def get_waves(self):
         return self.wave, self.waveritz
     def get_wave_comments(self):
-        return 'Vacuum wavelength from state energies (RITZ)','Vacuum wavelength from measurements (non-RITZ)'
+        return 'Vacuum wavelength from measurements (non-RITZ)','Vacuum wavelength from state energies (RITZ)'
     def get_wave_refs(self):
         return self.wave_ref_id, self.waveritz_ref_id
+    def get_wave_methods(self):
+        return self.wave_method, 6
     def get_waals(self):
         if self.gammawaals: return self.gammawaals
         elif self.sigmawaals and self.alphawaals: return [self.sigmawaals, self.alphawaals]

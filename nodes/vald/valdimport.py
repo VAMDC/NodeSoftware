@@ -104,25 +104,29 @@ VALD_FIELDS = [
     FieldDef('upper_term_flag', 215, 217, str.strip),
     FieldDef('upper_term', 217, 303, str.strip),
 
-    # === Accuracy ===
+    # === Accuracy and transition flags ===
     # 1X,A1,A7,1X,A16,9I4 = skip, accurflag, accuracy, skip, comment, 9 reference indices
     # FORTRAN 1X means skip 1 position
     FieldDef('accurflag', 304, 305, str.strip),
     FieldDef('accuracy', 305, 312, str.strip),
-    # Position 312-313 is 1X (skip)
+    # Positions 312-313 contain transition flags (not actually skipped in data)
+    FieldDef('transition_flag', 311, 312, str.strip,
+             description="Transition type: ' '=E1, A=autoion, B=E2, C=M1, D=M2, E=E3, F=M3"),
+    FieldDef('broadening_flag', 312, 313, str.strip,
+             description="Broadening flag: 0-7 for different broadening types"),
     FieldDef('comment', 313, 329, str.strip),
 
-    # === Reference indices (9I4) ===
+    # === Linelist IDs (9I4) ===
     # Each I4 is 4 characters, right-justified
-    FieldDef('r1', 329, 333, int, null_values=('', '0', '   0')),
-    FieldDef('r2', 333, 337, int, null_values=('', '0', '   0')),
-    FieldDef('r3', 337, 341, int, null_values=('', '0', '   0')),
-    FieldDef('r4', 341, 345, int, null_values=('', '0', '   0')),
-    FieldDef('r5', 345, 349, int, null_values=('', '0', '   0')),
-    FieldDef('r6', 349, 353, int, null_values=('', '0', '   0')),
-    FieldDef('r7', 353, 357, int, null_values=('', '0', '   0')),
-    FieldDef('r8', 357, 361, int, null_values=('', '0', '   0')),
-    FieldDef('r9', 361, 365, int, null_values=('', '0', '   0')),
+    FieldDef('ll1', 329, 333, int, null_values=('', '0', '   0')),
+    FieldDef('ll2', 333, 337, int, null_values=('', '0', '   0')),
+    FieldDef('ll3', 337, 341, int, null_values=('', '0', '   0')),
+    FieldDef('ll4', 341, 345, int, null_values=('', '0', '   0')),
+    FieldDef('ll5', 345, 349, int, null_values=('', '0', '   0')),
+    FieldDef('ll6', 349, 353, int, null_values=('', '0', '   0')),
+    FieldDef('ll7', 353, 357, int, null_values=('', '0', '   0')),
+    FieldDef('ll8', 357, 361, int, null_values=('', '0', '   0')),
+    FieldDef('ll9', 361, 365, int, null_values=('', '0', '   0')),
 ]
 
 
@@ -262,6 +266,61 @@ def accuracy_to_loggf_error(accurflag: Optional[str], accuracy: Optional[str]) -
         return None
 
     return None
+
+
+def parse_transition_properties(transition_flag: Optional[str],
+                                 lower_energy: Optional[float],
+                                 upper_energy: Optional[float]) -> tuple:
+    """
+    Determine transition_type and autoionized from VALD transition flag.
+
+    Based on logic from SOURCE/TOOLS/test_parse.c lines 46-99.
+
+    Args:
+        transition_flag: Single character flag from position 312 (FORTRAN)
+        lower_energy: Lower state energy in cm^-1
+        upper_energy: Upper state energy in cm^-1
+
+    Returns:
+        tuple: (transition_type, autoionized)
+            transition_type: 'E1', 'E2', 'M1', 'M2', 'E3', 'M3', or None
+            autoionized: True if autoionization transition, False otherwise
+
+    Transition type mapping:
+        ' ' (space) -> 'E1' (electric dipole, allowed)
+        'A' -> autoionization (if lower_energy > upper_energy)
+        'B' -> 'E2' (electric quadrupole, forbidden)
+        'C' -> 'M1' (magnetic dipole, forbidden)
+        'D' -> 'M2' (magnetic quadrupole, forbidden)
+        'E' -> 'E3' (electric octupole, forbidden)
+        'F' -> 'M3' (magnetic octupole, forbidden)
+    """
+    if not transition_flag:
+        return None, False
+
+    TRANSITION_MAP = {
+        ' ': 'E1',  # Electric dipole (allowed)
+        'B': 'E2',  # Electric quadrupole
+        'C': 'M1',  # Magnetic dipole
+        'D': 'M2',  # Magnetic quadrupole
+        'E': 'E3',  # Electric octupole
+        'F': 'M3',  # Magnetic octupole
+    }
+
+    autoionized = False
+
+    # Check for autoionization
+    if transition_flag == 'A':
+        # Validate: autoionization occurs when lower energy > upper energy
+        if lower_energy is not None and upper_energy is not None:
+            if lower_energy > upper_energy:
+                autoionized = True
+                return None, autoionized  # No transition_type for autoionization
+        # If validation fails, treat as normal transition (reset flag)
+        transition_flag = ' '
+
+    transition_type = TRANSITION_MAP.get(transition_flag)
+    return transition_type, autoionized
 
 
 def parse_fraction(s: str) -> Optional[float]:
@@ -816,62 +875,6 @@ class StateCache:
         return (self.hits / total * 100) if total > 0 else 0
 
 
-class LineListCache:
-    """
-    Cache for linelist lookups and creation.
-    Creates linelist records on-the-fly as needed.
-    """
-
-    def __init__(self):
-        self.cache = {}  # (wave_ref, r1...r9) -> linelist_id
-        self.hits = 0
-        self.misses = 0
-
-    def _make_key(self, wave_ref, r1, r2, r3, r4, r5, r6, r7, r8, r9):
-        """Create cache key from reference data"""
-        return (wave_ref, r1, r2, r3, r4, r5, r6, r7, r8, r9)
-
-    def get_or_create_linelist(self, wave_ref, r1, r2, r3, r4, r5, r6, r7, r8, r9):
-        """
-        Get or create linelist record.
-        Returns linelist_id.
-        """
-        from node_common.models import LineList
-        from django.db import transaction
-
-        key = self._make_key(wave_ref, r1, r2, r3, r4, r5, r6, r7, r8, r9)
-
-        if key in self.cache:
-            self.hits += 1
-            return self.cache[key]
-
-        self.misses += 1
-
-        # Create new linelist
-        with transaction.atomic():
-            linelist = LineList.objects.create(
-                srcfile=wave_ref or 'unknown',
-                r1=r1,
-                r2=r2,
-                r3=r3,
-                r4=r4,
-                r5=r5,
-                r6=r6,
-                r7=r7,
-                r8=r8,
-                r9=r9,
-            )
-            linelist_id = linelist.id
-
-        self.cache[key] = linelist_id
-        return linelist_id
-
-    @property
-    def hit_rate(self):
-        total = self.hits + self.misses
-        return (self.hits / total * 100) if total > 0 else 0
-
-
 # =============================================================================
 # IMPORT FUNCTIONS
 # =============================================================================
@@ -882,26 +885,19 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
 
     Returns: (total_processed, total_inserted)
     """
-    try:
-        from tqdm import tqdm
-        progress_bar = tqdm
-    except ImportError:
-        # Fallback if tqdm not available
-        class DummyBar:
-            def __init__(self, *args, **kwargs): pass
-            def update(self, n): pass
-            def set_postfix(self, d): pass
-            def __enter__(self): return self
-            def __exit__(self, *args): pass
-        progress_bar = DummyBar
-
     # Import Django models (will fail if not in Django context)
     from node_atom.models import State
+    from node_common.models import LineList
     from django.db import transaction, connection
 
     # Temporarily disable foreign key constraints for import
     with connection.cursor() as cursor:
         cursor.execute("PRAGMA foreign_keys = OFF")
+
+    # Load linelist method lookup
+    linelist_methods = {ll.id: ll.method for ll in LineList.objects.all()}
+    if verbose:
+        print(f'Loaded {len(linelist_methods)} linelist method mappings')
 
     input_stream = open_input(input_file)
     records = parse_vald_stream(input_stream, skip_header)
@@ -909,92 +905,90 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
     total_processed = 0
     total_inserted = 0
 
-    with progress_bar(desc="Extracting states", unit=" lines", disable=not verbose) as pbar:
-        for batch in batch_iterator(records, batch_size):
-            states = []
+    for batch in batch_iterator(records, batch_size):
+        states = []
 
-            for row in batch:
-                lower_energy = row['lower_energy']
-                lower_energy_scaled = scale_energy(lower_energy)
-                upper_energy = row['upper_energy']
-                upper_energy_scaled = scale_energy(upper_energy)
+        for row in batch:
+            lower_energy = row['lower_energy']
+            lower_energy_scaled = scale_energy(lower_energy)
+            upper_energy = row['upper_energy']
+            upper_energy_scaled = scale_energy(upper_energy)
 
-                species_id = row.get('species_id')
+            species_id = row.get('species_id')
 
-                # Parse quantum numbers for lower state
-                lower_qn = parse_quantum_numbers(
-                    species_id=species_id,
-                    j=row['lower_j'],
-                    coupling=row['lower_term_flag'],
-                    term_desc=row['lower_term'],
-                    level_desc=row['lower_term']
-                )
+            # Parse quantum numbers for lower state
+            lower_qn = parse_quantum_numbers(
+                species_id=species_id,
+                j=row['lower_j'],
+                coupling=row['lower_term_flag'],
+                term_desc=row['lower_term'],
+                level_desc=row['lower_term']
+            )
 
-                # Parse quantum numbers for upper state
-                upper_qn = parse_quantum_numbers(
-                    species_id=species_id,
-                    j=row['upper_j'],
-                    coupling=row['upper_term_flag'],
-                    term_desc=row['upper_term'],
-                    level_desc=row['upper_term']
-                )
+            # Parse quantum numbers for upper state
+            upper_qn = parse_quantum_numbers(
+                species_id=species_id,
+                j=row['upper_j'],
+                coupling=row['upper_term_flag'],
+                term_desc=row['upper_term'],
+                level_desc=row['upper_term']
+            )
 
-                # Extract lower state
-                states.append(State(
-                    species_id=species_id,
-                    energy=lower_energy,
-                    energy_scaled=lower_energy_scaled,
-                    j=row['lower_j'],
-                    lande=row['lower_lande'],
-                    config=lower_qn.get('config'),
-                    term=lower_qn.get('term'),
-                    l=lower_qn.get('l'),
-                    s=lower_qn.get('s'),
-                    p=lower_qn.get('p'),
-                    j1=lower_qn.get('j1'),
-                    j2=lower_qn.get('j2'),
-                    k=lower_qn.get('k'),
-                    s2=lower_qn.get('s2'),
-                    jc=lower_qn.get('jc'),
-                    sn=lower_qn.get('sn'),
-                    n=lower_qn.get('n'),
-                ))
+            # Extract lower state (use ll3 for energy method)
+            lower_energy_method = linelist_methods.get(row.get('ll3'))
+            states.append(State(
+                species_id=species_id,
+                energy=lower_energy,
+                energy_scaled=lower_energy_scaled,
+                energy_method=lower_energy_method,
+                j=row['lower_j'],
+                lande=row['lower_lande'],
+                config=lower_qn.get('config'),
+                term=lower_qn.get('term'),
+                l=lower_qn.get('l'),
+                s=lower_qn.get('s'),
+                p=lower_qn.get('p'),
+                j1=lower_qn.get('j1'),
+                j2=lower_qn.get('j2'),
+                k=lower_qn.get('k'),
+                s2=lower_qn.get('s2'),
+                jc=lower_qn.get('jc'),
+                sn=lower_qn.get('sn'),
+                n=lower_qn.get('n'),
+            ))
 
-                # Extract upper state
-                states.append(State(
-                    species_id=species_id,
-                    energy=upper_energy,
-                    energy_scaled=upper_energy_scaled,
-                    j=row['upper_j'],
-                    lande=row['upper_lande'],
-                    config=upper_qn.get('config'),
-                    term=upper_qn.get('term'),
-                    l=upper_qn.get('l'),
-                    s=upper_qn.get('s'),
-                    p=upper_qn.get('p'),
-                    j1=upper_qn.get('j1'),
-                    j2=upper_qn.get('j2'),
-                    k=upper_qn.get('k'),
-                    s2=upper_qn.get('s2'),
-                    jc=upper_qn.get('jc'),
-                    sn=upper_qn.get('sn'),
-                    n=upper_qn.get('n'),
-                ))
+            # Extract upper state (use ll4 for energy method)
+            upper_energy_method = linelist_methods.get(row.get('ll4'))
+            states.append(State(
+                species_id=species_id,
+                energy=upper_energy,
+                energy_scaled=upper_energy_scaled,
+                energy_method=upper_energy_method,
+                j=row['upper_j'],
+                lande=row['upper_lande'],
+                config=upper_qn.get('config'),
+                term=upper_qn.get('term'),
+                l=upper_qn.get('l'),
+                s=upper_qn.get('s'),
+                p=upper_qn.get('p'),
+                j1=upper_qn.get('j1'),
+                j2=upper_qn.get('j2'),
+                k=upper_qn.get('k'),
+                s2=upper_qn.get('s2'),
+                jc=upper_qn.get('jc'),
+                sn=upper_qn.get('sn'),
+                n=upper_qn.get('n'),
+            ))
 
-            # Bulk insert with deduplication
-            with transaction.atomic():
-                initial_count = State.objects.count()
-                bulk_insert_optimized(State, states, batch_size, ignore_conflicts=True)
-                final_count = State.objects.count()
-                inserted = final_count - initial_count
+        # Bulk insert with deduplication
+        with transaction.atomic():
+            initial_count = State.objects.count()
+            bulk_insert_optimized(State, states, batch_size, ignore_conflicts=True)
+            final_count = State.objects.count()
+            inserted = final_count - initial_count
 
-            total_processed += len(batch)
-            total_inserted += inserted
-            pbar.update(len(batch))
-            pbar.set_postfix({
-                'unique_states': total_inserted,
-                'dedup_rate': f'{(1 - total_inserted/(total_processed*2))*100:.1f}%'
-            })
+        total_processed += len(batch)
+        total_inserted += inserted
 
     return total_processed, total_inserted
 
@@ -1006,112 +1000,93 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
     Returns: total_processed
     """
-    try:
-        from tqdm import tqdm
-        progress_bar = tqdm
-    except ImportError:
-        class DummyBar:
-            def __init__(self, *args, **kwargs): pass
-            def update(self, n): pass
-            def set_postfix(self, d): pass
-            def __enter__(self): return self
-            def __exit__(self, *args): pass
-        progress_bar = DummyBar
-
     from node_atom.models import State, Transition
+    from node_common.models import LineList
     from django.db import transaction, connection
 
     # Temporarily disable foreign key constraints for import
     with connection.cursor() as cursor:
         cursor.execute("PRAGMA foreign_keys = OFF")
 
+    # Load linelist method lookup
+    linelist_methods = {ll.id: ll.method for ll in LineList.objects.all()}
+    if verbose:
+        print(f'Loaded {len(linelist_methods)} linelist method mappings')
+
     input_stream = open_input(input_file)
     state_cache = StateCache()
-    linelist_cache = LineListCache()
     records = parse_vald_stream(input_stream, skip_header)
 
     total_processed = 0
 
-    with progress_bar(desc="Importing transitions", unit=" lines", disable=not verbose) as pbar:
-        for batch in batch_iterator(records, batch_size):
-            state_keys = set()
-            for row in batch:
-                lower_energy_scaled = scale_energy(row['lower_energy'])
-                upper_energy_scaled = scale_energy(row['upper_energy'])
-                row['_lower_energy_scaled'] = lower_energy_scaled
-                row['_upper_energy_scaled'] = upper_energy_scaled
+    for batch in batch_iterator(records, batch_size):
+        state_keys = set()
+        for row in batch:
+            lower_energy_scaled = scale_energy(row['lower_energy'])
+            upper_energy_scaled = scale_energy(row['upper_energy'])
+            row['_lower_energy_scaled'] = lower_energy_scaled
+            row['_upper_energy_scaled'] = upper_energy_scaled
 
-                state_keys.add((row['species_id'], lower_energy_scaled, row['lower_j']))
-                state_keys.add((row['species_id'], upper_energy_scaled, row['upper_j']))
+            state_keys.add((row['species_id'], lower_energy_scaled, row['lower_j']))
+            state_keys.add((row['species_id'], upper_energy_scaled, row['upper_j']))
 
-            state_cache.prefetch_states(state_keys)
+        state_cache.prefetch_states(state_keys)
 
-            transitions = []
-            for row in batch:
-                try:
-                    # Get or create linelist for this transition
-                    linelist_id = linelist_cache.get_or_create_linelist(
-                        wave_ref=row.get('wave_ref'),
-                        r1=row.get('r1'),
-                        r2=row.get('r2'),
-                        r3=row.get('r3'),
-                        r4=row.get('r4'),
-                        r5=row.get('r5'),
-                        r6=row.get('r6'),
-                        r7=row.get('r7'),
-                        r8=row.get('r8'),
-                        r9=row.get('r9'),
-                    )
+        transitions = []
+        for row in batch:
+            try:
+                loggf_error = accuracy_to_loggf_error(
+                    row.get('accurflag'),
+                    row.get('accuracy')
+                )
 
-                    loggf_error = accuracy_to_loggf_error(
-                        row.get('accurflag'),
-                        row.get('accuracy')
-                    )
+                transition_type, autoionized = parse_transition_properties(
+                    row.get('transition_flag'),
+                    row.get('lower_energy'),
+                    row.get('upper_energy')
+                )
 
-                    transitions.append(Transition(
-                        upstate_id=state_cache.get_state_id(
-                            row['species_id'],
-                            row['_upper_energy_scaled'],
-                            row['upper_j'],
-                            row['upper_term'] or None
-                        ),
-                        lostate_id=state_cache.get_state_id(
-                            row['species_id'],
-                            row['_lower_energy_scaled'],
-                            row['lower_j'],
-                            row['lower_term'] or None
-                        ),
-                        species_id=row.get('species_id'),
-                        wave=row['wave'],
-                        waveritz=row['wave_ritz'],
-                        loggf=row['loggf'],
-                        gammarad=row.get('gammarad'),
-                        gammastark=row.get('gammastark'),
-                        gammawaals=row.get('gammawaals'),
-                        accurflag=row.get('accurflag'),
-                        accur=row.get('accuracy'),
-                        loggf_err=loggf_error,
-                        wave_linelist_id=linelist_id,
-                    ))
-                except ValueError as e:
-                    print(f"Warning: Skipping row: {e}", file=sys.stderr)
-                    continue
+                wave_method = linelist_methods.get(row.get('ll1'))
+                transitions.append(Transition(
+                    upstate_id=state_cache.get_state_id(
+                        row['species_id'],
+                        row['_upper_energy_scaled'],
+                        row['upper_j'],
+                        row['upper_term'] or None
+                    ),
+                    lostate_id=state_cache.get_state_id(
+                        row['species_id'],
+                        row['_lower_energy_scaled'],
+                        row['lower_j'],
+                        row['lower_term'] or None
+                    ),
+                    species_id=row.get('species_id'),
+                    wave=row['wave'],
+                    waveritz=row['wave_ritz'],
+                    loggf=row['loggf'],
+                    wave_method=wave_method,
+                    gammarad=row.get('gammarad'),
+                    gammastark=row.get('gammastark'),
+                    gammawaals=row.get('gammawaals'),
+                    accurflag=row.get('accurflag'),
+                    accur=row.get('accuracy'),
+                    loggf_err=loggf_error,
+                    transition_type=transition_type,
+                    autoionized=autoionized,
+                ))
+            except ValueError as e:
+                print(f"Warning: Skipping row: {e}", file=sys.stderr)
+                continue
 
-            # Bulk insert
-            with transaction.atomic():
-                bulk_insert_optimized(Transition, transitions, batch_size)
+        # Bulk insert
+        with transaction.atomic():
+            bulk_insert_optimized(Transition, transitions, batch_size)
 
-            total_processed += len(batch)
-            pbar.update(len(batch))
-            pbar.set_postfix({
-                'cache_hit_rate': f'{state_cache.hit_rate:.1f}%'
-            })
+        total_processed += len(batch)
 
     if verbose:
         print(f'Done! Imported {total_processed} transitions.')
         print(f'State cache stats: {state_cache.hits} hits, {state_cache.misses} misses')
-        print(f'Linelist cache stats: {linelist_cache.hits} hits, {linelist_cache.misses} misses')
-        print(f'Created {linelist_cache.misses} unique linelists')
 
     # Calculate derived fields
     if not skip_calc:
@@ -1165,28 +1140,21 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
 
     Returns: (total_processed, total_states_inserted, total_transitions_inserted)
     """
-    try:
-        from tqdm import tqdm
-        progress_bar = tqdm
-    except ImportError:
-        class DummyBar:
-            def __init__(self, *args, **kwargs): pass
-            def update(self, n): pass
-            def set_postfix(self, d): pass
-            def __enter__(self): return self
-            def __exit__(self, *args): pass
-        progress_bar = DummyBar
-
     from node_atom.models import State, Transition
+    from node_common.models import LineList
     from django.db import transaction, connection
 
     # Temporarily disable foreign key constraints for import
     with connection.cursor() as cursor:
         cursor.execute("PRAGMA foreign_keys = OFF")
 
+    # Load linelist method lookup
+    linelist_methods = {ll.id: ll.method for ll in LineList.objects.all()}
+    if verbose:
+        print(f'Loaded {len(linelist_methods)} linelist method mappings')
+
     input_stream = open_input(input_file)
     state_cache = StateCache()
-    linelist_cache = LineListCache()
 
     total_processed = 0
     total_states_inserted = 0
@@ -1222,147 +1190,162 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
         records = parse_vald_stream(input_stream, skip_header)
         batch_source = lambda: batch_iterator(records, batch_size)
 
-    with progress_bar(desc="Importing VALD data", unit=" lines", disable=not verbose) as pbar:
-        for batch in batch_source():
-            # === STEP 1: Insert states directly (bypass Django ORM) ===
-            state_keys = set()
-            state_rows = []
+    for batch in batch_source():
+        # === STEP 1: Insert states directly (bypass Django ORM) ===
+        state_keys = set()
+        state_rows = []
 
-            for row in batch:
+        for row in batch:
+            species_id = row['species_id']
+
+            # Lower state
+            lower_energy, lower_j, lower_lande, lower_term = (
+                row['lower_energy'], row['lower_j'],
+                row['lower_lande'], row['lower_term'] or None
+            )
+            lower_energy_scaled = scale_energy(lower_energy)
+            row['_lower_energy_scaled'] = lower_energy_scaled
+
+            # Parse quantum numbers for lower state
+            lower_qn = parse_quantum_numbers(
+                species_id=species_id,
+                j=lower_j,
+                coupling=row['lower_term_flag'],
+                term_desc=lower_term,
+                level_desc=lower_term
+            )
+
+            state_keys.add((species_id, lower_energy_scaled, lower_j))
+            lower_energy_method = linelist_methods.get(row.get('ll3'))
+
+            ref_codes = row.get('ref_codes', [None]*9)
+            lower_energy_ref = ref_codes[2]
+            lower_lande_ref = ref_codes[4]
+            lower_level_ref = ref_codes[8]
+
+            state_rows.append((
+                species_id, lower_energy, lower_energy_scaled, lower_energy_method, lower_j, lower_lande,
+                lower_qn.get('config'), lower_qn.get('term'),
+                lower_qn.get('l'), lower_qn.get('s'), lower_qn.get('p'),
+                lower_qn.get('j1'), lower_qn.get('j2'), lower_qn.get('k'),
+                lower_qn.get('s2'), lower_qn.get('jc'), lower_qn.get('sn'), lower_qn.get('n'),
+                lower_energy_ref, lower_lande_ref, lower_level_ref
+            ))
+
+            # Upper state
+            upper_energy, upper_j, upper_lande, upper_term = (
+                row['upper_energy'], row['upper_j'],
+                row['upper_lande'], row['upper_term'] or None
+            )
+            upper_energy_scaled = scale_energy(upper_energy)
+            row['_upper_energy_scaled'] = upper_energy_scaled
+
+            # Parse quantum numbers for upper state
+            upper_qn = parse_quantum_numbers(
+                species_id=species_id,
+                j=upper_j,
+                coupling=row['upper_term_flag'],
+                term_desc=upper_term,
+                level_desc=upper_term
+            )
+
+            state_keys.add((species_id, upper_energy_scaled, upper_j))
+            upper_energy_method = linelist_methods.get(row.get('ll4'))
+
+            upper_energy_ref = ref_codes[3]
+            upper_lande_ref = ref_codes[4]
+            upper_level_ref = ref_codes[8]
+
+            state_rows.append((
+                species_id, upper_energy, upper_energy_scaled, upper_energy_method, upper_j, upper_lande,
+                upper_qn.get('config'), upper_qn.get('term'),
+                upper_qn.get('l'), upper_qn.get('s'), upper_qn.get('p'),
+                upper_qn.get('j1'), upper_qn.get('j2'), upper_qn.get('k'),
+                upper_qn.get('s2'), upper_qn.get('jc'), upper_qn.get('sn'), upper_qn.get('n'),
+                upper_energy_ref, upper_lande_ref, upper_level_ref
+            ))
+
+        # Direct SQL insert (faster than Django ORM)
+        with transaction.atomic():
+            initial_state_count = State.objects.count()
+            with connection.cursor() as cursor:
+                cursor.executemany(
+                    "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, energy_method, J, lande, config, term, L, S, P, J1, J2, K, S2, Jc, Sn, n, energy_ref_id, lande_ref_id, level_ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    state_rows
+                )
+            final_state_count = State.objects.count()
+            states_inserted = final_state_count - initial_state_count
+
+        total_states_inserted += states_inserted
+
+        # === STEP 2: Prefetch state IDs for this batch ===
+        state_cache.prefetch_states(state_keys)
+
+        # === STEP 3: Insert transitions directly (bypass Django ORM) ===
+        transition_rows = []
+        for row in batch:
+            try:
+                # Cache lookups once
                 species_id = row['species_id']
 
-                # Lower state
-                lower_energy, lower_j, lower_lande, lower_term = (
-                    row['lower_energy'], row['lower_j'],
-                    row['lower_lande'], row['lower_term'] or None
+                # Get state IDs
+                upstate_id = state_cache.get_state_id(
+                    species_id, row['_upper_energy_scaled'],
+                    row['upper_j'], row['upper_term'] or None
                 )
-                lower_energy_scaled = scale_energy(lower_energy)
-                row['_lower_energy_scaled'] = lower_energy_scaled
-
-                # Parse quantum numbers for lower state
-                lower_qn = parse_quantum_numbers(
-                    species_id=species_id,
-                    j=lower_j,
-                    coupling=row['lower_term_flag'],
-                    term_desc=lower_term,
-                    level_desc=lower_term
+                lostate_id = state_cache.get_state_id(
+                    species_id, row['_lower_energy_scaled'],
+                    row['lower_j'], row['lower_term'] or None
                 )
 
-                state_keys.add((species_id, lower_energy_scaled, lower_j))
-                state_rows.append((
-                    species_id, lower_energy, lower_energy_scaled, lower_j, lower_lande,
-                    lower_qn.get('config'), lower_qn.get('term'),
-                    lower_qn.get('l'), lower_qn.get('s'), lower_qn.get('p'),
-                    lower_qn.get('j1'), lower_qn.get('j2'), lower_qn.get('k'),
-                    lower_qn.get('s2'), lower_qn.get('jc'), lower_qn.get('sn'), lower_qn.get('n')
+                loggf_error = accuracy_to_loggf_error(
+                    row.get('accurflag'),
+                    row.get('accuracy')
+                )
+
+                transition_type, autoionized = parse_transition_properties(
+                    row.get('transition_flag'),
+                    row.get('lower_energy'),
+                    row.get('upper_energy')
+                )
+
+                wave_method = linelist_methods.get(row.get('ll1'))
+
+                ref_codes = row.get('ref_codes', [None]*9)
+                wave_ref = ref_codes[0]
+                loggf_ref = ref_codes[1]
+                gammarad_ref = ref_codes[5]
+                gammastark_ref = ref_codes[6]
+                waals_ref = ref_codes[7]
+
+                transition_rows.append((
+                    upstate_id, lostate_id, species_id,
+                    row['wave'], row['wave_ritz'], row['loggf'], wave_method,
+                    row.get('gammarad'), row.get('gammastark'), row.get('gammawaals'),
+                    row.get('accurflag'), row.get('accuracy'), loggf_error,
+                    transition_type, autoionized,
+                    wave_ref, wave_ref, loggf_ref, gammarad_ref, gammastark_ref, waals_ref
                 ))
+            except ValueError as e:
+                print(f"Warning: Skipping transition: {e}", file=sys.stderr)
+                continue
 
-                # Upper state
-                upper_energy, upper_j, upper_lande, upper_term = (
-                    row['upper_energy'], row['upper_j'],
-                    row['upper_lande'], row['upper_term'] or None
-                )
-                upper_energy_scaled = scale_energy(upper_energy)
-                row['_upper_energy_scaled'] = upper_energy_scaled
-
-                # Parse quantum numbers for upper state
-                upper_qn = parse_quantum_numbers(
-                    species_id=species_id,
-                    j=upper_j,
-                    coupling=row['upper_term_flag'],
-                    term_desc=upper_term,
-                    level_desc=upper_term
+        # Direct SQL insert (faster than Django ORM)
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.executemany(
+                    "INSERT INTO transitions (upstate, lostate, species_id, wave, waveritz, loggf, wave_method, gammarad, gammastark, gammawaals, accurflag, accur, loggf_err, transition_type, autoionized, wave_ref_id, waveritz_ref_id, loggf_ref_id, gammarad_ref_id, gammastark_ref_id, waals_ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    transition_rows
                 )
 
-                state_keys.add((species_id, upper_energy_scaled, upper_j))
-                state_rows.append((
-                    species_id, upper_energy, upper_energy_scaled, upper_j, upper_lande,
-                    upper_qn.get('config'), upper_qn.get('term'),
-                    upper_qn.get('l'), upper_qn.get('s'), upper_qn.get('p'),
-                    upper_qn.get('j1'), upper_qn.get('j2'), upper_qn.get('k'),
-                    upper_qn.get('s2'), upper_qn.get('jc'), upper_qn.get('sn'), upper_qn.get('n')
-                ))
-
-            # Direct SQL insert (faster than Django ORM)
-            with transaction.atomic():
-                initial_state_count = State.objects.count()
-                with connection.cursor() as cursor:
-                    cursor.executemany(
-                        "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, J, lande, config, term, L, S, P, J1, J2, K, S2, Jc, Sn, n) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        state_rows
-                    )
-                final_state_count = State.objects.count()
-                states_inserted = final_state_count - initial_state_count
-
-            total_states_inserted += states_inserted
-
-            # === STEP 2: Prefetch state IDs for this batch ===
-            state_cache.prefetch_states(state_keys)
-
-            # === STEP 3: Insert transitions directly (bypass Django ORM) ===
-            transition_rows = []
-            for row in batch:
-                try:
-                    # Cache lookups once
-                    species_id = row['species_id']
-
-                    # Get or create linelist for this transition
-                    linelist_id = linelist_cache.get_or_create_linelist(
-                        row.get('wave_ref'), row.get('r1'), row.get('r2'), row.get('r3'),
-                        row.get('r4'), row.get('r5'), row.get('r6'),
-                        row.get('r7'), row.get('r8'), row.get('r9')
-                    )
-
-                    # Get state IDs
-                    upstate_id = state_cache.get_state_id(
-                        species_id, row['_upper_energy_scaled'],
-                        row['upper_j'], row['upper_term'] or None
-                    )
-                    lostate_id = state_cache.get_state_id(
-                        species_id, row['_lower_energy_scaled'],
-                        row['lower_j'], row['lower_term'] or None
-                    )
-
-                    loggf_error = accuracy_to_loggf_error(
-                        row.get('accurflag'),
-                        row.get('accuracy')
-                    )
-
-                    transition_rows.append((
-                        upstate_id, lostate_id, species_id,
-                        row['wave'], row['wave_ritz'], row['loggf'],
-                        row.get('gammarad'), row.get('gammastark'), row.get('gammawaals'),
-                        row.get('accurflag'), row.get('accuracy'), loggf_error, linelist_id
-                    ))
-                except ValueError as e:
-                    print(f"Warning: Skipping transition: {e}", file=sys.stderr)
-                    continue
-
-            # Direct SQL insert (faster than Django ORM)
-            with transaction.atomic():
-                with connection.cursor() as cursor:
-                    cursor.executemany(
-                        "INSERT INTO transitions (upstate, lostate, species_id, wave, waveritz, loggf, gammarad, gammastark, gammawaals, accurflag, accur, loggf_err, wave_linelist_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        transition_rows
-                    )
-
-            total_transitions_inserted += len(transition_rows)
-            total_processed += len(batch)
-
-            pbar.update(len(batch))
-            pbar.set_postfix({
-                'states': total_states_inserted,
-                'transitions': total_transitions_inserted,
-                'cache_hit': f'{state_cache.hit_rate:.1f}%'
-            })
+        total_transitions_inserted += len(transition_rows)
+        total_processed += len(batch)
 
     if verbose:
         print(f'Processed {total_processed} lines')
         print(f'Inserted {total_states_inserted} unique states')
         print(f'Inserted {total_transitions_inserted} transitions')
         print(f'State cache: {state_cache.hits} hits, {state_cache.misses} misses')
-        print(f'Linelist cache: {linelist_cache.hits} hits, {linelist_cache.misses} misses')
-        print(f'Created {linelist_cache.misses} unique linelists')
 
     # Calculate derived fields
     if not skip_calc:
@@ -1410,18 +1393,6 @@ def import_species(input_file, batch_size=10000, verbose=True):
 
     Returns: (total_processed, total_inserted)
     """
-    try:
-        from tqdm import tqdm
-        progress_bar = tqdm
-    except ImportError:
-        class DummyBar:
-            def __init__(self, *args, **kwargs): pass
-            def update(self, n): pass
-            def set_postfix(self, d): pass
-            def __enter__(self): return self
-            def __exit__(self, *args): pass
-        progress_bar = DummyBar
-
     from node_common.models import Species
     from django.db import transaction
     import csv
@@ -1438,52 +1409,49 @@ def import_species(input_file, batch_size=10000, verbose=True):
         species_list = []
         total_processed = 0
 
-        with progress_bar(desc="Importing species", unit=" lines", disable=not verbose) as pbar:
-            for row in reader:
-                try:
-                    # Ignore Use field - import all species
-                    # use = row.get('Use', '1').strip()
-                    # if use != '1':
-                    #     continue
+        for row in reader:
+            try:
+                # Ignore Use field - import all species
+                # use = row.get('Use', '1').strip()
+                # if use != '1':
+                #     continue
 
-                    species = Species(
-                        id=int(row['Index']),
-                        name=row['Name'].strip(),
-                        ion=int(row['Charge']) if row['Charge'].strip() else None,
-                        inchi=row['InChI'].strip() if row['InChI'].strip() else None,
-                        inchikey=row['InChIkey'].strip() if row['InChIkey'].strip() else None,
-                        mass=float(row['Mass']) if row['Mass'].strip() else None,
-                        massno=int(float(row['Mass'])) if row['Mass'].strip() else None,
-                        ionen=float(row['Ion. en.']) if row['Ion. en.'].strip() else None,
-                        solariso=float(row['Fract.']) if row['Fract.'].strip() else None,
-                        ncomp=int(row['Num. comp.']) if row['Num. comp.'].strip() else None,
-                    )
-                    species_list.append(species)
-                    total_processed += 1
+                species = Species(
+                    id=int(row['Index']),
+                    name=row['Name'].strip(),
+                    ion=int(row['Charge']) if row['Charge'].strip() else None,
+                    inchi=row['InChI'].strip() if row['InChI'].strip() else None,
+                    inchikey=row['InChIkey'].strip() if row['InChIkey'].strip() else None,
+                    mass=float(row['Mass']) if row['Mass'].strip() else None,
+                    massno=int(float(row['Mass'])) if row['Mass'].strip() else None,
+                    ionen=float(row['Ion. en.']) if row['Ion. en.'].strip() else None,
+                    solariso=float(row['Fract.']) if row['Fract.'].strip() else None,
+                    ncomp=int(row['Num. comp.']) if row['Num. comp.'].strip() else None,
+                )
+                species_list.append(species)
+                total_processed += 1
 
-                    if len(species_list) >= batch_size:
-                        with transaction.atomic():
-                            Species.objects.bulk_create(
-                                species_list,
-                                batch_size=batch_size,
-                                ignore_conflicts=True
-                            )
-                        pbar.update(len(species_list))
-                        species_list = []
+                if len(species_list) >= batch_size:
+                    with transaction.atomic():
+                        Species.objects.bulk_create(
+                            species_list,
+                            batch_size=batch_size,
+                            ignore_conflicts=True
+                        )
+                    species_list = []
 
-                except (ValueError, KeyError) as e:
-                    if verbose and total_processed < 5:
-                        print(f"Warning: Skipping row: {e}", file=sys.stderr)
-                    continue
+            except (ValueError, KeyError) as e:
+                if verbose and total_processed < 5:
+                    print(f"Warning: Skipping row: {e}", file=sys.stderr)
+                continue
 
-            if species_list:
-                with transaction.atomic():
-                    Species.objects.bulk_create(
-                        species_list,
-                        batch_size=batch_size,
-                        ignore_conflicts=True
-                    )
-                pbar.update(len(species_list))
+        if species_list:
+            with transaction.atomic():
+                Species.objects.bulk_create(
+                    species_list,
+                    batch_size=batch_size,
+                    ignore_conflicts=True
+                )
 
     inserted_count = Species.objects.count()
 
@@ -1515,17 +1483,6 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
 
     Returns: (total_processed, matched, multiple_matches, no_match)
     """
-    try:
-        from tqdm import tqdm
-        progress_bar = tqdm
-    except ImportError:
-        class DummyBar:
-            def __init__(self, *args, **kwargs): pass
-            def update(self, n): pass
-            def set_postfix(self, d): pass
-            def __enter__(self): return self
-            def __exit__(self, *args): pass
-        progress_bar = DummyBar
 
     from node_atom.models import State
     from django.db import transaction, connection
@@ -1554,55 +1511,36 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
 
     update_queue = []
 
-    with progress_bar(desc="Importing HFS constants", unit=" records", total=total_records, disable=not verbose) as pbar:
-        for row in ab_cursor:
-            ab_id, speid, energy, j, term, a, da, b, db = row
-            stats['total'] += 1
+    for row in ab_cursor:
+        ab_id, speid, energy, j, term, a, da, b, db = row
+        stats['total'] += 1
 
-            candidates = State.objects.filter(
-                species_id=speid,
-                j=j
-            ).extra(
-                where=[f"ABS(energy - {energy}) < {energy_tolerance}"]
-            )
+        candidates = State.objects.filter(
+            species_id=speid,
+            j=j
+        ).extra(
+            where=[f"ABS(energy - {energy}) < {energy_tolerance}"]
+        )
 
-            candidate_count = candidates.count()
+        candidate_count = candidates.count()
 
-            if candidate_count == 0:
-                stats['no_match'] += 1
-            else:
-                if candidate_count > 1:
-                    stats['multiple_matches'] += 1
+        if candidate_count == 0:
+            stats['no_match'] += 1
+        else:
+            if candidate_count > 1:
+                stats['multiple_matches'] += 1
 
-                state = candidates.last()
-                stats['matched'] += 1
-                update_queue.append({
-                    'state_id': state.id,
-                    'a': a,
-                    'da': da,
-                    'b': b,
-                    'db': db
-                })
-
-            if len(update_queue) >= batch_size:
-                with transaction.atomic():
-                    for update in update_queue:
-                        State.objects.filter(id=update['state_id']).update(
-                            hfs_a=update['a'],
-                            hfs_a_error=update['da'],
-                            hfs_b=update['b'],
-                            hfs_b_error=update['db']
-                        )
-                        stats['updated'] += 1
-                update_queue = []
-
-            pbar.update(1)
-            pbar.set_postfix({
-                'matched': stats['matched'],
-                'updated': stats['updated']
+            state = candidates.last()
+            stats['matched'] += 1
+            update_queue.append({
+                'state_id': state.id,
+                'a': a,
+                'da': da,
+                'b': b,
+                'db': db
             })
 
-        if update_queue:
+        if len(update_queue) >= batch_size:
             with transaction.atomic():
                 for update in update_queue:
                     State.objects.filter(id=update['state_id']).update(
@@ -1612,6 +1550,18 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
                         hfs_b_error=update['db']
                     )
                     stats['updated'] += 1
+            update_queue = []
+
+    if update_queue:
+        with transaction.atomic():
+            for update in update_queue:
+                State.objects.filter(id=update['state_id']).update(
+                    hfs_a=update['a'],
+                    hfs_a_error=update['da'],
+                    hfs_b=update['b'],
+                    hfs_b_error=update['db']
+                )
+                stats['updated'] += 1
 
     ab_conn.close()
 
@@ -1641,17 +1591,6 @@ def import_bibtex(input_file, batch_size=1000, verbose=True):
 
     Returns: (total_processed, total_inserted)
     """
-    try:
-        from tqdm import tqdm
-        progress_bar = tqdm
-    except ImportError:
-        class DummyBar:
-            def __init__(self, *args, **kwargs): pass
-            def update(self, n): pass
-            def set_postfix(self, d): pass
-            def __enter__(self): return self
-            def __exit__(self, *args): pass
-        progress_bar = DummyBar
 
     from node_common.models import Reference
     from vamdctap.bibtextools import BibTeX2XML
@@ -1670,102 +1609,197 @@ def import_bibtex(input_file, batch_size=1000, verbose=True):
     brace_count = 0
     lines = content.split('\n')
 
-    with progress_bar(desc="Importing references", unit=" refs", disable=not verbose) as pbar:
-        for i, line in enumerate(lines):
-            if line.strip().startswith('@'):
-                if current_entry:
-                    bibtex_text = '\n'.join(current_entry)
-                    match = bibtex_pattern.search(bibtex_text)
-                    if match:
-                        bibtex_key = match.group(1).strip()
-                        try:
-                            xml_text = BibTeX2XML(bibtex_text, key=bibtex_key)
-                            ref = Reference(
-                                id=bibtex_key,
-                                bibtex=bibtex_text,
-                                xml=xml_text
-                            )
-                            references.append(ref)
-                            total_processed += 1
+    for i, line in enumerate(lines):
+        if line.strip().startswith('@'):
+            if current_entry:
+                bibtex_text = '\n'.join(current_entry)
+                match = bibtex_pattern.search(bibtex_text)
+                if match:
+                    bibtex_key = match.group(1).strip()
+                    try:
+                        xml_text = BibTeX2XML(bibtex_text, key=bibtex_key)
+                        ref = Reference(
+                            id=bibtex_key,
+                            bibtex=bibtex_text,
+                            xml=xml_text
+                        )
+                        references.append(ref)
+                        total_processed += 1
 
-                            if len(references) >= batch_size:
-                                with transaction.atomic():
-                                    Reference.objects.bulk_create(
-                                        references,
-                                        batch_size=batch_size,
-                                        ignore_conflicts=True
-                                    )
-                                pbar.update(len(references))
-                                references = []
-                        except Exception as e:
-                            if verbose:
-                                print(f"Warning: Failed to process entry {bibtex_key}: {e}", file=sys.stderr)
+                        if len(references) >= batch_size:
+                            with transaction.atomic():
+                                Reference.objects.bulk_create(
+                                    references,
+                                    batch_size=batch_size,
+                                    ignore_conflicts=True
+                                )
+                            references = []
+                    except Exception as e:
+                        if verbose:
+                            print(f"Warning: Failed to process entry {bibtex_key}: {e}", file=sys.stderr)
 
-                current_entry = [line]
-                brace_count = line.count('{') - line.count('}')
-            elif current_entry:
-                current_entry.append(line)
-                brace_count += line.count('{') - line.count('}')
+            current_entry = [line]
+            brace_count = line.count('{') - line.count('}')
+        elif current_entry:
+            current_entry.append(line)
+            brace_count += line.count('{') - line.count('}')
 
-                if brace_count == 0 and line.strip().endswith('}'):
-                    bibtex_text = '\n'.join(current_entry)
-                    match = bibtex_pattern.search(bibtex_text)
-                    if match:
-                        bibtex_key = match.group(1).strip()
-                        try:
-                            xml_text = BibTeX2XML(bibtex_text, key=bibtex_key)
-                            ref = Reference(
-                                id=bibtex_key,
-                                bibtex=bibtex_text,
-                                xml=xml_text
-                            )
-                            references.append(ref)
-                            total_processed += 1
+            if brace_count == 0 and line.strip().endswith('}'):
+                bibtex_text = '\n'.join(current_entry)
+                match = bibtex_pattern.search(bibtex_text)
+                if match:
+                    bibtex_key = match.group(1).strip()
+                    try:
+                        xml_text = BibTeX2XML(bibtex_text, key=bibtex_key)
+                        ref = Reference(
+                            id=bibtex_key,
+                            bibtex=bibtex_text,
+                            xml=xml_text
+                        )
+                        references.append(ref)
+                        total_processed += 1
 
-                            if len(references) >= batch_size:
-                                with transaction.atomic():
-                                    Reference.objects.bulk_create(
-                                        references,
-                                        batch_size=batch_size,
-                                        ignore_conflicts=True
-                                    )
-                                pbar.update(len(references))
-                                references = []
-                        except Exception as e:
-                            if verbose:
-                                print(f"Warning: Failed to process entry {bibtex_key}: {e}", file=sys.stderr)
+                        if len(references) >= batch_size:
+                            with transaction.atomic():
+                                Reference.objects.bulk_create(
+                                    references,
+                                    batch_size=batch_size,
+                                    ignore_conflicts=True
+                                )
+                            references = []
+                    except Exception as e:
+                        if verbose:
+                            print(f"Warning: Failed to process entry {bibtex_key}: {e}", file=sys.stderr)
 
-                    current_entry = []
-                    brace_count = 0
+                current_entry = []
+                brace_count = 0
 
-        if current_entry and brace_count == 0:
-            bibtex_text = '\n'.join(current_entry)
-            match = bibtex_pattern.search(bibtex_text)
-            if match:
-                bibtex_key = match.group(1).strip()
-                try:
-                    xml_text = BibTeX2XML(bibtex_text, key=bibtex_key)
-                    ref = Reference(
-                        id=bibtex_key,
-                        bibtex=bibtex_text,
-                        xml=xml_text
-                    )
-                    references.append(ref)
-                    total_processed += 1
-                except Exception as e:
-                    if verbose:
-                        print(f"Warning: Failed to process entry {bibtex_key}: {e}", file=sys.stderr)
-
-        if references:
-            with transaction.atomic():
-                Reference.objects.bulk_create(
-                    references,
-                    batch_size=batch_size,
-                    ignore_conflicts=True
+    # Handle last entry
+    if current_entry and brace_count == 0:
+        bibtex_text = '\n'.join(current_entry)
+        match = bibtex_pattern.search(bibtex_text)
+        if match:
+            bibtex_key = match.group(1).strip()
+            try:
+                xml_text = BibTeX2XML(bibtex_text, key=bibtex_key)
+                ref = Reference(
+                    id=bibtex_key,
+                    bibtex=bibtex_text,
+                    xml=xml_text
                 )
-            pbar.update(len(references))
+                references.append(ref)
+                total_processed += 1
+            except Exception as e:
+                if verbose:
+                    print(f"Warning: Failed to process entry {bibtex_key}: {e}", file=sys.stderr)
+
+    # Insert remaining references
+    if references:
+        with transaction.atomic():
+            Reference.objects.bulk_create(
+                references,
+                batch_size=batch_size,
+                ignore_conflicts=True
+            )
 
     inserted_count = Reference.objects.count()
+
+    return total_processed, inserted_count
+
+
+# =============================================================================
+# LINELIST IMPORT
+# =============================================================================
+
+METHOD_TYPE_MAP = {
+    'exp': 0,   # experiment
+    'obs': 1,   # observed
+    'emp': 2,   # empirical
+    'pred': 3,  # theory (predicted)
+    'calc': 4,  # semiempirical (calculated)
+    'mix': 5,   # compilation
+    'comp': 5   # compilation (alternative name)
+}
+
+
+def import_linelists(input_file, batch_size=1000, verbose=True):
+    """
+    Import linelist metadata from linelists.dat file.
+
+    File format (tab-separated):
+    - Column 1: basename (srcfile)
+    - Column 2: id (primary key)
+    - Column 3: listtype (string, can be empty)
+    - Column 4: method type integer (0-5, or -1 for unmapped)
+
+    Returns: (total_processed, total_inserted)
+    """
+
+    from node_common.models import LineList
+    from django.db import transaction
+
+    linelists = []
+    total_processed = 0
+
+    with open(input_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+
+            parts = line.split('\t')
+            if len(parts) < 4:
+                if verbose:
+                    print(f"Warning: Skipping malformed line: {line}", file=sys.stderr)
+                continue
+
+            srcfile = parts[0]
+
+            try:
+                linelist_id = int(parts[1])
+            except ValueError:
+                if verbose:
+                    print(f"Warning: Invalid ID in line: {line}", file=sys.stderr)
+                continue
+
+            listtype = parts[2].strip() if parts[2].strip() else None
+
+            try:
+                method = int(parts[3])
+                # Convert -1 to None (unmapped types)
+                if method < 0:
+                    method = None
+            except ValueError:
+                method = None
+
+            linelist = LineList(
+                id=linelist_id,
+                srcfile=srcfile,
+                listtype=listtype,
+                method=method
+            )
+            linelists.append(linelist)
+            total_processed += 1
+
+            if len(linelists) >= batch_size:
+                with transaction.atomic():
+                    LineList.objects.bulk_create(
+                        linelists,
+                        batch_size=batch_size,
+                        ignore_conflicts=True
+                    )
+                linelists = []
+
+    # Insert remaining
+    if linelists:
+        with transaction.atomic():
+            LineList.objects.bulk_create(
+                linelists,
+                batch_size=batch_size,
+                ignore_conflicts=True
+            )
+
+    inserted_count = LineList.objects.count()
 
     return total_processed, inserted_count
 
@@ -1783,53 +1817,60 @@ def main():
 
     # States import command
     states_parser = subparsers.add_parser('import-states',
-                                         help='Import states (Pass 1)')
+                                     help='Import states (Pass 1)')
     states_parser.add_argument('--file', type=str, help='Input file (or use stdin)')
     states_parser.add_argument('--batch-size', type=int, default=10000)
     states_parser.add_argument('--skip-header', type=int, default=2)
 
     # Transitions import command
     trans_parser = subparsers.add_parser('import-transitions',
-                                        help='Import transitions (Pass 2)')
+                                    help='Import transitions (Pass 2)')
     trans_parser.add_argument('--file', type=str, help='Input file (or use stdin)')
     trans_parser.add_argument('--batch-size', type=int, default=10000)
     trans_parser.add_argument('--skip-header', type=int, default=2)
     trans_parser.add_argument('--skip-calc', action='store_true',
-                            help='Skip Einstein A calculation')
+                        help='Skip Einstein A calculation')
 
     # Combined import command
     combined_parser = subparsers.add_parser('import-states-transitions',
-                                           help='Combined single-pass import (states + transitions)')
+                                       help='Combined single-pass import (states + transitions)')
     combined_parser.add_argument('--file', type=str, help='Input file (or use stdin)')
     combined_parser.add_argument('--batch-size', type=int, default=10000)
     combined_parser.add_argument('--skip-header', type=int, default=2)
     combined_parser.add_argument('--skip-calc', action='store_true',
-                               help='Skip Einstein A calculation')
+                           help='Skip Einstein A calculation')
     combined_parser.add_argument('--no-read-ahead', action='store_true',
-                               help='Disable read-ahead thread (enabled by default)')
+                           help='Disable read-ahead thread (enabled by default)')
 
     # Species import command
     species_parser = subparsers.add_parser('import-species',
-                                          help='Import species from CSV')
+                                      help='Import species from CSV')
     species_parser.add_argument('--file', type=str, required=True,
-                              help='Species CSV file')
+                          help='Species CSV file')
     species_parser.add_argument('--batch-size', type=int, default=10000)
 
     # BibTeX import command
     bibtex_parser = subparsers.add_parser('import-bibtex',
-                                         help='Import references from BibTeX file')
+                                     help='Import references from BibTeX file')
     bibtex_parser.add_argument('--file', type=str, required=True,
-                              help='BibTeX file')
+                          help='BibTeX file')
     bibtex_parser.add_argument('--batch-size', type=int, default=1000)
 
     # HFS import command
     hfs_parser = subparsers.add_parser('import-hfs',
-                                       help='Import hyperfine structure constants from AB.db')
+                                   help='Import hyperfine structure constants from AB.db')
     hfs_parser.add_argument('--file', type=str, required=True,
-                           help='AB.db SQLite database file')
+                       help='AB.db SQLite database file')
     hfs_parser.add_argument('--batch-size', type=int, default=1000)
     hfs_parser.add_argument('--energy-tolerance', type=float, default=1.0,
-                           help='Energy matching tolerance in cm-1 (default: 1.0)')
+                       help='Energy matching tolerance in cm-1 (default: 1.0)')
+
+    # Linelists import command
+    linelist_parser = subparsers.add_parser('import-linelists',
+                                        help='Import linelist metadata from linelists.dat')
+    linelist_parser.add_argument('--file', type=str, required=True,
+                            help='linelists.dat file (tab-separated)')
+    linelist_parser.add_argument('--batch-size', type=int, default=1000)
 
     args = parser.parse_args()
 
@@ -1846,28 +1887,28 @@ def main():
     # Run appropriate command
     if args.command == 'import-states':
         processed, inserted = import_states(
-            input_file=args.file,
-            batch_size=args.batch_size,
-            skip_header=args.skip_header
+        input_file=args.file,
+        batch_size=args.batch_size,
+        skip_header=args.skip_header
         )
         print(f'Done! Processed {processed} lines, inserted {inserted} unique states')
 
     elif args.command == 'import-transitions':
         processed = import_transitions(
-            input_file=args.file,
-            batch_size=args.batch_size,
-            skip_header=args.skip_header,
-            skip_calc=args.skip_calc
+        input_file=args.file,
+        batch_size=args.batch_size,
+        skip_header=args.skip_header,
+        skip_calc=args.skip_calc
         )
         print(f'Done! Imported {processed} transitions')
 
     elif args.command == 'import-states-transitions':
         processed, states_inserted, trans_inserted = import_states_transitions(
-            input_file=args.file,
-            batch_size=args.batch_size,
-            skip_header=args.skip_header,
-            skip_calc=args.skip_calc,
-            read_ahead=not args.no_read_ahead
+        input_file=args.file,
+        batch_size=args.batch_size,
+        skip_header=args.skip_header,
+        skip_calc=args.skip_calc,
+        read_ahead=not args.no_read_ahead
         )
         print(f'Done! Processed {processed} lines')
         print(f'Inserted {states_inserted} unique states')
@@ -1875,26 +1916,33 @@ def main():
 
     elif args.command == 'import-species':
         processed, inserted = import_species(
-            input_file=args.file,
-            batch_size=args.batch_size
+        input_file=args.file,
+        batch_size=args.batch_size
         )
         print(f'Done! Processed {processed} lines, inserted {inserted} total species')
 
     elif args.command == 'import-bibtex':
         processed, inserted = import_bibtex(
-            input_file=args.file,
-            batch_size=args.batch_size
+        input_file=args.file,
+        batch_size=args.batch_size
         )
         print(f'Done! Processed {processed} BibTeX entries, inserted {inserted} total references')
 
     elif args.command == 'import-hfs':
         total, matched, multiple, no_match = import_hfs(
-            input_file=args.file,
-            batch_size=args.batch_size,
-            energy_tolerance=args.energy_tolerance
+        input_file=args.file,
+        batch_size=args.batch_size,
+        energy_tolerance=args.energy_tolerance
         )
         print(f'Done! Processed {total} HFS records')
         print(f'Matched: {matched}, Multiple candidates: {multiple}, No match: {no_match}')
+
+    elif args.command == 'import-linelists':
+        processed, inserted = import_linelists(
+        input_file=args.file,
+        batch_size=args.batch_size
+        )
+        print(f'Done! Processed {processed} lines, inserted {inserted} total linelists')
 
 
 if __name__ == '__main__':

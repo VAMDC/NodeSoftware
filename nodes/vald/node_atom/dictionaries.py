@@ -24,6 +24,7 @@ RETURNABLES = {\
 'AtomStateEnergy':'AtomState.energy',
 'AtomStateEnergyRef':'AtomState.energy_ref_id',
 'AtomStateEnergyUnit':'1/cm',
+'AtomStateEnergyMethod':'AtomState.energy_method',
 
 'AtomStateParity':'AtomState.p',
 'AtomStateTotalAngMom':'AtomState.j',
@@ -55,7 +56,7 @@ RETURNABLES = {\
 'RadTransWavelengthComment': 'RadTran.get_wave_comments()',
 'RadTransWavelengthRef':'RadTran.get_wave_refs()',
 'RadTransWavelengthUnit':u'A',
-'RadTransWavelengthMethod':'RadTran.method_return',
+'RadTransWavelengthMethod':'RadTran.get_wave_methods()',
 #'RadTransProcess':"RadTran.transition_type",
 'RadTransProcess':"excitation",
 'RadTransUpperStateRef':'RadTran.upstate_id',
@@ -124,6 +125,6 @@ RESTRICTABLES = {\
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 'RadTransBroadeningNatural':'gammarad',
 'RadTransBroadeningPressure':'gammastark',
-'MethodCategory':('method_restrict',valdObstype),
+'MethodCategory':('wave_method',valdObstype),
 'RadTransProbabilityA':'einsteina'
 }

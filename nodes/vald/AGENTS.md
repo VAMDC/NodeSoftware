@@ -1,11 +1,11 @@
-
-# concerning the import of data via valdimport.py
+# Import of data via valdimport.py
 
 ## to make a new dev database from scratch
 rm vald_dev.sqlite
 uv run manage.py migrate
 uv run valdimport.py import-species --file=VALD_list_of_species.csv
 uv run valdimport.py import-bibtex --file=VALD_ref.bib
+uv run valdimport.py import-linelists --file=linelists.dat
 
 ## model changes
 When the Django model changes, don't make a migration. Instead
@@ -24,10 +24,6 @@ uv run valdimport.py import-states-transitions --file=dump
 
 ## info on the incoming data format
 The FORTRAN code that produces the data is available in presformat5.f
-
-## further info
-see also VALD_IMPORT.md , if needed
-
 
 # concerning the XSAMS XML output
 
