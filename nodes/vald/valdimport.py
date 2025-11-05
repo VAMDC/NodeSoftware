@@ -1427,6 +1427,7 @@ def import_species(input_file, batch_size=10000, verbose=True):
                     ionen=float(row['Ion. en.']) if row['Ion. en.'].strip() else None,
                     solariso=float(row['Fract.']) if row['Fract.'].strip() else None,
                     ncomp=int(row['Num. comp.']) if row['Num. comp.'].strip() else None,
+                    atomic=int(row['N1']) if row['N1'].strip() else None,
                 )
                 species_list.append(species)
                 total_processed += 1

@@ -139,11 +139,11 @@ def makeOptionalTag(tagname, keyword, G, extraAttr={}):
     elif isiterable(content):
         s = []
         for c in content:
-            s.append( '<%s>%s</%s>'%(tagname,c,tagname) )
+            s.append( '<%s>%s</%s>'%(tagname, escape(str(c)), tagname) )
         return ''.join(s)
     else:
         extra = "".join([' %s="%s"'% (k, v) for k, v in extraAttr.items()])
-        return '<%s%s>%s</%s>'%(tagname, extra, content,tagname)
+        return '<%s%s>%s</%s>'%(tagname, extra, escape(str(content)), tagname)
 
 def makeSourceRefs(refs):
     """
@@ -654,7 +654,7 @@ def makeTermType(tag, keyword, G):
         string += "</LK>"
     tlabel = G("%sLabel" % keyword)
     if tlabel:
-        string += "<TermLabel>%s</TermLabel>" % tlabel
+        string += "<TermLabel>%s</TermLabel>" % escape(str(tlabel))
     string += "</%s>" % tag
     return string
 
@@ -752,7 +752,7 @@ def makeAtomStateComponents(AtomState):
 
         clabel = G("AtomStateConfigurationLabel")
         if clabel:
-            string += "<ConfigurationLabel>%s</ConfigurationLabel>" % clabel
+            string += "<ConfigurationLabel>%s</ConfigurationLabel>" % escape(str(clabel))
         string += "</Configuration>"
 
         string += makeTermType("Term", "AtomStateTerm", G)
