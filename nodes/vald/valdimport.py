@@ -95,7 +95,10 @@ VALD_FIELDS = [
     # 2F7.3 = gammarad (105-112), gammastark (112-119)
     FieldDef('gammarad', 105, 112, float, null_values=('0.0', '', 'X')),
     FieldDef('gammastark', 112, 119, float, null_values=('0.000', '', 'X')),
-    FieldDef('gammawaals', 119, 127, float, null_values=('0.0', '', 'X')),
+    # F8.3 at 119-127: gammawaals OR encoded alpha+sigma
+    # Auto-detected: if value < 0 -> gammawaals
+    #                if value > 0 -> integer part = sigma, fractional part = alpha
+    FieldDef('gammawaals_raw', 119, 127, float, null_values=('0.0', '', 'X')),
 
     # === Term descriptions ===
     # A2,A86,A2,A86 = tflg_L, term_L, tflg_U, term_U
@@ -154,6 +157,45 @@ def scale_energy(value: Optional[float]) -> Optional[int]:
     if value is None:
         return None
     return int(round(value * ENERGY_SCALE_FACTOR))
+
+
+def parse_waals_broadening(gammawaals_raw: Optional[float]) -> tuple:
+    """
+    Parse van der Waals broadening value and auto-detect format.
+
+    Args:
+        gammawaals_raw: Raw value from field at positions 119-127
+
+    Returns:
+        tuple: (gammawaals, alphawaals, sigmawaals)
+            If value < 0: (gammawaals, None, None)
+            If value > 0: (None, alpha, sigma) where:
+                - sigma = integer part
+                - alpha = fractional part (parsed as string to avoid precision errors)
+            If value is None or 0: (None, None, None)
+    """
+    if gammawaals_raw is None or gammawaals_raw == 0.0:
+        return None, None, None
+
+    if gammawaals_raw < 0:
+        # Standard format: negative gammawaals value
+        return gammawaals_raw, None, None
+
+    # Extended format: positive value encodes sigma.alpha
+    # Parse as string to avoid floating point precision errors
+    value_str = str(gammawaals_raw)
+
+    if '.' in value_str:
+        int_part, frac_part = value_str.split('.', 1)
+        sigma = int(int_part)
+        # Parse fractional part as "0.xxx" to get clean decimal
+        alpha = float('0.' + frac_part)
+    else:
+        # No fractional part (e.g., "2.0" or "2")
+        sigma = int(gammawaals_raw)
+        alpha = 0.0
+
+    return None, alpha, sigma
 
 
 def accuracy_to_loggf_error(accurflag: Optional[str], accuracy: Optional[str]) -> Optional[float]:
@@ -998,6 +1040,10 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
     """
     Import transitions from VALD format (Pass 2)
 
+    Van der Waals broadening is auto-detected:
+    - If value < 0: stored as gammawaals
+    - If value > 0: integer part = sigmawaals, fractional part = alphawaals
+
     Returns: total_processed
     """
     from node_atom.models import State, Transition
@@ -1047,6 +1093,12 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
                 )
 
                 wave_method = linelist_methods.get(row.get('ll1'))
+
+                # Auto-detect van der Waals format
+                gammawaals_val, alphawaals_val, sigmawaals_val = parse_waals_broadening(
+                    row.get('gammawaals_raw')
+                )
+
                 transitions.append(Transition(
                     upstate_id=state_cache.get_state_id(
                         row['species_id'],
@@ -1067,7 +1119,9 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
                     wave_method=wave_method,
                     gammarad=row.get('gammarad'),
                     gammastark=row.get('gammastark'),
-                    gammawaals=row.get('gammawaals'),
+                    gammawaals=gammawaals_val,
+                    alphawaals=alphawaals_val,
+                    sigmawaals=sigmawaals_val,
                     accurflag=row.get('accurflag'),
                     accur=row.get('accuracy'),
                     loggf_err=loggf_error,
@@ -1133,6 +1187,10 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
     3. Create and insert transitions using those state IDs
 
     Memory-efficient for large datasets - only one batch in memory at a time.
+
+    Van der Waals broadening is auto-detected:
+    - If value < 0: stored as gammawaals
+    - If value > 0: integer part = sigmawaals, fractional part = alphawaals
 
     Args:
         read_ahead: If True, read and parse in separate thread to keep extraction
@@ -1311,6 +1369,11 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
 
                 wave_method = linelist_methods.get(row.get('ll1'))
 
+                # Auto-detect van der Waals format
+                gammawaals_val, alphawaals_val, sigmawaals_val = parse_waals_broadening(
+                    row.get('gammawaals_raw')
+                )
+
                 ref_codes = row.get('ref_codes', [None]*9)
                 wave_ref = ref_codes[0]
                 loggf_ref = ref_codes[1]
@@ -1321,7 +1384,8 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 transition_rows.append((
                     upstate_id, lostate_id, species_id,
                     row['wave'], row['wave_ritz'], row['loggf'], wave_method,
-                    row.get('gammarad'), row.get('gammastark'), row.get('gammawaals'),
+                    row.get('gammarad'), row.get('gammastark'), gammawaals_val,
+                    alphawaals_val, sigmawaals_val,
                     row.get('accurflag'), row.get('accuracy'), loggf_error,
                     transition_type, autoionized,
                     wave_ref, wave_ref, loggf_ref, gammarad_ref, gammastark_ref, waals_ref
@@ -1334,7 +1398,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
         with transaction.atomic():
             with connection.cursor() as cursor:
                 cursor.executemany(
-                    "INSERT INTO transitions (upstate, lostate, species_id, wave, waveritz, loggf, wave_method, gammarad, gammastark, gammawaals, accurflag, accur, loggf_err, transition_type, autoionized, wave_ref_id, waveritz_ref_id, loggf_ref_id, gammarad_ref_id, gammastark_ref_id, waals_ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO transitions (upstate, lostate, species_id, wave, waveritz, loggf, wave_method, gammarad, gammastark, gammawaals, alphawaals, sigmawaals, accurflag, accur, loggf_err, transition_type, autoionized, wave_ref_id, waveritz_ref_id, loggf_ref_id, gammarad_ref_id, gammastark_ref_id, waals_ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     transition_rows
                 )
 
