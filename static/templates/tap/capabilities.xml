@@ -1,5 +1,4 @@
 <?xml version='1.0'?>
-<?xml-stylesheet type="text/xsl" href="{{accessURL}}static/xsl/Capabilities.xsl"?>
 <cap:capabilities
     xmlns:cap='http://www.ivoa.net/xml/VOSICapabilities/v1.0'
     xmlns:vs='http://www.ivoa.net/xml/VODataService/v1.0'
