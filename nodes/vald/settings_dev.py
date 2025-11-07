@@ -1,7 +1,7 @@
 from settings_default import *
 
 DEBUG = False
-DEBUG = True
+#DEBUG = True
 TRANSLIM = 100000
 QUERY_STORE_ACTIVE = False
 
@@ -49,9 +49,9 @@ if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'
 
 
-LOGGING['loggers']['django.db.backends'] = {
-      'handlers': ['console', 'logfile'],
-      'level': 'DEBUG',
-      'propagate': False,
-  }
+#LOGGING['loggers']['django.db.backends'] = {
+#      'handlers': ['console', 'logfile'],
+#      'level': 'DEBUG',
+#      'propagate': False,
+#  }
 

@@ -637,27 +637,55 @@ def parse_quantum_numbers(species_id: int, j: Optional[float],
 
 def parse_reference_line(ref_line: str) -> dict:
     """
-    Parse VALD reference line.
-    Format: "wl:K07 gf:K07 K07 K07 K07 K07 K07 K07 K07"
-    Returns dict with 'wave_ref' and 'refs' (list of 9 reference strings)
+    Parse VALD reference line (space-separated format).
+
+    First field can be:
+    - "wl:key1" -> wave_ref = "key1"
+    - "wl:key1,iso:key2" -> wave_ref = "key1,key2"
+    - "wl:key1,wl:key2" -> wave_ref = "key1,key2"
+
+    Remaining fields are reference codes for the 9 data columns.
+
+    Returns dict with 'wave_ref' and 'ref_codes' (list of 9 reference strings)
     """
     parts = ref_line.strip().split()
     refs = {}
 
-    # First part should be "wl:XXX"
+    # Parse first field which may contain comma-separated type:key pairs
     if parts and ':' in parts[0]:
-        wave_ref = parts[0].split(':', 1)[1]
-        refs['wave_ref'] = wave_ref
+        # Split by comma to handle "wl:key1,iso:key2" or "wl:key1,wl:key2"
+        wl_parts = parts[0].split(',')
+        keys = []
+        for wl_part in wl_parts:
+            if ':' in wl_part:
+                key = wl_part.split(':', 1)[1]
+                keys.append(key)
+
+        # Store comma-separated keys in wave_ref
+        refs['wave_ref'] = ','.join(keys) if keys else None
     else:
         refs['wave_ref'] = None
 
     # Collect all reference codes (there should be 9 total)
+    # The first field may have multiple comma-separated pairs, but we only use the first key for ref_codes[0]
     ref_codes = []
-    for part in parts:
-        if ':' in part:
-            ref_codes.append(part.split(':', 1)[1])
+    for i, part in enumerate(parts):
+        if i == 0:
+            # First field: extract first key only for ref_codes
+            if ':' in part:
+                first_pair = part.split(',')[0]
+                if ':' in first_pair:
+                    ref_codes.append(first_pair.split(':', 1)[1])
+                else:
+                    ref_codes.append(None)
+            else:
+                ref_codes.append(part)
         else:
-            ref_codes.append(part)
+            # Remaining fields: extract key if type:key format, otherwise use as-is
+            if ':' in part:
+                ref_codes.append(part.split(':', 1)[1])
+            else:
+                ref_codes.append(part)
 
     # Pad to 9 refs if needed
     while len(ref_codes) < 9:
@@ -1375,7 +1403,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 )
 
                 ref_codes = row.get('ref_codes', [None]*9)
-                wave_ref = ref_codes[0]
+                wave_ref = row.get('wave_ref')
                 loggf_ref = ref_codes[1]
                 gammarad_ref = ref_codes[5]
                 gammastark_ref = ref_codes[6]
