@@ -40,13 +40,13 @@ RETURNABLES = {\
 'AtomStateTermLSSeniority':'Component.sn',
 #'AtomStateTermJJ':'Component.jj()',
 'AtomStateTermJ1J2':'Component.jj()',
-'AtomStateTermK':'Component.k',
+'AtomStateTermJKK':'Component.k',
 'AtomStateTermJKJ':'Component.jc',
 'AtomStateTermJKS':'Component.s2',
 'AtomStateTermLKL':'Component.l',
 'AtomStateTermLKK':'Component.k',
-#'AtomStateTermLKLSymbol':"",
-'AtomStateTermKJS2':'Component.s2',
+'AtomStateTermLKS2':'Component.s2',
+#'AtomStateTermLKLSymbol':""',
 'AtomStateShellPrincipalQN':'Component.n',
 
 #############################################################

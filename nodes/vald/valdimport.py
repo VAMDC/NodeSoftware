@@ -579,7 +579,8 @@ def parse_quantum_numbers(species_id: int, j: Optional[float],
             mult_match = re.match(r'^(\d+)', term)
             if mult_match:
                 multiplicity = int(mult_match.group(1))
-                result['s2'] = (multiplicity - 1) / 2.0
+                if multiplicity > 0:
+                    result['s2'] = (multiplicity - 1) / 2.0
 
         # Parse Jc from <Jc> in level description (use full_level if level_desc not provided)
         search_str = level_desc if level_desc else full_level
@@ -612,7 +613,8 @@ def parse_quantum_numbers(species_id: int, j: Optional[float],
             mult_match = re.match(r'^(\d+)', term)
             if mult_match:
                 multiplicity = int(mult_match.group(1))
-                result['s2'] = (multiplicity - 1) / 2.0
+                if multiplicity > 0:
+                    result['s2'] = (multiplicity - 1) / 2.0
 
         # Parse L from level description after '\ ' (use full_level if level_desc not provided)
         search_str = level_desc if level_desc else full_level
