@@ -648,9 +648,15 @@ def makeTermType(tag, keyword, G):
     k = G("%sLKK" % keyword)
     if l and k:
         string += "<LK>"
-        string += "<L><Value>%s</Value><Symbol>%s</Symbol></L>" % (l, G("%sLKLSymbol" % keyword))
+        lsym = G("%sLKLSymbol" % keyword)
+        string += "<L><Value>%s</Value>" % l
+        if lsym:
+            string += "<Symbol>%s</Symbol>" % lsym
+        string += "</L>"
         string += "<K>%s</K>" % k
-        string += "<S2>%s</S2>" % G("%sLKS2" % keyword)
+        s2 = G("%sLKS2" % keyword)
+        if s2:
+            string += "<S2>%s</S2>" % s2
         string += "</LK>"
     tlabel = G("%sLabel" % keyword)
     if tlabel:
