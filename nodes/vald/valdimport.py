@@ -1623,15 +1623,15 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
             if candidate_count > 1:
                 stats['multiple_matches'] += 1
 
-            state = candidates.last()
-            stats['matched'] += 1
-            update_queue.append({
-                'state_id': state.id,
-                'a': a,
-                'da': da,
-                'b': b,
-                'db': db
-            })
+            for state in candidates:
+                stats['matched'] += 1
+                update_queue.append({
+                    'state_id': state.id,
+                    'a': a,
+                    'da': da,
+                    'b': b,
+                    'db': db
+                })
 
         if len(update_queue) >= batch_size:
             with transaction.atomic():
