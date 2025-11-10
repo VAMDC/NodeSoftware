@@ -1,7 +1,7 @@
 from settings_default import *
 
 DEBUG = False
-#DEBUG = True
+DEBUG = True
 TRANSLIM = 200000
 QUERY_STORE_ACTIVE = False
 
