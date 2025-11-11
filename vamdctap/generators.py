@@ -108,19 +108,18 @@ def GetValue(returnable_key, **kwargs):
         # No dot means it is a static string!
         return name
 
-    # strip the prefix
+    # strip the prefix and get attribute chain
     attribs = name.split('.')[1:]
-    attribs.reverse() # to later pop() from the front
 
-    #get the current structure, throw away its name
-    bla,obj = kwargs.popitem()
+    # get the current structure (first value from kwargs)
+    obj = next(iter(kwargs.values()))
 
     # Go through the cascade of foreignKeys/attributes to get to the leaf object
-    while len(attribs) >1:
-        att = attribs.pop()
-        obj = getattr(obj,att)
+    for att in attribs[:-1]:
+        obj = getattr(obj, att)
 
-    att = attribs.pop() # this is the last one now, can be either attribute or function
+    # Get the final attribute (can be either attribute or function)
+    att = attribs[-1]
 
     if att.endswith('()'):
         value = getattr(obj,att[:-2])() # RUN IT!
