@@ -280,30 +280,31 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
         elif len(v)<l: v*=l
         extraAttr[k] = v
 
-    string = ''
+    parts = []
     for i, val in enumerate(value):
-        string += '<%s' % tagname
+        parts.append('<%s' % tagname)
         for k, v in extraAttr.items():
-            if v[i]: string += ' %s="%s"'%(k,v[i])
+            if v[i]:
+                parts.append(' %s="%s"'%(k,v[i]))
         if name[i]:
-            string += ' name="%s"' % name[i]
+            parts.append(' name="%s"' % name[i])
         if method[i]:
-            string += ' methodRef="M%s-%s"' % (NODEID, method[i])
-        string += '>'
+            parts.append(' methodRef="M%s-%s"' % (NODEID, method[i]))
+        parts.append('>')
         if comment[i]:
-            string += '<Comments>%s</Comments>' % escape('%s' % comment[i])
-        string += makeSourceRefs(refs[i])
-        string += '<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val)
-        string += makeEvaluation( keyword, G, j=i)
+            parts.append('<Comments>%s</Comments>' % escape('%s' % comment[i]))
+        parts.append(makeSourceRefs(refs[i]))
+        parts.append('<Value units="%s">%s</Value>' % (unit[i] or 'unitless', val))
+        parts.append(makeEvaluation( keyword, G, j=i))
 
         # This is broken, makes empty <Accuracy/>.
         # TODO: Proper solution is to add j-parameter to makeAccuracy(), similar to makeEvalution()
         #if acc[i] is not None:
-        #    string += '<Accuracy>%s</Accuracy>' % acc[i]
+        #    parts.append('<Accuracy>%s</Accuracy>' % acc[i])
 
 
-        string += '</%s>' % tagname
-    return string
+        parts.append('</%s>' % tagname)
+    return ''.join(parts)
 
 # an alias for compatibility reasons
 makeNamedDataType = makeRepeatedDataType
