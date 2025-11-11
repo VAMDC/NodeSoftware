@@ -195,25 +195,26 @@ def makePartitionfunc(keyword, G):
         Npf = len(temperature)
         unit = makeiter(unit,Npf)
 
-    string = ''
+    parts = []
     for i in range(Npf):
-        string += '<PartitionFunction>'
-        if len(comments)>i and comments[i]: string += '<Comments>%s</Comments>' % comments[i]
-        string += '<T units="%s"><DataList>' % (unit[i] if (len(unit)>i and unit[i]) else 'K')
-        string += " ".join(str(temp) for temp in temperature[i])
-        string += '</DataList></T>'
-        string += '<Q><DataList>'
-        string += " ".join(str(q) for q in partitionfunc[i])
-        string += '</DataList></Q>'
+        parts.append('<PartitionFunction>')
+        if len(comments)>i and comments[i]:
+            parts.append('<Comments>%s</Comments>' % comments[i])
+        parts.append('<T units="%s"><DataList>' % (unit[i] if (len(unit)>i and unit[i]) else 'K'))
+        parts.append(" ".join(str(temp) for temp in temperature[i]))
+        parts.append('</DataList></T>')
+        parts.append('<Q><DataList>')
+        parts.append(" ".join(str(q) for q in partitionfunc[i]))
+        parts.append('</DataList></Q>')
         if len(nsiname)>i and nsiname[i]:
-            string += makePrimaryType("NuclearSpinIsomer", "NuclearSpinIsomer",G,
-                                  extraAttr={"lowestEnergyStateRef":'S%s-%s' % (G('NodeID'), nsistateref[i])})
-            string += "<Name>%s</Name>" % nsiname[i]
-            string += "<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (nsisymgroup[i], nsilowrovibsym[i])
-            string += "</NuclearSpinIsomer>"
+            parts.append(makePrimaryType("NuclearSpinIsomer", "NuclearSpinIsomer",G,
+                                  extraAttr={"lowestEnergyStateRef":'S%s-%s' % (G('NodeID'), nsistateref[i])}))
+            parts.append("<Name>%s</Name>" % nsiname[i])
+            parts.append("<LowestRoVibSym group='%s'>%s</LowestRoVibSym>" % (nsisymgroup[i], nsilowrovibsym[i]))
+            parts.append("</NuclearSpinIsomer>")
 
-        string += '</PartitionFunction>'
-    return string
+        parts.append('</PartitionFunction>')
+    return ''.join(parts)
 
 def makePrimaryType(tagname, keyword, G, extraAttr={}):
     """
