@@ -3,11 +3,15 @@
 
 import sys
 import datetime
+import logging
 from xml.sax.saxutils import escape
 
 # Get the node-specific parts
 from django.conf import settings
 from importlib import import_module
+
+log = logging.getLogger('vamdc.tap.generator')
+
 DICTS = import_module(settings.NODEPKG + '.dictionaries')
 from requests.utils import CaseInsensitiveDict as CaselessDict
 RETURNABLES = CaselessDict(DICTS.RETURNABLES)
@@ -15,20 +19,20 @@ RETURNABLES = CaselessDict(DICTS.RETURNABLES)
 # This must always be set.
 try:
     NODEID = RETURNABLES['NodeID']
-except:
+except KeyError:
     NODEID = 'PleaseFillTheNodeID'
+    log.debug('NodeID not found in RETURNABLES, using default')
 
 try:
     XSAMS_VERSION = RETURNABLES['XSAMSVersion']
-except:
+except KeyError:
     XSAMS_VERSION = '1.0'
+    log.debug('XSAMSVersion not found in RETURNABLES, using default 1.0')
 try:
     SCHEMA_LOCATION = RETURNABLES['SchemaLocation']
-except:
+except KeyError:
     SCHEMA_LOCATION = 'http://vamdc.org/xml/xsams/%s'%XSAMS_VERSION
-
-import logging
-log = logging.getLogger('vamdc.tap.generator')
+    log.debug('SchemaLocation not found in RETURNABLES, using default')
 
 # Helper function to test if an object is a list or tuple
 import six # for python 2 and 3
@@ -902,14 +906,22 @@ def makeNormalMode(G):
 
         for i,x3 in enumerate(x3s):
             result.append('<Vector')
-            try: result.append(' ref="%s"'%vsrefs[i])
-            except: pass
-            try: result.append(' x3="%s"'%x3)
-            except: pass
-            try: result.append(' y3="%s"'%y3s[i])
-            except: pass
-            try: result.append(' z3="%s"'%z3s[i])
-            except: pass
+            try:
+                result.append(' ref="%s"'%vsrefs[i])
+            except (IndexError, TypeError):
+                log.debug('No reference for vector index %d', i)
+            try:
+                result.append(' x3="%s"'%x3)
+            except (TypeError, ValueError):
+                log.debug('Invalid x3 value for vector index %d', i)
+            try:
+                result.append(' y3="%s"'%y3s[i])
+            except (IndexError, TypeError):
+                log.debug('No y3 value for vector index %d', i)
+            try:
+                result.append(' z3="%s"'%z3s[i])
+            except (IndexError, TypeError):
+                log.debug('No z3 value for vector index %d', i)
             result.append('></Vector>')
 
         result.append('</DisplacementVectors>')
