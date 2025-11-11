@@ -38,8 +38,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'VAMDC node software'
-copyright = u'2012, VAMDC'
+project = u'VAMDC Node Software'
+copyright = u'2025, VAMDC'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -65,7 +65,7 @@ release = 'master'
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
-exclude_trees = []
+exclude_patterns = []
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -92,7 +92,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'sphinxdoc'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -177,15 +177,10 @@ latex_documents = [
    u'VAMDC WP7', 'manual'),
 ]
 
-f = open('_templates/documentTemplate.tex', 'r+')
-
-PREAMBLE = f.read()
-
 latex_elements = {
         'papersize': 'a4paper',
         'classoptions': ',oneside',
         'babel': '\\usepackage[english]{babel}',
-        'preamble': PREAMBLE
 }
 
 

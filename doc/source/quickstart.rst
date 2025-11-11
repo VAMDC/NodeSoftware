@@ -31,7 +31,7 @@ one.
 The solution is to let your data be accessible through an existing VAMDC
 database - one dealing with the type of data you have.
 
-Go to the `VAMDC portal <http://portal.vamdc.org/vamdc_portal/nodes.seam>`_. Here you will
+Go to the `VAMDC nodes list <http://portal.vamdc.org/vamdc_portal/nodes.seam>`_. Here you will
 find a list of all database nodes in VAMDC along with
 brief descriptions and contact information. Once you find a database
 you think would benefit from your data, contact the maintainer via
