@@ -1,0 +1,9 @@
+Testing all VAMDC nodes...
+=====================================
+
+
+=====================================
+Summary:
+  Passed: 0
+  Failed: 0
+  Needs Setup: 0
