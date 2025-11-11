@@ -22,7 +22,7 @@ from requests.utils import CaseInsensitiveDict as CaselessDict
 if settings.QUERY_STORE_ACTIVE:
     try:
         import requests as librequests
-    except:
+    except ImportError:
         log.critical('settings.QUERY_STORE_ACTIVE is True but requests package is missing!')
 
 QUERYFUNC = import_module(settings.NODEPKG+'.queryfunc')
@@ -104,30 +104,34 @@ class TAPQUERY(object):
             self.lang = self.request['LANG'][0]
             self.lang = self.lang.lower()
             log.info(self.lang)
-        except:
-            log.debug('LANG is empty, assuming VSS2')
+        except (KeyError, IndexError):
+            log.debug('LANG is empty or missing, assuming VSS2')
             self.lang='vss2'
         else:
             if self.lang not in ('vss1','vss2'):
                 self.errormsg += 'Only LANG=VSS1 or LANG=VSS2 is supported.\n'
 
-        try: 
+        try:
             self.query = self.request['QUERY'][0]
-        except: 
+        except (KeyError, IndexError):
             self.errormsg += 'Cannot find QUERY in request.\n'
+            log.debug('QUERY parameter missing or empty in request')
 
         try:
             self.format = self.request['FORMAT'][0]
             self.format = self.format.lower()
-        except:
-            log.debug('FORMAT is empty, assuming XSAMS')
+        except (KeyError, IndexError):
+            log.debug('FORMAT is empty or missing, assuming XSAMS')
             self.format='xsams'
         else:
             if self.format != 'xsams':
                 log.debug('Requested FORMAT is not XSAMS, letting it pass anyway.')
-        try: self.parsedSQL=SQL.parseString(self.query,parseAll=True)
-        except: # if this fails, we're done
+        try:
+            self.parsedSQL=SQL.parseString(self.query,parseAll=True)
+        except Exception as e:
+            # if this fails, we're done - SQL parsing error is critical
             self.errormsg += 'Could not parse the SQL query string: %s\n'%getattr(self,'query',None)
+            log.error('SQL parsing failed for query: %s - Error: %s', getattr(self,'query',None), str(e))
             self.isvalid=False
             return
 
@@ -327,7 +331,8 @@ def sync(request):
                 log.info('Empty result')
                 response.status_code=204
                 return response
-        except: pass
+        except (ValueError, TypeError) as e:
+            log.debug('Could not parse VAMDC-APPROX-SIZE header: %s', str(e))
 
     return response
 
