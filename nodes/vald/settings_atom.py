@@ -24,6 +24,9 @@ DATABASES = {
 #    'PASSWORD': 'V@ld',
   },
 }
+
+# Required for staticfiles app
+STATIC_URL = '/static/'
 LAST_MODIFIED = datetime.date(2020,1,24)
 NODEVERSION = LAST_MODIFIED.isoformat()
 
