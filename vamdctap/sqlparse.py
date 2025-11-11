@@ -200,7 +200,7 @@ def singleWhere(w,restrictables):
     if not w[0] in restrictables:
         log.warning('Unsupported Restrictable: %s'%w[0])
         return 'Q(pk=False)'
-    if not OPTRANS.has_key(w[1]):
+    if w[1] not in OPTRANS:
         log.warning('Unsupported operator: %s'%w[1])
         return ''
     value=w[2].strip('\'"')
@@ -213,7 +213,7 @@ def where2q(ws,restrictables):
     q=''
     for w in ws:
         if len(w)>4 and w[1]=='in':
-            if not restrictables.has_key(w[0]):
+            if w[0] not in restrictables:
                 log.warning('cant find name %s'%w[0]); return ''
             # join the comma-separated list into a single string and strip
             # the parentheses
