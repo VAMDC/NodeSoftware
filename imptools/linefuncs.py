@@ -94,6 +94,7 @@ def bySepNr2int(linedata, number, sep=','):
     """
     Split a text line by sep aargument and return the numbered split section.
     Always convert output to int.
+
     Inputs:
       linedata (str)
       number (int) - nth section, separated by sep
