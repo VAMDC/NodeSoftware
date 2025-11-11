@@ -4,17 +4,10 @@ DEBUG = False
 DEBUG = True
 TRANSLIM = 200000
 QUERY_STORE_ACTIVE = False
+SERVE_STATIC = False
 
-try:
-    INSTALLED_APPS.remove('node')
-except:
-    pass
-
-NODEPKG='node_molec'
-if not 'node_common' in INSTALLED_APPS:
-    INSTALLED_APPS.append('node_common')
-if not NODEPKG in INSTALLED_APPS:
-    INSTALLED_APPS.append(NODEPKG)
+NODEPKG = 'node_molec'
+INSTALLED_APPS = ['vamdctap', 'node_common', NODEPKG]
 
 DATABASES = {
   'default': {
@@ -30,9 +23,8 @@ EXAMPLE_QUERIES = [\
     "SELECT SPECIES",
     ]
 ADMINS = (('Thomas', 'thomas.marquart@astro.uu.se'),)
-SERVER_EMAIL = 'thomas.marquart.astro.uu.se'
+SERVER_EMAIL = 'thomas.marquart@astro.uu.se'
 DEPLOY_URL = 'http://localhost:8000/tap/'
-STATIC_URL = '/static/'
 
 VAMDC_APPS = [\
     "ivo://vamdc/xsams-mux",
