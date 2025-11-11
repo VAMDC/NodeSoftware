@@ -83,7 +83,7 @@ def splitWhere(ws, counter=0):
     logic = []
     rests = {}
     for w in ws:
-        if type(w) == str: logic.append(w)
+        if isinstance(w, str): logic.append(w)
         elif w[1] in OPTRANS:
             logic.append('r%s'%counter)
             rests[str(counter)] = w.asList()
@@ -127,7 +127,7 @@ def mergeQwithLogic(qdict, logic):
 
 
 def checkLen1(x):
-    if type(x) != list:
+    if not isinstance(x, list):
         log.error('this should have been a list: %s'%x)
     elif len(x) != 1:
         log.error('this should only have ha one element: %s'%x)
@@ -144,7 +144,7 @@ def restriction2Q(rs, restrictables=RESTRICTABLES):
         log.debug('Restrictable "%s" not supported!'%r)
         raise Exception('Restrictable "%s" not supported!'%r)
 
-    if type(restrictables[r]) == tuple:
+    if isinstance(restrictables[r], tuple):
         rest_rhs = restrictables[r][0]
     else: rest_rhs = restrictables[r]
 
