@@ -1815,12 +1815,20 @@ def import_species(input_file, batch_size=10000, verbose=True):
                             ignore_conflicts=True
                         )
                         # Insert components after species are created
+                        # Only create if both molecule and atom species exist
                         if component_list:
                             for comp in component_list:
-                                SpeciesComp.objects.get_or_create(
-                                    molecule_id=comp['molecule_id'],
-                                    atom_id=comp['atom_id']
-                                )
+                                try:
+                                    # Check if both species exist
+                                    if Species.objects.filter(id=comp['molecule_id']).exists() and \
+                                       Species.objects.filter(id=comp['atom_id']).exists():
+                                        SpeciesComp.objects.get_or_create(
+                                            molecule_id=comp['molecule_id'],
+                                            atom_id=comp['atom_id']
+                                        )
+                                except Exception as e:
+                                    if verbose:
+                                        print(f"Warning: Could not create component {comp['molecule_id']}->{comp['atom_id']}: {e}", file=sys.stderr)
                     species_list = []
                     component_list = []
 
@@ -1837,12 +1845,20 @@ def import_species(input_file, batch_size=10000, verbose=True):
                     ignore_conflicts=True
                 )
                 # Insert components after species are created
+                # Only create if both molecule and atom species exist
                 if component_list:
                     for comp in component_list:
-                        SpeciesComp.objects.get_or_create(
-                            molecule_id=comp['molecule_id'],
-                            atom_id=comp['atom_id']
-                        )
+                        try:
+                            # Check if both species exist
+                            if Species.objects.filter(id=comp['molecule_id']).exists() and \
+                               Species.objects.filter(id=comp['atom_id']).exists():
+                                SpeciesComp.objects.get_or_create(
+                                    molecule_id=comp['molecule_id'],
+                                    atom_id=comp['atom_id']
+                                )
+                        except Exception as e:
+                            if verbose:
+                                print(f"Warning: Could not create component {comp['molecule_id']}->{comp['atom_id']}: {e}", file=sys.stderr)
 
     inserted_count = Species.objects.count()
 
