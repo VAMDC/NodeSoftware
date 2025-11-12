@@ -1791,15 +1791,14 @@ def import_species(input_file, batch_size=10000, verbose=True):
 
                 # For molecules, create component relationships
                 if ncomp and ncomp > 1:
-                    # N1-N4 contain atomic numbers of component atoms
+                    # N1-N4 contain species IDs of component atoms
                     for i, col in enumerate(['N1', 'N2', 'N3', 'N4'], 1):
                         if i > ncomp:
                             break
-                        atom_z = row.get(col, '').strip()
-                        if atom_z:
-                            # Atomic species ID = atomic number (assuming neutral atoms)
-                            # VALD species IDs for atoms: Z * 100 (e.g., H = 100, He = 200)
-                            atom_species_id = int(atom_z) * 100
+                        atom_species_id_str = row.get(col, '').strip()
+                        if atom_species_id_str:
+                            # N1-N4 are already species IDs, not atomic numbers
+                            atom_species_id = int(atom_species_id_str)
                             component_list.append({
                                 'molecule_id': species_id,
                                 'atom_id': atom_species_id
