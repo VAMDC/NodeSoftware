@@ -26,21 +26,26 @@ class State(Model):
     # vald->xsams mapping = {0:'experiment', 1:'observed', 2:'empirical', 3:'theory', 4:'semiempirical', 5:'compilation'}
     energy_method = PositiveSmallIntegerField(null=True, db_index=True)
 
+    # Quantum numbers (common to both atoms and molecules)
     j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True)
-    l = PositiveSmallIntegerField(db_column=u'L', null=True)
     s = DecimalField(max_digits=3, decimal_places=1,db_column=u'S', null=True)
     p = DecimalField(max_digits=3, decimal_places=1,db_column=u'P', null=True)
-    j1 = DecimalField(max_digits=3, decimal_places=1,db_column=u'J1', null=True)
-    j2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'J2', null=True)
-    k = DecimalField(max_digits=3, decimal_places=1,db_column=u'K', null=True)
-    s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True)
-    jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True)
-    sn = PositiveSmallIntegerField(db_column=u'Sn',null=True)
     n = PositiveSmallIntegerField(db_column=u'n',null=True)
 
-    def jj(self):
-        if None not in (self.j1, self.j2):
-            return (self.j1, self.j2)
+    # Molecular quantum numbers (for diatomic molecules)
+    # v - vibrational quantum number
+    v = PositiveSmallIntegerField(db_column=u'v', null=True)
+    # Lambda - electronic orbital angular momentum projection (0=Sigma, 1=Pi, 2=Delta, etc.)
+    Lambda = PositiveSmallIntegerField(db_column=u'Lambda', null=True)
+    # Sigma - spin projection on internuclear axis
+    Sigma = DecimalField(max_digits=3, decimal_places=1, db_column=u'Sigma', null=True)
+    # Omega - total angular momentum projection = |Lambda + Sigma|
+    Omega = DecimalField(max_digits=3, decimal_places=1, db_column=u'Omega', null=True)
+    # N - rotational quantum number (for molecules, excludes spin)
+    rotN = PositiveSmallIntegerField(db_column=u'rotN', null=True)
+    # Electronic state label (X, A, B, a, b, etc.)
+    elecstate = CharField(max_length=10, null=True)
+
     def multiplicity(self):
         if self.s != None:
             return 2 * self.s + 1
