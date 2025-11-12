@@ -532,33 +532,30 @@ def parse_molecular_quantum_numbers(species_id: int, j: Optional[float],
     return result
 
 
-def is_molecular_term(term_desc: str) -> bool:
-    """
-    Detect if term description is for a molecular state rather than atomic.
+class SpeciesTypeCache:
+    """Cache for species types to avoid repeated database lookups"""
+    def __init__(self):
+        self._cache = {}
 
-    Molecular indicators:
-    - Electronic state labels (X, A, B, a, b) at start
-    - Greek letter symbols (Sigma, Pi, Delta, Phi, Gamma)
-    - Vibrational quantum number (v=)
-    """
-    if not term_desc:
-        return False
+    def is_molecule(self, species_id: int) -> bool:
+        """Check if species is a molecule (ncomp > 1)"""
+        if species_id not in self._cache:
+            from node_common.models import Species
+            try:
+                species = Species.objects.get(id=species_id)
+                self._cache[species_id] = species.isMolecule()
+            except Species.DoesNotExist:
+                # If species doesn't exist, assume atomic (safer default)
+                self._cache[species_id] = False
+        return self._cache[species_id]
 
-    term = term_desc.strip()
+    def clear(self):
+        """Clear the cache"""
+        self._cache.clear()
 
-    # Check for vibrational quantum number
-    if re.search(r'v\s*=\s*\d+', term, re.IGNORECASE):
-        return True
 
-    # Check for electronic state label at start (X, A, B, etc.)
-    if re.match(r'^[XABCDEFGabcdefg]\s+\d', term):
-        return True
-
-    # Check for molecular Lambda symbols (Sigma, Pi, Delta, etc.)
-    if re.search(r'\d\s*(Sigma|Pi|Delta|Phi|Gamma|SIGMA|PI|DELTA)', term, re.IGNORECASE):
-        return True
-
-    return False
+# Global species type cache
+_species_cache = SpeciesTypeCache()
 
 
 def parse_quantum_numbers(species_id: int, j: Optional[float],
@@ -567,12 +564,12 @@ def parse_quantum_numbers(species_id: int, j: Optional[float],
     """
     Parse VALD term description to extract quantum numbers.
 
-    Automatically detects molecular vs atomic terms and routes to appropriate parser.
+    Automatically detects molecular vs atomic terms based on species type.
 
     Based on parse_vald_term.c logic from VALD.
 
     Args:
-        species_id: Species identifier (for H/He special case, or molecular species)
+        species_id: Species identifier (determines if molecular or atomic)
         j: Total angular momentum J
         coupling: Coupling scheme flag ('LS', 'JJ', 'JK', 'LK', or other for atoms)
         term_desc: Term name/description
@@ -589,8 +586,8 @@ def parse_quantum_numbers(species_id: int, j: Optional[float],
     if not term_desc or not term_desc.strip():
         return {}
 
-    # Detect molecular vs atomic format
-    if is_molecular_term(term_desc):
+    # Use species type to determine parser
+    if _species_cache.is_molecule(species_id):
         return parse_molecular_quantum_numbers(species_id, j, term_desc)
 
     full_level = term_desc.strip()
@@ -1164,63 +1161,89 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
 
             # Extract lower state (use ll3 for energy method)
             lower_energy_method = linelist_methods.get(row.get('ll3'))
-            states.append(State(
-                species_id=species_id,
-                energy=lower_energy,
-                energy_scaled=lower_energy_scaled,
-                energy_method=lower_energy_method,
-                j=row['lower_j'],
-                lande=row['lower_lande'],
-                config=lower_qn.get('config'),
-                term=lower_qn.get('term'),
-                l=lower_qn.get('l'),
-                s=lower_qn.get('s'),
-                p=lower_qn.get('p'),
-                j1=lower_qn.get('j1'),
-                j2=lower_qn.get('j2'),
-                k=lower_qn.get('k'),
-                s2=lower_qn.get('s2'),
-                jc=lower_qn.get('jc'),
-                sn=lower_qn.get('sn'),
-                n=lower_qn.get('n'),
-                # Molecular quantum numbers
-                v=lower_qn.get('v'),
-                Lambda=lower_qn.get('Lambda'),
-                Sigma=lower_qn.get('Sigma'),
-                Omega=lower_qn.get('Omega'),
-                rotN=lower_qn.get('rotN'),
-                elecstate=lower_qn.get('elecstate'),
-            ))
+
+            # Build state kwargs conditionally based on model fields
+            lower_state_kwargs = {
+                'species_id': species_id,
+                'energy': lower_energy,
+                'energy_scaled': lower_energy_scaled,
+                'energy_method': lower_energy_method,
+                'j': row['lower_j'],
+                'lande': row['lower_lande'],
+                'config': lower_qn.get('config'),
+                'term': lower_qn.get('term'),
+                's': lower_qn.get('s'),
+                'p': lower_qn.get('p'),
+                'n': lower_qn.get('n'),
+            }
+
+            # Add atomic-specific fields if they exist in the model
+            if hasattr(State, 'l'):
+                lower_state_kwargs.update({
+                    'l': lower_qn.get('l'),
+                    'j1': lower_qn.get('j1'),
+                    'j2': lower_qn.get('j2'),
+                    'k': lower_qn.get('k'),
+                    's2': lower_qn.get('s2'),
+                    'jc': lower_qn.get('jc'),
+                    'sn': lower_qn.get('sn'),
+                })
+
+            # Add molecular-specific fields if they exist in the model
+            if hasattr(State, 'v'):
+                lower_state_kwargs.update({
+                    'v': lower_qn.get('v'),
+                    'Lambda': lower_qn.get('Lambda'),
+                    'Sigma': lower_qn.get('Sigma'),
+                    'Omega': lower_qn.get('Omega'),
+                    'rotN': lower_qn.get('rotN'),
+                    'elecstate': lower_qn.get('elecstate'),
+                })
+
+            states.append(State(**lower_state_kwargs))
 
             # Extract upper state (use ll4 for energy method)
             upper_energy_method = linelist_methods.get(row.get('ll4'))
-            states.append(State(
-                species_id=species_id,
-                energy=upper_energy,
-                energy_scaled=upper_energy_scaled,
-                energy_method=upper_energy_method,
-                j=row['upper_j'],
-                lande=row['upper_lande'],
-                config=upper_qn.get('config'),
-                term=upper_qn.get('term'),
-                l=upper_qn.get('l'),
-                s=upper_qn.get('s'),
-                p=upper_qn.get('p'),
-                j1=upper_qn.get('j1'),
-                j2=upper_qn.get('j2'),
-                k=upper_qn.get('k'),
-                s2=upper_qn.get('s2'),
-                jc=upper_qn.get('jc'),
-                sn=upper_qn.get('sn'),
-                n=upper_qn.get('n'),
-                # Molecular quantum numbers
-                v=upper_qn.get('v'),
-                Lambda=upper_qn.get('Lambda'),
-                Sigma=upper_qn.get('Sigma'),
-                Omega=upper_qn.get('Omega'),
-                rotN=upper_qn.get('rotN'),
-                elecstate=upper_qn.get('elecstate'),
-            ))
+
+            # Build state kwargs conditionally based on model fields
+            upper_state_kwargs = {
+                'species_id': species_id,
+                'energy': upper_energy,
+                'energy_scaled': upper_energy_scaled,
+                'energy_method': upper_energy_method,
+                'j': row['upper_j'],
+                'lande': row['upper_lande'],
+                'config': upper_qn.get('config'),
+                'term': upper_qn.get('term'),
+                's': upper_qn.get('s'),
+                'p': upper_qn.get('p'),
+                'n': upper_qn.get('n'),
+            }
+
+            # Add atomic-specific fields if they exist in the model
+            if hasattr(State, 'l'):
+                upper_state_kwargs.update({
+                    'l': upper_qn.get('l'),
+                    'j1': upper_qn.get('j1'),
+                    'j2': upper_qn.get('j2'),
+                    'k': upper_qn.get('k'),
+                    's2': upper_qn.get('s2'),
+                    'jc': upper_qn.get('jc'),
+                    'sn': upper_qn.get('sn'),
+                })
+
+            # Add molecular-specific fields if they exist in the model
+            if hasattr(State, 'v'):
+                upper_state_kwargs.update({
+                    'v': upper_qn.get('v'),
+                    'Lambda': upper_qn.get('Lambda'),
+                    'Sigma': upper_qn.get('Sigma'),
+                    'Omega': upper_qn.get('Omega'),
+                    'rotN': upper_qn.get('rotN'),
+                    'elecstate': upper_qn.get('elecstate'),
+                })
+
+            states.append(State(**upper_state_kwargs))
 
         # Bulk insert with deduplication
         with transaction.atomic():
@@ -1491,17 +1514,30 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
             lower_lande_ref = ref_codes[4]
             lower_level_ref = ref_codes[8]
 
-            state_rows.append((
+            # Build state row conditionally based on model fields
+            lower_row = [
                 species_id, lower_energy, lower_energy_scaled, lower_energy_method, lower_j, lower_lande,
                 lower_qn.get('config'), lower_qn.get('term'),
-                lower_qn.get('l'), lower_qn.get('s'), lower_qn.get('p'),
-                lower_qn.get('j1'), lower_qn.get('j2'), lower_qn.get('k'),
-                lower_qn.get('s2'), lower_qn.get('jc'), lower_qn.get('sn'), lower_qn.get('n'),
-                # Molecular quantum numbers
-                lower_qn.get('v'), lower_qn.get('Lambda'), lower_qn.get('Sigma'),
-                lower_qn.get('Omega'), lower_qn.get('rotN'), lower_qn.get('elecstate'),
-                lower_energy_ref, lower_lande_ref, lower_level_ref
-            ))
+                lower_qn.get('s'), lower_qn.get('p'), lower_qn.get('n')
+            ]
+
+            # Add atomic fields if model has them
+            if hasattr(State, 'l'):
+                lower_row.extend([
+                    lower_qn.get('l'), lower_qn.get('j1'), lower_qn.get('j2'),
+                    lower_qn.get('k'), lower_qn.get('s2'), lower_qn.get('jc'), lower_qn.get('sn')
+                ])
+
+            # Add molecular fields if model has them
+            if hasattr(State, 'v'):
+                lower_row.extend([
+                    lower_qn.get('v'), lower_qn.get('Lambda'), lower_qn.get('Sigma'),
+                    lower_qn.get('Omega'), lower_qn.get('rotN'), lower_qn.get('elecstate')
+                ])
+
+            # Add reference fields
+            lower_row.extend([lower_energy_ref, lower_lande_ref, lower_level_ref])
+            state_rows.append(tuple(lower_row))
 
             # Upper state
             upper_energy, upper_j, upper_lande, upper_term = (
@@ -1527,26 +1563,61 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
             upper_lande_ref = ref_codes[4]
             upper_level_ref = ref_codes[8]
 
-            state_rows.append((
+            # Build state row conditionally based on model fields
+            upper_row = [
                 species_id, upper_energy, upper_energy_scaled, upper_energy_method, upper_j, upper_lande,
                 upper_qn.get('config'), upper_qn.get('term'),
-                upper_qn.get('l'), upper_qn.get('s'), upper_qn.get('p'),
-                upper_qn.get('j1'), upper_qn.get('j2'), upper_qn.get('k'),
-                upper_qn.get('s2'), upper_qn.get('jc'), upper_qn.get('sn'), upper_qn.get('n'),
-                # Molecular quantum numbers
-                upper_qn.get('v'), upper_qn.get('Lambda'), upper_qn.get('Sigma'),
-                upper_qn.get('Omega'), upper_qn.get('rotN'), upper_qn.get('elecstate'),
-                upper_energy_ref, upper_lande_ref, upper_level_ref
-            ))
+                upper_qn.get('s'), upper_qn.get('p'), upper_qn.get('n')
+            ]
+
+            # Add atomic fields if model has them
+            if hasattr(State, 'l'):
+                upper_row.extend([
+                    upper_qn.get('l'), upper_qn.get('j1'), upper_qn.get('j2'),
+                    upper_qn.get('k'), upper_qn.get('s2'), upper_qn.get('jc'), upper_qn.get('sn')
+                ])
+
+            # Add molecular fields if model has them
+            if hasattr(State, 'v'):
+                upper_row.extend([
+                    upper_qn.get('v'), upper_qn.get('Lambda'), upper_qn.get('Sigma'),
+                    upper_qn.get('Omega'), upper_qn.get('rotN'), upper_qn.get('elecstate')
+                ])
+
+            # Add reference fields
+            upper_row.extend([upper_energy_ref, upper_lande_ref, upper_level_ref])
+            state_rows.append(tuple(upper_row))
 
         # Direct SQL insert (faster than Django ORM)
+        # Build SQL dynamically based on which fields exist in the model
         with transaction.atomic():
             initial_state_count = State.objects.count()
             with connection.cursor() as cursor:
-                cursor.executemany(
-                    "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, energy_method, J, lande, config, term, L, S, P, J1, J2, K, S2, Jc, Sn, n, v, Lambda, Sigma, Omega, rotN, elecstate, energy_ref_id, lande_ref_id, level_ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    state_rows
-                )
+                # Build column list based on model fields
+                base_cols = 'species_id, energy, energy_scaled, energy_method, J, lande, config, term, S, P, n'
+                base_placeholders = '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?'
+
+                # Check if atomic fields exist
+                if hasattr(State, 'l'):
+                    atomic_cols = ', L, J1, J2, K, S2, Jc, Sn'
+                    atomic_placeholders = ', ?, ?, ?, ?, ?, ?, ?'
+                else:
+                    atomic_cols = ''
+                    atomic_placeholders = ''
+
+                # Check if molecular fields exist
+                if hasattr(State, 'v'):
+                    molec_cols = ', v, Lambda, Sigma, Omega, rotN, elecstate'
+                    molec_placeholders = ', ?, ?, ?, ?, ?, ?'
+                else:
+                    molec_cols = ''
+                    molec_placeholders = ''
+
+                ref_cols = ', energy_ref_id, lande_ref_id, level_ref_id'
+                ref_placeholders = ', ?, ?, ?'
+
+                sql = f"INSERT OR IGNORE INTO states ({base_cols}{atomic_cols}{molec_cols}{ref_cols}) VALUES ({base_placeholders}{atomic_placeholders}{molec_placeholders}{ref_placeholders})"
+                cursor.executemany(sql, state_rows)
             final_state_count = State.objects.count()
             states_inserted = final_state_count - initial_state_count
 
