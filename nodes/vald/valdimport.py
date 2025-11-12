@@ -419,28 +419,179 @@ def detect_coupling(term_desc: str) -> str:
     return 'Unknown'
 
 
+def parse_molecular_quantum_numbers(species_id: int, j: Optional[float],
+                                   term_desc: str) -> dict:
+    """
+    Parse VALD molecular term description to extract molecular quantum numbers.
+
+    Molecular term format examples:
+    - X 2Pi v=0 J=1.5
+    - A 1Sigma+ v=5 J=3
+    - b 3Sigma- v=2 J=4.5 N=4
+    - X(2)Pi v=0 J=0.5
+
+    For diatomic molecules:
+    - Electronic state label (X, A, B, a, b, etc.)
+    - Multiplicity (2S+1)
+    - Lambda symbol (Sigma=0, Pi=1, Delta=2, etc.)
+    - +/- for parity (Sigma states)
+    - v = vibrational quantum number
+    - J = total angular momentum
+    - N = rotational quantum number (when specified)
+    - Omega = spin-orbit component (subscript on Lambda)
+
+    Returns:
+        dict with keys: elecstate, v, Lambda, Sigma, Omega, s, p, j, rotN, config, term
+    """
+    if not term_desc or not term_desc.strip():
+        return {}
+
+    result = {}
+    term = term_desc.strip()
+
+    # Split config from term if present (separated by space)
+    config = ''
+    if ' ' in term and not term.startswith('('):
+        parts = term.split(None, 1)
+        if len(parts) == 2 and not parts[0][0].isdigit():
+            # First part might be electronic state label
+            config = parts[0]
+            term = parts[1]
+
+    # Extract electronic state label (X, A, B, a, b, c, etc.)
+    # Usually first character(s) before multiplicity
+    elecstate_match = re.match(r'^([XABCDEFGabcdefg])\s*', term)
+    if elecstate_match:
+        result['elecstate'] = elecstate_match.group(1)
+        term = term[elecstate_match.end():]
+
+    # Extract multiplicity and Lambda symbol
+    # Pattern: (2S+1)Lambda or 2S+1 Lambda
+    # Lambda symbols: Sigma, Pi, Delta, Phi, Gamma (Σ, Π, Δ, Φ, Γ)
+    lambda_map = {
+        'Sigma': 0, 'SIGMA': 0, 'S': 0, 'SG': 0, 'Sg': 0,
+        'Pi': 1, 'PI': 1, 'P': 1,
+        'Delta': 2, 'DELTA': 2, 'D': 2,
+        'Phi': 3, 'PHI': 3, 'F': 3,
+        'Gamma': 4, 'GAMMA': 4, 'G': 4,
+    }
+
+    # Try to parse multiplicity(Lambda) or multiplicity Lambda
+    mult_lambda_match = re.match(r'(\d+)\s*\(?\s*(Sigma|Pi|Delta|Phi|Gamma|SIGMA|PI|DELTA|PHI|GAMMA|S|P|D|F|G|SG|Sg)([+\-]?)', term, re.IGNORECASE)
+    if mult_lambda_match:
+        multiplicity = int(mult_lambda_match.group(1))
+        lambda_symbol = mult_lambda_match.group(2)
+        parity_sign = mult_lambda_match.group(3)
+
+        # Calculate S from multiplicity
+        result['s'] = (multiplicity - 1) / 2.0
+
+        # Map Lambda symbol to quantum number
+        for key, value in lambda_map.items():
+            if lambda_symbol.lower() == key.lower():
+                result['Lambda'] = value
+                break
+
+        # Parity for Sigma states (+/-)
+        if parity_sign == '+':
+            result['p'] = 2  # Even parity
+        elif parity_sign == '-':
+            result['p'] = 1  # Odd parity
+
+        term = term[mult_lambda_match.end():]
+
+    # Extract Omega (subscript, spin-orbit component)
+    # Format: _{Omega} or _Omega
+    omega_match = re.search(r'_\{?([0-9./]+)\}?', term)
+    if omega_match:
+        result['Omega'] = parse_fraction(omega_match.group(1))
+        term = term[:omega_match.start()] + term[omega_match.end():]
+
+    # Extract vibrational quantum number: v=N
+    v_match = re.search(r'v\s*=\s*(\d+)', term, re.IGNORECASE)
+    if v_match:
+        result['v'] = int(v_match.group(1))
+
+    # Extract J (total angular momentum): J=N or J=N.5
+    j_match = re.search(r'J\s*=\s*([0-9./]+)', term, re.IGNORECASE)
+    if j_match:
+        result['j'] = parse_fraction(j_match.group(1))
+    elif j is not None:
+        result['j'] = j
+
+    # Extract N (rotational quantum number): N=N
+    n_match = re.search(r'N\s*=\s*(\d+)', term, re.IGNORECASE)
+    if n_match:
+        result['rotN'] = int(n_match.group(1))
+
+    # Store config and term
+    if config:
+        result['config'] = config
+    result['term'] = term_desc.strip()
+
+    return result
+
+
+def is_molecular_term(term_desc: str) -> bool:
+    """
+    Detect if term description is for a molecular state rather than atomic.
+
+    Molecular indicators:
+    - Electronic state labels (X, A, B, a, b) at start
+    - Greek letter symbols (Sigma, Pi, Delta, Phi, Gamma)
+    - Vibrational quantum number (v=)
+    """
+    if not term_desc:
+        return False
+
+    term = term_desc.strip()
+
+    # Check for vibrational quantum number
+    if re.search(r'v\s*=\s*\d+', term, re.IGNORECASE):
+        return True
+
+    # Check for electronic state label at start (X, A, B, etc.)
+    if re.match(r'^[XABCDEFGabcdefg]\s+\d', term):
+        return True
+
+    # Check for molecular Lambda symbols (Sigma, Pi, Delta, etc.)
+    if re.search(r'\d\s*(Sigma|Pi|Delta|Phi|Gamma|SIGMA|PI|DELTA)', term, re.IGNORECASE):
+        return True
+
+    return False
+
+
 def parse_quantum_numbers(species_id: int, j: Optional[float],
                          coupling: str, term_desc: str,
                          level_desc: str = None) -> dict:
     """
     Parse VALD term description to extract quantum numbers.
 
+    Automatically detects molecular vs atomic terms and routes to appropriate parser.
+
     Based on parse_vald_term.c logic from VALD.
 
     Args:
-        species_id: Species identifier (for H/He special case)
+        species_id: Species identifier (for H/He special case, or molecular species)
         j: Total angular momentum J
-        coupling: Coupling scheme flag ('LS', 'JJ', 'JK', 'LK', or other)
-        term_desc: Term name/description (e.g., '2F*', '(6,7/2)*', '2[11/2]')
+        coupling: Coupling scheme flag ('LS', 'JJ', 'JK', 'LK', or other for atoms)
+        term_desc: Term name/description
+                   Atomic: e.g., '2F*', '(6,7/2)*', '2[11/2]'
+                   Molecular: e.g., 'X 2Pi v=0 J=1.5', 'A 1Sigma+ v=5'
                    Can be full level (config + term) - will be split automatically
         level_desc: Full level description including electronic config (needed for JK/LK Jc extraction)
 
     Returns:
-        dict with keys: config, term, l, s, p, j1, j2, k, s2, jc, sn, n
+        dict with keys: config, term, l, s, p, j1, j2, k, s2, jc, sn, n (atomic)
+                    or: elecstate, v, Lambda, Sigma, Omega, s, p, j, rotN (molecular)
         Only non-None values are included.
     """
     if not term_desc or not term_desc.strip():
         return {}
+
+    # Detect molecular vs atomic format
+    if is_molecular_term(term_desc):
+        return parse_molecular_quantum_numbers(species_id, j, term_desc)
 
     full_level = term_desc.strip()
 
@@ -951,14 +1102,19 @@ class StateCache:
 # IMPORT FUNCTIONS
 # =============================================================================
 
-def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True):
+def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True, node_pkg='node_atom'):
     """
     Import states from VALD format (Pass 1)
+
+    Args:
+        node_pkg: Node package name ('node_atom' or 'node_molec')
 
     Returns: (total_processed, total_inserted)
     """
     # Import Django models (will fail if not in Django context)
-    from node_atom.models import State
+    import importlib
+    node_models = importlib.import_module(f'{node_pkg}.models')
+    State = node_models.State
     from node_common.models import LineList
     from django.db import transaction, connection
 
@@ -1027,6 +1183,13 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
                 jc=lower_qn.get('jc'),
                 sn=lower_qn.get('sn'),
                 n=lower_qn.get('n'),
+                # Molecular quantum numbers
+                v=lower_qn.get('v'),
+                Lambda=lower_qn.get('Lambda'),
+                Sigma=lower_qn.get('Sigma'),
+                Omega=lower_qn.get('Omega'),
+                rotN=lower_qn.get('rotN'),
+                elecstate=lower_qn.get('elecstate'),
             ))
 
             # Extract upper state (use ll4 for energy method)
@@ -1050,6 +1213,13 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
                 jc=upper_qn.get('jc'),
                 sn=upper_qn.get('sn'),
                 n=upper_qn.get('n'),
+                # Molecular quantum numbers
+                v=upper_qn.get('v'),
+                Lambda=upper_qn.get('Lambda'),
+                Sigma=upper_qn.get('Sigma'),
+                Omega=upper_qn.get('Omega'),
+                rotN=upper_qn.get('rotN'),
+                elecstate=upper_qn.get('elecstate'),
             ))
 
         # Bulk insert with deduplication
@@ -1066,9 +1236,12 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
 
 
 def import_transitions(input_file=None, batch_size=10000, skip_header=2,
-                      skip_calc=False, verbose=True):
+                      skip_calc=False, verbose=True, node_pkg='node_atom'):
     """
     Import transitions from VALD format (Pass 2)
+
+    Args:
+        node_pkg: Node package name ('node_atom' or 'node_molec')
 
     Van der Waals broadening is auto-detected:
     - If value < 0: stored as gammawaals
@@ -1076,7 +1249,10 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
     Returns: total_processed
     """
-    from node_atom.models import State, Transition
+    import importlib
+    node_models = importlib.import_module(f'{node_pkg}.models')
+    State = node_models.State
+    Transition = node_models.Transition
     from node_common.models import LineList
     from django.db import transaction, connection
 
@@ -1207,7 +1383,7 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
 
 def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
-                              skip_calc=False, read_ahead=True, verbose=True):
+                              skip_calc=False, read_ahead=True, verbose=True, node_pkg='node_atom'):
     """
     Combined single-pass import of states and transitions from VALD format.
 
@@ -1223,12 +1399,16 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
     - If value > 0: integer part = sigmawaals, fractional part = alphawaals
 
     Args:
+        node_pkg: Node package name ('node_atom' or 'node_molec')
         read_ahead: If True, read and parse in separate thread to keep extraction
                    tool running at full speed. Safe with SQLite (no locking issues).
 
     Returns: (total_processed, total_states_inserted, total_transitions_inserted)
     """
-    from node_atom.models import State, Transition
+    import importlib
+    node_models = importlib.import_module(f'{node_pkg}.models')
+    State = node_models.State
+    Transition = node_models.Transition
     from node_common.models import LineList
     from django.db import transaction, connection
 
@@ -1317,6 +1497,9 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 lower_qn.get('l'), lower_qn.get('s'), lower_qn.get('p'),
                 lower_qn.get('j1'), lower_qn.get('j2'), lower_qn.get('k'),
                 lower_qn.get('s2'), lower_qn.get('jc'), lower_qn.get('sn'), lower_qn.get('n'),
+                # Molecular quantum numbers
+                lower_qn.get('v'), lower_qn.get('Lambda'), lower_qn.get('Sigma'),
+                lower_qn.get('Omega'), lower_qn.get('rotN'), lower_qn.get('elecstate'),
                 lower_energy_ref, lower_lande_ref, lower_level_ref
             ))
 
@@ -1350,6 +1533,9 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 upper_qn.get('l'), upper_qn.get('s'), upper_qn.get('p'),
                 upper_qn.get('j1'), upper_qn.get('j2'), upper_qn.get('k'),
                 upper_qn.get('s2'), upper_qn.get('jc'), upper_qn.get('sn'), upper_qn.get('n'),
+                # Molecular quantum numbers
+                upper_qn.get('v'), upper_qn.get('Lambda'), upper_qn.get('Sigma'),
+                upper_qn.get('Omega'), upper_qn.get('rotN'), upper_qn.get('elecstate'),
                 upper_energy_ref, upper_lande_ref, upper_level_ref
             ))
 
@@ -1358,7 +1544,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
             initial_state_count = State.objects.count()
             with connection.cursor() as cursor:
                 cursor.executemany(
-                    "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, energy_method, J, lande, config, term, L, S, P, J1, J2, K, S2, Jc, Sn, n, energy_ref_id, lande_ref_id, level_ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, energy_method, J, lande, config, term, L, S, P, J1, J2, K, S2, Jc, Sn, n, v, Lambda, Sigma, Omega, rotN, elecstate, energy_ref_id, lande_ref_id, level_ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     state_rows
                 )
             final_state_count = State.objects.count()
@@ -1485,9 +1671,12 @@ def import_species(input_file, batch_size=10000, verbose=True):
     Format: comma-separated with header
     Use,Index,Name,Charge,InChI,InChIkey,Mass,Ion. en.,Fract.,Num. comp.,N1,N2,N3,N4,Dummy
 
+    For molecules (Num. comp. > 1), also populates the SpeciesComp table
+    to establish molecule-atom relationships using N1, N2, N3, N4 columns.
+
     Returns: (total_processed, total_inserted)
     """
-    from node_common.models import Species
+    from node_common.models import Species, SpeciesComp
     from django.db import transaction
     import csv
 
@@ -1501,6 +1690,7 @@ def import_species(input_file, batch_size=10000, verbose=True):
 
         reader = csv.DictReader(f)
         species_list = []
+        component_list = []
         total_processed = 0
 
         for row in reader:
@@ -1510,8 +1700,11 @@ def import_species(input_file, batch_size=10000, verbose=True):
                 # if use != '1':
                 #     continue
 
+                species_id = int(row['Index'])
+                ncomp = int(row['Num. comp.']) if row['Num. comp.'].strip() else None
+
                 species = Species(
-                    id=int(row['Index']),
+                    id=species_id,
                     name=row['Name'].strip(),
                     ion=int(row['Charge']) if row['Charge'].strip() else None,
                     inchi=row['InChI'].strip() if row['InChI'].strip() else None,
@@ -1520,10 +1713,27 @@ def import_species(input_file, batch_size=10000, verbose=True):
                     massno=int(float(row['Mass'])) if row['Mass'].strip() else None,
                     ionen=float(row['Ion. en.']) if row['Ion. en.'].strip() else None,
                     solariso=float(row['Fract.']) if row['Fract.'].strip() else None,
-                    ncomp=int(row['Num. comp.']) if row['Num. comp.'].strip() else None,
+                    ncomp=ncomp,
                     atomic=int(row['N1']) if row['N1'].strip() else None,
                 )
                 species_list.append(species)
+
+                # For molecules, create component relationships
+                if ncomp and ncomp > 1:
+                    # N1-N4 contain atomic numbers of component atoms
+                    for i, col in enumerate(['N1', 'N2', 'N3', 'N4'], 1):
+                        if i > ncomp:
+                            break
+                        atom_z = row.get(col, '').strip()
+                        if atom_z:
+                            # Atomic species ID = atomic number (assuming neutral atoms)
+                            # VALD species IDs for atoms: Z * 100 (e.g., H = 100, He = 200)
+                            atom_species_id = int(atom_z) * 100
+                            component_list.append({
+                                'molecule_id': species_id,
+                                'atom_id': atom_species_id
+                            })
+
                 total_processed += 1
 
                 if len(species_list) >= batch_size:
@@ -1533,7 +1743,15 @@ def import_species(input_file, batch_size=10000, verbose=True):
                             batch_size=batch_size,
                             ignore_conflicts=True
                         )
+                        # Insert components after species are created
+                        if component_list:
+                            for comp in component_list:
+                                SpeciesComp.objects.get_or_create(
+                                    molecule_id=comp['molecule_id'],
+                                    atom_id=comp['atom_id']
+                                )
                     species_list = []
+                    component_list = []
 
             except (ValueError, KeyError) as e:
                 if verbose and total_processed < 5:
@@ -1547,6 +1765,13 @@ def import_species(input_file, batch_size=10000, verbose=True):
                     batch_size=batch_size,
                     ignore_conflicts=True
                 )
+                # Insert components after species are created
+                if component_list:
+                    for comp in component_list:
+                        SpeciesComp.objects.get_or_create(
+                            molecule_id=comp['molecule_id'],
+                            atom_id=comp['atom_id']
+                        )
 
     inserted_count = Species.objects.count()
 
@@ -1557,7 +1782,7 @@ def import_species(input_file, batch_size=10000, verbose=True):
 # HYPERFINE STRUCTURE CONSTANTS IMPORT
 # =============================================================================
 
-def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
+def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0, node_pkg='node_atom'):
     """
     Import hyperfine structure constants (A and B) from AB.db SQLite database.
 
@@ -1575,11 +1800,14 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
         batch_size: Number of updates per transaction
         verbose: Print progress messages
         energy_tolerance: Maximum energy difference for matching (cm⁻¹)
+        node_pkg: Node package name ('node_atom' or 'node_molec')
 
     Returns: (total_processed, matched, multiple_matches, no_match)
     """
 
-    from node_atom.models import State
+    import importlib
+    node_models = importlib.import_module(f'{node_pkg}.models')
+    State = node_models.State
     from django.db import transaction, connection
     import sqlite3
 
