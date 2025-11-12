@@ -10,6 +10,36 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Remove atomic-only quantum number fields
+        migrations.RemoveField(
+            model_name='state',
+            name='l',
+        ),
+        migrations.RemoveField(
+            model_name='state',
+            name='j1',
+        ),
+        migrations.RemoveField(
+            model_name='state',
+            name='j2',
+        ),
+        migrations.RemoveField(
+            model_name='state',
+            name='k',
+        ),
+        migrations.RemoveField(
+            model_name='state',
+            name='s2',
+        ),
+        migrations.RemoveField(
+            model_name='state',
+            name='jc',
+        ),
+        migrations.RemoveField(
+            model_name='state',
+            name='sn',
+        ),
+        # Add molecular quantum number fields
         migrations.AddField(
             model_name='state',
             name='v',
