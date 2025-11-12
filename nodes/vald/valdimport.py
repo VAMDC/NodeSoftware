@@ -2207,6 +2207,12 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='VALD Data Import')
+
+    # Global arguments (before subparsers)
+    parser.add_argument('--settings', type=str, default='settings_dev',
+                       help='Django settings module (default: settings_dev). '
+                            'Use settings_molec for molecular data, settings_atom for atomic.')
+
     subparsers = parser.add_subparsers(dest='command', help='Command to run')
 
     # States import command
@@ -2274,16 +2280,27 @@ def main():
 
     # Setup Django environment
     import os
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings_dev')
+    # Use env variable if set, otherwise use --settings argument
+    if 'DJANGO_SETTINGS_MODULE' not in os.environ:
+        os.environ['DJANGO_SETTINGS_MODULE'] = args.settings
     import django
     django.setup()
+
+    # Detect node package from Django settings
+    from django.conf import settings
+    node_pkg = getattr(settings, 'NODEPKG', 'node_atom')
+    if verbose := getattr(args, 'verbose', True):
+        print(f'Using settings: {args.settings}')
+        print(f'Using node package: {node_pkg}')
+        print(f'Database: {settings.DATABASES["default"]["NAME"]}')
 
     # Run appropriate command
     if args.command == 'import-states':
         processed, inserted = import_states(
         input_file=args.file,
         batch_size=args.batch_size,
-        skip_header=args.skip_header
+        skip_header=args.skip_header,
+        node_pkg=node_pkg
         )
         print(f'Done! Processed {processed} lines, inserted {inserted} unique states')
 
@@ -2292,7 +2309,8 @@ def main():
         input_file=args.file,
         batch_size=args.batch_size,
         skip_header=args.skip_header,
-        skip_calc=args.skip_calc
+        skip_calc=args.skip_calc,
+        node_pkg=node_pkg
         )
         print(f'Done! Imported {processed} transitions')
 
@@ -2302,7 +2320,8 @@ def main():
         batch_size=args.batch_size,
         skip_header=args.skip_header,
         skip_calc=args.skip_calc,
-        read_ahead=not args.no_read_ahead
+        read_ahead=not args.no_read_ahead,
+        node_pkg=node_pkg
         )
         print(f'Done! Processed {processed} lines')
         print(f'Inserted {states_inserted} unique states')
@@ -2326,7 +2345,8 @@ def main():
         total, matched, multiple, no_match = import_hfs(
         input_file=args.file,
         batch_size=args.batch_size,
-        energy_tolerance=args.energy_tolerance
+        energy_tolerance=args.energy_tolerance,
+        node_pkg=node_pkg
         )
         print(f'Done! Processed {total} HFS records')
         print(f'Matched: {matched}, Multiple candidates: {multiple}, No match: {no_match}')
