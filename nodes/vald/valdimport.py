@@ -2209,9 +2209,10 @@ def main():
     parser = argparse.ArgumentParser(description='VALD Data Import')
 
     # Global arguments (before subparsers)
-    parser.add_argument('--settings', type=str, default='settings_dev',
-                       help='Django settings module (default: settings_dev). '
-                            'Use settings_molec for molecular data, settings_atom for atomic.')
+    parser.add_argument('--settings', type=str, default=None,
+                       help='Django settings module to use. '
+                            'Use settings_molec for molecular data, settings_atom for atomic. '
+                            'If not specified, uses DJANGO_SETTINGS_MODULE env var, or settings_dev as fallback.')
 
     subparsers = parser.add_subparsers(dest='command', help='Command to run')
 
@@ -2280,9 +2281,15 @@ def main():
 
     # Setup Django environment
     import os
-    # Use env variable if set, otherwise use --settings argument
-    if 'DJANGO_SETTINGS_MODULE' not in os.environ:
+    # Priority: --settings argument > env variable > default
+    if args.settings:
+        # User explicitly provided --settings, use it
         os.environ['DJANGO_SETTINGS_MODULE'] = args.settings
+    elif 'DJANGO_SETTINGS_MODULE' not in os.environ:
+        # No --settings and no env var, use default
+        os.environ['DJANGO_SETTINGS_MODULE'] = 'settings_dev'
+    # else: env var is already set, use it
+
     import django
     django.setup()
 
