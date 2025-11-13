@@ -9,6 +9,12 @@ log = logging.getLogger('vamdc.node.queryfunc')
 TRANSLIM = settings.TRANSLIM if hasattr(settings,'TRANSLIM') else 2000
 
 
+class Method:
+    def __init__(self, mid, category):
+        self.id = mid
+        self.category = category
+        self.description = f'{category} method'
+
 def getMethods():
     """Return method information for XSAMS output"""
     method_map = {
@@ -20,7 +26,7 @@ def getMethods():
         5: 'compilation',
         6: 'derived'  # for Ritz wavelengths
     }
-    return method_map
+    return [Method(mid, cat) for mid, cat in method_map.items()]
 
 
 def returnHeaders(transs):

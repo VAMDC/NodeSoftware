@@ -122,6 +122,7 @@ class State(Model):
     Omega = DecimalField(max_digits=3, decimal_places=1, db_column=u'Omega', null=True)
     rotN = PositiveSmallIntegerField(db_column=u'rotN', null=True)
     elecstate = CharField(max_length=10, null=True)
+    coupling_case = CharField(max_length=2, null=True)
 
     def jj(self):
         if None not in (self.j1, self.j2):
@@ -140,6 +141,25 @@ class State(Model):
         elif self.config:
             return self.config
         return None
+
+    def j_fmt(self):
+        """Format J as integer if whole number, otherwise as decimal"""
+        if self.j is None:
+            return None
+        if self.j % 1 == 0:
+            return int(self.j)
+        return float(self.j)
+
+    def qn_case(self):
+        """Determine appropriate XSAMS case for molecular states"""
+        if self.coupling_case == 'Ha':
+            return 'hunda'
+        elif self.coupling_case == 'Hb':
+            return 'hundb'
+        elif self.Lambda == 0:
+            return 'dcs'
+        else:
+            return 'hundb'
 
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)

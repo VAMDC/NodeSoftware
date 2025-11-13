@@ -420,28 +420,24 @@ def detect_coupling(term_desc: str) -> str:
 
 
 def parse_molecular_quantum_numbers(species_id: int, j: Optional[float],
-                                   term_desc: str) -> dict:
+                                   term_desc: str, coupling: str = None) -> dict:
     """
     Parse VALD molecular term description to extract molecular quantum numbers.
 
-    Molecular term format examples:
-    - X 2Pi v=0 J=1.5
-    - A 1Sigma+ v=5 J=3
-    - b 3Sigma- v=2 J=4.5 N=4
-    - X(2)Pi v=0 J=0.5
+    CSV format (defmolec): elecstate,multiplicity,Lambda,Sigma,Omega,v
+    Example: X,2,0,,none,0
+    - elecstate: electronic state label (X, A, B, a, b, etc.)
+    - multiplicity: 2S+1
+    - Lambda: projection of orbital angular momentum (0=Sigma, 1=Pi, 2=Delta, etc.)
+    - Sigma: projection of spin (often empty)
+    - Omega: |Lambda + Sigma| (often "none")
+    - v: vibrational quantum number
 
-    For diatomic molecules:
-    - Electronic state label (X, A, B, a, b, etc.)
-    - Multiplicity (2S+1)
-    - Lambda symbol (Sigma=0, Pi=1, Delta=2, etc.)
-    - +/- for parity (Sigma states)
-    - v = vibrational quantum number
-    - J = total angular momentum
-    - N = rotational quantum number (when specified)
-    - Omega = spin-orbit component (subscript on Lambda)
+    Args:
+        coupling: Hund's case indicator (e.g., 'Ha', 'Hb')
 
     Returns:
-        dict with keys: elecstate, v, Lambda, Sigma, Omega, s, p, j, rotN, config, term
+        dict with keys: elecstate, v, Lambda, Sigma, Omega, s, p, j, rotN, config, term, coupling_case
     """
     if not term_desc or not term_desc.strip():
         return {}
@@ -449,84 +445,48 @@ def parse_molecular_quantum_numbers(species_id: int, j: Optional[float],
     result = {}
     term = term_desc.strip()
 
-    # Split config from term if present (separated by space)
-    config = ''
-    if ' ' in term and not term.startswith('('):
-        parts = term.split(None, 1)
-        if len(parts) == 2 and not parts[0][0].isdigit():
-            # First part might be electronic state label
-            config = parts[0]
-            term = parts[1]
+    if ',' in term:
+        fields = [f.strip() for f in term.split(',')]
+        if len(fields) >= 6:
+            if fields[0] and fields[0] not in ('none', ''):
+                result['elecstate'] = fields[0]
 
-    # Extract electronic state label (X, A, B, a, b, c, etc.)
-    # Usually first character(s) before multiplicity
-    elecstate_match = re.match(r'^([XABCDEFGabcdefg])\s*', term)
-    if elecstate_match:
-        result['elecstate'] = elecstate_match.group(1)
-        term = term[elecstate_match.end():]
+            if fields[1] and fields[1].isdigit():
+                multiplicity = int(fields[1])
+                result['s'] = (multiplicity - 1) / 2.0
 
-    # Extract multiplicity and Lambda symbol
-    # Pattern: (2S+1)Lambda or 2S+1 Lambda
-    # Lambda symbols: Sigma, Pi, Delta, Phi, Gamma (Σ, Π, Δ, Φ, Γ)
-    lambda_map = {
-        'Sigma': 0, 'SIGMA': 0, 'S': 0, 'SG': 0, 'Sg': 0,
-        'Pi': 1, 'PI': 1, 'P': 1,
-        'Delta': 2, 'DELTA': 2, 'D': 2,
-        'Phi': 3, 'PHI': 3, 'F': 3,
-        'Gamma': 4, 'GAMMA': 4, 'G': 4,
-    }
+            if fields[2] and fields[2].isdigit():
+                result['Lambda'] = int(fields[2])
 
-    # Try to parse multiplicity(Lambda) or multiplicity Lambda
-    mult_lambda_match = re.match(r'(\d+)\s*\(?\s*(Sigma|Pi|Delta|Phi|Gamma|SIGMA|PI|DELTA|PHI|GAMMA|S|P|D|F|G|SG|Sg)([+\-]?)', term, re.IGNORECASE)
-    if mult_lambda_match:
-        multiplicity = int(mult_lambda_match.group(1))
-        lambda_symbol = mult_lambda_match.group(2)
-        parity_sign = mult_lambda_match.group(3)
+            if fields[3] and fields[3] not in ('', 'none'):
+                try:
+                    result['Sigma'] = parse_fraction(fields[3])
+                except:
+                    pass
 
-        # Calculate S from multiplicity
-        result['s'] = (multiplicity - 1) / 2.0
+            # Field 5: Omega (case a) or N (case b)
+            if fields[4] and fields[4] not in ('', 'none'):
+                try:
+                    value = parse_fraction(fields[4])
+                    if coupling == 'Hb':
+                        # Hund's case (b): field 5 is N (rotational QN)
+                        if value % 1 == 0:
+                            result['rotN'] = int(value)
+                    else:
+                        # Hund's case (a) or unknown: field 5 is Omega
+                        result['Omega'] = value
+                except:
+                    pass
 
-        # Map Lambda symbol to quantum number
-        for key, value in lambda_map.items():
-            if lambda_symbol.lower() == key.lower():
-                result['Lambda'] = value
-                break
+            if fields[5] and fields[5].isdigit():
+                result['v'] = int(fields[5])
 
-        # Parity for Sigma states (+/-)
-        if parity_sign == '+':
-            result['p'] = 2  # Even parity
-        elif parity_sign == '-':
-            result['p'] = 1  # Odd parity
-
-        term = term[mult_lambda_match.end():]
-
-    # Extract Omega (subscript, spin-orbit component)
-    # Format: _{Omega} or _Omega
-    omega_match = re.search(r'_\{?([0-9./]+)\}?', term)
-    if omega_match:
-        result['Omega'] = parse_fraction(omega_match.group(1))
-        term = term[:omega_match.start()] + term[omega_match.end():]
-
-    # Extract vibrational quantum number: v=N
-    v_match = re.search(r'v\s*=\s*(\d+)', term, re.IGNORECASE)
-    if v_match:
-        result['v'] = int(v_match.group(1))
-
-    # Extract J (total angular momentum): J=N or J=N.5
-    j_match = re.search(r'J\s*=\s*([0-9./]+)', term, re.IGNORECASE)
-    if j_match:
-        result['j'] = parse_fraction(j_match.group(1))
-    elif j is not None:
+    if j is not None:
         result['j'] = j
 
-    # Extract N (rotational quantum number): N=N
-    n_match = re.search(r'N\s*=\s*(\d+)', term, re.IGNORECASE)
-    if n_match:
-        result['rotN'] = int(n_match.group(1))
+    if coupling and coupling.strip() in ('Ha', 'Hb'):
+        result['coupling_case'] = coupling.strip()
 
-    # Store config and term
-    if config:
-        result['config'] = config
     result['term'] = term_desc.strip()
 
     return result
@@ -588,7 +548,7 @@ def parse_quantum_numbers(species_id: int, j: Optional[float],
 
     # Use species type to determine parser
     if _species_cache.is_molecule(species_id):
-        return parse_molecular_quantum_numbers(species_id, j, term_desc)
+        return parse_molecular_quantum_numbers(species_id, j, term_desc, coupling)
 
     full_level = term_desc.strip()
 
@@ -1532,7 +1492,8 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
             if hasattr(State, 'v'):
                 lower_row.extend([
                     lower_qn.get('v'), lower_qn.get('Lambda'), lower_qn.get('Sigma'),
-                    lower_qn.get('Omega'), lower_qn.get('rotN'), lower_qn.get('elecstate')
+                    lower_qn.get('Omega'), lower_qn.get('rotN'), lower_qn.get('elecstate'),
+                    lower_qn.get('coupling_case')
                 ])
 
             # Add reference fields
@@ -1581,7 +1542,8 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
             if hasattr(State, 'v'):
                 upper_row.extend([
                     upper_qn.get('v'), upper_qn.get('Lambda'), upper_qn.get('Sigma'),
-                    upper_qn.get('Omega'), upper_qn.get('rotN'), upper_qn.get('elecstate')
+                    upper_qn.get('Omega'), upper_qn.get('rotN'), upper_qn.get('elecstate'),
+                    upper_qn.get('coupling_case')
                 ])
 
             # Add reference fields
@@ -1607,8 +1569,8 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
 
                 # Check if molecular fields exist
                 if hasattr(State, 'v'):
-                    molec_cols = ', v, Lambda, Sigma, Omega, rotN, elecstate'
-                    molec_placeholders = ', ?, ?, ?, ?, ?, ?'
+                    molec_cols = ', v, Lambda, Sigma, Omega, rotN, elecstate, coupling_case'
+                    molec_placeholders = ', ?, ?, ?, ?, ?, ?, ?'
                 else:
                     molec_cols = ''
                     molec_placeholders = ''
