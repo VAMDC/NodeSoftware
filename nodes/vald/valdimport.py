@@ -424,20 +424,20 @@ def parse_molecular_quantum_numbers(species_id: int, j: Optional[float],
     """
     Parse VALD molecular term description to extract molecular quantum numbers.
 
-    CSV format (defmolec): elecstate,multiplicity,Lambda,Sigma,Omega,v
-    Example: X,2,0,,none,0
-    - elecstate: electronic state label (X, A, B, a, b, etc.)
+    CSV format: label,multiplicity,|Lambda|,parity,|Omega| or N,v
+    Example: X,2,0,+,0.5,0 (case a) or a,1,2,0,113,0 (case b)
+    - label: electronic state label (X, A, B, a, b, etc.)
     - multiplicity: 2S+1
-    - Lambda: projection of orbital angular momentum (0=Sigma, 1=Pi, 2=Delta, etc.)
-    - Sigma: projection of spin (often empty)
-    - Omega: |Lambda + Sigma| (often "none")
+    - |Lambda|: projection of orbital angular momentum (0=Sigma, 1=Pi, 2=Delta, etc.)
+    - parity: +, -, 0, e, f (or sometimes empty)
+    - |Omega| (case a) or N (case b): quantum number
     - v: vibrational quantum number
 
     Args:
         coupling: Hund's case indicator (e.g., 'Ha', 'Hb')
 
     Returns:
-        dict with keys: elecstate, v, Lambda, Sigma, Omega, s, p, j, rotN, config, term, coupling_case
+        dict with keys: elecstate, v, Lambda, Omega, s, p, j, rotN, config, term, coupling_case
     """
     if not term_desc or not term_desc.strip():
         return {}
@@ -448,38 +448,54 @@ def parse_molecular_quantum_numbers(species_id: int, j: Optional[float],
     if ',' in term:
         fields = [f.strip() for f in term.split(',')]
         if len(fields) >= 6:
+            # Field 0: electronic state label
             if fields[0] and fields[0] not in ('none', ''):
                 result['elecstate'] = fields[0]
 
+            # Field 1: multiplicity (2S+1)
             if fields[1] and fields[1].isdigit():
                 multiplicity = int(fields[1])
                 result['s'] = (multiplicity - 1) / 2.0
 
+            # Field 2: |Lambda|
             if fields[2] and fields[2].isdigit():
                 result['Lambda'] = int(fields[2])
 
+            # Field 3: parity (+, -, 0, e, f)
             if fields[3] and fields[3] not in ('', 'none'):
-                try:
-                    result['Sigma'] = parse_fraction(fields[3])
-                except:
-                    pass
+                parity_val = fields[3]
+                if parity_val in ('e', 'f'):
+                    # Kronig parity (e/f parity)
+                    result['kronig_parity'] = parity_val
+                else:
+                    # Total parity (+, -, 0)
+                    result['p'] = parity_val
 
-            # Field 5: Omega (case a) or N (case b)
+            # Field 4: |Omega| (case a) or N (case b)
             if fields[4] and fields[4] not in ('', 'none'):
                 try:
                     value = parse_fraction(fields[4])
                     if coupling == 'Hb':
-                        # Hund's case (b): field 5 is N (rotational QN)
+                        # Hund's case (b): field 4 is N (rotational QN)
                         if value % 1 == 0:
                             result['rotN'] = int(value)
                     else:
-                        # Hund's case (a) or unknown: field 5 is Omega
+                        # Hund's case (a) or unknown: field 4 is Omega
                         result['Omega'] = value
                 except:
                     pass
 
+            # Field 5: vibrational quantum number v
             if fields[5] and fields[5].isdigit():
                 result['v'] = int(fields[5])
+
+            # Field 6 (optional): electronic inversion parity (g/u) or asSym (a/s)
+            if len(fields) >= 7 and fields[6] and fields[6] not in ('', 'none'):
+                inv_val = fields[6]
+                if inv_val in ('g', 'u'):
+                    result['elec_inversion'] = inv_val
+                elif inv_val in ('a', 's'):
+                    result['asSym'] = inv_val
 
     if j is not None:
         result['j'] = j
@@ -1493,7 +1509,8 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 lower_row.extend([
                     lower_qn.get('v'), lower_qn.get('Lambda'), lower_qn.get('Sigma'),
                     lower_qn.get('Omega'), lower_qn.get('rotN'), lower_qn.get('elecstate'),
-                    lower_qn.get('coupling_case')
+                    lower_qn.get('coupling_case'), lower_qn.get('kronig_parity'),
+                    lower_qn.get('elec_inversion'), lower_qn.get('asSym')
                 ])
 
             # Add reference fields
@@ -1543,7 +1560,8 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
                 upper_row.extend([
                     upper_qn.get('v'), upper_qn.get('Lambda'), upper_qn.get('Sigma'),
                     upper_qn.get('Omega'), upper_qn.get('rotN'), upper_qn.get('elecstate'),
-                    upper_qn.get('coupling_case')
+                    upper_qn.get('coupling_case'), upper_qn.get('kronig_parity'),
+                    upper_qn.get('elec_inversion'), upper_qn.get('asSym')
                 ])
 
             # Add reference fields
@@ -1569,8 +1587,8 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
 
                 # Check if molecular fields exist
                 if hasattr(State, 'v'):
-                    molec_cols = ', v, Lambda, Sigma, Omega, rotN, elecstate, coupling_case'
-                    molec_placeholders = ', ?, ?, ?, ?, ?, ?, ?'
+                    molec_cols = ', v, Lambda, Sigma, Omega, rotN, elecstate, coupling_case, kronig_parity, elec_inversion, asSym'
+                    molec_placeholders = ', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?'
                 else:
                     molec_cols = ''
                     molec_placeholders = ''
@@ -1689,6 +1707,26 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
 
         if verbose:
             print('Einstein A calculated')
+
+    # Update ground_state_id for all species
+    if verbose:
+        print('Setting ground state references...')
+
+    with connection.cursor() as cursor:
+        # For each species, find the state with minimum energy and set it as ground_state_id
+        cursor.execute("""
+            UPDATE species
+            SET ground_state_id = (
+                SELECT id FROM states
+                WHERE states.species_id = species.id
+                ORDER BY states.energy ASC
+                LIMIT 1
+            )
+        """)
+
+    if verbose:
+        updated = cursor.rowcount if hasattr(cursor, 'rowcount') else 'N/A'
+        print(f'Ground state references set (updated {updated} species)')
 
     return total_processed, total_states_inserted, total_transitions_inserted
 

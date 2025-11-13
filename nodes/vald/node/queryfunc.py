@@ -220,7 +220,14 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
     else:
         # Filter states by species_id - works for both atoms and molecules
         for species in atoms_list + molecules_list:
-            species.States = State.objects.filter(pk__in=stateIDs[species.pk])
+            # Convert set to list to avoid "set changed size during iteration" error
+            state_ids = list(stateIDs[species.pk])
+
+            # Add ground state if it's not already in the list (needed for energyOrigin reference)
+            if species.ground_state_id and species.ground_state_id not in stateIDs[species.pk]:
+                state_ids.append(species.ground_state_id)
+
+            species.States = State.objects.filter(pk__in=state_ids)
 
     yield '<Species>\n'
 

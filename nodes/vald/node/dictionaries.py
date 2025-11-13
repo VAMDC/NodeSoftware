@@ -63,6 +63,7 @@ RETURNABLES = {\
 'MoleculeStateID':'MoleculeState.id',
 'MoleculeStateEnergy':'MoleculeState.energy',
 'MoleculeStateEnergyUnit':'1/cm',
+'MoleculeStateEnergyOrigin':'MoleculeState.energy_origin()',
 'MoleculeStateEnergyRef':'MoleculeState.energy_ref_id',
 'MoleculeStateEnergyMethod':'MoleculeState.energy_method',
 'MoleculeStateDescription':'MoleculeState.description()',
@@ -78,7 +79,10 @@ RETURNABLES = {\
 'MoleculeQNElecStateLabel':'MoleculeState.elecstate',
 'MoleculeQNJ':'MoleculeState.j_fmt()',
 'MoleculeQNS':'MoleculeState.s',
-'MoleculeQnParity':'MoleculeState.p',
+'MoleculeQnParity':'MoleculeState.parity_pm()',
+'MoleculeQNkronigParity':'MoleculeState.kronig_parity',
+'MoleculeQNelecInv':'MoleculeState.elec_inversion',
+'MoleculeQNasSym':'MoleculeState.asSym',
 
 #############################################################
 'RadTransID':'RadTran.id',

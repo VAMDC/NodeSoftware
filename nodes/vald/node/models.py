@@ -50,11 +50,13 @@ class Species(Model):
     ncomp = PositiveSmallIntegerField(null=True)
     atomic = PositiveSmallIntegerField(null=True, db_index=True)
     isotope = PositiveSmallIntegerField(null=True)
+    ground_state_id = IntegerField(null=True, db_index=True)  # ID of ground state (lowest energy)
 
     components = ManyToManyField('self',through='SpeciesComp', symmetrical=False)
 
     def isMolecule(self):
          return self.ncomp and self.ncomp > 1
+
 
     def __unicode__(self):
         return u'ID:%s %s'%(self.id,self.name)
@@ -101,28 +103,33 @@ class State(Model):
     energy_method = PositiveSmallIntegerField(null=True, db_index=True)
 
     # Common quantum numbers (both atoms and molecules)
-    j = DecimalField(max_digits=3, decimal_places=1,db_column=u'J', null=True)
-    s = DecimalField(max_digits=3, decimal_places=1,db_column=u'S', null=True)
-    p = DecimalField(max_digits=3, decimal_places=1,db_column=u'P', null=True)
+    j = DecimalField(max_digits=4, decimal_places=1,db_column=u'J', null=True)
+    s = DecimalField(max_digits=4, decimal_places=1,db_column=u'S', null=True)
+    p = CharField(max_length=2, db_column=u'P', null=True)  # Parity: +, -, 0, e, f for molecules
     n = PositiveSmallIntegerField(db_column=u'n',null=True)
 
     # Atomic-specific quantum numbers
     l = PositiveSmallIntegerField(db_column=u'L', null=True)
-    j1 = DecimalField(max_digits=3, decimal_places=1,db_column=u'J1', null=True)
-    j2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'J2', null=True)
-    k = DecimalField(max_digits=3, decimal_places=1,db_column=u'K', null=True)
-    s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True)
-    jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True)
+    j1 = DecimalField(max_digits=4, decimal_places=1,db_column=u'J1', null=True)
+    j2 = DecimalField(max_digits=4, decimal_places=1,db_column=u'J2', null=True)
+    k = DecimalField(max_digits=4, decimal_places=1,db_column=u'K', null=True)
+    s2 = DecimalField(max_digits=4, decimal_places=1,db_column=u'S2', null=True)
+    jc = DecimalField(max_digits=4, decimal_places=1,db_column=u'Jc', null=True)
     sn = PositiveSmallIntegerField(db_column=u'Sn',null=True)
 
     # Molecular quantum numbers (for diatomic molecules)
     v = PositiveSmallIntegerField(db_column=u'v', null=True)
     Lambda = PositiveSmallIntegerField(db_column=u'Lambda', null=True)
-    Sigma = DecimalField(max_digits=3, decimal_places=1, db_column=u'Sigma', null=True)
-    Omega = DecimalField(max_digits=3, decimal_places=1, db_column=u'Omega', null=True)
+    Sigma = DecimalField(max_digits=4, decimal_places=1, db_column=u'Sigma', null=True)
+    Omega = DecimalField(max_digits=4, decimal_places=1, db_column=u'Omega', null=True)
     rotN = PositiveSmallIntegerField(db_column=u'rotN', null=True)
     elecstate = CharField(max_length=10, null=True)
     coupling_case = CharField(max_length=2, null=True)
+
+    # Molecular parity labels (for diatomic molecules)
+    kronig_parity = CharField(max_length=1, null=True)  # e or f
+    elec_inversion = CharField(max_length=1, null=True)  # g or u
+    asSym = CharField(max_length=1, null=True)  # a or s
 
     def jj(self):
         if None not in (self.j1, self.j2):
@@ -160,6 +167,20 @@ class State(Model):
             return 'dcs'
         else:
             return 'hundb'
+
+    def parity_pm(self):
+        """Return parity only if it's + or -, otherwise None.
+        The value '0' is a special VALD marker for unresolved Λ-doubling
+        and should not be output to XSAMS."""
+        if self.p in ('+', '-'):
+            return self.p
+        return None
+
+    def energy_origin(self):
+        """Return the state ID of the ground state for this species.
+        Used as energyOrigin reference in XSAMS.
+        Returns just the numeric ID (the generator will add the 'Svald-' prefix)."""
+        return self.species.ground_state_id
 
     def __unicode__(self):
         return u'ID:%s Eng:%s'%(self.id,self.energy)
