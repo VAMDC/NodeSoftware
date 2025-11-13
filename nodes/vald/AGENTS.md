@@ -25,6 +25,20 @@ uv run valdimport.py import-states-transitions --file=dump
 ## info on the incoming data format
 The FORTRAN code that produces the data is available in presformat5.f
 
+### molecular term format
+Molecular states use a CSV format embedded in the term field: `label,multiplicity,|Λ|,parity,|Ω| or N,v[,g/u]`
+- label: electronic state label (X, A, B, a, b, etc.)
+- multiplicity: 2S+1
+- |Λ|: projection of orbital angular momentum (0=Sigma, 1=Pi, 2=Delta, etc.)
+- parity: +, -, 0 (merged Λ-doubling), e, f (Kronig parity)
+- |Ω| or N: depends on coupling case - field 4 is Ω for Hund's case (a), N for case (b)
+- v: vibrational quantum number
+- g/u (optional): electronic wavefunction inversion parity for homonuclear molecules
+
+Example: `X,2,0,e,0.5,0` (case a) or `a,1,2,0,113,0,g` (case b with g/u)
+
+The coupling_case field (Ha/Hb) determines how to interpret field 4. See DiatomicMolecularLevels.pdf for full specification.
+
 # concerning the XSAMS XML output
 
 ## XSAMS schema and output generation
@@ -35,3 +49,9 @@ node_atom/dictionaries.py maps Django model fields and methods to XSAMS keywords
 
 ## loggf accuracy information
 The transitions.accurflag field indicates the type of accuracy: 'N' for NIST quality classes (letter grades like A, AA+, D-), 'E' for estimated error in dex, 'C' for cancellation factor, 'P' for predicted, or '_' for general quality indicators. The transitions.accur field holds the raw accuracy text (either letter grades or numeric values), while transitions.loggf_err contains the calculated numerical error in dex converted via accuracy_to_loggf_error(). In XSAMS output, letter grades go to Evaluation/Quality elements and numerical errors go to Accuracy elements with appropriate type attributes (estimated/arbitrary/systematic).
+
+## molecular quantum numbers
+Molecular states store quantum numbers in dedicated fields parsed from the term description. The p field stores total parity (+, -, 0) but '0' is filtered out by parity_pm() since it's not valid in XSAMS (it's a VALD marker for unresolved Λ-doubling). Kronig parity (e/f) goes in kronig_parity, electronic inversion (g/u) in elec_inversion, and symmetry labels (a/s) in asSym. The XSAMS generator uses qn_case() to determine hundb vs hunda output, and only outputs non-NULL quantum numbers appropriate for each case.
+
+## ground states and energyOrigin
+Each species.ground_state_id stores the ID of the ground state (lowest energy state) for that species. This is populated automatically during import after all states are loaded. The StateEnergy element in XSAMS uses energyOrigin to reference this ground state. Ground states are always included in query results even if not involved in transitions, to ensure the energyOrigin reference is valid.
