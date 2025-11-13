@@ -207,14 +207,13 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
         atoms_list = [s for s in Atoms if not s.isMolecule()]
         molecules_list = [s for s in Atoms if s.isMolecule()]
 
-    # Attach states to each species
+    # Attach states to each species (works for both atoms and molecules)
     if requestables and ('atomstates' not in requestables):
         for species in atoms_list + molecules_list:
             species.States = []
     else:
-        for species in atoms_list:
-            species.States = State.objects.filter(pk__in=stateIDs[species.pk])
-        for species in molecules_list:
+        # Filter states by species_id - works for both atoms and molecules
+        for species in atoms_list + molecules_list:
             species.States = State.objects.filter(pk__in=stateIDs[species.pk])
 
     yield '<Species>\n'
