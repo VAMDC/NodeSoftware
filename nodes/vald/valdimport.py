@@ -2301,8 +2301,8 @@ def main():
         # User explicitly provided --settings, use it
         os.environ['DJANGO_SETTINGS_MODULE'] = args.settings
     elif 'DJANGO_SETTINGS_MODULE' not in os.environ:
-        # No --settings and no env var, use default
-        os.environ['DJANGO_SETTINGS_MODULE'] = 'settings_dev'
+        # No --settings and no env var, use default (matches manage.py)
+        os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
     # else: env var is already set, use it
 
     import django
