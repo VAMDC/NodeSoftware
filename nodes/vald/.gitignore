@@ -6,3 +6,5 @@ SOURCE
 *.sav
 dump
 *.xsams
+*.png
+*.pdf
