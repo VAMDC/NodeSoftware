@@ -6,8 +6,8 @@ TRANSLIM = 200000
 QUERY_STORE_ACTIVE = False
 SERVE_STATIC = False
 
-NODEPKG = 'node_atom'
-INSTALLED_APPS = ['vamdctap', 'node_common', NODEPKG]
+NODEPKG = 'node'
+INSTALLED_APPS = ['vamdctap', NODEPKG]
 
 DATABASES = {
   'default': {
