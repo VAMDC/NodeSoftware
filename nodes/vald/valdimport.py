@@ -540,7 +540,7 @@ class SpeciesTypeCache:
     def is_molecule(self, species_id: int) -> bool:
         """Check if species is a molecule (ncomp > 1)"""
         if species_id not in self._cache:
-            from node_common.models import Species
+            from node.models import Species
             try:
                 species = Species.objects.get(id=species_id)
                 self._cache[species_id] = species.isMolecule()
@@ -1099,12 +1099,12 @@ class StateCache:
 # IMPORT FUNCTIONS
 # =============================================================================
 
-def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True, node_pkg='node_atom'):
+def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True, node_pkg='node'):
     """
     Import states from VALD format (Pass 1)
 
     Args:
-        node_pkg: Node package name ('node_atom' or 'node_molec')
+        node_pkg: Node package name ('node' or 'node_molec')
 
     Returns: (total_processed, total_inserted)
     """
@@ -1112,7 +1112,7 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
     import importlib
     node_models = importlib.import_module(f'{node_pkg}.models')
     State = node_models.State
-    from node_common.models import LineList
+    from node.models import LineList
     from django.db import transaction, connection
 
     # Temporarily disable foreign key constraints for import
@@ -1259,12 +1259,12 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
 
 
 def import_transitions(input_file=None, batch_size=10000, skip_header=2,
-                      skip_calc=False, verbose=True, node_pkg='node_atom'):
+                      skip_calc=False, verbose=True, node_pkg='node'):
     """
     Import transitions from VALD format (Pass 2)
 
     Args:
-        node_pkg: Node package name ('node_atom' or 'node_molec')
+        node_pkg: Node package name ('node' or 'node_molec')
 
     Van der Waals broadening is auto-detected:
     - If value < 0: stored as gammawaals
@@ -1276,7 +1276,7 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
     node_models = importlib.import_module(f'{node_pkg}.models')
     State = node_models.State
     Transition = node_models.Transition
-    from node_common.models import LineList
+    from node.models import LineList
     from django.db import transaction, connection
 
     # Temporarily disable foreign key constraints for import
@@ -1406,7 +1406,7 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
 
 def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
-                              skip_calc=False, read_ahead=True, verbose=True, node_pkg='node_atom'):
+                              skip_calc=False, read_ahead=True, verbose=True, node_pkg='node'):
     """
     Combined single-pass import of states and transitions from VALD format.
 
@@ -1422,7 +1422,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
     - If value > 0: integer part = sigmawaals, fractional part = alphawaals
 
     Args:
-        node_pkg: Node package name ('node_atom' or 'node_molec')
+        node_pkg: Node package name ('node' or 'node_molec')
         read_ahead: If True, read and parse in separate thread to keep extraction
                    tool running at full speed. Safe with SQLite (no locking issues).
 
@@ -1432,7 +1432,7 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
     node_models = importlib.import_module(f'{node_pkg}.models')
     State = node_models.State
     Transition = node_models.Transition
-    from node_common.models import LineList
+    from node.models import LineList
     from django.db import transaction, connection
 
     # Temporarily disable foreign key constraints for import
@@ -1747,7 +1747,7 @@ def import_species(input_file, batch_size=10000, verbose=True):
 
     Returns: (total_processed, total_inserted)
     """
-    from node_common.models import Species, SpeciesComp
+    from node.models import Species, SpeciesComp
     from django.db import transaction
     import csv
 
@@ -1868,7 +1868,7 @@ def import_species(input_file, batch_size=10000, verbose=True):
 # HYPERFINE STRUCTURE CONSTANTS IMPORT
 # =============================================================================
 
-def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0, node_pkg='node_atom'):
+def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0, node_pkg='node'):
     """
     Import hyperfine structure constants (A and B) from AB.db SQLite database.
 
@@ -1886,7 +1886,7 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0, 
         batch_size: Number of updates per transaction
         verbose: Print progress messages
         energy_tolerance: Maximum energy difference for matching (cm⁻¹)
-        node_pkg: Node package name ('node_atom' or 'node_molec')
+        node_pkg: Node package name ('node' or 'node_molec')
 
     Returns: (total_processed, matched, multiple_matches, no_match)
     """
@@ -2001,7 +2001,7 @@ def import_bibtex(input_file, batch_size=1000, verbose=True):
     Returns: (total_processed, total_inserted)
     """
 
-    from node_common.models import Reference
+    from node.models import Reference
     from vamdctap.bibtextools import BibTeX2XML
     from django.db import transaction
 
@@ -2144,7 +2144,7 @@ def import_linelists(input_file, batch_size=1000, verbose=True):
     Returns: (total_processed, total_inserted)
     """
 
-    from node_common.models import LineList
+    from node.models import LineList
     from django.db import transaction
 
     linelists = []
@@ -2310,7 +2310,7 @@ def main():
 
     # Detect node package from Django settings
     from django.conf import settings
-    node_pkg = getattr(settings, 'NODEPKG', 'node_atom')
+    node_pkg = getattr(settings, 'NODEPKG', 'node')
     if verbose := getattr(args, 'verbose', True):
         print(f'Using settings: {args.settings}')
         print(f'Using node package: {node_pkg}')
