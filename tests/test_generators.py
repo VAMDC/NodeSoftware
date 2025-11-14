@@ -901,14 +901,21 @@ class TestMakeBroadeningType:
 
     def test_natural_broadening(self):
         def mock_g(key):
-            if key == 'LineshapeNaturalName':
+            # Function expects 'RadTransBroadening{name}LineshapeParameter' as the primary keyword
+            if key == 'RadTransBroadeningNaturalLineshapeParameter':
+                return '1.0'  # Some lineshape parameter value
+            elif key == 'RadTransBroadeningNaturalLineshapeParameterUnit':
+                return 'cm-1'
+            elif key == 'RadTransBroadeningNaturalLineshapeParameterName':
+                return 'gamma'
+            elif key == 'RadTransBroadeningNaturalLineshapeName':
                 return 'Lorentzian'
             return ''
 
         G = Mock(side_effect=mock_g)
         with patch('vamdctap.generators.NODEID', 'NODE'):
             result = makeBroadeningType(G, 'Natural')
-            assert '<Natural>' in result
+            assert '<Broadening name="natural">' in result  # name is lowercased
             assert '<Lineshape name="Lorentzian">' in result
 
 
