@@ -192,7 +192,7 @@ def makePartitionfunc(keyword, G):
         unit = makeiter(unit,Npf)
 
     string = ''
-    for i in xrange(Npf):
+    for i in range(Npf):
         string += '<PartitionFunction>'
         if len(comments)>i and comments[i]: string += '<Comments>%s</Comments>' % comments[i]
         string += '<T units="%s"><DataList>' % (unit[i] if (len(unit)>i and unit[i]) else 'K')
