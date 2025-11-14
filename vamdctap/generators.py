@@ -1482,7 +1482,7 @@ def makeDataSeriesType(tagname, keyword, G):
     dic = {}
     xpara = G("%sParameter" % keyword)
     if xpara:
-        dic["parameter"] = "%sParameter" % keyword
+        dic["parameter"] = xpara
     xunits = G("%sUnit" % keyword)
     if xunits:
         dic["units"] = xunits

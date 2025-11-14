@@ -926,16 +926,18 @@ class TestMakeDataSeriesType:
         def mock_g(key):
             if key == 'keywordParameter':
                 return 'X'
-            elif key == 'keywordUnits':
+            elif key == 'keywordUnit':  # Note: Unit not Units
                 return 'cm-1'
-            elif key == 'keywordDataList':
+            elif key == 'keyword':  # Data comes from base keyword
                 return [1, 2, 3, 4, 5]
+            elif key == 'keywordN':  # Count suffix
+                return '5'
             return ''
 
         G = Mock(side_effect=mock_g)
         result = makeDataSeriesType('DataSeries', 'keyword', G)
-        assert "parameter='X'" in result
-        assert "units='cm-1'" in result
+        assert 'parameter="X"' in result  # makePrimaryType uses double quotes
+        assert 'units="cm-1"' in result
         assert '<DataList' in result
         assert '1 2 3 4 5' in result
 
@@ -943,22 +945,28 @@ class TestMakeDataSeriesType:
         def mock_g(key):
             if key == 'keywordParameter':
                 return 'X'
-            elif key == 'keywordUnits':
+            elif key == 'keywordUnit':
                 return 'nm'
-            elif key == 'keywordLinearSequenceInitialValue':
+            elif key == 'keywordLinearA0':  # Required to trigger LinearSequence
+                return '1.0'
+            elif key == 'keywordLinearA1':  # Required to trigger LinearSequence
+                return '1.0'
+            elif key == 'keywordLinearInitial':
                 return '0'
-            elif key == 'keywordLinearSequenceIncrement':
+            elif key == 'keywordLinearIncrement':
                 return '0.1'
-            elif key == 'keywordLinearSequenceN':
+            elif key == 'keywordLinearCount':
                 return '100'
-            elif key == 'keywordDataList':
+            elif key == 'keyword':  # Base keyword for data
                 return ''
             return ''
 
         G = Mock(side_effect=mock_g)
         result = makeDataSeriesType('DataSeries', 'keyword', G)
         assert '<LinearSequence' in result
-        assert 'count' in result
+        assert 'count="100"' in result
+        assert 'initial="0"' in result
+        assert 'increment="0.1"' in result
 
 
 if __name__ == '__main__':
