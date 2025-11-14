@@ -297,8 +297,9 @@ class TestMakeOptionalTag:
         result = makeOptionalTag('Tag', 'keyword', G)
         assert result == '<Tag>42</Tag>'
 
-    def test_zero_content(self):
-        G = Mock(return_value=0)
+    def test_zero_string_content(self):
+        # GetValue converts numeric 0 to string '0', so this is what makeOptionalTag sees
+        G = Mock(return_value='0')
         result = makeOptionalTag('Tag', 'keyword', G)
         assert result == '<Tag>0</Tag>'
 
