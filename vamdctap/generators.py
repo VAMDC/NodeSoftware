@@ -370,19 +370,19 @@ def makeEvaluation(keyword, G, j=None):
         nevs = len(ev_list)
         try:
             ev_meth = makeiter( G(keyword + 'EvalMethod')[j], nevs )
-        except IndexError:
+        except (IndexError, TypeError):
             ev_meth = makeiter( None, nevs)
         try:
             ev_reco = makeiter( G(keyword + 'EvalRecommended')[j], nevs )
-        except IndexError:
+        except (IndexError, TypeError):
             ev_reco = makeiter(None, nevs)
         try:
             ev_refs = G(keyword + 'EvalRef')[j]
-        except IndexError:
+        except (IndexError, TypeError):
             ev_refs = []
         try:
             ev_comm = G(keyword + 'EvalComment')[j]
-        except IndexError:
+        except (IndexError, TypeError):
             ev_comm = []
     else:
         ev_list = makeiter(evs)
