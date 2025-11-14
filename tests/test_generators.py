@@ -817,9 +817,9 @@ class TestMakeDataSeriesAccuracyType:
         with patch('vamdctap.generators.NODEID', 'NODE'):
             result = makeDataSeriesAccuracyType('keyword', G)
             assert '<Accuracy' in result
-            assert "type='statistical'" in result
+            assert 'type="statistical"' in result  # makePrimaryType uses double quotes
             assert '<ErrorList' in result
-            assert "count='3'" in result
+            assert "count='3'" in result  # ErrorList uses single quotes
             assert '0.1 0.2 0.3' in result
 
     def test_with_error_value(self):
