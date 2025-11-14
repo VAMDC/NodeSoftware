@@ -125,12 +125,14 @@ class TestMakeiter:
         assert result == input_tuple
 
     def test_false_value(self):
+        # False is a valid boolean value, should be preserved
         result = makeiter(False)
-        assert result == []
+        assert result == [False]
 
     def test_false_value_with_n(self):
+        # False is a valid boolean value, should be replicated
         result = makeiter(False, 2)
-        assert result == [None, None]
+        assert result == [False, False]
 
 
 class TestMakeloop:
