@@ -47,6 +47,10 @@ from vamdctap.generators import (
     parityLabel, makeDataSeriesAccuracyType,
     makePartitionfunc, makeTermType, makeShellType,
     makeBroadeningType, makeDataSeriesType,
+    SelfSource, XsamsHeader, XsamsSources, XsamsEnvironments,
+    XsamsAtoms, XsamsMolecules, XsamsRadTrans,
+    makeAtomStateComponents, makeCaseQNs, makeNormalMode,
+    generatorError, XsamsMethods, XsamsFunctions,
 )
 
 
@@ -967,6 +971,439 @@ class TestMakeDataSeriesType:
         assert 'count="100"' in result
         assert 'initial="0"' in result
         assert 'increment="0.1"' in result
+
+
+class TestSelfSource:
+    """Test the SelfSource function"""
+
+    def test_self_source_structure(self):
+        tap = Mock()
+        tap.query = 'SELECT * FROM Species WHERE AtomSymbol="Fe"'
+        tap.token = 'test-token-12345'
+        tap.fullurl = 'http://test.org/tap/sync?QUERY=SELECT...'
+
+        with patch('vamdctap.generators.NODEID', 'TestNode'):
+            result = SelfSource(tap)
+
+        assert '<Source sourceID="BTestNode-' in result
+        assert '<Comments>' in result
+        assert 'SELECT * FROM Species' in result or '&lt;' in result  # Query escaped
+        assert 'test-token-12345' in result
+        assert '<Year>' in result
+        assert '<Category>database</Category>' in result
+
+
+class TestXsamsHeader:
+    """Test the XsamsHeader function"""
+
+    def test_basic_header(self):
+        HeaderInfo = {}
+
+        with patch('vamdctap.generators.XSAMS_VERSION', '1.0'):
+            with patch('vamdctap.generators.SCHEMA_LOCATION', 'http://test.org/schema'):
+                result = XsamsHeader(HeaderInfo)
+
+        assert '<?xml version="1.0" encoding="UTF-8"?>' in result
+        assert '<XSAMSData' in result
+        assert 'xmlns' in result
+        assert 'xsi:schemaLocation' in result
+
+    def test_header_with_truncated_warning(self):
+        HeaderInfo = {'Truncated': '50%'}
+
+        with patch('vamdctap.generators.XSAMS_VERSION', '1.0'):
+            result = XsamsHeader(HeaderInfo)
+
+        assert 'truncated' in result.lower()
+
+
+class TestXsamsSources:
+    """Test the XsamsSources generator"""
+
+    def test_no_sources(self):
+        tap = Mock()
+        tap.query = 'test query'
+        tap.token = 'token'
+        tap.fullurl = 'http://test.org/tap'
+
+        with patch('vamdctap.generators.NODEID', 'NODE'):
+            result = ''.join(XsamsSources(None, tap))
+
+        # Should still have opening tag and SelfSource
+        assert '<Sources>' in result
+        assert '</Sources>' in result
+        assert 'BNODE-' in result  # SelfSource ID
+
+    def test_with_sources(self):
+        # Create mock source objects
+        source1 = Mock(spec=[])
+
+        def mock_g(key, **kwargs):
+            mapping = {
+                'SourceID': 'REF1',
+                'SourceAuthorName': ['Smith, J.'],
+                'SourceTitle': 'Test Article',
+                'SourceCategory': 'journal',
+                'SourceYear': '2020',
+            }
+            return mapping.get(key, '')
+
+        tap = Mock()
+        tap.query = 'test'
+        tap.token = 'token'
+        tap.fullurl = 'http://test.org/tap'
+
+        with patch('vamdctap.generators.GetValue', side_effect=mock_g):
+            with patch('vamdctap.generators.checkXML', return_value=(False, None)):
+                with patch('vamdctap.generators.NODEID', 'NODE'):
+                    result = ''.join(XsamsSources([source1], tap))
+
+        assert '<Sources>' in result
+        assert 'sourceID="BNODE-REF1"' in result
+        assert 'Smith, J.' in result
+        assert 'Test Article' in result
+
+
+class TestXsamsEnvironments:
+    """Test the XsamsEnvironments generator"""
+
+    def test_no_environments(self):
+        result = list(XsamsEnvironments(None))
+        assert result == []
+
+    def test_with_environment(self):
+        env = Mock(spec=['Species'])  # spec prevents XML attribute
+        env.Species = []  # No species to simplify
+
+        def mock_g(key, **kwargs):
+            mapping = {
+                'EnvironmentID': 'E1',
+                'EnvironmentComment': '',
+                'EnvironmentRef': '',
+            }
+            return mapping.get(key, '')
+
+        # Mock makeDataType to return empty strings to avoid Mock issues
+        with patch('vamdctap.generators.GetValue', side_effect=mock_g):
+            with patch('vamdctap.generators.makeDataType', return_value=''):
+                with patch('vamdctap.generators.checkXML', return_value=(False, None)):
+                    with patch('vamdctap.generators.NODEID', 'NODE'):
+                        result = list(XsamsEnvironments([env]))
+
+        # Check that key tags are present
+        result_str = ''.join(str(r) for r in result)
+        assert '<Environments>' in result_str
+        assert '</Environments>' in result_str
+        assert 'envID="ENODE-E1"' in result_str
+
+
+class TestXsamsAtoms:
+    """Test the XsamsAtoms generator"""
+
+    def test_no_atoms(self):
+        result = list(XsamsAtoms(None))
+        assert result == []
+
+    def test_with_atom(self):
+        atom = Mock(spec=['States'])
+        atom.States = []
+
+        def mock_g(key, **kwargs):
+            mapping = {
+                'AtomSymbol': 'H',
+                'AtomSpeciesID': '1',
+                'AtomNuclearCharge': '1',
+                'AtomIonCharge': '0',
+                'AtomMassNumber': '1',
+            }
+            return mapping.get(key, '')
+
+        with patch('vamdctap.generators.GetValue', side_effect=mock_g):
+            with patch('vamdctap.generators.checkXML', return_value=(False, None)):
+                with patch('vamdctap.generators.NODEID', 'NODE'):
+                    result = list(XsamsAtoms([atom]))
+
+        result_str = ''.join(str(r) for r in result)
+        assert '<Atoms>' in result_str
+        assert '</Atoms>' in result_str
+        assert '<Atom>' in result_str
+        assert '<ChemicalElement>' in result_str
+
+
+class TestXsamsMolecules:
+    """Test the XsamsMolecules generator"""
+
+    def test_no_molecules(self):
+        result = list(XsamsMolecules(None))
+        assert result == []
+
+    def test_with_molecule(self):
+        mol = Mock(spec=['States', 'BasisStates'])
+        mol.States = []
+        mol.BasisStates = []
+
+        def mock_g(key, **kwargs):
+            mapping = {
+                'MoleculeSpeciesID': 'M1',
+                'MoleculeChemicalName': 'Water',
+                'MoleculeStoichiometricFormula': 'H2O',
+                'MoleculeIonCharge': '0',
+            }
+            return mapping.get(key, '')
+
+        with patch('vamdctap.generators.GetValue', side_effect=mock_g):
+            with patch('vamdctap.generators.checkXML', return_value=(False, None)):
+                with patch('vamdctap.generators.NODEID', 'NODE'):
+                    result = list(XsamsMolecules([mol]))
+
+        result_str = ''.join(str(r) for r in result)
+        assert '<Molecules>' in result_str
+        assert '</Molecules>' in result_str
+        assert '<Molecule ' in result_str or '<Molecule>' in result_str
+
+
+class TestXsamsRadTrans:
+    """Test the XsamsRadTrans generator"""
+
+    def test_no_transitions(self):
+        result = list(XsamsRadTrans(None))
+        assert result == []
+
+    def test_with_transition(self):
+        trans = Mock(spec=[])  # Empty spec prevents XML attribute
+
+        def mock_g(key, **kwargs):
+            mapping = {
+                'RadTransID': 'R1',
+                'RadTransWavenumber': '10000',
+                'RadTransWavenumberUnit': 'cm-1',
+                'RadTransUpperStateRef': 'S1',
+                'RadTransLowerStateRef': 'S2',
+                'RadTransSpeciesRef': 'X1',
+            }
+            return mapping.get(key, '')
+
+        with patch('vamdctap.generators.GetValue', side_effect=mock_g):
+            with patch('vamdctap.generators.makeDataType', return_value=''):  # Simplify
+                with patch('vamdctap.generators.checkXML', return_value=(False, None)):
+                    with patch('vamdctap.generators.NODEID', 'NODE'):
+                        result = list(XsamsRadTrans([trans]))
+
+        result_str = ''.join(str(r) for r in result)
+        # XsamsRadTrans doesn't yield wrapper tags - those are added by Xsams()
+        assert '<RadiativeTransition' in result_str
+        assert 'id="PNODE-R' in result_str
+
+
+class TestMakeTermType:
+    """Test the makeTermType function"""
+
+    def test_ls_coupling(self):
+        def mock_g(key):
+            # Function looks for LSL (orbital ang mom) and LSS (spin)
+            if key == 'keywordLSL':
+                return '1'  # P state
+            elif key == 'keywordLSS':
+                return '0.5'  # doublet
+            return ''
+
+        G = Mock(side_effect=mock_g)
+        result = makeTermType('Term', 'keyword', G)
+
+        assert '<LS>' in result
+        assert '<L><Value>1</Value></L>' in result
+        assert '<S>0.5</S>' in result
+
+    def test_with_term_label(self):
+        def mock_g(key):
+            if key == 'keywordLSL':
+                return '1'
+            elif key == 'keywordLSS':
+                return '0.5'
+            elif key == 'keywordLabel':
+                return 'Ground state'
+            return ''
+
+        G = Mock(side_effect=mock_g)
+        result = makeTermType('Term', 'keyword', G)
+
+        assert '<TermLabel>Ground state</TermLabel>' in result
+
+
+class TestMakeShellType:
+    """Test the makeShellType function"""
+
+    def test_basic_shell(self):
+        def mock_g(key):
+            if key == 'keywordPrincipalQN':
+                return '2'
+            elif key == 'keywordOrbitalAngMom':
+                return '1'
+            elif key == 'keywordNumberOfElectrons':
+                return '6'
+            return ''
+
+        G = Mock(side_effect=mock_g)
+        result = makeShellType('Shell', 'keyword', G)
+
+        assert '<PrincipalQuantumNumber>2</PrincipalQuantumNumber>' in result
+        # OrbitalAngularMomentum has nested Value tag
+        assert '<OrbitalAngularMomentum>' in result
+        assert '<Value>1</Value>' in result
+        assert '<NumberOfElectrons>6</NumberOfElectrons>' in result
+
+
+class TestMakeAtomStateComponents:
+    """Test the makeAtomStateComponents function"""
+
+    def test_no_components(self):
+        atom_state = Mock()
+        atom_state.Components = None
+
+        result = makeAtomStateComponents(atom_state)
+        assert result == ''
+
+    def test_with_configuration(self):
+        atom_state = Mock()
+        component = Mock()
+
+        def mock_g(key, **kwargs):
+            if key == 'AtomComponentConfigurationLabel':
+                return '1s2 2s2 2p6'
+            return ''
+
+        component.Configuration = True
+        atom_state.Components = [component]
+
+        with patch('vamdctap.generators.GetValue', side_effect=mock_g):
+            result = makeAtomStateComponents(atom_state)
+
+        assert '<Configuration>' in result or '<ConfigurationLabel>' in result
+
+
+class TestMakeCaseQNs:
+    """Test the makeCaseQNs function"""
+
+    def test_no_case(self):
+        G = Mock(side_effect=lambda key: '' if 'QNCase' in key else '')
+        result = makeCaseQNs(G)
+        assert result == ''
+
+    def test_with_case(self):
+        def mock_g(key):
+            if key == 'MoleculeQNCase':
+                return 'lpcs'
+            elif key == 'MoleculeQNv':
+                return '0'
+            elif key == 'MoleculeQNJ':
+                return '1'
+            return ''
+
+        G = Mock(side_effect=mock_g)
+        result = makeCaseQNs(G)
+
+        assert 'caseID="lpcs"' in result  # Case ID attribute
+        # QNs use namespace prefix like case:v and case:J
+        assert (':v>0</case:v>' in result or '<v>0</v>' in result)
+        assert (':J>1</case:J>' in result or '<J>1</J>' in result)
+
+
+class TestMakeNormalMode:
+    """Test the makeNormalMode function"""
+
+    def test_basic_normal_mode(self):
+        def mock_g(key):
+            if key == 'MoleculeNormalModeElectronicState':
+                return 'X'
+            elif key == 'MoleculeNormalModePointGroup':
+                return 'C2v'
+            elif key == 'MoleculeNormalModeID':
+                return '1'
+            elif key == 'MoleculeNormalModeHarmonicFrequency':
+                return '3000'
+            elif key == 'MoleculeNormalModeHarmonicFrequencyUnit':
+                return 'cm-1'
+            return ''
+
+        G = Mock(side_effect=mock_g)
+        result = makeNormalMode(G)
+
+        assert '<NormalMode' in result
+        assert 'electronicStateRef' in result or 'pointGroupSymmetry' in result
+        assert '<HarmonicFrequency>' in result or '3000' in result
+
+
+class TestGeneratorError:
+    """Test the generatorError function"""
+
+    def test_error_logging(self):
+        # generatorError just returns the location string
+        result = generatorError('TestLocation')
+        assert result == 'TestLocation'
+
+
+class TestXsamsMethods:
+    """Test the XsamsMethods generator"""
+
+    def test_no_methods(self):
+        result = list(XsamsMethods(None))
+        assert result == []
+
+    def test_with_method(self):
+        method = Mock(spec=[])
+
+        def mock_g(key, **kwargs):
+            mapping = {
+                'MethodID': 'M1',
+                'MethodCategory': 'experiment',
+                'MethodDescription': 'Test method',
+                'MethodRef': '',
+            }
+            return mapping.get(key, '')
+
+        with patch('vamdctap.generators.GetValue', side_effect=mock_g):
+            with patch('vamdctap.generators.checkXML', return_value=(False, None)):
+                with patch('vamdctap.generators.NODEID', 'NODE'):
+                    result = list(XsamsMethods([method]))
+
+        result_str = ''.join(str(r) for r in result)
+        assert '<Methods>' in result_str
+        assert '</Methods>' in result_str
+        assert '<Method methodID="MNODE-M1">' in result_str
+
+
+class TestXsamsFunctions:
+    """Test the XsamsFunctions generator"""
+
+    def test_no_functions(self):
+        result = list(XsamsFunctions(None))
+        assert result == []
+
+    def test_with_function(self):
+        func = Mock(spec=['Arguments', 'Parameters'])
+        func.Arguments = []
+        func.Parameters = []
+
+        def mock_g(key, **kwargs):
+            mapping = {
+                'FunctionID': 'F1',
+                'FunctionName': 'TestFunc',
+                'FunctionExpression': 'a*x + b',
+                'FunctionYName': 'y',
+                'FunctionYUnits': 'unitless',
+                'FunctionRef': '',
+            }
+            return mapping.get(key, '')
+
+        with patch('vamdctap.generators.GetValue', side_effect=mock_g):
+            with patch('vamdctap.generators.checkXML', return_value=(False, None)):
+                with patch('vamdctap.generators.NODEID', 'NODE'):
+                    result = list(XsamsFunctions([func]))
+
+        result_str = ''.join(str(r) for r in result)
+        assert '<Functions>' in result_str
+        assert '</Functions>' in result_str
+        assert '<Function functionID="FNODE-F1">' in result_str
 
 
 if __name__ == '__main__':
