@@ -7,7 +7,7 @@ except ImportError:
 
 from pybtex.database.input import bibtex
 from requests.utils import CaseInsensitiveDict as CaselessDict
-from xml.sax.saxutils import quoteattr
+from xml.sax.saxutils import quoteattr, escape
 
 # get the NodeID to put it in the source key
 from django.conf import settings
@@ -59,7 +59,7 @@ def BibTeX2XML(bibtexstring, key=None):
         name = a.first() + a.middle() + a.last() + a.lineage()
         name = [n.strip().strip('{}') for n in name]
         name = ' '.join(name)
-        xml += '<Author><Name>%s</Name></Author>'%name
+        xml += '<Author><Name>%s</Name></Author>' % escape(name)
     xml += '\n</Authors>'
 
     category = TYPE2CATEGORY.get(e.type)
@@ -88,7 +88,8 @@ def BibTeX2XML(bibtexstring, key=None):
 <PageEnd>%s</PageEnd>
 <UniformResourceIdentifier>%s</UniformResourceIdentifier>
 <DigitalObjectIdentifier>%s</DigitalObjectIdentifier>
-""" % (title,category,year or 2222,sourcename,volume,p1,p2,url,doi)
+""" % (escape(title or ''), escape(category or ''), year or 2222, escape(sourcename or ''),
+       escape(volume or ''), escape(p1 or ''), escape(p2 or ''), escape(url or ''), escape(doi or ''))
 
     xml += '<BibTeX>%s</BibTeX></Source>' % quoteattr(bibtexstring)[1:-1]
 
