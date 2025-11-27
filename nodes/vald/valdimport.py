@@ -419,28 +419,152 @@ def detect_coupling(term_desc: str) -> str:
     return 'Unknown'
 
 
+def parse_molecular_quantum_numbers(species_id: int, j: Optional[float],
+                                   term_desc: str, coupling: str = None) -> dict:
+    """
+    Parse VALD molecular term description to extract molecular quantum numbers.
+
+    CSV format: label,multiplicity,|Lambda|,parity,|Omega| or N,v
+    Example: X,2,0,+,0.5,0 (case a) or a,1,2,0,113,0 (case b)
+    - label: electronic state label (X, A, B, a, b, etc.)
+    - multiplicity: 2S+1
+    - |Lambda|: projection of orbital angular momentum (0=Sigma, 1=Pi, 2=Delta, etc.)
+    - parity: +, -, 0, e, f (or sometimes empty)
+    - |Omega| (case a) or N (case b): quantum number
+    - v: vibrational quantum number
+
+    Args:
+        coupling: Hund's case indicator (e.g., 'Ha', 'Hb')
+
+    Returns:
+        dict with keys: elecstate, v, Lambda, Omega, s, p, j, rotN, config, term, coupling_case
+    """
+    if not term_desc or not term_desc.strip():
+        return {}
+
+    result = {}
+    term = term_desc.strip()
+
+    if ',' in term:
+        fields = [f.strip() for f in term.split(',')]
+        if len(fields) >= 6:
+            # Field 0: electronic state label
+            if fields[0] and fields[0] not in ('none', ''):
+                result['elecstate'] = fields[0]
+
+            # Field 1: multiplicity (2S+1)
+            if fields[1] and fields[1].isdigit():
+                multiplicity = int(fields[1])
+                result['s'] = (multiplicity - 1) / 2.0
+
+            # Field 2: |Lambda|
+            if fields[2] and fields[2].isdigit():
+                result['Lambda'] = int(fields[2])
+
+            # Field 3: parity (+, -, 0, e, f)
+            if fields[3] and fields[3] not in ('', 'none'):
+                parity_val = fields[3]
+                if parity_val in ('e', 'f'):
+                    # Kronig parity (e/f parity)
+                    result['kronig_parity'] = parity_val
+                else:
+                    # Total parity (+, -, 0)
+                    result['p'] = parity_val
+
+            # Field 4: |Omega| (case a) or N (case b)
+            if fields[4] and fields[4] not in ('', 'none'):
+                try:
+                    value = parse_fraction(fields[4])
+                    if coupling == 'Hb':
+                        # Hund's case (b): field 4 is N (rotational QN)
+                        if value % 1 == 0:
+                            result['rotN'] = int(value)
+                    else:
+                        # Hund's case (a) or unknown: field 4 is Omega
+                        result['Omega'] = value
+                except:
+                    pass
+
+            # Field 5: vibrational quantum number v
+            if fields[5] and fields[5].isdigit():
+                result['v'] = int(fields[5])
+
+            # Field 6 (optional): electronic inversion parity (g/u) or asSym (a/s)
+            if len(fields) >= 7 and fields[6] and fields[6] not in ('', 'none'):
+                inv_val = fields[6]
+                if inv_val in ('g', 'u'):
+                    result['elec_inversion'] = inv_val
+                elif inv_val in ('a', 's'):
+                    result['asSym'] = inv_val
+
+    if j is not None:
+        result['j'] = j
+
+    if coupling and coupling.strip() in ('Ha', 'Hb'):
+        result['coupling_case'] = coupling.strip()
+
+    result['term'] = term_desc.strip()
+
+    return result
+
+
+class SpeciesTypeCache:
+    """Cache for species types to avoid repeated database lookups"""
+    def __init__(self):
+        self._cache = {}
+
+    def is_molecule(self, species_id: int) -> bool:
+        """Check if species is a molecule (ncomp > 1)"""
+        if species_id not in self._cache:
+            from node.models import Species
+            try:
+                species = Species.objects.get(id=species_id)
+                self._cache[species_id] = species.isMolecule()
+            except Species.DoesNotExist:
+                # If species doesn't exist, assume atomic (safer default)
+                self._cache[species_id] = False
+        return self._cache[species_id]
+
+    def clear(self):
+        """Clear the cache"""
+        self._cache.clear()
+
+
+# Global species type cache
+_species_cache = SpeciesTypeCache()
+
+
 def parse_quantum_numbers(species_id: int, j: Optional[float],
                          coupling: str, term_desc: str,
                          level_desc: str = None) -> dict:
     """
     Parse VALD term description to extract quantum numbers.
 
+    Automatically detects molecular vs atomic terms based on species type.
+
     Based on parse_vald_term.c logic from VALD.
 
     Args:
-        species_id: Species identifier (for H/He special case)
+        species_id: Species identifier (determines if molecular or atomic)
         j: Total angular momentum J
-        coupling: Coupling scheme flag ('LS', 'JJ', 'JK', 'LK', or other)
-        term_desc: Term name/description (e.g., '2F*', '(6,7/2)*', '2[11/2]')
+        coupling: Coupling scheme flag ('LS', 'JJ', 'JK', 'LK', or other for atoms)
+        term_desc: Term name/description
+                   Atomic: e.g., '2F*', '(6,7/2)*', '2[11/2]'
+                   Molecular: e.g., 'X 2Pi v=0 J=1.5', 'A 1Sigma+ v=5'
                    Can be full level (config + term) - will be split automatically
         level_desc: Full level description including electronic config (needed for JK/LK Jc extraction)
 
     Returns:
-        dict with keys: config, term, l, s, p, j1, j2, k, s2, jc, sn, n
+        dict with keys: config, term, l, s, p, j1, j2, k, s2, jc, sn, n (atomic)
+                    or: elecstate, v, Lambda, Sigma, Omega, s, p, j, rotN (molecular)
         Only non-None values are included.
     """
     if not term_desc or not term_desc.strip():
         return {}
+
+    # Use species type to determine parser
+    if _species_cache.is_molecule(species_id):
+        return parse_molecular_quantum_numbers(species_id, j, term_desc, coupling)
 
     full_level = term_desc.strip()
 
@@ -951,15 +1075,20 @@ class StateCache:
 # IMPORT FUNCTIONS
 # =============================================================================
 
-def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True):
+def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True, node_pkg='node'):
     """
     Import states from VALD format (Pass 1)
+
+    Args:
+        node_pkg: Node package name ('node' or 'node_molec')
 
     Returns: (total_processed, total_inserted)
     """
     # Import Django models (will fail if not in Django context)
-    from node_atom.models import State
-    from node_common.models import LineList
+    import importlib
+    node_models = importlib.import_module(f'{node_pkg}.models')
+    State = node_models.State
+    from node.models import LineList
     from django.db import transaction, connection
 
     # Temporarily disable foreign key constraints for import
@@ -1008,49 +1137,89 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
 
             # Extract lower state (use ll3 for energy method)
             lower_energy_method = linelist_methods.get(row.get('ll3'))
-            states.append(State(
-                species_id=species_id,
-                energy=lower_energy,
-                energy_scaled=lower_energy_scaled,
-                energy_method=lower_energy_method,
-                j=row['lower_j'],
-                lande=row['lower_lande'],
-                config=lower_qn.get('config'),
-                term=lower_qn.get('term'),
-                l=lower_qn.get('l'),
-                s=lower_qn.get('s'),
-                p=lower_qn.get('p'),
-                j1=lower_qn.get('j1'),
-                j2=lower_qn.get('j2'),
-                k=lower_qn.get('k'),
-                s2=lower_qn.get('s2'),
-                jc=lower_qn.get('jc'),
-                sn=lower_qn.get('sn'),
-                n=lower_qn.get('n'),
-            ))
+
+            # Build state kwargs conditionally based on model fields
+            lower_state_kwargs = {
+                'species_id': species_id,
+                'energy': lower_energy,
+                'energy_scaled': lower_energy_scaled,
+                'energy_method': lower_energy_method,
+                'j': row['lower_j'],
+                'lande': row['lower_lande'],
+                'config': lower_qn.get('config'),
+                'term': lower_qn.get('term'),
+                's': lower_qn.get('s'),
+                'p': lower_qn.get('p'),
+                'n': lower_qn.get('n'),
+            }
+
+            # Add atomic-specific fields if they exist in the model
+            if hasattr(State, 'l'):
+                lower_state_kwargs.update({
+                    'l': lower_qn.get('l'),
+                    'j1': lower_qn.get('j1'),
+                    'j2': lower_qn.get('j2'),
+                    'k': lower_qn.get('k'),
+                    's2': lower_qn.get('s2'),
+                    'jc': lower_qn.get('jc'),
+                    'sn': lower_qn.get('sn'),
+                })
+
+            # Add molecular-specific fields if they exist in the model
+            if hasattr(State, 'v'):
+                lower_state_kwargs.update({
+                    'v': lower_qn.get('v'),
+                    'Lambda': lower_qn.get('Lambda'),
+                    'Sigma': lower_qn.get('Sigma'),
+                    'Omega': lower_qn.get('Omega'),
+                    'rotN': lower_qn.get('rotN'),
+                    'elecstate': lower_qn.get('elecstate'),
+                })
+
+            states.append(State(**lower_state_kwargs))
 
             # Extract upper state (use ll4 for energy method)
             upper_energy_method = linelist_methods.get(row.get('ll4'))
-            states.append(State(
-                species_id=species_id,
-                energy=upper_energy,
-                energy_scaled=upper_energy_scaled,
-                energy_method=upper_energy_method,
-                j=row['upper_j'],
-                lande=row['upper_lande'],
-                config=upper_qn.get('config'),
-                term=upper_qn.get('term'),
-                l=upper_qn.get('l'),
-                s=upper_qn.get('s'),
-                p=upper_qn.get('p'),
-                j1=upper_qn.get('j1'),
-                j2=upper_qn.get('j2'),
-                k=upper_qn.get('k'),
-                s2=upper_qn.get('s2'),
-                jc=upper_qn.get('jc'),
-                sn=upper_qn.get('sn'),
-                n=upper_qn.get('n'),
-            ))
+
+            # Build state kwargs conditionally based on model fields
+            upper_state_kwargs = {
+                'species_id': species_id,
+                'energy': upper_energy,
+                'energy_scaled': upper_energy_scaled,
+                'energy_method': upper_energy_method,
+                'j': row['upper_j'],
+                'lande': row['upper_lande'],
+                'config': upper_qn.get('config'),
+                'term': upper_qn.get('term'),
+                's': upper_qn.get('s'),
+                'p': upper_qn.get('p'),
+                'n': upper_qn.get('n'),
+            }
+
+            # Add atomic-specific fields if they exist in the model
+            if hasattr(State, 'l'):
+                upper_state_kwargs.update({
+                    'l': upper_qn.get('l'),
+                    'j1': upper_qn.get('j1'),
+                    'j2': upper_qn.get('j2'),
+                    'k': upper_qn.get('k'),
+                    's2': upper_qn.get('s2'),
+                    'jc': upper_qn.get('jc'),
+                    'sn': upper_qn.get('sn'),
+                })
+
+            # Add molecular-specific fields if they exist in the model
+            if hasattr(State, 'v'):
+                upper_state_kwargs.update({
+                    'v': upper_qn.get('v'),
+                    'Lambda': upper_qn.get('Lambda'),
+                    'Sigma': upper_qn.get('Sigma'),
+                    'Omega': upper_qn.get('Omega'),
+                    'rotN': upper_qn.get('rotN'),
+                    'elecstate': upper_qn.get('elecstate'),
+                })
+
+            states.append(State(**upper_state_kwargs))
 
         # Bulk insert with deduplication
         with transaction.atomic():
@@ -1066,9 +1235,12 @@ def import_states(input_file=None, batch_size=10000, skip_header=2, verbose=True
 
 
 def import_transitions(input_file=None, batch_size=10000, skip_header=2,
-                      skip_calc=False, verbose=True):
+                      skip_calc=False, verbose=True, node_pkg='node'):
     """
     Import transitions from VALD format (Pass 2)
+
+    Args:
+        node_pkg: Node package name ('node' or 'node_molec')
 
     Van der Waals broadening is auto-detected:
     - If value < 0: stored as gammawaals
@@ -1076,8 +1248,11 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
     Returns: total_processed
     """
-    from node_atom.models import State, Transition
-    from node_common.models import LineList
+    import importlib
+    node_models = importlib.import_module(f'{node_pkg}.models')
+    State = node_models.State
+    Transition = node_models.Transition
+    from node.models import LineList
     from django.db import transaction, connection
 
     # Temporarily disable foreign key constraints for import
@@ -1207,7 +1382,7 @@ def import_transitions(input_file=None, batch_size=10000, skip_header=2,
 
 
 def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
-                              skip_calc=False, read_ahead=True, verbose=True):
+                              skip_calc=False, read_ahead=True, verbose=True, node_pkg='node'):
     """
     Combined single-pass import of states and transitions from VALD format.
 
@@ -1223,13 +1398,17 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
     - If value > 0: integer part = sigmawaals, fractional part = alphawaals
 
     Args:
+        node_pkg: Node package name ('node' or 'node_molec')
         read_ahead: If True, read and parse in separate thread to keep extraction
                    tool running at full speed. Safe with SQLite (no locking issues).
 
     Returns: (total_processed, total_states_inserted, total_transitions_inserted)
     """
-    from node_atom.models import State, Transition
-    from node_common.models import LineList
+    import importlib
+    node_models = importlib.import_module(f'{node_pkg}.models')
+    State = node_models.State
+    Transition = node_models.Transition
+    from node.models import LineList
     from django.db import transaction, connection
 
     # Temporarily disable foreign key constraints for import
@@ -1311,14 +1490,32 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
             lower_lande_ref = ref_codes[4]
             lower_level_ref = ref_codes[8]
 
-            state_rows.append((
+            # Build state row conditionally based on model fields
+            lower_row = [
                 species_id, lower_energy, lower_energy_scaled, lower_energy_method, lower_j, lower_lande,
                 lower_qn.get('config'), lower_qn.get('term'),
-                lower_qn.get('l'), lower_qn.get('s'), lower_qn.get('p'),
-                lower_qn.get('j1'), lower_qn.get('j2'), lower_qn.get('k'),
-                lower_qn.get('s2'), lower_qn.get('jc'), lower_qn.get('sn'), lower_qn.get('n'),
-                lower_energy_ref, lower_lande_ref, lower_level_ref
-            ))
+                lower_qn.get('s'), lower_qn.get('p'), lower_qn.get('n')
+            ]
+
+            # Add atomic fields if model has them
+            if hasattr(State, 'l'):
+                lower_row.extend([
+                    lower_qn.get('l'), lower_qn.get('j1'), lower_qn.get('j2'),
+                    lower_qn.get('k'), lower_qn.get('s2'), lower_qn.get('jc'), lower_qn.get('sn')
+                ])
+
+            # Add molecular fields if model has them
+            if hasattr(State, 'v'):
+                lower_row.extend([
+                    lower_qn.get('v'), lower_qn.get('Lambda'), lower_qn.get('Sigma'),
+                    lower_qn.get('Omega'), lower_qn.get('rotN'), lower_qn.get('elecstate'),
+                    lower_qn.get('coupling_case'), lower_qn.get('kronig_parity'),
+                    lower_qn.get('elec_inversion'), lower_qn.get('asSym')
+                ])
+
+            # Add reference fields
+            lower_row.extend([lower_energy_ref, lower_lande_ref, lower_level_ref])
+            state_rows.append(tuple(lower_row))
 
             # Upper state
             upper_energy, upper_j, upper_lande, upper_term = (
@@ -1344,23 +1541,63 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
             upper_lande_ref = ref_codes[4]
             upper_level_ref = ref_codes[8]
 
-            state_rows.append((
+            # Build state row conditionally based on model fields
+            upper_row = [
                 species_id, upper_energy, upper_energy_scaled, upper_energy_method, upper_j, upper_lande,
                 upper_qn.get('config'), upper_qn.get('term'),
-                upper_qn.get('l'), upper_qn.get('s'), upper_qn.get('p'),
-                upper_qn.get('j1'), upper_qn.get('j2'), upper_qn.get('k'),
-                upper_qn.get('s2'), upper_qn.get('jc'), upper_qn.get('sn'), upper_qn.get('n'),
-                upper_energy_ref, upper_lande_ref, upper_level_ref
-            ))
+                upper_qn.get('s'), upper_qn.get('p'), upper_qn.get('n')
+            ]
+
+            # Add atomic fields if model has them
+            if hasattr(State, 'l'):
+                upper_row.extend([
+                    upper_qn.get('l'), upper_qn.get('j1'), upper_qn.get('j2'),
+                    upper_qn.get('k'), upper_qn.get('s2'), upper_qn.get('jc'), upper_qn.get('sn')
+                ])
+
+            # Add molecular fields if model has them
+            if hasattr(State, 'v'):
+                upper_row.extend([
+                    upper_qn.get('v'), upper_qn.get('Lambda'), upper_qn.get('Sigma'),
+                    upper_qn.get('Omega'), upper_qn.get('rotN'), upper_qn.get('elecstate'),
+                    upper_qn.get('coupling_case'), upper_qn.get('kronig_parity'),
+                    upper_qn.get('elec_inversion'), upper_qn.get('asSym')
+                ])
+
+            # Add reference fields
+            upper_row.extend([upper_energy_ref, upper_lande_ref, upper_level_ref])
+            state_rows.append(tuple(upper_row))
 
         # Direct SQL insert (faster than Django ORM)
+        # Build SQL dynamically based on which fields exist in the model
         with transaction.atomic():
             initial_state_count = State.objects.count()
             with connection.cursor() as cursor:
-                cursor.executemany(
-                    "INSERT OR IGNORE INTO states (species_id, energy, energy_scaled, energy_method, J, lande, config, term, L, S, P, J1, J2, K, S2, Jc, Sn, n, energy_ref_id, lande_ref_id, level_ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    state_rows
-                )
+                # Build column list based on model fields
+                base_cols = 'species_id, energy, energy_scaled, energy_method, J, lande, config, term, S, P, n'
+                base_placeholders = '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?'
+
+                # Check if atomic fields exist
+                if hasattr(State, 'l'):
+                    atomic_cols = ', L, J1, J2, K, S2, Jc, Sn'
+                    atomic_placeholders = ', ?, ?, ?, ?, ?, ?, ?'
+                else:
+                    atomic_cols = ''
+                    atomic_placeholders = ''
+
+                # Check if molecular fields exist
+                if hasattr(State, 'v'):
+                    molec_cols = ', v, Lambda, Sigma, Omega, rotN, elecstate, coupling_case, kronig_parity, elec_inversion, asSym'
+                    molec_placeholders = ', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?'
+                else:
+                    molec_cols = ''
+                    molec_placeholders = ''
+
+                ref_cols = ', energy_ref_id, lande_ref_id, level_ref_id'
+                ref_placeholders = ', ?, ?, ?'
+
+                sql = f"INSERT OR IGNORE INTO states ({base_cols}{atomic_cols}{molec_cols}{ref_cols}) VALUES ({base_placeholders}{atomic_placeholders}{molec_placeholders}{ref_placeholders})"
+                cursor.executemany(sql, state_rows)
             final_state_count = State.objects.count()
             states_inserted = final_state_count - initial_state_count
 
@@ -1471,6 +1708,26 @@ def import_states_transitions(input_file=None, batch_size=10000, skip_header=2,
         if verbose:
             print('Einstein A calculated')
 
+    # Update ground_state_id for all species
+    if verbose:
+        print('Setting ground state references...')
+
+    with connection.cursor() as cursor:
+        # For each species, find the state with minimum energy and set it as ground_state_id
+        cursor.execute("""
+            UPDATE species
+            SET ground_state_id = (
+                SELECT id FROM states
+                WHERE states.species_id = species.id
+                ORDER BY states.energy ASC
+                LIMIT 1
+            )
+        """)
+
+    if verbose:
+        updated = cursor.rowcount if hasattr(cursor, 'rowcount') else 'N/A'
+        print(f'Ground state references set (updated {updated} species)')
+
     return total_processed, total_states_inserted, total_transitions_inserted
 
 
@@ -1485,9 +1742,12 @@ def import_species(input_file, batch_size=10000, verbose=True):
     Format: comma-separated with header
     Use,Index,Name,Charge,InChI,InChIkey,Mass,Ion. en.,Fract.,Num. comp.,N1,N2,N3,N4,Dummy
 
+    For molecules (Num. comp. > 1), also populates the SpeciesComp table
+    to establish molecule-atom relationships using N1, N2, N3, N4 columns.
+
     Returns: (total_processed, total_inserted)
     """
-    from node_common.models import Species
+    from node.models import Species, SpeciesComp
     from django.db import transaction
     import csv
 
@@ -1501,6 +1761,7 @@ def import_species(input_file, batch_size=10000, verbose=True):
 
         reader = csv.DictReader(f)
         species_list = []
+        component_list = []
         total_processed = 0
 
         for row in reader:
@@ -1510,8 +1771,11 @@ def import_species(input_file, batch_size=10000, verbose=True):
                 # if use != '1':
                 #     continue
 
+                species_id = int(row['Index'])
+                ncomp = int(row['Num. comp.']) if row['Num. comp.'].strip() else None
+
                 species = Species(
-                    id=int(row['Index']),
+                    id=species_id,
                     name=row['Name'].strip(),
                     ion=int(row['Charge']) if row['Charge'].strip() else None,
                     inchi=row['InChI'].strip() if row['InChI'].strip() else None,
@@ -1520,10 +1784,26 @@ def import_species(input_file, batch_size=10000, verbose=True):
                     massno=int(float(row['Mass'])) if row['Mass'].strip() else None,
                     ionen=float(row['Ion. en.']) if row['Ion. en.'].strip() else None,
                     solariso=float(row['Fract.']) if row['Fract.'].strip() else None,
-                    ncomp=int(row['Num. comp.']) if row['Num. comp.'].strip() else None,
+                    ncomp=ncomp,
                     atomic=int(row['N1']) if row['N1'].strip() else None,
                 )
                 species_list.append(species)
+
+                # For molecules, create component relationships
+                if ncomp and ncomp > 1:
+                    # N1-N4 contain species IDs of component atoms
+                    for i, col in enumerate(['N1', 'N2', 'N3', 'N4'], 1):
+                        if i > ncomp:
+                            break
+                        atom_species_id_str = row.get(col, '').strip()
+                        if atom_species_id_str:
+                            # N1-N4 are already species IDs, not atomic numbers
+                            atom_species_id = int(atom_species_id_str)
+                            component_list.append({
+                                'molecule_id': species_id,
+                                'atom_id': atom_species_id
+                            })
+
                 total_processed += 1
 
                 if len(species_list) >= batch_size:
@@ -1533,7 +1813,23 @@ def import_species(input_file, batch_size=10000, verbose=True):
                             batch_size=batch_size,
                             ignore_conflicts=True
                         )
+                        # Insert components after species are created
+                        # Only create if both molecule and atom species exist
+                        if component_list:
+                            for comp in component_list:
+                                try:
+                                    # Check if both species exist
+                                    if Species.objects.filter(id=comp['molecule_id']).exists() and \
+                                       Species.objects.filter(id=comp['atom_id']).exists():
+                                        SpeciesComp.objects.get_or_create(
+                                            molecule_id=comp['molecule_id'],
+                                            atom_id=comp['atom_id']
+                                        )
+                                except Exception as e:
+                                    if verbose:
+                                        print(f"Warning: Could not create component {comp['molecule_id']}->{comp['atom_id']}: {e}", file=sys.stderr)
                     species_list = []
+                    component_list = []
 
             except (ValueError, KeyError) as e:
                 if verbose and total_processed < 5:
@@ -1547,6 +1843,21 @@ def import_species(input_file, batch_size=10000, verbose=True):
                     batch_size=batch_size,
                     ignore_conflicts=True
                 )
+                # Insert components after species are created
+                # Only create if both molecule and atom species exist
+                if component_list:
+                    for comp in component_list:
+                        try:
+                            # Check if both species exist
+                            if Species.objects.filter(id=comp['molecule_id']).exists() and \
+                               Species.objects.filter(id=comp['atom_id']).exists():
+                                SpeciesComp.objects.get_or_create(
+                                    molecule_id=comp['molecule_id'],
+                                    atom_id=comp['atom_id']
+                                )
+                        except Exception as e:
+                            if verbose:
+                                print(f"Warning: Could not create component {comp['molecule_id']}->{comp['atom_id']}: {e}", file=sys.stderr)
 
     inserted_count = Species.objects.count()
 
@@ -1557,7 +1868,7 @@ def import_species(input_file, batch_size=10000, verbose=True):
 # HYPERFINE STRUCTURE CONSTANTS IMPORT
 # =============================================================================
 
-def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
+def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0, node_pkg='node'):
     """
     Import hyperfine structure constants (A and B) from AB.db SQLite database.
 
@@ -1575,11 +1886,14 @@ def import_hfs(input_file, batch_size=1000, verbose=True, energy_tolerance=1.0):
         batch_size: Number of updates per transaction
         verbose: Print progress messages
         energy_tolerance: Maximum energy difference for matching (cm⁻¹)
+        node_pkg: Node package name ('node' or 'node_molec')
 
     Returns: (total_processed, matched, multiple_matches, no_match)
     """
 
-    from node_atom.models import State
+    import importlib
+    node_models = importlib.import_module(f'{node_pkg}.models')
+    State = node_models.State
     from django.db import transaction, connection
     import sqlite3
 
@@ -1687,7 +2001,7 @@ def import_bibtex(input_file, batch_size=1000, verbose=True):
     Returns: (total_processed, total_inserted)
     """
 
-    from node_common.models import Reference
+    from node.models import Reference
     from vamdctap.bibtextools import BibTeX2XML
     from django.db import transaction
 
@@ -1830,7 +2144,7 @@ def import_linelists(input_file, batch_size=1000, verbose=True):
     Returns: (total_processed, total_inserted)
     """
 
-    from node_common.models import LineList
+    from node.models import LineList
     from django.db import transaction
 
     linelists = []
@@ -1908,6 +2222,13 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='VALD Data Import')
+
+    # Global arguments (before subparsers)
+    parser.add_argument('--settings', type=str, default=None,
+                       help='Django settings module to use. '
+                            'Use settings_molec for molecular data, settings_atom for atomic. '
+                            'If not specified, uses DJANGO_SETTINGS_MODULE env var, or settings_dev as fallback.')
+
     subparsers = parser.add_subparsers(dest='command', help='Command to run')
 
     # States import command
@@ -1975,16 +2296,33 @@ def main():
 
     # Setup Django environment
     import os
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings_dev')
+    # Priority: --settings argument > env variable > default
+    if args.settings:
+        # User explicitly provided --settings, use it
+        os.environ['DJANGO_SETTINGS_MODULE'] = args.settings
+    elif 'DJANGO_SETTINGS_MODULE' not in os.environ:
+        # No --settings and no env var, use default (matches manage.py)
+        os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+    # else: env var is already set, use it
+
     import django
     django.setup()
+
+    # Detect node package from Django settings
+    from django.conf import settings
+    node_pkg = getattr(settings, 'NODEPKG', 'node')
+    if verbose := getattr(args, 'verbose', True):
+        print(f'Using settings: {args.settings}')
+        print(f'Using node package: {node_pkg}')
+        print(f'Database: {settings.DATABASES["default"]["NAME"]}')
 
     # Run appropriate command
     if args.command == 'import-states':
         processed, inserted = import_states(
         input_file=args.file,
         batch_size=args.batch_size,
-        skip_header=args.skip_header
+        skip_header=args.skip_header,
+        node_pkg=node_pkg
         )
         print(f'Done! Processed {processed} lines, inserted {inserted} unique states')
 
@@ -1993,7 +2331,8 @@ def main():
         input_file=args.file,
         batch_size=args.batch_size,
         skip_header=args.skip_header,
-        skip_calc=args.skip_calc
+        skip_calc=args.skip_calc,
+        node_pkg=node_pkg
         )
         print(f'Done! Imported {processed} transitions')
 
@@ -2003,7 +2342,8 @@ def main():
         batch_size=args.batch_size,
         skip_header=args.skip_header,
         skip_calc=args.skip_calc,
-        read_ahead=not args.no_read_ahead
+        read_ahead=not args.no_read_ahead,
+        node_pkg=node_pkg
         )
         print(f'Done! Processed {processed} lines')
         print(f'Inserted {states_inserted} unique states')
@@ -2027,7 +2367,8 @@ def main():
         total, matched, multiple, no_match = import_hfs(
         input_file=args.file,
         batch_size=args.batch_size,
-        energy_tolerance=args.energy_tolerance
+        energy_tolerance=args.energy_tolerance,
+        node_pkg=node_pkg
         )
         print(f'Done! Processed {total} HFS records')
         print(f'Matched: {matched}, Multiple candidates: {multiple}, No match: {no_match}')

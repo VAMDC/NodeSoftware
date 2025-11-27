@@ -1,5 +1,32 @@
-from node_common.queryfunc import *
+from vamdctap.sqlparse import sql2Q
+from vamdctap.generators import *
+import vamdctap.generators as generators
 from .models import *
+from django.conf import settings
+import logging
+log = logging.getLogger('vamdc.node.queryfunc')
+
+TRANSLIM = settings.TRANSLIM if hasattr(settings,'TRANSLIM') else 2000
+
+
+class Method:
+    def __init__(self, mid, category):
+        self.id = mid
+        self.category = category
+        self.description = f'{category} method'
+
+def getMethods():
+    """Return method information for XSAMS output"""
+    method_map = {
+        0: 'experiment',
+        1: 'observed',
+        2: 'empirical',
+        3: 'theory',
+        4: 'semiempirical',
+        5: 'compilation',
+        6: 'derived'  # for Ritz wavelengths
+    }
+    return [Method(mid, cat) for mid, cat in method_map.items()]
 
 
 def returnHeaders(transs):
@@ -32,9 +59,14 @@ def setupResults(sql):
     log.debug('%s\n%s'%(sql.parsedSQL.columns,type(sql.where)))
     if (len(sql.parsedSQL.columns) == 1) and (sql.where == ''):
         log.debug('Special case of "select species"')
-        return {'Atoms':Species.objects.all(),
-                'HeaderInfo':{'COUNT-SPECIES':Species.objects.count(),
-                              'COUNT-ATOMS':Species.objects.count()}}
+        all_species = Species.objects.all()
+        atoms_list = [s for s in all_species if not s.isMolecule()]
+        molecules_list = [s for s in all_species if s.isMolecule()]
+        return {'Atoms': atoms_list,
+                'Molecules': molecules_list,
+                'HeaderInfo':{'COUNT-SPECIES':all_species.count(),
+                              'COUNT-ATOMS':len(atoms_list),
+                              'COUNT-MOLECULES':len(molecules_list)}}
 
     transs = Transition.objects.filter(q)
     if sql.HTTPmethod == 'HEAD':
@@ -165,28 +197,61 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
     yield '</Radiative>\n'
     yield '</Processes>\n'
 
+    # Split species into atoms and molecules
     if not Atoms: # Atoms is only pre-defined for "select species" special case
-        Atoms = Species.objects.filter(pk__in=stateIDs.keys())
-    if requestables and Atoms and ('atomstates' not in requestables):
-        for Atom in Atoms:
-            Atom.States = []
+        all_species = Species.objects.filter(pk__in=stateIDs.keys())
+        atoms_list = []
+        molecules_list = []
+
+        for species in all_species:
+            if species.isMolecule():
+                molecules_list.append(species)
+            else:
+                atoms_list.append(species)
     else:
-        for Atom in Atoms:
-            Atom.States = State.objects.filter(pk__in=stateIDs[Atom.pk])
+        # Atoms was predefined (SELECT SPECIES case), split it
+        atoms_list = [s for s in Atoms if not s.isMolecule()]
+        molecules_list = [s for s in Atoms if s.isMolecule()]
+
+    # Attach states to each species (works for both atoms and molecules)
+    if requestables and ('atomstates' not in requestables):
+        for species in atoms_list + molecules_list:
+            species.States = []
+    else:
+        # Filter states by species_id - works for both atoms and molecules
+        for species in atoms_list + molecules_list:
+            # Convert set to list to avoid "set changed size during iteration" error
+            state_ids = list(stateIDs[species.pk])
+
+            # Add ground state if it's not already in the list (needed for energyOrigin reference)
+            if species.ground_state_id and species.ground_state_id not in stateIDs[species.pk]:
+                state_ids.append(species.ground_state_id)
+
+            species.States = State.objects.filter(pk__in=state_ids)
 
     yield '<Species>\n'
+
+    # Yield atomic species
     if not requestables or 'atoms' in requestables:
         log.debug('Working on Atoms.')
         try:
-            for Atom in XsamsAtoms(Atoms):
+            for Atom in XsamsAtoms(atoms_list):
                 yield Atom
         except: errs+=generatorError(' Atoms')
 
+    # Yield molecular species
+    if not requestables or 'molecules' in requestables:
+        log.debug('Working on Molecules.')
+        try:
+            for Molecule in XsamsMolecules(molecules_list):
+                yield Molecule
+        except: errs+=generatorError(' Molecules')
+
     yield '</Species>\n'
 
-
-    for Atom in Atoms:
-        for state in Atom.States:
+    # Collect reference IDs from all states
+    for species in atoms_list + molecules_list:
+        for state in species.States:
             refIDs.update(state.energy_ref_id or [])
             refIDs.update(state.lande_ref_id or [])
             refIDs.update(state.level_ref_id or [])

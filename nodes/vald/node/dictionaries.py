@@ -50,6 +50,41 @@ RETURNABLES = {\
 'AtomStateShellPrincipalQN':'Component.n',
 
 #############################################################
+# MOLECULAR KEYWORDS (map to same State model fields)
+#############################################################
+'MoleculeChemicalName':'Molecule.name',
+'MoleculeSpeciesID':'Molecule.id',
+'MoleculeInchiKey':'Molecule.inchikey',
+'MoleculeInchi':'Molecule.inchi',
+'MoleculeStoichiometricFormula':'Molecule.name',
+'MoleculeIonCharge':'Molecule.ion',
+'MoleculeMassNumber':'Molecule.massno',
+
+'MoleculeStateID':'MoleculeState.id',
+'MoleculeStateEnergy':'MoleculeState.energy',
+'MoleculeStateEnergyUnit':'1/cm',
+'MoleculeStateEnergyOrigin':'MoleculeState.energy_origin()',
+'MoleculeStateEnergyRef':'MoleculeState.energy_ref_id',
+'MoleculeStateEnergyMethod':'MoleculeState.energy_method',
+'MoleculeStateDescription':'MoleculeState.description()',
+'MoleculeStateConfigurationLabel':'MoleculeState.config',
+'MoleculeQNCase':'MoleculeState.qn_case()',
+
+# Molecular quantum numbers
+'MoleculeQNv':'MoleculeState.v',
+'MoleculeQNLambda':'MoleculeState.Lambda',
+'MoleculeQNSigma':'MoleculeState.Sigma',
+'MoleculeQNOmega':'MoleculeState.Omega',
+'MoleculeQNN':'MoleculeState.rotN',
+'MoleculeQNElecStateLabel':'MoleculeState.elecstate',
+'MoleculeQNJ':'MoleculeState.j_fmt()',
+'MoleculeQNS':'MoleculeState.s',
+'MoleculeQnParity':'MoleculeState.parity_pm()',
+'MoleculeQNkronigParity':'MoleculeState.kronig_parity',
+'MoleculeQNelecInv':'MoleculeState.elec_inversion',
+'MoleculeQNasSym':'MoleculeState.asSym',
+
+#############################################################
 'RadTransID':'RadTran.id',
 'RadTransSpeciesRef':'RadTran.species_id',
 'RadTransWavelength':'RadTran.get_waves()',
@@ -107,24 +142,109 @@ from vamdctap.unitconv import *
 # custom function
 from django.db.models import Q
 
+# Helper functions for restrictables that can query both upper and lower states
+def bothStates(qval):
+    """Filter transitions where EITHER upper OR lower state matches the energy"""
+    return Q(upstate__energy=qval) | Q(lostate__energy=qval)
+
+def bothStates_lande(qval):
+    """Filter transitions where EITHER upper OR lower state matches the Lande factor"""
+    return Q(upstate__lande=qval) | Q(lostate__lande=qval)
+
+def bothStates_parity(qval):
+    """Filter transitions where EITHER upper OR lower state matches the parity"""
+    return Q(upstate__p=qval) | Q(lostate__p=qval)
+
+def bothStates_j(qval):
+    """Filter transitions where EITHER upper OR lower state matches J"""
+    return Q(upstate__j=qval) | Q(lostate__j=qval)
+
+def bothStates_v(qval):
+    """Filter transitions where EITHER upper OR lower state matches v (vibrational QN)"""
+    return Q(upstate__v=qval) | Q(lostate__v=qval)
+
+def bothStates_Lambda(qval):
+    """Filter transitions where EITHER upper OR lower state matches Lambda"""
+    return Q(upstate__Lambda=qval) | Q(lostate__Lambda=qval)
+
+def valdObstype(qval):
+    """Convert VAMDC method category string to VALD integer code"""
+    method_map = {
+        'experiment': 0, 'observed': 1, 'empirical': 2,
+        'theory': 3, 'semiempirical': 4, 'compilation': 5,
+        'derived': 6, 'ritz': 6
+    }
+    return method_map.get(qval.lower(), qval)
+
+def loggf2osc(loggf_val):
+    """Convert log(gf) to oscillator strength: f = 10^(loggf)"""
+    return 10**float(loggf_val)
+
+def loggf2wf(loggf_val):
+    """Convert log(gf) to weighted oscillator strength: gf = 10^(loggf)"""
+    return 10**float(loggf_val)
+
 RESTRICTABLES = {\
 #'ConstantTest':test_constant_factory('"U"'),
+
+# Species identification (atoms)
 'AtomSymbol':'species__name',
 'AtomMassNumber':'species__massno',
 'AtomNuclearCharge':'species__atomic',
 'IonCharge':'species__ion',
 'Inchi':'species__inchi',
 'InchiKey':'species__inchikey',
+
+# Species identification (molecules)
+'MoleculeChemicalName':'species__name',
+'MoleculeStoichiometricFormula':'species__name',
+'SpeciesID':'species__id',
+
+# State energy (both atoms and molecules)
 'StateEnergy':bothStates,
 'Lower.StateEnergy':'lostate__energy',
 'Upper.StateEnergy':'upstate__energy',
+
+# Atomic state properties
+'AtomStateLandeFactor':bothStates_lande,
+'Lower.AtomStateLandeFactor':'lostate__lande',
+'Upper.AtomStateLandeFactor':'upstate__lande',
+'AtomStateParity':bothStates_parity,
+'Lower.AtomStateParity':'lostate__p',
+'Upper.AtomStateParity':'upstate__p',
+'AtomStateTotalAngMom':bothStates_j,
+'Lower.AtomStateTotalAngMom':'lostate__j',
+'Upper.AtomStateTotalAngMom':'upstate__j',
+
+# Molecular quantum numbers
+'MoleculeQNv':bothStates_v,
+'Lower.MoleculeQNv':'lostate__v',
+'Upper.MoleculeQNv':'upstate__v',
+'MoleculeQNJ':bothStates_j,  # J is common to both atoms and molecules
+'Lower.MoleculeQNJ':'lostate__j',
+'Upper.MoleculeQNJ':'upstate__j',
+'MoleculeQNLambda':bothStates_Lambda,
+'Lower.MoleculeQNLambda':'lostate__Lambda',
+'Upper.MoleculeQNLambda':'upstate__Lambda',
+
+# Radiative transitions - wavelength/energy
 'RadTransWavelength':'wave',
 'RadTransWavenumber':('wave',invcm2Angstr),
 'RadTransFrequency':('wave',Hz2Angstr),
 'RadTransEnergy':('wave',eV2Angstr),
+
+# Radiative transitions - probabilities
+'RadTransProbabilityA':'einsteina',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
+'RadTransProbabilityOscillatorStrength':('loggf',loggf2osc),
+'RadTransProbabilityWeightedOscillatorStrength':('loggf',loggf2wf),
+
+# Radiative transitions - broadening
 'RadTransBroadeningNatural':'gammarad',
 'RadTransBroadeningPressure':'gammastark',
+'RadTransBroadeningPressureCharged':'gammastark',
+'RadTransBroadeningPressureNeutral':'gammawaals',
+
+# Metadata
 'MethodCategory':('wave_method',valdObstype),
-'RadTransProbabilityA':'einsteina'
 }
