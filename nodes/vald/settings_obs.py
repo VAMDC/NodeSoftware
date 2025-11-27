@@ -26,7 +26,7 @@ EXAMPLE_QUERIES = [\
     ]
 ADMINS = (('Thomas', 'thomas.marquart@astro.uu.se'),)
 SERVER_EMAIL = 'thomas.marquart@astro.uu.se'
-DEPLOY_URL = 'https://vald.astro.uu.se/vamdc-all/'
+DEPLOY_URL = 'https://vald.astro.uu.se/vamdc-obs/'
 
 VAMDC_APPS = [\
     "ivo://vamdc/atomicxsams2html",
