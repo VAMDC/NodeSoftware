@@ -12,10 +12,10 @@ INSTALLED_APPS = ['vamdctap', NODEPKG]
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': 'vald_dev.sqlite',
+    'NAME': 'vald_all.sqlite',
   },
 }
-LAST_MODIFIED = datetime.date(2025,10,22)
+LAST_MODIFIED = datetime.date(2025,11,28)
 NODEVERSION = LAST_MODIFIED.isoformat()
 
 EXAMPLE_QUERIES = [\
@@ -26,7 +26,7 @@ EXAMPLE_QUERIES = [\
     ]
 ADMINS = (('Thomas', 'thomas.marquart@astro.uu.se'),)
 SERVER_EMAIL = 'thomas.marquart@astro.uu.se'
-DEPLOY_URL = 'http://localhost:8000/tap/'
+DEPLOY_URL = 'https://vald.astro.uu.se/vamdc-all/'
 
 VAMDC_APPS = [\
     "ivo://vamdc/atomicxsams2html",
@@ -36,7 +36,7 @@ VAMDC_APPS = [\
     "ivo://vamdc/xsams-views",
     ]
 
-LOGGING['handlers']['logfile']['filename'] = 'devnode.log'
+LOGGING['handlers']['logfile']['filename'] = 'node_all.log'
 if not DEBUG:
     LOGGING['handlers']['logfile']['level'] = 'INFO'
 
