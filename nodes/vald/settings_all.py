@@ -26,7 +26,7 @@ EXAMPLE_QUERIES = [\
     ]
 ADMINS = (('Thomas', 'thomas.marquart@astro.uu.se'),)
 SERVER_EMAIL = 'thomas.marquart@astro.uu.se'
-DEPLOY_URL = 'https://vald.astro.uu.se/vamdc-all/'
+DEPLOY_URL = 'https://vald.astro.uu.se/vamdc-all/tap/'
 
 VAMDC_APPS = [\
     "ivo://vamdc/atomicxsams2html",
@@ -47,3 +47,14 @@ if not DEBUG:
 #      'propagate': False,
 #  }
 
+import subprocess
+def get_git_commit():
+    try:
+        return subprocess.check_output(
+            ['git', 'rev-parse', '--short', 'HEAD'],
+            stderr=subprocess.DEVNULL
+        ).decode('ascii').strip()
+    except Exception:
+        return 'unknown'
+
+NODESOFTWARE_VERSION = get_git_commit()
