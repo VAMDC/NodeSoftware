@@ -169,7 +169,7 @@ def XsamsRadTrans(RadTrans):
 
 
 
-def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
+def customXsams(tap, RadTrans=None, Environments=None, Atoms=None, Molecules=None,
         Methods=None, Functions=None, HeaderInfo=None):
     #return GEN.Xsams(tap, **kwargs)
     yield XsamsHeader(HeaderInfo)
@@ -198,7 +198,8 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
     yield '</Processes>\n'
 
     # Split species into atoms and molecules
-    if not Atoms: # Atoms is only pre-defined for "select species" special case
+    if Atoms is None and Molecules is None:
+        # Normal query case: build from stateIDs
         all_species = Species.objects.filter(pk__in=stateIDs.keys())
         atoms_list = []
         molecules_list = []
@@ -209,9 +210,9 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None,
             else:
                 atoms_list.append(species)
     else:
-        # Atoms was predefined (SELECT SPECIES case), split it
-        atoms_list = [s for s in Atoms if not s.isMolecule()]
-        molecules_list = [s for s in Atoms if s.isMolecule()]
+        # SELECT SPECIES case: use predefined lists
+        atoms_list = Atoms or []
+        molecules_list = Molecules or []
 
     # Attach states to each species (works for both atoms and molecules)
     if requestables and ('atomstates' not in requestables):
