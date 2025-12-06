@@ -42,13 +42,22 @@ def returnHeaders(transs):
     else:
         headers['APPROX-SIZE']='0.00'
 
-    if ntranss < 1E6:
-        headers['COUNT-ATOMS'] = \
-            len(transs.values_list('species_id',flat=True).distinct())
-        headers['COUNT-SPECIES'] = headers['COUNT-ATOMS']
+    if ntranss < 1E7:
+        species_ids = transs.values_list('species_id', flat=True).distinct()
+        species_objs = Species.objects.filter(pk__in=species_ids)
+        atoms_count = sum(1 for s in species_objs if not s.isMolecule())
+        molecules_count = sum(1 for s in species_objs if s.isMolecule())
+        headers['COUNT-ATOMS'] = atoms_count
+        headers['COUNT-MOLECULES'] = molecules_count
+        headers['COUNT-SPECIES'] = atoms_count + molecules_count
         sids = transs.values_list('upstate_id','lostate_id')
         sids = set(item for s in sids for item in s)
         headers['COUNT-STATES'] = len(sids)
+    else:
+        headers['COUNT-ATOMS'] = -1
+        headers['COUNT-MOLECULES'] = -1
+        headers['COUNT-SPECIES'] = -1
+        headers['COUNT-STATES'] = -1
 
     return headers
 
