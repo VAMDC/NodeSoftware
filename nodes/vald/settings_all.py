@@ -3,7 +3,7 @@ from settings_default import *
 DEBUG = False
 #DEBUG = True
 TRANSLIM = 200000
-QUERY_STORE_ACTIVE = False
+QUERY_STORE_ACTIVE = True
 SERVE_STATIC = False
 
 NODEPKG = 'node'
