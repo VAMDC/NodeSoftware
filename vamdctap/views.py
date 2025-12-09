@@ -249,8 +249,13 @@ def logCentral(sync):
 
             try:
                 # SEND THE ACTUAL REQUEST
+                if settings.DEBUG:
+                    log.info('Sending to Query Store: URL=%s' % settings.QUERY_STORE_URL)
+                    log.info('Query Store payload: %s' % logdata)
                 logreq = librequests.post(settings.QUERY_STORE_URL,
                     params=logdata, timeout=2000)
+                if settings.DEBUG:
+                    log.info('Query Store response: status=%s' % logreq.status_code)
             except Exception as e:
                 log.warn('Query Store unreachable! %s'%e)
             else:
