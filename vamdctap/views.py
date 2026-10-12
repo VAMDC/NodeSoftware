@@ -10,6 +10,7 @@ import os, math, sys
 from base64 import b64encode
 randStr = lambda n: b64encode(os.urandom(int(math.ceil(0.75*n))))[:n]
 import time
+import threading
 
 import logging
 log=logging.getLogger('vamdc.tap')
@@ -244,26 +245,29 @@ def logCentral(sync):
                        'accessType': request.method,   # HEAD or GET
                        'outputFormatVersion': settings.VAMDC_STDS_VERSION,
                        'dataURL': "%ssync?%s"%(getBaseURL(request), request.META['QUERY_STRING']),
-                       'query' :  taprequest
+                       'query' :  str(taprequest)
                        }
-
-            try:
-                # SEND THE ACTUAL REQUEST
-                if settings.DEBUG:
-                    log.info('Sending to Query Store: URL=%s' % settings.QUERY_STORE_URL)
-                    log.info('Query Store payload: %s' % logdata)
-                logreq = librequests.post(settings.QUERY_STORE_URL,
-                    params=logdata, timeout=2000)
-                if settings.DEBUG:
-                    log.info('Query Store response: status=%s' % logreq.status_code)
-            except Exception as e:
-                log.warn('Query Store unreachable! %s'%e)
-            else:
-                if logreq.status_code != 200:
-                  log.warn('Query Store returned code: %s' % logreq.status_code)
-                  log.debug('QS reply text:\n%s' % logreq.text)
+            # don't let a slow Query Store hold up the response
+            threading.Thread(target=sendToQueryStore, args=(logdata,),
+                             daemon=True).start()
         return response
     return wrapper
+
+def sendToQueryStore(logdata):
+    try:
+        if settings.DEBUG:
+            log.info('Sending to Query Store: URL=%s' % settings.QUERY_STORE_URL)
+            log.info('Query Store payload: %s' % logdata)
+        logreq = librequests.post(settings.QUERY_STORE_URL,
+            params=logdata, timeout=(5, 30))
+        if settings.DEBUG:
+            log.info('Query Store response: status=%s' % logreq.status_code)
+    except Exception as e:
+        log.warning('Query Store unreachable! %s'%e)
+    else:
+        if logreq.status_code != 200:
+          log.warning('Query Store returned code: %s' % logreq.status_code)
+          log.debug('QS reply text:\n%s' % logreq.text)
 
 
 @logCentral
