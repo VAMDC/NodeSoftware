@@ -259,9 +259,12 @@ def sendToQueryStore(logdata):
             log.info('Sending to Query Store: URL=%s' % settings.QUERY_STORE_URL)
             log.info('Query Store payload: %s' % logdata)
         logreq = librequests.post(settings.QUERY_STORE_URL,
-            params=logdata, timeout=(5, 30))
+            params=logdata, timeout=(5, 300))
         if settings.DEBUG:
             log.info('Query Store response: status=%s' % logreq.status_code)
+    except librequests.exceptions.ReadTimeout:
+        # the Query Store often registers the entry but acknowledges slowly
+        log.info('Query Store sent, but no reply: %s' % logdata['queryToken'])
     except Exception as e:
         log.warning('Query Store unreachable! %s'%e)
     else:
