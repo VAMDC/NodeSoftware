@@ -180,13 +180,16 @@ def XsamsRadTrans(RadTrans):
 
 def customXsams(tap, RadTrans=None, Environments=None, Atoms=None, Molecules=None,
         Methods=None, Functions=None, HeaderInfo=None):
+    global stateIDs
+    global refIDs
+    # a previous request may have aborted before the reset at the end
+    stateIDs = defaultdict(set)
+    refIDs = set()
+
     #return GEN.Xsams(tap, **kwargs)
     yield XsamsHeader(HeaderInfo)
     errs=''
     requestables = tap.requestables
-
-    global stateIDs
-    global refIDs
 
     log.debug('Working on Processes.')
     yield '<Processes>\n'
