@@ -81,6 +81,9 @@ def setupResults(sql):
     if sql.HTTPmethod == 'HEAD':
         return {'HeaderInfo':returnHeaders(transs)}
 
+    if not transs.exists():
+        return {}  # sync() turns this into 204
+
     transs = transs[:TRANSLIM]
     log.debug('Returning from setupResults()')
     return {'RadTrans':transs,
@@ -272,10 +275,7 @@ def customXsams(tap, RadTrans=None, Environments=None, Atoms=None, Molecules=Non
 
     log.debug(refIDs)
 
-    if len(refIDs) == 0:
-        Sources = Reference.objects.all()
-    else:
-        Sources = Reference.objects.filter(pk__in=refIDs)
+    Sources = Reference.objects.filter(pk__in=refIDs)
     if not requestables or 'sources' in requestables:
         log.debug('Working on Sources.')
         try:
