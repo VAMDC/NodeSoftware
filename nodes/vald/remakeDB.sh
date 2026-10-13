@@ -15,3 +15,6 @@ uv run valdimport.py import-states-transitions --file=defatom.dat
 uv run valdimport.py import-states-transitions --file=defmolec.dat
 
 uv run valdimport.py import-hfs --file=AB.db
+
+# without stats, sqlite prefers low-cardinality indexes (e.g. wave_method) over the wave range
+uv run manage.py shell -c "from django.db import connection; connection.cursor().execute('ANALYZE')"
