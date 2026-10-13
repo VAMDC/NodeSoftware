@@ -1,0 +1,19 @@
+[Unit]
+Description=The gunicorn service that runs the VALD VAMDC node, all lines
+After=network.target
+
+[Service]
+User=vamdc
+Group=vamdc
+WorkingDirectory=/opt/ValdNode/nodes/vald
+Environment="DJANGO_SETTINGS_MODULE=settings_all"
+ExecStart=/opt/ValdNode/.venv/bin/gunicorn wsgi:application -w 4 -t 300 -b unix:/run/vamdc-all/vald_all.socket
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+Restart=always
+RuntimeDirectory=vamdc-all
+RuntimeDirectoryMode=0755
+
+[Install]
+WantedBy=multi-user.target
