@@ -140,49 +140,57 @@ RETURNABLES = {\
 from vamdctap.unitconv import *
 
 # custom function
-from django.db.models import Q
+from math import log10
+from django.db.models import Q, F, Value, FloatField, ExpressionWrapper
+from django.db.models.functions import Log
 
-# Helper functions for restrictables that can query both upper and lower states
-def bothStates(qval):
-    """Filter transitions where EITHER upper OR lower state matches the energy"""
-    return Q(upstate__energy=qval) | Q(lostate__energy=qval)
+# Restrictable functions are called by vamdctap.sqlparse as fu(name, op, *values)
+# and return a Q. restriction2Q is imported late because sqlparse imports this module.
 
-def bothStates_lande(qval):
-    """Filter transitions where EITHER upper OR lower state matches the Lande factor"""
-    return Q(upstate__lande=qval) | Q(lostate__lande=qval)
+def bothStates(field):
+    """EITHER upper OR lower state matches"""
+    def restrict(r, op, *rhs):
+        from vamdctap.sqlparse import restriction2Q
+        return restriction2Q([r, op, *rhs], {r: 'upstate__'+field}) \
+             | restriction2Q([r, op, *rhs], {r: 'lostate__'+field})
+    return restrict
 
-def bothStates_parity(qval):
-    """Filter transitions where EITHER upper OR lower state matches the parity"""
-    return Q(upstate__p=qval) | Q(lostate__p=qval)
+METHOD_MAP = {
+    'experiment': 0, 'observed': 1, 'empirical': 2,
+    'theory': 3, 'semiempirical': 4, 'compilation': 5,
+    'derived': 6, 'ritz': 6
+}
 
-def bothStates_j(qval):
-    """Filter transitions where EITHER upper OR lower state matches J"""
-    return Q(upstate__j=qval) | Q(lostate__j=qval)
+def methodCategory(r, op, *rhs):
+    """VAMDC method category string to VALD integer code"""
+    from vamdctap.sqlparse import restriction2Q
+    rhs = [str(METHOD_MAP.get(v.strip('\'"').lower(), v)) for v in rhs]
+    return restriction2Q([r, op, *rhs], {r: 'wave_method'})
 
-def bothStates_v(qval):
-    """Filter transitions where EITHER upper OR lower state matches v (vibrational QN)"""
-    return Q(upstate__v=qval) | Q(lostate__v=qval)
+# stands in for log10(0), below any loggf in VALD
+LOGGF_MIN = -99999
 
-def bothStates_Lambda(qval):
-    """Filter transitions where EITHER upper OR lower state matches Lambda"""
-    return Q(upstate__Lambda=qval) | Q(lostate__Lambda=qval)
+def _log10(v):
+    v = float(v.strip('\'"'))
+    return log10(v) if v > 0 else LOGGF_MIN
 
-def valdObstype(qval):
-    """Convert VAMDC method category string to VALD integer code"""
-    method_map = {
-        'experiment': 0, 'observed': 1, 'empirical': 2,
-        'theory': 3, 'semiempirical': 4, 'compilation': 5,
-        'derived': 6, 'ritz': 6
-    }
-    return method_map.get(qval.lower(), qval)
+def weightedOscStrength(r, op, *rhs):
+    """gf restriction applied to loggf"""
+    from vamdctap.sqlparse import restriction2Q
+    rhs = [v if v in '()' else repr(_log10(v)) for v in rhs]
+    return restriction2Q([r, op, *rhs], {r: 'loggf'})
 
-def loggf2osc(loggf_val):
-    """Convert log(gf) to oscillator strength: f = 10^(loggf)"""
-    return 10**float(loggf_val)
-
-def loggf2wf(loggf_val):
-    """Convert log(gf) to weighted oscillator strength: gf = 10^(loggf)"""
-    return 10**float(loggf_val)
+def oscStrength(r, op, *rhs):
+    """f restriction applied to loggf, with g of the lower state"""
+    from vamdctap.sqlparse import OPTRANS
+    if len(rhs) != 1 or op not in ('<', '>', '<=', '>=', '=', '!=', '<>'):
+        raise Exception('%s supports only a single value with <, >, <=, >=, =, !='%r)
+    loggf = ExpressionWrapper(
+        Value(_log10(rhs[0])) + Log(Value(10.0), 2*F('lostate__j') + 1),
+        output_field=FloatField())
+    if op in ('!=', '<>'):
+        return ~Q(loggf=loggf)
+    return Q(**{'loggf'+OPTRANS[op]: loggf})
 
 RESTRICTABLES = {\
 #'ConstantTest':test_constant_factory('"U"'),
@@ -201,29 +209,29 @@ RESTRICTABLES = {\
 'SpeciesID':'species__id',
 
 # State energy (both atoms and molecules)
-'StateEnergy':bothStates,
+'StateEnergy':bothStates('energy'),
 'Lower.StateEnergy':'lostate__energy',
 'Upper.StateEnergy':'upstate__energy',
 
 # Atomic state properties
-'AtomStateLandeFactor':bothStates_lande,
+'AtomStateLandeFactor':bothStates('lande'),
 'Lower.AtomStateLandeFactor':'lostate__lande',
 'Upper.AtomStateLandeFactor':'upstate__lande',
-'AtomStateParity':bothStates_parity,
+'AtomStateParity':bothStates('p'),
 'Lower.AtomStateParity':'lostate__p',
 'Upper.AtomStateParity':'upstate__p',
-'AtomStateTotalAngMom':bothStates_j,
+'AtomStateTotalAngMom':bothStates('j'),
 'Lower.AtomStateTotalAngMom':'lostate__j',
 'Upper.AtomStateTotalAngMom':'upstate__j',
 
 # Molecular quantum numbers
-'MoleculeQNv':bothStates_v,
+'MoleculeQNv':bothStates('v'),
 'Lower.MoleculeQNv':'lostate__v',
 'Upper.MoleculeQNv':'upstate__v',
-'MoleculeQNJ':bothStates_j,  # J is common to both atoms and molecules
+'MoleculeQNJ':bothStates('j'),  # J is common to both atoms and molecules
 'Lower.MoleculeQNJ':'lostate__j',
 'Upper.MoleculeQNJ':'upstate__j',
-'MoleculeQNLambda':bothStates_Lambda,
+'MoleculeQNLambda':bothStates('Lambda'),
 'Lower.MoleculeQNLambda':'lostate__Lambda',
 'Upper.MoleculeQNLambda':'upstate__Lambda',
 
@@ -236,8 +244,8 @@ RESTRICTABLES = {\
 # Radiative transitions - probabilities
 'RadTransProbabilityA':'einsteina',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
-'RadTransProbabilityOscillatorStrength':('loggf',loggf2osc),
-'RadTransProbabilityWeightedOscillatorStrength':('loggf',loggf2wf),
+'RadTransProbabilityOscillatorStrength':oscStrength,
+'RadTransProbabilityWeightedOscillatorStrength':weightedOscStrength,
 
 # Radiative transitions - broadening
 'RadTransBroadeningNatural':'gammarad',
@@ -246,5 +254,5 @@ RESTRICTABLES = {\
 'RadTransBroadeningPressureNeutral':'gammawaals',
 
 # Metadata
-'MethodCategory':('wave_method',valdObstype),
+'MethodCategory':methodCategory,
 }
