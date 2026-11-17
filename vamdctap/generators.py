@@ -131,6 +131,10 @@ def GetValue(returnable_key, **kwargs):
         else: return '0'
     return value
 
+def attr(value):
+    "Escape a value that goes between the double quotes of an XML attribute."
+    return escape(str(value), {'"': '&quot;'})
+
 def makeOptionalTag(tagname, keyword, G, extraAttr={}):
     content = G(keyword)
 
@@ -142,7 +146,7 @@ def makeOptionalTag(tagname, keyword, G, extraAttr={}):
             s.append( '<%s>%s</%s>'%(tagname, escape(str(c)), tagname) )
         return ''.join(s)
     else:
-        extra = "".join([' %s="%s"'% (k, v) for k, v in extraAttr.items()])
+        extra = "".join([' %s="%s"'% (k, attr(v)) for k, v in extraAttr.items()])
         return '<%s%s>%s</%s>'%(tagname, extra, escape(str(content)), tagname)
 
 def makeSourceRefs(refs):
@@ -227,7 +231,7 @@ def makePrimaryType(tagname, keyword, G, extraAttr={}):
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
     for k, v in extraAttr.items():
         if v or v==0:
-            result.append( ' %s="%s"'% (k, v) )
+            result.append( ' %s="%s"'% (k, attr(v)) )
 
     result.append( '>' )
     if comment:
@@ -280,9 +284,9 @@ def makeRepeatedDataType(tagname, keyword, G, extraAttr={}):
     for i, val in enumerate(value):
         string += '<%s' % tagname
         for k, v in extraAttr.items():
-            if v[i]: string += ' %s="%s"'%(k,v[i])
+            if v[i]: string += ' %s="%s"'%(k,attr(v[i]))
         if name[i]:
-            string += ' name="%s"' % name[i]
+            string += ' name="%s"' % attr(name[i])
         if method[i]:
             string += ' methodRef="M%s-%s"' % (NODEID, method[i])
         string += '>'
@@ -428,7 +432,7 @@ def makeDataType(tagname, keyword, G, extraAttr={}, extraElem={}):
         result.append( ' methodRef="M%s-%s"' % (NODEID, method) )
     for k, v in extraAttr.items():
         if not v: continue
-        result.append( ' %s="%s"'% (k, v) )
+        result.append( ' %s="%s"'% (k, attr(v)) )
     result.append( '>' )
 
     if comment:
@@ -570,9 +574,9 @@ def XsamsEnvironments(Environments):
                 GS = lambda name: GetValue(name, EnvSpecies=EnvSpecies)
                 speciesRef = GS('EnvironmentSpeciesRef')
                 if speciesRef:
-                    yield '<Species name="%s" speciesRef="X%s-%s">' % (GS('EnvironmentSpeciesName'), NODEID, speciesRef)
+                    yield '<Species name="%s" speciesRef="X%s-%s">' % (attr(GS('EnvironmentSpeciesName')), NODEID, speciesRef)
                 else:
-                    yield '<Species name="%s">' % (GS('EnvironmentSpeciesName'))
+                    yield '<Species name="%s">' % attr(GS('EnvironmentSpeciesName'))
                 yield makeDataType('PartialPressure', 'EnvironmentSpeciesPartialPressure', GS)
                 yield makeDataType('MoleFraction', 'EnvironmentSpeciesMoleFraction', GS)
                 yield makeDataType('Concentration', 'EnvironmentSpeciesConcentration', GS)
@@ -764,7 +768,7 @@ def makeAtomStateComponents(AtomState):
         string += makeTermType("Term", "AtomStateTerm", G)
         mixCoe = G("AtomStateMixingCoeff")
         if mixCoe:
-            string += '<MixingCoefficient mixingClass="%s">%s</MixingCoefficient>' % (G("AtomStateMixingCoeffClass"), mixCoe)
+            string += '<MixingCoefficient mixingClass="%s">%s</MixingCoefficient>' % (attr(G("AtomStateMixingCoeffClass")), mixCoe)
         coms = G("AtomStateComponentComment")
         if coms:
             string += "<Comments>%s</Comments>" % coms
@@ -977,7 +981,7 @@ def makeCaseQNs(G):
     elecSym, elecSymGroup = G("MoleculeQNelecSym"), G("MoleculeQNelecSymGroup")
     if elecSym:
         if elecSymGroup:
-            result.append('<case:elecSym group="%s">%s</case:elecSym>' % (elecSymGroup, elecSym))
+            result.append('<case:elecSym group="%s">%s</case:elecSym>' % (attr(elecSymGroup), elecSym))
         else:
             result.append('<case:elecSym>%s</case:elecSym>' % elecSym)
 
@@ -989,10 +993,10 @@ def makeCaseQNs(G):
             makeOptionalTag('case:Omega', 'MoleculeQNOmega', G),
             makeOptionalTag('case:S', 'MoleculeQNS', G)])
     result.extend(['<case:vi mode="%s">%s</case:vi>' %
-                   (makeiter(G("MoleculeQNviMode"))[i],val)
+                   (attr(makeiter(G("MoleculeQNviMode"))[i]),val)
                    for i, val in enumerate(makeiter(G("MoleculeQNvi")))])
     result.extend(['<case:li mode="%s">%s</case:li>' %
-                   (makeiter(G("MoleculeQNliMode"))[i],val)
+                   (attr(makeiter(G("MoleculeQNliMode"))[i]),val)
                    for i, val in enumerate(makeiter(G("MoleculeQNli")))])
     result.extend([
             makeOptionalTag('case:v', 'MoleculeQNv', G),
@@ -1002,7 +1006,7 @@ def makeCaseQNs(G):
     vibSym, vibSymGroup = G("MoleculeQNvibSym"), G("MoleculeQNvibSymGroup")
     if vibSym:
         if vibSymGroup:
-            result.append('<case:vibSym group="%s">%s</case:vibSym>' % (vibSymGroup,vibSym))
+            result.append('<case:vibSym group="%s">%s</case:vibSym>' % (attr(vibSymGroup),vibSym))
         else:
             result.append('<case:vibSym>%s</case:vibSym>' % vibSym)
     result.extend([
@@ -1018,26 +1022,26 @@ def makeCaseQNs(G):
     rotSym, rotSymGroup = G("MoleculeQNrotSym"), G("MoleculeQNrotSymGroup")
     if rotSym:
         if rotSymGroup:
-            result.append('<case:rotSym group="%s">%s</case:rotSym>' % (rotSymGroup,rotSym))
+            result.append('<case:rotSym group="%s">%s</case:rotSym>' % (attr(rotSymGroup),rotSym))
         else:
             result.append('<case:rotSym>%s</case:rotSym>' % rotSym)
     rovibSym, rovibSymGroup = G("MoleculeQNrovibSym"), G("MoleculeQNrovibSymGroup")
     if rovibSym:
         if rovibSymGroup:
-            result.append('<case:rovibSym group="%s">%s</case:rovibSym>' % (rovibSymGroup,rovibSym))
+            result.append('<case:rovibSym group="%s">%s</case:rovibSym>' % (attr(rovibSymGroup),rovibSym))
         else:
             result.append('<case:rovibSym>%s</case:rovibSym>' % rovibSym)
     result.extend([
             makeOptionalTag('case:I', 'MoleculeQNI', G, extraAttr={"nuclearSpinRef":G("MoleculeQNInuclSpin")}),
             makeOptionalTag('case:SpinComponentLabel', 'MoleculeQNSpinComponentLabel', G)])
     result.extend(['<case:Fj j="%s" nuclearSpinRef="%s">%s</case:Fj>' %
-                   (makeiter(G("MoleculeQNFjj"))[i], makeiter(G("MoleculeQNFjnuclSpin"))[i], val)
+                   (attr(makeiter(G("MoleculeQNFjj"))[i]), attr(makeiter(G("MoleculeQNFjnuclSpin"))[i]), val)
                    for i, val in enumerate(makeiter(G("MoleculeQNFj")))])
     result.extend([
             makeOptionalTag('case:F1', 'MoleculeQNF1', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF1nuclSpin")}),
             makeOptionalTag('case:F2', 'MoleculeQNF2', G, extraAttr={"nuclearSpinRef":G("MoleculeQNF2nuclSpin")}),
             makeOptionalTag('case:F', 'MoleculeQNF', G, extraAttr={"nuclearSpinRef":G("MoleculeQNFnuclSpin")})])
-    result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("MoleculeQNrName"))[i],val)
+    result.extend(['<case:r name="%s">%s</case:r>'%(attr(makeiter(G("MoleculeQNrName"))[i]),val)
                    for i,val in enumerate(makeiter(G("MoleculeQNr")))])
     result.extend([
             makeOptionalTag('case:parity', 'MoleculeQNparity', G),
@@ -1061,14 +1065,14 @@ def makeCaseBSQNs(G):
         '<case:QNs>']
 
     result.extend(['<case:vi mode="%s">%s</case:vi>' %
-                   (makeiter(G("MoleculeBQNviMode"))[i],val)
+                   (attr(makeiter(G("MoleculeBQNviMode"))[i]),val)
                    for i, val in enumerate(makeiter(G("MoleculeBQNvi")))])
     result.extend(['<case:li mode="%s">%s</case:li>' %
-                   (makeiter(G("MoleculeBQNliMode"))[i],val)
+                   (attr(makeiter(G("MoleculeBQNliMode"))[i]),val)
                    for i, val in enumerate(makeiter(G("MoleculeBQNli")))])
-    result.extend(['<case:r name="%s">%s</case:r>'%(makeiter(G("MoleculeBQNrName"))[i],val)
+    result.extend(['<case:r name="%s">%s</case:r>'%(attr(makeiter(G("MoleculeBQNrName"))[i]),val)
                    for i,val in enumerate(makeiter(G("MoleculeBQNr")))])
-    result.extend(['<case:sym name="%s">%s</case:sym>'%(makeiter(G("MoleculeBQNsymName"))[i],val)
+    result.extend(['<case:sym name="%s">%s</case:sym>'%(attr(makeiter(G("MoleculeBQNsymName"))[i]),val)
                    for i,val in enumerate(makeiter(G("MoleculeBQNsym")))])
     result.extend([
             "</case:QNs>",
@@ -1315,9 +1319,9 @@ def makeBroadeningType(G, name='Natural'):
     # per broadening type             RadTransBroadening%sLineshapeName
     funcref = G("RadTransBroadening%sLineshapeFunction" % name) or None
     if funcref:
-        s += '<Lineshape name="%s" functionRef="F%s-%s">' % (G('RadTransBroadening%sLineshapeName' % name), NODEID, funcref)
+        s += '<Lineshape name="%s" functionRef="F%s-%s">' % (attr(G('RadTransBroadening%sLineshapeName' % name)), NODEID, funcref)
     else:
-        s += '<Lineshape name="%s">' % G('RadTransBroadening%sLineshapeName' % name)
+        s += '<Lineshape name="%s">' % attr(G('RadTransBroadening%sLineshapeName' % name))
     s += lsparams
     s += '</Lineshape>'
     s += '</Broadening>'
@@ -1421,8 +1425,8 @@ def XsamsRadTrans(RadTrans):
         group = G('RadTransGroup')
         proc = G('RadTransProcess')
         attrs=''
-        if group: attrs += ' groupLabel="%s"'%group
-        if proc: attrs += ' process="%s"'%proc
+        if group: attrs += ' groupLabel="%s"'%attr(group)
+        if proc: attrs += ' process="%s"'%attr(proc)
         yield '<RadiativeTransition id="P%s-R%s"%s>'%(NODEID,G('RadTransID'),attrs)
         yield makeOptionalTag('Comments','RadTransComment',G)
         yield makeSourceRefs(G('RadTransRefs'))
@@ -1925,8 +1929,8 @@ def XsamsFunctions(Functions):
         yield makePrimaryType("Function", "Function", G, extraAttr={"functionID":"F%s-%s" % (NODEID, G("FunctionID"))})
 
         yield "<Name>%s</Name>" % G("FunctionName")
-        yield '<Expression computerLanguage="%s">%s</Expression>\n' % (G("FunctionComputerLanguage"), G("FunctionExpression"))
-        yield '<Y name="%s" units="%s">' % (G("FunctionYName"), G("FunctionYUnits"))
+        yield '<Expression computerLanguage="%s">%s</Expression>\n' % (attr(G("FunctionComputerLanguage")), G("FunctionExpression"))
+        yield '<Y name="%s" units="%s">' % (attr(G("FunctionYName")), G("FunctionYUnits"))
         desc = G("FunctionYDescription")
         if desc:
             yield "<Description>%s</Description>" % desc
