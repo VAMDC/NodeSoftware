@@ -118,7 +118,8 @@ USE_I18N = False
 ###################################################
 # Web features
 ###################################################
-#STATIC_URL = '/static/'
+# required by django.contrib.staticfiles; without it runserver does not start
+STATIC_URL = '/static/'
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 #MEDIA_ROOT = os.path.join(BASE_PATH, 'static')

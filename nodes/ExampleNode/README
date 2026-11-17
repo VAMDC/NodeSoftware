@@ -10,10 +10,8 @@ the Python code; there is no separate RDBMS server to install and configure. The
 persisted as the file node.db, which is created during the setup sequence below, and can be backed
 up as a normal file for data security.
 
-You may have sqlite on your computer already. If the command sqlite3 works then it's there.
-Otherwise, see https://www.sqlite.org/download.html from which page you should typically
-install the "precompiled binaries" matching your OS. Note that you need the command-line tool
-sqlite3 as well as the libraries to make the node using the procedure below.
+SQLite support is part of Python, so there is nothing to install for it. The command-line tool sqlite3
+is handy for looking into node.db, but the procedure below does not need it.
 
 This example further assumes that you'll let Django create an an empty database, with all the
 columns of tables define, and then you will load appropriate data into the DB.
@@ -26,18 +24,20 @@ Basic steps for testing the examplenode
 (assuming you have all dependencies): 
 ---------------------------------------
 
-1) Copy folder ExampleNode in the checke3d-out source to a new folder, cd to it and do everything from there.
+The commands below start with "uv run python", which takes care of the dependencies listed in
+pyproject.toml. If you installed the dependencies yourself, plain "python" does the same.
+
+1) Copy folder ExampleNode in the checked-out source to a new folder next to it (inside nodes/),
+cd to it and do everything from there.
 This is necessary if you want to commit your new-born node back into the source repository; it
 must not overwrite the existing files for ExampleNode. If you don't want to commit your changes
 (implying that this node is a disposable experiment), then you can work in the ExampleNode directory.
 
-2) Install sqlite if you don't already have it.
+2) Make your settings file and ask Django to create the empty database:
 
-3) Ask Django to make your empty database:
-
-$ cp settings_default.py settings.py
-$ python manage.py makemigrations node
-$ python manage.py migrate node
+$ cp settings_example.py settings.py
+$ uv run python manage.py makemigrations node
+$ uv run python manage.py migrate
 
 Translation: there is a Django application called "node", built in the "node" folder under where you're
 working, and you'd like Django to "migrate" the database structure to match it, please. Don't worry that
@@ -48,60 +48,64 @@ files defining the data model.
 thing in Django. The Python module settings.py contains the Django configuration for the node.
 Notably, it tells Django to use an SQLite database in the file node.db found in the current directory.
 
-4) Arrange input data to the form needed for ingestion to the database. One file of data is needed
+3) Arrange input data to the form needed for ingestion to the database. One file of data is needed
 per database table, and those files have ASCII formats.
 
 This work could be done using the imptools package in the NodeSoftware tree;
 or you could write your own converter; or you can use the files *.sqlite3.txt in which some example
 data are already converted. These latter files contain the same data as the .dat files in the
-example_data folder.
+example_data folder: 19 lines of singly ionised niobium with their 21 levels and two (made-up)
+references.
 
-5) Ingest the data using the sqlite3 command-line tool that comes with the SQLite libraries. In the
-following sequence the first line is a shell command to start the tool and connect the DB, and the
-rest are commands given within sqlite3; note that they all start with a dot to distinguish them from
-SQL statements.
+4) Ingest the data:
 
-$ sqlite3
-sqlite> .mode list
-sqlite> .separator ; |
-sqlite> .import references.sqlite3.txt refs
-sqlite> .nullvalue NULL
-sqlite> .separator ; \n
-sqlite> .import species.sqlite3.txt species
-sqlite> .import states.sqlite3.txt states
-sqlite> .import transitions.sqlite3.txt transitions
+$ uv run python load_data.py
 
-Setting mode to list tells the tool to read files in which fields and lines are separated by named separators.
-It's distinct from csv mode where the tool assumes the separators; the supplied files don't match CSV format.
+load_data.py is a short script that reads the four *.sqlite3.txt files and writes them to the database
+through the Django models. Each file has one record per line with the fields separated by semicolons,
+in the order of the fields of the corresponding class in node/models.py; NULL marks a missing value.
+The file of bibliographic references contains records that span several lines, so there the records
+end with | instead.
 
-The file of bibliographic references contains records split over multiple file-lines, so the line separator is
-| rather than \n and we let the bibtex parser eat the linebreaks later. C.f. the other files where each record
-is on one line.
+5) Run the tests:
+
+$ uv run python manage.py test
+
+These send a few queries through the node and check what comes back, see node/tests.py. They use
+their own temporary database, so they also work before step 4.
 
 6) Test-run the node in a local, temporary web-server:
 
-$ python manage.py runserver
+$ uv run python manage.py runserver
 
-You can now find your web-server at http://localhost:8000/tap although that page won't have much to express in a web-browser.
-Try http://localhost:8000/tap/availability and http://localhost:8000/tap/capabilities to quickly test from a browser
-that the node is alive.
+You can now find your node at http://localhost:8000/tap/ although only the following addresses below
+it answer. Try http://localhost:8000/tap/availability and http://localhost:8000/tap/capabilities to
+quickly test from a browser that the node is alive.
 
-You can actually make queries on the node from the browser if you know how to embed the query text in the URL.
-The simplest test-query is:
+You can make queries on the node from the browser if you embed the query text in the URL.
+The simplest test-queries are:
 
-http://localhost:8000/tap/sync?LANG=vss2&FORMAT=xsams&QUERY=select+species.
+http://localhost:8000/tap/sync?LANG=VSS2&FORMAT=XSAMS&QUERY=select+species
+http://localhost:8000/tap/sync?LANG=VSS2&FORMAT=XSAMS&QUERY=select+all+where+RadTransWavelength+>+2700+and+RadTransWavelength+<+3000
 
-You might want to run VAMDC's Tap Validator tool against your now for further tests.
+or from the command line, which also shows the statistics in the VAMDC-COUNT-* headers:
 
-Cnrl-C the temporary server to stop it when your finished testing.
+$ curl -s -G -D - -o out.xsams --data-urlencode "QUERY=select all where AtomSymbol = 'Nb'" http://localhost:8000/tap/sync
+
+You might want to run VAMDC's Tap Validator tool against your node for further tests.
+
+Ctrl-C the temporary server to stop it when you are finished testing.
 
 7) Replace the test data with your own data. If the set of columns in the example suit your data, just make up new
 input files and ingest them as above. You can use SQL statements in the sqlite tool to wipe the old data, e.g.
 
-$sqlite3 node.db
+$ sqlite3 node.db
 sqlite> delete from transitions;
 
-If you need to change the set of columns, look in the node folder and edit the models.py file to what you need.
+(load_data.py does that for you when you run it again with new files.)
+
+If you need to change the set of columns, look in the node folder and edit the models.py file to what you need,
+then repeat the makemigrations and migrate commands of step 2.
 At this point, you'll need to consult the Django documentation to see how to alter the DB-table-model,s and the main
 documentation of this node software to see how your specialised columns can be used in VAMDC queries.
 Good luck!
@@ -110,16 +114,14 @@ Good luck!
 preserve node.db along with the Python files as that is your database.
 
 9) When you have a working node that you want to share on VAMDC, you'll need to run it in a proper web-server. The
-built-in one from Dango, which you used in step 6, is not good for production.
+built-in one from Django, which you used in step 6, is not good for production.
 
 There are many ways to put the node into a web server, with a huge number of subtle variations. The node-software
 documentation discusses a few, and your local sysadmins may require a particular approach. If you have freedom of
 choice, a gunicorn server to run the Python code with an nginx reverse-proxy to protect gunicorn are good choices.
 Some sample configuration-files are included in the example node.
 
-
-7) Startup web services
-
-Follow the online manual to start a webserver, then, depending
-on how you set it up, point a webbrowser to something like  
- http://YourURL/node/Yournode/tap/capabilities/ to test if things work.
+10) A word on security. Your node answers queries from anybody on the internet. The query function in
+node/queryfunc.py turns the query into a database query with sql2Q(), which passes the values from
+the query on as data. Keep it that way when you customise: never paste text from the query into a
+string that goes to eval() or into hand-written SQL.

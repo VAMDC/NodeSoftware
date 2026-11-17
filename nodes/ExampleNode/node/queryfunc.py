@@ -24,9 +24,10 @@ LIMIT = 1000
 # Helper functions (called from setupResults)
 #------------------------------------------------------------
 
-def getRefs(transs):
+def getRefs(transs, species):
     """
-    From the transition-matches, use ForeignKeys to extract all relevant references
+    From the transition-matches and their states, use ForeignKeys to extract
+    all relevant references
     """
     # extract a unique set of reference keys from the given ForeignKey
     # fields on the Transition model (e.g. Transition.loggf_ref).
@@ -35,11 +36,15 @@ def getRefs(transs):
     # object (it's the same as loggf_ref.id, but more efficient).  In
     # our example, refset will hold strings "REF1" or "REF2" after
     # this.
-    refset = []
-    for t in transs.values_list('wave_ref_id', 'loggf_ref_id', 'lande_ref_id',
-                                'gammarad_ref_id', 'gammastark_ref_id', 'waals_ref_id'):
-        refset.append(t)
-    refset = set(refset) # a set always holds only unique keys
+    refset = set() # a set always holds only unique keys
+    for refs in transs.values_list('wave_ref_id', 'loggf_ref_id', 'lande_ref_id',
+                                   'gammarad_ref_id', 'gammastark_ref_id', 'waals_ref_id'):
+        refset.update(refs)
+    # the states that we return point to references, too
+    for spec in species:
+        for refs in spec.States.values_list('energy_ref_id', 'lande_ref_id'):
+            refset.update(refs)
+    refset.discard(None)
 
     # Use the found reference keys to extract the correct references from the References table.
     refmatches = models.Reference.objects.filter(pk__in=refset) # only match primary keys in refset
@@ -82,34 +87,6 @@ def getSpeciesWithStates(transs):
         nstates += spec.States.count()
     return species, nspecies, nstates
 
-def getFunctions(transs):
-    """
-    Obtain function expressions for correcting/adjusting certain transitions
-    In this example, such expressions are stored on the form e.g.  y = a * x + b * z
-    where we have max 3 arguments and 3 parameters
-    We assume all arguments (x,y,z ...) and all parameters (a,b,c) are unitless.
-    """
-    import re # regular expressions
-    funcs = transs.values_list("function", flat=True)
-    for func in funcs:
-        func = re.sub(r"\s", "", func) # remove all whitespace in the expresion
-        fy, rest = func.split('=', 1)
-        fargs = re.findall(r"a|b|c", func)
-        fpars = re.findall(r"x|y|z", func)
-        func.id = func
-        func.name = "Correction"
-        func.expression = func
-        func.y = fy
-        func.yunit = "unitless"
-        for arg in fargs:
-            func.Arguments.name = arg
-            func.Arguments.lower_limit = 0.0
-            func.Arguments.upper_limit = 1.0
-        for par in fpars:
-            func.Parameters.name = par
-    return funcs
-
-
 def getLifetimeMethods():
     """
     In the example we are storing both experimental and theoretical
@@ -147,8 +124,11 @@ def setupResults(sql):
     # log the incoming query
     log.info(sql)
 
-    # convert the incoming sql to a correct django query syntax object
-    # (sql2Q is a helper function to do this for us).
+    # Convert the WHERE-part of the incoming query to a Django Q-object,
+    # using the RESTRICTABLES from dictionaries.py. sql2Q() passes the
+    # values from the query to Django as data. Never put them into a
+    # string that goes to eval() or into raw SQL: they come from anybody
+    # on the internet.
     q = sql2Q(sql)
     log.info(q)
 
@@ -156,22 +136,25 @@ def setupResults(sql):
     # since through this model (in our example) we are be able to
     # reach all other models. Note that a queryset is actually not yet
     # hitting the database, making it very efficient.
-    transs = models.Transition.objects.select_related().filter(q)
+    transs = models.Transition.objects.select_related().filter(q).order_by('vacwave')
 
     # count the number of matches, make a simple trunkation if there are
-    # too many (record the coverage in the returned header)
-    ntranss=transs.count()
-    if LIMIT < ntranss :
-        transs = transs[:limit]
-        percentage='%.1f' % (float(limit) / ntranss * 100)
+    # too many (record the coverage in the returned header). We cut at
+    # the wavelength of the first transition beyond the limit; slicing
+    # the queryset instead would not allow to filter it further below.
+    ntranss = transs.count()
+    if ntranss > LIMIT:
+        limitwave = transs[LIMIT].vacwave
+        transs = transs.filter(vacwave__lt=limitwave)
+        percentage = '%.1f' % (float(LIMIT) / ntranss * 100)
     else:
-        percentage=None
+        percentage = None
 
     # Through the transition-matches, use our helper functions to extract
     # all the relevant database data for our query.
-    sources = getRefs(transs)
-    nsources = sources.count()
     species, nspecies, nstates = getSpeciesWithStates(transs)
+    sources = getRefs(transs, species)
+    nsources = sources.count()
     methods = getLifetimeMethods()
 
     # Create the header with some useful info. The key names here are
@@ -180,7 +163,7 @@ def setupResults(sql):
                   'COUNT-SOURCES':nsources,
                   'COUNT-SPECIES':nspecies,
                   'COUNT-STATES':nstates,
-                  'COUNT_RADIATIVE':ntranss,
+                  'COUNT-RADIATIVE':transs.count(),
                   'APPROX-SIZE':ntranss*0.001 }
 
     # Return the data. The keynames are standardized.

@@ -277,9 +277,9 @@ One way of handling this is to use a custom function as the value of the Restric
 where *checkIron* would be a function, e.g. defined in the same file (before referencing it, of course) as::
 
     def checkIron(restrictable,operator,value):
-        value = string.strip('\'"')
+        value = value.strip('\'"')
         if value == 'Fe' and operator in ('=','=='):
-            return return Q(pk=F('pk'))
+            return Q(pk=F('pk'))
         else:
             return ~Q(pk=F('pk'))
 

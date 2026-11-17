@@ -18,7 +18,7 @@ as shown in the violet box.
 It goes like this:
 
 * Get the Nodesoftware and make a copy of the example node.
-* Auto-create a new settings file and put your database connection there.
+* Make a settings file from the template and put your database connection there.
 * Either
     * Write your data model and let Django create the database from it. Then use the import tool to put your data there.
     * Let Django write the model from an existing database that you already have.
@@ -57,11 +57,12 @@ thing to do, is to make a copy of the ExampleNode::
 Inside your node directory
 ---------------------------------
 
-The first thing to do inside your node directory is to run::
+The first thing to do inside your node directory is to make your settings file
+from the template::
 
-    $ ./manage.py
+    $ cp settings_example.py settings.py
 
-This will generate a new file ``settings.py`` for you. This file is where 
+The new file ``settings.py`` is where 
 you override the default settings which reside in ``settings_default.py`` (which you should not edit!). 
 There are only a few configuration items that you need to fill
 
@@ -402,58 +403,57 @@ In a concrete example of an atomic transition database, it looks like this:
 
 Explanations on what happens here:
 
-* Lines 1-4: We import some helper functions from the sqlparser and the 
-  dictionaries and models that reside in the same directory as 
-  ``queryfunc.py``
-* Line 6: Set the limit of transitions for use below.
-* Line 7: Begin the function `setupResults`. Do not change this line.
-* Line 9: This uses the helper function where2q() to 
-  convert the information in `sql.where` to QueryObjects that match your 
-  model, using the RESTRICTABLES (see below). The result from where2q() is
-  a string that needs to be executed with eval().
-* In line 10 we simply pass these QueryObjects to the Transition model's 
+* Lines 1-2: We import the helper function `sql2Q()` from the sqlparser and the
+  models that reside in the same directory as ``queryfunc.py``
+* Line 4: Set the limit of transitions for use below.
+* Line 6: Begin the function `setupResults`. Do not change this line.
+* Line 7: This uses the helper function `sql2Q()` to 
+  convert the information in `sql.where` to a QueryObject that matches your 
+  model, using the RESTRICTABLES (see below). See :ref:`queryfusecurity`
+  on why you should leave this step to `sql2Q()`.
+* In line 8 we simply pass this QueryObject to the Transition model's 
   filter function. This returns a QuerySet, an unevaluated version of the 
   query, which we assign to the variable `transs`. We also ordered it by
   wavelength.
-* Line 11: We use the count() method on the QuerySet to get the 
+* Line 9: We use the count() method on the QuerySet to get the 
   number of transitions which we later pass into the header.
-* Line 13-17: We check if the number is larger than our limit and shorten
+* Line 11-15: We check if the number is larger than our limit and shorten
   the QuerySet if necessary. This is done by getting the wavelength at the
-  limit and making a new QuerySet that has as an additional restriction
-  the new upper wavelength limit. We also prepare a string with the percentage
+  limit and adding the new upper wavelength limit as a further restriction
+  to the QuerySet. We also prepare a string with the percentage
   for the headers.
-* Lines 19-29: Here comes the tricky part. For the selected transitions, we
+* Lines 17-27: Here comes the tricky part. For the selected transitions, we
   now need to create the corresponding atoms/species, since they go into
   different parts of the generator, see the table above. Not only that, each
   atom should have attached its list of states that are upper or lower states
   for the selected transitions - there is an inner loop over `Atom.States` in
   the generator, remember? In detail:
 
-  * Line 19: We pull a single column out of the Transitions model, the key that
+  * Line 17: We pull a single column out of the Transitions model, the key that
     links to the Species model. We put that into a `set()` to throw out
     duplicates.
-  * Line 20: We use this set to query for all our Species.
-  * Line 21: We count them and save the result for later.
-  * Line 22: We make a new variable for the number of states which we will
+  * Line 18: We use this set to query for all our Species.
+  * Line 19: We count them and save the result for later.
+  * Line 20: We make a new variable for the number of states which we will
     increase in the coming loop.
-  * Line 23: Start a loop over our selected `species`.
-  * Line 24: Make a sub-selection on our previously selected transitions,
+  * Line 21: Start a loop over our selected `species`.
+  * Line 22: Make a sub-selection on our previously selected transitions,
     now only selecting the ones that belong to the current species.
-  * Lines 25-26: As for the species IDs before, we now pull the keys to the
+  * Lines 23-24: As for the species IDs before, we now pull the keys to the
     upper and lower states out of our Transition model.
-  * Line 27: We concatenate the two lists of IDs and put them in a `set()` to
-    get rid of duplicates. `sids` is now a list of IDs of all the states
+  * Line 25: We put the two lists of IDs into `set()` and join them to
+    get rid of duplicates. `sids` now holds the IDs of all the states
     within the current species that are used in the selected transtions.
-  * Line 28: Use this list to make the query on the State model. And, 
+  * Line 26: Use this set to make the query on the State model. And, 
     **most importantly**, attach it to the current species object. This
     way we have constructed the nested structure for the generator.
-  * Line 29: For the statistics, we now increase the state count with
+  * Line 27: For the statistics, we now increase the state count with
     the number for the current species.
 
-* Lines 31-36: Put the statistics into a key-value structure where the 
+* Lines 29-34: Put the statistics into a key-value structure where the 
   keys are the header names as definded by the VAMDC-TAP standard and the
   values are the strings/numbers that we calculated above.
-* Lines 39-41: Return the QuerySets and the headers, again as key-value 
+* Lines 36-39: Return the QuerySets and the headers, again as key-value 
   pairs. The keys are the names from the first column of the table above, so
   that the generator recognizes them and loops over them at the right place.
 
@@ -472,12 +472,37 @@ Explanations on what happens here:
 
     We are well aware that adapting the above example to your data is a
     non-trivial task unless you know Python and Django reasonably well.  There
-    is a more complete example in ``ExampleNode/node/queryfunc.py`` and you can
+    is a more complete, working example in ``ExampleNode/node/queryfunc.py`` and you can
     also have a look at the other nodes' ``queryfunc.py`` which are included in
     the NodeSoftware. And, of course, we are willing to assist you in this
     step, so feel free to contact us about this.
 
 More comprehensive information on how to run queries within Django can be found at https://docs.djangoproject.com/en/5.2/topics/db/queries/.
+
+.. _queryfusecurity:
+
+Keep the query values as data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Your node answers queries from anybody on the internet, without login.
+Whatever stands in a query, in particular the values that the Restrictables
+are compared to, must therefore only ever be treated as data:
+
+* Never pass a string that contains parts of the query to Python's `eval()`
+  or `exec()`.
+* Never paste parts of the query into hand-written SQL. Use Django's
+  `filter()` and `Q()` or, if you really need raw SQL, its parameters.
+
+`sql2Q()` follows these rules: it hands each value to Django as a keyword
+argument of `Q()`, and Django passes it on to the database as a parameter.
+If you treat some Restrictables yourself (see :ref:`specialrestr`), build
+`Q`-objects from the values in the same way.
+
+The helper `where2q()`, which very old versions of this document recommended,
+broke the first rule. It returned a string of Python code with the values
+from the query pasted in, to be run with `eval()`, so that a crafted query
+could run any code on the server. It has been removed in November 2026; if your
+``queryfunc.py`` still calls it, see :ref:`changes` on how to replace it.
 
 
 The dictionaries
@@ -518,13 +543,13 @@ As we have learned from writing the query function above, we can use the
 RESTRICTABLES to match the VAMDC dictionary names to places in our data 
 model. The key in each key-value-pair is a name from the VAMDC 
 dictionary and the values are the field names of the model class that you 
-want to query primarily (Transition, in the example above, line 10).
+want to query primarily (Transition, in the example above, line 8).
 
 The RESTRICTABLES example give fits our query function from above, so we know
 that the "main" model is the Transitions. Now if a query like "AtomIonCharge >
 1" comes along, this can be translated into
 `Transition.objects.filter(species__ion__gt=1)` without further ado, which is
-exactly what `where2q()` does. Note that we here used a ForeignKey to the
+exactly what `sql2Q()` does. Note that we here used a ForeignKey to the
 Species model; the values in the RESTRICTABLES need to be written from the
 perspective of the queried model.
 
@@ -580,6 +605,15 @@ Testing the node
 Now you should have everything in place to run your node. If you still
 need to fill your database with the import tool, now is the time to do
 so according to :ref:`importing`.
+
+The ExampleNode comes with a few tests in ``node/tests.py`` which send queries
+through the node and check the reply. You run them with::
+
+    $ ./manage.py test
+    # or with uv: uv run python manage.py test
+
+Replace the queries and the expected numbers by some that fit your data, and
+re-run the tests whenever you change something.
 
 Django comes with a built-in server for testing. You can start it
 with::

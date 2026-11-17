@@ -1,7 +1,5 @@
-from django.db.models import Q
-from vamdctap.sqlparse import *
-from dictionaries import *
-from models import *
+from vamdctap.sqlparse import sql2Q
+from .models import Transition, Species, State
 
 LIMIT = 10000
 
@@ -13,7 +11,7 @@ def setupResults(sql):
     if ntranss > LIMIT:
         percentage = '%.1f'%(float(LIMIT)/ntranss *100)
         limitwave = transs[LIMIT].wavelength
-        transs = Transition.objects.filter(q,Q(vacwave__lt=limitwave))
+        transs = transs.filter(wavelength__lt=limitwave)
     else: percentage=None
 
     spids = set( transs.values_list('species_id',flat=True) )
@@ -24,14 +22,14 @@ def setupResults(sql):
         subtranss = transs.filter(species=specie)
         up=subtranss.values_list('upper_state_id',flat=True)
         lo=subtranss.values_list('lower_state_id',flat=True)
-        sids = set(up+lo)
+        sids = set(up) | set(lo)
         specie.States = State.objects.filter(id__in = sids)
         nstates += len(sids)
 
     headerinfo={'TRUNCATED':percentage,
                 'COUNT-ATOMS':nspecies,
                 'COUNT-STATES':nstates,
-                'COUNT-RADIATIVE':ntranss
+                'COUNT-RADIATIVE':ntranss,
                 'APPROX-SIZE':ntranss*0.001
                }
 
@@ -39,4 +37,3 @@ def setupResults(sql):
             'Atoms':species,
             'HeaderInfo':headerinfo
            }
-

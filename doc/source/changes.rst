@@ -8,6 +8,63 @@ Changelog
     document before, since terms are used that are introduced later. It is meant
     for returning readers, especially the maintainers of VAMDC nodes.
 
+November 2026
+---------------------
+
+**Security: where2q() is gone. Check your queryfunc.py!** The old helper
+*where2q()* returned a string of Python code which the node had to run with
+*eval()*. The values from the query were pasted into that string, so a crafted
+query could run arbitrary code on the server, without any login. Under Python 2
+this was exploitable in every node that called *eval()* on the result of
+*where2q()*. Under Python 3 the function happened to fail before it got that
+far, but the obvious repair re-opened the hole. *where2q()* now only raises an
+error that points here.
+
+*sql2Q()* replaced *where2q()* in July 2011 and has been the documented way
+since the 11.10 release (see below), but several nodes kept the old lines. If
+your ``node/queryfunc.py`` contains something like ::
+
+    q = where2q(sql.where, RESTRICTABLES)
+    try: q = eval(q)
+    except: return {}
+
+replace it by ::
+
+    q = sql2Q(sql)
+
+and import it with ``from vamdctap.sqlparse import sql2Q``. Things to know:
+
+* *sql2Q()* takes the whole `sql` object instead of `sql.where` and finds the
+  RESTRICTABLES of your node by itself.
+* It returns the finished Q-object, there is nothing to *eval()*. The values
+  from the query reach Django as data, never as code.
+* It understands NOT, IN, LIKE and <> and applies functions that you attach to
+  a Restrictable (see :ref:`unitconv` and :ref:`specialrestr`).
+* A query that uses a keyword which is not in your RESTRICTABLES is now answered
+  with an error (HTTP 400) instead of an empty result, so the try/except can go.
+* The rest of your query function stays as it is; `q` is used in the same way,
+  e.g. ``Transition.objects.filter(q)``.
+* If you ran *eval()* on *where2q()* only as a syntax check before calling
+  *splitWhere()*, *restriction2Q()* and *mergeQwithLogic()* yourself, simply
+  delete those lines.
+
+You can make this two-line change also in an old installation that cannot be
+upgraded right away, **provided that it is release 11.12 (January 2012) or
+newer**. In the first months of its existence, up to and including release
+11.10beta, *sql2Q()* itself built its Q-objects with *eval()* and had the same
+hole; an installation that old must be upgraded, whichever of the two functions
+it uses. Do not wait with either. See also :ref:`queryfusecurity`.
+
+**Logic of a query.** As a second line of defence, *mergeQwithLogic()* now
+only accepts the tokens that the query parser produces (`r0`, `r1`, ..., AND,
+OR, NOT and parentheses).
+
+**ExampleNode.** The ExampleNode works again from start to finish with the
+steps in its ``README``: the example data are loaded with the new script
+``load_data.py``, the node answers below ``/tap/`` like all other nodes,
+its output is valid XSAMS and ``./manage.py test`` runs a few test queries
+that you can adapt to your data.
+
 November 2025
 ---------------------
 

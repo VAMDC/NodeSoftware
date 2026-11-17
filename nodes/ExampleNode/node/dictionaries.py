@@ -44,8 +44,11 @@ RETURNABLES = {\
 'AtomStateEnergyUnit':'1/cm',
 'AtomStateDescription':'',
 'AtomStateLifeTime': 'AtomState.get_best_tau()',
+'AtomStateLifeTimeUnit': 's',
+'AtomStateLifeTimeDecay': 'total',
 'AtomStateLifeTimeMethod': 'AtomState.get_tau_ref()',
 ############################################################
+'RadTransID':'RadTran.id',
 'RadTransSpeciesRef':'RadTran.species_id',
 'RadTransComment':'Wavelength is for vacuum.',
 'RadTransWavelength':'RadTran.vacwave',
@@ -107,7 +110,6 @@ RESTRICTABLES = {\
 'AtomNuclearCharge':'species__atomic',
 'AtomStateEnergy':'upstate__energy',
 'RadTransWavelength':'vacwave',
-'RadTransWavenumber':'vavenum',
 'RadTransProbabilityLog10WeightedOscillatorStrength':'loggf',
 'AtomIonCharge':'species__ion'
 }

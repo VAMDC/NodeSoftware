@@ -8,9 +8,8 @@ Each model class defines a table in the database. The fields define the columns 
 # library import
 from django.db.models import *
 
-# this is only need for converting bibtex -> xsams sources
-# requrires package "pybtex"
-#from vamdctap import bibtextools
+# this is only needed for converting bibtex -> xsams sources
+from vamdctap import bibtextools
 
 class Species(Model):
     id = PositiveSmallIntegerField(primary_key=True, db_index=True)
@@ -24,8 +23,8 @@ class Species(Model):
     isotope = PositiveSmallIntegerField(null=True, blank=True)
 
     # defines some optional meta-options for viewing and storage
-    def __unicode__(self):
-        return u'ID:%s %s'%(self.id,self.name)
+    def __str__(self):
+        return 'ID:%s %s'%(self.id,self.name)
     class Meta:
         db_table = u'species'
 
@@ -42,14 +41,12 @@ class Reference(Model):
 
         In this case we use the BibTex2XML helper to format the bibtex entry for return.
         """
-        # commented out to not depend on pybtex package
-        #return bibtextools.BibTeX2XML( self.bibtex )
-        return ''
+        return bibtextools.BibTeX2XML(self.bibtex, self.id)
 
     class Meta:
         db_table = u'refs'
-    def __unicode__(self):
-        return u'%s'%self.id
+    def __str__(self):
+        return '%s'%self.id
 
 class State(Model):
     id = CharField(max_length=255, primary_key=True, db_index=True)
@@ -70,9 +67,9 @@ class State(Model):
     s2 = DecimalField(max_digits=3, decimal_places=1,db_column=u'S2', null=True,blank=True)
     jc = DecimalField(max_digits=3, decimal_places=1,db_column=u'Jc', null=True,blank=True)
 
-    # half-time
-    tau_exp = DecimalField(max_digits=8, decimal_places=4,db_column=u'tau_exp', null=True,blank=True)
-    tau_calc = DecimalField(max_digits=8, decimal_places=4,db_column=u'tau_calc', null=True,blank=True)
+    # lifetime in seconds
+    tau_exp = FloatField(null=True, blank=True)
+    tau_calc = FloatField(null=True, blank=True)
     tau_exp_ref = ForeignKey(Reference, related_name='istau_exp_state', null=True, on_delete=CASCADE)
     tau_calc_ref = ForeignKey(Reference, related_name='istau_calc_state',null=True, on_delete=CASCADE)
     energy_ref = ForeignKey(Reference, related_name='isenergyref_state', null=True, on_delete=CASCADE)
@@ -100,8 +97,8 @@ class State(Model):
             return "MtauTHEO"
 
     # metadata
-    def __unicode__(self):
-        return u'ID:%s En:%s'%(self.id,self.energy)
+    def __str__(self):
+        return 'ID:%s En:%s'%(self.id,self.energy)
     class Meta:
         db_table = u'states'
 
@@ -129,7 +126,7 @@ class Transition(Model):
     gammastark_ref = ForeignKey(Reference, related_name='isgammastarkref_trans',null=True, on_delete=CASCADE)
     waals_ref = ForeignKey(Reference, related_name='iswaalsref_trans',null=True, on_delete=CASCADE)
 
-    def __unicode__(self):
-        return u'ID:%s Wavel: %s'%(self.id,self.vacwave)
+    def __str__(self):
+        return 'ID:%s Wavel: %s'%(self.id,self.vacwave)
     class Meta:
         db_table = u'transitions'
