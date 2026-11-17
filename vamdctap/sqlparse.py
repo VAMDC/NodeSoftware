@@ -113,14 +113,19 @@ def applyRestrictFu(rs,restrictables=RESTRICTABLES):
 
     return rs
 
+LOGICTRANS = {'and': '&', 'or': '|', 'not': '~', '(': '(', ')': ')'}
+
 def mergeQwithLogic(qdict, logic):
-    logic = ' '.join(logic).replace('and','&').replace('not','~').replace('or','|')
-    env = {}
-    for r in qdict:
-        env[f"r{r}"] = qdict[r]
+    env = {f"r{r}": q for r, q in qdict.items()}
+    # only these tokens may reach eval(), whatever the grammar lets through
+    expr = []
+    for token in logic:
+        if token in env: expr.append(token)
+        elif token.lower() in LOGICTRANS: expr.append(LOGICTRANS[token.lower()])
+        else: raise ValueError('Invalid token in query logic: %r' % token)
 
     try:
-        return eval(logic, {}, env)
+        return eval(' '.join(expr), {'__builtins__': {}}, env)
     except Exception as e:
         log.error(f"Eval of logic with Qs failed: {e}")
 
@@ -190,45 +195,9 @@ def sql2Q(sql):
     return mergeQwithLogic(qdict,logic)
 
 
-
-
-
-
-# OLD HELPER FUNCTIONS BELOW HERE
-
-def singleWhere(w,restrictables):
-    if not w[0] in restrictables:
-        log.warning('Unsupported Restrictable: %s'%w[0])
-        return 'Q(pk=False)'
-    if not OPTRANS.has_key(w[1]):
-        log.warning('Unsupported operator: %s'%w[1])
-        return ''
-    value=w[2].strip('\'"')
-    qstring = 'Q(%s="%s")'%(restrictables[w[0]] + OPTRANS[w[1]],value)
-    return qstring
-
-def where2q(ws,restrictables):
-    if not ws:
-        return 'Q()'
-    q=''
-    for w in ws:
-        if len(w)>4 and w[1]=='in':
-            if not restrictables.has_key(w[0]):
-                log.warning('cant find name %s'%w[0]); return ''
-            # join the comma-separated list into a single string and strip
-            # the parentheses
-            w[2] = '"%s"' % ', '.join(w[3:-1])
-            qstring="Q(%s__in=(%s))" % (restrictables[w[0]], ', '.join(w[3:-1]))
-            q += qstring
-            return q
-        log.debug('w: %s'%w)
-        if w=='and': q+=' & '
-        elif w=='or': q+=' | '
-        elif w[0]=='(' and w[-1]==')':
-            q+=' ( '
-            q+=where2q(w[1:-1],restrictables)
-            q+=' ) '
-        elif len(w)==3: q+=singleWhere(w,restrictables)
-
-    log.debug('q: %s'%q)
-    return q
+# where2q() built a string of Python code with the query values pasted in,
+# for the node to eval(): remote code execution. The name stays importable so
+# that nodes which still call it fail with an explanation.
+def where2q(ws, restrictables=None):
+    raise NotImplementedError('where2q() has been removed because eval() of its result '
+                              'executes code from the query. Use q = sql2Q(sql) instead.')
