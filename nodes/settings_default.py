@@ -1,17 +1,17 @@
 #
-# Default config for a node. When creating your own node, run 'manage.py' to
-# build your own settings.py file in the node, then copy&paste variables you need to
+# Default config for a node. When creating your own node, copy the ExampleNode's
+# settings_example.py to settings.py in your node, then copy&paste variables you need to
 # change from this file. Don't edit this file directly.
 #
 
 import sys, os
 import datetime
+import subprocess
 
 ###################################################
 # Software and standards version
 ###################################################
 VAMDC_STDS_VERSION = '12.07'
-NODESOFTWARE_VERSION = '12.07-github-master'
 
 ###################################################
 # Basic node setup
@@ -22,6 +22,20 @@ sys.path.append(BASE_PATH)
 sys.path.append(BASE_PATH+'/nodes')
 NODENAME = os.path.basename(os.path.dirname(__file__))
 NODEPKG = 'node'
+
+def get_git_commit(path=BASE_PATH):
+    """Short hash of the checked-out NodeSoftware commit, 'unknown' without git."""
+    try:
+        return subprocess.check_output(
+            ['git', '-C', path, 'rev-parse', '--short', 'HEAD'],
+            stderr=subprocess.DEVNULL, timeout=5
+        ).decode('ascii').strip()
+    except Exception:
+        return 'unknown'
+
+# Shown in /tap/capabilities, so that one can see which code a node runs.
+# A node can override it in its settings.py.
+NODESOFTWARE_VERSION = get_git_commit()
 NODEVERSION = 1
 
 # Where to load url info from

@@ -46,15 +46,3 @@ if not DEBUG:
 #      'level': 'DEBUG',
 #      'propagate': False,
 #  }
-
-import subprocess
-def get_git_commit():
-    try:
-        return subprocess.check_output(
-            ['git', 'rev-parse', '--short', 'HEAD'],
-            stderr=subprocess.DEVNULL
-        ).decode('ascii').strip()
-    except Exception:
-        return 'unknown'
-
-NODESOFTWARE_VERSION = get_git_commit()
