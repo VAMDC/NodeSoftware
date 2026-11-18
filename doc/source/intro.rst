@@ -1,15 +1,8 @@
 
-This document covers the NodeSoftware running from **git master** (updated for Django 5.2 and Python 3.11+).
-
-Links to HTML-versions:
-
-* Last release: http://readthedocs.org/docs/vamdc-nodesoftware/en/release/
-* Latest development: http://readthedocs.org/docs/vamdc-nodesoftware/en/latest/
-
-Links to PDF-versions:
-
-* Last release: http://media.readthedocs.org/pdf/vamdc-nodesoftware/release/vamdc-nodesoftware.pdf 
-* Latest development: http://media.readthedocs.org/pdf/vamdc-nodesoftware/latest/vamdc-nodesoftware.pdf
+This document covers the NodeSoftware from the master branch of
+https://github.com/VAMDC/NodeSoftware (Python 3.11+, Django 5.2). The
+documentation is also part of that repository, in the directory ``doc/``,
+where you can build it yourself with ``make html``.
 
 
 .. _intro:
@@ -20,8 +13,11 @@ Introduction
 About VAMDC
 -------------
 
-The Virtual Atomic and Molecular Data Center is a EU FP7 research 
-infrastructure project and you can read all about it on http://vamdc.eu/
+The Virtual Atomic and Molecular Data Centre (VAMDC) connects databases of
+atomic and molecular data so that they can be searched together. It started as
+an EU FP7 research infrastructure project in 2009 and is now run by a
+consortium of the participating institutes. You can read all about it on
+https://vamdc.org/
 
 
 VAMDC nodes
@@ -30,7 +26,7 @@ VAMDC nodes
 A "node" within VAMDC is a data service that offers its data using the
 standards and protocols defined by the VAMDC. They are web services with a
 simple API, the specification of which can be found in the documentation for
-the VAMDC standards: http://vamdc.org/documents/standards/ 
+the VAMDC standards: https://vamdc.org/documents/standards/
 
 The scope of this document is to serve as documentation for the 
 reference implementation of such a service. The goal of this 
@@ -60,9 +56,9 @@ details like the database layout from the parts of code that are shared
 between nodes.
 
 Our implementation of the VAMDC node software is therefore based on a 
-framework called `Django <http://www.djangoproject.com/>`_ (which in 
+framework called `Django <https://www.djangoproject.com/>`_ (which in 
 turn is based on the programming language `Python 
-<http://www.python.org>`_) that provides both the database abstraction 
+<https://www.python.org>`_) that provides both the database abstraction 
 layer and high level tools for implementing web services.
 
 The ingredients for a VAMDC node based on this software package and its 

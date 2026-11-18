@@ -32,11 +32,25 @@ with your own data handling tools, let's have a look at step 2 first.
 Loading ascii data into the database
 ------------------------------------------
 
-In the following, we assume that you use MySQL as your database engine 
-(this is also our recommendation when a new database is set up for the first 
-time). Other engines have similar mechanisms for bulk loading data.
+Which database engine to use? Since a node only reads its database, the
+simplest choice, SQLite, works well even for large data sets: the VALD node
+serves about 270 million transitions from a single SQLite file of 60 GB.
+SQLite needs no database server and the database is just a file that you can
+copy around. MySQL/MariaDB or PostgreSQL are the choice if the data are in such
+a database already, or if other programs write to it while the node runs.
 
-The mysql command we use looks like this::
+Each engine has its own command for bulk loading:
+
+* SQLite: the ``.import`` command of the ``sqlite3`` command-line tool
+  (https://sqlite.org/cli.html)
+* MySQL/MariaDB: ``LOAD DATA INFILE``
+* PostgreSQL: ``COPY``
+
+For small data sets you can also load the files through your Django models
+with a short Python script, which then works with any engine. The ExampleNode
+contains such a script, ``load_data.py``.
+
+In the following, we use MySQL as an example. The command looks like this::
 
     mysql> LOAD DATA INFILE '/path/to/data.file' into table <TAB>;
 
@@ -53,18 +67,25 @@ the column delimiter, skipping header lines and the like. Mathematical
 or logical operations can be run on the columns too, before the data 
 get inserted into the database.
 
-You can read all about LOAD DATA at http://dev.mysql.com/doc/refman/5.1/en/load-data.html
+You can read all about LOAD DATA at https://dev.mysql.com/doc/refman/8.4/en/load-data.html
 
 A more complete example would look like::
 
     mysql> LOAD DATA INFILE '/path/transitions.dat' IGNORE INTO TABLE transitions COLUMNS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"' IGNORE 1 LINES;
+
+.. note::
+    After loading, let the database collect statistics about the tables, with
+    ``ANALYZE;`` in SQLite and PostgreSQL or ``ANALYZE TABLE <TAB>;`` in
+    MySQL. Without them, the database can choose a bad way of running a
+    query, e.g. scan millions of rows instead of using the index on the
+    wavelength. Repeat this after every larger import.
 
 
 Preparing the input files
 ----------------------------------
 
 In the not so unlikely case that the data are not yet in a format
-exacly matching the database layout, the Node Software ships with a
+exactly matching the database layout, the Node Software ships with a
 *rewrite tool* to convert your data into such a format. The output will be ascii
 files that can be loaded as described in the previous section and will fulfill the following criteria:
 
@@ -96,7 +117,7 @@ section, you need to place yourself in the *imptools/* directory (this
 is so the rewriter can find all its dependencies) and then give the
 mapping file as an argument to the *imptools/run_rewrite.py* program::
 
-    $ python run_rewrite.py ../nodes/MyNode/mapping_mynode.py
+    $ uv run python run_rewrite.py ../nodes/MyNode/mapping_mynode.py
 
 
 The result will be a set of ascii output files on the right form.
@@ -106,9 +127,9 @@ The result will be a set of ascii output files on the right form.
    For large amounts of raw data, the rewrite operation can be very
    time consuming. We have found that a speed-up of as much as five
    times can be achieved by not using standard Python but an
-   alternative implementation of Python  called *pypy*. If installed
-   you run the rewrite program just as above except you replace
-   *python* with *pypy*. See http://pypy.org for further details on *pypy* usage. 
+   alternative implementation of Python called *PyPy*. With uv, run
+   ``uv run --python pypy3.11 python run_rewrite.py ...``, which downloads
+   PyPy if needed. See https://pypy.org for further details on PyPy.
 
 
 

@@ -65,6 +65,13 @@ steps in its ``README``: the example data are loaded with the new script
 its output is valid XSAMS and ``./manage.py test`` runs a few test queries
 that you can adapt to your data.
 
+**Deployment and documentation.** :ref:`deploy` describes the current setup:
+gunicorn as a systemd service behind nginx, Caddy or Apache, with matching
+example files in the ExampleNode, and what to set before going live
+(``DEBUG``, ``DEPLOY_URL``). The import tool runs again on Python 3.12 and
+newer. The rest of the documentation has been checked and brought up to date,
+from the installation with uv to dead links.
+
 November 2025
 ---------------------
 

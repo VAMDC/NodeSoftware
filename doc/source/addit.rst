@@ -18,7 +18,9 @@ among other things. However, this does not always work (e.g. if you deploy
 behind a proxy) so there is a manual override. Simply set *DEPLOY_URL* in
 ``settings.py``, ending with */tap/* like this::
 
-    DEPLOY_URL = 'http://your.server/some/path/tap/'
+    DEPLOY_URL = 'https://your.server/yournode/tap/'
+
+For a node behind a proxy, as in :ref:`deploy`, this setting is needed.
 
 
 
@@ -35,9 +37,9 @@ use to point to them.
 
 Here is a list of the most important Returnable names for IDs:
 
-* **AtomSpeciesID** uniquely identifies an atomic spieces. Different isotopes and ions are considered different species.
+* **AtomSpeciesID** uniquely identifies an atomic species. Different isotopes and ions are considered different species.
 * **AtomStateID** is the ID for the states within an atomic species.
-* **CrossSectionID** identifies radiative crosssections.
+* **CrossSectionID** identifies radiative cross sections.
 * **EnvironmentID** identifies environments.
 * **FunctionID** numbers functions.
 * **MethodID** is for the defined methods.
@@ -54,7 +56,7 @@ VAMDC. Say, for example that you (in ``dictionaries.py``) set your NodeID to
 output will look something like *<Source sourceID="Bxyz-1">* for your first
 source. This means that the generator takes care of adding the prefix "B" as
 mandated for sourceIDs by the schema, plus it inserts the NodeID to prevent
-clashed with IDs from other VAMDC nodes.
+clashes with IDs from other VAMDC nodes.
 
 **IDs are mandatory** which means that you *have* to fill the Returnables from
 the list above, if you use the corresponding part of the schema.
@@ -126,12 +128,12 @@ about this. However, there are two issues that can interfere:
   then only the species for the first few transitions in the database are
   returned.
 * Again taking "SELECT SPECIES" as example, this can lead to performance issues
-  if a node's query stategy is to impose the restrictions onto the most
-  numerous model fist, since this query then corresponds to selecting
+  if a node's query strategy is to impose the restrictions onto the most
+  numerous model first, since this query then corresponds to selecting
   everything and afterwards throwing everything away except the species
   information.
 
-The solution is to make the queryfunction aware of the Returnables. These are
+The solution is to make the query function aware of the Requestables. These are
 attached to the object **sql** that comes as input. For example, one can test
 if the setup of atomic states is needed like this::
 
@@ -180,7 +182,7 @@ an entry in the State model. Now one sets the related_names of these
 ForeignKeys to something like *'transitions_with_this_upstate'* and 
 *'transitions_with_this_lostate'* respectively. Thereby, for any state 
 *s* the transitions that have *s* as upper state can be retrieved by 
-*s.transitions_with_this_upstate*.
+*s.transitions_with_this_upstate.all()*.
 
 
 
@@ -193,9 +195,16 @@ piece of XML itself than filling the Returnable and letting the generator
 handle this. This is allowed and the generator checks every time it loops over
 an object, if the loop variable, e.g. `AtomState`  has an attribute called
 `XML`. If so, it returns `AtomState.XML()` instead of trying to extract the
-values from the Retunable for the current block of XSAMS. Note the *execution*
+values from the Returnable for the current block of XSAMS. Note the *execution*
 of `.XML()` which means that this needs to be coded as a function/method in
 your model, not as an attribute.
+
+.. note::
+    The generator escapes the values that it puts into the XML, but it cannot
+    do that for XML that you write yourself. Escape any text from your
+    database with ``xml.sax.saxutils.escape()`` (and attribute values with
+    ``escape(value, {'"': '&quot;'})``), otherwise a single `<`, `&` or `"`
+    in your data makes the whole document invalid.
 
 
 .. _debugntest:
@@ -203,34 +212,32 @@ your model, not as an attribute.
 Quick debugging and testing
 ---------------------------
 
-Sometimes it is necessary to go manually go though the steps that happen when a query comes in in order to find out where omething goes wrong. A good tool for this is in interactive python session which you start from within your node directory with::
+To find out where something goes wrong with a query, you can run it in an
+interactive Python session, which you start from within your node directory
+with::
 
-    ./manage.py shell
+    $ uv run python manage.py shell
 
-From within the Python shell, you can run::
+There you can send a query through the whole node, exactly as a web request
+would, without starting a server::
 
-    # import the relevant part of the NodeSoftware
-    from vamdctap import views as V
-    # import your queryfunction
-    from node import queryfunc as Q
-    # set up a query
-    foo = {'LANG':'VSS2','FORMAT':'XSAMS',
-        'QUERY':'select all where radtranswavelength < 1000 and radtranswavelength > 900'}
-    # run the parser
-    foo = V.TAPQUERY(foo)
-    # check basic validity
-    print foo.isvalid
-    ...
-    # look at the parsed where clause
-    print foo.where
-    # put it into your query function and see what happens
-    Q.setupResults(foo)
+    from django.test import Client
+    r = Client().get('/tap/sync', {'QUERY': 'SELECT ALL WHERE RadTransWavelength > 2700 AND RadTransWavelength < 3000'})
+    r.status_code, r['VAMDC-COUNT-RADIATIVE']
+    xml = b''.join(r.streaming_content).decode()
 
-You can also manually run the first step from the queryfunction::
+or run the single steps by hand, to see what each of them makes of the query::
 
-    from vamdctap import sqlparse as S
-    q = S.sql2Q(foo)
-    print q
+    from vamdctap.sqlparse import SQL, sql2Q
+    sql = SQL.parse_string('SELECT ALL WHERE RadTransWavelength > 2700 AND RadTransWavelength < 3000')
+    sql2Q(sql)                       # the restrictions as a Django Q-object
+    from node import queryfunc
+    result = queryfunc.setupResults(sql)
+    result['HeaderInfo']             # the statistics
+    result['RadTrans'].count()
+
+The same lines, with checks of the numbers, make good tests for your node;
+see ``node/tests.py`` in the ExampleNode.
 
 .. _unitconv:
 
@@ -327,10 +334,11 @@ So, in summary, the call *q=sql2Q(sql)* at the start of the query function can b
 Now, depending on what you want to do, you can manipulate this process at any intermediate step. To continue the example with iron only, we could insert the following at the start of the loop over the restrictions::
 
     if restriction[0].lower() == 'atomsymbol':
-        if restriction[1] in ('=','==):
-            if restriction[3] == 'Fe':
-                q_dict[i] = Q(pk=F('pk'))
-                continue
+        if restriction[1] == '=' and restriction[2].strip('\'"') == 'Fe':
+            q_dict[i] = Q(pk=F('pk'))   # always true
+        else:
+            q_dict[i] = ~Q(pk=F('pk'))  # always false
+        continue
 
 
 .. _returnresult:
@@ -340,15 +348,17 @@ How to skip the XSAMS generator and return a custom format
 
 Currently, only queries with *FORMAT=XSAMS* are officially supported. Since
 some nodes wanted to be able to return other formats (that are only useful for
-their community, for example to inculde binary data like an image of a
-molecule) there is a mechanism to to do this. 
+their community, for example to include binary data like an image of a
+molecule) there is a mechanism to do this. 
 
 Whenever *FORMAT* is something else than *XSAMS*, the NodeSoftware checks whether there is a function called *returnResults()* in a node's ``queryfunc.py``. If so, it completely hands the responsibility to assemble the output to this function.
 
 .. note::
     This means that you have to return a HttpResponse object from it and
     know a little more about Django views. In addition you are on your own
-    to assembe your custom data format.
+    to assemble your custom data format. The rules from
+    :ref:`queryfusecurity` apply here as well: build the database query with
+    *sql2Q()*, never with *eval()*.
 
         
     
@@ -358,13 +368,13 @@ Making more use of Django
 ------------------------------------------
 
 Django offers a plethora of features that we do not use for the purpose of
-a bare VAMDC node but that might be useful for adding custom funcitonality.
+a bare VAMDC node but that might be useful for adding custom functionality.
 For example you could:
 
 * Use the included **admin-interface** to browse and manipulate the content of your database.
 * Add a custom query form that is suited specifically for the most common use case of your data.
 * Add a web-browsable view of your data.
 
-For more information on all this have a look into Django's excellect documentation at https://docs.djangoproject.com/
+For more information on all this have a look into Django's excellent documentation at https://docs.djangoproject.com/
 
 For extending your node beyond the VAMDC-TAP interface, you would normally add a second *app* to your node directory, besides the existing one called *node*. Then you simply tell your ``urls.py`` to serve the new app at a certain URL.

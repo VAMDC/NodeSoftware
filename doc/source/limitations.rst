@@ -5,7 +5,7 @@ Known limitations
 
 In general, the NodeSoftware tries to be forgiving with faulty input data from
 the nodes' databases and will do its best to return a valid and complete XML
-document. However it relies on the content of the connected dabase and the
+document. However it relies on the content of the connected database and the
 connection to the schema via the models and dictionaries. Errors in these
 cannot be compensated by the software itself and can result in invalid output
 data. All nodes are encouraged to check the validity of their XML output
@@ -18,6 +18,7 @@ deliberate limitations include:
 
 * Treating isotopes and ions of atoms as different species, repeating the element information instead of nesting several ions within each isotope, and nesting the ions within each element.
 * Only allowing one set of quantum numbers per atomic or molecular state. If a node wishes to return several different descriptions of the quantum numbers per state, this needs to be implemented in a custom fashion for this node. 
-* Only one set of line broadening parameters per transtion and per type (instrumental, natural, pressure, doppler) is allowed at this time. The next release of the software will include the possibility to give several pressure-broadenings per transition.
+* Only one set of line broadening parameters per transition and per type (instrumental, natural, pressure, doppler) is allowed, except for pressure broadening, where a node can give several.
+* The XSAMS output is written by Python code, one element at a time. This is the slow part of large queries: the VALD node, for example, writes about 2000 radiative transitions per second, while the database part of the same query takes a fraction of that time. Nodes should therefore limit the number of transitions per query (see the LIMIT in the ExampleNode's ``queryfunc.py``) and report the truncation in the headers.
 
 A full list of outstanding issues is available at the development repository at https://github.com/VAMDC/NodeSoftware/issues where anybody is welcome to file bugs or wishlist-items.

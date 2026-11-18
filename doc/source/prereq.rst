@@ -6,90 +6,57 @@ Software prerequisits and installation
 Quick start
 -----------------
 
-If you use a Linux distribution like Debian or Ubuntu, you can simply run
-the following commands to install all software that you need::
+On a current Debian or Ubuntu server, this gets you everything::
 
-   $ sudo apt update && sudo apt install python3 python3-pip python3-venv gunicorn nginx git ipython3
-   $ pip3 install django pyparsing
-
-For Python database drivers (MySQL, PostgreSQL), install as needed::
-
-   $ pip3 install mysqlclient  # for MySQL
-   $ pip3 install psycopg2-binary  # for PostgreSQL
-
-**Recommended: Using uv with pyproject.toml**
-
-For modern Python development, we recommend using ``uv`` as a faster alternative
-to pip and virtual environment management. The NodeSoftware includes a
-``pyproject.toml`` file that defines all dependencies. Install uv with::
-
+   $ sudo apt update && sudo apt install git curl
    $ curl -LsSf https://astral.sh/uv/install.sh | sh
+   $ git clone https://github.com/VAMDC/NodeSoftware.git
+   $ cd NodeSoftware
+   $ uv sync
 
-Then install dependencies using::
+``uv`` (https://docs.astral.sh/uv/) installs the Python version and the
+packages that the NodeSoftware needs, as listed in ``pyproject.toml``, into the
+directory ``.venv`` inside the NodeSoftware. Nothing is installed system-wide,
+so it does not interfere with other software on the server. You then run
+commands with ``uv run``, e.g. ``uv run python manage.py test`` in a node
+directory. If your node
+uses MySQL/MariaDB or PostgreSQL, add the driver with ``uv sync --extra
+mysql`` or ``uv sync --extra postgres``.
 
-   $ uv sync  # installs dependencies from pyproject.toml
-   $ uv run python manage.py  # runs commands in the virtual environment
+Without uv, a virtual environment of Python's own does the same::
 
-The ``pyproject.toml`` file is the modern Python standard for declaring project
-metadata and dependencies. With uv, it automatically creates and manages a virtual
-environment, ensuring isolated and reproducible builds. See https://docs.astral.sh/uv/
-for more information.
+   $ python3 -m venv .venv
+   $ .venv/bin/pip install -e .
 
-This will automatically install dependencies. Similar packages exist for other
-Linux distributions (Fedora, Arch, etc.). All software can also be installed
-on Windows and macOS, though setup details differ.
+and then use ``/path/to/NodeSoftware/.venv/bin/python`` wherever this
+documentation says ``uv run python``.
 
-**Docker Alternative**. For a consistent development environment across platforms,
-consider using Docker. A basic Dockerfile in your node directory can encapsulate
-all dependencies. See https://docs.docker.com/ for container-based deployment.
+On macOS and other Linux distributions, the steps are the same once git is
+installed.
 
 If the commands above worked, you might want to skip to :ref:`testprereq`.
-Otherwise continue reading for a list of the individual software dependencies.
+Otherwise read on for the individual pieces.
 
-Python plus some modules
+Python and its packages
 --------------------------------
 
-Python is a wide-spread, open-source, object-oriented, 
-dynamically-typed, interpreted programming language. You can read all 
-about it at http://python.org and there exist installation packages
-for all operating systems and architectures.
+We require Python 3.11 or newer (tested up to Python 3.13). The Python
+packages that the NodeSoftware uses are listed in ``pyproject.toml``. The
+main ones are:
 
-We require Python 3.11 or newer (tested up to Python 3.13).
+* *Django*, the Python-based web framework that runs the services (see
+  :ref:`intro` and https://www.djangoproject.com). We use Django 5.2 LTS (Long
+  Term Support, with security fixes until April 2028).
+* *pyparsing*, for parsing the queries.
+* *gunicorn*, which runs the node on a server, see :ref:`deploy`.
+* the driver for your database: SQLite support comes with Python itself;
+  for MySQL/MariaDB it is *mysqlclient*, for PostgreSQL *psycopg2*.
 
-We recommend to also install IPython (http://ipython.scipy.org/), an 
-improved interactive shell for Python.
+Install them from ``pyproject.toml`` as shown above rather than from your
+Linux distribution's packages, which often have other versions.
 
-Database access library
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This depends on your choice of database engine (see below). The two 
-choices we support primarily are SQLite (access library comes with 
-Python itself) and MySQL (access library at 
-http://pypi.python.org/pypi/MySQL-python/ but preferrably installed by 
-your OS's package manager).
-
-
-PyParsing
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This is needed for our SQL-parser and you can read about it at 
-http://pypi.python.org/pypi/pyparsing
-
-Again, it is best installed via your distribution's package manager.
-
-
-Django
-----------------
-
-Django is the Python-based web-framework that we use to run the services (see
-:ref:`intro` and http://djangoproject.com). We currently use Django 5.2 LTS
-(Long Term Support release). Future LTS and stable releases will be supported
-as they become available.
-
-The packaged version of your OS may be outdated. We recommend installing
-Django using ``pip3`` (see command above) or using a virtual environment
-for better dependency management. Alternatively follow the installation
-instructions on the Django website.
+IPython (https://ipython.org) is a nicer interactive Python shell that
+``manage.py shell`` uses if it is installed.
 
 Database engine
 ------------------
@@ -100,42 +67,28 @@ instead deploy the node software directly on top of the existing
 database. The list of databases that Django can handle can be found at
 https://docs.djangoproject.com/en/5.2/ref/databases/
 
-When setting up a new database, we recommend one of the following two
-
-* SQLite http://www.sqlite.org/
-* MySQL http://mysql.com/ (or, if ORACLE 
-  succeeds in messing MySQL up, the MySQL fork called MariaDB 
-  http://mariadb.org/ )
-
-Unless the data set is extremely large and/or complex, the choice 
-between the two is of minor importance. SQLite has the advantage of not 
-relying on a separate server software and is often on par with MySQL in 
-terms of speed. Its limitation in terms of concurrent write access is 
-not relevant in our typical use case where the database is only read, 
-not written to, during standard operation.
+When setting up a new database, we recommend SQLite (https://sqlite.org).
+It needs no database server, the whole database is a single file, and it
+handles large data sets well as long as the database is only read during
+operation, which is the case for a VAMDC node. The VALD node, for example,
+serves a 60 GB SQLite database. MySQL/MariaDB (https://mariadb.org) or
+PostgreSQL are good choices if the data are in such a database already, or
+if other programs write to the database while the node runs. See also
+:ref:`importing`.
 
 Webserver
 ---------------
 
-The node software needs to run within a webserver. The two setups that we
-successfully tested are *Gunicorn* (together with *nginx*) and the Apache
-webserver (with its WSGI module). 
-
-This is covered in more detail in :ref:`deploy`.
+On a server, the node runs with *gunicorn* behind a web server such as
+*nginx*, *Caddy* or *Apache*. This is covered in :ref:`deploy`.
 
 Git version control
 --------------------
 
 This is not a real requirement since you can download the node software 
 (see :ref:`source`) directly. However, using the version control system 
-*git* (http://git-scm.com/), it becomes easier to update your 
+*git* (https://git-scm.com/), it becomes easier to update your 
 installation and to re-submit your changes.
-
-
-The node software itself
------------------------------
-
-See :ref:`source` on how to obtain the source code.
 
 
 .. _testprereq:
@@ -145,14 +98,11 @@ Test your installation
 
 None of the following commands should give you an error::
 
-    $ python -c "import django"
-    $ python -c "import pyparsing"
-
     $ cd /path/to/where/you/downloaded/NodeSoftware
     $ cd nodes/ExampleNode
-    $ ./manage.py 
-    $ ./manage.py test
-    $ ./manage.py shell
+    $ cp settings_example.py settings.py
+    $ uv run python manage.py test
+    $ uv run python manage.py shell
 
 The last command will open an interactive Python shell for you (IPython, 
 if you have it installed, otherwise standard Python) and in there you 
@@ -178,32 +128,57 @@ contacting us, see :ref:`contact`.
 Upgrading
 ========================
 
-NodeSoftware
---------------
+Keep your node up to date with the master branch of the repository on GitHub.
+This matters for security: in November 2026 a hole was closed that let a
+crafted query run code on nodes that use the old helper function *where2q()*,
+see :ref:`changes`.
 
-The simplest way is to simply download the latest tar.gz-archive and extract it
-on top of you previous installation. We however strongly recommend to backup
-the files in your node-directory before doing this; alternatively moving the
-old NodeSoftware to a different location and then copy the files you need from
-there into the new version.
+**Before you start**, back up your node directory (``nodes/YourDBname``),
+including ``settings.py``, which is not part of the repository, and your
+database if it lives in a file like ``node.db``.
 
-If you instead use our version control system, please see :ref:`gitcollab` on
-how to get the latest.
+**With git** (recommended), in the directory where you cloned the
+NodeSoftware::
+
+    $ git pull
+    $ uv sync
+
+``git pull`` keeps your own changes to the node directory and tells you if they
+collide with changes in the repository.
+
+**Without git**, download
+https://github.com/VAMDC/NodeSoftware/archive/refs/heads/master.zip, unpack it
+next to your old installation, copy your node directory into its ``nodes/``
+directory, then run ``uv sync`` in the new installation. Unpacking the archive
+on top of the old installation does not remove files that have been deleted in
+the meantime, so we advise against it.
+
+``uv sync`` installs the Python packages in the versions listed in
+``pyproject.toml``, including Django. Without uv, ``.venv/bin/pip install -e .``
+does the same; a plain ``pip3 install --upgrade django`` may give you a newer
+Django than the NodeSoftware supports.
+
+**Afterwards**, restart the node, e.g. ``sudo systemctl restart
+yournode.service``, and check that it still answers your example queries.
+Running ``./manage.py test`` in your node directory helps if you have
+written tests for it, see the ExampleNode.
 
 .. note::
 
-    After upgrading the NodeSoftware, you should check that your node is
-    still running properly. We cannot (yet) guarantee that you
-    need not update your node-specific code to fit the latest version. Larger
-    changes will be mentioned in the :ref:`changes`.
+    **Upgrading from a version older than 2025.** Since November 2025 the
+    NodeSoftware requires Python 3.11 or newer and Django 5.2. If your node
+    ran on Python 2 (all versions before May 2017) or on an old Django, the
+    common code will work after the upgrade but your node's own files will
+    probably not. Typical changes are ``print`` as a function,
+    ``except X as e``, ``key in dict`` instead of ``dict.has_key(key)``,
+    ``urlpatterns`` as a plain list in ``urls.py``, an ``on_delete`` argument
+    on every ``ForeignKey`` and Django migrations instead of ``syncdb``. The
+    ExampleNode shows the current form of all files; the :ref:`changes` lists
+    what changed when.
 
-Django
-----------
-
-This depends on how you installed Django. With ``pip3`` it is enough to run::
-
-    $ pip3 install --upgrade django
-
+    If you cannot do this right away, at least make sure that your
+    ``node/queryfunc.py`` does not use *where2q()* or *eval()*, see the
+    November 2026 entry in the :ref:`changes`.
 
 Everything else
 ----------------

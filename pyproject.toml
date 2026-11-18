@@ -18,6 +18,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+docs = [
+    "sphinx>=7.0",
+]
 mysql = [
     "mysqlclient>=2.2.0",
 ]

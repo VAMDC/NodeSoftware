@@ -19,6 +19,15 @@ import sys, os
 #sys.path.append(os.path.abspath('.'))
 sys.path.append(os.path.abspath('../..'))
 
+# vamdctap needs Django settings of a node to import; the ExampleNode's will do
+sys.path.insert(0, os.path.abspath('../../nodes/ExampleNode'))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings_example')
+try:
+    import django
+    django.setup()
+except ImportError:
+    pass  # the API pages stay empty, the rest of the docs builds
+
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions

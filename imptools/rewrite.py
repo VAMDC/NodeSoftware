@@ -10,13 +10,12 @@ controlled from a mapping file.
 
 import sys
 import gzip
-import collections
-import six
+import collections.abc
 from time import time
 
 TOTAL_LINES = 0
 TOTAL_ERRS = 0
-is_iter = lambda iterable: isinstance(iterable, collections.Iterable) and not isinstance(iterable, six.string_types)
+is_iter = lambda iterable: isinstance(iterable, collections.abc.Iterable) and not isinstance(iterable, str)
 
 DELIM = ';'
 QUOTE = '"'

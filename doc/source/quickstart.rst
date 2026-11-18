@@ -1,6 +1,6 @@
 .. _quickstart:
 
-`VAMDC <http://www.vamdc.org/>`_ is a European collaborative effort to centralize access to
+`VAMDC <https://vamdc.org/>`_ is a European collaborative effort to centralize access to
 atomic and molecular research data. Data producers maintain their
 scientific resources as "nodes" in the VAMDC network. Data consumers can then conveniently
 query the network from an online portal, receiving collated information from the nodes having what
@@ -9,12 +9,12 @@ stored with the data, it also creates a clear way for scientists to credit the o
 
 This quickstart guide is aimed at you who are a data producer and are interested
 in making your research available through VAMDC. This page is relevant to you if any
-of the following statments apply:
+of the following statements apply:
 
 * I have data that could complement or improve existing atomic/molecular data.
 * I have data in some custom format and want to make it available as a VAMDC node.
 
-The `full documentation <http://www.vamdc.org/documents/nodesoftware/index.html>`_
+The rest of this documentation (see :ref:`frontpage`)
 gives more details. Also don't be shy to send an email to support@vamdc.eu if you run into trouble.
 
 
@@ -50,13 +50,9 @@ optimized for the hardware they were created on, but can be hard to
 maintain, update and keep secure in the long run. Especially
 when the original creators have moved on.
 
-VAMDC's open-source *NodeSoftware* package is downloadable via GIT using
-`these <http://www.vamdc.org/documents/nodesoftware/prereq.html>`_
-instructions. There are also tarballs to be found `here <http://www.vamdc.eu/software>`_.
-The default NodeSoftware is `Python <http://www.python.org/>`_ based and uses the `Django <https://www.djangoproject.com/>`_
-framework and a few more dependencies outlined on the
-`prerequisites <http://www.vamdc.org/documents/nodesoftware/prereq.html>`_ page. All documentation
-referes to the Python version of the software.
+VAMDC's open-source *NodeSoftware* is on GitHub, see :ref:`source`.
+It is written in `Python <https://www.python.org/>`_ and uses the `Django <https://www.djangoproject.com/>`_
+framework and a few more dependencies outlined in :ref:`prereq`.
 
 The NodeSoftware contains all tools for setting up and running a
 VAMDC node. It also offers import tools for converting existing data.
@@ -68,8 +64,10 @@ get it set up, in brief:
 
 #. In the NodeSoftware directory, go to  ``nodes/``. Copy and rename
    the ExampleNode directory. This will hold your new node.
-#. In your new node directory, edit ``settings.py``. This sets up your
-   database and other properties. See other nodes for more examples.
+#. In your new node directory, copy ``settings_example.py`` to ``settings.py``
+   and edit it. This sets up your database and other properties. The
+   ExampleNode's ``README`` walks you through the first steps with its
+   example data.
 #. You now need to specify the database schema to match how you store
    your data. You need to describe the tables as "models" using Django's
    easy syntax.
@@ -84,7 +82,7 @@ The NodeSoftware can help you import legacy data from text files on
 almost any format. The included import tool (in the ``imptools/``
 directory) converts from such raw data into a format possible to directly import into a
 modern database. The process is summarized below (in more detail in
-the `imptool documentation <http://www.vamdc.org/documents/nodesoftware/prereq.html>`_).
+:ref:`importing`).
 
 #. Prepare your raw data as text files (they can be gzipped if very
    large).
@@ -96,12 +94,15 @@ the `imptool documentation <http://www.vamdc.org/documents/nodesoftware/prereq.h
    raw input data to intermediary text files exactly representing
    how the data will be represented in your database.
 #. Import the converted files into your database using the SQL command
-   suitable for your database (such as ``LOAD DATA INFILE`` for MySQL).
+   suitable for your database (such as ``LOAD DATA INFILE`` for MySQL), or
+   with a short Python script through your Django models, like ``load_data.py``
+   in the ExampleNode.
 
 To test your new Node you can start it with Django's in-built
 testserver (``manage.py runserver``). This will start your node locally
-on port `8000` by default. You can then download the JAVA-based validation
-tool from http://www.vamdc.org/software and try sending some queries.
+on port `8000` by default. Send it some queries with your browser or ``curl``;
+the VAMDC validation tool from https://vamdc.org/software can check that the
+output is valid.
 
 Test that ``<URL>/availability`` and ``<URL>/capabilities``
 work as they should. Remember to set up some sample queries in your
@@ -109,7 +110,7 @@ settings file (see examples in the file) - once you register with VAMDC these wi
 test your node's status.
 
 The Django test server should *never* be used for anything but
-debugging. See the `documentation <http://www.vamdc.org/documents/nodesoftware/deploy.html>`_
+debugging. See :ref:`deploy`
 for instructions on setting up a full-fledged webserver and proxy to serve your data.
 
 
@@ -129,9 +130,8 @@ format.
 
 The VAMDC dictionaries are necessarily rather complex in order to
 cover all possible data forms. They are more extensively explained on the
-the `concepts <http://www.vamdc.org/documents/nodesoftware/concepts.html#conceptdict>`_, page
-and in the `new node <http://www.vamdc.org/documents/nodesoftware/newnode.html#the-dictionaries>`_.
-documentation. Thmere is also a `list of all VAMDC keywords <http://dictionary.vamdc.org/returnables/>`_.
+the :ref:`concepts <conceptdict>` page
+and in :ref:`newnode`. There is also a `list of all VAMDC keywords <http://dictionary.vamdc.org/returnables/>`_.
 The NodeSoftware contains many examples of creating your dictionaries.
 
 The final step consists of registering your node with
@@ -152,5 +152,5 @@ the central VAMDC registry.
 Once registered, data consumers will be able to access your node from the
 `VAMDC portal <http://portal.vamdc.org/vamdc_portal/>`_.
 
-Welcome the VAMDC community!
+Welcome to the VAMDC community!
 

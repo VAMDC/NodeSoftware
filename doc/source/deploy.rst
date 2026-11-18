@@ -3,158 +3,173 @@
 Deployment of your node
 =========================
 
-Now that you have a node that runs nicely with Django's test server, the 
-last remaining step is to configure the server that will run the node
-in a production setup.
+Now that you have a node that runs nicely with Django's test server, the
+last remaining step is to run it permanently on a server. The setup we
+describe here, and which the VALD node uses, is:
 
-How and on which server you set up your node to run permanently, is much
-dependent on your technical resources and the solution we give here is just
-one out of several possibilities (although we also quickly mention the most
-common alternative).
+* *gunicorn* runs the Python code of the node. It is started and supervised
+  by *systemd*, like any other service on a current Linux server.
+* A web server in front of it (*nginx*, *Caddy* or *Apache*) receives the
+  requests from the internet, handles https and compresses the XML.
 
-Gunicorn plus proxy
+The ExampleNode contains example files for all of this.
+
+Before you go live
 --------------------------------
-Our recommended way for hosting your node by yourself on a server is
-Gunicorn (http://gunicorn.org/, `sudo apt install gunicorn` on Debian/Ubuntu) which is aware of Django and understands
-its settings.
 
-You would write a `gunicorn.conf` file (you find it in `nodes/ExampleNode`)
-like this:
+In your node's ``settings.py``:
 
-.. literalinclude:: ../../nodes/ExampleNode/gunicorn.conf
+* ``DEBUG = False``. The ExampleNode's settings template sets it to `True`
+  for testing. With `True`, error pages show anyone details about your
+  installation and settings.
+* ``DEPLOY_URL = 'https://your.server/yournode/tap/'``, i.e. the public
+  address of your node. It appears in the XSAMS output and in the
+  capabilities. Without it the node guesses the address from the request,
+  which goes wrong behind a proxy.
+* ``ADMINS`` and ``EXAMPLE_QUERIES`` should be filled in, see :ref:`newnode`.
 
-and then simply start it from within your node directory with::
+If your database is a file (SQLite), the user that runs the node needs read
+access to the file and to its directory.
 
-    $ gunicorn -c gunicorn.conf settings.wsgi:application
+gunicorn as a systemd service
+--------------------------------
 
-(Note: In modern Django, use the WSGI application directly rather than the deprecated gunicorn_django command.)
+gunicorn is installed together with the other dependencies of the
+NodeSoftware (it is listed in ``pyproject.toml``), so after ``uv sync`` it is
+at ``.venv/bin/gunicorn`` inside the NodeSoftware directory.
 
-The example config makes Gunicorn listen at a unix-socket. Even though you can
-connect it to a TCP-port instead (see commented out line), you do not want
-external requests sent directly to Gunicorn, but to a proxy instead. This
-proxy takes care of the load balancing between the Gunicorn worker processes
-and can compress the XML output from your node before sending it.
+The service is described by a systemd unit file. The ExampleNode contains
+``gunicorn.service``:
 
-Nginx as proxy
+.. literalinclude:: ../../nodes/ExampleNode/gunicorn.service
+
+Adapt the paths, the user and the name `yournode`, then install and start
+it::
+
+    $ sudo cp gunicorn.service /etc/systemd/system/yournode.service
+    $ sudo systemctl daemon-reload
+    $ sudo systemctl enable --now yournode
+    $ systemctl status yournode
+
+After changes to your node's code or settings, ``sudo systemctl restart
+yournode`` makes it use them. The output of gunicorn and the node goes to the
+system journal, see ``journalctl -u yournode``.
+
+gunicorn listens at a unix socket, which only processes on the same machine
+can reach. You do not want requests from the internet to reach gunicorn
+directly, but to go through a web server.
+
+A few notes on the parameters:
+
+* **Workers** (``-w``): each worker answers one query at a time, so this is
+  the number of queries your node handles in parallel. A worker can use a lot
+  of memory during a large query, so make sure your server has enough for all
+  of them at once.
+* **Timeout** (``-t``): a worker that takes longer than this for a query is
+  killed. Large queries can take minutes, mostly for writing the XML (see
+  :ref:`limitations`). The web server in front needs a timeout at least as
+  long, otherwise it gives up on the query first.
+* **Several nodes** on one server simply get one unit each, with different
+  names, sockets and ``DJANGO_SETTINGS_MODULE`` if they share a node directory.
+
+nginx in front
 ~~~~~~~~~~~~~~~~~~
-Nginx (http://nginx.org/en/, `sudo apt install nginx` on Debian/Ubuntu) is a
-fast and light-weight web server. To configure it to serve the running node
-with Gunicorn, according to the example above, you would configure it like
-this:
+nginx (https://nginx.org, ``sudo apt install nginx`` on Debian/Ubuntu) is a
+fast and light-weight web server. The ExampleNode contains this snippet for
+the server block of your site:
 
 .. literalinclude:: ../../nodes/ExampleNode/nginx.conf
 
-Note that you probably want to edit the port, server name and the location
-at which to serve the node (change `/yournode/tap` at three places but make
-them match each other).
+After editing, check and reload the configuration::
 
-If you installed *nginx* with the debian/ubuntu package, you can place symbolic
-links to the config file into `/etc/nginx/` like this to make it use the config
-above::
+    $ sudo nginx -t && sudo systemctl reload nginx
 
-    $ cd /etc/nginx/sites-available/
-    $ sudo ln -s $VAMDCROOT/nodes/YourNode/nginx.conf vamdcnode
-    $ cd ../sites-enabled/
-    $ sudo ln -s ../sites-available/vamdcnode
-    $ sudo /etc/init.d/nginx restart
+For https, the usual way is a free certificate from Let's Encrypt, e.g. with
+``sudo apt install certbot python3-certbot-nginx`` and ``sudo certbot --nginx``.
 
-Proxy Alternatives
+Caddy in front
 ~~~~~~~~~~~~~~~~~~
-What you choose as proxy for Gunicorn is somewhat arbitrary. Common
-alternatives to *nginx* are *lighttpd* or *Apache*. Especially if the server
-that is to run your node already has an Apache running for serving other
-websites, it makes sense to simply tell it how to proxy your Gunicorn server::
+Caddy (https://caddyserver.com, ``sudo apt install caddy`` on current
+Debian/Ubuntu) is a web server with a very short configuration, which also
+gets and renews the https certificate by itself. The ExampleNode contains
+a ``Caddyfile``:
 
-    ProxyPass /yournode http://localhost:8000
-    ProxyPassReverse /yournode http://localhost:8000
+.. literalinclude:: ../../nodes/ExampleNode/Caddyfile
 
+Apache in front
+~~~~~~~~~~~~~~~~~~
+If the server already runs Apache for other websites, it can just as well pass
+the requests on to gunicorn. The ExampleNode contains this snippet for the
+VirtualHost of your site:
 
-Deployment in Apache
+.. literalinclude:: ../../nodes/ExampleNode/apache.conf
+
+Check and reload with ``sudo apachectl configtest && sudo systemctl reload
+apache2``.
+
+Apache can alternatively run the node's code itself with *mod_wsgi*, without
+gunicorn. We do not recommend that any more: the node can then not be
+restarted without Apache, and has to run on the Python version that mod_wsgi was
+built for.
+
+Checking the deployed node
 --------------------------------
 
-As an alternative to deplyment with Gunicorn plus proxy, the Apache webserver
-can not only act as a proxy but also replace Gunicorn by using its mod_wsgi
-plugin to run the Python code directly. The main disadvantage of this setup is
-that you cannot configure and restart the node independantly from Apache, so
-the likelyhood of interfering with any other sites that Apache serves is
-larger.
+From any machine::
 
-There are two example files in your node directory for setting this up:
+    $ curl https://your.server/yournode/tap/availability
+    $ curl -I "https://your.server/yournode/tap/sync?QUERY=SELECT+SPECIES"
 
-* *apache.conf*: This is an Apache config file that defines a virtual 
-  server, bound to a certain host name. You will have to edit several 
-  things in that file before it will work in Apache: the server name
-  and the path to the node software in a few places. On a Debian-like 
-  system you would then move this file to 
-  */etc/apache2/sites-available/vamdcnode* and run *a2ensite vamdcnode* to 
-  activate it.
-* *wsgi.py*: This is the file that the previous one points to in its 
-  WsgiScriptAlias. Edit the path and your node's name.
+The second command sends a HEAD request, which only returns the statistics
+headers (`VAMDC-COUNT-...`) and is therefore quick. Check that the
+`accessURL` in https://your.server/yournode/tap/capabilities is your public
+address; if not, set ``DEPLOY_URL``.
 
-Once you have set this up and re-started the Apache webserver, your node 
-should deliver data at the configured URL.
-
-Container-based deployment
---------------------------------
-Modern deployment increasingly uses containerization for consistency across
-environments. Docker containers can encapsulate your node with all dependencies,
-making deployment portable and reproducible. Container orchestration platforms
-like Kubernetes can manage scaling and availability.
-
-For cloud platforms, services like AWS ECS, Google Cloud Run, or Azure Container
-Apps provide managed container hosting. Platform-as-a-Service options like
-Heroku, Railway, or Fly.io also support Django applications with minimal
-configuration.
-
-See https://docs.docker.com/ and Django deployment documentation for container-based
-deployment patterns.
+Finally, ask the VAMDC team to register your node, see :ref:`contact`.
 
 .. _logging:
 
 Logging
 ------------------
 
-Finally, a few words on logging the access to your node. There are two basic
-ways:
+There are two places where you find out what happens at your node:
 
-* let the webserver do it.
-* let the NodeSoftware do it.
+* The web server logs each request. Since the query is part of the URL, these
+  logs show who asked what and when.
+* The NodeSoftware logs what happens inside the node, for example errors in
+  your query function, and how long things took.
 
-The webserver/proxy, be it nginx or apache, keeps a log on when, how and by
-whom your node is accessed. Since the query itself is in the accessed URL, it
-also ends up in these logs. There are many tools to analyze and visualize this
-kind of logs. In the case of Apache/WSGI-deployment, errors in the NodeSoftware show up the webservers error-log since it is the former that executes the latter. With gunicorn, the webserver knows nothing about the NodeSoftware's errors since it only acts as a proxy. Gunicorn keeps its own logs.
+Nodes use the latter primarily in their ``queryfunc.py``, where you set it up
+like this::
 
-However, the webserver logs usually contain no information about what happened
-inside the NodeSoftware. If you want to keep tabs on how much data was returned
-from each query, how long it took to process and so on, you need to tell the
-NodeSoftware to save this information for you - this is where the `logging`-facility comes into play.
-
-Nodes will primarily use this in their ``queryfunc.py`` where you initialize it like this::
-    
     import logging
-    >>> log = logging.getLogger('vamdc.node.queryfu')
+    log = logging.getLogger('vamdc.node.queryfu')
 
 Then any of the following can be used to log messages of different levels::
 
-    >>> log.debug('some text with a variable: %s'%variable)
-    >>> log.info('bla')
-    >>> log.warning('bla')
-    >>> log.error('bla')
-    >>> log.critical('bla')
+    log.debug('some text with a variable: %s' % variable)
+    log.info('bla')
+    log.warning('bla')
+    log.error('bla')
+    log.critical('bla')
 
-Where these messages end up is configured in ``settings_default.py`` and you can as usual override the default in the node's own ``settings.py``. For example, you set the location and name of the log-file like this::
+Where these messages end up is configured in ``settings_default.py`` and you
+can as usual override the default in the node's own ``settings.py``. For
+example, you set the location and name of the log-file like this::
 
     LOGGING['handlers']['logfile']['filename'] = '/path/to/yourlog.log'
+
+The directory must be writable by the user that runs the node.
 
 .. note::
 
     Critical errors (using `log.critical()`) are sent to the configured
     admin email address. You need to supply a valid address and make
     sure your server can send emails. The email address that these messages
-    are sent from can bet set with ``SERVER_EMAIL='vamdcnode@your.server'``.
+    are sent from can be set with ``SERVER_EMAIL='vamdcnode@your.server'``.
 
-If you want to turn off the logging of debug messages, you can add the following for turning them on or off, depending on your global DEBUG setting::
+If you want to turn off the logging of debug messages, you can add the
+following for turning them on or off, depending on your global DEBUG setting::
 
     if not DEBUG:
         LOGGING['handlers']['logfile']['level'] = 'INFO'

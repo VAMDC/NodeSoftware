@@ -52,7 +52,7 @@ ADMINS = (  ('Admin 1 Name', 'name1@mail.net'),
 ## This overrides the default, in case
 ## the automatism does not work. Eg. when
 ## running behind a proxy.
-#DEPLOY_URL = 'http://your.server/path/tap/'
+#DEPLOY_URL = 'https://your.server/yournode/tap/'
 
 
 ###############################################

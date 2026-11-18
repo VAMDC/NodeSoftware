@@ -1,0 +1,16 @@
+# Caddy (version 2) in front of the gunicorn service in gunicorn.service.
+# Caddy gets and renews the https certificate by itself. With the Debian/Ubuntu
+# package this goes into /etc/caddy/Caddyfile, then: sudo systemctl reload caddy
+# Set DEPLOY_URL = 'https://your.server/yournode/tap/' in settings.py.
+
+your.server {
+    handle_path /yournode/* {
+        encode gzip
+        reverse_proxy unix//run/yournode/gunicorn.sock {
+            transport http {
+                # large queries take minutes; match gunicorn's -t
+                response_header_timeout 300s
+            }
+        }
+    }
+}

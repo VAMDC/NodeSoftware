@@ -17,7 +17,7 @@ as shown in the violet box.
 
 It goes like this:
 
-* Get the Nodesoftware and make a copy of the example node.
+* Get the NodeSoftware and make a copy of the example node.
 * Make a settings file from the template and put your database connection there.
 * Either
     * Write your data model and let Django create the database from it. Then use the import tool to put your data there.
@@ -31,11 +31,10 @@ But let's take it step by step:
 The main directory of your node
 ---------------------------------
 
-Let's give the directory which holds your copy of the NodeSoftware a name and
-call it `$VAMDCROOT`. (It is called `NodeSoftware` by default and exists
-whereever you downloaded and extracted it, unless you moved it elsewhere and/or
-renamed it, which is no problem to do) a name and call it `$VAMDCROOT`. Let's
-also assume the name of the dataset is `YourDBname`.
+Let's call the directory which holds your copy of the NodeSoftware
+`$VAMDCROOT`. (It is called `NodeSoftware` by default and exists wherever you
+cloned or unpacked it; moving or renaming it is no problem.) Let's also assume
+the name of the dataset is `YourDBname`.
 
 Inside $VAMDCROOT you find several subdirectories. For setting up a new 
 node, you only need to care about the one called `nodes/` which contains 
@@ -43,7 +42,6 @@ the files for several nodes already, plus the example node. The first
 thing to do, is to make a copy of the ExampleNode::
 
     $ export VAMDCROOT=/your/path/to/NodeSoftware/
-    $ # (the last line is for Bash-like shells, for C-Shell use `setenv` instead of `export`
     $ cd $VAMDCROOT/nodes/
     $ cp -a ExampleNode YourDBname
     $ cd YourDBname/
@@ -68,7 +66,7 @@ There are only a few configuration items that you need to fill
 
 * The information on how to connect to your database.
 * A name and email address for the node administrator(s).
-* Example queries that makes sense with your data.
+* Example queries that make sense with your data.
 * Optionally you can set the location of the log-file and override other options by copying from ``settings_default.py``.
 
 The structure for filling in this information is already inside the newly
@@ -119,7 +117,7 @@ for these that correspond to the table columns. An example may look like this::
         ion = IntegerField()
         mass = DecimalField(max_digits=7, decimal_places=2)
         class Meta:
-            db_table = u'species'
+            db_table = 'species'
 
 There is one important thing to do with these model definitions, apart 
 from checking that the columns were detected correctly: The columns that 
@@ -134,15 +132,19 @@ addition to the one above, that was auto-detected as follows::
         energy = DecimalField(max_digits=17, decimal_places=4)
         ...
 
-Now suppose you know that the field called `species` is acutally a 
+Now suppose you know that the field called `species` is actually a 
 reference to the species-table. You would then change the class `State` 
 as such::
 
     class State(Model):
         id = IntegerField(primary_key=True)
-        species = ForeignKey(Species)
+        species = ForeignKey(Species, on_delete=CASCADE)
         energy = DecimalField(max_digits=17, decimal_places=4)
         ...
+
+`on_delete` tells Django what to do with a state when its species is deleted;
+since your node only reads the database, the choice does not matter much and
+`CASCADE` is fine.
 
 .. note:: 
     You will probably have to re-order the classes inside the file 
@@ -153,9 +155,9 @@ Let's add a third model::
 
     class Transition(Model):
         id = IntegerField(primary_key=True)
-        species = ForeignKey(Species)
-        upper_state = ForeignKey(State, related_name='transup')
-        lower_state = ForeignKey(State, related_name='translo')
+        species = ForeignKey(Species, on_delete=CASCADE)
+        upper_state = ForeignKey(State, on_delete=CASCADE, related_name='transup')
+        lower_state = ForeignKey(State, on_delete=CASCADE, related_name='translo')
         wavelength = FloatField()
 
 The important thing here is the `related_name`. Whenever you want to define
@@ -173,10 +175,10 @@ above you could do something like::
     >>> allspecies = Species.objects.all()
     >>> allspecies.count() # the number of species is returned
     >>> somestates = State.objects.filter(species__name='He')
-    >>> for state in somestates: print state.energy
+    >>> for state in somestates: print(state.energy)
     >>> sometransitions = Transition.objects.filter(wavelength__lt=500)
     >>> atransition = sometransitions[5]
-    >>> othertransitions = atransition.upper_state.transup.objects.all()
+    >>> othertransitions = atransition.upper_state.transup.all()
     >>> othertransitions.count() # gives the number of transitions with the
                                  # same upper state.
 
@@ -286,17 +288,17 @@ Using the XML generator
 Before we go on to the remaining two ingredients, the *query function* and the
 *dictionaries*, we need to have an understanding on how they play together in
 the XML generator. As you remember from :ref:`xsamsconcepts`, the goal is to
-run queries on your models and pass on the output to the generator so that it can looped over them to fill the hierarchical XSAMS structure.
+run queries on your models and pass on the output to the generator so that it can loop over them to fill the hierarchical XSAMS structure.
 
 In order to make this work, we need to name the variables that you pass into
 the generator (as explained below) and the loop variables that you use in the
 Returnables. For example, continuing on the model above: Assume you have made a
 selection of your Transition model; you pass this on under the name *RadTrans*;
-the generator loops over it, calling each Transition insite its loop *RadTran*
+the generator loops over it, calling each Transition inside its loop *RadTran*
 (note the singular!). `RadTran` is now a single instance of your Transition
 model and has the wavelength as `RadTran.wavelength` since we called the field
 this way above. The entry in the RETURNABLES would therefore look like
-`'RadTranWavelenth':'RadTran.wavelength'` - where the first part is the keyword
+`'RadTransWavelength':'RadTran.wavelength'` - where the first part is the keyword
 from the VAMDC dictionary (which the generator knows where in the schema it
 should end up) and the second part tells it how to get the value from the
 query results that it got from your query function.
@@ -354,11 +356,11 @@ Functions             Function
 
 
 The third and fourth columns are for an inner loop. So for example the
-generator loops over all `Atoms`, calling each atom insteance
-`Atom`. To extract all states being a part of this particualar Atom,
+generator loops over all `Atoms`, calling each atom instance
+`Atom`. To extract all states being a part of this particular Atom,
 the generator will assume that there is an iterable `States` defined
 on each `Atom` over which it will iterate. So it will loop over `Atom.States`, calling each
-of state `AtomState` in the inner loop, like this::
+state `AtomState` in the inner loop, like this::
 
      for Atom in Atoms: 
 
@@ -466,7 +468,7 @@ Explanations on what happens here:
     could e.g. be `'AtomIonCharge':'species__ion'` which will use the `ion` 
     field of the species model. Depending on your database layout, it might 
     not be possible to pass all restrictions to a single model. Then you 
-    need to write a more advanced query than the shortcuts in Lines 7-8.
+    need to write a more advanced query than the shortcut in lines 7-8.
 
 .. note::
 
@@ -627,22 +629,24 @@ hopefully see a positive status message.
 
 You should also be able to run queries by accessing URLS like::
 
-    http://127.0.0.1:8000/tap/sync?LANG=VSS1&FORMAT=XSAMS&QUERY=SELECT ALL WHERE AtomIonCharge > 1
+    http://127.0.0.1:8000/tap/sync?LANG=VSS2&FORMAT=XSAMS&QUERY=SELECT ALL WHERE AtomIonCharge > 1
 
 replacing the last part by whatever restriction makes sense for your data set.
 
-.. note::
-	The URL has to be URL-encoded when testing from a script or
-	similar. Web browsers usually do that for you. To also see
-	the statistics headers, you can use `wget -S -O output.xml "<URL>"`.
+From the command line, ``curl`` takes care of the URL-encoding and with
+``-D -`` also shows the statistics headers::
+
+    $ curl -G -D - -o output.xml --data-urlencode "QUERY=SELECT ALL WHERE AtomIonCharge > 1" http://127.0.0.1:8000/tap/sync
 
 You should run several different test queries to your node, using all the
-Restrictables that you defined. Make sure that the output values matches your
+Restrictables that you defined. Make sure that the output values match your
 expectations.
 
 There is a very convenient software called **TAPvalidator** (see
-http://www.vamdc.org/software) which can be used to query a node, browse the
-output and check that it is valid with respect to the xsams standard.
+https://vamdc.org/software) which can be used to query a node, browse the
+output and check that it is valid with respect to the XSAMS standard. If you
+have the schema files from https://github.com/VAMDC/VAMDC-XSAMS locally, also
+``xmllint --noout --schema xsams.xsd output.xml`` does the check.
 
 Once your node does what it should do with the test server, you can start
 thinking about :ref:`deploying it <deploy>`.

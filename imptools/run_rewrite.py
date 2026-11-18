@@ -8,7 +8,7 @@ controlled from a mapping file.
 """
 
 
-import os, os.path, sys, imp, optparse
+import os, os.path, sys, optparse, importlib.util
 from time import time
 from multiprocessing import Pool
 
@@ -35,27 +35,26 @@ def mod_import(mod_path):
     """
     if not os.path.isabs(mod_path):
         mod_path = os.path.abspath(mod_path)
-    path, filename = mod_path.rsplit(os.path.sep, 1)
-    modname = filename.rstrip('.py')
+    path, filename = os.path.split(mod_path)
+    modname = os.path.splitext(filename)[0]
 
     # for good measure, add given path to sys so one can for example import 
     # modules in the same directory from inside the mapping file.
     sys.path.append(os.path.abspath(path))
 
-    try:
-        result = imp.find_module(modname, [path])
-    except ImportError:
+    spec = importlib.util.spec_from_file_location(modname, mod_path)
+    if spec is None or not os.path.exists(mod_path):
         print("Could not find module '%s' (%s.py) at path '%s'" % (modname, modname, path))
         return None
+    mod = importlib.util.module_from_spec(spec)
+    # the worker processes find the mapping's functions by module name
+    sys.modules[modname] = mod
     try:
-        mod = imp.load_module(modname, *result)
+        spec.loader.exec_module(mod)
     except ImportError as e:
         print("Could not find or import module %s at path '%s'" % (modname, path))
         print(e)
         return None
-    finally:
-        # we have to close the file handle manually
-        result[0].close()
     return mod
 
 def do_rewrite():

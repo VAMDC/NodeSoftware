@@ -1,16 +1,25 @@
+# systemd unit that runs the node with gunicorn. Adapt the paths and the name
+# "yournode", copy it to /etc/systemd/system/yournode.service, then
+#   sudo systemctl daemon-reload && sudo systemctl enable --now yournode
 [Unit]
-Description=The gunicorn sevice that runs the VAMDC node
+Description=VAMDC node yournode (gunicorn)
 After=network.target
 
 [Service]
-PIDFile=/run/vamdc/vald-dev.pid
 User=vamdc
 Group=vamdc
-WorkingDirectory=/opt/NodeSoftware/nodes/ExampleNode
-ExecStart=/opt/pypy3-v5.7.1-linux64/bin/gunicorn --timeout 120 --pid /run/vamdc/vald-dev.pid --workers 3 --bind :7669 wsgi
+WorkingDirectory=/opt/NodeSoftware/nodes/YourNode
+Environment="DJANGO_SETTINGS_MODULE=settings"
+# -w: worker processes, each answers one query at a time
+# -t: seconds before a worker on a long query is killed; keep the proxy's
+#     timeout at least as long
+ExecStart=/opt/NodeSoftware/.venv/bin/gunicorn wsgi:application -w 4 -t 300 -b unix:/run/yournode/gunicorn.sock
 ExecReload=/bin/kill -s HUP $MAINPID
-ExecStop=/bin/kill -s TERM $MAINPID
-PrivateTmp=no
+Restart=always
+PrivateTmp=true
+# systemd creates /run/yournode for the socket and removes it on stop
+RuntimeDirectory=yournode
+RuntimeDirectoryMode=0755
 
 [Install]
 WantedBy=multi-user.target

@@ -62,9 +62,7 @@ It is the first column that contains the *name* that we use globally
 within VAMDC for a certain bit of information. This is what we mean in 
 the following when we talk about "global names" or "keywords".
 
-The full VAMDC dictionary is still being worked on and it currently 
-resides at http://dictionary.vamdc.eu/ where also some helper tools
-are provided.
+The full VAMDC dictionary can be browsed at https://dictionary.vamdc.org/
 
 At the nodes, the dictionary is used in the following different ways. 
 Note that some keywords do not make sense being used in all three 
@@ -81,7 +79,7 @@ Returnables
 
 Each node keeps a list of global names that we call the *Returnables*. 
 This list contains the names associated with the kinds of information 
-that a node has to offer. This is list is offered as XML at the 
+that a node has to offer. This list is offered as XML at the 
 *tap/capabilities/* URL end point which allows user applications to 
 decide whether it is worth to query a certain node for a certain bit of 
 data, or not.
@@ -95,7 +93,7 @@ layout of the database.
 
 This "translation" is then used, among other things, by the code that 
 fills the data into a certain output format which in turn can become 
-node-independant. Thereby each Returnable corresponds to a certain 
+node-independent. Thereby each Returnable corresponds to a certain 
 place (a column in table format, or a certain XML tag) in the output 
 format.
 
@@ -120,19 +118,20 @@ Requestables
 ~~~~~~~~~~~~~~~~~
 
 Requestables are a third way of using the dictionary. They are used in 
-the SELECT-clause of the SQL expression when one wants to recieve only a 
+the SELECT-clause of the query when one wants to receive only a 
 subset of the data that matches the restrictions. For example, *SELECT 
-Species, RadiativeTransitions* would return only the fields in this
-group and skip any information about the states, if it were available.
+Species, RadiativeTransitions WHERE ...* would return only the species and
+the transitions and skip any information about the states. *SELECT ALL*
+returns everything.
 
 
 The registry
 ---------------
 
-The registry is a central web service where all VAMDC nodes are 
-registered with their access URL and some additional information. This 
-allows finding nodes before sending queries to them. You will need to 
-register your node there once the setup is complete.
+The registry (https://registry.vamdc.org/) is a central web service where
+all VAMDC nodes are registered with their access URL and some additional
+information. This allows finding nodes before sending queries to them. You
+will need to register your node there once the setup is complete.
 
 
 
@@ -146,7 +145,7 @@ TAP services
 
 TAP stands for *Table Access Protocol* and is a Virtual Observatory 
 standard definition of a web service. The detailed specs can be found 
-`here <http://www.ivoa.net/Documents/TAP/>`_. All VAMDC nodes offer 
+`here <https://www.ivoa.net/documents/TAP/>`_. All VAMDC nodes offer 
 their data though a TAP-like interface which means that the URL 
 end-points are named like in TAP, the most important being */tap/sync* 
 for a data query which returns the data synchronously (in the immediate 
@@ -154,23 +153,28 @@ reply). Also the attribute names for submitting a query are strongly
 inspired by TAP so that a query to a single VAMDC node looks something 
 like this::
 
-    http://domain.of.your.node/tap/sync/?LANG=VSS1&FORMAT=XSAMS&QUERY=query string
+    https://domain.of.your.node/tap/sync?LANG=VSS2&FORMAT=XSAMS&QUERY=query string
+
+A HEAD request to the same URL returns only the HTTP headers with the
+statistics of the result (``VAMDC-COUNT-SPECIES``, ``VAMDC-COUNT-RADIATIVE``,
+``VAMDC-TRUNCATED`` and so on), which lets clients find out cheaply how much
+data a node would return.
 
 VAMDC nodes currently only use and support a subset of the TAP standard, 
-i.e. that parts that are needed within the VAMDC. Keep in mind that 
+i.e. the parts that are needed within the VAMDC. Keep in mind that 
 users will not primarily query an individual node but use a higher level 
 tool like the VAMDC portal for querying many nodes at once. Data 
 providers that want to set up their own VAMDC node do not really need to 
 care about TAP either.
 
 The more detailed specification of the VAMDC variant of a TAP service 
-can be found in the standards documentation at http://vamdc.org/documents/standards/.
+can be found in the standards documentation at https://vamdc.org/documents/standards/.
 
 
 The query language
 ---------------------
 
-The node software uses the *VAMDC SQL-subset 2* (VSS2) which is a superset of VSS1 for query language as defined in the VAMDC standards. This is 
+The node software uses the *VAMDC SQL-subset 2* (VSS2), the query language defined in the VAMDC standards. This is 
 basically a SQL-like string where the database layout of the 
 node does not need to be known - instead one uses the keywords 
 from the dictionary in the WHERE part to restrict the selection of data. 
@@ -191,7 +195,7 @@ XSAMS stands for XML Schema for Atoms, Molecules and Solids. It defines
 a strict way to represent data in XML. XSAMS is the format in which 
 VAMDC nodes send their data replies.
 
-Link to the `VAMDC-XSAMS project on Sourceforge <http://sourceforge.net/projects/xsams/>`_.
+The schema files are at https://github.com/VAMDC/VAMDC-XSAMS.
 
 The NodeSoftware provides an implementation of the XSAMS schema and data providers need not know it in detail to set up a VAMDC node. However, basic knowledge of its structure is needed to be able to write the few bits of code as explained in the next chapter.
 
@@ -201,7 +205,7 @@ XSAMS is a hierarchical structure which simplified looks like this:
    :width: 500 px
    :alt: Basic structure of XSAMS
 
-Inside each box resides all the data that corresponds to it. The *atom* box holds the name, atomic number, masses, iosotopes, ionization and so on. The *atomic state* box holds the state energy, quantum numbers and so on.
+Inside each box resides all the data that corresponds to it. The *atom* box holds the name, atomic number, masses, isotopes, ionization and so on. The *atomic state* box holds the state energy, quantum numbers and so on.
 
 The different parts are interlinked, for example each atomic state has an ID
 and the transitions can refer to them as their initial and final state. Sources
@@ -212,23 +216,23 @@ The generic XSAMS generator
 ------------------------------
 
 The node software comes with an implementation of the XSAMS that can (but need
-not necessesarily) be used by all nodes, aka the XSAMS *generator*. This frees
+not necessarily) be used by all nodes, aka the XSAMS *generator*. This frees
 data providers from the need to know about XML and the details of the schema.
-In order for this to work, data providers need fill the *Returnables* as
-described above and in the next chaper. The generator then knows how to put the
+In order for this to work, data providers need to fill the *Returnables* as
+described above and in the next chapter. The generator then knows how to put the
 data into the schema.
 
 In principle, XSAMS allows many more nested loops than are shown in the diagram
 above. But since each node needs to build from its database the structure that
 matches the hierarchy, we have made some deliberate simplifications. For
-example we treat each ion and isotope or an atom as a different atom/species.
-This means that skip the complexity of having five or more nested loops at the
+example we treat each ion and isotope of an atom as a different atom/species.
+This means that we skip the complexity of having five or more nested loops at the
 expense of replicating some information.
 
 The portal
 ---------------
 
-The portal is the obvious example of a *user application* that makes use of
+The portal (https://portal.vamdc.org/) is the obvious example of a *user application* that makes use of
 VAMDC nodes. It is a web site that facilitates the submission of a query to
 many nodes at once by providing a web form out of which it assembles the query
 string which it then sends to one or many nodes, gathers the results from each

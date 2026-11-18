@@ -116,10 +116,9 @@ preserve node.db along with the Python files as that is your database.
 9) When you have a working node that you want to share on VAMDC, you'll need to run it in a proper web-server. The
 built-in one from Django, which you used in step 6, is not good for production.
 
-There are many ways to put the node into a web server, with a huge number of subtle variations. The node-software
-documentation discusses a few, and your local sysadmins may require a particular approach. If you have freedom of
-choice, a gunicorn server to run the Python code with an nginx reverse-proxy to protect gunicorn are good choices.
-Some sample configuration-files are included in the example node.
+The documentation (doc/source/deploy.rst) describes the setup we recommend: gunicorn runs the node as a systemd
+service, and a web server in front of it handles https and compression. The example node contains the files for
+this: gunicorn.service, and nginx.conf, Caddyfile or apache.conf for the web server of your choice.
 
 10) A word on security. Your node answers queries from anybody on the internet. The query function in
 node/queryfunc.py turns the query into a database query with sql2Q(), which passes the values from
